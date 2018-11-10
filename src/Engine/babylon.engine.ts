@@ -4307,6 +4307,7 @@ module BABYLON {
                         excludeLoaders.push(loader);
                         Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
                         this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
+                        return;
                     }
                 }
 
@@ -5716,6 +5717,7 @@ module BABYLON {
                     if (fallbackUrl) {
                         excludeLoaders.push(loader);
                         this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture, excludeLoaders);
+                        return;
                     }
                 }
 

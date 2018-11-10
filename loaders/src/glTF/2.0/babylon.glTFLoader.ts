@@ -1713,28 +1713,44 @@ module BABYLON.GLTF2 {
             const sampler = (texture.sampler == undefined ? GLTFLoader._DefaultSampler : ArrayItem.Get(`${context}/sampler`, this.gltf.samplers, texture.sampler));
             const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
-            const deferred = new Deferred<void>();
-            const babylonTexture = new Texture(null, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
-                if (!this._disposed) {
-                    deferred.resolve();
-                }
-            }, (message, exception) => {
-                if (!this._disposed) {
-                    deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
-                }
-            });
-            promises.push(deferred.promise);
+            const image = ArrayItem.Get(`${context}/source`, this.gltf.images, texture.source);
+            let babylonTexture: Texture;
+            if (image.uri && this.babylonScene.getEngine().textureFormatInUse) {
+                // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
+                const deferred = new Deferred<void>();
+                babylonTexture = new Texture(`${this._uniqueRootUrl}` + image.uri, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
+                    if (!this._disposed) {
+                        deferred.resolve();
+                    }
+                }, (message, exception) => {
+                    if (!this._disposed) {
+                        deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
+                    }
+                });
+                promises.push(deferred.promise);
+            }else {
+                const deferred = new Deferred<void>();
+                babylonTexture = new Texture(null, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
+                    if (!this._disposed) {
+                        deferred.resolve();
+                    }
+                }, (message, exception) => {
+                    if (!this._disposed) {
+                        deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
+                    }
+                });
+                promises.push(deferred.promise);
+
+                promises.push(this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
+                    const name = image.uri || `${this._fileName}#image${image.index}`;
+                    const dataUrl = `data:${this._uniqueRootUrl}${name}`;
+                    babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
+                }));
+
+            }
 
             babylonTexture.wrapU = samplerData.wrapU;
             babylonTexture.wrapV = samplerData.wrapV;
-
-            const image = ArrayItem.Get(`${context}/source`, this.gltf.images, texture.source);
-            promises.push(this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
-                const name = image.uri || `${this._fileName}#image${image.index}`;
-                const dataUrl = `data:${this._uniqueRootUrl}${name}`;
-                babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
-            }));
-
             assign(babylonTexture);
 
             this.logClose();
