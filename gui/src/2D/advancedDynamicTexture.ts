@@ -569,8 +569,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         var textureSize = this.getSize();
 
         if (this._isFullscreen) {
-            x = x * (textureSize.width / engine.getRenderWidth());
-            y = y * (textureSize.height / engine.getRenderHeight());
+            let camera = scene.cameraToUseForPointers || scene.activeCamera;
+            let viewport = camera!.viewport;
+            x = x * (textureSize.width / (engine.getRenderWidth() * viewport.width));
+            y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
 
         if (this._capturingControl[pointerId]) {
@@ -639,9 +641,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
             let engine = scene.getEngine();
-            let viewport = camera.viewport;
-            let x = (scene.pointerX / engine.getHardwareScalingLevel() - viewport.x * engine.getRenderWidth()) / viewport.width;
-            let y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
+            let viewport = camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());;
+            let x = scene.pointerX / engine.getHardwareScalingLevel() - viewport.x;
+            let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
+            
 
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
