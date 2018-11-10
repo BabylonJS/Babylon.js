@@ -34,7 +34,7 @@ declare module "scene" {
         configurable: true
     });
 
-declare module "Meshes/Mesh" {
+declare module "Meshes/mesh" {
     export interface Mesh {
         /**
          * Simplify the mesh according to the given array of settings.

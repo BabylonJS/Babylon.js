@@ -1,5 +1,5 @@
-import { Sound } from "Audio/sound";
-import { Analyser } from "Audio/analyser";
+import { Sound } from "./sound";
+import { Analyser } from "./analyser";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Engine } from "Engines/engine";
