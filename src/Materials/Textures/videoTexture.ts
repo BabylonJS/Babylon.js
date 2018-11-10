@@ -1,5 +1,6 @@
 import { Observable } from "Misc/observable";
 import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Engine } from "Engines/engine";
@@ -374,7 +375,7 @@ import { Texture } from "Materials/Textures/texture";
                         video.play();
                     })
                     .catch(function(err) {
-                        Tools.Error(err.name);
+                        Logger.Error(err.name);
                     });
             }
             else {
@@ -414,7 +415,7 @@ import { Texture } from "Materials/Textures/texture";
                             }
                         },
                         function(e: MediaStreamError) {
-                            Tools.Error(e.name);
+                            Logger.Error(e.name);
                         }
                     );
                 }

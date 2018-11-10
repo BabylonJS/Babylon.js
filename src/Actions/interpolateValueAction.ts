@@ -1,7 +1,7 @@
 import { Action } from "./action";
 import { Condition } from "./condition";
 
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Observable } from "Misc/observable";
 import { Color3, Vector3, Matrix, Quaternion } from "Maths/math";
 import { Animation } from "Animations/animation";
@@ -102,7 +102,7 @@ import { Animation } from "Animations/animation";
             } else if (this.value instanceof Quaternion) {
                 dataType = Animation.ANIMATIONTYPE_QUATERNION;
             } else {
-                Tools.Warn("InterpolateValueAction: Unsupported type (" + typeof this.value + ")");
+                Logger.Warn("InterpolateValueAction: Unsupported type (" + typeof this.value + ")");
                 return;
             }
 

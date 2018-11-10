@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { SerializationHelper } from "Misc/decorators";
 import { Nullable } from "types";
 import { Camera } from "./camera";
@@ -111,7 +111,7 @@ import { Camera } from "./camera";
         public add(input: ICameraInput<TCamera>): void {
             var type = input.getSimpleName();
             if (this.attached[type]) {
-                Tools.Warn("camera input of type " + type + " already exists on camera");
+                Logger.Warn("camera input of type " + type + " already exists on camera");
                 return;
             }
 

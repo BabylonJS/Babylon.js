@@ -28,6 +28,8 @@ import { IOfflineProvider } from "Offline/IOfflineProvider";
 import { ILoadingScreen, DefaultLoadingScreen } from "Loading/loadingScreen";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Constants } from "./constants";
+import { DomManagement } from "Misc/domManagement";
+import { Logger } from "Misc/logger";
 declare type Texture = import("Materials/Textures/texture").Texture;
 declare type VideoTexture = import("Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -544,7 +546,12 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
         /**
          * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
          */
-        public static ShadersRepository = "src/Shaders/";
+        public static get ShadersRepository(): string {
+            return Effect.ShadersRepository;
+        }
+        public static set ShadersRepository(value: string) {
+            Effect.ShadersRepository = value;
+        }
 
         // Public members
 
@@ -1134,7 +1141,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                     this.onCanvasPointerOutObservable.notifyObservers(ev);
                 };
 
-                if (Tools.IsWindowObjectExist()) {
+                if (DomManagement.IsWindowObjectExist()) {
                     window.addEventListener("blur", this._onBlur);
                     window.addEventListener("focus", this._onFocus);
                 }
@@ -1146,7 +1153,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                     this._onContextLost = (evt: Event) => {
                         evt.preventDefault();
                         this._contextWasLost = true;
-                        Tools.Warn("WebGL context lost.");
+                        Logger.Warn("WebGL context lost.");
 
                         this.onContextLostObservable.notifyObservers(this);
                     };
@@ -1164,7 +1171,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                             this._rebuildBuffers();
                             // Cache
                             this.wipeCaches(true);
-                            Tools.Warn("WebGL context successfully restored.");
+                            Logger.Warn("WebGL context successfully restored.");
                             this.onContextRestoredObservable.notifyObservers(this);
                             this._contextWasLost = false;
                         }, 0);
@@ -1188,7 +1195,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
             }
 
             // Viewport
-            const devicePixelRatio = Tools.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
+            const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
 
             var limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
             this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
@@ -1252,7 +1259,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                     document.exitPointerLock();
                 };
 
-                if (Tools.IsWindowObjectExist()) {
+                if (DomManagement.IsWindowObjectExist()) {
                     window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
                     window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
                 }
@@ -4331,7 +4338,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                         // Add Back
                         customFallback = true;
                         excludeLoaders.push(loader);
-                        Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
+                        Logger.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
                         this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
                     }
                 }
@@ -4774,7 +4781,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
          */
         public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
             if (this.webGLVersion === 1) {
-                Tools.Error("WebGL 1 does not support texture comparison.");
+                Logger.Error("WebGL 1 does not support texture comparison.");
                 return;
             }
 
@@ -4873,7 +4880,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
             var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_DEPTHTEXTURE);
 
             if (!this._caps.depthTextureExtension) {
-                Tools.Error("Depth texture is not supported by your browser or hardware.");
+                Logger.Error("Depth texture is not supported by your browser or hardware.");
                 return internalTexture;
             }
 
@@ -4923,7 +4930,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
             internalTexture.isCube = true;
 
             if (this.webGLVersion === 1) {
-                Tools.Error("Depth cube texture is not supported by WebGL 1.");
+                Logger.Error("Depth cube texture is not supported by WebGL 1.");
                 return internalTexture;
             }
 
@@ -5033,7 +5040,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+                Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
 
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -5145,7 +5152,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                 var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
                 if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                     type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                    Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+                    Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
                 }
 
                 var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
@@ -5537,7 +5544,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-                Tools.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
+                Logger.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
             }
 
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -5666,7 +5673,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                         DDSTools.UploadDDSLevels(this, glTextureFromLod, data, info, true, 6, mipmapIndex);
                     }
                     else {
-                        Tools.Warn("DDS is the only prefiltered cube map supported so far.");
+                        Logger.Warn("DDS is the only prefiltered cube map supported so far.");
                     }
 
                     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
@@ -5738,7 +5745,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
             let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
                 if (loader) {
                     const fallbackUrl = loader.getFallbackTextureUrl(texture.url, this._textureFormatInUse);
-                    Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
+                    Logger.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
                     if (fallbackUrl) {
                         excludeLoaders.push(loader);
                         this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture, excludeLoaders);
@@ -5936,20 +5943,20 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
             if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
                 generateMipMaps = false;
                 samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
-                Tools.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+                Logger.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
             }
             else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
                 generateMipMaps = false;
                 samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
-                Tools.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+                Logger.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
             }
             else if (textureType === gl.FLOAT && !this._caps.textureFloatRender) {
                 generateMipMaps = false;
-                Tools.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
+                Logger.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
             }
             else if (textureType === gl.HALF_FLOAT && !this._caps.colorBufferFloat) {
                 generateMipMaps = false;
-                Tools.Warn("Render to half float textures is not supported. Mipmap generation forced to false.");
+                Logger.Warn("Render to half float textures is not supported. Mipmap generation forced to false.");
             }
 
             var width = size;
@@ -6933,7 +6940,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
             this.disableVR();
 
             // Events
-            if (Tools.IsWindowObjectExist()) {
+            if (DomManagement.IsWindowObjectExist()) {
                 window.removeEventListener("blur", this._onBlur);
                 window.removeEventListener("focus", this._onFocus);
                 window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
@@ -7007,7 +7014,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
          */
         public displayLoadingUI(): void {
-            if (!Tools.IsWindowObjectExist()) {
+            if (!DomManagement.IsWindowObjectExist()) {
                 return;
             }
             const loadingScreen = this.loadingScreen;
@@ -7021,7 +7028,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
          */
         public hideLoadingUI(): void {
-            if (!Tools.IsWindowObjectExist()) {
+            if (!DomManagement.IsWindowObjectExist()) {
                 return;
             }
             const loadingScreen = this.loadingScreen;

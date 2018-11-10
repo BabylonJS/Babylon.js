@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { Vector3, Color3 } from "Maths/math";
@@ -116,6 +116,6 @@ import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
          * @param mesh The mesh to replace the default mesh of the gizmo
          */
         public setCustomMesh(mesh: Mesh) {
-            Tools.Error("Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo)");
+            Logger.Error("Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo)");
         }
     }

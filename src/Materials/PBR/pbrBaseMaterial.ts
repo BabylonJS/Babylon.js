@@ -1,6 +1,7 @@
 import { serialize, serializeAsImageProcessingConfiguration } from "Misc/decorators";
 import { Observer } from "Misc/observable";
-import { Tools, IAnimatable } from "Misc/tools";
+import { IAnimatable } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { SmartArray } from "Misc/smartArray";
 import { TextureTools } from "Misc/textureTools";
 import { Nullable } from "types";
@@ -916,7 +917,7 @@ import { Constants } from "Engines/constants";
 
             if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 mesh.createNormals(true);
-                Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
+                Logger.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
             }
 
             let previousEffect = subMesh.effect;

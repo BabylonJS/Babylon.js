@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { ISize } from "Maths/math";
@@ -193,7 +193,7 @@ import { Constants } from "Engines/constants";
         public serialize(): any {
             const scene = this.getScene();
             if (scene && !scene.isReady()) {
-                Tools.Warn("The scene must be ready before serializing the dynamic texture");
+                Logger.Warn("The scene must be ready before serializing the dynamic texture");
             }
 
             const serializationObject = super.serialize();

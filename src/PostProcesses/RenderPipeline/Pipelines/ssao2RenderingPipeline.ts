@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { serialize, SerializationHelper } from "Misc/decorators";
 import { Vector3, Tmp } from "Maths/math";
 import { Camera } from "Cameras/camera";
@@ -182,7 +182,7 @@ import { Scene } from "scene";
             this._ratio = ratio;
 
             if (!this.isSupported) {
-                Tools.Error("SSAO 2 needs WebGL 2 support.");
+                Logger.Error("SSAO 2 needs WebGL 2 support.");
                 return;
             }
 

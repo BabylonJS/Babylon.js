@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable } from "types";
 import { Camera } from "Cameras";
 import { Scene } from "scene";
@@ -353,12 +353,12 @@ import { CannonJSPlugin, OimoJSPlugin } from "Physics";
             if (onError) {
                 onError(msg, err);
             } else {
-                Tools.Log(msg);
+                Logger.Log(msg);
                 throw err;
             }
         } finally {
             if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                Tools.Log(logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                Logger.Log(logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
             }
         }
 
@@ -451,7 +451,7 @@ import { CannonJSPlugin, OimoJSPlugin } from "Physics";
                                         }
                                     });
                                     if (found === false) {
-                                        Tools.Warn("Geometry not found for mesh " + parsedMesh.id);
+                                        Logger.Warn("Geometry not found for mesh " + parsedMesh.id);
                                     }
                                 }
                             }
@@ -486,7 +486,7 @@ import { CannonJSPlugin, OimoJSPlugin } from "Physics";
                                     loadedMaterialsIds.push(parsedMesh.materialId);
                                     var mat = parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
                                     if (!mat) {
-                                        Tools.Warn("Material not found for mesh " + parsedMesh.id);
+                                        Logger.Warn("Material not found for mesh " + parsedMesh.id);
                                     } else {
                                         log += "\n\tMaterial " + mat.toString(fullDetails);
                                     }
@@ -564,12 +564,12 @@ import { CannonJSPlugin, OimoJSPlugin } from "Physics";
                 if (onError) {
                     onError(msg, err);
                 } else {
-                    Tools.Log(msg);
+                    Logger.Log(msg);
                     throw err;
                 }
             } finally {
                 if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                    Tools.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                    Logger.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
 
@@ -684,12 +684,12 @@ import { CannonJSPlugin, OimoJSPlugin } from "Physics";
                 if (onError) {
                     onError(msg, err);
                 } else {
-                    Tools.Log(msg);
+                    Logger.Log(msg);
                     throw err;
                 }
             } finally {
                 if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                    Tools.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                    Logger.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
                 }
             }
             return false;

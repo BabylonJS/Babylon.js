@@ -4,7 +4,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Effect } from "Materials/effect";
 import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { Camera } from "Cameras/camera";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Constants } from "Engines/constants";
 
     /**
@@ -46,7 +46,7 @@ import { Constants } from "Engines/constants";
             this._depthTexture = depthTexture;
             this.onApplyObservable.add((effect: Effect) => {
                 if (!this._depthTexture) {
-                    Tools.Warn("No depth texture set on CircleOfConfusionPostProcess");
+                    Logger.Warn("No depth texture set on CircleOfConfusionPostProcess");
                     return;
                 }
                 effect.setTexture("depthSampler", this._depthTexture);

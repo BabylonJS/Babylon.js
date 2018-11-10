@@ -1,16 +1,16 @@
-import { Tools } from "Misc/tools";
 import { Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Maths/math";
-import { Engine } from "Engines/engine";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { PostProcess } from "PostProcesses/postProcess";
-
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { Constants } from "Engines/constants";
+import { DomManagement } from "Misc/domManagement";
+import { Logger } from "Misc/logger";
 
+declare type Engine = import("Engines/engine").Engine;
+declare type InternalTexture = import("Materials/Textures/internalTexture").InternalTexture;
+declare type BaseTexture  = import("Materials/Textures/baseTexture").BaseTexture;
+declare type RenderTargetTexture = import("Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type PostProcess = import("PostProcesses/postProcess").PostProcess;
+declare type AbstractMesh = import("Meshes/abstractMesh").AbstractMesh;
     /**
      * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
      * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)
@@ -182,6 +182,10 @@ import { Constants } from "Engines/constants";
      * Effect containing vertex and fragment shader that can be executed on an object.
      */
     export class Effect {
+        /**
+         * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
+         */
+        public static ShadersRepository = "src/Shaders/";
         /**
          * Name of the effect.
          */
@@ -500,10 +504,10 @@ import { Constants } from "Engines/constants";
 
         /** @hidden */
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
-            if (Tools.IsWindowObjectExist()) {
+            if (DomManagement.IsWindowObjectExist()) {
                 // DOM element ?
                 if (vertex instanceof HTMLElement) {
-                    var vertexCode = Tools.GetDOMTextContent(vertex);
+                    var vertexCode = DomManagement.GetDOMTextContent(vertex);
                     callback(vertexCode);
                     return;
                 }
@@ -527,7 +531,7 @@ import { Constants } from "Engines/constants";
             if (vertex[0] === "." || vertex[0] === "/" || vertex.indexOf("http") > -1) {
                 vertexShaderUrl = vertex;
             } else {
-                vertexShaderUrl = Engine.ShadersRepository + vertex;
+                vertexShaderUrl = Effect.ShadersRepository + vertex;
             }
 
             // Vertex shader
@@ -536,10 +540,10 @@ import { Constants } from "Engines/constants";
 
         /** @hidden */
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
-            if (Tools.IsWindowObjectExist()) {
+            if (DomManagement.IsWindowObjectExist()) {
                 // DOM element ?
                 if (fragment instanceof HTMLElement) {
-                    var fragmentCode = Tools.GetDOMTextContent(fragment);
+                    var fragmentCode = DomManagement.GetDOMTextContent(fragment);
                     callback(fragmentCode);
                     return;
                 }
@@ -568,7 +572,7 @@ import { Constants } from "Engines/constants";
             if (fragment[0] === "." || fragment[0] === "/" || fragment.indexOf("http") > -1) {
                 fragmentShaderUrl = fragment;
             } else {
-                fragmentShaderUrl = Engine.ShadersRepository + fragment;
+                fragmentShaderUrl = Effect.ShadersRepository + fragment;
             }
 
             // Fragment shader
@@ -592,16 +596,16 @@ import { Constants } from "Engines/constants";
 
             // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
-                Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
-                Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
+                Logger.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
+                Logger.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
             }
             else if (this.name.vertex) {
-                Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
-                Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
+                Logger.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
+                Logger.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
             }
             else {
-                Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
-                Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
+                Logger.Error("Vertex shader: " + this.name + formattedVertexCode);
+                Logger.Error("Fragment shader: " + this.name + formattedFragmentCode);
             }
         }
 
@@ -719,7 +723,7 @@ import { Constants } from "Engines/constants";
                     // Replace
                     returnValue = returnValue.replace(match[0], includeContent);
                 } else {
-                    var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
+                    var includeShaderUrl = Effect.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
                     this._engine._loadFile(includeShaderUrl, (fileContent) => {
                         Effect.IncludesShadersStore[includeFile] = fileContent as string;
@@ -863,14 +867,14 @@ import { Constants } from "Engines/constants";
                 this._compilationError = e.message;
 
                 // Let's go through fallbacks then
-                Tools.Error("Unable to compile effect:");
-                Tools.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
+                Logger.Error("Unable to compile effect:");
+                Logger.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
                     return " " + uniform;
                 }));
-                Tools.Error("Attributes: " + attributesNames.map(function(attribute) {
+                Logger.Error("Attributes: " + attributesNames.map(function(attribute) {
                     return " " + attribute;
                 }));
-                Tools.Error("Error: " + this._compilationError);
+                Logger.Error("Error: " + this._compilationError);
                 if (previousProgram) {
                     this._program = previousProgram;
                     this._isReady = true;
@@ -881,7 +885,7 @@ import { Constants } from "Engines/constants";
                 }
 
                 if (fallbacks && fallbacks.isMoreFallbacks) {
-                    Tools.Error("Trying next fallback.");
+                    Logger.Error("Trying next fallback.");
                     this.defines = fallbacks.reduce(this.defines, this);
                     this._prepareEffect();
                 } else { // Sorry we did everything we can

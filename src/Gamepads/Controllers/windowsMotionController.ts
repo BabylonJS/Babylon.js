@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { Scene } from "scene";
@@ -346,7 +346,7 @@ import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
 
                 path = WindowsMotionController.MODEL_BASE_URL + device + '/';
             } else {
-                Tools.Warn("You need to reference GLTF loader to load Windows Motion Controllers model. Falling back to generic models");
+                Logger.Warn("You need to reference GLTF loader to load Windows Motion Controllers model. Falling back to generic models");
                 path = GenericController.MODEL_BASE_URL;
                 filename = GenericController.MODEL_FILENAME;
             }
@@ -366,8 +366,8 @@ import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
                     meshLoaded(this._defaultModel);
                 }
             }, null, (scene: Scene, message: string) => {
-                Tools.Log(message);
-                Tools.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
+                Logger.Log(message);
+                Logger.Warn('Failed to retrieve controller model from the remote server: ' + path + filename);
                 if (!forceDefault) {
                     this.initControllerMesh(scene, meshLoaded, true);
                 }
@@ -409,7 +409,7 @@ import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
                 // Create our mesh info. Note that this method will always return non-null.
                 loadedMeshInfo = this.createMeshInfo(parentMesh);
             } else {
-                Tools.Warn('Could not find root node in model file.');
+                Logger.Warn('Could not find root node in model file.');
             }
 
             return loadedMeshInfo;
@@ -428,13 +428,13 @@ import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
             for (i = 0; i < this._mapping.buttons.length; i++) {
                 var buttonMeshName = (<any>this._mapping.buttonMeshNames)[this._mapping.buttons[i]];
                 if (!buttonMeshName) {
-                    Tools.Log('Skipping unknown button at index: ' + i + ' with mapped name: ' + this._mapping.buttons[i]);
+                    Logger.Log('Skipping unknown button at index: ' + i + ' with mapped name: ' + this._mapping.buttons[i]);
                     continue;
                 }
 
                 var buttonMesh = getChildByName(rootNode, buttonMeshName);
                 if (!buttonMesh) {
-                    Tools.Warn('Missing button mesh with name: ' + buttonMeshName);
+                    Logger.Warn('Missing button mesh with name: ' + buttonMeshName);
                     continue;
                 }
 
@@ -448,7 +448,7 @@ import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
                     loadedMeshInfo.buttonMeshes[this._mapping.buttons[i]] = buttonMeshInfo;
                 } else {
                     // If we didn't find the mesh, it simply means this button won't have transforms applied as mapped button value changes.
-                    Tools.Warn('Missing button submesh under mesh with name: ' + buttonMeshName +
+                    Logger.Warn('Missing button submesh under mesh with name: ' + buttonMeshName +
                         '(VALUE: ' + !!buttonMeshInfo.value +
                         ', PRESSED: ' + !!buttonMeshInfo.pressed +
                         ', UNPRESSED:' + !!buttonMeshInfo.unpressed +
@@ -460,13 +460,13 @@ import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
             for (i = 0; i < this._mapping.axisMeshNames.length; i++) {
                 var axisMeshName = this._mapping.axisMeshNames[i];
                 if (!axisMeshName) {
-                    Tools.Log('Skipping unknown axis at index: ' + i);
+                    Logger.Log('Skipping unknown axis at index: ' + i);
                     continue;
                 }
 
                 var axisMesh = getChildByName(rootNode, axisMeshName);
                 if (!axisMesh) {
-                    Tools.Warn('Missing axis mesh with name: ' + axisMeshName);
+                    Logger.Warn('Missing axis mesh with name: ' + axisMeshName);
                     continue;
                 }
 
@@ -480,7 +480,7 @@ import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
                     loadedMeshInfo.axisMeshes[i] = axisMeshInfo;
                 } else {
                     // If we didn't find the mesh, it simply means thit axis won't have transforms applied as mapped axis values change.
-                    Tools.Warn('Missing axis submesh under mesh with name: ' + axisMeshName +
+                    Logger.Warn('Missing axis submesh under mesh with name: ' + axisMeshName +
                         '(VALUE: ' + !!axisMeshInfo.value +
                         ', MIN: ' + !!axisMeshInfo.min +
                         ', MAX:' + !!axisMeshInfo.max +
@@ -491,7 +491,7 @@ import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
             // Pointing Ray
             loadedMeshInfo.pointingPoseNode = getChildByName(rootNode, this._mapping.pointingPoseMeshName);
             if (!loadedMeshInfo.pointingPoseNode) {
-                Tools.Warn('Missing pointing pose mesh with name: ' + this._mapping.pointingPoseMeshName);
+                Logger.Warn('Missing pointing pose mesh with name: ' + this._mapping.pointingPoseMeshName);
             }else {
                 this._pointingPoseNode = loadedMeshInfo.pointingPoseNode;
             }

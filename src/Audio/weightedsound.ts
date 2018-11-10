@@ -1,5 +1,5 @@
 import { Sound } from "Audio/sound";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 
     /**
      * Wraps one or more Sound objects and selects one with random weight for playback.
@@ -60,7 +60,7 @@ import { Tools } from "Misc/tools";
         public set directionalConeInnerAngle(value: number) {
             if (value !== this._coneInnerAngle) {
                 if (this._coneOuterAngle < value) {
-                    Tools.Error("directionalConeInnerAngle: outer angle of the cone must be superior or equal to the inner angle.");
+                    Logger.Error("directionalConeInnerAngle: outer angle of the cone must be superior or equal to the inner angle.");
                     return;
                 }
 
@@ -86,7 +86,7 @@ import { Tools } from "Misc/tools";
         public set directionalConeOuterAngle(value: number) {
             if (value !== this._coneOuterAngle) {
                 if (value < this._coneInnerAngle) {
-                    Tools.Error("directionalConeOuterAngle: outer angle of the cone must be superior or equal to the inner angle.");
+                    Logger.Error("directionalConeOuterAngle: outer angle of the cone must be superior or equal to the inner angle.");
                     return;
                 }
 

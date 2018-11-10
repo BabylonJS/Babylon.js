@@ -9,6 +9,7 @@ import { CubeTexture } from "Materials/Textures/cubeTexture";
 import { Constants } from "Engines/constants";
 import { Scene } from "scene";
 import { PostProcess } from "PostProcesses/postProcess";
+import { Logger } from "Misc/logger";
 
     /**
      * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -109,7 +110,7 @@ import { PostProcess } from "PostProcesses/postProcess";
 
             for (let i = 0; i < EnvironmentTextureTools._MagicBytes.length; i++) {
                 if (dataView.getUint8(pos++) !== EnvironmentTextureTools._MagicBytes[i]) {
-                    Tools.Error('Not a babylon environment map');
+                    Logger.Error('Not a babylon environment map');
                     return null;
                 }
             }
@@ -585,7 +586,7 @@ import { PostProcess } from "PostProcesses/postProcess";
          */
         public static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void {
             if (info.version !== 1) {
-                Tools.Warn('Unsupported babylon environment map version "' + info.version + '"');
+                Logger.Warn('Unsupported babylon environment map version "' + info.version + '"');
             }
 
             let irradianceInfo = info.irradiance as EnvironmentTextureIrradianceInfoV1;

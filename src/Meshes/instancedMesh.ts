@@ -1,6 +1,7 @@
 import { Nullable, FloatArray, IndicesArray } from "types";
 import { Vector3 } from "Maths/math";
 import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Camera } from "Cameras/camera";
 import { Node } from "node";
 import { AbstractMesh } from "Meshes/abstractMesh";
@@ -94,7 +95,7 @@ Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
             }
 
             //no-op with warning
-            Tools.Warn("Note - setting renderingGroupId of an instanced mesh has no effect on the scene");
+            Logger.Warn("Note - setting renderingGroupId of an instanced mesh has no effect on the scene");
         }
 
         /**

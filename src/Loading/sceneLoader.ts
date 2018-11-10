@@ -12,6 +12,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { AssetContainer } from "assetContainer";
 import { IParticleSystem } from "Particles/IParticleSystem";
 import { Skeleton } from "Bones/skeleton";
+import { Logger } from "Misc/logger";
     /**
      * Class used to represent data loading progression
      */
@@ -317,7 +318,7 @@ import { Skeleton } from "Bones/skeleton";
             if (registeredPlugin) {
                 return registeredPlugin;
             }
-            Tools.Warn("Unable to find a plugin to load " + extension + " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: http://doc.babylonjs.com/how_to/load_from_any_file_type");
+            Logger.Warn("Unable to find a plugin to load " + extension + " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: http://doc.babylonjs.com/how_to/load_from_any_file_type");
             return SceneLoader._getDefaultPlugin();
         }
 
@@ -464,7 +465,7 @@ import { Skeleton } from "Bones/skeleton";
             }
             else {
                 if (sceneFilename.substr(0, 1) === "/") {
-                    Tools.Error("Wrong sceneFilename parameter");
+                    Logger.Error("Wrong sceneFilename parameter");
                     return null;
                 }
 
@@ -536,7 +537,7 @@ import { Skeleton } from "Bones/skeleton";
          */
         public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string = "", scene: Nullable<Scene> = Engine.LastCreatedScene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if (!scene) {
-                Tools.Error("No scene available to import mesh to");
+                Logger.Error("No scene available to import mesh to");
                 return null;
             }
 
@@ -558,7 +559,7 @@ import { Skeleton } from "Bones/skeleton";
                 if (onError) {
                     onError(scene, errorMessage, exception);
                 } else {
-                    Tools.Error(errorMessage);
+                    Logger.Error(errorMessage);
                     // should the exception be thrown?
                 }
 
@@ -692,7 +693,7 @@ import { Skeleton } from "Bones/skeleton";
          */
         public static Append(rootUrl: string, sceneFilename: string = "", scene: Nullable<Scene> = Engine.LastCreatedScene, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if (!scene) {
-                Tools.Error("No scene available to append to");
+                Logger.Error("No scene available to append to");
                 return null;
             }
 
@@ -718,7 +719,7 @@ import { Skeleton } from "Bones/skeleton";
                 if (onError) {
                     onError(scene, errorMessage, exception);
                 } else {
-                    Tools.Error(errorMessage);
+                    Logger.Error(errorMessage);
                     // should the exception be thrown?
                 }
 
@@ -814,7 +815,7 @@ import { Skeleton } from "Bones/skeleton";
             pluginExtension: Nullable<string> = null
         ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if (!scene) {
-                Tools.Error("No scene available to load asset container to");
+                Logger.Error("No scene available to load asset container to");
                 return null;
             }
 
@@ -835,7 +836,7 @@ import { Skeleton } from "Bones/skeleton";
                 if (onError) {
                     onError(scene, errorMessage, exception);
                 } else {
-                    Tools.Error(errorMessage);
+                    Logger.Error(errorMessage);
                     // should the exception be thrown?
                 }
 

@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Scene } from "scene";
 import { Vector3, Vector2, Path2 } from "Maths/math";
 import { VertexBuffer } from "Meshes/buffer";
@@ -187,7 +187,7 @@ import { Mesh } from "Meshes/mesh";
             this._outlinepoints.add(points);
 
             if (typeof earcut === 'undefined') {
-                Tools.Warn("Earcut was not found, the polygon will not be built.");
+                Logger.Warn("Earcut was not found, the polygon will not be built.");
             }
         }
 

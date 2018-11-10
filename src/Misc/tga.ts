@@ -1,5 +1,5 @@
 import { InternalTexture } from "Materials/Textures/internalTexture";
-import { Tools } from "./tools";
+import { Logger } from "Misc/logger";
 
     /**
      * Based on jsTGALoader - Javascript loader for TGA file
@@ -57,7 +57,7 @@ import { Tools } from "./tools";
         public static UploadContent(texture: InternalTexture, data: Uint8Array): void {
             // Not enough data to contain header ?
             if (data.length < 19) {
-                Tools.Error("Unable to load TGA file - Not enough data to contain header");
+                Logger.Error("Unable to load TGA file - Not enough data to contain header");
                 return;
             }
 
@@ -67,7 +67,7 @@ import { Tools } from "./tools";
 
             // Assume it's a valid Targa file.
             if (header.id_length + offset > data.length) {
-                Tools.Error("Unable to load TGA file - Not enough data");
+                Logger.Error("Unable to load TGA file - Not enough data");
                 return;
             }
 

@@ -1,5 +1,6 @@
 ﻿import { Tools } from "Misc/tools";
 import { Observable } from "Misc/observable";
+import { DomManagement } from "Misc/domManagement";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { _TimeToken } from "Instrumentation/timeToken";
@@ -38,7 +39,7 @@ import { Gamepad, GenericPad } from "./gamepad";
          * @param _scene BabylonJS scene
          */
         constructor(private _scene?: Scene) {
-            if (!Tools.IsWindowObjectExist()) {
+            if (!DomManagement.IsWindowObjectExist()) {
                 this._gamepadEventSupported = false;
             } else {
                 this._gamepadEventSupported = 'GamepadEvent' in window;

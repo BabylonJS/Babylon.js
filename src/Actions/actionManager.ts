@@ -11,6 +11,7 @@ import { Engine } from "Engines/engine";
 import { Constants } from "Engines/constants";
 import { Tools } from "Misc/tools";
 import { ActionEvent } from "Actions/actionEvent";
+import { Logger } from "Misc/logger";
 
     /**
      * Action Manager manages all events to be triggered on a given mesh or the global scene.
@@ -312,7 +313,7 @@ import { ActionEvent } from "Actions/actionEvent";
         public registerAction(action: Action): Nullable<Action> {
             if (action.trigger === ActionManager.OnEveryFrameTrigger) {
                 if (this.getScene().actionManager !== this) {
-                    Tools.Warn("OnEveryFrameTrigger can only be used with scene.actionManager");
+                    Logger.Warn("OnEveryFrameTrigger can only be used with scene.actionManager");
                     return null;
                 }
             }

@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Vector3 } from "Maths/math";
 import { Action } from "./action";
 import { Condition } from "./condition";
@@ -221,7 +221,7 @@ declare type ActionEvent = import("./actionEvent").ActionEvent;
             this._property = this._getProperty(this.propertyPath);
 
             if (typeof this._effectiveTarget[this._property] !== "number") {
-                Tools.Warn("Warning: IncrementValueAction can only be used with number values");
+                Logger.Warn("Warning: IncrementValueAction can only be used with number values");
             }
         }
 

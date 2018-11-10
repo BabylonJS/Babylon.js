@@ -19,6 +19,7 @@ import { StereoscopicInterlacePostProcess } from "PostProcesses/stereoscopicInte
 import { VRDistortionCorrectionPostProcess } from "PostProcesses/vrDistortionCorrectionPostProcess";
 import { Animation } from "Animations/animation";
 import { VRCameraMetrics } from "Cameras/VR/vrCameraMetrics";
+import { Logger } from "Misc/logger";
 
 declare type FreeCamera = import("./freeCamera").FreeCamera;
 declare type TargetCamera = import("./targetCamera").TargetCamera;
@@ -585,7 +586,7 @@ declare type TargetCamera = import("./targetCamera").TargetCamera;
          */
         public attachPostProcess(postProcess: PostProcess, insertAt: Nullable<number> = null): number {
             if (!postProcess.isReusable() && this._postProcesses.indexOf(postProcess) > -1) {
-                Tools.Error("You're trying to reuse a post process not defined as reusable.");
+                Logger.Error("You're trying to reuse a post process not defined as reusable.");
                 return 0;
             }
 

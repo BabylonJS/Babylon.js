@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Scene } from "scene";
 import { AbstractMesh } from "Meshes/abstractMesh";
 import { _TimeToken } from "Instrumentation/timeToken";
@@ -68,7 +68,7 @@ import { PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledC
                 }
             } else {
                 // If the app or home buttons are ever made available
-                Tools.Warn(`Unrecognized Daydream button index: ${buttonIdx}`);
+                Logger.Warn(`Unrecognized Daydream button index: ${buttonIdx}`);
             }
         }
     }

@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Observable, Observer } from "Misc/observable";
 import { Vector3 } from "Maths/math";
 import { Mesh } from "Meshes/mesh";
@@ -91,7 +91,7 @@ declare module "scene" {
             this._physicsEngine = new PhysicsEngine(gravity, plugin);
             return true;
         } catch (e) {
-            Tools.Error(e.message);
+            Logger.Error(e.message);
             return false;
         }
     };

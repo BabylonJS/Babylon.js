@@ -22,6 +22,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "abstractScene";
 import { Constants } from "Engines/constants";
+import { Logger } from "Misc/logger";
 
 declare module "abstractScene" {
     export interface AbstractScene {
@@ -264,7 +265,7 @@ declare module "abstractScene" {
 
             // Warn on stencil
             if (!this._engine.isStencilEnable) {
-                Tools.Warn("Rendering the Highlight Layer requires the stencil to be active on the canvas. var engine = new Engine(canvas, antialias, { stencil: true }");
+                Logger.Warn("Rendering the Highlight Layer requires the stencil to be active on the canvas. var engine = new Engine(canvas, antialias, { stencil: true }");
             }
 
             // Adapt options

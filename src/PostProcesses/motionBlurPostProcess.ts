@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Vector2 } from "Maths/math";
 import { Camera } from "Cameras/camera";
 import { Effect } from "Materials/effect";
@@ -68,7 +68,7 @@ declare type Engine = import("Engines/engine").Engine;
 
             if (!this._geometryBufferRenderer) {
                 // Geometry buffer renderer is not supported. So, work as a passthrough.
-                Tools.Warn("Multiple Render Target support needed to compute object based motion blur");
+                Logger.Warn("Multiple Render Target support needed to compute object based motion blur");
                 this.updateEffect();
             } else {
                 // Geometry buffer renderer is supported.

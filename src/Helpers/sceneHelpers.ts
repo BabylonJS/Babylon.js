@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Vector3 } from "Maths/math";
@@ -151,7 +151,7 @@ declare module "scene" {
     Scene.prototype.createDefaultSkybox = function(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
 
         if (!environmentTexture) {
-            Tools.Warn("Can not create default skybox without environment texture.");
+            Logger.Warn("Can not create default skybox without environment texture.");
             return null;
         }
 
