@@ -644,7 +644,7 @@ module BABYLON {
          * Creates a ShadowGenerator object.
          * A ShadowGenerator is the required tool to use the shadows.
          * Each light casting shadows needs to use its own ShadowGenerator.
-         * Documentation : http://doc.babylonjs.com/tutorials/shadows
+         * Documentation : https://doc.babylonjs.com/babylon101/shadows
          * @param mapSize The size of the texture what stores the shadows. Example : 1024.
          * @param light The light object generating the shadows.
          * @param useFullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.

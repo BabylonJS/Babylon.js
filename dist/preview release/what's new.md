@@ -62,6 +62,7 @@
 - AssetContainer dispose method ([TrevorDev](https://github.com/TrevorDev))
 - Loading texture with KTX will fallback to non-KTX loader if KTX loader fails ([TrevorDev](https://github.com/TrevorDev))
 - `Layer` are now supported in `RenderTargetTexture` ([Sebavan](https://github.com/Sebavan))
+- Make onscreen joystick's canvas public ([TrevorDev](https://github.com/TrevorDev))
 - Added `Tools.CustomRequestHeaders`, `Tools.UseCustomRequestHeaders`, `Tools.InjectCustomRequestHeaders` to send Custom Request Headers alongside XMLHttpRequest's i.e. when loading files (Tools.Loadfile) from resources requiring special headers like 'Authorization' ([susares](https://github.com/susares))
 
 ### glTF Loader
@@ -87,6 +88,7 @@
 - Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBahavior using Mesh as base type, causing type-checking problems with AbstractMesh ([Poolminer](https://github.com/Poolminer/))
+- TransformNode lookAt not working in world space when node's parent has rotation ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
