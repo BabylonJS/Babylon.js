@@ -211,6 +211,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Returns an array containing the root container.
      * This is mostly used to let the Inspector introspects the ADT
+     * @returns an array containing the rootContainer
      */
     public getChildren(): Array<Container> {
         return [this._rootContainer];

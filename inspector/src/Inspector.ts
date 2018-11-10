@@ -7,7 +7,7 @@ import { Scene, Observable, Observer, Nullable, IInspectorOptions } from "babylo
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
-import { GLTFFileLoader } from "babylonjs-loaders"
+import { GLTFFileLoader } from "babylonjs-loaders";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -190,7 +190,7 @@ export class Inspector {
             const host = parentControl.ownerDocument!.createElement("div");
 
             host.id = "embed-host";
-            host.style.width = options.embedHostWidth || "300px";
+            host.style.width = options.embedHostWidth || "auto";
 
             parentControl.appendChild(host);
 
