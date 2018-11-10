@@ -68,6 +68,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
     private _rootCanvas: Nullable<HTMLCanvasElement>;
+
+    /** @hidden */
+    public _needRedraw = false;
+
     /**
      * Define type to string to ensure compatibility across browsers
      * Safari doesn't support DataTransfer constructor
@@ -540,6 +544,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         context.strokeStyle = "white";
         var measure = new Measure(0, 0, renderWidth, renderHeight);
         this._rootContainer._draw(measure, context);
+
+        if (this._needRedraw) { // We need to redraw as some elements dynamically adapt to their content
+            this._needRedraw = false;
+            this._render();
+        }
     }
 
     /** @hidden */
@@ -560,8 +569,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         var textureSize = this.getSize();
 
         if (this._isFullscreen) {
-            x = x * (textureSize.width / engine.getRenderWidth());
-            y = y * (textureSize.height / engine.getRenderHeight());
+            let camera = scene.cameraToUseForPointers || scene.activeCamera;
+            let viewport = camera!.viewport;
+            x = x * (textureSize.width / (engine.getRenderWidth() * viewport.width));
+            y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
 
         if (this._capturingControl[pointerId]) {
@@ -630,9 +641,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
             let engine = scene.getEngine();
-            let viewport = camera.viewport;
-            let x = (scene.pointerX / engine.getHardwareScalingLevel() - viewport.x * engine.getRenderWidth()) / viewport.width;
-            let y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
+            let viewport = camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+            let x = scene.pointerX / engine.getHardwareScalingLevel() - viewport.x;
+            let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
 
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer

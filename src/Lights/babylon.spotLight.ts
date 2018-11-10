@@ -177,7 +177,7 @@ module BABYLON {
         /**
          * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
          * It can cast shadows.
-         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
          * @param name The light friendly name
          * @param position The position of the spot light in the scene
          * @param direction The direction of the light in the scene
