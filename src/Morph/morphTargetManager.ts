@@ -1,6 +1,6 @@
 import { Observer } from "Misc/observable";
 import { SmartArray } from "Misc/smartArray";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { Engine } from "Engines/engine";
@@ -179,7 +179,7 @@ import { MorphTarget } from "./morphTarget";
                         this._vertexCount = vertexCount;
                     }
                     else if (this._vertexCount !== vertexCount) {
-                        Tools.Error("Incompatible target. Targets must all have the same vertices count.");
+                        Logger.Error("Incompatible target. Targets must all have the same vertices count.");
                         return;
                     }
                 }

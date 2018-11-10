@@ -3,7 +3,7 @@ import { Analyser } from "./analyser";
 
 import { Nullable } from "types";
 import { Observable } from "Misc/observable";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Engine } from "Engines/engine";
 
     /**
@@ -233,7 +233,7 @@ import { Engine } from "Engines/engine";
             }
             catch (e) {
                 this.canUseWebAudio = false;
-                Tools.Error("Web Audio: " + e.message);
+                Logger.Error("Web Audio: " + e.message);
             }
         }
 

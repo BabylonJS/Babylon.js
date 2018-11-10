@@ -1,4 +1,5 @@
 import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Scene } from "scene";
 import { Vector3, Vector2, Color3, Color4 } from "Maths/math";
 import { _TimeToken } from "Instrumentation/timeToken";
@@ -39,12 +40,12 @@ import { ProceduralTexture } from "./proceduralTexture";
 
         private _loadJson(jsonUrl: string): void {
             let noConfigFile = () => {
-                Tools.Log("No config file found in " + jsonUrl + " trying to use ShadersStore or DOM element");
+                Logger.Log("No config file found in " + jsonUrl + " trying to use ShadersStore or DOM element");
                 try {
                     this.setFragment(this._texturePath);
                 }
                 catch (ex) {
-                    Tools.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");
+                    Logger.Error("No json or ShaderStore or DOM element found for CustomProceduralTexture");
                 }
             };
 
@@ -84,7 +85,7 @@ import { ProceduralTexture } from "./proceduralTexture";
                 xhr.send();
             }
             catch (ex) {
-                Tools.Error("CustomProceduralTexture: Error on XHR send request.");
+                Logger.Error("CustomProceduralTexture: Error on XHR send request.");
             }
         }
 

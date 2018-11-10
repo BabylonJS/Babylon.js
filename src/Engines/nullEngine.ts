@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable, FloatArray, IndicesArray } from "types";
 import { Scene } from "scene";
 import { Matrix, Color3, Color4, Viewport } from "Maths/math";
@@ -125,7 +125,7 @@ import { Constants } from "./constants";
             this._caps.vertexArrayObject = false;
             this._caps.instancedArrays = false;
 
-            Tools.Log(`Babylon.js v${Engine.Version} - Null engine`);
+            Logger.Log(`Babylon.js v${Engine.Version} - Null engine`);
 
             // Wrappers
             if (typeof URL === "undefined") {

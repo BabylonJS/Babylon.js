@@ -1,6 +1,7 @@
 import { Nullable } from "types";
 import { serialize, serializeAsTexture, SerializationHelper } from "Misc/decorators";
-import { IAnimatable, Tools } from "Misc/tools";
+import { IAnimatable } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Vector2, Vector3, Matrix, Vector4 } from "Maths/math";
 import { Scalar } from "Maths/math.scalar";
 import { Camera } from "Cameras/camera";
@@ -367,7 +368,7 @@ import { Constants } from "Engines/constants";
             if (enabled) {
                 var geometry = this._scene.enableGeometryBufferRenderer();
                 if (!geometry) {
-                    Tools.Warn("Geometry renderer is not supported, cannot create volumetric lights in Standard Rendering Pipeline");
+                    Logger.Warn("Geometry renderer is not supported, cannot create volumetric lights in Standard Rendering Pipeline");
                     return;
                 }
             }
@@ -584,7 +585,7 @@ import { Constants } from "Engines/constants";
             }
 
             if (!this._enableMSAAOnFirstPostProcess(this._samples) && this._samples > 1) {
-                Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
+                Logger.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
         }
 

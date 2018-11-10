@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { IDisposable, Scene } from "scene";
@@ -46,7 +46,7 @@ import { Ray } from "Culling/ray";
          * @returns Promise which resolves after it is initialized
          */
         public initializeAsync(): Promise<void> {
-            Tools.Warn("The WebXR APIs are still under development and are subject to change in the future.");
+            Logger.Warn("The WebXR APIs are still under development and are subject to change in the future.");
             // Check if the browser supports webXR
             this._xrNavigator = navigator;
             if (!this._xrNavigator.xr) {

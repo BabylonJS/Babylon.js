@@ -1,5 +1,5 @@
 import { Nullable } from "types";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Vector3 } from "Maths/math";
 import { AbstractMesh } from "Meshes/abstractMesh";
 import { Mesh } from "Meshes/mesh";
@@ -27,7 +27,7 @@ import { PhysicsImpostor } from "./physicsImpostor";
             this._physicsEngine = this._scene.getPhysicsEngine();
 
             if (!this._physicsEngine) {
-                Tools.Warn('Physics engine not enabled. Please enable the physics before you can use the methods.');
+                Logger.Warn('Physics engine not enabled. Please enable the physics before you can use the methods.');
             }
         }
 
@@ -41,7 +41,7 @@ import { PhysicsImpostor } from "./physicsImpostor";
          */
         public applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant): Nullable<PhysicsRadialExplosionEvent> {
             if (!this._physicsEngine) {
-                Tools.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
+                Logger.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
                 return null;
             }
 
@@ -76,7 +76,7 @@ import { PhysicsImpostor } from "./physicsImpostor";
          */
         public applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant): Nullable<PhysicsRadialExplosionEvent> {
             if (!this._physicsEngine) {
-                Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
             }
 
@@ -111,7 +111,7 @@ import { PhysicsImpostor } from "./physicsImpostor";
          */
         public gravitationalField(origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant): Nullable<PhysicsGravitationalFieldEvent> {
             if (!this._physicsEngine) {
-                Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
             }
 
@@ -138,7 +138,7 @@ import { PhysicsImpostor } from "./physicsImpostor";
          */
         public updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode: PhysicsUpdraftMode = PhysicsUpdraftMode.Center): Nullable<PhysicsUpdraftEvent> {
             if (!this._physicsEngine) {
-                Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
             }
 
@@ -164,7 +164,7 @@ import { PhysicsImpostor } from "./physicsImpostor";
          */
         public vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent> {
             if (!this._physicsEngine) {
-                Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
             }
 

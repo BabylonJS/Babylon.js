@@ -1,5 +1,5 @@
 import { Observer, Observable } from "Misc/observable";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable } from "types";
 import { PointerInfo } from "Events/pointerEvents";
 import { Scene } from "scene";
@@ -529,6 +529,6 @@ import { StandardMaterial } from "Materials/standardMaterial";
          * @param mesh The mesh to replace the default mesh of the gizmo
          */
         public setCustomMesh(mesh: Mesh) {
-            Tools.Error("Custom meshes are not supported on this gizmo");
+            Logger.Error("Custom meshes are not supported on this gizmo");
         }
     }

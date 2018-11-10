@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Observer, Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
@@ -798,7 +798,7 @@ import { Animation } from "Animations/animation";
                 this.onControllerMeshLoadedObservable.notifyObservers(webVRController);
             }
             catch (err) {
-                Tools.Warn("Error in your custom logic onControllerMeshLoaded: " + err);
+                Logger.Warn("Error in your custom logic onControllerMeshLoaded: " + err);
             }
         }
 
@@ -847,7 +847,7 @@ import { Animation } from "Animations/animation";
                     this.exitVR();
                 }
             } else {
-                Tools.Warn('Detected VRDisplayPresentChange on an unknown VRDisplay. Did you can enterVR on the vrExperienceHelper?');
+                Logger.Warn('Detected VRDisplayPresentChange on an unknown VRDisplay. Did you can enterVR on the vrExperienceHelper?');
             }
 
             this.updateButtonVisibility();
@@ -900,7 +900,7 @@ import { Animation } from "Animations/animation";
                     this.onEnteringVRObservable.notifyObservers(this);
                 }
                 catch (err) {
-                    Tools.Warn("Error in your custom logic onEnteringVR: " + err);
+                    Logger.Warn("Error in your custom logic onEnteringVR: " + err);
                 }
             }
 
@@ -979,7 +979,7 @@ import { Animation } from "Animations/animation";
                         this.onExitingVRObservable.notifyObservers(this);
                     }
                     catch (err) {
-                        Tools.Warn("Error in your custom logic onExitingVR: " + err);
+                        Logger.Warn("Error in your custom logic onExitingVR: " + err);
                     }
                 }
                 if (this._webVRpresenting) {
@@ -1864,7 +1864,7 @@ import { Animation } from "Animations/animation";
                             this.onNewMeshSelected.notifyObservers(hit.pickedMesh);
                         }
                         catch (err) {
-                            Tools.Warn("Error in your custom logic onNewMeshSelected: " + err);
+                            Logger.Warn("Error in your custom logic onNewMeshSelected: " + err);
                         }
                     }
                     else {

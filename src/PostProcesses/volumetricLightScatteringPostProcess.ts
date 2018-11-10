@@ -1,6 +1,6 @@
 import { serializeAsVector3, serialize, serializeAsMeshReference } from "Misc/decorators";
 import { SmartArray } from "Misc/smartArray";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Color4, Color3, Vector2, Vector3, Matrix, Viewport } from "Maths/math";
 import { VertexBuffer } from "Meshes/buffer";
 import { AbstractMesh } from "Meshes/abstractMesh";
@@ -63,12 +63,12 @@ declare type Engine = import("Engines/engine").Engine;
          * VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead
          */
         public get useDiffuseColor(): boolean {
-            Tools.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
+            Logger.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
             return false;
         }
 
         public set useDiffuseColor(useDiffuseColor: boolean) {
-            Tools.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
+            Logger.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
         }
 
         /**

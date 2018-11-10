@@ -1,4 +1,4 @@
-import { Tools } from "./tools";
+import { Logger } from "Misc/logger";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 
     /**
@@ -89,7 +89,7 @@ import { InternalTexture } from "Materials/Textures/internalTexture";
             if (identifier[0] !== 0xAB || identifier[1] !== 0x4B || identifier[2] !== 0x54 || identifier[3] !== 0x58 || identifier[4] !== 0x20 || identifier[5] !== 0x31 ||
                 identifier[6] !== 0x31 || identifier[7] !== 0xBB || identifier[8] !== 0x0D || identifier[9] !== 0x0A || identifier[10] !== 0x1A || identifier[11] !== 0x0A) {
                 this.isInvalid = true;
-                    Tools.Error("texture missing KTX identifier");
+                    Logger.Error("texture missing KTX identifier");
                 return;
             }
 
@@ -115,7 +115,7 @@ import { InternalTexture } from "Materials/Textures/internalTexture";
 
             // Make sure we have a compressed type.  Not only reduces work, but probably better to let dev know they are not compressing.
             if (this.glType !== 0) {
-                Tools.Error("only compressed formats currently supported");
+                Logger.Error("only compressed formats currently supported");
                 return;
             } else {
                 // value of zero is an indication to generate mipmaps @ runtime.  Not usually allowed for compressed, so disregard.
@@ -123,17 +123,17 @@ import { InternalTexture } from "Materials/Textures/internalTexture";
             }
 
             if (this.pixelHeight === 0 || this.pixelDepth !== 0) {
-                Tools.Error("only 2D textures currently supported");
+                Logger.Error("only 2D textures currently supported");
                 return;
             }
 
             if (this.numberOfArrayElements !== 0) {
-                Tools.Error("texture arrays not currently supported");
+                Logger.Error("texture arrays not currently supported");
                 return;
             }
 
             if (this.numberOfFaces !== facesExpected) {
-                Tools.Error("number of faces expected" + facesExpected + ", but found " + this.numberOfFaces);
+                Logger.Error("number of faces expected" + facesExpected + ", but found " + this.numberOfFaces);
                 return;
             }
 

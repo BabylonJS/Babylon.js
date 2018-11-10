@@ -2,7 +2,7 @@ import { IPhysicsEnginePlugin, PhysicsImpostor, IPhysicsEnabledObject, PhysicsEn
 import { AbstractMesh } from "Meshes/abstractMesh";
 import { Vector3, Quaternion } from "Maths/math";
 import { Nullable } from "types";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 
     declare var OIMO: any;
 
@@ -78,7 +78,7 @@ import { Tools } from "Misc/tools";
             impostor.physicsBody.applyImpulse(contactPoint.scale(this.world.invScale), force.scale(this.world.invScale * mass));
         }
         public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-            Tools.Warn("Oimo doesn't support applying force. Using impule instead.");
+            Logger.Warn("Oimo doesn't support applying force. Using impule instead.");
             this.applyImpulse(impostor, force, contactPoint);
         }
         public generatePhysicsBody(impostor: PhysicsImpostor) {
@@ -170,7 +170,7 @@ import { Tools } from "Misc/tools";
                     // register mesh
                     switch (i.type) {
                         case PhysicsImpostor.ParticleImpostor:
-                            Tools.Warn("No Particle support in OIMO.js. using SphereImpostor instead");
+                            Logger.Warn("No Particle support in OIMO.js. using SphereImpostor instead");
                         case PhysicsImpostor.SphereImpostor:
                             var radiusX = extendSize.x;
                             var radiusY = extendSize.y;
@@ -277,7 +277,7 @@ import { Tools } from "Misc/tools";
                     type = "jointBall";
                     break;
                 case PhysicsJoint.SpringJoint:
-                    Tools.Warn("OIMO.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
+                    Logger.Warn("OIMO.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
                     var springData = <SpringJointData>jointData;
                     nativeJointData.min = springData.length || nativeJointData.min;
                     //Max should also be set, just make sure it is at least min
@@ -311,7 +311,7 @@ import { Tools } from "Misc/tools";
             try {
                 this.world.removeJoint(impostorJoint.joint.physicsJoint);
             } catch (e) {
-                Tools.Warn(e);
+                Logger.Warn(e);
             }
 
         }

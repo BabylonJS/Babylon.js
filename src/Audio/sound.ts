@@ -8,6 +8,7 @@ import { AudioSceneComponent } from "Audio/audioSceneComponent";
 import { AbstractMesh } from "Meshes/abstractMesh";
 import { TransformNode } from "Meshes/transformNode";
 import { SceneComponentConstants } from "sceneComponent";
+import { Logger } from "Misc/logger";
 
     /**
      * Defines a sound that can be played in the application.
@@ -230,9 +231,9 @@ import { SceneComponentConstants } from "sceneComponent";
                                                 this._soundLoaded(data as ArrayBuffer);
                                             }, undefined, true, true, (exception) => {
                                                 if (exception) {
-                                                    Tools.Error("XHR " + exception.status + " error on: " + url + ".");
+                                                    Logger.Error("XHR " + exception.status + " error on: " + url + ".");
                                                 }
-                                                Tools.Error("Sound creation aborted.");
+                                                Logger.Error("Sound creation aborted.");
                                                 this._scene.mainSoundTrack.RemoveSound(this);
                                             });
                                         }
@@ -265,7 +266,7 @@ import { SceneComponentConstants } from "sceneComponent";
                         }
 
                         if (!validParameter) {
-                            Tools.Error("Parameter must be a URL to the sound, an Array of URLs (.mp3 & .ogg) or an ArrayBuffer of the sound.");
+                            Logger.Error("Parameter must be a URL to the sound, an Array of URLs (.mp3 & .ogg) or an ArrayBuffer of the sound.");
                         }
                         else {
                             if (!codecSupportedFound) {
@@ -282,7 +283,7 @@ import { SceneComponentConstants } from "sceneComponent";
                         }
                     }
                     catch (ex) {
-                        Tools.Error("Unexpected error. Sound creation aborted.");
+                        Logger.Error("Unexpected error. Sound creation aborted.");
                         this._scene.mainSoundTrack.RemoveSound(this);
                     }
                 }
@@ -291,7 +292,7 @@ import { SceneComponentConstants } from "sceneComponent";
                 // Adding an empty sound to avoid breaking audio calls for non Web Audio browsers
                 this._scene.mainSoundTrack.AddSound(this);
                 if (!Engine.audioEngine.WarnedWebAudioUnsupported) {
-                    Tools.Error("Web Audio is not supported by your browser.");
+                    Logger.Error("Web Audio is not supported by your browser.");
                     Engine.audioEngine.WarnedWebAudioUnsupported = true;
                 }
                 // Simulating a ready to play event to avoid breaking code for non web audio browsers
@@ -368,7 +369,7 @@ import { SceneComponentConstants } from "sceneComponent";
                 this._isReadyToPlay = true;
                 if (this.autoplay) { this.play(); }
                 if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
-            }, (err: any) => { Tools.Error("Error while decoding audio data for: " + this.name + " / Error: " + err); });
+            }, (err: any) => { Logger.Error("Error while decoding audio data for: " + this.name + " / Error: " + err); });
         }
 
         /**
@@ -489,7 +490,7 @@ import { SceneComponentConstants } from "sceneComponent";
         */
         public setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void {
             if (coneOuterAngle < coneInnerAngle) {
-                Tools.Error("setDirectionalCone(): outer angle of the cone must be superior or equal to the inner angle.");
+                Logger.Error("setDirectionalCone(): outer angle of the cone must be superior or equal to the inner angle.");
                 return;
             }
             this._coneInnerAngle = coneInnerAngle;
@@ -516,7 +517,7 @@ import { SceneComponentConstants } from "sceneComponent";
         public set directionalConeInnerAngle(value: number) {
             if (value != this._coneInnerAngle) {
                 if (this._coneOuterAngle < value) {
-                    Tools.Error("directionalConeInnerAngle: outer angle of the cone must be superior or equal to the inner angle.");
+                    Logger.Error("directionalConeInnerAngle: outer angle of the cone must be superior or equal to the inner angle.");
                     return;
                 }
 
@@ -540,7 +541,7 @@ import { SceneComponentConstants } from "sceneComponent";
         public set directionalConeOuterAngle(value: number) {
             if (value != this._coneOuterAngle) {
                 if (value < this._coneInnerAngle) {
-                    Tools.Error("directionalConeOuterAngle: outer angle of the cone must be superior or equal to the inner angle.");
+                    Logger.Error("directionalConeOuterAngle: outer angle of the cone must be superior or equal to the inner angle.");
                     return;
                 }
 
@@ -685,7 +686,7 @@ import { SceneComponentConstants } from "sceneComponent";
                     this.isPaused = false;
                 }
                 catch (ex) {
-                    Tools.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
+                    Logger.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
                 }
             }
         }

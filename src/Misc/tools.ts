@@ -11,6 +11,8 @@ import { Observable } from "./observable";
 import { FilesInput } from "./filesInput";
 import { TGATools } from "./tga";
 import { Constants } from "Engines/constants";
+import { DomManagement } from "./domManagement";
+import { Logger } from "./logger";
 
 declare type Engine = import("Engines/engine").Engine;
 
@@ -336,7 +338,7 @@ declare type Engine = import("Engines/engine").Engine;
          * @param action defines the action to execute after the current execution block
          */
         public static SetImmediate(action: () => void) {
-            if (Tools.IsWindowObjectExist() && window.setImmediate) {
+            if (DomManagement.IsWindowObjectExist() && window.setImmediate) {
                 window.setImmediate(action);
             } else {
                 setTimeout(action, 1);
@@ -478,19 +480,7 @@ declare type Engine = import("Engines/engine").Engine;
          * @param element defines the root element
          * @returns a string
          */
-        public static GetDOMTextContent(element: HTMLElement): string {
-            var result = "";
-            var child = element.firstChild;
-
-            while (child) {
-                if (child.nodeType === 3) {
-                    result += child.textContent;
-                }
-                child = <any>(child.nextSibling);
-            }
-
-            return result;
-        }
+        public static GetDOMTextContent = DomManagement.GetDOMTextContent;
 
         /**
          * Convert an angle in radians to degrees
@@ -643,7 +633,7 @@ declare type Engine = import("Engines/engine").Engine;
             var eventPrefix = "pointer";
 
             // Check if pointer events are supported
-            if (Tools.IsWindowObjectExist() && !window.PointerEvent && !navigator.pointerEnabled) {
+            if (DomManagement.IsWindowObjectExist() && !window.PointerEvent && !navigator.pointerEnabled) {
                 eventPrefix = "mouse";
             }
 
@@ -657,7 +647,7 @@ declare type Engine = import("Engines/engine").Engine;
          * @returns frame number
          */
         public static QueueNewFrame(func: () => void, requester?: any): number {
-            if (!Tools.IsWindowObjectExist()) {
+            if (!DomManagement.IsWindowObjectExist()) {
                 return setTimeout(func, 16);
             }
 
@@ -801,7 +791,7 @@ declare type Engine = import("Engines/engine").Engine;
                 img.removeEventListener("load", loadHandler);
                 img.removeEventListener("error", errorHandler);
 
-                Tools.Error("Error while trying to load image: " + input);
+                Logger.Error("Error while trying to load image: " + input);
 
                 if (onError) {
                     onError("Error while trying to load image: " + input, err);
@@ -930,7 +920,7 @@ declare type Engine = import("Engines/engine").Engine;
                             // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
                             request.removeEventListener("readystatechange", onReadyStateChange);
 
-                            if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!Tools.IsWindowObjectExist() || Tools.IsFileURL()))) {
+                            if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!DomManagement.IsWindowObjectExist() || Tools.IsFileURL()))) {
                                 onSuccess(!useArrayBuffer ? request.responseText : <ArrayBuffer>request.response, request.responseURL);
                                 return;
                             }
@@ -1020,7 +1010,7 @@ declare type Engine = import("Engines/engine").Engine;
          * @param onError defines the callback to call if an error occurs
          */
         public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void) {
-            if (!Tools.IsWindowObjectExist()) {
+            if (!DomManagement.IsWindowObjectExist()) {
                 return;
             }
             var head = document.getElementsByTagName('head')[0];
@@ -1091,7 +1081,7 @@ declare type Engine = import("Engines/engine").Engine;
 
             reader.onloadend = (e) => request.onCompleteObservable.notifyObservers(request);
             reader.onerror = (e) => {
-                Tools.Log("Error while reading file: " + fileToLoad.name);
+                Logger.Log("Error while reading file: " + fileToLoad.name);
                 callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
             };
             reader.onload = (e) => {
@@ -1441,7 +1431,7 @@ declare type Engine = import("Engines/engine").Engine;
                 width = size;
             }
             else {
-                Tools.Error("Invalid 'size' parameter !");
+                Logger.Error("Invalid 'size' parameter !");
                 return;
             }
 
@@ -1524,7 +1514,7 @@ declare type Engine = import("Engines/engine").Engine;
                 width = size;
             }
             else {
-                Tools.Error("Invalid 'size' parameter !");
+                Logger.Error("Invalid 'size' parameter !");
                 return;
             }
 
@@ -1538,7 +1528,7 @@ declare type Engine = import("Engines/engine").Engine;
 
             var renderCanvas = engine.getRenderingCanvas();
             if (!renderCanvas) {
-                Tools.Error("No rendering canvas found !");
+                Logger.Error("No rendering canvas found !");
                 return;
             }
 
@@ -1659,140 +1649,77 @@ declare type Engine = import("Engines/engine").Engine;
         /**
          * No log
          */
-        public static readonly NoneLogLevel = 0;
+        public static readonly NoneLogLevel = Logger.NoneLogLevel;
         /**
          * Only message logs
          */
-        public static readonly MessageLogLevel = 1;
+        public static readonly MessageLogLevel = Logger.MessageLogLevel;
         /**
          * Only warning logs
          */
-        public static readonly WarningLogLevel = 2;
+        public static readonly WarningLogLevel = Logger.WarningLogLevel;
         /**
          * Only error logs
          */
-        public static readonly ErrorLogLevel = 4;
+        public static readonly ErrorLogLevel = Logger.ErrorLogLevel;
         /**
          * All logs
          */
-        public static readonly AllLogLevel = 7;
-
-        private static _LogCache = "";
+        public static readonly AllLogLevel = Logger.AllLogLevel;
 
         /**
          * Gets a value indicating the number of loading errors
          * @ignorenaming
          */
-        public static errorsCount = 0;
+        public static get errorsCount(): number {
+            return Logger.errorsCount;
+        }
 
         /**
          * Callback called when a new log is added
          */
         public static OnNewCacheEntry: (entry: string) => void;
 
-        private static _AddLogEntry(entry: string) {
-            Tools._LogCache = entry + Tools._LogCache;
-
-            if (Tools.OnNewCacheEntry) {
-                Tools.OnNewCacheEntry(entry);
-            }
-        }
-
-        private static _FormatMessage(message: string): string {
-            var padStr = (i: number) => (i < 10) ? "0" + i : "" + i;
-
-            var date = new Date();
-            return "[" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
-        }
-
-        private static _LogDisabled(message: string): void {
-            // nothing to do
-        }
-        private static _LogEnabled(message: string): void {
-            var formattedMessage = Tools._FormatMessage(message);
-            console.log("BJS - " + formattedMessage);
-
-            var entry = "<div style='color:white'>" + formattedMessage + "</div><br>";
-            Tools._AddLogEntry(entry);
-        }
-
-        private static _WarnDisabled(message: string): void {
-            // nothing to do
-        }
-        private static _WarnEnabled(message: string): void {
-            var formattedMessage = Tools._FormatMessage(message);
-            console.warn("BJS - " + formattedMessage);
-
-            var entry = "<div style='color:orange'>" + formattedMessage + "</div><br>";
-            Tools._AddLogEntry(entry);
-        }
-
-        private static _ErrorDisabled(message: string): void {
-            // nothing to do
-        }
-        private static _ErrorEnabled(message: string): void {
-            Tools.errorsCount++;
-            var formattedMessage = Tools._FormatMessage(message);
-            console.error("BJS - " + formattedMessage);
-
-            var entry = "<div style='color:red'>" + formattedMessage + "</div><br>";
-            Tools._AddLogEntry(entry);
-        }
-
         /**
          * Log a message to the console
          */
-        public static Log: (message: string) => void = Tools._LogEnabled;
+        public static Log(message: string): void {
+            Logger.Log(message);
+        }
 
         /**
          * Write a warning message to the console
          */
-        public static Warn: (message: string) => void = Tools._WarnEnabled;
+        public static Warn(message: string): void {
+            Logger.Warn(message);
+        }
 
         /**
          * Write an error message to the console
          */
-        public static Error: (message: string) => void = Tools._ErrorEnabled;
+        public static Error(message: string): void {
+            Logger.Error(message);
+        }
 
         /**
          * Gets current log cache (list of logs)
          */
         public static get LogCache(): string {
-            return Tools._LogCache;
+            return Logger.LogCache;
         }
 
         /**
          * Clears the log cache
          */
         public static ClearLogCache(): void {
-            Tools._LogCache = "";
-            Tools.errorsCount = 0;
+            Logger.ClearLogCache();
         }
 
         /**
          * Sets the current log level (MessageLogLevel / WarningLogLevel / ErrorLogLevel)
          */
         public static set LogLevels(level: number) {
-            if ((level & Tools.MessageLogLevel) === Tools.MessageLogLevel) {
-                Tools.Log = Tools._LogEnabled;
-            }
-            else {
-                Tools.Log = Tools._LogDisabled;
-            }
-
-            if ((level & Tools.WarningLogLevel) === Tools.WarningLogLevel) {
-                Tools.Warn = Tools._WarnEnabled;
-            }
-            else {
-                Tools.Warn = Tools._WarnDisabled;
-            }
-
-            if ((level & Tools.ErrorLogLevel) === Tools.ErrorLogLevel) {
-                Tools.Error = Tools._ErrorEnabled;
-            }
-            else {
-                Tools.Error = Tools._ErrorDisabled;
-            }
+            Logger.LogLevels = level;
         }
 
         /**
@@ -1807,9 +1734,7 @@ declare type Engine = import("Engines/engine").Engine;
          * Checks if the window object exists
          * @returns true if the window object exists
          */
-        public static IsWindowObjectExist(): boolean {
-            return (typeof window) !== "undefined";
-        }
+        public static IsWindowObjectExist = DomManagement.IsWindowObjectExist;
 
         // Performances
 
@@ -1856,7 +1781,7 @@ declare type Engine = import("Engines/engine").Engine;
 
         private static _StartUserMark(counterName: string, condition = true): void {
             if (!Tools._performance) {
-                if (!Tools.IsWindowObjectExist()) {
+                if (!DomManagement.IsWindowObjectExist()) {
                     return;
                 }
                 Tools._performance = window.performance;
@@ -1927,7 +1852,7 @@ declare type Engine = import("Engines/engine").Engine;
          * Gets either window.performance.now() if supported or Date.now() else
          */
         public static get Now(): number {
-            if (Tools.IsWindowObjectExist() && window.performance && window.performance.now) {
+            if (DomManagement.IsWindowObjectExist() && window.performance && window.performance.now) {
                 return window.performance.now();
             }
 

@@ -1,7 +1,7 @@
 import { SerializationHelper, serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3, serializeAsImageProcessingConfiguration } from "Misc/decorators";
 import { SmartArray } from "Misc/smartArray";
 import { Observer } from "Misc/observable";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable, int, float } from "types";
 import { Scene } from "scene";
 import { Matrix, Vector3, Color3, Vector4 } from "Maths/math";
@@ -816,7 +816,7 @@ import { Constants } from "Engines/constants";
                 if (mesh) {
                     if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                         mesh.createNormals(true);
-                        Tools.Warn("BackgroundMaterial: Normals have been created for the mesh: " + mesh.name);
+                        Logger.Warn("BackgroundMaterial: Normals have been created for the mesh: " + mesh.name);
                     }
                 }
             }

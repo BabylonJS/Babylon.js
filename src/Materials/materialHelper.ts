@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable } from "types";
 import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
@@ -488,7 +488,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
                     }
 
                     if (attribs.length > maxAttributesCount) {
-                        Tools.Error("Cannot add more vertex attributes for mesh " + mesh.name);
+                        Logger.Error("Cannot add more vertex attributes for mesh " + mesh.name);
                     }
                 }
             }

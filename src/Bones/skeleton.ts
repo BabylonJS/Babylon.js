@@ -12,6 +12,7 @@ import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverr
 import { AnimationRange, Animation } from "Animations/animation";
 import { Engine } from "Engines/engine";
 import { Constants } from "Engines/constants";
+import { Logger } from "Misc/logger";
 
     /**
      * Class used to handle skinning animations
@@ -270,7 +271,7 @@ import { Constants } from "Engines/constants";
             }
 
             if (this.bones.length !== sourceBones.length) {
-                Tools.Warn(`copyAnimationRange: this rig has ${this.bones.length} bones, while source as ${sourceBones.length}`);
+                Logger.Warn(`copyAnimationRange: this rig has ${this.bones.length} bones, while source as ${sourceBones.length}`);
                 ret = false;
             }
 
@@ -282,7 +283,7 @@ import { Constants } from "Engines/constants";
                 if (sourceBone) {
                     ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired, skelDimensionsRatio);
                 } else {
-                    Tools.Warn("copyAnimationRange: not same rig, missing source bone " + boneName);
+                    Logger.Warn("copyAnimationRange: not same rig, missing source bone " + boneName);
                     ret = false;
                 }
             }

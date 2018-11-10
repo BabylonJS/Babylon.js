@@ -48,6 +48,8 @@ import { Ray } from "Culling/ray";
 import { Node } from "node";
 import { MorphTarget } from "Morph/morphTarget";
 import { Constants } from "Engines/constants";
+import { DomManagement } from "Misc/domManagement";
+import { Logger } from "Misc/logger";
 
     /**
      * Define an interface for all classes that will hold resources
@@ -1301,7 +1303,7 @@ import { Constants } from "Engines/constants";
                 this.postProcessManager = new PostProcessManager(this);
             }
 
-            if (Tools.IsWindowObjectExist()) {
+            if (DomManagement.IsWindowObjectExist()) {
                 this.attachControl();
             }
 
@@ -4488,7 +4490,7 @@ import { Constants } from "Engines/constants";
                     if (internalTexture) {
                         engine.bindFramebuffer(internalTexture);
                     } else {
-                        Tools.Error("Camera contains invalid customDefaultRenderTarget");
+                        Logger.Error("Camera contains invalid customDefaultRenderTarget");
                     }
                 } else {
                     engine.restoreDefaultFramebuffer(); // Restore back buffer if needed

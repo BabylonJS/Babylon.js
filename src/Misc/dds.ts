@@ -3,7 +3,7 @@ import { SphericalPolynomial } from "Maths/sphericalPolynomial";
 import { Constants } from "Engines/constants";
 import { InternalTexture } from "Materials/Textures/internalTexture";
 import { Nullable } from "types";
-import { Tools } from "./tools";
+import { Logger } from "Misc/logger";
 import { CubeMapToSphericalPolynomialTools } from "Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 
 declare type Engine = import("Engines/engine").Engine;
@@ -451,17 +451,17 @@ declare type Engine = import("Engines/engine").Engine;
             let blockBytes = 1;
 
             if (header[off_magic] !== DDS_MAGIC) {
-                Tools.Error("Invalid magic number in DDS header");
+                Logger.Error("Invalid magic number in DDS header");
                 return;
             }
 
             if (!info.isFourCC && !info.isRGB && !info.isLuminance) {
-                Tools.Error("Unsupported format, must contain a FourCC, RGB or LUMINANCE code");
+                Logger.Error("Unsupported format, must contain a FourCC, RGB or LUMINANCE code");
                 return;
             }
 
             if (info.isCompressed && !ext) {
-                Tools.Error("Compressed textures are not supported on this platform.");
+                Logger.Error("Compressed textures are not supported on this platform.");
                 return;
             }
 

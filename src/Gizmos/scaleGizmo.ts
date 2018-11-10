@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { Vector3, Color3 } from "Maths/math";
@@ -79,7 +79,7 @@ import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
 
         public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
             if (!value) {
-                Tools.Warn("Setting updateGizmoRotationToMatchAttachedMesh = false on scaling gizmo is not supported.");
+                Logger.Warn("Setting updateGizmoRotationToMatchAttachedMesh = false on scaling gizmo is not supported.");
             }
             if (this.xGizmo) {
                 this.xGizmo.updateGizmoRotationToMatchAttachedMesh = value;

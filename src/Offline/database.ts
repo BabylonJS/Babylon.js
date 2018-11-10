@@ -1,4 +1,5 @@
 import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable } from "types";
 import { Engine } from "Engines/engine";
 import { IOfflineProvider } from "./IOfflineProvider";
@@ -162,7 +163,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
                 xhr.send();
             }
             catch (ex) {
-                Tools.Error("Error on XHR send request.");
+                Logger.Error("Error on XHR send request.");
                 this._callbackManifestChecked(false);
             }
         }
@@ -198,7 +199,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
 
                     // executes when a version change transaction cannot complete due to other active transactions
                     request.onblocked = () => {
-                        Tools.Error("IDB request blocked. Please reload the page.");
+                        Logger.Error("IDB request blocked. Please reload the page.");
                         handleError();
                     };
 
@@ -218,7 +219,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
                                 this._db.createObjectStore("textures", { keyPath: "textureUrl" });
                             }
                             catch (ex) {
-                                Tools.Error("Error while creating object stores. Exception: " + ex.message);
+                                Logger.Error("Error while creating object stores. Exception: " + ex.message);
                                 handleError();
                             }
                         }
@@ -275,7 +276,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
                         var URL = window.URL || window.webkitURL;
                         blobTextureURL = URL.createObjectURL(texture.data);
                         image.onerror = () => {
-                            Tools.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
+                            Logger.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
                             image.src = url;
                         };
                         image.src = blobTextureURL;
@@ -291,12 +292,12 @@ import { IOfflineProvider } from "./IOfflineProvider";
                     texture = (<any>(event.target)).result;
                 };
                 getRequest.onerror = () => {
-                    Tools.Error("Error loading texture " + url + " from DB.");
+                    Logger.Error("Error loading texture " + url + " from DB.");
                     image.src = url;
                 };
             }
             else {
-                Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+                Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
                 image.src = url;
             }
         }
@@ -381,7 +382,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
                     }, false);
 
                     xhr.addEventListener("error", () => {
-                        Tools.Error("Error in XHR request in BABYLON.Database.");
+                        Logger.Error("Error in XHR request in BABYLON.Database.");
                         image.src = url;
                     }, false);
 
@@ -396,7 +397,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
                 }
             }
             else {
-                Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+                Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
                 image.src = url;
             }
         }
@@ -443,17 +444,17 @@ import { IOfflineProvider } from "./IOfflineProvider";
                         version = (<any>(event.target)).result;
                     };
                     getRequest.onerror = () => {
-                        Tools.Error("Error loading version for scene " + url + " from DB.");
+                        Logger.Error("Error loading version for scene " + url + " from DB.");
                         callback(-1);
                     };
                 }
                 catch (ex) {
-                    Tools.Error("Error while accessing 'versions' object store (READ OP). Exception: " + ex.message);
+                    Logger.Error("Error while accessing 'versions' object store (READ OP). Exception: " + ex.message);
                     callback(-1);
                 }
             }
             else {
-                Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+                Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
                 callback(-1);
             }
         }
@@ -487,11 +488,11 @@ import { IOfflineProvider } from "./IOfflineProvider";
                     addRequest.onsuccess = () => {
                     };
                     addRequest.onerror = () => {
-                        Tools.Error("Error in DB add version request in BABYLON.Database.");
+                        Logger.Error("Error in DB add version request in BABYLON.Database.");
                     };
                 }
                 catch (ex) {
-                    Tools.Error("Error while accessing 'versions' object store (WRITE OP). Exception: " + ex.message);
+                    Logger.Error("Error while accessing 'versions' object store (WRITE OP). Exception: " + ex.message);
                     callback(-1);
                 }
             }
@@ -566,12 +567,12 @@ import { IOfflineProvider } from "./IOfflineProvider";
                     file = (<any>(event.target)).result;
                 };
                 getRequest.onerror = () => {
-                    Tools.Error("Error loading file " + url + " from DB.");
+                    Logger.Error("Error loading file " + url + " from DB.");
                     notInDBCallback();
                 };
             }
             else {
-                Tools.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+                Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
                 callback();
             }
         }
@@ -639,7 +640,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
                                 addRequest.onsuccess = () => {
                                 };
                                 addRequest.onerror = () => {
-                                    Tools.Error("Error in DB add file request in BABYLON.Database.");
+                                    Logger.Error("Error in DB add file request in BABYLON.Database.");
                                 };
                             }
                             catch (ex) {
@@ -660,7 +661,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
                 }, false);
 
                 xhr.addEventListener("error", () => {
-                    Tools.Error("error on XHR request.");
+                    Logger.Error("error on XHR request.");
                     callback();
                 }, false);
 
@@ -671,7 +672,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
                 xhr.send();
             }
             else {
-                Tools.Error("Error: IndexedDB not supported by your browser or Babylon.js Database is not open.");
+                Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js Database is not open.");
                 callback();
             }
         }

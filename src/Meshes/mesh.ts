@@ -24,6 +24,7 @@ import { MorphTargetManager } from "Morph/morphTargetManager";
 import { PhysicsImpostor } from "Physics/physicsImpostor";
 import { Constants } from "Engines/constants";
 import { SerializationHelper } from "Misc/decorators";
+import { Logger } from "Misc/logger";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -499,7 +500,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          */
         public addLODLevel(distance: number, mesh: Nullable<Mesh>): Mesh {
             if (mesh && mesh._masterMesh) {
-                Tools.Warn("You cannot use a mesh as LOD level twice");
+                Logger.Warn("You cannot use a mesh as LOD level twice");
                 return this;
             }
 
@@ -2109,7 +2110,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
             if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)
                 || !this.isVerticesDataPresent(VertexBuffer.NormalKind)
                 || !this.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                Tools.Warn("Cannot call applyDisplacementMap: Given mesh is not complete. Position, Normal or UV are missing");
+                Logger.Warn("Cannot call applyDisplacementMap: Given mesh is not complete. Position, Normal or UV are missing");
                 return this;
             }
 
@@ -2600,7 +2601,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
             let morphTargetManager = this._morphTargetManager;
             if (morphTargetManager && morphTargetManager.vertexCount) {
                 if (morphTargetManager.vertexCount !== this.getTotalVertices()) {
-                    Tools.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
+                    Logger.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
                     this.morphTargetManager = null;
                     return;
                 }
@@ -2610,7 +2611,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
 
                     const positions = morphTarget.getPositions();
                     if (!positions) {
-                        Tools.Error("Invalid morph target. Target must have positions.");
+                        Logger.Error("Invalid morph target. Target must have positions.");
                         return;
                     }
 
@@ -3548,7 +3549,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
                         totalVertices += meshes[index].getTotalVertices();
 
                         if (totalVertices > 65536) {
-                            Tools.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                            Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
                             return null;
                         }
                     }

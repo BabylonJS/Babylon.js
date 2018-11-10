@@ -1,5 +1,5 @@
 import { Nullable, IndicesArray } from "types";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { ArrayTools } from "Misc/arrayTools";
 import { Vector3, Matrix, Quaternion, Space } from "Maths/math";
 import { TransformNode } from "Meshes/transformNode";
@@ -261,7 +261,7 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
 
             //sanity check!
             if (!this.object) {
-                Tools.Error("No object was provided. A physics object is obligatory");
+                Logger.Error("No object was provided. A physics object is obligatory");
                 return;
             }
 
@@ -276,7 +276,7 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
 
             this._physicsEngine = this._scene.getPhysicsEngine();
             if (!this._physicsEngine) {
-                Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
+                Logger.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
             } else {
                 //set the object's quaternion, if not set
                 if (!this.object.rotationQuaternion) {
@@ -297,7 +297,7 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
                 if (!this.object.parent || this._options.ignoreParent) {
                     this._init();
                 } else if (this.object.parent.physicsImpostor) {
-                    Tools.Warn("You must affect impostors to children before affecting impostor to parent.");
+                    Logger.Warn("You must affect impostors to children before affecting impostor to parent.");
                 }
             }
         }
@@ -537,7 +537,7 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
             if (index > -1) {
                 this._onBeforePhysicsStepCallbacks.splice(index, 1);
             } else {
-                Tools.Warn("Function to remove was not found");
+                Logger.Warn("Function to remove was not found");
             }
         }
 
@@ -559,7 +559,7 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
             if (index > -1) {
                 this._onAfterPhysicsStepCallbacks.splice(index, 1);
             } else {
-                Tools.Warn("Function to remove was not found");
+                Logger.Warn("Function to remove was not found");
             }
         }
 
@@ -598,7 +598,7 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
             if (found) {
                 this._onPhysicsCollideCallbacks.splice(index, 1);
             } else {
-                Tools.Warn("Function to remove was not found");
+                Logger.Warn("Function to remove was not found");
             }
         }
 

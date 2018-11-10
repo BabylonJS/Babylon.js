@@ -2,6 +2,7 @@ import { Engine } from "Engines/engine";
 import { Scene } from "scene";
 import { SceneLoaderProgressEvent, SceneLoader } from "Loading/sceneLoader";
 import { Tools } from "./tools";
+import { Logger } from "Misc/logger";
 
     /**
      * Class used to help managing file picking and drag'n'drop
@@ -256,7 +257,7 @@ import { Tools } from "./tools";
             // If a scene file has been provided
             if (this._sceneFileToLoad) {
                 if (this._currentScene) {
-                    if (Tools.errorsCount > 0) {
+                    if (Logger.errorsCount > 0) {
                         Tools.ClearLogCache();
                     }
                     this._engine.stopRenderLoop();
@@ -290,7 +291,7 @@ import { Tools } from "./tools";
                 });
             }
             else {
-                Tools.Error("Please provide a valid .babylon file.");
+                Logger.Error("Please provide a valid .babylon file.");
             }
         }
     }

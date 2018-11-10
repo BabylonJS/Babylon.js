@@ -1,4 +1,4 @@
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Nullable, FloatArray } from "types";
 import { Matrix, Vector3, Color3, Vector4 } from "Maths/math";
 import { Engine } from "Engines/engine";
@@ -425,7 +425,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
             if (location === undefined) {
                 if (this._buffer) {
                     // Cannot add an uniform if the buffer is already created
-                    Tools.Error("Cannot add an uniform after UBO has been created.");
+                    Logger.Error("Cannot add an uniform after UBO has been created.");
                     return;
                 }
                 this.addUniform(uniformName, size);

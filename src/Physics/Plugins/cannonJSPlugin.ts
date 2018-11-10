@@ -1,5 +1,5 @@
 import { Nullable, FloatArray } from "types";
-import { Tools } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Vector3, Matrix, Quaternion } from "Maths/math";
 import { VertexBuffer } from "Meshes/buffer";
 import { AbstractMesh } from "Meshes/abstractMesh";
@@ -20,7 +20,7 @@ import { IPhysicsEnginePlugin, PhysicsImpostor, PhysicsImpostorJoint, PhysicsJoi
 
         public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
             if (!this.isSupported()) {
-                Tools.Error("CannonJS is not available. Please make sure you included the js file.");
+                Logger.Error("CannonJS is not available. Please make sure you included the js file.");
                 return;
             }
 
@@ -273,7 +273,7 @@ import { IPhysicsEnginePlugin, PhysicsImpostor, PhysicsImpostorJoint, PhysicsJoi
                     returnValue = new this.BJSCANNON.Box(new this.BJSCANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
                     break;
                 case PhysicsImpostor.PlaneImpostor:
-                    Tools.Warn("Attention, PlaneImposter might not behave as you expect. Consider using BoxImposter instead");
+                    Logger.Warn("Attention, PlaneImposter might not behave as you expect. Consider using BoxImposter instead");
                     returnValue = new this.BJSCANNON.Plane();
                     break;
                 case PhysicsImpostor.MeshImpostor:
@@ -299,7 +299,7 @@ import { IPhysicsEnginePlugin, PhysicsImpostor, PhysicsImpostorJoint, PhysicsJoi
                         Vector3.TransformCoordinates(Vector3.FromArray(rawVerts, index), transform).toArray(temp, index);
                     }
 
-                    Tools.Warn("MeshImpostor only collides against spheres.");
+                    Logger.Warn("MeshImpostor only collides against spheres.");
                     returnValue = new this.BJSCANNON.Trimesh(temp, <number[]>rawFaces);
                     //now set back the transformation!
                     object.position.copyFrom(oldPosition);

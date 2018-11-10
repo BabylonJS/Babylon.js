@@ -9,6 +9,7 @@ import { BaseTexture } from "Materials/Textures/baseTexture";
 import { Texture } from "Materials/Textures/texture";
 import { CubeTexture } from "Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "Materials/Textures/hdrCubeTexture";
+import { Logger } from "Misc/logger";
 
     /**
      * Defines the list of states available for a task inside a AssetsManager
@@ -882,7 +883,7 @@ import { HDRCubeTexture } from "Materials/Textures/hdrCubeTexture";
                     )
                 );
             } catch (e) {
-                Tools.Error("Error running progress callbacks.");
+                Logger.Error("Error running progress callbacks.");
                 console.log(e);
             }
 
@@ -906,7 +907,7 @@ import { HDRCubeTexture } from "Materials/Textures/hdrCubeTexture";
 
                     this.onTasksDoneObservable.notifyObservers(this._tasks);
                 } catch (e) {
-                    Tools.Error("Error running tasks-done callbacks.");
+                    Logger.Error("Error running tasks-done callbacks.");
                     console.log(e);
                 }
                 this._isLoading = false;

@@ -17,6 +17,7 @@ import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { Animation } from "Animations/animation";
 import { MaterialDefines } from "./materialDefines";
 import { Constants } from "Engines/constants";
+import { Logger } from "Misc/logger";
 
 declare var BABYLON: any;
 
@@ -1201,7 +1202,7 @@ declare var BABYLON: any;
             else if (parsedMaterial.customType === "BABYLON.PBRMaterial" && parsedMaterial.overloadedAlbedo) {
                 parsedMaterial.customType = "BABYLON.LegacyPBRMaterial";
                 if (!BABYLON.LegacyPBRMaterial) {
-                    Tools.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
+                    Logger.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
                     return;
                 }
             }

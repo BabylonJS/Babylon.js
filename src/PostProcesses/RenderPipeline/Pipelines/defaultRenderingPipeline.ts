@@ -1,7 +1,8 @@
 import { Nullable } from "types";
 import { serialize, SerializationHelper } from "Misc/decorators";
 import { Observer } from "Misc/observable";
-import { IAnimatable, Tools } from "Misc/tools";
+import { IAnimatable } from "Misc/tools";
+import { Logger } from "Misc/logger";
 import { Camera } from "Cameras/camera";
 import { ImageProcessingConfiguration } from "Materials/imageProcessingConfiguration";
 import { Texture } from "Materials/Textures/texture";
@@ -586,7 +587,7 @@ import { BloomEffect } from "PostProcesses/bloomEffect";
             }
 
             if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {
-                Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
+                Logger.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
         }
 
