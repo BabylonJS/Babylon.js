@@ -1,5 +1,5 @@
 
-import { Camera } from "Cameras";
+import { Camera } from "Cameras/camera";
 import { Effect } from "Materials/effect";
 import { Texture } from "Materials/Textures/texture";
 import { DynamicTexture } from "Materials/Textures/dynamicTexture";
