@@ -641,10 +641,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
             let engine = scene.getEngine();
-            let viewport = camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());;
+            let viewport = camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             let x = scene.pointerX / engine.getHardwareScalingLevel() - viewport.x;
             let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
-            
 
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer

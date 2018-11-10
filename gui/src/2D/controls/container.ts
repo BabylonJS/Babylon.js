@@ -296,7 +296,7 @@ export class Container extends Control {
                     }
                 }
             }
-            
+
             if (this.adaptWidthToChildren && computedWidth >= 0) {
                 if (this.width !== computedWidth + "px") {
                     this.width = computedWidth + "px";
