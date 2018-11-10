@@ -296,12 +296,18 @@ export class Container extends Control {
                     }
                 }
             }
-
+            
             if (this.adaptWidthToChildren && computedWidth >= 0) {
-                this.width = computedWidth + "px";
+                if (this.width !== computedWidth + "px") {
+                    this.width = computedWidth + "px";
+                    this._host._needRedraw = true;
+                }
             }
             if (this.adaptHeightToChildren && computedHeight >= 0) {
-                this.height = computedHeight + "px";
+                if (this.height !== computedHeight + "px") {
+                    this.height = computedHeight + "px";
+                    this._host._needRedraw = true;
+                }
             }
         }
         context.restore();

@@ -68,6 +68,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
     private _rootCanvas: Nullable<HTMLCanvasElement>;
+
+    /** @hidden */
+    public _needRedraw = false;
+
     /**
      * Define type to string to ensure compatibility across browsers
      * Safari doesn't support DataTransfer constructor
@@ -540,6 +544,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         context.strokeStyle = "white";
         var measure = new Measure(0, 0, renderWidth, renderHeight);
         this._rootContainer._draw(measure, context);
+
+        if (this._needRedraw) { // We need to redraw as some elements dynamically adapt to their content
+            this._needRedraw = false;
+            this._render();
+        }
     }
 
     /** @hidden */
