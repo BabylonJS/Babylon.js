@@ -621,10 +621,14 @@ module BABYLON {
                 } else if (parsedTexture.isRenderTarget) {
                     let renderTargetTexture: Nullable<RenderTargetTexture> = null;
                     if (parsedTexture.isCube) {
-                        const probe = ReflectionProbe.Parse(parsedTexture, scene, rootUrl);
-
-                        if (probe) {
-                            renderTargetTexture = probe.cubeTexture;
+                        // Search for an existing reflection probe (which contains a cube render target texture)
+                        if (scene.reflectionProbes) {
+                            for (var index = 0; index < scene.reflectionProbes.length; index++) {
+                                const probe = scene.reflectionProbes[index];
+                                if (probe.name === parsedTexture.name) {
+                                    return probe.cubeTexture;
+                                }
+                            }
                         }
                     } else {
                         renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
