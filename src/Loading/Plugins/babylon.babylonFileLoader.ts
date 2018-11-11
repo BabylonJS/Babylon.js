@@ -649,7 +649,7 @@ module BABYLON {
                     if (parsedData.createDefaultSkybox === true) {
                         var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;
                         var skyboxBlurLevel = parsedData.skyboxBlurLevel || 0;
-                        var skyboxIsPBR = parsedData.skyboxIsPBR;
+                        var skyboxIsPBR = parsedData.skyboxIsPBR !== undefined ? parsedData.skyboxIsPBR : true;
                         scene.createDefaultSkybox(scene.environmentTexture, skyboxIsPBR, skyboxScale, skyboxBlurLevel);
                     }
                 }
