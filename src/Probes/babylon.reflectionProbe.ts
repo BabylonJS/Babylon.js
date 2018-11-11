@@ -5,7 +5,41 @@ module BABYLON {
          * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
          */
         reflectionProbes: Array<ReflectionProbe>;
+
+        /**
+         * Removes the given reflection probe from this scene.
+         * @param toRemove The reflection probe to remove
+         * @returns The index of the removed reflection probe
+         */
+        removeReflectionProbe(toRemove: ReflectionProbe): number;
+
+        /**
+         * Adds the given reflection probe to this scene.
+         * @param newReflectionProbe The reflection probe to add
+         */
+        addReflectionProbe(newReflectionProbe: ReflectionProbe): void;
     }
+
+    AbstractScene.prototype.removeReflectionProbe = function(toRemove: ReflectionProbe): number {
+        if (!this.reflectionProbes) {
+            return -1;
+        }
+
+        var index = this.reflectionProbes.indexOf(toRemove);
+        if (index !== -1) {
+            this.reflectionProbes.splice(index, 1);
+        }
+
+        return index;
+    };
+
+    AbstractScene.prototype.addReflectionProbe = function(newReflectionProbe: ReflectionProbe): void {
+        if (!this.reflectionProbes) {
+            this.reflectionProbes = [];
+        }
+
+        this.reflectionProbes.push(newReflectionProbe);
+    };
 
     /**
      * Class used to generate realtime reflection / refraction cube textures

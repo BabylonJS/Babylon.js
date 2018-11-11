@@ -3237,24 +3237,6 @@ module BABYLON {
         }
 
         /**
-         * Removes the given reflection probe from this scene.
-         * @param toRemove The reflection probe to remove
-         * @returns The index of the removed reflection probe
-         */
-        public removeReflectionProbe(toRemove: ReflectionProbe): number {
-            if (!this.reflectionProbes) {
-                return -1;
-            }
-
-            var index = this.reflectionProbes.indexOf(toRemove);
-            if (index !== -1) {
-                this.reflectionProbes.splice(index, 1);
-            }
-
-            return index;
-        }
-
-        /**
          * Adds the given light to this scene
          * @param newLight The light to add
          */
@@ -3376,18 +3358,6 @@ module BABYLON {
         public addTexture(newTexture: BaseTexture): void {
             this.textures.push(newTexture);
             this.onNewTextureAddedObservable.notifyObservers(newTexture);
-        }
-
-        /**
-         * Adds the given reflection probe to this scene.
-         * @param newReflectionProbe The reflection probe to add
-         */
-        public addReflectionProbe(newReflectionProbe: ReflectionProbe): void {
-            if (!this.reflectionProbes) {
-                this.reflectionProbes = [];
-            }
-
-            this.reflectionProbes.push(newReflectionProbe);
         }
 
         /**
