@@ -60,6 +60,8 @@ declare module BABYLON.GUI {
             _layerToDispose: BABYLON.Nullable<BABYLON.Layer>;
             /** @hidden */
             _linkedControls: Control[];
+            /** @hidden */
+            _needRedraw: boolean;
             /**
                 * BABYLON.Observable event triggered each time an clipboard event is received from the rendering canvas
                 */
