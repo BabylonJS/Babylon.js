@@ -9,8 +9,8 @@ import { PostProcessRenderPipeline } from "PostProcesses/RenderPipeline/postProc
 import { PostProcessRenderEffect } from "PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { Scene } from "scene";
 
-import "Shaders/chromaticAberration";
-import "Shaders/lensHighlights";
+import "Shaders/chromaticAberration.fragment";
+import "Shaders/lensHighlights.fragment";
 import "Shaders/depthOfField.fragment";
 
     /**
