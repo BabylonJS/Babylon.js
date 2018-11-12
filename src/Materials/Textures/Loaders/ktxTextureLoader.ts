@@ -7,8 +7,9 @@ import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Implementation of the KTX Texture Loader.
+     * @hidden
      */
-    class KTXTextureLoader implements IInternalTextureLoader {
+    export class _KTXTextureLoader implements IInternalTextureLoader {
         /**
          * Defines wether the loader supports cascade loading the different faces.
          */
@@ -99,4 +100,4 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     }
 
     // Register the loader.
-    Engine._TextureLoaders.unshift(new KTXTextureLoader());
+    Engine._TextureLoaders.unshift(new _KTXTextureLoader());

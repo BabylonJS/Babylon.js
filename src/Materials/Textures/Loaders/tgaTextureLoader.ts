@@ -7,8 +7,9 @@ import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Implementation of the TGA Texture Loader.
+     * @hidden
      */
-    class TGATextureLoader implements IInternalTextureLoader {
+    export class _TGATextureLoader implements IInternalTextureLoader {
         /**
          * Defines wether the loader supports cascade loading the different faces.
          */
@@ -77,4 +78,4 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     }
 
     // Register the loader.
-    Engine._TextureLoaders.push(new TGATextureLoader());
+    Engine._TextureLoaders.push(new _TGATextureLoader());
