@@ -720,7 +720,8 @@
                         grid-template-columns: 1fr auto;
                         background: #555555;    
                         height: 30px;   
-                        padding-right: 5px;
+                        padding-right: 5px;                        
+                        cursor: pointer;
                         
                         .title {
                             margin-left: 5px;
@@ -734,7 +735,6 @@
                             display: flex;
                             align-items: center;  
                             justify-items: center;
-                            cursor: pointer;
                             transform-origin: center;
 
                             &.closed {
