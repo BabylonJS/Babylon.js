@@ -4,6 +4,9 @@ import { Camera } from "Cameras/camera";
 import { Effect } from "Materials/effect";
 import { PostProcess } from "./postProcess";
 import { Engine } from "Engines/engine";
+
+import "Shaders/stereoscopicInterlace.fragment";
+
     /**
      * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
      */

@@ -6,6 +6,9 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "Engines/engine";
 import { Constants } from "Engines/constants";
 
+import "Shaders/fxaa.fragment";
+import "Shaders/fxaa.vertex";
+
     /**
      * Fxaa post process
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#fxaa

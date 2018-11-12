@@ -22,10 +22,10 @@ import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { IShadowLight } from "Lights/shadowLight";
 import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Constants } from "Engines/constants";
 
 import "Shaders/background.fragment";
 import "Shaders/background.vertex";
-import { Constants } from "Engines/constants";
 
     /**
      * Background material defines definition.

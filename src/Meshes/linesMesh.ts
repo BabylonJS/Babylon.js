@@ -9,6 +9,10 @@ import { InstancedMesh } from "Meshes/instancedMesh";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 import { ShaderMaterial } from "Materials/shaderMaterial";
+
+import "Shaders/color.fragment";
+import "Shaders/color.vertex";
+
     /**
      * Line mesh
      * @see https://doc.babylonjs.com/babylon101/parametric_shapes

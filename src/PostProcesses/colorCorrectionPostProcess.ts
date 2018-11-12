@@ -4,6 +4,8 @@ import { Texture } from "Materials/Textures/texture";
 import { Engine } from "Engines/engine";
 import { Camera } from "Cameras/camera";
 
+import "Shaders/colorCorrection.fragment";
+
     /**
      *
      * This post-process allows the modification of rendered colors by using

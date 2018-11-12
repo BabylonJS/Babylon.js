@@ -9,6 +9,10 @@ import { PostProcessRenderPipeline } from "PostProcesses/RenderPipeline/postProc
 import { PostProcessRenderEffect } from "PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { Scene } from "scene";
 
+import "Shaders/chromaticAberration";
+import "Shaders/lensHighlights";
+import "Shaders/depthOfField.fragment";
+
     /**
      * BABYLON.JS Chromatic Aberration GLSL Shader
      * Author: Olivier Guyot

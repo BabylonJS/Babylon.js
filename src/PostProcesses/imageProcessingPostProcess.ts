@@ -12,6 +12,9 @@ import { Engine } from "Engines/engine";
 import { Scene } from "scene";
 import { Constants } from "Engines/constants";
 
+import "Shaders/imageProcessing.fragment";
+import "Shaders/postprocess.vertex";
+
     /**
      * ImageProcessingPostProcess
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing

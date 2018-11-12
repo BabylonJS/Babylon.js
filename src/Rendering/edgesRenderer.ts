@@ -12,6 +12,9 @@ import { Camera } from "Cameras/camera";
 import { Constants } from "Engines/constants";
 import { Node } from "node";
 
+import "Shaders/line.fragment";
+import "Shaders/line.vertex";
+
 declare module "Meshes/AbstractMesh" {
     export interface AbstractMesh {
         /**

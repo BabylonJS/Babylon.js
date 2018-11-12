@@ -4,6 +4,8 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "Engines/engine";
 import { Constants } from "Engines/constants";
 
+import "Shaders/highlights.fragment";
+
     /**
      * Extracts highlights from the image
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses

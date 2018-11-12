@@ -6,6 +6,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Texture } from "Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
 
+import "Shaders/noise.fragment";
+
     /**
      * Class used to generate noise procedural textures
      */

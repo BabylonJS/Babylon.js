@@ -3,6 +3,8 @@ import { Camera } from "Cameras/camera";
 import { Effect } from "Materials/effect";
 import { Engine } from "Engines/engine";
 
+import "Shaders/blackAndWhite.fragment";
+
     /**
      * Post process used to render in black and white
      */

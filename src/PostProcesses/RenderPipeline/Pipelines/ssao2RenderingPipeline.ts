@@ -13,6 +13,9 @@ import { Engine } from "Engines/engine";
 import { GeometryBufferRenderer } from "Rendering/geometryBufferRenderer";
 import { Scene } from "scene";
 
+import "Shaders/ssao2.fragment";
+import "Shaders/ssaoCombine.fragment";
+
     /**
      * Render pipeline to produce ssao effect
      */

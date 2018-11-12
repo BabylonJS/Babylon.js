@@ -8,6 +8,9 @@ import { ParticleSystem } from "./particleSystem";
 import { Scene } from "scene";
 import { SceneComponentConstants } from "sceneComponent";
 import { AssetContainer } from "assetContainer";
+
+import "Shaders/particles.vertex";
+
     // Adds the parsers to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
 

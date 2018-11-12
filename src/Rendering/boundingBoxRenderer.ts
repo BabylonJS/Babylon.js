@@ -12,6 +12,9 @@ import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 import { ShaderMaterial } from "Materials/shaderMaterial";
 
+import "Shaders/color.fragment";
+import "Shaders/color.vertex";
+
 declare module "scene" {
     export interface Scene {
         /** @hidden (Backing field) */

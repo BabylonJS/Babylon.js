@@ -3,6 +3,9 @@ import { Constants } from "Engines/constants";
 import { Camera } from "Cameras/camera";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 
+import "Shaders/pass.fragment";
+import "Shaders/passCube.fragment";
+
 declare type Engine = import("Engines/engine").Engine;
 
     /**

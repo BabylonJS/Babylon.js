@@ -3,6 +3,8 @@ import { Effect } from "Materials/effect";
 import { PostProcess } from "./postProcess";
 import { Constants } from "Engines/constants";
 
+import "Shaders/tonemap.fragment";
+
 declare type Engine = import("Engines/engine").Engine;
 
     /** Defines operator used for tonemapping */

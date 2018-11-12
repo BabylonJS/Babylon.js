@@ -16,6 +16,10 @@ import { PostProcess } from "./postProcess";
 import { Constants } from "Engines/constants";
 import { Scene } from "scene";
 
+import "Shaders/depth.vertex";
+import "Shaders/volumetricLightScattering.fragment";
+import "Shaders/volumetricLightScatteringPass.fragment";
+
 declare type Engine = import("Engines/engine").Engine;
 
     /**

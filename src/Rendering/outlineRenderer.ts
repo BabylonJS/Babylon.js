@@ -9,6 +9,9 @@ import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
 import { Effect } from "Materials/effect";
 import { Material } from "Materials/material";
 
+import "./outline.fragment";
+import "./outline.vertex";
+
 declare module "scene" {
     export interface Scene {
         /** @hidden */

@@ -24,6 +24,9 @@ import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "Engines/constants";
 import { SerializationHelper } from "Misc/decorators";
 
+import "Shaders/particles.fragment";
+import "Shaders/particles.vertex";
+
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
