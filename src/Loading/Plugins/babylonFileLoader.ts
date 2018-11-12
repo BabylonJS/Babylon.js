@@ -26,6 +26,8 @@ import { Skeleton } from "Bones/skeleton";
 import { MorphTargetManager } from "Morph/morphTargetManager";
 import { CannonJSPlugin } from "Physics/Plugins/cannonJSPlugin";
 import { OimoJSPlugin } from "Physics/Plugins/oimoJSPlugin";
+import { ReflectionProbe } from "Probes/reflectionProbe";
+
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
             var parsedMaterial = parsedData.materials[index];
