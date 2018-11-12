@@ -1,11 +1,45 @@
 module BABYLON {
-    export interface Scene {
+    export interface AbstractScene {
         /**
          * The list of reflection probes added to the scene
          * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
          */
         reflectionProbes: Array<ReflectionProbe>;
+
+        /**
+         * Removes the given reflection probe from this scene.
+         * @param toRemove The reflection probe to remove
+         * @returns The index of the removed reflection probe
+         */
+        removeReflectionProbe(toRemove: ReflectionProbe): number;
+
+        /**
+         * Adds the given reflection probe to this scene.
+         * @param newReflectionProbe The reflection probe to add
+         */
+        addReflectionProbe(newReflectionProbe: ReflectionProbe): void;
     }
+
+    AbstractScene.prototype.removeReflectionProbe = function(toRemove: ReflectionProbe): number {
+        if (!this.reflectionProbes) {
+            return -1;
+        }
+
+        var index = this.reflectionProbes.indexOf(toRemove);
+        if (index !== -1) {
+            this.reflectionProbes.splice(index, 1);
+        }
+
+        return index;
+    };
+
+    AbstractScene.prototype.addReflectionProbe = function(newReflectionProbe: ReflectionProbe): void {
+        if (!this.reflectionProbes) {
+            this.reflectionProbes = [];
+        }
+
+        this.reflectionProbes.push(newReflectionProbe);
+    };
 
     /**
      * Class used to generate realtime reflection / refraction cube textures
@@ -18,11 +52,13 @@ module BABYLON {
         private _viewMatrix = Matrix.Identity();
         private _target = Vector3.Zero();
         private _add = Vector3.Zero();
-        private _attachedMesh: AbstractMesh;
+        @serializeAsMeshReference()
+        private _attachedMesh: Nullable<AbstractMesh>;
 
         private _invertYAxis = false;
 
         /** Gets or sets probe position (center of the cube map) */
+        @serializeAsVector3()
         public position = Vector3.Zero();
 
         /**
@@ -78,7 +114,10 @@ module BABYLON {
 
                 Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
-                scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+                if (scene.activeCamera) {
+                    this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                    scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+                }
 
                 scene._forcedViewPosition = this.position;
             });
@@ -87,10 +126,6 @@ module BABYLON {
                 scene._forcedViewPosition = null;
                 scene.updateTransformMatrix(true);
             });
-
-            if (scene.activeCamera) {
-                this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
-            }
         }
 
         /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
@@ -133,7 +168,7 @@ module BABYLON {
          * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
          * @param mesh defines the mesh to attach to
          */
-        public attachToMesh(mesh: AbstractMesh): void {
+        public attachToMesh(mesh: Nullable<AbstractMesh>): void {
             this._attachedMesh = mesh;
         }
 
@@ -161,6 +196,73 @@ module BABYLON {
                 this._renderTargetTexture.dispose();
                 (<any>this._renderTargetTexture) = null;
             }
+        }
+
+        /**
+         * Converts the reflection probe information to a readable string for debug purpose.
+         * @param fullDetails Supports for multiple levels of logging within scene loading
+         * @returns the human readable reflection probe info
+         */
+        public toString(fullDetails?: boolean): string {
+            var ret = "Name: " + this.name;
+
+            if (fullDetails) {
+                ret += ", position: " + this.position.toString();
+
+                if (this._attachedMesh) {
+                    ret += ", attached mesh: " + this._attachedMesh.name;
+                }
+            }
+
+            return ret;
+        }
+
+        /**
+         * Get the class name of the relfection probe.
+         * @returns "ReflectionProbe"
+         */
+        public getClassName(): string {
+            return "ReflectionProbe";
+        }
+
+        /**
+         * Serialize the reflection probe to a JSON representation we can easily use in the resepective Parse function.
+         * @returns The JSON representation of the texture
+         */
+        public serialize(): any {
+            const serializationObject = SerializationHelper.Serialize(this, this._renderTargetTexture.serialize());
+            serializationObject.isReflectionProbe = true;
+
+            return serializationObject;
+        }
+
+        /**
+         * Parse the JSON representation of a reflection probe in order to recreate the reflection probe in the given scene.
+         * @param parsedReflectionProbe Define the JSON representation of the reflection probe
+         * @param scene Define the scene the parsed reflection probe should be instantiated in
+         * @param rootUrl Define the root url of the parsing sequence in the case of relative dependencies
+         * @returns The parsed reflection probe if successful
+         */
+        public static Parse(parsedReflectionProbe: any, scene: Scene, rootUrl: string): Nullable<ReflectionProbe> {
+            let reflectionProbe: Nullable<ReflectionProbe> = null;
+            if (scene.reflectionProbes) {
+                for (let index = 0; index < scene.reflectionProbes.length; index++) {
+                    const rp = scene.reflectionProbes[index];
+                    if (rp.name === parsedReflectionProbe.name) {
+                        reflectionProbe = rp;
+                        break;
+                    }
+                }
+            }
+
+            reflectionProbe = SerializationHelper.Parse(() => reflectionProbe || new ReflectionProbe(parsedReflectionProbe.name, parsedReflectionProbe.renderTargetSize, scene, parsedReflectionProbe._generateMipMaps), parsedReflectionProbe, scene, rootUrl);
+            reflectionProbe.cubeTexture._waitingRenderList = parsedReflectionProbe.renderList;
+
+            if (parsedReflectionProbe._attachedMesh) {
+                reflectionProbe.attachToMesh(scene.getMeshByID(parsedReflectionProbe._attachedMesh));
+            }
+
+            return reflectionProbe;
         }
     }
 }
