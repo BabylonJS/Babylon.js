@@ -59,7 +59,6 @@ if (BABYLON.Engine.isSupported()) {
     var currentPluginName;
     var skyboxPath = "https://assets.babylonjs.com/environments/environmentSpecular.env";
     var debugLayerEnabled = false;
-    var debugLayerLastActiveTab = 0;
 
     engine.loadingUIBackgroundColor = "#a9b5bc";
 
@@ -75,9 +74,9 @@ if (BABYLON.Engine.isSupported()) {
     BABYLON.Animation.AllowMatricesInterpolation = true;
 
     // Update the defaults of the GLTFTab in the inspector.
-    INSPECTOR.GLTFTab._GetLoaderDefaultsAsync().then(function(defaults) {
-        defaults.validate = true;
-    });
+    // INSPECTOR.GLTFTab._GetLoaderDefaultsAsync().then(function(defaults) {
+    //     defaults.validate = true;
+    // });
 
     // Setting up some GLTF values
     BABYLON.GLTFFileLoader.IncrementalLoading = false;
@@ -87,7 +86,6 @@ if (BABYLON.Engine.isSupported()) {
             plugin.onValidatedObservable.add(function(results) {
                 if (results.issues.numErrors > 0) {
                     debugLayerEnabled = true;
-                    debugLayerLastActiveTab = "GLTF";
                 }
             });
         }
@@ -213,7 +211,7 @@ if (BABYLON.Engine.isSupported()) {
         }
 
         if (debugLayerEnabled) {
-            currentScene.debugLayer.show({ initialTab: debugLayerLastActiveTab });
+            currentScene.debugLayer.show();
         }
     };
 
@@ -259,10 +257,6 @@ if (BABYLON.Engine.isSupported()) {
     else {
         var startProcessingFiles = function() {
             BABYLON.Tools.ClearLogCache();
-
-            if (currentScene) {
-                debugLayerLastActiveTab = currentScene.debugLayer.getActiveTab();
-            }
         };
 
         filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, startProcessingFiles, null, sceneError);
@@ -279,7 +273,6 @@ if (BABYLON.Engine.isSupported()) {
         filesInput.monitorElementForDragNDrop(canvas);
 
         htmlInput.addEventListener('change', function(event) {
-            var filestoLoad;
             // Handling data transfer via drag'n'drop
             if (event && event.dataTransfer && event.dataTransfer.files) {
                 filesToLoad = event.dataTransfer.files;
@@ -295,8 +288,6 @@ if (BABYLON.Engine.isSupported()) {
     window.addEventListener("keydown", function(event) {
         // Press R to reload
         if (event.keyCode === 82 && event.target.nodeName !== "INPUT" && currentScene) {
-            debugLayerLastActiveTab = currentScene.debugLayer.getActiveTab();
-
             if (assetUrl) {
                 loadFromAssetUrl();
             }
@@ -310,11 +301,10 @@ if (BABYLON.Engine.isSupported()) {
         if (currentScene) {
             if (currentScene.debugLayer.isVisible()) {
                 debugLayerEnabled = false;
-                debugLayerLastActiveTab = currentScene.debugLayer.getActiveTab();
                 currentScene.debugLayer.hide();
             }
             else {
-                currentScene.debugLayer.show({ initialTab: debugLayerLastActiveTab });
+                currentScene.debugLayer.show();
                 debugLayerEnabled = true;
             }
         }
@@ -325,7 +315,7 @@ if (BABYLON.Engine.isSupported()) {
         if (event.keyCode === 32 && event.target.nodeName !== "INPUT") {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
-                canvas.style.height = "calc(100% - 56px)";                
+                canvas.style.height = "calc(100% - 56px)";
                 engine.resize();
             }
             else {

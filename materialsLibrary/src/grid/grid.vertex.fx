@@ -17,9 +17,6 @@ uniform mat4 view;
 uniform mat4 worldView;
 
 // Varying
-#ifdef TRANSPARENT
-    varying vec4 vCameraSpacePosition;
-#endif
 varying vec3 vPosition;
 varying vec3 vNormal;
 
@@ -41,10 +38,6 @@ void main(void) {
 
     vec4 cameraSpacePosition = worldView * vec4(position, 1.0);
     gl_Position = projection * cameraSpacePosition;
-
-    #ifdef TRANSPARENT
-        vCameraSpacePosition = cameraSpacePosition;
-    #endif
 
 #ifdef OPACITY
 #ifndef UV1

@@ -270,6 +270,7 @@ export class Container extends Control {
             }
 
             this._localDraw(context);
+            this._renderHighlight(context);
 
             if (this.clipChildren) {
                 this._clipForChildren(context);
@@ -283,6 +284,7 @@ export class Container extends Control {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
                     child._draw(this._measureForChildren, context);
+                    child._renderHighlight(context);
 
                     if (child.onAfterDrawObservable.hasObservers()) {
                         child.onAfterDrawObservable.notifyObservers(child);
@@ -314,6 +316,25 @@ export class Container extends Control {
 
         if (this.onAfterDrawObservable.hasObservers()) {
             this.onAfterDrawObservable.notifyObservers(this);
+        }
+    }
+
+    /** @hidden */
+    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+        if (!this.children) {
+            return;
+        }
+
+        for (var index = 0; index < this.children.length; index++) {
+            var item = this.children[index];
+
+            if (!predicate || predicate(item)) {
+                results.push(item);
+            }
+
+            if (!directDescendantsOnly) {
+                item._getDescendants(results, false, predicate);
+            }
         }
     }
 
