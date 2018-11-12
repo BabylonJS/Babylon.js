@@ -25,8 +25,8 @@ import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { Constants } from "Engines/constants";
 
-import "./shadowMap.fragment";
-import "./shadowMap.vertex";
+import "Shaders/shadowMap.fragment";
+import "Shaders/shadowMap.vertex";
 import "Shaders/depthBoxBlur.fragment";
 
     /**

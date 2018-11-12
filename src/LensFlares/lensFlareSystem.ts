@@ -16,8 +16,8 @@ import { LensFlare } from "./lensFlare";
 import { LensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent";
 import { Constants } from "Engines/constants";
 
-import "./lensFlare.fragment";
-import "./lensFlare.vertex";
+import "Shaders/lensFlare.fragment";
+import "Shaders/lensFlare.vertex";
 
     /**
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.

@@ -20,10 +20,10 @@ import { Texture } from "Materials/Textures/texture";
 import { RawTexture } from "Materials/Textures/rawTexture";
 import { Constants } from "Engines/constants";
 
-import "./gpuUpdateParticles.fragment";
-import "./gpuUpdateParticles.vertex";
-import "./gpuRenderParticles.fragment";
-import "./gpuRenderParticles.vertex";
+import "Shaders/gpuUpdateParticles.fragment";
+import "Shaders/gpuUpdateParticles.vertex";
+import "Shaders/gpuRenderParticles.fragment";
+import "Shaders/gpuRenderParticles.vertex";
 
     /**
      * This represents a GPU particle system in Babylon
