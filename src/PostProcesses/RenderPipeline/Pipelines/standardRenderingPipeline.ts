@@ -19,6 +19,8 @@ import { GeometryBufferRenderer } from "Rendering/geometryBufferRenderer";
 import { Scene } from "scene";
 import { Animation } from "Animations/animation";
 import { Constants } from "Engines/constants";
+
+import "Shaders/standard.fragment";
     /**
      * Standard rendering pipeline
      * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.

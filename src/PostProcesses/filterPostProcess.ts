@@ -5,6 +5,8 @@ import { Effect } from "Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "Engines/engine";
 
+import "Shaders/filter.fragment";
+
     /**
      * Applies a kernel filter to the image
      */

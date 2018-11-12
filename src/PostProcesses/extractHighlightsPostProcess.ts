@@ -6,6 +6,8 @@ import { Engine } from "Engines/engine";
 import { ToGammaSpace } from "Maths/math";
 import { Constants } from "Engines/constants";
 
+import "Shaders/extractHighlights.fragment";
+
     /**
      * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
      */

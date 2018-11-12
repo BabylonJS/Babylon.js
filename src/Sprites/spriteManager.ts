@@ -15,6 +15,9 @@ import { Material } from "Materials/material";
 import { SceneComponentConstants } from "sceneComponent";
 import { Constants } from "Engines/constants";
 
+import "./sprites.fragment";
+import "./sprites.vertex";
+
     /**
      * Defines the minimum interface to fullfil in order to be a sprite manager.
      */

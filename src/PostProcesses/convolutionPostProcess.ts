@@ -5,6 +5,8 @@ import { Engine } from "Engines/engine";
 import { Effect } from "Materials/effect";
 import { Constants } from "Engines/constants";
 
+import "Shaders/convolution.fragment";
+
     /**
      * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the
      * input texture to perform effects such as edge detection or sharpening

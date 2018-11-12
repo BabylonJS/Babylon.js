@@ -12,6 +12,9 @@ import { GeometryBufferRendererSceneComponent } from "./geometryBufferRendererSc
 import { Scene } from "scene";
 import { SceneComponentConstants } from "sceneComponent";
 
+import "./geometry.fragment";
+import "./geometry.vertex";
+
     /**
      * This renderer is helpfull to fill one of the render target with a geometry buffer.
      */

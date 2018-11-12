@@ -24,6 +24,10 @@ import { AbstractScene } from "abstractScene";
 import { Constants } from "Engines/constants";
 import { Logger } from "Misc/logger";
 
+import "Shaders/glowMapMerge.fragment";
+import "Shaders/glowMapMerge.vertex";
+import "Shaders/glowBlurPostProcess.fragment";
+
 declare module "abstractScene" {
     export interface AbstractScene {
         /**

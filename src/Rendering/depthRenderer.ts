@@ -13,6 +13,9 @@ import { Constants } from "Engines/constants";
 import { SceneComponentConstants } from "sceneComponent";
 import { DepthRendererSceneComponent } from "./depthRendererSceneComponent";
 
+import "./depth.fragment";
+import "./depth.vertex";
+
     /**
      * This represents a depth renderer in Babylon.
      * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing

@@ -28,10 +28,10 @@ import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
 import { CubeTexture } from "Materials/Textures/cubeTexture";
 
 import { StandardMaterial } from "Materials/standardMaterial";
+import { Constants } from "Engines/constants";
 
 import "Shaders/pbr.fragment";
 import "Shaders/pbr.vertex";
-import { Constants } from "Engines/constants";
 
     /**
      * Manages the defines for the PBR Material.

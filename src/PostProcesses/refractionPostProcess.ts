@@ -4,6 +4,9 @@ import { Effect } from "Materials/effect";
 import { Texture } from "Materials/Textures/texture";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "Engines/engine";
+
+import "Shaders/refraction.fragment";
+
     /**
      * Post process which applies a refractin texture
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction

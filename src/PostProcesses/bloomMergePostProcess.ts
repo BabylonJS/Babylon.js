@@ -5,6 +5,8 @@ import { Effect } from "Materials/effect";
 import { Camera } from "Cameras/camera";
 import { Constants } from "Engines/constants";
 
+import "Shaders/bloomMerge.fragment";
+
     /**
      * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
      */

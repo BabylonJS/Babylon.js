@@ -11,6 +11,9 @@ import { Scene } from "scene";
 import { PostProcess } from "PostProcesses/postProcess";
 import { Logger } from "Misc/logger";
 
+import "Shaders/rgbdEncode.fragment";
+import "Shaders/rgbdDecode.fragment";
+
     /**
      * Raw texture data and descriptor sufficient for WebGL texture upload
      */
