@@ -68,7 +68,7 @@ module.exports = {
             use: ['style-loader', 'css-loader']
         }]
     },
-    mode: "development",
+    mode: "production",
     devServer: {
         contentBase: path.join(__dirname, "dist"),
         compress: false,
