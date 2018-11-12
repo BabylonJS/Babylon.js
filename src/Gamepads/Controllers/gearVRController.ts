@@ -8,7 +8,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
 import { GamepadButtonChanges } from "Gamepads/gamepad";
 import { WebVRController } from "./webVRController";
-import { PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledController";
+import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 
 /**
      * Gear VR Controller
@@ -82,3 +82,13 @@ import { PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledC
             }
         }
     }
+
+    PoseEnabledControllerHelper._ControllerFactories.push({
+        canCreate: (gamepadInfo) => {
+            return gamepadInfo.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0 ||
+                gamepadInfo.id.indexOf('Oculus Go') !== -1;
+        },
+        create: (gamepadInfo) => {
+            return new GearVRController(gamepadInfo);
+        }
+    });

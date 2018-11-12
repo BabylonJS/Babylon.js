@@ -1,5 +1,4 @@
 import { Nullable } from "types";
-import { RenderingGroupInfo, Scene } from "scene";
 import { AbstractMesh } from "Meshes/abstractMesh";
 import { SubMesh } from "Meshes/subMesh";
 import { SmartArray } from "Misc/smartArray";
@@ -7,6 +6,9 @@ import { ISpriteManager } from "Sprites/spriteManager";
 import { IParticleSystem } from "Particles/IParticleSystem";
 import { Material } from "Materials/material";
 import { RenderingGroup } from "./renderingGroup";
+
+declare type Scene = import("scene").Scene;
+declare type Camera = import("Cameras/camera").Camera;
 
     /**
      * Interface describing the different options available in the rendering manager
@@ -25,6 +27,26 @@ import { RenderingGroup } from "./renderingGroup";
          * Defines whether or not to autoclear the stencil buffer.
          */
         stencil: boolean;
+    }
+
+    /**
+     * This class is used by the onRenderingGroupObservable
+     */
+    export class RenderingGroupInfo {
+        /**
+         * The Scene that being rendered
+         */
+        scene: Scene;
+
+        /**
+         * The camera currently used for the rendering pass
+         */
+        camera: Nullable<Camera>;
+
+        /**
+         * The ID of the renderingGroup being processed
+         */
+        renderingGroupId: number;
     }
 
     /**

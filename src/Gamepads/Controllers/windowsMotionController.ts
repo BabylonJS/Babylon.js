@@ -14,8 +14,9 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
 import { WebVRController } from "./webVRController";
 import { GenericController } from "./genericController";
-import { PoseEnabledController, PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledController";
+import { PoseEnabledController, PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
+
     /**
      * Defines the LoadedMeshInfo object that describes information about the loaded webVR controller mesh
      */
@@ -538,3 +539,12 @@ import { StickValues, GamepadButtonChanges } from "Gamepads/gamepad";
             this.onTrackpadChangedObservable.clear();
         }
     }
+
+    PoseEnabledControllerHelper._ControllerFactories.push({
+        canCreate: (gamepadInfo) => {
+            return gamepadInfo.id.indexOf(WindowsMotionController.GAMEPAD_ID_PREFIX) === 0;
+        },
+        create: (gamepadInfo) => {
+            return new WindowsMotionController(gamepadInfo);
+        }
+    });
