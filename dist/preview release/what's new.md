@@ -2,6 +2,7 @@
 
 ## Major updates
 
+- [Inspector v2.0](https://doc.babylonjs.com/features/playground_debuglayer). [Dev log](https://medium.com/@babylonjs/dev-log-creating-the-new-inspector-b15c50900205) ([Deltakosh](https://github.com/deltakosh))
 - Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
 - Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein)) [@NEED DEMO]
 - Added [Object Based Motion Blur](http://doc.babylonjs.com/how_to/using_motionblurpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
@@ -60,7 +61,11 @@
 - Added opacity texture support to `GridMaterial` ([Deltakosh](https://github.com/deltakosh))
 - Added support for deserializing morph target animations in animation groups
 - AssetContainer dispose method ([TrevorDev](https://github.com/TrevorDev))
-
+- Loading texture with KTX will fallback to non-KTX loader if KTX loader fails ([TrevorDev](https://github.com/TrevorDev))
+- `Layer` are now supported in `RenderTargetTexture` ([Sebavan](https://github.com/Sebavan))
+- Make onscreen joystick's canvas public ([TrevorDev](https://github.com/TrevorDev))
+- Added `Tools.CustomRequestHeaders`, `Tools.UseCustomRequestHeaders`, `Tools.InjectCustomRequestHeaders` to send Custom Request Headers alongside XMLHttpRequest's i.e. when loading files (Tools.Loadfile) from resources requiring special headers like 'Authorization' ([susares](https://github.com/susares))
+- Added `.serialize` and `.Parse` functions in `ReflectionProbe` to retrieve reflection probes when parsing a previously serialized material ([julien-moreau](https://github.com/julien-moreau))
 ### glTF Loader
 
 - Added support for mesh instancing for improved performance when multiple nodes point to the same mesh ([bghgary](https://github.com/bghgary))
@@ -77,12 +82,14 @@
 - Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))
 - Refocusing on input gui with pointer events ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo scaling not consistent when camera is parented ([TrevorDev](https://github.com/TrevorDev))
-- Context loss causing unexpected results with dynamic textures ([TrevorDev](https://github.com/TrevorDev))
+- Context loss causing unexpected results with dynamic textures, geometries with the same name and reflectionTextures ([TrevorDev](https://github.com/TrevorDev))
 - CreateScreenshotUsingRenderTarget stretches mirror textures when setting both width and height ([TrevorDev](https://github.com/TrevorDev))
 - VR helper only updating vr cameras position when entering vr, rotation was missing ([TrevorDev](https://github.com/TrevorDev))
 - Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
 - Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
+- PointerDragBahavior using Mesh as base type, causing type-checking problems with AbstractMesh ([Poolminer](https://github.com/Poolminer/))
+- TransformNode lookAt not working in world space when node's parent has rotation ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -94,6 +101,7 @@
 - Add missing effect layer to asset container ([TrevorDev](https://github.com/TrevorDev))
 - Fixed effect layer compatibility with multi materials ([Sebavan](https://github.com/Sebavan))
 - Added a `DeepImmutable<T>` type to specifiy that a referenced object should be considered recursively immutable, meaning that all its properties are `readonly` and that if a property is a reference to an object, this object is also recursively immutable. ([barroij](https://github.com/barroij))
+- Fixed `VideoTexture` poster property when autoplay is turned off.
 
 ### Viewer
 

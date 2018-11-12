@@ -481,7 +481,7 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.6";
+            return "4.0.0-alpha.7";
         }
 
         /**
@@ -4243,12 +4243,13 @@ module BABYLON {
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
+         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
         public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
             onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
             buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-            forcedExtension: Nullable<string> = null): InternalTexture {
+            forcedExtension: Nullable<string> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
             var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
             var fromData = url.substr(0, 5) === "data:";
             var fromBlob = url.substr(0, 5) === "blob:";
@@ -4262,7 +4263,7 @@ module BABYLON {
 
             let loader: Nullable<IInternalTextureLoader> = null;
             for (let availableLoader of Engine._TextureLoaders) {
-                if (availableLoader.canLoad(extension, this._textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
+                if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, this._textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
                     loader = availableLoader;
                     break;
                 }
@@ -4303,7 +4304,9 @@ module BABYLON {
                     if (fallbackUrl) {
                         // Add Back
                         customFallback = true;
-                        this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                        excludeLoaders.push(loader);
+                        Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
+                        this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
                     }
                 }
 
@@ -4324,12 +4327,15 @@ module BABYLON {
             // processing for non-image formats
             if (loader) {
                 var callback = (data: string | ArrayBuffer) => {
-                    loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => {
-                        this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
-                            done();
-                            return false;
-                        },
-                            samplingMode);
+                    loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
+                        if (loadFailed) {
+                            onInternalError("TextureLoader failed to load data");
+                        }else {
+                            this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
+                                done();
+                                return false;
+                            }, samplingMode);
+                        }
                     });
                 };
 
@@ -5674,9 +5680,10 @@ module BABYLON {
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (defualt: empty array)
          * @returns the cube texture as an InternalTexture
          */
-        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
+        public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
             var gl = this._gl;
 
             var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
@@ -5696,7 +5703,7 @@ module BABYLON {
 
             let loader: Nullable<IInternalTextureLoader> = null;
             for (let availableLoader of Engine._TextureLoaders) {
-                if (availableLoader.canLoad(extension, this._textureFormatInUse, fallback, false, false)) {
+                if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, this._textureFormatInUse, fallback, false, false)) {
                     loader = availableLoader;
                     break;
                 }
@@ -5704,9 +5711,11 @@ module BABYLON {
 
             let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
                 if (loader) {
-                    const fallbackUrl = loader.getFallbackTextureUrl(rootUrl, this._textureFormatInUse);
+                    const fallbackUrl = loader.getFallbackTextureUrl(texture.url, this._textureFormatInUse);
+                    Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
                     if (fallbackUrl) {
-                        this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture);
+                        excludeLoaders.push(loader);
+                        this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture, excludeLoaders);
                     }
                 }
 

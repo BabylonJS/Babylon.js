@@ -1450,6 +1450,14 @@ declare module BABYLON.GLTF2 {
          */
         loadUriAsync(context: string, uri: string): Promise<ArrayBufferView>;
         private _onProgress;
+        /**
+         * Adds a JSON pointer to the metadata of the Babylon object at `<object>.metadata.gltf.pointers`.
+         * @param babylonObject the Babylon object with metadata
+         * @param pointer the JSON pointer
+         */
+        static AddPointerMetadata(babylonObject: {
+            metadata: any;
+        }, pointer: string): void;
         private static _GetTextureWrapMode;
         private static _GetTextureSamplingMode;
         private static _GetTypedArray;

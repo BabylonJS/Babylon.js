@@ -73,6 +73,7 @@ export class Control {
     private _cachedOffsetX: number;
     private _cachedOffsetY: number;
     private _isVisible = true;
+    private _isHighlighted = false;
     /** @hidden */
     public _linkedMesh: Nullable<AbstractMesh>;
     private _fontSet = false;
@@ -85,6 +86,16 @@ export class Control {
     protected _disabledColor = "#9a9a9a";
     /** @hidden */
     public _tag: any;
+
+    /**
+     * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
+     */
+    public uniqueId: number;
+
+    /**
+     * Gets or sets an object used to store user defined information for the node
+     */
+    public metadata: any = null;
 
     /** Gets or sets a boolean indicating if the control can be hit with pointer events */
     public isHitTestVisible = true;
@@ -117,6 +128,14 @@ export class Control {
 
     /** Gets the control type name */
     public get typeName(): string {
+        return this._getTypeName();
+    }
+
+    /**
+     * Get the current class name of the control.
+     * @returns current class name
+     */
+    public getClassName(): string {
         return this._getTypeName();
     }
 
@@ -185,6 +204,22 @@ export class Control {
         }
         this._alphaSet = true;
         this._alpha = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
+     */
+    public get isHighlighted(): boolean {
+        return this._isHighlighted;
+    }
+
+    public set isHighlighted(value: boolean) {
+        if (this._isHighlighted === value) {
+            return;
+        }
+
+        this._isHighlighted = value;
         this._markAsDirty();
     }
 
@@ -847,6 +882,25 @@ export class Control {
         this.notRenderable = false;
     }
 
+    /** @hidden */
+    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+        // Do nothing by default
+    }
+
+    /**
+     * Will return all controls that have this control as ascendant
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @return all child controls
+     */
+    public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
+        var results = new Array<Control>();
+
+        this._getDescendants(results, directDescendantsOnly, predicate);
+
+        return results;
+    }
+
     /**
      * Link current control with a target mesh
      * @param mesh defines the mesh to link with
@@ -941,6 +995,9 @@ export class Control {
     public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
         this._root = root;
         this._host = host;
+        if (this._host) {
+            this.uniqueId = this._host.getScene()!.getUniqueId();
+        }
     }
 
     /** @hidden */
@@ -974,6 +1031,23 @@ export class Control {
 
             this._transformMatrix.invertToRef(this._invertTransformMatrix);
         }
+    }
+
+    /** @hidden */
+    public _renderHighlight(context: CanvasRenderingContext2D): void {
+        if (!this.isHighlighted) {
+            return;
+        }
+
+        context.strokeStyle = "#4affff";
+        context.lineWidth = 2;
+
+        this._renderHighlightSpecific(context);
+    }
+
+    /** @hidden */
+    protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+        context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
     /** @hidden */
@@ -1373,7 +1447,7 @@ export class Control {
 
         if (type === PointerEventTypes.POINTERDOWN) {
             this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
-            this._host._lastControlDown[pointerId] = this;
+            this._host._registerLastControlDown(this, pointerId);
             this._host._lastPickedControl = this;
             return true;
         }

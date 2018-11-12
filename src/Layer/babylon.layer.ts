@@ -2,7 +2,7 @@ module BABYLON {
 
     /**
      * This represents a full screen 2d layer.
-     * This can be usefull to display a picture in the  background of your scene for instance.
+     * This can be useful to display a picture in the  background of your scene for instance.
      * @see https://www.babylonjs-playground.com/#08A2BS#1
      */
     export class Layer {
@@ -47,6 +47,17 @@ module BABYLON {
          * Define a mask to restrict the layer to only some of the scene cameras.
          */
         public layerMask: number = 0x0FFFFFFF;
+
+        /**
+         * Define the list of render target the layer is visible into.
+         */
+        public renderTargetTextures: RenderTargetTexture[] = [];
+
+        /**
+         * Define if the layer is only used in renderTarget or if it also
+         * renders in the main frame buffer of the canvas.
+         */
+        public renderOnlyInRenderTargetTextures = false;
 
         private _scene: Scene;
         private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
@@ -108,7 +119,7 @@ module BABYLON {
         /**
          * Instantiates a new layer.
          * This represents a full screen 2d layer.
-         * This can be usefull to display a picture in the  background of your scene for instance.
+         * This can be useful to display a picture in the  background of your scene for instance.
          * @see https://www.babylonjs-playground.com/#08A2BS#1
          * @param name Define the name of the layer in the scene
          * @param imgUrl Define the url of the texture to display in the layer
@@ -255,6 +266,9 @@ module BABYLON {
                 this.texture.dispose();
                 this.texture = null;
             }
+
+            // Clean RTT list
+            this.renderTargetTextures = [];
 
             // Remove from scene
             var index = this._scene.layers.indexOf(this);
