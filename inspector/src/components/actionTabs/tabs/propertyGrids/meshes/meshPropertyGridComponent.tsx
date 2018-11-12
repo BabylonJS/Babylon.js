@@ -7,6 +7,7 @@ import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
+import { AxesViewerComponent } from "./axesViewerComponent";
 
 interface IMeshPropertyGridComponentProps {
     mesh: Mesh,
@@ -184,6 +185,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind) &&
                         <CheckBoxLineComponent label="Render vertex normals" isSelected={() => renderNormalVectors} onSelect={() => this.renderNormalVectors()} />
                     }
+                    <AxesViewerComponent node={mesh} />
                 </LineContainerComponent>
             </div>
         );
