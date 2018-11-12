@@ -149,25 +149,13 @@ var BABYLONDEVTOOLS;
                 var tempDirectory = '/.temp' + module.build.distOutputDirectory;
                 this.loadScript(babylonJSPath + tempDirectory + library.output);
             }
-            else if (min) {
-                if (library.webpack) {
-                    if (module.build.distOutputDirectory)
-                        this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
+            else if (module.build.distOutputDirectory) {
+                if (min) {
+                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
                 }
                 else {
-                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
+                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + (library.maxOutput || library.output.replace(".min", "")));
                 }
-            }
-            else {
-                if (module.build.distOutputDirectory)
-                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
-            }
-
-            // Currently not being used
-            if (!min && library.sassFiles && library.sassFiles.length > 0) {
-                var cssFile = library.output.replace('.js', '.css');
-                cssFile = babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + cssFile;
-                this.loadCss(cssFile);
             }
         }
 
@@ -196,39 +184,9 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.loadBJSScripts = function(settings) {
-            var loadModules = true;
-
-            // Main bjs files
-            if (!useDist) {
-                var currentConfig = settings.build.currentConfig;
-                var buildConfiguration = settings.buildConfigurations[currentConfig];
-                var filesToLoad = [];
-
-                for (var index = 0; index < buildConfiguration.length; index++) {
-                    var dependencyName = buildConfiguration[index];
-                    var dependency = settings.workloads[dependencyName];
-                    this.processDependency(settings, dependency, filesToLoad);
-                }
-
-                this.loadScripts(filesToLoad);
-
-                if (currentConfig !== "all") {
-                    loadModules = false;
-                }
-            }
-            else if (min) {
-                this.loadScript('/dist/preview release/babylon.js');
-            }
-            else {
-                this.loadScript('/dist/preview release/babylon.max.js');
-            }
-
-            // Modules
-            if (loadModules) {
-
-                for (var i = 0; i < settings.modules.length; i++) {
-                    this.loadModule(settings[settings.modules[i]]);
-                }
+            // Load all the modules from the config.json.
+            for (var i = 0; i < settings.modules.length; i++) {
+                this.loadModule(settings[settings.modules[i]]);
             }
         }
 
