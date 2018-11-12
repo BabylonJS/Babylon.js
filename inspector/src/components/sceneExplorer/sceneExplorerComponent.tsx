@@ -73,13 +73,16 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.setState({ filter: filter });
     }
 
-    findSiblings(items: any[], target: any, goNext: boolean, data: { previousOne?: any, found?: boolean }): boolean {
-        if (!items || items.length === 0) {
+    findSiblings(parent: any, items: any[], target: any, goNext: boolean, data: { previousOne?: any, found?: boolean }): boolean {
+        if (!items) {
             return false;
         }
 
-        const sortedItems = Tools.SortAndFilter(items);
+        const sortedItems = Tools.SortAndFilter(parent, items);
 
+        if (!items || sortedItems.length === 0) {
+            return false;
+        }
 
         for (var item of sortedItems) {
             if (item === target) { // found the current selection!
@@ -99,7 +102,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             }
 
             if (item.getChildren && item.metadata && item.metadata.isExpanded) {
-                if (this.findSiblings(item.getChildren(), target, goNext, data)) {
+                if (this.findSiblings(item, item.getChildren(), target, goNext, data)) {
                     return true;
                 }
             }
@@ -146,9 +149,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         keyEvent.preventDefault();
 
         let data = {};
-        if (!this.findSiblings(scene.rootNodes, this.state.selectedEntity, goNext, data)) {
-            if (!this.findSiblings(scene.materials, this.state.selectedEntity, goNext, data)) {
-                this.findSiblings(scene.textures, this.state.selectedEntity, goNext, data);
+        if (!this.findSiblings(null, scene.rootNodes, this.state.selectedEntity, goNext, data)) {
+            if (!this.findSiblings(null, scene.materials, this.state.selectedEntity, goNext, data)) {
+                this.findSiblings(null, scene.textures, this.state.selectedEntity, goNext, data);
             }
         }
 

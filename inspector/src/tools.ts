@@ -16,11 +16,18 @@ export class Tools {
         return false;
     }
 
-    public static SortAndFilter(items: any[]): any[] {
+    public static SortAndFilter(parent: any, items: any[]): any[] {
         if (!items) {
             return [];
         }
-        return items.filter((i) => !i.metadata || !i.metadata.hidden).sort((a: any, b: any) => {
+
+        const finalArray = items.filter((i) => !i.metadata || !i.metadata.hidden);
+
+        if (parent && parent.metadata && parent.metadata.detachedChildren) {
+            finalArray.push(...parent.metadata.detachedChildren);
+        }
+
+        return finalArray.sort((a: any, b: any) => {
             const lowerCaseA = (a.name || "").toLowerCase();
             const lowerCaseB = (b.name || "").toLowerCase();
 

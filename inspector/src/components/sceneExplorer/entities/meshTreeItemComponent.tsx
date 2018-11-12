@@ -32,6 +32,18 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
             }
             mesh.metadata.previousParent = mesh.parent;
 
+            if (mesh.metadata.previousParent) {
+                if (!mesh.metadata.previousParent.metadata) {
+                    mesh.metadata.previousParent.metadata = {};
+                }
+
+                if (!mesh.metadata.previousParent.metadata.detachedChildren) {
+                    mesh.metadata.previousParent.metadata.detachedChildren = [];
+                }
+
+                mesh.metadata.previousParent.metadata.detachedChildren.push(mesh);
+            }
+
             // Connect to gizmo
             const dummy = BABYLON.BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(mesh as Mesh);
             dummy.metadata = { hidden: true };
@@ -55,13 +67,18 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
             return;
         }
 
-
+        const previousParent = mesh.metadata.previousParent;
         mesh.removeBehavior(mesh.metadata.pointerDragBehavior);
         mesh.metadata.gizmo.dispose();
         mesh.metadata.gizmo = null;
-        mesh.setParent(mesh.metadata.previousParent);
+        mesh.setParent(previousParent);
         mesh.metadata.dummy.dispose();
         mesh.metadata.dummy = null;
+
+        if (previousParent && previousParent.metadata) {
+            previousParent.metadata.detachedChildren = null;
+        }
+
         mesh.metadata.previousParent = null;
         mesh.metadata.pointerDragBehavior = null;
 

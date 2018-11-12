@@ -126,7 +126,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
             )
         }
 
-        const sortedItems = Tools.SortAndFilter(items);
+        const sortedItems = Tools.SortAndFilter(null, items);
 
         return (
             <div>

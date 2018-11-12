@@ -86,7 +86,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             return null;
         }
 
-        const children = Tools.SortAndFilter(entity.getChildren ? entity.getChildren() : entity.children);
+        const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         return (
             children.map(item => {
 
@@ -104,7 +104,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         const entity = this.props.entity;
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
-        const children = Tools.SortAndFilter(entity.getChildren ? entity.getChildren() : entity.children);
+        const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         const hasChildren = children.length > 0;
 
         if (!entity.metadata) {
