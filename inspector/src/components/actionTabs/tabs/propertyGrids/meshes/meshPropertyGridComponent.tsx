@@ -111,7 +111,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const scene = mesh.getScene();
 
         const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
-        const renderNormalVectors = mesh.metadata && mesh.metadata.normalLines;
+        const renderNormalVectors = (mesh.metadata && mesh.metadata.normalLines) ? true : false;
 
         return (
             <div className="pane">
