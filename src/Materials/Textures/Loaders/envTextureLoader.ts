@@ -7,8 +7,9 @@ import { _TimeToken } from "Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     /**
      * Implementation of the ENV Texture Loader.
+     * @hidden
      */
-    class ENVTextureLoader implements IInternalTextureLoader {
+    export class _ENVTextureLoader implements IInternalTextureLoader {
         /**
          * Defines wether the loader supports cascade loading the different faces.
          */
@@ -92,4 +93,4 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
     }
 
     // Register the loader.
-    Engine._TextureLoaders.push(new ENVTextureLoader());
+    Engine._TextureLoaders.push(new _ENVTextureLoader());

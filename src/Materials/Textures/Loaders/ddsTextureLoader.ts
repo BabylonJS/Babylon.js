@@ -8,8 +8,9 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 import { DDSTools, DDSInfo } from "Misc/dds";
     /**
      * Implementation of the DDS Texture Loader.
+     * @hidden
      */
-    class DDSTextureLoader implements IInternalTextureLoader {
+    export class _DDSTextureLoader implements IInternalTextureLoader {
         /**
          * Defines wether the loader supports cascade loading the different faces.
          */
@@ -126,4 +127,4 @@ import { DDSTools, DDSInfo } from "Misc/dds";
     }
 
     // Register the loader.
-    Engine._TextureLoaders.push(new DDSTextureLoader());
+    Engine._TextureLoaders.push(new _DDSTextureLoader());

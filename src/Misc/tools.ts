@@ -198,11 +198,11 @@ declare type Engine = import("Engines/engine").Engine;
             return null;
         }
 
-        if (source.getClassName && source.getClassName === "Mesh") {
+        if (source.getClassName && source.getClassName() === "Mesh") {
             return null;
         }
 
-        if (source.getClassName && source.getClassName === "SubMesh") {
+        if (source.getClassName && source.getClassName() === "SubMesh") {
             return source.clone(destinationObject);
         } else if (source.clone) {
             return source.clone();
