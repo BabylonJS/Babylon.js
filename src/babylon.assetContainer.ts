@@ -25,6 +25,7 @@ module BABYLON {
             this["layers"] = [];
             this["lensFlareSystems"] = [];
             this["proceduralTextures"] = [];
+            this["reflectionProbes"] = [];
         }
 
         /**
@@ -69,6 +70,9 @@ module BABYLON {
             });
             this.textures.forEach((o) => {
                 this.scene.addTexture(o);
+            });
+            this.reflectionProbes.forEach((o) => {
+                this.scene.addReflectionProbe(o);
             });
 
             for (let component of this.scene._serializableComponents) {
@@ -119,6 +123,9 @@ module BABYLON {
             this.textures.forEach((o) => {
                 this.scene.removeTexture(o);
             });
+            this.reflectionProbes.forEach((o) => {
+                this.scene.removeReflectionProbe(o);
+            });
 
             for (let component of this.scene._serializableComponents) {
                 component.removeFromContainer(this);
@@ -160,6 +167,9 @@ module BABYLON {
                 o.dispose();
             });
             this.textures.forEach((o) => {
+                o.dispose();
+            });
+            this.reflectionProbes.forEach((o) => {
                 o.dispose();
             });
 
