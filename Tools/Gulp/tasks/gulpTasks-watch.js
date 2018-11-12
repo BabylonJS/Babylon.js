@@ -8,20 +8,6 @@ var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 // Read the full config.
 var config = require("../config.json");
 
-// Keep for reference for a bit might cccome back pretty soon.
-// /**
-//  * Watch ts files from typescript .
-//  * Hack into the cli :-)
-//  */
-// gulp.task("srcTscWatch", function() {
-//     // Reuse The TSC CLI from gulp to enable -w.
-//     process.argv[2] = "-w";
-//     process.argv[3] = "-p";
-//     process.argv[4] = "../../src/tsconfig.json";
-//     require("../../../node_modules/typescript/lib/tsc.js");
-//     return Promise.resolve();
-// });
-
 /**
  * Watch ts files and fire repective tasks.
  */
