@@ -5,7 +5,7 @@ import { SceneLoader } from "Loading/sceneLoader";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
 import { WebVRController } from "./webVRController";
-import { PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledController";
+import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 import { GamepadButtonChanges } from "Gamepads/gamepad";
 
     /**
@@ -118,3 +118,12 @@ import { GamepadButtonChanges } from "Gamepads/gamepad";
             }
         }
     }
+
+    PoseEnabledControllerHelper._ControllerFactories.push({
+        canCreate: (gamepadInfo) => {
+            return gamepadInfo.id.toLowerCase().indexOf('openvr') !== -1;
+        },
+        create: (gamepadInfo) => {
+            return new ViveController(gamepadInfo);
+        }
+    });

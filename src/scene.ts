@@ -41,7 +41,7 @@ import { ActionManager } from "Actions/actionManager";
 import { PostProcess } from "PostProcesses/postProcess";
 import { PostProcessManager } from "PostProcesses/postProcessManager";
 import { IOfflineProvider } from "Offline/IOfflineProvider";
-import { RenderingManager, IRenderingManagerAutoClearSetup } from "Rendering/renderingManager";
+import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "Rendering/renderingManager";
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "sceneComponent";
 import { Engine } from "Engines/engine";
 import { Ray } from "Culling/ray";
@@ -93,26 +93,6 @@ import { Logger } from "Misc/logger";
         public set ignore(b: boolean) {
             this._ignore = b;
         }
-    }
-
-    /**
-     * This class is used by the onRenderingGroupObservable
-     */
-    export class RenderingGroupInfo {
-        /**
-         * The Scene that being rendered
-         */
-        scene: Scene;
-
-        /**
-         * The camera currently used for the rendering pass
-         */
-        camera: Nullable<Camera>;
-
-        /**
-         * The ID of the renderingGroup being processed
-         */
-        renderingGroupId: number;
     }
 
     /** Interface defining initialization parameters for Scene class */

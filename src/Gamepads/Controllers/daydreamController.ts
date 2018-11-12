@@ -7,7 +7,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
 import { GamepadButtonChanges } from "Gamepads/gamepad";
 import { WebVRController } from "./webVRController";
-import { PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledController";
+import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 
     /**
      * Google Daydream controller
@@ -72,3 +72,12 @@ import { PoseEnabledControllerType, ExtendedGamepadButton } from "./poseEnabledC
             }
         }
     }
+
+    PoseEnabledControllerHelper._ControllerFactories.push({
+        canCreate: (gamepadInfo) => {
+            return gamepadInfo.id.indexOf(DaydreamController.GAMEPAD_ID_PREFIX) === 0;
+        },
+        create: (gamepadInfo) => {
+            return new DaydreamController(gamepadInfo);
+        }
+    });

@@ -5,7 +5,7 @@ import { SceneLoader } from "Loading/sceneLoader";
 import { _DepthCullingState, _StencilState, _AlphaState } from "States";
 
 import { WebVRController } from "./webVRController";
-import { ExtendedGamepadButton } from "./poseEnabledController";
+import { ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 import { GamepadButtonChanges } from "Gamepads/gamepad";
 
     /**
@@ -55,3 +55,5 @@ import { GamepadButtonChanges } from "Gamepads/gamepad";
             console.dir(state);
         }
     }
+
+    PoseEnabledControllerHelper._DefaultControllerFactory = (gamepadInfo: any) => new GenericController(gamepadInfo);

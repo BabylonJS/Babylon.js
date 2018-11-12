@@ -11,14 +11,6 @@ import { Engine } from "Engines/engine";
 
 import { Gamepad } from "Gamepads/gamepad";
 import { ExtendedGamepadButton } from "./poseEnabledController";
-
-import { OculusTouchController } from "Gamepads/Controllers/oculusTouchController";
-import { WindowsMotionController } from "Gamepads/Controllers/windowsMotionController";
-import { ViveController } from "Gamepads/Controllers/viveController";
-import { GearVRController } from "Gamepads/Controllers/gearVRController";
-import { DaydreamController } from "Gamepads/Controllers/daydreamController";
-import { GenericController } from "Gamepads/Controllers/genericController";
-
 import { WebVRFreeCamera, PoseControlled, DevicePose } from "Cameras/VR/webVRCamera";
 import { TargetCamera } from "Cameras/targetCamera";
     /**
@@ -88,40 +80,50 @@ import { TargetCamera } from "Cameras/targetCamera";
         readonly value: number;
     }
 
+    /** @hidden */
+    export interface _GamePadFactory {
+        /**
+         * Returns wether or not the current gamepad can be created for this type of controller.
+         * @param gamepadInfo Defines the gamepad info as receveid from the controller APIs.
+         * @returns true if it can be created, otherwise false
+         */
+        canCreate(gamepadInfo: any): boolean;
+
+        /**
+         * Creates a new instance of the Gamepad.
+         * @param gamepadInfo Defines the gamepad info as receveid from the controller APIs.
+         * @returns the new gamepad instance
+         */
+        create(gamepadInfo: any): Gamepad;
+    }
+
     /**
      * Defines the PoseEnabledControllerHelper object that is used initialize a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
      */
     export class PoseEnabledControllerHelper {
+        /** @hidden */
+        public static _ControllerFactories: _GamePadFactory[] = [];
+
+        /** @hidden */
+        public static _DefaultControllerFactory: Nullable<(gamepadInfo: any) => Gamepad> = null;
+
         /**
          * Initializes a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
          * @param vrGamepad the gamepad to initialized
          * @returns a vr controller of the type the gamepad identified as
          */
         public static InitiateController(vrGamepad: any) {
-            // Oculus Touch
-            if (vrGamepad.id.indexOf('Oculus Touch') !== -1) {
-                return new OculusTouchController(vrGamepad);
+            for (let factory of this._ControllerFactories) {
+                if (factory.canCreate(vrGamepad)) {
+                    return factory.create(vrGamepad);
+                }
             }
-            // Windows Mixed Reality controllers
-            else if (vrGamepad.id.indexOf(WindowsMotionController.GAMEPAD_ID_PREFIX) === 0) {
-                return new WindowsMotionController(vrGamepad);
+
+            if (this._DefaultControllerFactory) {
+                return this._DefaultControllerFactory(vrGamepad);
             }
-            // HTC Vive
-            else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
-                return new ViveController(vrGamepad);
-            }
-            // Samsung/Oculus Gear VR or Oculus Go
-            else if (vrGamepad.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0 || vrGamepad.id.indexOf('Oculus Go') !== -1) {
-                return new GearVRController(vrGamepad);
-            }
-            // Google Daydream
-            else if (vrGamepad.id.indexOf(DaydreamController.GAMEPAD_ID_PREFIX) === 0) {
-                return new DaydreamController(vrGamepad);
-            }
-            // Generic
-            else {
-                return new GenericController(vrGamepad);
-            }
+
+            throw "The type of gamepad you are trying to load needs to be imported first or is not supported.";
         }
     }
 
