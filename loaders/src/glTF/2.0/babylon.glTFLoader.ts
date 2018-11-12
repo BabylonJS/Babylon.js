@@ -1721,7 +1721,7 @@ module BABYLON.GLTF2 {
             }
 
             const deferred = new Deferred<void>();
-            let babylonTexture = new Texture(textureURL, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
+            const babylonTexture = new Texture(textureURL, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
                 if (!this._disposed) {
                     deferred.resolve();
                 }
