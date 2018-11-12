@@ -375,7 +375,7 @@ module BABYLON {
 
         /**
          * Resets the refresh counter of the texture and start bak from scratch.
-         * Could be usefull to regenerate the texture if it is setup to render only once.
+         * Could be useful to regenerate the texture if it is setup to render only once.
          */
         public resetRefreshCounter(): void {
             this._currentRefreshId = -1;
@@ -754,8 +754,18 @@ module BABYLON {
                 scene.updateTransformMatrix(true);
             }
 
+            // Before Camera Draw
+            for (let step of scene._beforeRenderTargetDrawStage) {
+                step.action(this);
+            }
+
             // Render
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
+
+            // After Camera Draw
+            for (let step of scene._afterRenderTargetDrawStage) {
+                step.action(this);
+            }
 
             if (this._postProcessManager) {
                 this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses, this.ignoreCameraViewport);

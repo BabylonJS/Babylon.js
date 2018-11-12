@@ -35,10 +35,13 @@ module BABYLON {
          * Gets a boolean indicating if the virtual joystick was pressed
          */
         public pressed: boolean;
+        /**
+         * Canvas the virtual joystick will render onto, default z-index of this is 5
+         */
+        public static Canvas: Nullable<HTMLCanvasElement>;
 
         // Used to draw the virtual joystick inside a 2D canvas on top of the WebGL rendering canvas
         private static _globalJoystickIndex: number = 0;
-        private static vjCanvas: Nullable<HTMLCanvasElement>;
         private static vjCanvasContext: CanvasRenderingContext2D;
         private static vjCanvasWidth: number;
         private static vjCanvasHeight: number;
@@ -95,32 +98,32 @@ module BABYLON {
             this._onResize = (evt) => {
                 VirtualJoystick.vjCanvasWidth = window.innerWidth;
                 VirtualJoystick.vjCanvasHeight = window.innerHeight;
-                if (VirtualJoystick.vjCanvas) {
-                    VirtualJoystick.vjCanvas.width = VirtualJoystick.vjCanvasWidth;
-                    VirtualJoystick.vjCanvas.height = VirtualJoystick.vjCanvasHeight;
+                if (VirtualJoystick.Canvas) {
+                    VirtualJoystick.Canvas.width = VirtualJoystick.vjCanvasWidth;
+                    VirtualJoystick.Canvas.height = VirtualJoystick.vjCanvasHeight;
                 }
                 VirtualJoystick.halfWidth = VirtualJoystick.vjCanvasWidth / 2;
             };
 
             // injecting a canvas element on top of the canvas 3D game
-            if (!VirtualJoystick.vjCanvas) {
+            if (!VirtualJoystick.Canvas) {
                 window.addEventListener("resize", this._onResize, false);
-                VirtualJoystick.vjCanvas = document.createElement("canvas");
+                VirtualJoystick.Canvas = document.createElement("canvas");
                 VirtualJoystick.vjCanvasWidth = window.innerWidth;
                 VirtualJoystick.vjCanvasHeight = window.innerHeight;
-                VirtualJoystick.vjCanvas.width = window.innerWidth;
-                VirtualJoystick.vjCanvas.height = window.innerHeight;
-                VirtualJoystick.vjCanvas.style.width = "100%";
-                VirtualJoystick.vjCanvas.style.height = "100%";
-                VirtualJoystick.vjCanvas.style.position = "absolute";
-                VirtualJoystick.vjCanvas.style.backgroundColor = "transparent";
-                VirtualJoystick.vjCanvas.style.top = "0px";
-                VirtualJoystick.vjCanvas.style.left = "0px";
-                VirtualJoystick.vjCanvas.style.zIndex = "5";
-                VirtualJoystick.vjCanvas.style.msTouchAction = "none";
+                VirtualJoystick.Canvas.width = window.innerWidth;
+                VirtualJoystick.Canvas.height = window.innerHeight;
+                VirtualJoystick.Canvas.style.width = "100%";
+                VirtualJoystick.Canvas.style.height = "100%";
+                VirtualJoystick.Canvas.style.position = "absolute";
+                VirtualJoystick.Canvas.style.backgroundColor = "transparent";
+                VirtualJoystick.Canvas.style.top = "0px";
+                VirtualJoystick.Canvas.style.left = "0px";
+                VirtualJoystick.Canvas.style.zIndex = "5";
+                VirtualJoystick.Canvas.style.msTouchAction = "none";
                 // Support for jQuery PEP polyfill
-                VirtualJoystick.vjCanvas.setAttribute("touch-action", "none");
-                let context = VirtualJoystick.vjCanvas.getContext('2d');
+                VirtualJoystick.Canvas.setAttribute("touch-action", "none");
+                let context = VirtualJoystick.Canvas.getContext('2d');
 
                 if (!context) {
                     throw new Error("Unable to create canvas for virtual joystick");
@@ -129,9 +132,9 @@ module BABYLON {
                 VirtualJoystick.vjCanvasContext = context;
                 VirtualJoystick.vjCanvasContext.strokeStyle = "#ffffff";
                 VirtualJoystick.vjCanvasContext.lineWidth = 2;
-                document.body.appendChild(VirtualJoystick.vjCanvas);
+                document.body.appendChild(VirtualJoystick.Canvas);
             }
-            VirtualJoystick.halfWidth = VirtualJoystick.vjCanvas.width / 2;
+            VirtualJoystick.halfWidth = VirtualJoystick.Canvas.width / 2;
             this.pressed = false;
             // default joystick color
             this._joystickColor = "cyan";
@@ -154,11 +157,11 @@ module BABYLON {
                 this._onPointerUp(evt);
             };
 
-            VirtualJoystick.vjCanvas.addEventListener('pointerdown', this._onPointerDownHandlerRef, false);
-            VirtualJoystick.vjCanvas.addEventListener('pointermove', this._onPointerMoveHandlerRef, false);
-            VirtualJoystick.vjCanvas.addEventListener('pointerup', this._onPointerUpHandlerRef, false);
-            VirtualJoystick.vjCanvas.addEventListener('pointerout', this._onPointerUpHandlerRef, false);
-            VirtualJoystick.vjCanvas.addEventListener("contextmenu", (evt) => {
+            VirtualJoystick.Canvas.addEventListener('pointerdown', this._onPointerDownHandlerRef, false);
+            VirtualJoystick.Canvas.addEventListener('pointermove', this._onPointerMoveHandlerRef, false);
+            VirtualJoystick.Canvas.addEventListener('pointerup', this._onPointerUpHandlerRef, false);
+            VirtualJoystick.Canvas.addEventListener('pointerout', this._onPointerUpHandlerRef, false);
+            VirtualJoystick.Canvas.addEventListener("contextmenu", (evt) => {
                 evt.preventDefault();    // Disables system menu
             }, false);
             requestAnimationFrame(() => { this._drawVirtualJoystick(); });
@@ -366,14 +369,14 @@ module BABYLON {
          * Release internal HTML canvas
          */
         public releaseCanvas() {
-            if (VirtualJoystick.vjCanvas) {
-                VirtualJoystick.vjCanvas.removeEventListener('pointerdown', this._onPointerDownHandlerRef);
-                VirtualJoystick.vjCanvas.removeEventListener('pointermove', this._onPointerMoveHandlerRef);
-                VirtualJoystick.vjCanvas.removeEventListener('pointerup', this._onPointerUpHandlerRef);
-                VirtualJoystick.vjCanvas.removeEventListener('pointerout', this._onPointerUpHandlerRef);
+            if (VirtualJoystick.Canvas) {
+                VirtualJoystick.Canvas.removeEventListener('pointerdown', this._onPointerDownHandlerRef);
+                VirtualJoystick.Canvas.removeEventListener('pointermove', this._onPointerMoveHandlerRef);
+                VirtualJoystick.Canvas.removeEventListener('pointerup', this._onPointerUpHandlerRef);
+                VirtualJoystick.Canvas.removeEventListener('pointerout', this._onPointerUpHandlerRef);
                 window.removeEventListener("resize", this._onResize);
-                document.body.removeChild(VirtualJoystick.vjCanvas);
-                VirtualJoystick.vjCanvas = null;
+                document.body.removeChild(VirtualJoystick.Canvas);
+                VirtualJoystick.Canvas = null;
             }
         }
     }

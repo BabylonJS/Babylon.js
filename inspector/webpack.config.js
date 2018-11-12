@@ -1,6 +1,5 @@
 const path = require('path');
 const webpack = require('webpack');
-const DtsBundleWebpack = require('dts-bundle-webpack')
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
@@ -21,10 +20,7 @@ module.exports = {
         umdNamedDefine: true
     },
     resolve: {
-        extensions: [".js", '.ts'],
-        alias: {
-            Split: path.resolve(__dirname, '../dist/preview release/split.js')
-        }
+        extensions: [".js", '.ts', ".tsx"],
     },
     externals: {
         babylonjs: {
@@ -67,6 +63,9 @@ module.exports = {
                 "css-loader",
                 "sass-loader"
             ]
+        }, {
+            test: /\.css$/,
+            use: ['style-loader', 'css-loader']
         }]
     },
     mode: "production",
@@ -76,19 +75,14 @@ module.exports = {
         //open: true,
         port: 9000
     },
+    performance: {
+        hints: false
+    },
     plugins: [
         new CleanWebpackPlugin([
             path.resolve(__dirname, './src/**/*.js'),
             path.resolve(__dirname, './src/**/*.map')
         ]),
-        // removed due to the way gulp=webpack works
-        /*new DtsBundleWebpack({
-            name: "babylonjs-inspector",
-            main: path.resolve(__dirname, '../dist/preview release/inspector/build/index.d.ts'),
-            out: path.resolve(__dirname, '../dist/preview release/inspector/babylon.inspector.module.d.ts'),
-            baseDir: path.resolve(__dirname, '../dist/preview release/inspector/build/'),
-            headerText: "BabylonJS Inspector"
-        }),*/
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/
