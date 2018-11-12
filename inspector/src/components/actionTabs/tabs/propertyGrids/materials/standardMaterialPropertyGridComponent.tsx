@@ -56,6 +56,7 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
         return (
             <div className="pane">
                 <CommonMaterialPropertyGridComponent material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                {this.renderTextures()}
                 <LineContainerComponent title="LIGHTING & COLORS">
                     <Color3LineComponent label="Diffuse" target={material} propertyName="diffuseColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Specular" target={material} propertyName="specularColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -63,7 +64,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Ambient" target={material} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                {this.renderTextures()}
             </div>
         );
     }
