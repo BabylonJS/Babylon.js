@@ -958,7 +958,7 @@ module BABYLON {
                     request.addEventListener("readystatechange", onReadyStateChange);
 
                     if (Tools.UseCustomRequestHeaders) {
-                       Tools.InjectCustomRequestHeaders(request);
+                        Tools.InjectCustomRequestHeaders(request);
                     }
 
                     request.send();
@@ -1541,7 +1541,7 @@ module BABYLON {
                 return;
             }
 
-            var originalSize = {width: renderCanvas.width, height: renderCanvas.height};
+            var originalSize = { width: renderCanvas.width, height: renderCanvas.height };
             engine.setSize(width, height);
             scene.render();
 

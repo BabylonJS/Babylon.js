@@ -1,12 +1,12 @@
 // Old Fashion Way for IE 11 Devs. Yes, that still exists ;-)
 
 var BABYLONDEVTOOLS;
-(function (BABYLONDEVTOOLS) {
+(function(BABYLONDEVTOOLS) {
 
-    var getJson = function (url, callback, errorCallback) {
+    var getJson = function(url, callback, errorCallback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url);
-        xhr.onload = function () {
+        xhr.onload = function() {
             if (this.status >= 200 && this.status < 300) {
                 var data = JSON.parse(xhr.response);
                 callback(data)
@@ -17,7 +17,7 @@ var BABYLONDEVTOOLS;
                 });
             }
         };
-        xhr.onerror = function () {
+        xhr.onerror = function() {
             errorCallback({
                 status: this.status,
                 statusText: xhr.statusText
@@ -26,11 +26,12 @@ var BABYLONDEVTOOLS;
         xhr.send();
     }
 
-    var Loader = (function () {
+    var Loader = (function() {
         var queue;
         var callback;
         var dependencies;
         var useDist;
+        var testMode;
         var min;
         var babylonJSPath;
 
@@ -43,10 +44,10 @@ var BABYLONDEVTOOLS;
             babylonJSPath = '';
         }
 
-        Loader.prototype.debugShortcut = function (engine) {
+        Loader.prototype.debugShortcut = function(engine) {
             // Add inspector shortcut
             var map = {};
-            var onkey = function (e) {
+            var onkey = function(e) {
                 e = e || event; // to deal with IE
                 map[e.keyCode] = e.type == 'keydown';
                 if (map[17] && map[16] && map[18] && map[73]) {
@@ -69,12 +70,12 @@ var BABYLONDEVTOOLS;
             document.addEventListener("keyup", onkey);
         }
 
-        Loader.prototype.root = function (newBabylonJSPath) {
+        Loader.prototype.root = function(newBabylonJSPath) {
             babylonJSPath = newBabylonJSPath;
             return this;
         }
 
-        Loader.prototype.require = function (newDependencies) {
+        Loader.prototype.require = function(newDependencies) {
             if (typeof newDependencies === 'string') {
                 dependencies.push(newDependencies);
             }
@@ -86,17 +87,22 @@ var BABYLONDEVTOOLS;
             return this;
         }
 
-        Loader.prototype.onReady = function (newCallback) {
+        Loader.prototype.onReady = function(newCallback) {
             callback = newCallback;
             return this;
         }
 
-        Loader.prototype.useDist = function () {
+        Loader.prototype.testMode = function() {
+            testMode = true;
+            return this;
+        }
+
+        Loader.prototype.useDist = function() {
             useDist = true;
             return this;
         }
 
-        Loader.prototype.dequeue = function () {
+        Loader.prototype.dequeue = function() {
             if (queue.length == 0) {
                 console.log('Scripts loaded');
                 BABYLON.Engine.ShadersRepository = "/src/Shaders/";
@@ -114,17 +120,17 @@ var BABYLONDEVTOOLS;
             script.src = url;
 
             var self = this;
-            script.onload = function () {
+            script.onload = function() {
                 self.dequeue();
             };
             head.appendChild(script);
         }
 
-        Loader.prototype.loadScript = function (url) {
+        Loader.prototype.loadScript = function(url) {
             queue.push(url);
         }
 
-        Loader.prototype.loadCss = function (url) {
+        Loader.prototype.loadCss = function(url) {
             var head = document.getElementsByTagName('head')[0];
 
             var style = document.createElement('link');
@@ -134,13 +140,13 @@ var BABYLONDEVTOOLS;
             document.head.appendChild(style);
         }
 
-        Loader.prototype.loadScripts = function (urls) {
+        Loader.prototype.loadScripts = function(urls) {
             for (var i = 0; i < urls.length; i++) {
                 this.loadScript(urls[i]);
             }
         }
 
-        Loader.prototype.loadLibrary = function (library, module) {
+        Loader.prototype.loadLibrary = function(library, module) {
             if (library.preventLoadLibrary) {
                 return;
             }
@@ -189,7 +195,7 @@ var BABYLONDEVTOOLS;
                 }
             }
             else {
-                if (module.build.distOutputDirectory)
+                if (module.build.distOutputDirectory && (!testMode || !module.build.ignoreInTestMode))
                     this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
             }
 
@@ -201,13 +207,13 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadModule = function (module) {
+        Loader.prototype.loadModule = function(module) {
             for (var i = 0; i < module.libraries.length; i++) {
                 this.loadLibrary(module.libraries[i], module);
             }
         }
 
-        Loader.prototype.processDependency = function (settings, dependency, filesToLoad) {
+        Loader.prototype.processDependency = function(settings, dependency, filesToLoad) {
             if (dependency.dependUpon) {
                 for (var i = 0; i < dependency.dependUpon.length; i++) {
                     var dependencyName = dependency.dependUpon[i];
@@ -225,7 +231,7 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadBJSScripts = function (settings) {
+        Loader.prototype.loadBJSScripts = function(settings) {
             var loadModules = true;
 
             // Main bjs files
@@ -262,17 +268,13 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.load = function (newCallback) {
+        Loader.prototype.load = function(newCallback) {
             var self = this;
             if (newCallback) {
                 callback = newCallback;
             }
             getJson('/Tools/Gulp/config.json',
-                function (data) {
-                    if (!min) {
-                        self.loadScript('/dist/preview release/split.js');
-                    }
-
+                function(data) {
                     self.loadBJSScripts(data);
                     if (dependencies) {
                         self.loadScripts(dependencies);
@@ -280,7 +282,7 @@ var BABYLONDEVTOOLS;
 
                     self.dequeue();
                 },
-                function (reason) {
+                function(reason) {
                     console.error(reason);
                 }
             );

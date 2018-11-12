@@ -67,7 +67,7 @@ module BABYLON {
     }
 
     /**
-     * Helper class usefull to convert panorama picture to their cubemap representation in 6 faces.
+     * Helper class useful to convert panorama picture to their cubemap representation in 6 faces.
      */
     export class PanoramaToCubeMapTools {
 
