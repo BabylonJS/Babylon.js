@@ -649,7 +649,7 @@ module BABYLON.GLTF2 {
 
             const canInstance = (node.skin == undefined && !mesh.primitives[0].targets);
 
-            const babylonAbstractMesh: AbstractMesh;
+            let babylonAbstractMesh: AbstractMesh;
             let promise: Promise<any>;
 
             const instanceData = primitive._instanceData;
