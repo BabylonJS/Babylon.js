@@ -28,6 +28,7 @@ import { Mesh } from "Meshes/mesh";
             this["layers"] = [];
             this["lensFlareSystems"] = [];
             this["proceduralTextures"] = [];
+            this["reflectionProbes"] = [];
         }
 
         /**
@@ -72,6 +73,9 @@ import { Mesh } from "Meshes/mesh";
             });
             this.textures.forEach((o) => {
                 this.scene.addTexture(o);
+            });
+            this.reflectionProbes.forEach((o) => {
+                this.scene.addReflectionProbe(o);
             });
 
             for (let component of this.scene._serializableComponents) {
@@ -122,6 +126,9 @@ import { Mesh } from "Meshes/mesh";
             this.textures.forEach((o) => {
                 this.scene.removeTexture(o);
             });
+            this.reflectionProbes.forEach((o) => {
+                this.scene.removeReflectionProbe(o);
+            });
 
             for (let component of this.scene._serializableComponents) {
                 component.removeFromContainer(this);
@@ -163,6 +170,9 @@ import { Mesh } from "Meshes/mesh";
                 o.dispose();
             });
             this.textures.forEach((o) => {
+                o.dispose();
+            });
+            this.reflectionProbes.forEach((o) => {
                 o.dispose();
             });
 

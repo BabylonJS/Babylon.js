@@ -630,7 +630,7 @@ declare type RenderTargetTexture = import ("Materials/Textures/renderTargetTextu
                 return parsedCustomTexture;
             }
 
-            if (parsedTexture.isCube) {
+            if (parsedTexture.isCube && !parsedTexture.isRenderTarget) {
                 return Texture._CubeTextureParser(parsedTexture, scene, rootUrl);
             }
 
@@ -650,8 +650,21 @@ declare type RenderTargetTexture = import ("Materials/Textures/renderTargetTextu
 
                     return mirrorTexture;
                 } else if (parsedTexture.isRenderTarget) {
-                    var renderTargetTexture = Texture._CreateRenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
-                    renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+                    let renderTargetTexture: Nullable<RenderTargetTexture> = null;
+                    if (parsedTexture.isCube) {
+                        // Search for an existing reflection probe (which contains a cube render target texture)
+                        if (scene.reflectionProbes) {
+                            for (var index = 0; index < scene.reflectionProbes.length; index++) {
+                                const probe = scene.reflectionProbes[index];
+                                if (probe.name === parsedTexture.name) {
+                                    return probe.cubeTexture;
+                                }
+                            }
+                        }
+                    } else {
+                        renderTargetTexture = Texture._CreateRenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
+                        renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+                    }
 
                     return renderTargetTexture;
                 } else {
@@ -674,13 +687,13 @@ declare type RenderTargetTexture = import ("Materials/Textures/renderTargetTextu
             // Update Sampling Mode
             if (parsedTexture.samplingMode) {
                 var sampling: number = parsedTexture.samplingMode;
-                if (texture._samplingMode !== sampling) {
+                if (texture && texture._samplingMode !== sampling) {
                     texture.updateSamplingMode(sampling);
                 }
             }
 
             // Animations
-            if (parsedTexture.animations) {
+            if (texture && parsedTexture.animations) {
                 for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                     var parsedAnimation = parsedTexture.animations[animationIndex];
 
