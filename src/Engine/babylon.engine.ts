@@ -4317,6 +4317,7 @@ module BABYLON {
                     }
                     if (Tools.UseFallbackTexture) {
                         this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                        return;
                     }
                 }
 
