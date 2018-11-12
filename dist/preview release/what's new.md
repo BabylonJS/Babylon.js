@@ -64,13 +64,13 @@
 - `Layer` are now supported in `RenderTargetTexture` ([Sebavan](https://github.com/Sebavan))
 - Make onscreen joystick's canvas public ([TrevorDev](https://github.com/TrevorDev))
 - Added `Tools.CustomRequestHeaders`, `Tools.UseCustomRequestHeaders`, `Tools.InjectCustomRequestHeaders` to send Custom Request Headers alongside XMLHttpRequest's i.e. when loading files (Tools.Loadfile) from resources requiring special headers like 'Authorization' ([susares](https://github.com/susares))
-- Load KTX textures in the gltf2 loader when textureFormat is set on engine ([TrevorDev](https://github.com/TrevorDev))
 - Added `.serialize` and `.Parse` functions in `ReflectionProbe` to retrieve reflection probes when parsing a previously serialized material ([julien-moreau](https://github.com/julien-moreau))
 ### glTF Loader
 
 - Added support for mesh instancing for improved performance when multiple nodes point to the same mesh ([bghgary](https://github.com/bghgary))
 - Create `TransformNode` objects instead of `Mesh` objects for glTF nodes without geometry ([bghgary](https://github.com/bghgary))
 - Added glTF JSON pointers to metadata of nodes, materials, and textures ([bghgary](https://github.com/bghgary))
+- Load KTX textures in the gltf2 loader when textureFormat is set on engine ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Serializer
 
