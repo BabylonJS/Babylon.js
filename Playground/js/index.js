@@ -498,29 +498,11 @@ function showError(errorMessage, errorEvent) {
                 }
 
                 var showInspector = false;
-                var showDebugLayer = false;
-                var initialTabIndex = 0;
                 showBJSPGMenu();
                 jsEditor.updateOptions({ readOnly: false });
 
-                if (document.getElementsByClassName('insp-wrapper').length > 0) {
-                    for (var i = 0; i < engine.scenes.length; i++) {
-                        if (engine.scenes[i]._debugLayer) {
-                            //TODO: once inspector is updated on netlify, use getActiveTabIndex instead of the following loop
-                            //initialTabIndex = engine.scenes[i]._debugLayer._inspector.getActiveTabIndex();
-                            var tabs = engine.scenes[i]._debugLayer._inspector._tabbar._tabs;
-                            for (var j = 0; j < tabs.length; j++) {
-                                if (tabs[j].isActive()) {
-                                    initialTabIndex = j;
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
+                if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
                     showInspector = true;
-                } else if (document.getElementById('DebugLayer')) {
-                    showDebugLayer = true;
                 }
 
                 if (engine) {
@@ -644,12 +626,9 @@ function showError(errorMessage, errorEvent) {
 
                     if (scene) {
                         if (showInspector) {
-                            scene.debugLayer.show({ initialTab: initialTabIndex });
-                            scene.executeWhenReady(function() {
-                                scene.debugLayer._inspector.refresh();
-                            })
-                        } else if (showDebugLayer) {
-                            scene.debugLayer.show();
+                            if (!scene.debugLayer.isVisible()) {
+                                scene.debugLayer.show({ embedMode: true });
+                            }
                         }
                     }
                 });
@@ -905,8 +884,7 @@ function showError(errorMessage, errorEvent) {
             engine.resize();
 
             if (scene.debugLayer.isVisible()) {
-                scene.debugLayer.hide();  // Because when you close it with the cross, it doesn't call hide(), so you have to do it in code
-                scene.debugLayer.show();
+                scene.debugLayer.show({ embedMode: true });
             }
         }
 
@@ -969,12 +947,11 @@ function showError(errorMessage, errorEvent) {
         var toggleDebug = function() {
             // Always showing the debug layer, because you can close it by itself
             var scene = engine.scenes[0];
-            if (document.getElementsByClassName("insp-right-panel")[0]) {
+            if (scene.debugLayer.isVisible()) {
                 scene.debugLayer.hide();
             }
             else {
-                scene.debugLayer.hide(); // Because when you close it with the cross, it doesn't call hide(), so you have to do it in code
-                scene.debugLayer.show();
+                scene.debugLayer.show({ embedMode: true });
             }
         }
 

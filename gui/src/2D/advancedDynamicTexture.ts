@@ -84,6 +84,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public onClipboardObservable = new Observable<ClipboardInfo>();
 
     /**
+     * Observable event triggered each time a pointer down is intercepted by a control
+     */
+    public onControlPickedObservable = new Observable<Control>();
+
+    /**
      * Gets or sets a boolean defining if alpha is stored as premultiplied
      */
     public premulAlpha = false;
@@ -208,6 +213,25 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
+     * Returns an array containing the root container.
+     * This is mostly used to let the Inspector introspects the ADT
+     * @returns an array containing the rootContainer
+     */
+    public getChildren(): Array<Container> {
+        return [this._rootContainer];
+    }
+
+    /**
+     * Will return all controls that are inside this texture
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @return all child controls
+     */
+    public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
+        return this._rootContainer.getDescendants(directDescendantsOnly, predicate);
+    }
+
+    /**
      * Gets or sets the current focused control
      */
     public get focusedControl(): Nullable<IFocusableControl> {
@@ -303,6 +327,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
 
         this._texture.isReady = true;
+    }
+
+    /**
+     * Get the current class name of the texture useful for serialization or dynamic coding.
+     * @returns "AdvancedDynamicTexture"
+     */
+    public getClassName(): string {
+        return "AdvancedDynamicTexture";
     }
 
     /**
@@ -405,6 +437,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         this._rootContainer.dispose();
         this.onClipboardObservable.clear();
+        this.onControlPickedObservable.clear();
 
         super.dispose();
     }
@@ -556,6 +589,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this._rootCanvas) {
             this._rootCanvas.style.cursor = cursor;
         }
+    }
+
+    /** @hidden */
+    public _registerLastControlDown(control: Control, pointerId: number) {
+        this._lastControlDown[pointerId] = control;
+
+        this.onControlPickedObservable.notifyObservers(control);
     }
 
     private _doPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): void {
