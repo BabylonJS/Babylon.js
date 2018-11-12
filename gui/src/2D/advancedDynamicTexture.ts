@@ -260,15 +260,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._clipboardData = value;
     }
 
-     /**
-     * Creates a new AdvancedDynamicTexture
-     * @param name defines the name of the texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param scene defines the hosting scene
-     * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-     * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-     */
+    /**
+    * Creates a new AdvancedDynamicTexture
+    * @param name defines the name of the texture
+    * @param width defines the width of the texture
+    * @param height defines the height of the texture
+    * @param scene defines the hosting scene
+    * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+    * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+    */
     constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
         super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
 
@@ -628,7 +628,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
                 && pi.type !== PointerEventTypes.POINTERDOWN) {
-                    return;
+                return;
             }
 
             if (!scene) {
@@ -664,7 +664,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     }
-     /** @hidden */
+    /** @hidden */
     private onClipboardCut = (evt: ClipboardEvent) => {
         let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
         this.onClipboardObservable.notifyObservers(ev);
@@ -677,9 +677,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         evt.preventDefault();
     }
 
-   /**
-    * Register the clipboard Events onto the canvas
-    */
+    /**
+     * Register the clipboard Events onto the canvas
+     */
     public registerClipboardEvents(): void {
         self.addEventListener("copy", this.onClipboardCopy, false);
         self.addEventListener("cut", this.onClipboardCut, false);
@@ -690,7 +690,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     public unRegisterClipboardEvents(): void {
         self.removeEventListener("copy", this.onClipboardCopy);
-        self.removeEventListener("cut",  this.onClipboardCut);
+        self.removeEventListener("cut", this.onClipboardCut);
         self.removeEventListener("paste", this.onClipboardPaste);
     }
 
