@@ -6,7 +6,7 @@ import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene } from "babylonjs";
 import { GlobalState } from "components/globalState";
 
-const Split = require("react-split");
+const Split = require('split.js')
 
 require("./embedHost.scss");
 
@@ -23,6 +23,20 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
 
     constructor(props: IEmbedHostComponentProps) {
         super(props);
+    }
+
+    componentDidMount() {
+        const container = this.refs.split;
+
+        if (!container) {
+            return;
+        }
+
+        Split([this.refs.topPart, this.refs.bottomPart], {
+            direction: "vertical",
+            minSize: [200, 200],
+            gutterSize: 4
+        })
     }
 
     renderContent() {
@@ -45,20 +59,20 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
         }
 
         return (
-            <Split id="split" className="noPopup" direction="vertical" gutterSize={4} minSize={[200, 200]}>
-                <div id="topPart">
+            <div ref="split" id="split" className="noPopup">
+                <div id="topPart" ref="topPart">
                     <SceneExplorerComponent scene={this.props.scene}
                         globalState={this.props.globalState}
                         popupMode={true}
                         noHeader={true} />
                 </div>
-                <div id="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
+                <div id="bottomPart" ref="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
                     <ActionTabsComponent scene={this.props.scene}
                         globalState={this.props.globalState}
                         popupMode={true}
                         noHeader={true} />
                 </div>
-            </Split>
+            </div>
         )
     }
 
