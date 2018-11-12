@@ -18,8 +18,8 @@ import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "abstractScene";
 import { Constants } from "Engines/constants";
 
-import "./glowMapMerge.fragment";
-import "./glowMapMerge.vertex";
+import "Shaders/glowMapMerge.fragment";
+import "Shaders/glowMapMerge.vertex";
 
 declare module "abstractScene" {
     export interface AbstractScene {

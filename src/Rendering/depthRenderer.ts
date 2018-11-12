@@ -13,8 +13,8 @@ import { Constants } from "Engines/constants";
 import { SceneComponentConstants } from "sceneComponent";
 import { DepthRendererSceneComponent } from "./depthRendererSceneComponent";
 
-import "./depth.fragment";
-import "./depth.vertex";
+import "Shaders/depth.fragment";
+import "Shaders/depth.vertex";
 
     /**
      * This represents a depth renderer in Babylon.

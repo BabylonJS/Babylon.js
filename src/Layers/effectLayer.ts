@@ -24,8 +24,8 @@ import { Material } from "Materials/material";
 import { MaterialHelper } from "Materials/materialHelper";
 import { Constants } from "Engines/constants";
 
-import "./glowMapGeneration.fragment";
-import "./glowMapGeneration.vertex";
+import "Shaders/glowMapGeneration.fragment";
+import "Shaders/glowMapGeneration.vertex";
 
     /**
      * Effect layer options. This helps customizing the behaviour
