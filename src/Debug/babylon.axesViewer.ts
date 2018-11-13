@@ -35,6 +35,13 @@ module BABYLON.Debug {
             return this._zmesh;
         }
 
+        private static _recursiveChangeRenderingGroupId(mesh: AbstractMesh, id: number) {
+            mesh.renderingGroupId = id;
+            mesh.getChildMeshes().forEach((m) => {
+                AxesViewer._recursiveChangeRenderingGroupId(m, id);
+            });
+        }
+
         /**
          * Creates a new AxesViewer
          * @param scene defines the hosting scene
@@ -66,9 +73,9 @@ module BABYLON.Debug {
             this._zmesh.rotationQuaternion = new BABYLON.Quaternion();
             this._zmesh.scaling.scaleInPlace(4);
 
-            this._xmesh.renderingGroupId = 2;
-            this._ymesh.renderingGroupId = 2;
-            this._zmesh.renderingGroupId = 2;
+            AxesViewer._recursiveChangeRenderingGroupId(this._xmesh, 2);
+            AxesViewer._recursiveChangeRenderingGroupId(this._ymesh, 2);
+            AxesViewer._recursiveChangeRenderingGroupId(this._zmesh, 2);
 
             this.scene = scene;
             this.update(new BABYLON.Vector3(), Vector3.Right(), Vector3.Up(), Vector3.Forward());
