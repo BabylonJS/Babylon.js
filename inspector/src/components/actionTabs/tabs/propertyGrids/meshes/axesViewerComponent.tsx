@@ -40,9 +40,9 @@ export class AxesViewerComponent extends React.Component<IAxisViewerComponentPro
         const y = new BABYLON.Vector3(0, 1, 0);
         const z = new BABYLON.Vector3(0, 0, 1);
 
-        viewer.xAxisMesh.metadata = { hidden: true };
-        viewer.yAxisMesh.metadata = { hidden: true };
-        viewer.zAxisMesh.metadata = { hidden: true };
+        viewer.xAxisMesh!.metadata = { hidden: true };
+        viewer.yAxisMesh!.metadata = { hidden: true };
+        viewer.zAxisMesh!.metadata = { hidden: true };
 
         node.metadata.onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
             let matrix = node.getWorldMatrix();
