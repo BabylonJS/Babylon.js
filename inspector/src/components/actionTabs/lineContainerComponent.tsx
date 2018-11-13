@@ -23,11 +23,11 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         const className = this.state.isExpanded ? "collapse" : "collapse closed";
 
         return (
-            <div className="header">
+            <div className="header" onClick={() => this.switchExpandedState()}>
                 <div className="title">
                     {this.props.title}
                 </div>
-                <div className={className} onClick={() => this.switchExpandedState()}>
+                <div className={className}>
                     <FontAwesomeIcon icon={faChevronDown} />
                 </div>
             </div>

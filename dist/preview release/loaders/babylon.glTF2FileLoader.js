@@ -2220,8 +2220,14 @@ var BABYLON;
                 this.logOpen(context + " " + (texture.name || ""));
                 var sampler = (texture.sampler == undefined ? GLTFLoader._DefaultSampler : ArrayItem.Get(context + "/sampler", this.gltf.samplers, texture.sampler));
                 var samplerData = this._loadSampler("/samplers/" + sampler.index, sampler);
+                var image = ArrayItem.Get(context + "/source", this.gltf.images, texture.source);
+                var textureURL = null;
+                if (image.uri && !BABYLON.Tools.IsBase64(image.uri) && this.babylonScene.getEngine().textureFormatInUse) {
+                    // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
+                    textureURL = this._uniqueRootUrl + image.uri;
+                }
                 var deferred = new BABYLON.Deferred();
-                var babylonTexture = new BABYLON.Texture(null, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, function () {
+                var babylonTexture = new BABYLON.Texture(textureURL, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, function () {
                     if (!_this._disposed) {
                         deferred.resolve();
                     }
@@ -2231,14 +2237,15 @@ var BABYLON;
                     }
                 });
                 promises.push(deferred.promise);
+                if (!textureURL) {
+                    promises.push(this.loadImageAsync("/images/" + image.index, image).then(function (data) {
+                        var name = image.uri || _this._fileName + "#image" + image.index;
+                        var dataUrl = "data:" + _this._uniqueRootUrl + name;
+                        babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
+                    }));
+                }
                 babylonTexture.wrapU = samplerData.wrapU;
                 babylonTexture.wrapV = samplerData.wrapV;
-                var image = ArrayItem.Get(context + "/source", this.gltf.images, texture.source);
-                promises.push(this.loadImageAsync("/images/" + image.index, image).then(function (data) {
-                    var name = image.uri || _this._fileName + "#image" + image.index;
-                    var dataUrl = "data:" + _this._uniqueRootUrl + name;
-                    babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
-                }));
                 assign(babylonTexture);
                 this.logClose();
                 return Promise.all(promises).then(function () {

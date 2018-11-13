@@ -50,22 +50,22 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 {
                     adtTexture &&
                     <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
-                        <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} target={adtTexture} propertyName="renderScale" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={adtTexture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Premultiply alpha" target={adtTexture} propertyName="premulAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent label="Ideal width" target={adtTexture} propertyName="idealWidth" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent label="Ideal height" target={adtTexture} propertyName="idealHeight" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent label="Ideal width" target={adtTexture} propertyName="idealWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent label="Ideal height" target={adtTexture} propertyName="idealHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Use smallest ideal" target={adtTexture} propertyName="useSmallestIdeal" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Render at ideal size" target={adtTexture} propertyName="renderAtIdealSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
                 <LineContainerComponent title="TRANSFORM">
-                    <FloatLineComponent label="U offset" target={texture} propertyName="uOffset" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="V offset" target={texture} propertyName="vOffset" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="V scale" target={texture} propertyName="uScale" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="V scale" target={texture} propertyName="vScale" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="U angle" target={texture} propertyName="uAng" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="V angle" target={texture} propertyName="vAng" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="W angle" target={texture} propertyName="wAng" step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="U offset" target={texture} propertyName="uOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="V offset" target={texture} propertyName="vOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="V scale" target={texture} propertyName="uScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="V scale" target={texture} propertyName="vScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="U angle" target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="V angle" target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="W angle" target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
                     <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
                 </LineContainerComponent>

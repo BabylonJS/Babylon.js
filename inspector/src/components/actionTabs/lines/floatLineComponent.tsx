@@ -6,7 +6,6 @@ interface IFloatLineComponentProps {
     label: string,
     target: any,
     propertyName: string,
-    step?: number,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     additionalClass?: string
 }
@@ -71,15 +70,13 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     render() {
-
-        const step = this.props.step !== undefined ? this.props.step : 0.1;
         return (
             <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
                 <div className="label">
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} step={step} />
+                    <input className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} />
                 </div>
             </div>
         );
