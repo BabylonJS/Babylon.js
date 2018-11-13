@@ -7,6 +7,7 @@ module BABYLON {
          * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
          */
         public gizmos: {positionGizmo: Nullable<PositionGizmo>, rotationGizmo: Nullable<RotationGizmo>, scaleGizmo: Nullable<ScaleGizmo>, boundingBoxGizmo: Nullable<BoundingBoxGizmo>};
+        public clearGizmoOnEmptyPointerEvent = false;
         private _gizmosEnabled = {positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false};
         private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh: Nullable<AbstractMesh> = null;
@@ -68,10 +69,14 @@ module BABYLON {
                                 this.attachToMesh(node);
                             }
                         } else {
-                            this.attachToMesh(null);
+                            if (this.clearGizmoOnEmptyPointerEvent) {
+                                this.attachToMesh(null);
+                            }
                         }
                     }else {
-                        this.attachToMesh(null);
+                        if (this.clearGizmoOnEmptyPointerEvent) {
+                            this.attachToMesh(null);
+                        }
                     }
                 }
             });
