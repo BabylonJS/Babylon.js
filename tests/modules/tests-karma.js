@@ -9,7 +9,6 @@ function runTests(testType, BABYLON, GUI, INSPECTOR) {
         it("should have the dependencies loaded", function () {
             assert.isDefined(BABYLON);
             assert.isDefined(GUI);
-            assert.isDefined(INSPECTOR);
             assert.isDefined(BABYLON.GLTF2);
         })
 
