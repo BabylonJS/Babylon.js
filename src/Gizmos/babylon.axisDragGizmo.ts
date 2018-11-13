@@ -17,6 +17,27 @@ module BABYLON {
          * * snapDistance is the the change in distance
          */
         public onSnapObservable = new Observable<{snapDistance: number}>();
+
+        /** @hidden */
+        public static _CreateArrow(scene: Scene, material: StandardMaterial) {
+            var arrow = new BABYLON.AbstractMesh("", scene);
+            var arrowMesh = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96}, scene);
+            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, scene);
+            arrowTail.color = material.emissiveColor;
+            arrow.addChild(arrowMesh);
+            arrow.addChild(arrowTail);
+
+            // Position arrow pointing in its drag axis
+            arrowMesh.scaling.scaleInPlace(0.05);
+            arrowMesh.material = material;
+            arrowMesh.rotation.x = Math.PI / 2;
+            arrowMesh.position.z += 0.3;
+            arrowTail.scaling.scaleInPlace(0.26);
+            arrowTail.rotation.x = Math.PI / 2;
+            arrowTail.material = material;
+            return arrow;
+        }
+
         /**
          * Creates an AxisDragGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -36,21 +57,8 @@ module BABYLON {
             hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
 
             // Build mesh on root node
-            var arrow = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
-            var arrowMesh = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96}, gizmoLayer.utilityLayerScene);
-            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, gizmoLayer.utilityLayerScene);
-            arrowTail.color = coloredMaterial.emissiveColor;
-            arrow.addChild(arrowMesh);
-            arrow.addChild(arrowTail);
+            var arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, coloredMaterial);
 
-            // Position arrow pointing in its drag axis
-            arrowMesh.scaling.scaleInPlace(0.05);
-            arrowMesh.material = coloredMaterial;
-            arrowMesh.rotation.x = Math.PI / 2;
-            arrowMesh.position.z += 0.3;
-            arrowTail.scaling.scaleInPlace(0.26);
-            arrowTail.rotation.x = Math.PI / 2;
-            arrowTail.material = coloredMaterial;
             arrow.lookAt(this._rootMesh.position.subtract(dragAxis));
             arrow.scaling.scaleInPlace(1 / 3);
 
