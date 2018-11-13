@@ -19,7 +19,7 @@ module BABYLON {
         public onSnapObservable = new Observable<{snapDistance: number}>();
 
         /** @hidden */
-        public static _CreateArrow(scene:Scene, material:StandardMaterial){
+        public static _CreateArrow(scene: Scene, material: StandardMaterial) {
             var arrow = new BABYLON.AbstractMesh("", scene);
             var arrowMesh = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96}, scene);
             var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, scene);
