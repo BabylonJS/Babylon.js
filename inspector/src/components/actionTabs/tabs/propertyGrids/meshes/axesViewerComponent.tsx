@@ -48,7 +48,7 @@ export class AxesViewerComponent extends React.Component<IAxisViewerComponentPro
             extend.scaleInPlace(0.5 * 0.5);
 
             viewer.scaleLines = Math.max(extend.x, extend.y, extend.z) * 2;
-            viewer.update(node.position, BABYLON.Vector3.TransformNormal(x, matrix), BABYLON.Vector3.TransformNormal(y, matrix), BABYLON.Vector3.TransformNormal(z, matrix));
+            viewer.update(node.getAbsolutePosition(), BABYLON.Vector3.TransformNormal(x, matrix), BABYLON.Vector3.TransformNormal(y, matrix), BABYLON.Vector3.TransformNormal(z, matrix));
         });
 
         this.setState({ displayAxis: true });

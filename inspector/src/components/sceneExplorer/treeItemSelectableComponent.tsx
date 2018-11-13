@@ -9,6 +9,7 @@ import * as React from "react";
 export interface ITreeItemSelectableComponentProps {
     entity: any,
     selectedEntity?: any,
+    mustExpand?: boolean,
     offset: number,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
     onSelectionChangedObservable?: Observable<any>,
@@ -21,7 +22,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
 
-        this.state = { isSelected: this.props.entity === this.props.selectedEntity, isExpanded: Tools.LookForItem(this.props.entity, this.props.selectedEntity) };
+        this.state = { isSelected: this.props.entity === this.props.selectedEntity, isExpanded: this.props.mustExpand || Tools.LookForItem(this.props.entity, this.props.selectedEntity) };
     }
 
     switchExpandedState(): void {
