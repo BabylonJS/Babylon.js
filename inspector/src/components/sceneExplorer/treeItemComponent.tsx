@@ -28,9 +28,12 @@ class TreeItemExpandableHeaderComponent extends React.Component<ITreeItemExpanda
         return (
             <div className="expandableHeader">
                 <div className="text">
-                    <span className="arrow icon" onClick={() => this.props.onClick()}>
+                    <div className="arrow icon" onClick={() => this.props.onClick()}>
                         {chevron}
-                    </span> {this.props.label}
+                    </div> 
+                    <div className="text-value">
+                        {this.props.label}
+                    </div>
                 </div>
                 <div className="expandAll icon" onClick={() => this.expandAll()} title={this.props.isExpanded ? "Collapse all" : "Expand all"}>
                     {expandAll}
@@ -51,10 +54,15 @@ class TreeItemRootHeaderComponent extends React.Component<ITreeItemRootHeaderCom
 
     render() {
         return (
-            <div>
-                <span className="arrow icon">
-                    <FontAwesomeIcon icon={faBan} />
-                </span> {this.props.label}
+            <div className="expandableHeader">
+                <div className="text">
+                    <div className="arrow icon">
+                        <FontAwesomeIcon icon={faBan} />
+                    </div>
+                    <div className="text-value">
+                        {this.props.label}
+                    </div>
+                </div>
             </div>
         )
     }
@@ -151,7 +159,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
                 {
                     sortedItems.map(item => {
                         return (
-                            <TreeItemSelectableComponent mustExpand={this.state.mustExpand} extensibilityGroups={this.props.extensibilityGroups} key={item.uniqueId} offset={this.props.offset + 2} selectedEntity={this.props.selectedEntity} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
+                            <TreeItemSelectableComponent mustExpand={this.state.mustExpand} extensibilityGroups={this.props.extensibilityGroups} key={item.uniqueId} offset={this.props.offset + 1} selectedEntity={this.props.selectedEntity} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
                         );
                     })
                 }

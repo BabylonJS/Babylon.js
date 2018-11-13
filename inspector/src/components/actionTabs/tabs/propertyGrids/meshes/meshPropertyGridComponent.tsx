@@ -8,6 +8,7 @@ import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 import { AxesViewerComponent } from "./axesViewerComponent";
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
 
 interface IMeshPropertyGridComponentProps {
     mesh: Mesh,
@@ -145,6 +146,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 </LineContainerComponent>
                 <LineContainerComponent title="DISPLAY" closed={true}>
                     <SliderLineComponent label="Visibility" target={mesh} propertyName="visibility" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="Alpha index" target={mesh} propertyName="alphaIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Receive shadows" target={mesh} propertyName="receiveShadows" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind) &&

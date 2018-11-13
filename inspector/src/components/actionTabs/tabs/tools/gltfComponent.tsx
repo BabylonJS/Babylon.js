@@ -122,7 +122,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                 </LineContainerComponent>
                 <LineContainerComponent title="GLTF EXTENSIONS" closed={true}>
                     <CheckBoxLineComponent label="MSFT_lod" isSelected={() => extensionStates["MSFT_lod"].enabled} onSelect={value => extensionStates["MSFT_lod"].enabled = value} />
-                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" step={1} additionalClass="gltf-extension-property" />
+                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" additionalClass="gltf-extension-property" />
                     <CheckBoxLineComponent label="MSFT_minecraftMesh" isSelected={() => extensionStates["MSFT_minecraftMesh"].enabled} onSelect={value => extensionStates["MSFT_minecraftMesh"].enabled = value} />
                     <CheckBoxLineComponent label="MSFT_sRGBFactors" isSelected={() => extensionStates["MSFT_sRGBFactors"].enabled} onSelect={value => extensionStates["MSFT_sRGBFactors"].enabled = value} />
                     <CheckBoxLineComponent label="MSFT_audio_emitter" isSelected={() => extensionStates["MSFT_audio_emitter"].enabled} onSelect={value => extensionStates["MSFT_audio_emitter"].enabled = value} />
