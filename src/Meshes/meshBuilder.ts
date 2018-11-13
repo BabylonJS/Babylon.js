@@ -2,7 +2,7 @@ import { Tools } from "Misc/tools";
 import { Nullable, FloatArray, IndicesArray } from "types";
 import { Camera } from "Cameras/camera";
 import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color3, Color4, Plane, Tmp, Epsilon, Vector4, Axis, Path3D, PositionNormalVertex } from "Maths/math";
+import { Matrix, Vector3, Vector2, Color3, Color4, Plane, Tmp, Vector4, Path3D, PositionNormalVertex } from "Maths/math";
 import { Mesh, _CreationDataStorage } from "./mesh";
 import { AbstractMesh } from "./abstractMesh";
 import { VertexBuffer } from "./buffer";
@@ -976,9 +976,9 @@ Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, n
             if (options.sourcePlane) {
                 plane.translate(options.sourcePlane.normal, -options.sourcePlane.d);
 
-                const dot = BABYLON.Vector3.Dot(plane.position, options.sourcePlane.normal);
+                const dot = Vector3.Dot(plane.position, options.sourcePlane.normal);
                 const flip = dot >= 0;
-                plane.lookAt(BABYLON.Vector3.Zero(), 0, flip ? Math.PI : 0, 0);
+                plane.lookAt(Vector3.Zero(), 0, flip ? Math.PI : 0, 0);
             }
 
             return plane;

@@ -3,7 +3,7 @@ import { Logger } from "Misc/logger";
 import { Nullable } from "types";
 import { PointerInfo } from "Events/pointerEvents";
 import { Scene } from "scene";
-import { Quaternion, Matrix, Vector3, Color3 } from "Maths/math";
+import { Quaternion, Matrix, Vector3, Color3, Epsilon } from "Maths/math";
 import { AbstractMesh } from "Meshes/abstractMesh";
 import { Mesh } from "Meshes/mesh";
 import { MeshBuilder } from "Meshes/meshBuilder";
@@ -523,13 +523,13 @@ import { StandardMaterial } from "Materials/standardMaterial";
 
             // Adjust scale to avoid undefined behavior when adding child
             if (box.scaling.y === 0) {
-                box.scaling.y = BABYLON.Epsilon;
+                box.scaling.y = Epsilon;
             }
             if (box.scaling.x === 0) {
-                box.scaling.x = BABYLON.Epsilon;
+                box.scaling.x = Epsilon;
             }
             if (box.scaling.z === 0) {
-                box.scaling.z = BABYLON.Epsilon;
+                box.scaling.z = Epsilon;
             }
 
             box.addChild(mesh);
