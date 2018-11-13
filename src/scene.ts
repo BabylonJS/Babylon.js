@@ -170,13 +170,13 @@ import { Logger } from "Misc/logger";
         public _environmentBRDFTexture: BaseTexture;
 
         /** @hidden */
-        protected _environmentTexture: BaseTexture;
+        protected _environmentTexture: Nullable<BaseTexture>;
         /**
          * Texture used in all pbr material as the reflection texture.
          * As in the majority of the scene they are the same (exception for multi room and so on),
          * this is easier to reference from here than from all the materials.
          */
-        public get environmentTexture(): BaseTexture {
+        public get environmentTexture(): Nullable<BaseTexture> {
             return this._environmentTexture;
         }
         /**
@@ -184,7 +184,7 @@ import { Logger } from "Misc/logger";
          * As in the majority of the scene they are the same (exception for multi room and so on),
          * this is easier to set here than in all the materials.
          */
-        public set environmentTexture(value: BaseTexture) {
+        public set environmentTexture(value: Nullable<BaseTexture>) {
             if (this._environmentTexture === value) {
                 return;
             }

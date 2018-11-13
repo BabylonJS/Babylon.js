@@ -1,15 +1,9 @@
-import * as INSPECTOR from "../src/index";
-
-/**
- * Legacy support, defining window.INSPECTOR (global variable).
- *
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
+import { Inspector } from "../src/index";
 
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).INSPECTOR = INSPECTOR;
+    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+    (<any>globalObject).BABYLON.Inspector = Inspector;
 }
 
 export * from "../src/index";

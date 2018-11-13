@@ -69,7 +69,7 @@
                 "main": "../../dist/preview release/build/index.d.ts",
                 "out": "../babylon.module.d.ts",
                 "baseDir": "../../dist/preview release/build/",
-                "headerText": "BabylonJS"
+                "headerText": "Babylon.js"
             },
             "processDeclaration": {
                 "filename": "babylon.module.d.ts",
@@ -179,7 +179,7 @@
                 "main": "../../dist/preview release/materialsLibrary/build/src/index.d.ts",
                 "out": "../babylonjs.materials.module.d.ts",
                 "baseDir": "../../dist/preview release/materialsLibrary/build/",
-                "headerText": "BabylonJS Materials"
+                "headerText": "Babylon.js Materials"
             },
             "processDeclaration": {
                 "filename": "babylonjs.materials.module.d.ts",
@@ -220,7 +220,7 @@
                 "main": "../../dist/preview release/postProcessesLibrary/build/src/index.d.ts",
                 "out": "../babylonjs.postProcess.module.d.ts",
                 "baseDir": "../../dist/preview release/postProcessesLibrary/build/",
-                "headerText": "BabylonJS Postprocess library"
+                "headerText": "Babylon.js Postprocess library"
             },
             "processDeclaration": {
                 "filename": "babylonjs.postProcess.module.d.ts",
@@ -301,7 +301,7 @@
                 "main": "../../dist/preview release/proceduralTexturesLibrary/build/src/index.d.ts",
                 "out": "../babylonjs.proceduralTextures.module.d.ts",
                 "baseDir": "../../dist/preview release/proceduralTexturesLibrary/build/",
-                "headerText": "BabylonJS Procedural Textures"
+                "headerText": "Babylon.js Procedural Textures"
             },
             "processDeclaration": {
                 "filename": "babylonjs.proceduralTextures.module.d.ts",
@@ -357,7 +357,7 @@
                 "main": "../../dist/preview release/loaders/build/src/index.d.ts",
                 "out": "../babylonjs.loaders.module.d.ts",
                 "baseDir": "../../dist/preview release/loaders/build/",
-                "headerText": "BabylonJS Loaders"
+                "headerText": "Babylon.js Loaders"
             },
             "processDeclaration": {
                 "filename": "babylonjs.loaders.module.d.ts",
@@ -415,7 +415,7 @@
                 "main": "../../dist/preview release/serializers/build/src/index.d.ts",
                 "out": "../babylonjs.serializers.module.d.ts",
                 "baseDir": "../../dist/preview release/serializers/build/",
-                "headerText": "BabylonJS serializers"
+                "headerText": "Babylon.js serializers"
             },
             "processDeclaration": {
                 "filename": "babylonjs.serializers.module.d.ts",
@@ -465,7 +465,7 @@
                 "main": "../../dist/preview release/gui/build/src/index.d.ts",
                 "out": "../babylon.gui.module.d.ts",
                 "baseDir": "../../dist/preview release/gui/build/",
-                "headerText": "BabylonJS GUI"
+                "headerText": "Babylon.js GUI"
             },
             "processDeclaration": {
                 "filename": "babylon.gui.module.d.ts",
@@ -497,7 +497,7 @@
                 "main": "../../dist/preview release/inspector/build/src/index.d.ts",
                 "out": "../babylon.inspector.module.d.ts",
                 "baseDir": "../../dist/preview release/inspector/build/",
-                "headerText": "BabylonJS Inspector"
+                "headerText": "Babylon.js Inspector"
             },
             "processDeclaration": {
                 "filename": "babylon.inspector.module.d.ts",
