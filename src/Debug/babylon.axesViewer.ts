@@ -54,7 +54,7 @@ module BABYLON.Debug {
             var blueColoredMaterial = new BABYLON.StandardMaterial("", scene);
             blueColoredMaterial.disableLighting = true;
             blueColoredMaterial.emissiveColor = BABYLON.Color3.Blue().scale(0.5);
-            
+
             this._xmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, redColoredMaterial);
             this._ymesh = BABYLON.AxisDragGizmo._CreateArrow(scene, greenColoredMaterial);
             this._zmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
@@ -84,27 +84,25 @@ module BABYLON.Debug {
         public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
             if (this._xmesh) {
                 this._xmesh.position.copyFrom(position);
-                
-                var cross = Vector3.Cross(Vector3.Forward(), xaxis)
-                this._xmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1+Vector3.Dot(Vector3.Forward(), xaxis));
+
+                var cross = Vector3.Cross(Vector3.Forward(), xaxis);
+                this._xmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1 + Vector3.Dot(Vector3.Forward(), xaxis));
                 this._xmesh.rotationQuaternion!.normalize();
             }
             if (this._ymesh) {
                 this._ymesh.position.copyFrom(position);
-                
-                var cross = Vector3.Cross(Vector3.Forward(), yaxis)
-                this._ymesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1+Vector3.Dot(Vector3.Forward(), yaxis));
+
+                var cross = Vector3.Cross(Vector3.Forward(), yaxis);
+                this._ymesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1 + Vector3.Dot(Vector3.Forward(), yaxis));
                 this._ymesh.rotationQuaternion!.normalize();
             }
             if (this._zmesh) {
                 this._zmesh.position.copyFrom(position);
-                
-                var cross = Vector3.Cross(Vector3.Forward(), zaxis)
-                this._zmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1+Vector3.Dot(Vector3.Forward(), zaxis));
+
+                var cross = Vector3.Cross(Vector3.Forward(), zaxis);
+                this._zmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1 + Vector3.Dot(Vector3.Forward(), zaxis));
                 this._zmesh.rotationQuaternion!.normalize();
             }
-
-            
 
         }
 
