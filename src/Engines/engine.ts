@@ -4340,6 +4340,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                         excludeLoaders.push(loader);
                         Logger.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
                         this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
+                        return;
                     }
                 }
 
@@ -4349,6 +4350,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                     }
                     if (Tools.UseFallbackTexture) {
                         this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                        return;
                     }
                 }
 
@@ -5749,6 +5751,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                     if (fallbackUrl) {
                         excludeLoaders.push(loader);
                         this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture, excludeLoaders);
+                        return;
                     }
                 }
 

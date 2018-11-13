@@ -121,22 +121,39 @@
         -ms-user-select: none;    
         user-select: none;    
         
-        align-self: center;                
-        display: flex;
-        align-items: center;
+        align-self: center;     
+        display: grid;
+        align-items: center;           
 
         &:hover {
             background: #444444;
         }
-        
-        .arrow {
-            margin-left: 0px;
-            color: white;
-            cursor: pointer;
-            display: inline-block;
-            margin-right: 6px;
-            opacity: 0.5;
+
+        .expandableHeader {
+            display: grid;
+            grid-template-columns: 1fr 20px;
+
+            .text {
+                grid-column: 1;
+                display: flex;
+                align-items: center;
+
+                .arrow {
+                    margin-left: 0px;
+                    color: white;
+                    cursor: pointer;
+                    display: inline-block;
+                    margin-right: 6px;
+                    opacity: 0.5;
+                }
+            }
+
+            .expandAll {
+                grid-column: 2;
+            }
         }
+        
+
     }
 
     .icon {
