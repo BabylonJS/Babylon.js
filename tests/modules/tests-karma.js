@@ -7,11 +7,9 @@ function runTests(testType, BABYLON, GUI, INSPECTOR) {
     describe(testType + ' module tests', function () {
 
         it("should have the dependencies loaded", function () {
-            assert.isDefined(BABYLON, "BABYLON should be defined");
-            assert.isDefined(GUI, "GUI should be defined");
-            assert.isDefined(INSPECTOR, "INSPECTOR should be defined");
-            // GLTF2 has migrated to BABYLON
-            // assert.isDefined(BABYLON.GLTF2, "BABYLON.GLTF2 should be defined");
+            assert.isDefined(BABYLON);
+            assert.isDefined(GUI);
+            assert.isDefined(BABYLON.GLTF2);
         })
 
         var subject;

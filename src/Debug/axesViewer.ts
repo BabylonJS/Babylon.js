@@ -26,6 +26,21 @@ import { LinesMesh } from "Meshes/linesMesh";
          */
         public scaleLines = 1;
 
+        /** Gets the mesh used to render x-axis */
+        public get xAxisMesh(): Nullable<LinesMesh> {
+            return this._xmesh;
+        }
+
+        /** Gets the mesh used to render x-axis */
+        public get yAxisMesh(): Nullable<LinesMesh> {
+            return this._ymesh;
+        }
+
+        /** Gets the mesh used to render x-axis */
+        public get zAxisMesh(): Nullable<LinesMesh> {
+            return this._zmesh;
+        }
+
         /**
          * Creates a new AxesViewer
          * @param scene defines the hosting scene

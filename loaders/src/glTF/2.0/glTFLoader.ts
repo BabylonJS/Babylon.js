@@ -1713,8 +1713,15 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
             const sampler = (texture.sampler == undefined ? GLTFLoader._DefaultSampler : ArrayItem.Get(`${context}/sampler`, this.gltf.samplers, texture.sampler));
             const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
+            const image = ArrayItem.Get(`${context}/source`, this.gltf.images, texture.source);
+            let textureURL: Nullable<string> = null;
+            if (image.uri && !Tools.IsBase64(image.uri) && this.babylonScene.getEngine().textureFormatInUse) {
+                // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
+                textureURL = this._uniqueRootUrl + image.uri;
+            }
+
             const deferred = new Deferred<void>();
-            const babylonTexture = new Texture(null, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
+            const babylonTexture = new Texture(textureURL, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
                 if (!this._disposed) {
                     deferred.resolve();
                 }
@@ -1725,16 +1732,16 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
             });
             promises.push(deferred.promise);
 
+            if (!textureURL) {
+                promises.push(this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
+                    const name = image.uri || `${this._fileName}#image${image.index}`;
+                    const dataUrl = `data:${this._uniqueRootUrl}${name}`;
+                    babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
+                }));
+            }
+
             babylonTexture.wrapU = samplerData.wrapU;
             babylonTexture.wrapV = samplerData.wrapV;
-
-            const image = ArrayItem.Get(`${context}/source`, this.gltf.images, texture.source);
-            promises.push(this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
-                const name = image.uri || `${this._fileName}#image${image.index}`;
-                const dataUrl = `data:${this._uniqueRootUrl}${name}`;
-                babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
-            }));
-
             assign(babylonTexture);
 
             this.logClose();

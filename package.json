@@ -98,12 +98,12 @@
         "@fortawesome/free-regular-svg-icons": "~5.4.1",
         "@fortawesome/free-solid-svg-icons": "~5.4.1",
         "@fortawesome/react-fontawesome": "~0.1.3",
-        "@types/react": "~16.4.18",
+        "@types/react": "~16.7.3",
         "@types/react-dom": "~16.0.9",
         "file-loader": "~2.0.0",
         "re-resizable": "~4.9.1",
-        "react": "~16.5.2",
-        "react-dom": "~16.5.2",
+        "react": "~16.6.3",
+        "react-dom": "~16.6.3",
         "split.js": "^1.5.9"
     }
 }

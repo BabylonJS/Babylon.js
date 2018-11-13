@@ -974,14 +974,11 @@ Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, n
             vertexData.applyToMesh(plane, options.updatable);
 
             if (options.sourcePlane) {
-                plane.translate(options.sourcePlane.normal, options.sourcePlane.d);
+                plane.translate(options.sourcePlane.normal, -options.sourcePlane.d);
 
-                var product = Math.acos(Vector3.Dot(options.sourcePlane.normal, Axis.Z));
-                var vectorProduct = Vector3.Cross(Axis.Z, options.sourcePlane.normal);
-
-                if (vectorProduct.lengthSquared() > Epsilon) {
-                    plane.rotate(vectorProduct, product);
-                }
+                const dot = BABYLON.Vector3.Dot(plane.position, options.sourcePlane.normal);
+                const flip = dot >= 0;
+                plane.lookAt(BABYLON.Vector3.Zero(), 0, flip ? Math.PI : 0, 0);
             }
 
             return plane;
