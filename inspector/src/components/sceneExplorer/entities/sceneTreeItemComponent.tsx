@@ -15,6 +15,7 @@ interface ISceneTreeItemComponentProps {
 export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean, isInPickingMode: boolean, gizmoMode: number }> {
     private _onPointerObserver: Nullable<Observer<PointerInfo>>;
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
+    private _selectedEntity: any;
 
     constructor(props: ISceneTreeItemComponentProps) {
         super(props);
@@ -55,6 +56,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
         const scene = this.props.scene;
         this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add((entity) => {
+            this._selectedEntity = entity;
             if (scene.metadata && scene.metadata.gizmoManager) {
                 const manager: GizmoManager = scene.metadata.gizmoManager;
 
@@ -142,6 +144,14 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 case 3:
                     manager.scaleGizmoEnabled = true;
                     break;
+            }
+
+            if (this._selectedEntity && this._selectedEntity.getClassName) {
+                const className = this._selectedEntity.getClassName();
+
+                if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
+                    manager.attachToMesh(this._selectedEntity);
+                }
             }
         }
 

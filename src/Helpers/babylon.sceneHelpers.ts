@@ -184,11 +184,11 @@ module BABYLON {
     Scene.prototype.createDefaultXRExperienceAsync = function(): Promise<BABYLON.WebXRExperienceHelper> {
         return BABYLON.WebXRExperienceHelper.CreateAsync(this).then((helper) => {
             var outputCanvas = new BABYLON.WebXRManagedOutputCanvas(helper);
-            return BABYLON.WebXREnterExitUI.CreateAsync(this, helper, {outputCanvasContext: outputCanvas.canvasContext})
-            .then((ui) => {
-                new BABYLON.WebXRInput(helper);
-                return helper;
-            });
+            return BABYLON.WebXREnterExitUI.CreateAsync(this, helper, { outputCanvasContext: outputCanvas.canvasContext })
+                .then((ui) => {
+                    new BABYLON.WebXRInput(helper);
+                    return helper;
+                });
         });
     };
 }

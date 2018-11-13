@@ -1,14 +1,15 @@
 import * as React from "react";
 import { Nullable, Observable, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faMinus, faBan } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faMinus, faBan, faExpandArrowsAlt, faCompress } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
 
 interface ITreeItemExpandableHeaderComponentProps {
     isExpanded: boolean,
     label: string,
-    onClick: () => void
+    onClick: () => void,
+    onExpandAll: (expand: boolean) => void
 }
 
 class TreeItemExpandableHeaderComponent extends React.Component<ITreeItemExpandableHeaderComponentProps> {
@@ -16,14 +17,27 @@ class TreeItemExpandableHeaderComponent extends React.Component<ITreeItemExpanda
         super(props);
     }
 
+    expandAll() {
+        this.props.onExpandAll(!this.props.isExpanded);
+    }
+
     render() {
         const chevron = this.props.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
+        const expandAll = this.props.isExpanded ? <FontAwesomeIcon icon={faCompress} /> : <FontAwesomeIcon icon={faExpandArrowsAlt} />
 
         return (
-            <div>
-                <span className="arrow icon" onClick={() => this.props.onClick()}>
-                    {chevron}
-                </span> {this.props.label}
+            <div className="expandableHeader">
+                <div className="text">
+                    <div className="arrow icon" onClick={() => this.props.onClick()}>
+                        {chevron}
+                    </div> 
+                    <div className="text-value">
+                        {this.props.label}
+                    </div>
+                </div>
+                <div className="expandAll icon" onClick={() => this.expandAll()} title={this.props.isExpanded ? "Collapse all" : "Expand all"}>
+                    {expandAll}
+                </div>
             </div>
         )
     }
@@ -40,10 +54,15 @@ class TreeItemRootHeaderComponent extends React.Component<ITreeItemRootHeaderCom
 
     render() {
         return (
-            <div>
-                <span className="arrow icon">
-                    <FontAwesomeIcon icon={faBan} />
-                </span> {this.props.label}
+            <div className="expandableHeader">
+                <div className="text">
+                    <div className="arrow icon">
+                        <FontAwesomeIcon icon={faBan} />
+                    </div>
+                    <div className="text-value">
+                        {this.props.label}
+                    </div>
+                </div>
             </div>
         )
     }
@@ -61,15 +80,15 @@ export interface ITreeItemComponentProps {
 }
 
 
-export class TreeItemComponent extends React.Component<ITreeItemComponentProps, { isExpanded: boolean }> {
+export class TreeItemComponent extends React.Component<ITreeItemComponentProps, { isExpanded: boolean, mustExpand: boolean }> {
     constructor(props: ITreeItemComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false };
+        this.state = { isExpanded: false, mustExpand: false };
     }
 
     switchExpandedState(): void {
-        this.setState({ isExpanded: !this.state.isExpanded });
+        this.setState({ isExpanded: !this.state.isExpanded, mustExpand: false });
     }
 
     shouldComponentUpdate(nextProps: ITreeItemComponentProps, nextState: { isExpanded: boolean }) {
@@ -91,6 +110,10 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
         }
 
         return true;
+    }
+
+    expandAll(expand: boolean) {
+        this.setState({isExpanded: expand, mustExpand: expand});
     }
 
     render() {
@@ -121,7 +144,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
         if (!this.state.isExpanded) {
             return (
                 <div className="groupContainer" style={marginStyle}>
-                    <TreeItemExpandableHeaderComponent isExpanded={false} label={this.props.label} onClick={() => this.switchExpandedState()} />
+                    <TreeItemExpandableHeaderComponent isExpanded={false} label={this.props.label} onClick={() => this.switchExpandedState()} onExpandAll={expand => this.expandAll(expand)} />
                 </div >
             )
         }
@@ -131,12 +154,12 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
         return (
             <div>
                 <div className="groupContainer" style={marginStyle}>
-                    <TreeItemExpandableHeaderComponent isExpanded={this.state.isExpanded} label={this.props.label} onClick={() => this.switchExpandedState()} />
+                    <TreeItemExpandableHeaderComponent isExpanded={this.state.isExpanded} label={this.props.label} onClick={() => this.switchExpandedState()} onExpandAll={expand => this.expandAll(expand)} />
                 </div>
                 {
                     sortedItems.map(item => {
                         return (
-                            <TreeItemSelectableComponent extensibilityGroups={this.props.extensibilityGroups} key={item.uniqueId} offset={this.props.offset + 2} selectedEntity={this.props.selectedEntity} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
+                            <TreeItemSelectableComponent mustExpand={this.state.mustExpand} extensibilityGroups={this.props.extensibilityGroups} key={item.uniqueId} offset={this.props.offset + 1} selectedEntity={this.props.selectedEntity} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
                         );
                     })
                 }
