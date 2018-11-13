@@ -377,7 +377,7 @@ import { Constants } from "Engines/constants";
 
         /**
          * Invert the refraction texture alongside the y axis.
-         * It can be usefull with procedural textures or probe for instance.
+         * It can be useful with procedural textures or probe for instance.
          * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
          */
         @serialize()

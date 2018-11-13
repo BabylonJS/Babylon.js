@@ -13,6 +13,7 @@ describe('Babylon Scene Loader', function() {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
+            .testMode()
             .load(function() {
                 // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);

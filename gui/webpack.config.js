@@ -1,6 +1,5 @@
 const path = require('path');
 const webpack = require('webpack');
-const DtsBundleWebpack = require('dts-bundle-webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
@@ -17,8 +16,7 @@ module.exports = {
             amd: "babylonjs-gui",
             commonjs: "babylonjs-gui"
         },
-        umdNamedDefine: true,
-        //devtoolModuleFilenameTemplate: "[absolute-resource-path]"
+        umdNamedDefine: true
     },
     resolve: {
         extensions: [".js", '.ts']

@@ -19,7 +19,7 @@ import "Shaders/layer.vertex";
 
     /**
      * This represents a full screen 2d layer.
-     * This can be usefull to display a picture in the  background of your scene for instance.
+     * This can be useful to display a picture in the  background of your scene for instance.
      * @see https://www.babylonjs-playground.com/#08A2BS#1
      */
     export class Layer {
@@ -136,7 +136,7 @@ import "Shaders/layer.vertex";
         /**
          * Instantiates a new layer.
          * This represents a full screen 2d layer.
-         * This can be usefull to display a picture in the  background of your scene for instance.
+         * This can be useful to display a picture in the  background of your scene for instance.
          * @see https://www.babylonjs-playground.com/#08A2BS#1
          * @param name Define the name of the layer in the scene
          * @param imgUrl Define the url of the texture to display in the layer

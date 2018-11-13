@@ -1,7 +1,7 @@
 /**
  * Describes the test suite.
  */
-describe('Babylon Scene Loader', function () {
+describe('Babylon Scene Loader', function() {
     let subject: BABYLON.Engine;
 
     this.timeout(10000);
@@ -9,11 +9,12 @@ describe('Babylon Scene Loader', function () {
     /**
      * Loads the dependencies.
      */
-    before(function (done) {
+    before(function(done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
-            .load(function () {
+            .testMode()
+            .load(function() {
                 // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 done();
@@ -23,7 +24,7 @@ describe('Babylon Scene Loader', function () {
     /**
      * Create a new engine subject before each test.
      */
-    beforeEach(function () {
+    beforeEach(function() {
         subject = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -37,16 +38,16 @@ describe('Babylon Scene Loader', function () {
      * Integration tests for post processes.
      */
     describe('#postProcesses', () => {
-        it('Add default pipeline', () => {            
+        it('Add default pipeline', () => {
             const scene = new BABYLON.Scene(subject);
             var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 100, new BABYLON.Vector3(0, 0, 0), scene);
-            
+
             // Set caps so that HDR will be set when creating default pipeline
             var caps = subject.getCaps();
             caps.textureFloatRender = true;
 
-            var promise = new Promise<void>((res, rej)=>{
-                scene.whenReadyAsync().then(()=>{
+            var promise = new Promise<void>((res, rej) => {
+                scene.whenReadyAsync().then(() => {
                     let createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
                     var defaultPipeline = new BABYLON.DefaultRenderingPipeline("default", true, scene, [camera]);
                     // wait for all shaders to be compiled if needed

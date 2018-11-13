@@ -58,6 +58,14 @@ import { Constants } from "Engines/constants";
         }
 
         /**
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "DynamicTexture"
+         */
+        public getClassName(): string {
+            return "DynamicTexture";
+        }
+
+        /**
          * Gets the current state of canRescale
          */
         public get canRescale(): boolean {

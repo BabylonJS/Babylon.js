@@ -31,6 +31,7 @@ var BABYLONDEVTOOLS;
         var callback;
         var dependencies;
         var useDist;
+        var testMode;
         var min;
         var babylonJSPath;
 
@@ -88,6 +89,11 @@ var BABYLONDEVTOOLS;
 
         Loader.prototype.onReady = function(newCallback) {
             callback = newCallback;
+            return this;
+        }
+
+        Loader.prototype.testMode = function() {
+            testMode = true;
             return this;
         }
 
@@ -197,10 +203,6 @@ var BABYLONDEVTOOLS;
             }
             getJson('/Tools/Gulp/config.json',
                 function(data) {
-                    if (!min) {
-                        self.loadScript('/dist/preview release/split.js');
-                    }
-
                     self.loadBJSScripts(data);
                     if (dependencies) {
                         self.loadScripts(dependencies);

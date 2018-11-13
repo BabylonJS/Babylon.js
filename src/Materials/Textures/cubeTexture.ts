@@ -282,14 +282,23 @@ import { Constants } from "Engines/constants";
          * @returns a new cube texture
          */
         public clone(): CubeTexture {
-            return SerializationHelper.Clone(() => {
-                let scene = this.getScene();
+            let scene = this.getScene();
+            let uniqueId = 0;
+
+            let newCubeTexture = SerializationHelper.Clone(() => {
 
                 if (!scene) {
                     return this;
                 }
-                return new CubeTexture(this.url, scene, this._extensions, this._noMipmap, this._files);
+                const cubeTexture = new CubeTexture(this.url, scene, this._extensions, this._noMipmap, this._files);
+                uniqueId = cubeTexture.uniqueId;
+
+                return cubeTexture;
             }, this);
+
+            newCubeTexture.uniqueId = uniqueId;
+
+            return newCubeTexture;
         }
     }
 

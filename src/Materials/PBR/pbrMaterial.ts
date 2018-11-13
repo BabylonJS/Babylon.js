@@ -243,7 +243,7 @@ import { PBRBaseMaterial } from "./pbrBaseMaterial";
         public indexOfRefraction = 0.66;
 
         /**
-         * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
+         * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")

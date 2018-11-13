@@ -62,7 +62,7 @@ declare module "scene" {
     };
 
     /**
-     * Defines the Depth Renderer scene component responsible to manage a depth buffer usefull
+     * Defines the Depth Renderer scene component responsible to manage a depth buffer useful
      * in several rendering techniques.
      */
     export class DepthRendererSceneComponent implements ISceneComponent {

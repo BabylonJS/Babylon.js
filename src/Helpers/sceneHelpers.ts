@@ -208,8 +208,8 @@ declare module "scene" {
     Scene.prototype.createDefaultXRExperienceAsync = function(): Promise<WebXRExperienceHelper> {
         return WebXRExperienceHelper.CreateAsync(this).then((helper) => {
             var outputCanvas = new WebXRManagedOutputCanvas(helper);
-            return WebXREnterExitUI.CreateAsync(this, helper, {outputCanvasContext: outputCanvas.canvasContext})
-            .then(() => {
+            return WebXREnterExitUI.CreateAsync(this, helper, { outputCanvasContext: outputCanvas.canvasContext })
+                .then((ui) => {
                     new WebXRInput(helper);
                     return helper;
                 });

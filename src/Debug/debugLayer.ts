@@ -6,6 +6,72 @@ import { Scene } from "scene";
     declare var INSPECTOR: any;
     // load the inspector using require, if not present in the global namespace.
 
+    /**
+     * Interface used to define scene explorer extensibility option
+     */
+    export interface IExplorerExtensibilityOption {
+        /**
+         * Define the option label
+         */
+        label: string;
+        /**
+         * Defines the action to execute on click
+         */
+        action: (entity: any) => void;
+    }
+
+    /**
+     * Defines a group of actions associated with a predicate to use when extending the Inspector scene explorer
+     */
+    export interface IExplorerExtensibilityGroup {
+        /**
+         * Defines a predicate to test if a given type mut be extended
+         */
+        predicate: (entity: any) => boolean;
+        /**
+         * Gets the list of options added to a type
+         */
+        entries: IExplorerExtensibilityOption[];
+    }
+
+    /**
+     * Interface used to define the options to use to create the Inspector
+     */
+    export interface IInspectorOptions {
+        /**
+         * Display in overlay mode (default: false)
+         */
+        overlay?: boolean;
+        /**
+         * HTML element to use as root (the parent of the rendering canvas will be used as default value)
+         */
+        globalRoot?: HTMLElement;
+        /**
+         * Display the Scene explorer
+         */
+        showExplorer?: boolean;
+        /**
+         * Display the property inspector
+         */
+        showInspector?: boolean;
+        /**
+         * Display in embed mode (both panes on the right)
+         */
+        embedMode?: boolean;
+        /**
+         * let the Inspector handles resize of the canvas when panes are resized (default to true)
+         */
+        handleResize?: boolean;
+        /**
+         * Allow the panes to popup (default: true)
+         */
+        enablePopup?: boolean;
+        /**
+         * Optional list of extensibility entries
+         */
+        explorerExtensibility?: IExplorerExtensibilityGroup[];
+    }
+
 declare module "scene" {
     export interface Scene {
         /**
@@ -46,8 +112,6 @@ declare module "scene" {
         public static InspectorURL = 'https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
 
         private _scene: Scene;
-        // The inspector instance
-        private _inspector: any;
 
         private BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
@@ -74,28 +138,24 @@ declare module "scene" {
         }
 
         /** Creates the inspector window. */
-        private _createInspector(config: {
-            popup?: boolean,
-            initialTab?: number | string,
-            parentElement?: HTMLElement,
-            newColors?: {
-                backgroundColor?: string,
-                backgroundColorLighter?: string,
-                backgroundColorLighter2?: string,
-                backgroundColorLighter3?: string,
-                color?: string,
-                colorTop?: string,
-                colorBot?: string
+        private _createInspector(config?: Partial<IInspectorOptions>) {
+            if (this.isVisible()) {
+                return;
             }
-        } = {}) {
-            let popup = config.popup || false;
-            let initialTab = config.initialTab || 0;
-            let parentElement = config.parentElement || null;
-            if (!this._inspector) {
-                this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
 
-                this._inspector = new this.BJSINSPECTOR.Inspector(this._scene, popup, initialTab, parentElement, config.newColors);
-            } // else nothing to do as instance is already created
+            const userOptions: IInspectorOptions = {
+                overlay: false,
+                showExplorer: true,
+                showInspector: true,
+                embedMode: false,
+                handleResize: true,
+                enablePopup: true,
+                ...config
+            };
+
+            this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
+
+            this.BJSINSPECTOR.Inspector.Show(this._scene, userOptions);
         }
 
         /**
@@ -103,63 +163,22 @@ declare module "scene" {
          * @returns true if visible otherwise, false
          */
         public isVisible(): boolean {
-            if (!this._inspector) {
-                return false;
-            }
-            return true;
+            return this.BJSINSPECTOR.Inspector.IsVisible;
         }
 
         /**
          * Hide the inspector and close its window.
          */
         public hide() {
-            if (this._inspector) {
-                try {
-                    this._inspector.dispose();
-                } catch (e) {
-                    // If the inspector has been removed directly from the inspector tool
-                }
-                this.onPropertyChangedObservable.clear();
-                this._inspector = null;
-            }
+            this.BJSINSPECTOR.Inspector.Hide();
         }
 
         /**
-        *
-        * Launch the debugLayer.
-        *
-        * initialTab:
-        * | Value | Tab Name |
-        * | --- | --- |
-        * | 0 | Scene |
-        * | 1 | Console |
-        * | 2 | Stats |
-        * | 3 | Textures |
-        * | 4 | Mesh |
-        * | 5 | Light |
-        * | 6 | Material |
-        * | 7 | GLTF |
-        * | 8 | GUI |
-        * | 9 | Physics |
-        * | 10 | Camera |
-        * | 11 | Audio |
-        *
-        * @param config Define the configuration of the inspector
-        */
-        public show(config: {
-            popup?: boolean,
-            initialTab?: number | string,
-            parentElement?: HTMLElement,
-            newColors?: {
-                backgroundColor?: string,
-                backgroundColorLighter?: string,
-                backgroundColorLighter2?: string,
-                backgroundColorLighter3?: string,
-                color?: string,
-                colorTop?: string,
-                colorBot?: string
-            }
-        } = {}): void {
+          * Launch the debugLayer.
+          * @param config Define the configuration of the inspector
+          */
+        public show(config?: IInspectorOptions): void {
+
             if (typeof this.BJSINSPECTOR == 'undefined') {
                 // Load inspector and add it to the DOM
                 Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, config));
@@ -167,13 +186,5 @@ declare module "scene" {
                 // Otherwise creates the inspector
                 this._createInspector(config);
             }
-        }
-
-        /**
-         * Gets the active tab
-         * @return the index of the active tab or -1 if the inspector is hidden
-         */
-        public getActiveTab(): number {
-            return this._inspector ? this._inspector.getActiveTabIndex() : -1;
         }
     }

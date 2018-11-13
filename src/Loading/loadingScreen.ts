@@ -132,7 +132,9 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 if (!this._loadingDiv) {
                     return;
                 }
-                document.body.removeChild(this._loadingDiv);
+                if (this._loadingDiv.parentElement) {
+                    this._loadingDiv.parentElement.removeChild(this._loadingDiv);
+                }
                 window.removeEventListener("resize", this._resizeLoadingUI);
 
                 this._loadingDiv = null;

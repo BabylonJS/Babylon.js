@@ -16,6 +16,7 @@ describe('Example', function() {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
+            .testMode()
             .load(function() {
                 // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
@@ -29,7 +30,7 @@ describe('Example', function() {
      */
     describe('#ExponentOfTwo', () => {
         it('should be expoent of two', () => {
-            var result : boolean = BABYLON.Tools.IsExponentOfTwo(2);
+            var result: boolean = BABYLON.Tools.IsExponentOfTwo(2);
             expect(result).to.be.true;
 
             result = BABYLON.Tools.IsExponentOfTwo(4);
@@ -40,7 +41,7 @@ describe('Example', function() {
         });
 
         it('should not be exponent of two', () => {
-            var result : boolean = BABYLON.Tools.IsExponentOfTwo(3);
+            var result: boolean = BABYLON.Tools.IsExponentOfTwo(3);
             expect(result).to.be.false;
 
             result = BABYLON.Tools.IsExponentOfTwo(6);
