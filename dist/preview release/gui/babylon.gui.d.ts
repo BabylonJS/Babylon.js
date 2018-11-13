@@ -742,7 +742,7 @@ declare module BABYLON.GUI {
                 * @param advancedTexture defines the AdvancedDynamicTexture the dialog is assigned to
                 * @param options
                 */
-            static ShowPickerDialog(advancedTexture: AdvancedDynamicTexture, options: {
+            static ShowPickerDialogAsync(advancedTexture: AdvancedDynamicTexture, options: {
                     pickerWidth?: string;
                     pickerHeight?: string;
                     lastColor?: string;
@@ -750,7 +750,10 @@ declare module BABYLON.GUI {
                     swatchSize?: number;
                     numSwatchesPerLine?: number;
                     savedColors?: Array<string>;
-            }): string;
+            }): Promise<{
+                    savedColors?: string[];
+                    pickedColor: string;
+            }>;
     }
 }
 declare module BABYLON.GUI {
