@@ -738,9 +738,19 @@ declare module BABYLON.GUI {
             _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
             _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
             /**
-                * This is so cool!
+                *
+                * @param advancedTexture defines the AdvancedDynamicTexture the dialog is assigned to
+                * @param options
                 */
-            static ShowPickerDialog(advancedTexture: AdvancedDynamicTexture, pickerWidth: string, pickerHeight: string, lastColor: string, swatchLimit: number, swatchSize: number, numSwatchesPerLine: number, savedColors: Array<string>): string;
+            static ShowPickerDialog(advancedTexture: AdvancedDynamicTexture, options: {
+                    pickerWidth?: string;
+                    pickerHeight?: string;
+                    lastColor?: string;
+                    swatchLimit?: number;
+                    swatchSize?: number;
+                    numSwatchesPerLine?: number;
+                    savedColors?: Array<string>;
+            }): string;
     }
 }
 declare module BABYLON.GUI {
