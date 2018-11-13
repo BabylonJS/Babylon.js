@@ -92,7 +92,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             children.map(item => {
 
                 return (
-                    <TreeItemSelectableComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} key={item.uniqueId} offset={this.props.offset + 2} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
+                    <TreeItemSelectableComponent mustExpand={this.props.mustExpand} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} key={item.uniqueId} offset={this.props.offset + 2} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
                 );
             })
         )
