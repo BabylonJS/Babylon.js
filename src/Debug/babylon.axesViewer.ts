@@ -7,14 +7,9 @@ module BABYLON.Debug {
      * The Axes viewer will show 3 axes in a specific point in space
      */
     export class AxesViewer {
-
-        private _xline = [Vector3.Zero(), Vector3.Zero()];
-        private _yline = [Vector3.Zero(), Vector3.Zero()];
-        private _zline = [Vector3.Zero(), Vector3.Zero()];
-
-        private _xmesh: Nullable<LinesMesh>;
-        private _ymesh: Nullable<LinesMesh>;
-        private _zmesh: Nullable<LinesMesh>;
+        private _xmesh: Nullable<AbstractMesh>;
+        private _ymesh: Nullable<AbstractMesh>;
+        private _zmesh: Nullable<AbstractMesh>;
 
         /**
          * Gets the hosting scene
@@ -26,17 +21,17 @@ module BABYLON.Debug {
         public scaleLines = 1;
 
         /** Gets the mesh used to render x-axis */
-        public get xAxisMesh(): Nullable<LinesMesh> {
+        public get xAxisMesh(): Nullable<AbstractMesh> {
             return this._xmesh;
         }
 
         /** Gets the mesh used to render x-axis */
-        public get yAxisMesh(): Nullable<LinesMesh> {
+        public get yAxisMesh(): Nullable<AbstractMesh> {
             return this._ymesh;
         }
 
         /** Gets the mesh used to render x-axis */
-        public get zAxisMesh(): Nullable<LinesMesh> {
+        public get zAxisMesh(): Nullable<AbstractMesh> {
             return this._zmesh;
         }
 
@@ -46,26 +41,37 @@ module BABYLON.Debug {
          * @param scaleLines defines a number used to scale line length (1 by default)
          */
         constructor(scene: Scene, scaleLines = 1) {
-
             this.scaleLines = scaleLines;
 
-            this._xmesh = Mesh.CreateLines("xline", this._xline, scene, true);
-            this._ymesh = Mesh.CreateLines("yline", this._yline, scene, true);
-            this._zmesh = Mesh.CreateLines("zline", this._zline, scene, true);
+            var greenColoredMaterial = new BABYLON.StandardMaterial("", scene);
+            greenColoredMaterial.disableLighting = true;
+            greenColoredMaterial.emissiveColor = BABYLON.Color3.Green().scale(0.5);
+
+            var redColoredMaterial = new BABYLON.StandardMaterial("", scene);
+            redColoredMaterial.disableLighting = true;
+            redColoredMaterial.emissiveColor = BABYLON.Color3.Red().scale(0.5);
+
+            var blueColoredMaterial = new BABYLON.StandardMaterial("", scene);
+            blueColoredMaterial.disableLighting = true;
+            blueColoredMaterial.emissiveColor = BABYLON.Color3.Blue().scale(0.5);
+            
+            this._xmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, redColoredMaterial);
+            this._ymesh = BABYLON.AxisDragGizmo._CreateArrow(scene, greenColoredMaterial);
+            this._zmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
+
+            this._xmesh.rotationQuaternion = new BABYLON.Quaternion();
+            this._xmesh.scaling.scaleInPlace(4);
+            this._ymesh.rotationQuaternion = new BABYLON.Quaternion();
+            this._ymesh.scaling.scaleInPlace(4);
+            this._zmesh.rotationQuaternion = new BABYLON.Quaternion();
+            this._zmesh.scaling.scaleInPlace(4);
 
             this._xmesh.renderingGroupId = 2;
             this._ymesh.renderingGroupId = 2;
             this._zmesh.renderingGroupId = 2;
 
-            this._xmesh.material.checkReadyOnlyOnce = true;
-            this._xmesh.color = new Color3(1, 0, 0);
-            this._ymesh.material.checkReadyOnlyOnce = true;
-            this._ymesh.color = new Color3(0, 1, 0);
-            this._zmesh.material.checkReadyOnlyOnce = true;
-            this._zmesh.color = new Color3(0, 0, 1);
-
             this.scene = scene;
-
+            this.update(new BABYLON.Vector3(), Vector3.Right(), Vector3.Up(), Vector3.Forward());
         }
 
         /**
@@ -76,36 +82,29 @@ module BABYLON.Debug {
          * @param zaxis defines the z axis of the viewer
          */
         public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
-
-            var scaleLines = this.scaleLines;
-
             if (this._xmesh) {
                 this._xmesh.position.copyFrom(position);
+                
+                var cross = Vector3.Cross(Vector3.Forward(), xaxis)
+                this._xmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1+Vector3.Dot(Vector3.Forward(), xaxis));
+                this._xmesh.rotationQuaternion!.normalize();
             }
             if (this._ymesh) {
                 this._ymesh.position.copyFrom(position);
+                
+                var cross = Vector3.Cross(Vector3.Forward(), yaxis)
+                this._ymesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1+Vector3.Dot(Vector3.Forward(), yaxis));
+                this._ymesh.rotationQuaternion!.normalize();
             }
             if (this._zmesh) {
                 this._zmesh.position.copyFrom(position);
+                
+                var cross = Vector3.Cross(Vector3.Forward(), zaxis)
+                this._zmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1+Vector3.Dot(Vector3.Forward(), zaxis));
+                this._zmesh.rotationQuaternion!.normalize();
             }
 
-            var point2 = this._xline[1];
-            point2.x = xaxis.x * scaleLines;
-            point2.y = xaxis.y * scaleLines;
-            point2.z = xaxis.z * scaleLines;
-            Mesh.CreateLines("", this._xline, null, false, this._xmesh);
-
-            point2 = this._yline[1];
-            point2.x = yaxis.x * scaleLines;
-            point2.y = yaxis.y * scaleLines;
-            point2.z = yaxis.z * scaleLines;
-            Mesh.CreateLines("", this._yline, null, false, this._ymesh);
-
-            point2 = this._zline[1];
-            point2.x = zaxis.x * scaleLines;
-            point2.y = zaxis.y * scaleLines;
-            point2.z = zaxis.z * scaleLines;
-            Mesh.CreateLines("", this._zline, null, false, this._zmesh);
+            
 
         }
 
