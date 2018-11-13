@@ -1,5 +1,5 @@
 import { TransformNode, IExplorerExtensibilityGroup } from "babylonjs";
-import { faCube } from '@fortawesome/free-solid-svg-icons';
+import { faCodeBranch } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
@@ -20,7 +20,7 @@ export class TransformNodeItemComponent extends React.Component<ITransformNodeIt
         const transformNode = this.props.transformNode;
         return (
             <div className="transformNodeTools">
-                <TreeItemLabelComponent label={transformNode.name} onClick={() => this.props.onClick()} icon={faCube} color="cornflowerblue" />
+                <TreeItemLabelComponent label={transformNode.name} onClick={() => this.props.onClick()} icon={faCodeBranch} color="cornflowerblue" />
                 {
                     <ExtensionsComponent target={transformNode} extensibilityGroups={this.props.extensibilityGroups} />
                 }
