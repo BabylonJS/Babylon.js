@@ -171,6 +171,26 @@
                     opacity: 0.6;
                 }
 
+                .iconMessageLine {
+                    padding-left: 5px;
+                    height: 30px;
+                    display: grid;
+                    grid-template-columns: 30px 1fr;
+
+                    .icon {
+                        grid-column: 1;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                    }
+
+                    .value {
+                        grid-column: 2;
+                        display: flex;
+                        align-items: center;
+                    }
+                }
+
                 .textLine {
                     padding-left: 5px;
                     height: 30px;
@@ -563,6 +583,7 @@
                         width: 256px;
                         margin-top: 5px;
                         margin-bottom: 5px;
+                        border: 2px solid rgba(255, 255, 255, 0.4);
                     }
                 }
 
