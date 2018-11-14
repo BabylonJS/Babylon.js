@@ -83,7 +83,12 @@ export class DebugTabComponent extends PaneComponent {
 
             for (var mesh of scene.meshes) {
                 if (mesh.physicsImpostor) {
-                    physicsViewer.showImpostor(mesh.physicsImpostor);
+                    let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor);
+
+                    if (debugMesh) {
+                        debugMesh.metadata = { hidden: true };
+                        debugMesh.material!.metadata = { hidden: true };
+                    }
                 }
             }
         } else {
