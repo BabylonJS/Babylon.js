@@ -258,7 +258,7 @@ module BABYLON {
                     this._engine.stopRenderLoop();
                 }
 
-                SceneLoader.LoadAsync("file:", this._sceneFileToLoad.name, this._engine, (progress) => {
+                SceneLoader.LoadAsync("file:", this._sceneFileToLoad, this._engine, (progress) => {
                     if (this._progressCallback) {
                         this._progressCallback(progress);
                     }
