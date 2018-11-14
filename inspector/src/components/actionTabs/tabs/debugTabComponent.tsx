@@ -6,18 +6,22 @@ import { GridPropertyGridComponent } from "./propertyGrids/gridPropertyGridCompo
 
 export class DebugTabComponent extends PaneComponent {
     private _skeletonViewersEnabled = false;
+    private _physicsViewersEnabled = false;
     private _skeletonViewers = new Array<BABYLON.Debug.SkeletonViewer>();
 
     constructor(props: IPaneComponentProps) {
         super(props);
     }
 
-
     componentWillMount() {
         const scene = this.props.scene;
 
         if (!scene) {
             return;
+        }
+
+        if (!scene.metadata) {
+            scene.metadata = {};
         }
 
         for (var mesh of scene.meshes) {
@@ -27,6 +31,7 @@ export class DebugTabComponent extends PaneComponent {
         }
 
         this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
+        this._physicsViewersEnabled = scene.metadata.physicsViewer != null;
     }
 
     componentWillUnmount() {
@@ -68,6 +73,25 @@ export class DebugTabComponent extends PaneComponent {
         }
     }
 
+    switchPhysicsViewers() {
+        this._physicsViewersEnabled = !this._physicsViewersEnabled;
+        const scene = this.props.scene;
+
+        if (this._physicsViewersEnabled) {
+            const physicsViewer = new BABYLON.Debug.PhysicsViewer(scene);
+            scene.metadata.physicsViewer = physicsViewer;
+
+            for (var mesh of scene.meshes) {
+                if (mesh.physicsImpostor) {
+                    physicsViewer.showImpostor(mesh.physicsImpostor);
+                }
+            }
+        } else {
+            scene.metadata.physicsViewer.dispose();
+            scene.metadata.physicsViewer = null;
+        }
+    }
+
     render() {
         const scene = this.props.scene;
 
@@ -80,6 +104,7 @@ export class DebugTabComponent extends PaneComponent {
                 <LineContainerComponent title="HELPERS">
                     <GridPropertyGridComponent scene={scene} />
                     <CheckBoxLineComponent label="Bones" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
+                    <CheckBoxLineComponent label="Physics" isSelected={() => this._physicsViewersEnabled} onSelect={() => this.switchPhysicsViewers()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="TEXTURE CHANNELS">
                     <CheckBoxLineComponent label="Diffuse" isSelected={() => BABYLON.StandardMaterial.DiffuseTextureEnabled} onSelect={() => BABYLON.StandardMaterial.DiffuseTextureEnabled = !BABYLON.StandardMaterial.DiffuseTextureEnabled} />

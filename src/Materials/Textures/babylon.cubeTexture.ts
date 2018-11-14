@@ -3,6 +3,8 @@ module BABYLON {
      * Class for creating a cube texture
      */
     export class CubeTexture extends BaseTexture {
+        private _delayedOnLoad: Nullable<() => void>;
+
         /**
          * The url of the texture
          */
@@ -58,6 +60,13 @@ module BABYLON {
             return this._rotationY;
         }
 
+        /**
+         * Are mip maps generated for this texture or not.
+         */
+        public get noMipmap(): boolean {
+            return this._noMipmap;
+        }
+
         private _noMipmap: boolean;
         private _files: string[];
         private _extensions: string[];
@@ -66,7 +75,7 @@ module BABYLON {
         private _createPolynomials: boolean;
 
         /** @hidden */
-        public readonly _prefiltered: boolean = false;
+        public _prefiltered: boolean = false;
 
         /**
          * Creates a cube texture from an array of image urls
@@ -190,9 +199,32 @@ module BABYLON {
         }
 
         /**
-         * Delays loading of the cube texture
+         * Update the url (and optional buffer) of this texture if url was null during construction.
+         * @param url the url of the texture
+         * @param forcedExtension defines the extension to use
+         * @param onLoad callback called when the texture is loaded  (defaults to null)
          */
-        public delayLoad(): void {
+        public updateURL(url: string, forcedExtension?: string, onLoad?: () => void): void {
+            if (this.url) {
+                this.releaseInternalTexture();
+            }
+
+            this.url = url;
+            this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+            this._prefiltered = false;
+
+            if (onLoad) {
+                this._delayedOnLoad = onLoad;
+            }
+
+            this.delayLoad(forcedExtension);
+        }
+
+        /**
+         * Delays loading of the cube texture
+         * @param forcedExtension defines the extension to use
+         */
+        public delayLoad(forcedExtension?: string): void {
             if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
@@ -207,10 +239,10 @@ module BABYLON {
 
             if (!this._texture) {
                 if (this._prefiltered) {
-                    this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, undefined, undefined, this._format, undefined, this._createPolynomials);
+                    this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
                 }
                 else {
-                    this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, undefined, undefined, this._format);
+                    this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, undefined, this._format, forcedExtension);
                 }
             }
         }
