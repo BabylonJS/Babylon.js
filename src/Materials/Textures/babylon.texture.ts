@@ -170,8 +170,7 @@ module BABYLON {
         private _cachedWAng: number;
         private _cachedProjectionMatrixId: number;
         private _cachedCoordinatesMode: number;
-        /** @hidden */
-        public _samplingMode: number;
+
         /** @hidden */
         public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
         private _deleteBuffer: boolean;
@@ -293,15 +292,20 @@ module BABYLON {
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
          * @param buffer the buffer of the texture (defaults to null)
+         * @param onLoad callback called when the texture is loaded  (defaults to null)
          */
-        public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null): void {
+        public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, onLoad?: () => void): void {
             if (this.url) {
-                throw new Error("URL is already set");
+                this.releaseInternalTexture();
             }
 
             this.url = url;
             this._buffer = buffer;
             this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+
+            if (onLoad) {
+                this._delayedOnLoad = onLoad;
+            }
             this.delayLoad();
         }
 
@@ -340,45 +344,6 @@ module BABYLON {
 
             this._delayedOnLoad = null;
             this._delayedOnError = null;
-        }
-
-        /**
-          * Update the sampling mode of the texture.
-         * Default is Trilinear mode.
-         *
-         * | Value | Type               | Description |
-         * | ----- | ------------------ | ----------- |
-         * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
-         * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
-         * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
-         * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
-         * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
-         * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
-         * | 7    | NEAREST_LINEAR |             |
-         * | 8    | NEAREST_NEAREST |             |
-         * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
-         * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
-         * | 11   | LINEAR_LINEAR |             |
-         * | 12   | LINEAR_NEAREST |             |
-         *
-         *    > _mag_: magnification filter (close to the viewer)
-         *    > _min_: minification filter (far from the viewer)
-         *    > _mip_: filter used between mip map levels
-         *@param samplingMode Define the new sampling mode of the texture
-         */
-        public updateSamplingMode(samplingMode: number): void {
-            if (!this._texture) {
-                return;
-            }
-
-            let scene = this.getScene();
-
-            if (!scene) {
-                return;
-            }
-
-            this._samplingMode = samplingMode;
-            scene.getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         }
 
         private _prepareRowForTextureGeneration(x: number, y: number, z: number, t: Vector3): void {
@@ -560,7 +525,7 @@ module BABYLON {
         }
 
         /**
-         * Get the current class name of the texture usefull for serialization or dynamic coding.
+         * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "Texture"
          */
         public getClassName(): string {
@@ -599,7 +564,7 @@ module BABYLON {
                 return parsedCustomTexture;
             }
 
-            if (parsedTexture.isCube) {
+            if (parsedTexture.isCube && !parsedTexture.isRenderTarget) {
                 return CubeTexture.Parse(parsedTexture, scene, rootUrl);
             }
 
@@ -619,8 +584,21 @@ module BABYLON {
 
                     return mirrorTexture;
                 } else if (parsedTexture.isRenderTarget) {
-                    var renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
-                    renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+                    let renderTargetTexture: Nullable<RenderTargetTexture> = null;
+                    if (parsedTexture.isCube) {
+                        // Search for an existing reflection probe (which contains a cube render target texture)
+                        if (scene.reflectionProbes) {
+                            for (var index = 0; index < scene.reflectionProbes.length; index++) {
+                                const probe = scene.reflectionProbes[index];
+                                if (probe.name === parsedTexture.name) {
+                                    return probe.cubeTexture;
+                                }
+                            }
+                        }
+                    } else {
+                        renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
+                        renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+                    }
 
                     return renderTargetTexture;
                 } else {
@@ -643,13 +621,13 @@ module BABYLON {
             // Update Sampling Mode
             if (parsedTexture.samplingMode) {
                 var sampling: number = parsedTexture.samplingMode;
-                if (texture._samplingMode !== sampling) {
+                if (texture && texture._samplingMode !== sampling) {
                     texture.updateSamplingMode(sampling);
                 }
             }
 
             // Animations
-            if (parsedTexture.animations) {
+            if (texture && parsedTexture.animations) {
                 for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                     var parsedAnimation = parsedTexture.animations[animationIndex];
 

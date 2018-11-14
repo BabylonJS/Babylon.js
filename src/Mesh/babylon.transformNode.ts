@@ -232,7 +232,7 @@ module BABYLON {
                 return false;
             }
 
-            if (this.infiniteDistance) {
+            if (this.infiniteDistance !== this._cache.infiniteDistance) {
                 return false;
             }
 
@@ -267,6 +267,7 @@ module BABYLON {
             this._cache.rotation = Vector3.Zero();
             this._cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
             this._cache.billboardMode = -1;
+            this._cache.infiniteDistance = false;
         }
 
         /**
@@ -464,6 +465,37 @@ module BABYLON {
                 this.rotation.y = yaw + yawCor;
                 this.rotation.z = rollCor;
             }
+
+            // Correct for parent's rotation offset
+            if (space === Space.WORLD && this.parent) {
+                if (this.rotationQuaternion) {
+                    // Get local rotation matrix of the looking object
+                    var rotationMatrix = Tmp.Matrix[0];
+                    this.rotationQuaternion.toRotationMatrix(rotationMatrix);
+
+                    // Offset rotation by parent's inverted rotation matrix to correct in world space
+                    var parentRotationMatrix = Tmp.Matrix[1];
+                    this.parent.getWorldMatrix().getRotationMatrixToRef(parentRotationMatrix);
+                    parentRotationMatrix.invert();
+                    rotationMatrix.multiplyToRef(parentRotationMatrix, rotationMatrix);
+                    this.rotationQuaternion.fromRotationMatrix(rotationMatrix);
+                } else {
+                    // Get local rotation matrix of the looking object
+                    var quaternionRotation = Tmp.Quaternion[0];
+                    Quaternion.FromEulerVectorToRef(this.rotation, quaternionRotation);
+                    var rotationMatrix = Tmp.Matrix[0];
+                    quaternionRotation.toRotationMatrix(rotationMatrix);
+
+                    // Offset rotation by parent's inverted rotation matrix to correct in world space
+                    var parentRotationMatrix = Tmp.Matrix[1];
+                    this.parent.getWorldMatrix().getRotationMatrixToRef(parentRotationMatrix);
+                    parentRotationMatrix.invert();
+                    rotationMatrix.multiplyToRef(parentRotationMatrix, rotationMatrix);
+                    quaternionRotation.fromRotationMatrix(rotationMatrix);
+                    quaternionRotation.toEulerAnglesToRef(this.rotation);
+                }
+            }
+
             return this;
         }
 
@@ -812,6 +844,7 @@ module BABYLON {
             this._cache.scaling.copyFrom(this.scaling);
             this._cache.pivotMatrixUpdated = false;
             this._cache.billboardMode = this.billboardMode;
+            this._cache.infiniteDistance = this.infiniteDistance;
             this._currentRenderId = this.getScene().getRenderId();
             this._childRenderId = this.getScene().getRenderId();
             this._isDirty = false;

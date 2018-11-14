@@ -17,18 +17,19 @@
             padding: 0;
             margin: 0
         }
-        
+
         #wrapper {
             width: 100%;
             height: 100%;
             display: flex;
             overflow: hidden;
         }
-        
+
         canvas {
             width: 100%;
+            height: 100%;
         }
-        
+
         #inspector {
             width: 25%;
         }
@@ -46,7 +47,7 @@
 
     <!--Starting the game-->
     <script>
-        BABYLONDEVTOOLS.Loader.require("test/index.js").load(function () {
+        BABYLONDEVTOOLS.Loader.require("test/index.js").load(function() {
             new Test('game-canvas');
         });
     </script>
