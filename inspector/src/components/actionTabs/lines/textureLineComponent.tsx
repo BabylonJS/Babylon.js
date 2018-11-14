@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Texture, PostProcess } from "babylonjs";
+import { BaseTexture, PostProcess, Texture } from "babylonjs";
 
 interface ITextureLineComponentProps {
-    texture: Texture,
+    texture: BaseTexture,
     width: number,
     height: number
 }
@@ -108,7 +108,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             }
 
             //To flip image on Y axis.
-            if (texture.invertY || texture.isCube) {
+            if ((texture as Texture).invertY || texture.isCube) {
                 for (var i = 0; i < halfHeight; i++) {
                     for (var j = 0; j < numberOfChannelsByLine; j++) {
                         var currentCell = j + i * numberOfChannelsByLine;

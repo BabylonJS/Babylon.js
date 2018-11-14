@@ -92,7 +92,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         scene.environmentTexture &&
                         <TextureLinkLineComponent label="Env. texture" texture={scene.environmentTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
                     }
-                    <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} />
+                    <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
                     <FogPropertyGridComponent scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>

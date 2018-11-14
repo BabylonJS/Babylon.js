@@ -2,7 +2,8 @@ import * as React from "react";
 
 interface IFileButtonLineComponentProps {
     label: string,
-    onClick: (file: File) => void
+    onClick: (file: File) => void,
+    accept: string
 }
 
 export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
@@ -15,6 +16,8 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
         if (files && files.length) {
             this.props.onClick(files[0]);
         }
+
+        evt.target.value = "";
     }
 
     render() {
@@ -23,7 +26,7 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
                 <label htmlFor="file-upload" className="file-upload">
                     {this.props.label}
                 </label>
-                <input id="file-upload" type="file" accept=".dds, .env" onChange={evt => this.onChange(evt)} />
+                <input ref="upload" id="file-upload" type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
             </div>
         );
     }
