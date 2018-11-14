@@ -108,6 +108,30 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         this.props.onSelectionChangedObservable.notifyObservers(mesh.material)
     }
 
+    convertPhysicsTypeToString(): string {
+        const mesh = this.props.mesh;
+        switch (mesh.physicsImpostor!.type) {
+            case BABYLON.PhysicsImpostor.NoImpostor:
+                return "No impostor";
+            case BABYLON.PhysicsImpostor.SphereImpostor:
+                return "Sphere";
+            case BABYLON.PhysicsImpostor.BoxImpostor:
+                return "Box";
+            case BABYLON.PhysicsImpostor.PlaneImpostor:
+                return "Plane";
+            case BABYLON.PhysicsImpostor.MeshImpostor:
+                return "Mesh";
+            case BABYLON.PhysicsImpostor.CylinderImpostor:
+                return "Cylinder";
+            case BABYLON.PhysicsImpostor.ParticleImpostor:
+                return "Particle";
+            case BABYLON.PhysicsImpostor.HeightmapImpostor:
+                return "Heightmap";
+        }
+
+        return "Unknown";
+    }
+
     render() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
@@ -177,6 +201,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <TextLineComponent label="has matrix weights" value={mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind) ? "Yes" : "No"} />
                     <TextLineComponent label="has matrix indices" value={mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) ? "Yes" : "No"} />
                 </LineContainerComponent>
+                {
+                    mesh.physicsImpostor != null &&
+                    <LineContainerComponent title="PHYSICS" closed={true}>
+                        <FloatLineComponent label="Mass" target={mesh.physicsImpostor} propertyName="mass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent label="Friction" target={mesh.physicsImpostor} propertyName="friction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent label="Restitution" target={mesh.physicsImpostor} propertyName="restitution" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <TextLineComponent label="Type" value={this.convertPhysicsTypeToString()} />
+                    </LineContainerComponent>
+                }
                 <LineContainerComponent title="DEBUG" closed={true}>
                     <CheckBoxLineComponent label="Show bounding box" target={mesh} propertyName="showBoundingBox" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {

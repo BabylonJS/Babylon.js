@@ -293,15 +293,21 @@ module BABYLON {
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
          * @param buffer the buffer of the texture (defaults to null)
+         * @param onLoad callback called when the texture is loaded  (defaults to null)
          */
-        public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null): void {
+        public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, onLoad?: () => void): void {
             if (this.url) {
-                throw new Error("URL is already set");
+                this.releaseInternalTexture();
             }
 
             this.url = url;
             this._buffer = buffer;
             this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+
+            if (onLoad) {
+                this._delayedOnLoad = onLoad;
+            }
+
             this.delayLoad();
         }
 

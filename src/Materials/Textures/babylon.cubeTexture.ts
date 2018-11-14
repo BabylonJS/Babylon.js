@@ -3,6 +3,8 @@ module BABYLON {
      * Class for creating a cube texture
      */
     export class CubeTexture extends BaseTexture {
+        private _delayedOnLoad: Nullable<() => void>;
+
         /**
          * The url of the texture
          */
@@ -190,6 +192,26 @@ module BABYLON {
         }
 
         /**
+         * Update the url (and optional buffer) of this texture if url was null during construction.
+         * @param url the url of the texture
+         * @param onLoad callback called when the texture is loaded  (defaults to null)
+         */
+        public updateURL(url: string, onLoad?: () => void): void {
+            if (this.url) {
+                this.releaseInternalTexture();
+            }
+
+            this.url = url;
+            this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+
+            if (onLoad) {
+                this._delayedOnLoad = onLoad;
+            }
+
+            this.delayLoad();
+        }
+
+        /**
          * Delays loading of the cube texture
          */
         public delayLoad(): void {
@@ -207,10 +229,10 @@ module BABYLON {
 
             if (!this._texture) {
                 if (this._prefiltered) {
-                    this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, undefined, undefined, this._format, undefined, this._createPolynomials);
+                    this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
                 }
                 else {
-                    this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, undefined, undefined, this._format);
+                    this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, undefined, this._format);
                 }
             }
         }
