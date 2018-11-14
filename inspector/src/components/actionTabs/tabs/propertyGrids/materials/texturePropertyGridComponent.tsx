@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Texture, CubeTexture, Observable } from "babylonjs";
+import { Texture, BaseTexture, CubeTexture, Observable } from "babylonjs";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
@@ -10,9 +10,10 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
+import { text } from "@fortawesome/fontawesome-svg-core";
 
 interface ITexturePropertyGridComponentProps {
-    texture: Texture,
+    texture: BaseTexture,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -28,9 +29,16 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             var url = URL.createObjectURL(blob);
 
             if (texture.isCube) {
-                (texture as CubeTexture).updateURL(url, () => this.forceUpdate());
+                let extension: string | undefined = undefined;
+                if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                    extension = ".dds";
+                } else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                    extension = ".env";
+                }
+
+                (texture as CubeTexture).updateURL(url, extension, () => this.forceUpdate());
             } else {
-                texture.updateURL(url, null, () => this.forceUpdate());
+                (texture as Texture).updateURL(url, null, () => this.forceUpdate());
             }
 
         }, undefined, true);
@@ -50,7 +58,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             <div className="pane">
                 <LineContainerComponent title="PREVIEW">
                     <TextureLineComponent texture={texture} width={256} height={256} />
-                    <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga" />
+                    <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
                 <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
