@@ -6,6 +6,7 @@ interface IFloatLineComponentProps {
     label: string,
     target: any,
     propertyName: string,
+    onChange?: (newValue: number) => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     additionalClass?: string
 }
@@ -37,6 +38,10 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     raiseOnPropertyChanged(newValue: number, previousValue: number) {
+        if (this.props.onChange) {
+            this.props.onChange(newValue);
+        }
+
         if (!this.props.onPropertyChangedObservable) {
             return;
         }

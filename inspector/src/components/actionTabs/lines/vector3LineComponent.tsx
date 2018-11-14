@@ -9,6 +9,7 @@ interface IVector3LineComponentProps {
     label: string,
     target: any,
     propertyName: string,
+    onChange?: (newvalue: Vector3) => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -38,6 +39,10 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
     }
 
     raiseOnPropertyChanged(previousValue: Vector3) {
+        if (this.props.onChange) {
+            this.props.onChange(this.state.value);
+        }
+
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
