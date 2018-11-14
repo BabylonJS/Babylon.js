@@ -10,7 +10,6 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
-import { text } from "@fortawesome/fontawesome-svg-core";
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
