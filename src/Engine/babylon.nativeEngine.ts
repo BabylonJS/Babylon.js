@@ -189,7 +189,7 @@
             this._caps.maxVertexUniformVectors = 16;
 
             // Extensions
-            this._caps.standardDerivatives = false;
+            this._caps.standardDerivatives = true;
 
             this._caps.astc = null;
             this._caps.s3tc = null;
@@ -283,7 +283,7 @@
                         if (data) {
                             if (vertexBuffer.type === VertexBuffer.FLOAT && ArrayBuffer.isView(data)) {
                                 if (!buffer._nativeVertexBuffer) {
-                                    const length = vertexBuffer.count * vertexBuffer.getSize();
+                                    const length = vertexBuffer.byteLength / Float32Array.BYTES_PER_ELEMENT;
                                     buffer._nativeVertexBuffer = this._native.createVertexBuffer(new Float32Array(data.buffer, data.byteOffset, length));
                                 }
                                 this._native.bindVertexBuffer(buffer._nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride);
