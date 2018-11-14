@@ -78,6 +78,7 @@
 ### Materials Library
 
 ## Bug fixes
+- Fixed FileLoader's loading of a skybox, & added a parsed value for whether to create with PBR or STDMaterial ([Palmer-JC](https://github.com/Palmer-JC))
 - Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))
 - Refocusing on input gui with pointer events ([TrevorDev](https://github.com/TrevorDev))
 - Gizmo scaling not consistent when camera is parented ([TrevorDev](https://github.com/TrevorDev))
