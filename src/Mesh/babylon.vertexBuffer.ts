@@ -87,11 +87,6 @@
         public readonly type: number;
 
         /**
-         * Gets the number of attributes.
-         */
-        public readonly count: number;
-
-        /**
          * Constructor
          * @param engine the engine
          * @param data the data to use for this vertex buffer
@@ -149,8 +144,6 @@
 
             this._instanced = instanced !== undefined ? instanced : false;
             this._instanceDivisor = instanced ? 1 : 0;
-
-            this.count = count || (this.byteLength / this.byteStride);
         }
 
         /** @hidden */
