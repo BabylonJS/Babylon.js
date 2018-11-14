@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Texture, Observable } from "babylonjs";
+import { Texture, CubeTexture, Observable } from "babylonjs";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
@@ -9,6 +9,7 @@ import { TextureLineComponent } from "../../../lines/textureLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
 
 interface ITexturePropertyGridComponentProps {
     texture: Texture,
@@ -18,6 +19,21 @@ interface ITexturePropertyGridComponentProps {
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
+    }
+
+    updateTexture(file: File) {
+        const texture = this.props.texture;
+        BABYLON.Tools.ReadFile(file, (data) => {
+            var blob = new Blob([data], { type: "octet/stream" });
+            var url = URL.createObjectURL(blob);
+
+            if (texture.isCube) {
+                (texture as CubeTexture).updateURL(url, () => this.forceUpdate());
+            } else {
+                texture.updateURL(url, null, () => this.forceUpdate());
+            }
+
+        }, undefined, true);
     }
 
     render() {
@@ -34,6 +50,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             <div className="pane">
                 <LineContainerComponent title="PREVIEW">
                     <TextureLineComponent texture={texture} width={256} height={256} />
+                    <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga" />
                 </LineContainerComponent>
                 <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
@@ -43,7 +60,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
-                        texture.updateSamplingMode && 
+                        texture.updateSamplingMode &&
                         <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => texture.updateSamplingMode(value)} />
                     }
                 </LineContainerComponent>
