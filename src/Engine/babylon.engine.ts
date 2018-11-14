@@ -4332,7 +4332,7 @@ module BABYLON {
                     loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
                         if (loadFailed) {
                             onInternalError("TextureLoader failed to load data");
-                        }else {
+                        } else {
                             this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
                                 done();
                                 return false;

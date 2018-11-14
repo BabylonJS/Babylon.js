@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Observable, Scene, BaseTexture, Nullable } from "babylonjs";
+import { Observable, Scene, BaseTexture, Nullable, Vector3 } from "babylonjs";
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { RadioButtonLineComponent } from "../../lines/radioLineComponent";
@@ -8,6 +8,8 @@ import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 import { FogPropertyGridComponent } from "./fogPropertyGridComponent";
 import { FileButtonLineComponent } from "../../lines/fileButtonLineComponent";
 import { TextureLinkLineComponent } from "../../lines/textureLinkLineComponent";
+import { Vector3LineComponent } from "../../lines/vector3LineComponent";
+import { FloatLineComponent } from "../../lines/floatLineComponent";
 
 interface IScenePropertyGridComponentProps {
     scene: Scene,
@@ -71,10 +73,34 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         }, undefined, true);
     }
 
+    updateGravity(newValue: Vector3) {
+        const scene = this.props.scene;
+        const physicsEngine = scene.getPhysicsEngine()!;
+
+        physicsEngine.setGravity(newValue);
+    }
+
+    updateTimeStep(newValue: number) {
+        const scene = this.props.scene;
+        const physicsEngine = scene.getPhysicsEngine()!;
+
+        physicsEngine.setTimeStep(newValue);
+    }
+
     render() {
         const scene = this.props.scene;
 
         const renderingModeGroupObservable = new BABYLON.Observable<RadioButtonLineComponent>();
+
+        const physicsEngine = scene.getPhysicsEngine();
+        let dummy: Nullable<{ gravity: Vector3, timeStep: number }> = null;
+
+        if (physicsEngine) {
+            dummy = {
+                gravity: physicsEngine.gravity,
+                timeStep: physicsEngine.getTimeStep()
+            }
+        }
 
         return (
             <div className="pane">
@@ -94,6 +120,16 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                     }
                     <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
                     <FogPropertyGridComponent scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
+                {
+                    dummy !== null &&
+                    <LineContainerComponent title="PHYSICS" closed={true}>
+                        <FloatLineComponent label="Time step" target={dummy} propertyName="timeStep" onChange={newValue => this.updateTimeStep(newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent label="Gravity" target={dummy} propertyName="gravity" onChange={newValue => this.updateGravity(newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    </LineContainerComponent>
+                }
+                <LineContainerComponent title="COLLISIONS" closed={true}>
+                    <Vector3LineComponent label="Gravity" target={scene} propertyName="gravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>
         );

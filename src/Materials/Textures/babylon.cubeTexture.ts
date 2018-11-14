@@ -207,6 +207,7 @@ module BABYLON {
         public updateURL(url: string, forcedExtension?: string, onLoad?: () => void): void {
             if (this.url) {
                 this.releaseInternalTexture();
+                this.getScene()!.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
             }
 
             this.url = url;
