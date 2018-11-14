@@ -60,7 +60,7 @@ module BABYLON {
          * ```javascript
          * var pointLight = new BABYLON.PointLight("pl", camera.position, scene);
          * ```
-         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
          * @param name The light friendly name
          * @param position The position of the point light in the scene
          * @param scene The scene the lights belongs to

@@ -189,3 +189,7 @@ Viewer/tests/Lib/**/*.js
 Viewer/tests/commons/**/*.js
 .sass-cache/
 gui/dist/
+/Viewer/tests/tsc
+/Viewer/tests/tsc.cmd
+/Viewer/tests/tsserver
+/Viewer/tests/tsserver.cmd

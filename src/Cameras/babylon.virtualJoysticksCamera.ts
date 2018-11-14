@@ -4,7 +4,7 @@ module BABYLON {
     });
 
     /**
-     * This represents a free type of camera. It can be usefull in First Person Shooter game for instance.
+     * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
      * It is identical to the Free Camera and simply adds by default a virtual joystick.
      * Virtual Joysticks are on-screen 2D graphics that are used to control the camera or other scene items.
      * @see http://doc.babylonjs.com/features/cameras#virtual-joysticks-camera
@@ -12,7 +12,7 @@ module BABYLON {
     export class VirtualJoysticksCamera extends FreeCamera {
 
         /**
-         * Intantiates a VirtualJoysticksCamera. It can be usefull in First Person Shooter game for instance.
+         * Intantiates a VirtualJoysticksCamera. It can be useful in First Person Shooter game for instance.
          * It is identical to the Free Camera and simply adds by default a virtual joystick.
          * Virtual Joysticks are on-screen 2D graphics that are used to control the camera or other scene items.
          * @see http://doc.babylonjs.com/features/cameras#virtual-joysticks-camera

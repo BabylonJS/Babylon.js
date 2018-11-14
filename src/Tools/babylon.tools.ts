@@ -203,6 +203,20 @@ module BABYLON {
         public static BaseUrl = "";
 
         /**
+         * Enable/Disable Custom HTTP Request Headers globally.
+         * default = false
+         * @see CustomRequestHeaders
+         */
+        public static UseCustomRequestHeaders: boolean = false;
+
+        /**
+         * Custom HTTP Request Headers to be sent with XMLHttpRequests
+         * i.e. when loading files, where the server/service expects an Authorization header.
+         * @see InjectCustomRequestHeaders injects them to an XMLHttpRequest
+         */
+        public static CustomRequestHeaders: { [key: string]: string } = {};
+
+        /**
          * Gets or sets the retry strategy to apply when an error happens while loading an asset
          */
         public static DefaultRetryStrategy = RetryStrategy.ExponentialBackoff();
@@ -943,6 +957,10 @@ module BABYLON {
 
                     request.addEventListener("readystatechange", onReadyStateChange);
 
+                    if (Tools.UseCustomRequestHeaders) {
+                        Tools.InjectCustomRequestHeaders(request);
+                    }
+
                     request.send();
                 };
 
@@ -1523,7 +1541,7 @@ module BABYLON {
                 return;
             }
 
-            var originalSize = {width: renderCanvas.width, height: renderCanvas.height};
+            var originalSize = { width: renderCanvas.width, height: renderCanvas.height };
             engine.setSize(width, height);
             scene.render();
 
@@ -1878,6 +1896,19 @@ module BABYLON {
 
             if (console.time) {
                 console.timeEnd(counterName);
+            }
+        }
+
+        /**
+         * Injects the @see CustomRequestHeaders into the given request
+         * @param request the request that should be used for injection
+         */
+        public static InjectCustomRequestHeaders(request: XMLHttpRequest): void {
+            for (let key in Tools.CustomRequestHeaders) {
+                const val = Tools.CustomRequestHeaders[key];
+                if (val) {
+                    request.setRequestHeader(key, val);
+                }
             }
         }
 
