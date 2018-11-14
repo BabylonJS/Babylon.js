@@ -60,6 +60,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
                 <LineContainerComponent title="GENERAL">
+                    <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
+                    <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
                     <TextLineComponent label="Is 3D" value={texture.is3D ? "Yes" : "No"} />
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />
@@ -83,15 +85,26 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     </LineContainerComponent>
                 }
                 <LineContainerComponent title="TRANSFORM">
-                    <FloatLineComponent label="U offset" target={texture} propertyName="uOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="V offset" target={texture} propertyName="vOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="V scale" target={texture} propertyName="uScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="V scale" target={texture} propertyName="vScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="U angle" target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="V angle" target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="W angle" target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
-                    <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
+                    {
+                        !texture.isCube &&
+                        <div>
+                            <FloatLineComponent label="U offset" target={texture} propertyName="uOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent label="V offset" target={texture} propertyName="vOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent label="V scale" target={texture} propertyName="uScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent label="V scale" target={texture} propertyName="vScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent label="U angle" target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent label="V angle" target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent label="W angle" target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
+                            <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
+                        </div>
+                    }
+                    {
+                        texture.isCube &&
+                        <div>
+                            <SliderLineComponent label="Rotation Y" minimum={0} maximum={2 * Math.PI} step={0.1} target={texture} propertyName="rotationY" />
+                        </div>
+                    }
                 </LineContainerComponent>
             </div>
         );

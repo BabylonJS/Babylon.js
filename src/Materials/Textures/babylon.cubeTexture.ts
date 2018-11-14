@@ -199,6 +199,14 @@ module BABYLON {
         }
 
         /**
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "CubeTexture"
+         */
+        public getClassName(): string {
+            return "CubeTexture";
+        }
+
+        /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
          * @param forcedExtension defines the extension to use
@@ -261,6 +269,14 @@ module BABYLON {
          * @param value Reflection texture matrix
          */
         public setReflectionTextureMatrix(value: Matrix): void {
+            if (value.updateFlag === this._textureMatrix.updateFlag) {
+                return;
+            }
+
+            if (value.isIdentity() !== this._textureMatrix.isIdentity()) {
+                this.getScene()!.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
+            }
+
             this._textureMatrix = value;
         }
 

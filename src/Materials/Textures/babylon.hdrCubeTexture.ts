@@ -133,6 +133,14 @@ module BABYLON {
         }
 
         /**
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "HDRCubeTexture"
+         */
+        public getClassName(): string {
+            return "HDRCubeTexture";
+        }
+
+        /**
          * Occurs when the file is raw .hdr file.
          */
         private loadTexture() {
@@ -271,6 +279,14 @@ module BABYLON {
          */
         public setReflectionTextureMatrix(value: Matrix): void {
             this._textureMatrix = value;
+
+            if (value.updateFlag === this._textureMatrix.updateFlag) {
+                return;
+            }
+
+            if (value.isIdentity() !== this._textureMatrix.isIdentity()) {
+                this.getScene()!.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
+            }
         }
 
         /**
