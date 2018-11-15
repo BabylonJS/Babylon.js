@@ -359,22 +359,22 @@ export class ColorPicker extends Control {
         this.value = this._tmpColor;
     }
 
-    private _isPointOnSquare(coordinates: Vector2): boolean {
+    private _isPointOnSquare(x: number, y: number): boolean {
         this._updateSquareProps();
 
         var left = this._squareLeft;
         var top = this._squareTop;
         var size = this._squareSize;
 
-        if (coordinates.x >= left && coordinates.x <= left + size &&
-            coordinates.y >= top && coordinates.y <= top + size) {
+        if (x >= left && x <= left + size &&
+            y >= top && y <= top + size) {
             return true;
         }
 
         return false;
     }
 
-    private _isPointOnWheel(coordinates: Vector2): boolean {
+    private _isPointOnWheel(x: number, y: number): boolean {
         var radius = Math.min(this._currentMeasure.width, this._currentMeasure.height) * .5;
         var centerX = radius + this._currentMeasure.left;
         var centerY = radius + this._currentMeasure.top;
@@ -383,8 +383,8 @@ export class ColorPicker extends Control {
         var radiusSq = radius * radius;
         var innerRadiusSq = innerRadius * innerRadius;
 
-        var dx = coordinates.x - centerX;
-        var dy = coordinates.y - centerY;
+        var dx = x - centerX;
+        var dy = y - centerY;
 
         var distSq = dx * dx + dy * dy;
 
@@ -405,21 +405,33 @@ export class ColorPicker extends Control {
         this._pointerStartedOnSquare = false;
         this._pointerStartedOnWheel = false;
 
-        if (this._isPointOnSquare(coordinates)) {
+        // Invert transform
+        this._invertTransformMatrix.transformCoordinates(coordinates.x, coordinates.y, this._transformedPosition);
+
+        let x = this._transformedPosition.x;
+        let y = this._transformedPosition.y;
+
+        if (this._isPointOnSquare(x, y)) {
             this._pointerStartedOnSquare = true;
-        } else if (this._isPointOnWheel(coordinates)) {
+        } else if (this._isPointOnWheel(x, y)) {
             this._pointerStartedOnWheel = true;
         }
 
-        this._updateValueFromPointer(coordinates.x, coordinates.y);
+        this._updateValueFromPointer(x, y);
         this._host._capturingControl[pointerId] = this;
 
         return true;
     }
 
     public _onPointerMove(target: Control, coordinates: Vector2): void {
+        // Invert transform
+        this._invertTransformMatrix.transformCoordinates(coordinates.x, coordinates.y, this._transformedPosition);
+
+        let x = this._transformedPosition.x;
+        let y = this._transformedPosition.y;
+
         if (this._pointerIsDown) {
-            this._updateValueFromPointer(coordinates.x, coordinates.y);
+            this._updateValueFromPointer(x, y);
         }
 
         super._onPointerMove(target, coordinates);

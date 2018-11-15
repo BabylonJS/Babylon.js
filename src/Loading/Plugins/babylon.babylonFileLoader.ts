@@ -55,6 +55,19 @@ module BABYLON {
                 }
             }
 
+            // Reflection probes
+            if (parsedData.reflectionProbes !== undefined && parsedData.reflectionProbes !== null) {
+                for (index = 0, cache = parsedData.reflectionProbes.length; index < cache; index++) {
+                    var parsedReflectionProbe = parsedData.reflectionProbes[index];
+                    var reflectionProbe = ReflectionProbe.Parse(parsedReflectionProbe, scene, rootUrl);
+                    if (reflectionProbe) {
+                        container.reflectionProbes.push(reflectionProbe);
+                        log += (index === 0 ? "\n\tReflection Probes:" : "");
+                        log += "\n\t\t" + reflectionProbe.toString(fullDetails);
+                    }
+                }
+            }
+
             // Animations
             if (parsedData.animations !== undefined && parsedData.animations !== null) {
                 for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
@@ -632,9 +645,11 @@ module BABYLON {
 
                 // Environment texture
                 if (parsedData.environmentTexture !== undefined && parsedData.environmentTexture !== null) {
+                    // PBR needed for both HDR texture (gamma space) & a sky box
+                    var isPBR = parsedData.isPBR !== undefined ? parsedData.isPBR : true;
                     if (parsedData.environmentTextureType && parsedData.environmentTextureType === "BABYLON.HDRCubeTexture") {
                         var hdrSize: number = (parsedData.environmentTextureSize) ? parsedData.environmentTextureSize : 128;
-                        var hdrTexture = new HDRCubeTexture(rootUrl + parsedData.environmentTexture, scene, hdrSize);
+                        var hdrTexture = new HDRCubeTexture(rootUrl + parsedData.environmentTexture, scene, hdrSize, true, !isPBR);
                         if (parsedData.environmentTextureRotationY) {
                             hdrTexture.rotationY = parsedData.environmentTextureRotationY;
                         }
@@ -649,7 +664,7 @@ module BABYLON {
                     if (parsedData.createDefaultSkybox === true) {
                         var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;
                         var skyboxBlurLevel = parsedData.skyboxBlurLevel || 0;
-                        scene.createDefaultSkybox(undefined, true, skyboxScale, skyboxBlurLevel);
+                        scene.createDefaultSkybox(scene.environmentTexture, isPBR, skyboxScale, skyboxBlurLevel);
                     }
                 }
                 // Finish
