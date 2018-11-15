@@ -12,10 +12,21 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
     constructor(props: ILineContainerComponentProps) {
         super(props);
 
-        this.state = { isExpanded: !this.props.closed };
+        let initialState: boolean;
+
+        if (typeof (Storage) !== "undefined" && localStorage.getItem(this.props.title) !== null) {
+            initialState = localStorage.getItem(this.props.title) === "true";
+        } else {
+            initialState = !this.props.closed;
+        }
+
+        this.state = { isExpanded: initialState };
     }
 
     switchExpandedState(): void {
+        if (typeof (Storage) !== "undefined") {
+            localStorage.setItem(this.props.title, !this.state.isExpanded ? "true" : "false");
+        }
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
