@@ -1505,10 +1505,12 @@ module BABYLON {
                 return this;
             }
 
+            const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
+
             var sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
                 sideOrientation = this._effectiveMaterial.sideOrientation;
-                if (this._getWorldMatrixDeterminant() < 0) {
+                if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
                     sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
                 }
             }
@@ -1526,7 +1528,7 @@ module BABYLON {
                 this._bind(subMesh, effect, fillMode);
             }
 
-            var world = this.getWorldMatrix();
+            var world = effectiveMesh.getWorldMatrix();
 
             if (this._effectiveMaterial._storeEffectOnSubMeshes) {
                 this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
