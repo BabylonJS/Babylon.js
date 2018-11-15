@@ -236,7 +236,7 @@ module BABYLON {
          * @param world defines the world matrix to use to update the bounding info
          * @returns the submesh
          */
-        public updateBoundingInfo(world: Matrix): SubMesh {
+        public updateBoundingInfo(world: DeepImmutable<Matrix>): SubMesh {
             let boundingInfo = this.getBoundingInfo();
 
             if (!boundingInfo) {
