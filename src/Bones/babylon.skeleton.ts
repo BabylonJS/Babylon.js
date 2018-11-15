@@ -5,17 +5,21 @@ module BABYLON {
      */
     export class Skeleton implements IAnimatable {
         /**
-         * Gets the list of child bones
+         * Defines the list of child bones
          */
         public bones = new Array<Bone>();
         /**
-         * Gets an estimate of the dimension of the skeleton at rest
+         * Defines an estimate of the dimension of the skeleton at rest
          */
         public dimensionsAtRest: Vector3;
         /**
-         * Gets a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
+         * Defines a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
          */
         public needInitialSkinMatrix = false;
+        /**
+         * Defines a mesh that override the matrix used to get the world matrix (null by default).
+         */
+        public overrideMesh: Nullable<AbstractMesh> = null;
 
         /**
          * Gets the list of animations attached to this skeleton
@@ -36,6 +40,9 @@ module BABYLON {
         private _lastAbsoluteTransformsUpdateId = -1;
 
         private _canUseTextureForBones = false;
+
+        /** @hidden */
+        public _numBonesWithLinkedTransformNode = 0;
 
         /**
          * Specifies if the skeleton should be serialized
@@ -370,6 +377,18 @@ module BABYLON {
          * Build all resources required to render a skeleton
          */
         public prepare(): void {
+            // Update the local matrix of bones with linked transform nodes.
+            if (this._numBonesWithLinkedTransformNode > 0) {
+                for (const bone of this.bones) {
+                    if (bone._linkedTransformNode) {
+                        // Computing the world matrix also computes the local matrix.
+                        bone._linkedTransformNode.computeWorldMatrix();
+                        bone._matrix = bone._linkedTransformNode._localMatrix;
+                        bone.markAsDirty();
+                    }
+                }
+            }
+
             if (!this._isDirty) {
                 return;
             }
