@@ -84,7 +84,8 @@ module BABYLON {
         // Cache
         /** @hidden */
         public _poseMatrix: Matrix;
-        private _localWorld = Matrix.Zero();
+        /** @hidden */
+        public _localMatrix = Matrix.Zero();
 
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
@@ -413,7 +414,7 @@ module BABYLON {
          */
         public setPositionWithLocalVector(vector3: Vector3): TransformNode {
             this.computeWorldMatrix();
-            this.position = Vector3.TransformNormal(vector3, this._localWorld);
+            this.position = Vector3.TransformNormal(vector3, this._localMatrix);
             return this;
         }
 
@@ -424,7 +425,7 @@ module BABYLON {
         public getPositionExpressedInLocalSpace(): Vector3 {
             this.computeWorldMatrix();
             const invLocalWorldMatrix = Tmp.Matrix[0];
-            this._localWorld.invertToRef(invLocalWorldMatrix);
+            this._localMatrix.invertToRef(invLocalWorldMatrix);
             return Vector3.TransformNormal(this.position, invLocalWorldMatrix);
         }
 
@@ -435,7 +436,7 @@ module BABYLON {
          */
         public locallyTranslate(vector3: Vector3): TransformNode {
             this.computeWorldMatrix(true);
-            this.position = Vector3.TransformCoordinates(vector3, this._localWorld);
+            this.position = Vector3.TransformCoordinates(vector3, this._localMatrix);
             return this;
         }
 
@@ -940,7 +941,7 @@ module BABYLON {
             }
 
             // Local world
-            Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localWorld);
+            Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localMatrix);
 
             // Parent
             if (this.parent && this.parent.getWorldMatrix) {
@@ -952,22 +953,22 @@ module BABYLON {
                         Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
 
-                    this._localWorld.getTranslationToRef(Tmp.Vector3[5]);
+                    this._localMatrix.getTranslationToRef(Tmp.Vector3[5]);
                     Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[5], Tmp.Vector3[5]);
-                    this._worldMatrix.copyFrom(this._localWorld);
+                    this._worldMatrix.copyFrom(this._localMatrix);
                     this._worldMatrix.setTranslation(Tmp.Vector3[5]);
 
                 } else {
                     if (this._transformToBoneReferal) {
-                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
+                        this._localMatrix.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
                         Tmp.Matrix[6].multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), this._worldMatrix);
                     } else {
-                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+                        this._localMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
                     }
                 }
                 this._markSyncedWithParent();
             } else {
-                this._worldMatrix.copyFrom(this._localWorld);
+                this._worldMatrix.copyFrom(this._localMatrix);
             }
 
             // Normal matrix
