@@ -26,6 +26,7 @@ export class RadioButtonLineComponent extends React.Component<IRadioButtonLineCo
     componentWillUnmount() {
         if (this._onSelectionChangedObserver) {
             this.props.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+            this._onSelectionChangedObserver = null;
         }
     }
 
