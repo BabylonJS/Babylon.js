@@ -24,7 +24,13 @@ module BABYLON {
         private _from = Number.MAX_VALUE;
         private _to = -Number.MAX_VALUE;
         private _isStarted: boolean;
+        private _isPaused: boolean;
         private _speedRatio = 1;
+
+        /**
+         * Gets or sets the unique id of the node
+         */
+        public uniqueId: number;
 
         /**
          * This observable will notify when one animation have ended.
@@ -40,6 +46,11 @@ module BABYLON {
          * This observable will notify when all animations have paused.
          */
         public onAnimationGroupPauseObservable = new Observable<AnimationGroup>();
+
+        /**
+         * This observable will notify when all animations are playing.
+         */
+        public onAnimationGroupPlayObservable = new Observable<AnimationGroup>();
 
         /**
          * Gets the first frame
@@ -60,6 +71,13 @@ module BABYLON {
          */
         public get isStarted(): boolean {
             return this._isStarted;
+        }
+
+        /**
+         * Gets a value indicating that the current group is playing
+         */
+        public get isPlaying(): boolean {
+            return this._isStarted && !this._isPaused;
         }
 
         /**
@@ -111,6 +129,7 @@ module BABYLON {
             public name: string,
             scene: Nullable<Scene> = null) {
             this._scene = scene || Engine.LastCreatedScene!;
+            this.uniqueId = this._scene.getUniqueId();
 
             this._scene.animationGroups.push(this);
         }
@@ -216,6 +235,9 @@ module BABYLON {
             }
 
             this._isStarted = true;
+            this._isPaused = false;
+
+            this.onAnimationGroupPlayObservable.notifyObservers(this);
 
             return this;
         }
@@ -228,6 +250,8 @@ module BABYLON {
             if (!this._isStarted) {
                 return this;
             }
+
+            this._isPaused = true;
 
             for (var index = 0; index < this._animatables.length; index++) {
                 let animatable = this._animatables[index];
@@ -259,6 +283,8 @@ module BABYLON {
                 this.stop();
                 this.start(loop, this._speedRatio);
             }
+
+            this._isPaused = false;
 
             return this;
         }
@@ -293,6 +319,8 @@ module BABYLON {
                 let animatable = this._animatables[index];
                 animatable.restart();
             }
+
+            this.onAnimationGroupPlayObservable.notifyObservers(this);
 
             return this;
         }

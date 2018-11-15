@@ -14,18 +14,8 @@ interface IArcRotateCameraPropertyGridComponentProps {
 }
 
 export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRotateCameraPropertyGridComponentProps> {
-    private _timerIntervalId: number;
-
     constructor(props: IArcRotateCameraPropertyGridComponentProps) {
         super(props);
-    }
-
-    componentWillMount() {
-        this._timerIntervalId = window.setInterval(() => this.forceUpdate(), 500);
-    }
-
-    componentWillUnmount() {
-        window.clearInterval(this._timerIntervalId);
     }
 
     render() {
