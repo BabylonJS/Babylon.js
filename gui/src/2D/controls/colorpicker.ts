@@ -482,7 +482,7 @@ export class ColorPicker extends Control {
             // This int is used for naming swatches and serves as the index for calling them from the list
             var swatchNumber: number;
 
-            // Menu Panel options. We need to know if the swatchDrawer is null so we can create it the first time.
+            // Menu Panel options. We need to know if the swatchDrawer exists so we can create it if needed.
             var swatchDrawerOpen: boolean = false;
             var swatchDrawer: Grid;
             var editSwatchMode = false;
@@ -662,7 +662,7 @@ export class ColorPicker extends Control {
                         swatch.thickness = 2;
                     };
                     swatch.onPointerClickObservable.add(() => { 
-                        if (editSwatchMode) {
+                        if (!editSwatchMode) {
                             if (options.savedColors) {
                                 UpdateValues(BABYLON.Color3.FromHexString(options.savedColors[swatch.metadata]));
                             }
@@ -672,7 +672,7 @@ export class ColorPicker extends Control {
                             SaveColor("", butSave);
                         } 
                     });
-                    console.log("swatch name: " + swatch.name);
+                    console.log("swatch: " + swatch.name + ": " + options.savedColors[swatch.metadata]);
                     return swatch;
                 }
                 else {
@@ -700,7 +700,7 @@ export class ColorPicker extends Control {
                             swatchDrawer.addColumnDefinition(1 / options.numSwatchesPerLine!, false);            
                         }  
                     }
-                    if (color != null) {
+                    if (color != "") {
                         options.savedColors.push(color);
                     }
                     swatchNumber = 0;
@@ -714,10 +714,10 @@ export class ColorPicker extends Control {
                         }
 
                         // Update diaogue container sizes
-                        dialogueContainer.height = (parseInt(options.pickerHeight!) + ((options.swatchSize! * 1.5) * (rowCount!))).toString() + "px";
-                        var topRow = parseInt(options.pickerHeight!) / parseInt(dialogueContainer.height);
-                        dialogueContainer.setRowDefinition(0, topRow, false);
-                        dialogueContainer.setRowDefinition(1, 1.0 - topRow, false);
+                        dialogContainer.height = (parseInt(options.pickerHeight!) + ((options.swatchSize! * 1.5) * (rowCount!))).toString() + "px";
+                        var topRow = parseInt(options.pickerHeight!) / parseInt(dialogContainer.height);
+                        dialogContainer.setRowDefinition(0, topRow, false);
+                        dialogContainer.setRowDefinition(1, 1.0 - topRow, false);
 
                         swatchDrawer.height = ((options.swatchSize! * 1.5) * rowCount).toString() + "px";
                         
@@ -738,13 +738,12 @@ export class ColorPicker extends Control {
                     if (options.savedColors.length >= options.swatchLimit!) {
                         DisableButton(button);
                     }
-                    dialogueContainer.addControl(swatchDrawer, 1, 0);
+                    dialogContainer.addControl(swatchDrawer, 1, 0);
                 }
 
             }
 
             function AddSwatchControl() {
-
                 // Add Edit button to the picker panel
                 var butEdit = Button.CreateSimpleButton("butEdit", "Edit Swatches");
                 butEdit.width = "140px";
@@ -770,15 +769,21 @@ export class ColorPicker extends Control {
                     butEdit.background = buttonBackgroundHoverColor;
                 };
                 butEdit.onPointerClickObservable.add(() => { 
-                    ClosePicker(newSwatch.background); 
+                    if (editSwatchMode) {
+                        editSwatchMode = false;
+                        (butEdit.children[0] as TextBlock).text = "Edit Swatches";
+                    }
+                    else {
+                        editSwatchMode = true;
+                        (butEdit.children[0] as TextBlock).text = "Done";
+                    }
                 });
-                pickerPanel.addControl(butEdit, 1, 0);
-                
+                pickerPanel.addControl(butEdit, 1, 0);               
             }
 
             // Passes last chosen color back to scene and kills dialog by removing from AdvancedDynamicTexture
             function ClosePicker(color: string) {
-                if (options.savedColors) {
+                if (options.savedColors && options.savedColors.length > 0) {
                     resolve({ 
                         savedColors: options.savedColors, 
                         pickedColor: color
@@ -786,29 +791,28 @@ export class ColorPicker extends Control {
                 } 
                 else {
                     resolve({ 
-                        savedColors: options.savedColors, 
                         pickedColor: color
                     });
                 }
  
-                advancedTexture.removeControl(dialogueContainer);
+                advancedTexture.removeControl(dialogContainer);
             }
 
             // Dialogue menu container which will contain both the main dialogue window and the swatch drawer which opens once a color is saved.
-            var dialogueContainer = new Grid();
-            dialogueContainer.name = "Dialogue Container";
-            dialogueContainer.width = options.pickerWidth;
+            var dialogContainer = new Grid();
+            dialogContainer.name = "Dialog Container";
+            dialogContainer.width = options.pickerWidth;
             if (options.savedColors) {
-                dialogueContainer.height = (parseInt(options.pickerHeight) + ((options.swatchSize * 1.5) * (rowCount!))).toString() + "px";
-                var topRow = parseInt(options.pickerHeight) / parseInt(dialogueContainer.height);
-                dialogueContainer.addRowDefinition(topRow, false);
-                dialogueContainer.addRowDefinition(1.0 - topRow, false);
+                dialogContainer.height = (parseInt(options.pickerHeight) + ((options.swatchSize * 1.5) * (rowCount!))).toString() + "px";
+                var topRow = parseInt(options.pickerHeight) / parseInt(dialogContainer.height);
+                dialogContainer.addRowDefinition(topRow, false);
+                dialogContainer.addRowDefinition(1.0 - topRow, false);
             }
             else {
-                dialogueContainer.height = parseInt(options.pickerHeight);
-                dialogueContainer.addRowDefinition(1.0, false);
+                dialogContainer.height = parseInt(options.pickerHeight);
+                dialogContainer.addRowDefinition(1.0, false);
             }
-            advancedTexture.addControl(dialogueContainer);
+            advancedTexture.addControl(dialogContainer);
 
             // Picker container
             var pickerPanel = new Grid();
@@ -817,7 +821,7 @@ export class ColorPicker extends Control {
             pickerPanel.height = options.pickerHeight;
             pickerPanel.addRowDefinition(35, true);
             pickerPanel.addRowDefinition(1.0, false);
-            dialogueContainer.addControl(pickerPanel, 0, 0);
+            dialogContainer.addControl(pickerPanel, 0, 0);
 
             // Picker container head
             var header = new Rectangle();
@@ -977,6 +981,9 @@ export class ColorPicker extends Control {
             });
             pickerSwatchesButtons.addControl(butCancel, 0, 1);     
         
+/************* DELETE NEXT LINE ********************/
+console.log(butCancel.name + " button text: " + butCancel.children[0].name);
+
             if (options.savedColors) {
                 var butSave = Button.CreateSimpleButton("butSave", "Save Swatch");
                 butSave.width = "140px";
@@ -1022,6 +1029,7 @@ export class ColorPicker extends Control {
                 };
                 butSave.onPointerClickObservable.add(() => {
                     if (options.savedColors) {
+                        console.log("savedColors Length: " + options.savedColors.length);
                         if (options.savedColors.length == 0) {
                             AddSwatchControl();
                         }
