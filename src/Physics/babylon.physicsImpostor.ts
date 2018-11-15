@@ -156,7 +156,8 @@ module BABYLON {
 
         private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
         private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
-        private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = [];
+        /** @hidden */
+        public _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = [];
 
         private _deltaPosition: Vector3 = Vector3.Zero();
         private _deltaRotation: Quaternion;
