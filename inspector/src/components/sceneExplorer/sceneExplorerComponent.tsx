@@ -179,6 +179,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     guiElements && guiElements.length > 0 &&
                     <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} filter={this.state.filter} />
                 }
+                {
+                    scene.animationGroups.length > 0 &&
+                    <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.animationGroups} label="Animation groups" offset={1} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} filter={this.state.filter} />
+                }
             </div>
         )
     }

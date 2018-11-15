@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { Mesh, TransformNode, Material, StandardMaterial, Texture, PBRMaterial, Scene, FreeCamera, ArcRotateCamera, HemisphericLight, PointLight, BackgroundMaterial } from "babylonjs";
+import { Mesh, TransformNode, Material, StandardMaterial, Texture, PBRMaterial, Scene, FreeCamera, ArcRotateCamera, HemisphericLight, PointLight, BackgroundMaterial, AnimationGroup } from "babylonjs";
 import { MaterialPropertyGridComponent } from "./propertyGrids/materials/materialPropertyGridComponent";
 import { StandardMaterialPropertyGridComponent } from "./propertyGrids/materials/standardMaterialPropertyGridComponent";
 import { TexturePropertyGridComponent } from "./propertyGrids/materials/texturePropertyGridComponent";
@@ -21,10 +21,21 @@ import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
 import { ColorPicker } from "babylonjs-gui";
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
+import { AnimationGroupGridComponent } from "./propertyGrids/animationGroupPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
+    private _timerIntervalId: number;
+
     constructor(props: IPaneComponentProps) {
         super(props);
+    }
+
+    componentWillMount() {
+        this._timerIntervalId = window.setInterval(() => this.forceUpdate(), 500);
+    }
+
+    componentWillUnmount() {
+        window.clearInterval(this._timerIntervalId);
     }
 
     render() {
@@ -100,6 +111,14 @@ export class PropertyGridTabComponent extends PaneComponent {
                 return (<BackgroundMaterialPropertyGridComponent
                     material={material}
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "AnimationGroup") {
+                const animationGroup = entity as AnimationGroup;
+                return (<AnimationGroupGridComponent
+                    animationGroup={animationGroup}
+                    scene={this.props.scene}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
