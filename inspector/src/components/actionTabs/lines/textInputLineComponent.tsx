@@ -1,10 +1,12 @@
 import * as React from "react";
 import { Observable } from "babylonjs";
 import { PropertyChangedEvent } from "components/propertyChangedEvent";
+import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface ITextInputLineComponentProps {
     label: string,
     target: any,
+    lockObject: LockObject,
     propertyName: string,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
@@ -16,6 +18,10 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         super(props);
 
         this.state = { value: this.props.target[this.props.propertyName] || "" }
+    }
+
+    componentWillUnmount() {
+        this.props.lockObject.lock = false;
     }
 
     shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string }) {
@@ -61,7 +67,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} />
+                    <input value={this.state.value} onBlur={() => this.props.lockObject.lock = false} onFocus={() => this.props.lockObject.lock = true} onChange={evt => this.updateValue(evt.target.value)} />
                 </div>
             </div>
         );

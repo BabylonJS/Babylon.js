@@ -10,9 +10,11 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
+import { LockObject } from "../lockObject";
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -78,8 +80,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
                         <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={adtTexture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Premultiply alpha" target={adtTexture} propertyName="premulAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent label="Ideal width" target={adtTexture} propertyName="idealWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent label="Ideal height" target={adtTexture} propertyName="idealHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Ideal width" target={adtTexture} propertyName="idealWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Ideal height" target={adtTexture} propertyName="idealHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Use smallest ideal" target={adtTexture} propertyName="useSmallestIdeal" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Render at ideal size" target={adtTexture} propertyName="renderAtIdealSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
@@ -88,13 +90,13 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     {
                         !texture.isCube &&
                         <div>
-                            <FloatLineComponent label="U offset" target={texture} propertyName="uOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <FloatLineComponent label="V offset" target={texture} propertyName="vOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <FloatLineComponent label="V scale" target={texture} propertyName="uScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <FloatLineComponent label="V scale" target={texture} propertyName="vScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <FloatLineComponent label="U angle" target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <FloatLineComponent label="V angle" target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <FloatLineComponent label="W angle" target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="U offset" target={texture} propertyName="uOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="V offset" target={texture} propertyName="vOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="V scale" target={texture} propertyName="uScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="V scale" target={texture} propertyName="vScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="U angle" target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="V angle" target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="W angle" target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
                             <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
                         </div>

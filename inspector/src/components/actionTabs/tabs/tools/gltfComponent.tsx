@@ -76,11 +76,11 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
             <LineContainerComponent title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
                 {
                     issues.numErrors !== 0 &&
-                    <MessageLineComponent text="Your file has some validation issues" icon={faTimesCircle} color="Red"/>
+                    <MessageLineComponent text="Your file has some validation issues" icon={faTimesCircle} color="Red" />
                 }
                 {
                     issues.numErrors === 0 &&
-                    <MessageLineComponent text="Your file is a valid glTF file" icon={faCheck} color="Green"/>
+                    <MessageLineComponent text="Your file is a valid glTF file" icon={faCheck} color="Green" />
                 }
                 <TextLineComponent label="Errors" value={issues.numErrors.toString()} />
                 <TextLineComponent label="Warnings" value={issues.numWarnings.toString()} />
