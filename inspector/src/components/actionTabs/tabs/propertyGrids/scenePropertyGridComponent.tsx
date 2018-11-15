@@ -10,6 +10,8 @@ import { FileButtonLineComponent } from "../../lines/fileButtonLineComponent";
 import { TextureLinkLineComponent } from "../../lines/textureLinkLineComponent";
 import { Vector3LineComponent } from "../../lines/vector3LineComponent";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
+import { SliderLineComponent } from "../../lines/sliderLineComponent";
+import { OptionsLineComponent } from "../../lines/optionsLineComponent";
 
 interface IScenePropertyGridComponentProps {
     scene: Scene,
@@ -19,6 +21,7 @@ interface IScenePropertyGridComponentProps {
 
 export class ScenePropertyGridComponent extends React.Component<IScenePropertyGridComponentProps> {
     private _storedEnvironmentTexture: Nullable<BaseTexture>;
+    private _renderingModeGroupObservable = new BABYLON.Observable<RadioButtonLineComponent>();
 
     constructor(props: IScenePropertyGridComponentProps) {
         super(props);
@@ -90,7 +93,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
     render() {
         const scene = this.props.scene;
 
-        const renderingModeGroupObservable = new BABYLON.Observable<RadioButtonLineComponent>();
 
         const physicsEngine = scene.getPhysicsEngine();
         let dummy: Nullable<{ gravity: Vector3, timeStep: number }> = null;
@@ -102,12 +104,19 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
             }
         }
 
+        const imageProcessing = scene.imageProcessingConfiguration;
+
+        var toneMappingOptions = [
+            { label: "Standard", value: BABYLON.ImageProcessingConfiguration.TONEMAPPING_STANDARD },
+            { label: "ACES", value: BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES }
+        ]
+
         return (
             <div className="pane">
                 <LineContainerComponent title="RENDERING MODE">
-                    <RadioButtonLineComponent onSelectionChangedObservable={renderingModeGroupObservable} label="Point" isSelected={() => scene.forcePointsCloud} onSelect={() => this.setRenderingModes(true, false)} />
-                    <RadioButtonLineComponent onSelectionChangedObservable={renderingModeGroupObservable} label="Wireframe" isSelected={() => scene.forceWireframe} onSelect={() => this.setRenderingModes(false, true)} />
-                    <RadioButtonLineComponent onSelectionChangedObservable={renderingModeGroupObservable} label="Solid" isSelected={() => !scene.forcePointsCloud && !scene.forceWireframe} onSelect={() => this.setRenderingModes(false, false)} />
+                    <RadioButtonLineComponent onSelectionChangedObservable={this._renderingModeGroupObservable} label="Point" isSelected={() => scene.forcePointsCloud} onSelect={() => this.setRenderingModes(true, false)} />
+                    <RadioButtonLineComponent onSelectionChangedObservable={this._renderingModeGroupObservable} label="Wireframe" isSelected={() => scene.forceWireframe} onSelect={() => this.setRenderingModes(false, true)} />
+                    <RadioButtonLineComponent onSelectionChangedObservable={this._renderingModeGroupObservable} label="Solid" isSelected={() => !scene.forcePointsCloud && !scene.forceWireframe} onSelect={() => this.setRenderingModes(false, false)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
                     <Color3LineComponent label="Clear color" target={scene} propertyName="clearColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -120,6 +129,12 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                     }
                     <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
                     <FogPropertyGridComponent scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
+                <LineContainerComponent title="IMAGE PROCESSING">
+                    <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Contrast" target={imageProcessing} propertyName="contrast" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Exposure" target={imageProcessing} propertyName="exposure" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Tone mapping" target={imageProcessing} propertyName="toneMappingEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Tone mapping type" options={toneMappingOptions} target={imageProcessing} propertyName="toneMappingType" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ mode: value })} />
                 </LineContainerComponent>
                 {
                     dummy !== null &&
