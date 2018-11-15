@@ -274,7 +274,7 @@ gulp.task("build", gulp.series("shaders", function build() {
 * TsLint all typescript files from the src directory.
 */
 gulp.task("typescript-tsLint", function() {
-    const dtsFilter = filter(['**', '!**/*.d.ts'], {restore: false});
+    const dtsFilter = filter(['**', '!**/*.d.ts'], { restore: false });
     return gulp.src(config.typescript)
         .pipe(dtsFilter)
         .pipe(gulpTslint({
@@ -348,7 +348,7 @@ gulp.task("tsLint", gulp.series("typescript-tsLint", "typescript-libraries-tsLin
 * Compiles all typescript files and creating a js and a declaration file.
 */
 gulp.task("typescript-compile", function() {
-    const dtsFilter = filter(['**', '!**/*.d.ts'], {restore: false});
+    const dtsFilter = filter(['**', '!**/*.d.ts'], { restore: false });
     var tsResult = gulp.src(config.typescript)
         .pipe(dtsFilter)
         .pipe(sourcemaps.init())
@@ -686,7 +686,6 @@ var buildExternalLibrary = function(library, settings, watch) {
                         cb();
                     }))
                     .pipe(rename(function(path) {
-                        console.log(path.basename);
                         //path.extname === ".js"
                         path.basename = path.basename.replace(".min", "")
                     })).pipe(gulp.dest(outputDirectory));
@@ -883,7 +882,7 @@ gulp.task("netlify-cleanup", function() {
 
 // this is needed for the modules for the declaration files.
 gulp.task("modules-compile", function() {
-    const dtsFilter = filter(['**', '!**/*.d.ts'], {restore: false});
+    const dtsFilter = filter(['**', '!**/*.d.ts'], { restore: false });
     var tsResult = gulp.src(config.typescript)
         .pipe(dtsFilter)
         .pipe(sourcemaps.init())
