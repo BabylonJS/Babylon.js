@@ -245,7 +245,7 @@ module BABYLON {
 
         /**
          * Resets the refresh counter of the texture and start bak from scratch.
-         * Could be usefull to regenerate the texture if it is setup to render only once.
+         * Could be useful to regenerate the texture if it is setup to render only once.
          */
         public resetRefreshCounter(): void {
             this._currentRefreshId = -1;

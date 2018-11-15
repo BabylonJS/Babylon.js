@@ -286,7 +286,7 @@ export class Grid extends Container {
         return "Grid";
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _getGridDefinitions(definitionCallback: (lefts: number[], tops: number[], widths: number[], heights: number[]) => void) {
         let widths = [];
         let heights = [];
         let lefts = [];
@@ -352,23 +352,71 @@ export class Grid extends Container {
             index++;
         }
 
-        // Setting child sizes
+        definitionCallback(lefts, tops, widths, heights);
+    }
+
+    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
+            // Setting child sizes
+            for (var key in this._cells) {
+                if (!this._cells.hasOwnProperty(key)) {
+                    continue;
+                }
+                let split = key.split(":");
+                let x = parseInt(split[0]);
+                let y = parseInt(split[1]);
+                let cell = this._cells[key];
+
+                cell.left = lefts[y] + "px";
+                cell.top = tops[x] + "px";
+                cell.width = widths[y] + "px";
+                cell.height = heights[x] + "px";
+            }
+        });
+
+        super._additionalProcessing(parentMeasure, context);
+    }
+
+    public _flagDescendantsAsMatrixDirty(): void {
         for (var key in this._cells) {
             if (!this._cells.hasOwnProperty(key)) {
                 continue;
             }
-            let split = key.split(":");
-            let x = parseInt(split[0]);
-            let y = parseInt(split[1]);
-            let cell = this._cells[key];
 
-            cell.left = lefts[y] + "px";
-            cell.top = tops[x] + "px";
-            cell.width = widths[y] + "px";
-            cell.height = heights[x] + "px";
+            let child = this._cells[key];
+            child._markMatrixAsDirty();
+        }
+    }
+
+    protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+        if (!this.isHighlighted) {
+            return;
         }
 
-        super._additionalProcessing(parentMeasure, context);
+        super._renderHighlightSpecific(context);
+
+        this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
+
+            // Columns
+            for (var index = 0; index < lefts.length; index++) {
+                const left = this._currentMeasure.left + lefts[index] + widths[index];
+                context.beginPath();
+                context.moveTo(left, this._currentMeasure.top);
+                context.lineTo(left, this._currentMeasure.top + this._currentMeasure.height);
+                context.stroke();
+            }
+
+            // Rows
+            for (var index = 0; index < tops.length; index++) {
+                const top = this._currentMeasure.top + tops[index] + heights[index];
+                context.beginPath();
+                context.moveTo(this._currentMeasure.left, top);
+                context.lineTo(this._currentMeasure.left + this._currentMeasure.width, top);
+                context.stroke();
+            }
+        });
+
+        context.restore();
     }
 
     /** Releases associated resources */

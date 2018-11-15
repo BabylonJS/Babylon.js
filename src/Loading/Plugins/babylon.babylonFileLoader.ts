@@ -55,6 +55,19 @@ module BABYLON {
                 }
             }
 
+            // Reflection probes
+            if (parsedData.reflectionProbes !== undefined && parsedData.reflectionProbes !== null) {
+                for (index = 0, cache = parsedData.reflectionProbes.length; index < cache; index++) {
+                    var parsedReflectionProbe = parsedData.reflectionProbes[index];
+                    var reflectionProbe = ReflectionProbe.Parse(parsedReflectionProbe, scene, rootUrl);
+                    if (reflectionProbe) {
+                        container.reflectionProbes.push(reflectionProbe);
+                        log += (index === 0 ? "\n\tReflection Probes:" : "");
+                        log += "\n\t\t" + reflectionProbe.toString(fullDetails);
+                    }
+                }
+            }
+
             // Animations
             if (parsedData.animations !== undefined && parsedData.animations !== null) {
                 for (index = 0, cache = parsedData.animations.length; index < cache; index++) {

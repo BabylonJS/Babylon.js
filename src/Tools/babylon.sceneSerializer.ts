@@ -209,6 +209,16 @@ module BABYLON {
             // Animations
             Animation.AppendSerializedAnimations(scene, serializationObject);
 
+            // Reflection probes
+            if (scene.reflectionProbes && scene.reflectionProbes.length > 0) {
+                serializationObject.reflectionProbes = [];
+
+                for (index = 0; index < scene.reflectionProbes.length; index++) {
+                    var reflectionProbe = scene.reflectionProbes[index];
+                    serializationObject.reflectionProbes.push(reflectionProbe.serialize());
+                }
+            }
+
             // Materials
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];
