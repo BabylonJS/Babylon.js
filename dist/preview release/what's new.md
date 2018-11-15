@@ -67,12 +67,18 @@
 - Added `Tools.CustomRequestHeaders`, `Tools.UseCustomRequestHeaders`, `Tools.InjectCustomRequestHeaders` to send Custom Request Headers alongside XMLHttpRequest's i.e. when loading files (Tools.Loadfile) from resources requiring special headers like 'Authorization' ([susares](https://github.com/susares))
 - Added `.serialize` and `.Parse` functions in `ReflectionProbe` to retrieve reflection probes when parsing a previously serialized material ([julien-moreau](https://github.com/julien-moreau))
 - GizmoManager clearGizmoOnEmptyPointerEvent options and onAttachedToMeshObservable event ([TrevorDev](https://github.com/TrevorDev))
+- Added support for overriding the mesh used for the world matrix for a mesh with a skeleton ([bghgary](https://github.com/bghgary))
+- Added support for linking a bone to a transform node ([bghgary](https://github.com/bghgary))
+
 ### glTF Loader
 
 - Added support for mesh instancing for improved performance when multiple nodes point to the same mesh ([bghgary](https://github.com/bghgary))
 - Create `TransformNode` objects instead of `Mesh` objects for glTF nodes without geometry ([bghgary](https://github.com/bghgary))
 - Added glTF JSON pointers to metadata of nodes, materials, and textures ([bghgary](https://github.com/bghgary))
 - Load KTX textures in the gltf2 loader when textureFormat is set on engine ([TrevorDev](https://github.com/TrevorDev))
+- Skinned meshes now behave as intended by glTF ([bghgary](https://github.com/bghgary))
+  - Skinned meshes now set an override mesh instead of reparenting to the `__root__` transform node
+  - Loaded bones are linked with the transform node created for the corresponding glTF node
 
 ### glTF Serializer
 
