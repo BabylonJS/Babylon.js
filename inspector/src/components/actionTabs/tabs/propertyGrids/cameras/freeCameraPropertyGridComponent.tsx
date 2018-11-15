@@ -13,18 +13,8 @@ interface IFreeCameraPropertyGridComponentProps {
 }
 
 export class FreeCameraPropertyGridComponent extends React.Component<IFreeCameraPropertyGridComponentProps> {
-    private _timerIntervalId: number;
-
     constructor(props: IFreeCameraPropertyGridComponentProps) {
         super(props);
-    }
-
-    componentWillMount() {
-        this._timerIntervalId = window.setInterval(() => this.forceUpdate(), 500);
-    }
-
-    componentWillUnmount() {
-        window.clearInterval(this._timerIntervalId);
     }
 
     render() {

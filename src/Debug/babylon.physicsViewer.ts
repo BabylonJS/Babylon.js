@@ -62,16 +62,17 @@ module BABYLON.Debug {
         /**
          * Renders a specified physic impostor
          * @param impostor defines the impostor to render
+         * @returns the new debug mesh used to render the impostor
          */
-        public showImpostor(impostor: PhysicsImpostor): void {
+        public showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh> {
 
             if (!this._scene) {
-                return;
+                return null;
             }
 
             for (var i = 0; i < this._numMeshes; i++) {
                 if (this._impostors[i] == impostor) {
-                    return;
+                    return null;
                 }
             }
 
@@ -89,6 +90,7 @@ module BABYLON.Debug {
                 this._numMeshes++;
             }
 
+            return debugMesh;
         }
 
         /**
