@@ -11,6 +11,7 @@ module BABYLON {
         private _tmpQuaternion = new BABYLON.Quaternion();
         private _tmpAmmoTransform:any;
         private _tmpAmmoQuaternion:any;
+        private _tmpAmmoConcreteContactResultCallback:any;
 
         public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
             if(typeof Ammo === "function"){
@@ -29,6 +30,7 @@ module BABYLON {
             this.world           = new this.BJSAMMO.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
             this._tmpAmmoTransform = new this.BJSAMMO.btTransform();
             this._tmpAmmoQuaternion = new this.BJSAMMO.btQuaternion(0,0,0,1);
+            this._tmpAmmoConcreteContactResultCallback = new this.BJSAMMO.ConcreteContactResultCallback();
         }
 
         public setGravity(gravity: Vector3): void {
@@ -43,13 +45,47 @@ module BABYLON {
             return this._fixedTimeStep;
         }
 
+        // Ammo's contactTest and contactPairTest take a callback that runs synchronously, wrap them so that they are easier to consume 
+        private _contactTest(impostor:PhysicsImpostor){
+            var result = false;
+            this._tmpAmmoConcreteContactResultCallback.addSingleResult = function(){ result = true }
+            this.world.contactTest(impostor.physicsBody,this._tmpAmmoConcreteContactResultCallback);
+            return result;
+        }
+        // Ammo's collision events have some weird quirks
+        // contactPairTest fires too many events as it fires events even when objects are close together but contactTest does not
+        // so only fire event if both contactTest and contactPairTest have a hit
+        private _contactPairTest(impostorA:PhysicsImpostor, impostorB:PhysicsImpostor){
+            var result = false;
+            this._tmpAmmoConcreteContactResultCallback.addSingleResult = function(){ result = true }
+            this.world.contactPairTest(impostorA.physicsBody, impostorB.physicsBody,this._tmpAmmoConcreteContactResultCallback);
+            return result;
+        }
+
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
             impostors.forEach(function(impostor) {
                 impostor.beforeStep();
             });
             this.world.stepSimulation(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
-            impostors.forEach((impostor) => {
-                impostor.afterStep();
+
+            impostors.forEach((mainImpostor) => {
+                mainImpostor.afterStep();
+
+                // Handle collision
+                if(mainImpostor._onPhysicsCollideCallbacks.length > 0){
+                    if(this._contactTest(mainImpostor)){
+                        mainImpostor._onPhysicsCollideCallbacks.forEach((c)=>{
+                            c.otherImpostors.forEach((otherImpostor)=>{
+                                if(mainImpostor.physicsBody.isActive() || otherImpostor.physicsBody.isActive()){
+                                    if(this._contactPairTest(mainImpostor, otherImpostor)){                                    
+                                        mainImpostor.onCollide({ body: otherImpostor.physicsBody });
+                                        otherImpostor.onCollide({ body: mainImpostor.physicsBody });
+                                    }
+                                }
+                            })
+                        })
+                    }
+                }
             });
         }
 
@@ -97,7 +133,6 @@ module BABYLON {
             }
         }
 
-
         public removePhysicsBody(impostor: PhysicsImpostor) {
             this.world.removeRigidBody(impostor.physicsBody);
         }
@@ -123,27 +158,18 @@ module BABYLON {
                     joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
                     break;
                 // case PhysicsJoint.SpringJoint:
-                //     Tools.Warn("OIMO.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
-                //     var springData = <SpringJointData>jointData;
-                //     nativeJointData.min = springData.length || nativeJointData.min;
-                //     //Max should also be set, just make sure it is at least min
-                //     nativeJointData.max = Math.max(nativeJointData.min, nativeJointData.max);
+                //     break;
                 // case PhysicsJoint.DistanceJoint:
-                //     type = "jointDistance";
-                //     nativeJointData.max = (<DistanceJointData>jointData).maxDistance;
                 //     break;
                 // case PhysicsJoint.PrismaticJoint:
-                //     type = "jointPrisme";
                 //     break;
                 // case PhysicsJoint.SliderJoint:
-                //     type = "jointSlide";
                 //     break;
                 // case PhysicsJoint.WheelJoint:
-                //     type = "jointWheel";
                 //     break;
-                case PhysicsJoint.HingeJoint:
-                    joint = new Ammo.btHingeConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
-                    break;
+                // case PhysicsJoint.HingeJoint:
+                //     joint = new Ammo.btHingeConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
+                //     break;
                 default:
                     joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
                     break;
