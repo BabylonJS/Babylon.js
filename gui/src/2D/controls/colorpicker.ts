@@ -514,7 +514,12 @@ export class ColorPicker extends Control {
 
             // Drawer height calculations
             if (options.savedColors) {
-                var rowCount = Math.ceil(options.savedColors.length/options.numSwatchesPerLine);
+                if (options.savedColors.length == 0) {
+                    var rowCount = 1;
+                }
+                else {
+                    var rowCount = Math.ceil(options.savedColors.length/options.numSwatchesPerLine);
+                }
             }
 
             /** 
@@ -692,6 +697,21 @@ export class ColorPicker extends Control {
                 }
             }
 
+            function UpdateDialogSize(gridControl: Grid) {
+                // Update diaogue container sizes
+                if (gridControl.rowCount > 1) {
+                    gridControl.height = (parseInt(options.pickerHeight!) + ((options.swatchSize! * 1.5) * (rowCount!)) + (options.swatchSize! / 2)).toString() + "px";
+                    var topRow = parseInt(options.pickerHeight!) / parseInt(gridControl.height);
+                    gridControl.setRowDefinition(0, topRow, false);
+                    gridControl.setRowDefinition(1, 1.0 - topRow, false);    
+                } else {
+                    gridControl.height = (parseInt(options.pickerHeight!) + ((options.swatchSize! * 1.5) * (rowCount!)) + (options.swatchSize! / 2)).toString() + "px";
+                    var topRow = parseInt(options.pickerHeight!) / parseInt(gridControl.height);
+                    gridControl.setRowDefinition(0, topRow, false);
+                    gridControl.addRowDefinition(1.0 - topRow, false);     
+                }
+            }
+
             /** 
              * When Save Color button is pressed this function will first create a swatch drawer if one is not already 
              * made. Then all controls are removed from the drawer and we step through the savedColors array and 
@@ -724,13 +744,7 @@ export class ColorPicker extends Control {
                         for (var i = 0; i < rowCount; i++) {
                             swatchDrawer.setRowDefinition(i, 1 / rowCount, false);
                         }
-
-                        // Update diaogue container sizes
-                        dialogContainer.height = (parseInt(options.pickerHeight!) + ((options.swatchSize! * 1.5) * (rowCount!))).toString() + "px";
-                        var topRow = parseInt(options.pickerHeight!) / parseInt(dialogContainer.height);
-                        dialogContainer.setRowDefinition(0, topRow, false);
-                        dialogContainer.setRowDefinition(1, 1.0 - topRow, false);
-
+                        UpdateDialogSize(dialogContainer);
                         swatchDrawer.height = ((options.swatchSize! * 1.5) * rowCount).toString() + "px";
                         
                         // Determine number of buttons to create per row based on the button limit per row and number of saved colors
@@ -814,14 +828,12 @@ export class ColorPicker extends Control {
             var dialogContainer = new Grid();
             dialogContainer.name = "Dialog Container";
             dialogContainer.width = options.pickerWidth;
-            if (options.savedColors) {
-                dialogContainer.height = (parseInt(options.pickerHeight) + ((options.swatchSize * 1.5) * (rowCount!))).toString() + "px";
-                var topRow = parseInt(options.pickerHeight) / parseInt(dialogContainer.height);
-                dialogContainer.addRowDefinition(topRow, false);
-                dialogContainer.addRowDefinition(1.0 - topRow, false);
+            if (options.savedColors && options.savedColors.length > 0) {
+                UpdateDialogSize(dialogContainer);
             }
             else {
-                dialogContainer.height = parseInt(options.pickerHeight);
+                var int = options.pickerHeight.split("px");
+                dialogContainer.height = parseInt(int[0]) + "px";
                 dialogContainer.addRowDefinition(1.0, false);
             }
             advancedTexture.addControl(dialogContainer);
@@ -899,6 +911,7 @@ export class ColorPicker extends Control {
 
             // Picker color values input
             var pickerColorValues = new Grid();
+            pickerColorValues.name = "Dialog Lower Right";
             pickerColorValues.addRowDefinition(10, true);
             pickerColorValues.addRowDefinition(115, true);
             pickerColorValues.addRowDefinition(35, true);
@@ -907,11 +920,13 @@ export class ColorPicker extends Control {
             // New color swatch and old color swatch
             var newText = new TextBlock();
             newText.text = "new";
+            newText.name = "New Color Label";
             newText.color = lightStrokeColor;
             newText.fontSize = 16;
             pickerSwatches.addControl(newText, 0, 0);    
 
             newSwatch = new Rectangle();
+            newSwatch.name = "New Color Swatch";
             newSwatch.background = options.lastColor;
             newSwatch.width = "100px";
             newSwatch.height = "60px";
@@ -934,6 +949,7 @@ export class ColorPicker extends Control {
             pickerSwatches.addControl(currentSwatch, 2, 0);
 
             var swatchOutline = new Rectangle();
+            swatchOutline.name = "Swatched Outline";
             swatchOutline.width = "100px";
             swatchOutline.height = "120px";
             swatchOutline.top = "5px";
@@ -943,6 +959,7 @@ export class ColorPicker extends Control {
             pickerSwatchesButtons.addControl(swatchOutline, 0, 0);
 
             var currentText = new TextBlock();
+            currentText.name = "Current Color Label";
             currentText.text = "current";
             currentText.color = lightStrokeColor;
             currentText.fontSize = 16;
@@ -992,9 +1009,6 @@ export class ColorPicker extends Control {
                 ClosePicker(currentSwatch.background); 
             });
             pickerSwatchesButtons.addControl(butCancel, 0, 1);     
-        
-/************* DELETE NEXT LINE ********************/
-console.log(butCancel.name + " button text: " + butCancel.children[0].name);
 
             if (options.savedColors) {
                 var butSave = Button.CreateSimpleButton("butSave", "Save Swatch");
@@ -1059,6 +1073,7 @@ console.log(butCancel.name + " button text: " + butCancel.children[0].name);
             // RGB values text boxes
             currentColor = Color3.FromHexString(options.lastColor);
             var rgbValuesQuadrant = new Grid();
+            rgbValuesQuadrant.name = "RGB Values";
             rgbValuesQuadrant.width = "300px";
             rgbValuesQuadrant.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             rgbValuesQuadrant.addRowDefinition(1/3, false);
@@ -1212,6 +1227,7 @@ console.log(butCancel.name + " button text: " + butCancel.children[0].name);
 
             // Hex value input
             var hexValueQuadrant = new Grid();
+            hexValueQuadrant.name = "Hex Value";
             hexValueQuadrant.width = "300px";
             hexValueQuadrant.addRowDefinition(1.0, false);
             hexValueQuadrant.addColumnDefinition(0.1, false);
