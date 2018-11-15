@@ -22,16 +22,24 @@ import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPro
 import { ColorPicker } from "babylonjs-gui";
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
 import { AnimationGroupGridComponent } from "./propertyGrids/animationGroupPropertyGridComponent";
+import { LockObject } from "./propertyGrids/lockObject";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
+    private _lockObject = new LockObject();
 
     constructor(props: IPaneComponentProps) {
         super(props);
     }
 
+    timerRefresh() {
+        if (!this._lockObject.lock) {
+            this.forceUpdate();
+        }
+    }
+
     componentWillMount() {
-        this._timerIntervalId = window.setInterval(() => this.forceUpdate(), 500);
+        this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
     }
 
     componentWillUnmount() {
@@ -56,6 +64,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const mesh = entity as Mesh;
                 if (mesh.getTotalVertices() > 0) {
                     return (<MeshPropertyGridComponent mesh={mesh}
+                        lockObject={this._lockObject}
                         onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
                 }
@@ -63,18 +72,23 @@ export class PropertyGridTabComponent extends PaneComponent {
 
             if (className.indexOf("FreeCamera") !== -1) {
                 const freeCamera = entity as FreeCamera;
-                return (<FreeCameraPropertyGridComponent camera={freeCamera} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                return (<FreeCameraPropertyGridComponent camera={freeCamera}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className.indexOf("ArcRotateCamera") !== -1) {
                 const arcRotateCamera = entity as ArcRotateCamera;
-                return (<ArcRotateCameraPropertyGridComponent camera={arcRotateCamera} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                return (<ArcRotateCameraPropertyGridComponent camera={arcRotateCamera}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className === "HemisphericLight") {
                 const hemisphericLight = entity as HemisphericLight;
                 return (<HemisphericLightPropertyGridComponent
                     light={hemisphericLight}
+                    lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
@@ -82,18 +96,22 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const pointLight = entity as PointLight;
                 return (<PointLightPropertyGridComponent
                     light={pointLight}
+                    lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className.indexOf("TransformNode") !== -1 || className.indexOf("Mesh") !== -1) {
                 const transformNode = entity as TransformNode;
-                return (<TransformNodePropertyGridComponent transformNode={transformNode} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                return (<TransformNodePropertyGridComponent transformNode={transformNode}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className === "StandardMaterial") {
                 const material = entity as StandardMaterial;
                 return (<StandardMaterialPropertyGridComponent
                     material={material}
+                    lockObject={this._lockObject}
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -102,6 +120,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const material = entity as PBRMaterial;
                 return (<PBRMaterialPropertyGridComponent
                     material={material}
+                    lockObject={this._lockObject}
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -110,6 +129,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const material = entity as BackgroundMaterial;
                 return (<BackgroundMaterialPropertyGridComponent
                     material={material}
+                    lockObject={this._lockObject}
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -119,41 +139,55 @@ export class PropertyGridTabComponent extends PaneComponent {
                 return (<AnimationGroupGridComponent
                     animationGroup={animationGroup}
                     scene={this.props.scene}
+                    lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className.indexOf("Material") !== -1) {
                 const material = entity as Material;
-                return (<MaterialPropertyGridComponent material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                return (<MaterialPropertyGridComponent material={material}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className.indexOf("Texture") !== -1) {
                 const texture = entity as Texture;
-                return (<TexturePropertyGridComponent texture={texture} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                return (<TexturePropertyGridComponent texture={texture}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className === "TextBlock") {
                 const textBlock = entity as TextBlock;
-                return (<TextBlockPropertyGridComponent textBlock={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                return (<TextBlockPropertyGridComponent textBlock={textBlock}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className === "InputText") {
                 const inputText = entity as InputText;
-                return (<InputTextPropertyGridComponent inputText={inputText} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                return (<InputTextPropertyGridComponent inputText={inputText}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className === "ColorPicker") {
                 const colorPicker = entity as ColorPicker;
-                return (<ColorPickerPropertyGridComponent colorPicker={colorPicker} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                return (<ColorPickerPropertyGridComponent colorPicker={colorPicker}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (entity._host) {
                 const control = entity as Control;
-                return (<ControlPropertyGridComponent control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                return (<ControlPropertyGridComponent control={control}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
         } else if (entity.transformNodes) {
             const scene = entity as Scene;
             return (<ScenePropertyGridComponent scene={scene}
+                lockObject={this._lockObject}
                 onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                 onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
         }

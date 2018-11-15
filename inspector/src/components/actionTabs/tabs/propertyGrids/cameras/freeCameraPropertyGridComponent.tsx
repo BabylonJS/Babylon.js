@@ -6,9 +6,11 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { LockObject } from "../lockObject";
 
 interface IFreeCameraPropertyGridComponentProps {
     camera: FreeCamera,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -22,13 +24,13 @@ export class FreeCameraPropertyGridComponent extends React.Component<IFreeCamera
 
         return (
             <div className="pane">
-                <CommonCameraPropertyGridComponent camera={camera} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonCameraPropertyGridComponent lockObject={this.props.lockObject} camera={camera} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={camera} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="CONTROLS" closed={true}>
-                    <FloatLineComponent label="Angular sensitivity" target={camera} propertyName="angularSensibility" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="Speed" target={camera} propertyName="speed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Angular sensitivity" target={camera} propertyName="angularSensibility" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Speed" target={camera} propertyName="speed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="COLLISIONS" closed={true}>
                     <CheckBoxLineComponent label="Check collisions" target={camera} propertyName="checkCollisions" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
