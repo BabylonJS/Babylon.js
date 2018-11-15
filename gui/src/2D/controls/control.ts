@@ -1039,10 +1039,12 @@ export class Control {
             return;
         }
 
+        context.save();
         context.strokeStyle = "#4affff";
         context.lineWidth = 2;
 
         this._renderHighlightSpecific(context);
+        context.restore();
     }
 
     /** @hidden */

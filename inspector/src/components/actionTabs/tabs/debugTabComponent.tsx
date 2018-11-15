@@ -54,7 +54,7 @@ export class DebugTabComponent extends PaneComponent {
                     if (found) {
                         continue;
                     }
-                    var viewer = new BABYLON.Debug.SkeletonViewer(mesh.skeleton, mesh, scene, true, 0, BABYLON.UtilityLayerRenderer.DefaultUtilityLayer);
+                    var viewer = new BABYLON.Debug.SkeletonViewer(mesh.skeleton, mesh, scene, true, 0);
                     viewer.isEnabled = true;
                     this._skeletonViewers.push(viewer);
                     if (!mesh.metadata) {
