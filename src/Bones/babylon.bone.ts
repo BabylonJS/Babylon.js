@@ -46,6 +46,9 @@ module BABYLON {
         private _needToCompose = false;
 
         /** @hidden */
+        public _linkedTransformNode: Nullable<TransformNode> = null;
+
+        /** @hidden */
         get _matrix(): Matrix {
             this._compose();
             return this._localMatrix;
@@ -191,6 +194,23 @@ module BABYLON {
          */
         public getAbsoluteTransform(): Matrix {
             return this._absoluteTransform;
+        }
+
+        /**
+         * Links with the given transform node.
+         * The local matrix of this bone is copied from the transform node every frame.
+         * @param transformNode defines the transform node to link to
+         */
+        public linkTransformNode(transformNode: Nullable<TransformNode>): void {
+            if (this._linkedTransformNode) {
+                this._skeleton._numBonesWithLinkedTransformNode--;
+            }
+
+            this._linkedTransformNode = transformNode;
+
+            if (this._linkedTransformNode) {
+                this._skeleton._numBonesWithLinkedTransformNode++;
+            }
         }
 
         // Properties (matches AbstractMesh properties)
