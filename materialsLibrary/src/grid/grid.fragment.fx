@@ -11,9 +11,6 @@ uniform vec4 gridControl;
 uniform vec3 gridOffset;
 
 // Varying
-#ifdef TRANSPARENT
-varying vec4 vCameraSpacePosition;
-#endif
 varying vec3 vPosition;
 varying vec3 vNormal;
 
@@ -78,7 +75,7 @@ void main(void) {
     
     // Scale position to the requested ratio.
     float gridRatio = gridControl.x;
-    vec3 gridPos = (vPosition + gridOffset) / gridRatio;
+    vec3 gridPos = (vPosition + gridOffset.xyz) / gridRatio;
     
     // Find the contribution of each coords.
     float x = contributionOnAxis(gridPos.x);
@@ -103,10 +100,7 @@ void main(void) {
 
     float opacity = 1.0;
 #ifdef TRANSPARENT
-    float distanceToFragment = length(vCameraSpacePosition.xyz);
-    float cameraPassThrough = clamp(distanceToFragment - 0.25, 0.0, 1.0);
-
-    opacity = clamp(grid, 0.08, cameraPassThrough * gridControl.w * grid);
+    opacity = clamp(grid, 0.08, gridControl.w * grid);
 #endif    
 
 #ifdef OPACITY

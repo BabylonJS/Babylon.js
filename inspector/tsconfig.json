@@ -3,11 +3,13 @@
         "experimentalDecorators": true,
         "module": "esnext",
         "target": "es5",
+        "jsx": "react",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noUnusedLocals": true,
         "strictNullChecks": true,
+        "moduleResolution": "node",
         "declaration": true,
         "sourceMap": true,
         "lib": [
@@ -36,9 +38,6 @@
             ],
             "babylonjs-serializers": [
                 "../../dist/preview release/serializers/babylonjs.serializers.module.d.ts"
-            ],
-            "Split": [
-                "./helpers/ISplit.d.ts"
             ]
         },
         "outDir": "./build"

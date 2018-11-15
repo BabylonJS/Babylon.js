@@ -5,7 +5,7 @@ module BABYLON {
     });
 
     /**
-     * This represents a free type of camera. It can be usefull in First Person Shooter game for instance.
+     * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
      * Please consider using the new UniversalCamera instead as it adds more functionality like the gamepad.
      * @see http://doc.babylonjs.com/features/cameras#universal-camera
      */
@@ -161,7 +161,7 @@ module BABYLON {
 
         /**
          * Instantiates a Free Camera.
-         * This represents a free type of camera. It can be usefull in First Person Shooter game for instance.
+         * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
          * Please consider using the new UniversalCamera instead as it adds more functionality like touch to this camera.
          * @see http://doc.babylonjs.com/features/cameras#universal-camera
          * @param name Define the name of the camera in the scene
