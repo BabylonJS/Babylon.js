@@ -520,6 +520,9 @@ module BABYLON {
         /**
          * Sets this transform node rotation to the given local axis.
          * @param localAxis the axis in local space
+         * @param yawCor optional yaw (y-axis) correction in radians
+         * @param pitchCor optional pitch (x-axis) correction in radians
+         * @param rollCor optional roll (z-axis) correction in radians
          * @returns this TransformNode
          */
         public setDirection(localAxis: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0): TransformNode {
