@@ -652,7 +652,7 @@ export class ColorPicker extends Control {
                 }
             }
 
-            // Creates and styles an individual swatch when SaveColor is called. 
+            // Creates and styles an individual swatch when UpdateSwatches is called. 
             function CreateSwatch() {
                 if (options.savedColors) {
                     if (editSwatchMode) {
@@ -686,7 +686,7 @@ export class ColorPicker extends Control {
                         }
                         else {
                             DeleteSwatch(swatch.metadata);
-                            SaveColor("", butSave);
+                            UpdateSwatches("", butSave);
                         } 
                     });
                     console.log("swatch: " + swatch.name + ": " + options.savedColors[swatch.metadata]);
@@ -718,7 +718,7 @@ export class ColorPicker extends Control {
              * creates one swatch per color. It will also set the height of the drawer control based on how many 
              * saved colors there are and how many can be stored on one row. 
              */
-            function SaveColor(color: string, button: Button) {
+            function UpdateSwatches(color: string, button: Button) {
                 if (options.savedColors) {
                     if (!swatchDrawerOpen) {
                         swatchDrawer = new Grid();
@@ -737,6 +737,7 @@ export class ColorPicker extends Control {
                     }
                     swatchNumber = 0;
                     swatchDrawer.clearControls();
+                    var rowCount = Math.ceil(options.savedColors.length/options.numSwatchesPerLine!);
                     for (var y = 0; y < rowCount; y++) {
                         if (swatchDrawer.rowCount < rowCount) {
                             swatchDrawer.addRowDefinition(1 / rowCount, false);
@@ -1060,7 +1061,7 @@ export class ColorPicker extends Control {
                             AddSwatchControl();
                         }
                         if (options.savedColors.length < options.swatchLimit!) {
-                            SaveColor(newSwatch.background, butSave); 
+                            UpdateSwatches(newSwatch.background, butSave); 
                         }     
                     } 
                 });
@@ -1289,7 +1290,7 @@ export class ColorPicker extends Control {
             hexValueQuadrant.addControl(hexVal, 0, 1);
 
             if (options.savedColors && options.savedColors.length > 0) {
-                SaveColor("", butSave!); 
+                UpdateSwatches("", butSave!); 
             } 
         });
     }
