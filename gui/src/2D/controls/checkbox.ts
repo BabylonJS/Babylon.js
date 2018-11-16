@@ -88,7 +88,7 @@ export class Checkbox extends Control {
     }
 
     protected _getTypeName(): string {
-        return "CheckBox";
+        return "Checkbox";
     }
 
     /** @hidden */
