@@ -1,6 +1,7 @@
 import { Helper } from "../../../commons/helper";
 import { assert, expect, should } from "../viewerReference";
 import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../../src";
+import { PBRMaterial } from "babylonjs";
 
 export let name = "scene manager";
 
@@ -43,7 +44,7 @@ describe(name, function() {
     it("should set the default material to be PBR-Enabled per default", (done) => {
         let viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
-            assert.isTrue(viewer.sceneManager.scene.defaultMaterial instanceof BABYLON.PBRMaterial);
+            assert.isTrue(viewer.sceneManager.scene.defaultMaterial instanceof PBRMaterial);
 
             viewer.dispose();
             done();
