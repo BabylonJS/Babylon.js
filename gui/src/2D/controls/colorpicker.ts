@@ -528,7 +528,6 @@ export class ColorPicker extends Control {
             * are will receive no update. This is to prevent the input from the user being overwritten.
             */
             function UpdateValues(value: Color3, inputField: string) {
-                console.log("activeField: " + activeField);
                 activeField = inputField;
                 var pickedColor = value.toHexString();
                 newSwatch.background = pickedColor;
@@ -656,7 +655,7 @@ export class ColorPicker extends Control {
             function CreateSwatch() {
                 if (options.savedColors) {
                     if (editSwatchMode) {
-                        var icon: string = "b";
+                        var icon: string = "";//"b";
                     }
                     else {
                         var icon: string = "";
@@ -689,12 +688,14 @@ export class ColorPicker extends Control {
                             UpdateSwatches("", butSave);
                         }
                     });
-                    console.log("swatch: " + swatch.name + ": " + options.savedColors[metadata]);
                     return swatch;
                 }
                 else {
                     return null;
                 }
+            }
+
+            function EditSwatches() {
             }
 
             /**
@@ -705,6 +706,7 @@ export class ColorPicker extends Control {
              */
             function UpdateSwatches(color: string, button: Button) {
                 if (options.savedColors) {
+
                     if (color != "") {
                         options.savedColors.push(color);
                     }
@@ -742,9 +744,7 @@ export class ColorPicker extends Control {
                     if (options.savedColors.length >= options.swatchLimit!) {
                         DisableButton(button);
                     }
-                    dialogContainer.addControl(swatchDrawer, 1, 0);
                 }
-
             }
 
             // Shows or hides edit swatches button depending on if there are saved swatches
@@ -782,6 +782,7 @@ export class ColorPicker extends Control {
                             editSwatchMode = true;
                             (butEdit.children[0] as TextBlock).text = "Done";
                         }
+                        EditSwatches();
                     });
                     pickerPanel.addControl(butEdit, 1, 0);
                 }
@@ -841,6 +842,7 @@ export class ColorPicker extends Control {
                 for (var i = 0; i < options.numSwatchesPerLine!; i++) {
                     swatchDrawer.addColumnDefinition(1 / options.numSwatchesPerLine!, false);
                 }    
+                dialogContainer.addControl(swatchDrawer, 1, 0);
             }
 
             // Picker container
@@ -1060,7 +1062,7 @@ export class ColorPicker extends Control {
                 };
                 butSave.onPointerClickObservable.add(() => {
                     if (options.savedColors) {
-                        rowCount = Math.ceil(options.savedColors.length / options.numSwatchesPerLine!);
+                        // rowCount = Math.ceil(options.savedColors.length / options.numSwatchesPerLine!);
                         if (options.savedColors.length == 0) {
                             setEditButtonVisibility(true);
                         }
