@@ -25,15 +25,29 @@ var processData = function(data, options) {
             line = `${spaces}import { ${type} } from "${module}";`;
         }
 
-        // Append Module Name
-        // Declaration
-        line = line.replace(/declare module "/g, `declare module "${moduleName}/`);
-        // From
-        line = line.replace(/ from "/g, ` from "${moduleName}/`);
-        // Module augmentation
-        line = line.replace(/    module "/g, `    module "${moduleName}/`);
-        // Inlined Import
-        line = line.replace(/import\("/g, `import("${moduleName}/`);
+        // Checks if line is about external module
+        var externalModule = false;
+        if (options.externals) {
+            for (let ext in options.externals) {
+                externalModule = line.indexOf(ext) > -1;
+                if (externalModule) {
+                    break;
+                }
+            }
+        }
+        // If not Append Module Name
+        if (!externalModule) {
+            // Declaration
+            line = line.replace(/declare module "/g, `declare module "${moduleName}/`);
+            // From
+            line = line.replace(/ from "/g, ` from "${moduleName}/`);
+            // Module augmentation
+            line = line.replace(/    module "/g, `    module "${moduleName}/`);
+            // Inlined Import
+            line = line.replace(/import\("/g, `import("${moduleName}/`);
+            // Side Effect Import
+            line = line.replace(/import "/g, `import "${moduleName}/`);
+        }
 
         lines[index] = line;
     }

@@ -1,9 +1,10 @@
 const path = require('path');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
-    context: __dirname,
+    context: path.resolve(__dirname, './src'),
     entry: {
         'babylonjs-postProcessesLibrary': path.resolve(__dirname, './legacy/legacy.ts'),
     },
@@ -39,7 +40,7 @@ module.exports = {
             loader: 'awesome-typescript-loader',
             options: {
                 configFileName: '../../postProcessLibrary/tsconfig.json',
-                declarationDir: '../../dist/preview release/postProcessesLibrary/build'
+                declaration: false
             }
         }]
     },
@@ -51,6 +52,7 @@ module.exports = {
         port: 9000
     },
     plugins: [
+        new HardSourceWebpackPlugin(),
         new CleanWebpackPlugin([
             path.resolve(__dirname, './src/**/*.js'),
             path.resolve(__dirname, './src/**/*.map')

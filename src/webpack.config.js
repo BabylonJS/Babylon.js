@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
     context: __dirname,
@@ -39,7 +40,7 @@ module.exports = {
             loader: 'awesome-typescript-loader',
             options: {
                 configFileName: '../../src/tsconfig.json',
-                declarationDir: '../../dist/preview release/build'
+                declaration: false
             }
         }]
     },
@@ -51,6 +52,7 @@ module.exports = {
         port: 9000
     },
     plugins: [
+        new HardSourceWebpackPlugin(),
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/,

@@ -3,7 +3,6 @@ var gulp = require("gulp");
 var webpack = require('webpack');
 var webpackStream = require("webpack-stream");
 var cp = require('child_process');
-var merge2 = require("merge2");
 var path = require("path");
 
 // Gulp Helpers
@@ -28,70 +27,76 @@ var buildShaders = function(settings) {
 /**
  * Build a single library (one of the material of mat lib) from a module (materialsLibrary for instance)
  */
-var buildExternalLibrariesMultiEntry = function(libraries, settings, cb) {
+var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     // Convert Module to Namespace for globals
-    const sequence = [];
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
+    // Does name contain .min. for min files.
     var isMinOutputName = libraries[0].output.indexOf(".min.") > -1;
 
     // Webpack Config.
     var wpConfig = require(settings.build.webpack);
+    // Create multi entry list.
     wpConfig.entry = { };
-    wpConfig.output.filename = isMinOutputName ? '[name].js' : '[name].min.js';
     for (let library of settings.libraries) {
-        let name = library.output.replace(isMinOutputName ? ".js" : ".min.js", "");
+        let name = library.output.replace(isMinOutputName ? ".min.js" : ".js", "");
         wpConfig.entry[name] = path.resolve(wpConfig.context, library.entry);
     }
 
+    // Create output by type (min vs max).
+    if (isMin) {
+        wpConfig.output.filename = isMinOutputName ? '[name].min.js' : '[name].js';
+    }
+    else {
+        // Generate unminified file.
+        wpConfig.mode = "development";
+        wpConfig.output.filename = isMinOutputName ? '[name].js' : '[name].max.js';
+    }
+
     // Generate minified file.
-    let wpBuildMin = webpackStream(wpConfig, webpack);
-    let buildEventMin = wpBuildMin.pipe(gulp.dest(outputDirectory));
-    sequence.push(buildEventMin);
+    let wpBuild = webpackStream(wpConfig, webpack);
+    return wpBuild.pipe(gulp.dest(outputDirectory));
+}
 
-    // Generate unminified file.
-    wpConfig.mode = "development";
-    // Allow babylon.max.js and babylon.js
-    wpConfig.output.filename = isMinOutputName ? '[name].max.js' : '[name].js';
-    //wpConfig.output.filename = library.maxOutput || wpConfig.output.filename.replace(".min", "");
-    let wpBuildMax = webpackStream(wpConfig, webpack);
-    let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));
-    sequence.push(buildEventMax);
+/**
+ * Build DTS Files
+ */
+var buildDTSFiles = function(libraries, settings, cb) {
+    // Convert Module to Namespace for globals
+    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
-    return merge2(sequence)
-        .on("end", function() {
-            // TODO. Generate all d.ts
-            let library = libraries[0];
-            if (!library.preventLoadLibrary) {
-                let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
-                // Generate DTS the Dts Bundle way...
-                // dtsBundle.bundle(settings.build.dtsBundle);
+    // TODO. Generate all d.ts
+    let library = libraries[0];
+    if (!library.preventLoadLibrary) {
+        // Find declaration path.
+        let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
 
-                let srcDirectory = settings.build.srcDirectory;
-                let depthCount = srcDirectory.match(/\//g).length - srcDirectory.match(/\.\.\//g).length;
-                let tempDirectory = "";
-                for (let i = 0; i < depthCount; i++) {
-                    tempDirectory += "../"
-                }
-                tempDirectory += ".temp/";
+        // Create temp directory.
+        let srcDirectory = settings.build.srcDirectory;
+        let depthCount = srcDirectory.match(/\//g).length - srcDirectory.match(/\.\.\//g).length;
+        let tempDirectory = "";
+        for (let i = 0; i < depthCount; i++) {
+            tempDirectory += "../"
+        }
+        tempDirectory += ".temp/";
 
-                // Generate DTS the old way...
-                cp.execSync('tsc --module amd --outFile "' + tempDirectory + 'amd.js" --emitDeclarationOnly true', {
-                    cwd: settings.build.srcDirectory
-                });
-
-                // Convert the tsc AMD BUNDLED declaration to our expected one
-                processAmdDeclarationToModule("../../.temp/amd.d.ts", {
-                    output: fileLocation,
-                    moduleName: settings.build.processDeclaration.packageName,
-                    entryPoint: library.entry
-                });
-
-                // Convert Module to Namespace for globals
-                processModuleDeclarationToNamespace(fileLocation, settings.build.processDeclaration);
-            }
-            cb();
+        // Generate DTS the old way...
+        cp.execSync('tsc --module amd --outFile "' + tempDirectory + 'amd.js" --emitDeclarationOnly true', {
+            cwd: settings.build.srcDirectory
         });
+
+        // Convert the tsc AMD BUNDLED declaration to our expected one
+        processAmdDeclarationToModule("../../.temp/amd.d.ts", {
+            output: fileLocation,
+            moduleName: settings.build.processDeclaration.packageName,
+            entryPoint: library.entry,
+            externals: settings.build.processDeclaration.classMap,
+        });
+
+        // Convert Module to Namespace for globals
+        processModuleDeclarationToNamespace(fileLocation, settings.build.processDeclaration);
+    }
+    cb();
 }
 
 /**
@@ -104,9 +109,11 @@ function buildExternalLibraries(settings) {
     // Creates the required tasks.
     var tasks = [];
     var shaders = function() { return buildShaders(settings); };
-    var build = function(cb) { return buildExternalLibrariesMultiEntry(settings.libraries, settings, cb) };
+    var buildMin = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, true) };
+    var buildMax = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, false) };
+    var buildDTS = function(cb) { return buildDTSFiles(settings.libraries, settings, cb) };
 
-    tasks.push(shaders, build);
+    tasks.push(shaders, buildMin, buildMax, buildDTS);
 
     return gulp.series.apply(this, tasks);
 }

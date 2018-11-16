@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
     context: __dirname,
@@ -58,7 +59,7 @@ module.exports = {
             loader: 'awesome-typescript-loader',
             options: {
                 configFileName: '../../inspector/tsconfig.json',
-                declarationDir: '../../dist/preview release/inspector/build'
+                declaration: false
             }
         },
         {
@@ -85,6 +86,7 @@ module.exports = {
         hints: false
     },
     plugins: [
+        new HardSourceWebpackPlugin(),
         new CleanWebpackPlugin([
             path.resolve(__dirname, './src/**/*.js'),
             path.resolve(__dirname, './src/**/*.map')
