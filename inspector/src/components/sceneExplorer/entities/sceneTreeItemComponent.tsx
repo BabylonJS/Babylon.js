@@ -22,8 +22,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
         const scene = this.props.scene;
         let gizmoMode = 0;
-        if (scene.metadata && scene.metadata.gizmoManager) {
-            const manager: GizmoManager = scene.metadata.gizmoManager;
+        if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
+            const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
             if (manager.positionGizmoEnabled) {
                 gizmoMode = 1;
             } else if (manager.rotationGizmoEnabled) {
@@ -57,8 +57,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         const scene = this.props.scene;
         this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add((entity) => {
             this._selectedEntity = entity;
-            if (scene.metadata && scene.metadata.gizmoManager) {
-                const manager: GizmoManager = scene.metadata.gizmoManager;
+            if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
+                const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
 
                 const className = entity.getClassName();
 
@@ -115,15 +115,15 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
     setGizmoMode(mode: number) {
         const scene = this.props.scene;
 
-        if (!scene.metadata) {
-            scene.metadata = {};
+        if (!scene.reservedDataStore) {
+            scene.reservedDataStore = {};
         }
 
-        if (!scene.metadata.gizmoManager) {
-            scene.metadata.gizmoManager = new GizmoManager(scene);
+        if (!scene.reservedDataStore.gizmoManager) {
+            scene.reservedDataStore.gizmoManager = new GizmoManager(scene);
         }
 
-        const manager: GizmoManager = scene.metadata.gizmoManager;
+        const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
 
         manager.positionGizmoEnabled = false;
         manager.rotationGizmoEnabled = false;
@@ -132,7 +132,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         if (this.state.gizmoMode === mode) {
             mode = 0;
             manager.dispose();
-            scene.metadata.gizmoManager = null;
+            scene.reservedDataStore.gizmoManager = null;
         } else {
             switch (mode) {
                 case 1:

@@ -18,6 +18,7 @@ var playBtn = document.getElementById("playBtn");
 var slider = document.getElementById("slider");
 var footer = document.getElementById("footer");
 var canvas = document.getElementById("renderCanvas");
+var canvasZone = document.getElementById("canvasZone");
 
 var indexOf = location.href.indexOf("?");
 if (indexOf !== -1) {
@@ -45,7 +46,7 @@ if (indexOf !== -1) {
 
 if (kiosk) {
     footer.style.display = "none";
-    canvas.style.height = "100%";
+    canvasZone.style.height = "100%";
 }
 
 if (BABYLON.Engine.isSupported()) {
@@ -315,17 +316,19 @@ if (BABYLON.Engine.isSupported()) {
         if (event.keyCode === 32 && event.target.nodeName !== "INPUT") {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
-                canvas.style.height = "calc(100% - 56px)";
+                canvasZone.style.height = "calc(100% - 56px)";
+                if (debugLayerEnabled) {
+                    currentScene.debugLayer.show();
+                }
                 engine.resize();
             }
             else {
                 footer.style.display = "none";
-                canvas.style.height = "100%";
+                canvasZone.style.height = "100%";
                 errorZone.style.display = "none";
                 engine.resize();
-                if (debugLayerEnabled) {
+                if (currentScene.debugLayer.isVisible()) {
                     currentScene.debugLayer.hide();
-                    debugLayerEnabled = false;
                 }
             }
         }
@@ -374,6 +377,27 @@ dropdownBtn.addEventListener("click", function() {
     }
 });
 
+function selectCurrentGroup(group, index, animation) {
+    if (currentGroupIndex !== undefined) {
+        document.getElementById(formatId(currentGroup.name + "-" + currentGroupIndex)).classList.remove("active");
+    }
+    playBtn.classList.remove("play");
+    playBtn.classList.add("pause");
+
+    // start the new animation group
+    currentGroup = group;
+    currentGroupIndex = index;
+    animation.classList.add("active");
+    dropdownLabel.innerHTML = currentGroup.name;
+    dropdownLabel.title = currentGroup.name;
+
+    // set the slider
+    slider.setAttribute("min", currentGroup.from);
+    slider.setAttribute("max", currentGroup.to);
+    currentSliderValue = currentGroup.from;
+    slider.value = currentGroup.from;
+}
+
 function createDropdownLink(group, index) {
     var animation = document.createElement("a");
     animation.innerHTML = group.name;
@@ -383,55 +407,46 @@ function createDropdownLink(group, index) {
         // stop the current animation group
         currentGroup.reset();
         currentGroup.stop();
-        document.getElementById(formatId(currentGroup.name + "-" + currentGroupIndex)).classList.remove("active");
-        playBtn.classList.remove("play");
-        playBtn.classList.add("pause");
 
-        // start the new animation group
-        currentGroup = group;
-        currentGroupIndex = index;
-        currentGroup.start(true);
-        this.classList.add("active");
-        dropdownLabel.innerHTML = currentGroup.name;
-        dropdownLabel.title = currentGroup.name;
-
-        // set the slider
-        slider.setAttribute("min", currentGroup.from);
-        slider.setAttribute("max", currentGroup.to);
-        currentSliderValue = currentGroup.from;
-        slider.value = currentGroup.from;
+        group.play(true);
 
         // hide the content of the dropdown
         displayDropdownContent(false);
     });
     dropdownContent.appendChild(animation);
+
+    group.onAnimationGroupPlayObservable.add(function(grp) {
+        selectCurrentGroup(grp, index, animation);
+    });
+
+    group.onAnimationGroupPauseObservable.add(function(grp) {
+        playBtn.classList.add("play");
+        playBtn.classList.remove("pause");
+    });
 }
 
 // event on the play/pause button
 playBtn.addEventListener("click", function() {
     // click on the button to run the animation
     if (this.classList.contains("play")) {
-        this.classList.remove("play");
-        this.classList.add("pause");
-        var currentFrame = slider.value;
         currentGroup.play(true);
     }
     // click on the button to pause the animation
     else {
-        this.classList.add("play");
-        this.classList.remove("pause");
         currentGroup.pause();
     }
 });
 
 // event on the slider
 slider.addEventListener("input", function() {
+    var value = parseFloat(this.value);
+
     if (playBtn.classList.contains("play")) {
         currentGroup.play(true);
-        currentGroup.goToFrame(this.value);
+        currentGroup.goToFrame(value);
         currentGroup.pause();
     } else {
-        currentGroup.goToFrame(this.value);
+        currentGroup.goToFrame(value);
     }
 });
 

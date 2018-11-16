@@ -9,6 +9,7 @@ import * as React from "react";
 export interface ITreeItemSelectableComponentProps {
     entity: any,
     selectedEntity?: any,
+    mustExpand?: boolean,
     offset: number,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
     onSelectionChangedObservable?: Observable<any>,
@@ -21,7 +22,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
 
-        this.state = { isSelected: this.props.entity === this.props.selectedEntity, isExpanded: Tools.LookForItem(this.props.entity, this.props.selectedEntity) };
+        this.state = { isSelected: this.props.entity === this.props.selectedEntity, isExpanded: this.props.mustExpand || Tools.LookForItem(this.props.entity, this.props.selectedEntity) };
     }
 
     switchExpandedState(): void {
@@ -91,7 +92,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             children.map(item => {
 
                 return (
-                    <TreeItemSelectableComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} key={item.uniqueId} offset={this.props.offset + 2} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
+                    <TreeItemSelectableComponent mustExpand={this.props.mustExpand} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} key={item.uniqueId} offset={this.props.offset + 2} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
                 );
             })
         )
@@ -107,14 +108,14 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         const hasChildren = children.length > 0;
 
-        if (!entity.metadata) {
-            entity.metadata = {};
+        if (!entity.reservedDataStore) {
+            entity.reservedDataStore = {};
         }
 
-        entity.metadata.setExpandedState = (value: boolean) => {
+        entity.reservedDataStore.setExpandedState = (value: boolean) => {
             this.setState({ isExpanded: value });
         }
-        entity.metadata.isExpanded = this.state.isExpanded;
+        entity.reservedDataStore.isExpanded = this.state.isExpanded;
 
         if (this.props.filter) {
             const lowerCaseFilter = this.props.filter.toLowerCase();

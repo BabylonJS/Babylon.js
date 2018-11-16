@@ -1,12 +1,15 @@
 import * as React from "react";
 import { Observable } from "babylonjs";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IFloatLineComponentProps {
     label: string,
     target: any,
     propertyName: string,
-    step?: number,
+    lockObject?: LockObject,
+    onChange?: (newValue: number) => void,
+    isInteger?: boolean,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     additionalClass?: string
 }
@@ -19,8 +22,13 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         let currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: currentValue ? currentValue.toFixed(3) : "0" }
+        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(3)) : "0" }
         this._store = currentValue;
+    }
+
+
+    componentWillUnmount() {
+        this.unlock();
     }
 
     shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string }) {
@@ -30,14 +38,20 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        if (newValue && newValue !== nextState.value) {
-            nextState.value = newValue.toFixed(3);
+        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(3) : "0";
+
+        if (newValueString !== nextState.value) {
+            nextState.value = newValueString;
             return true;
         }
         return false;
     }
 
     raiseOnPropertyChanged(newValue: number, previousValue: number) {
+        if (this.props.onChange) {
+            this.props.onChange(newValue);
+        }
+
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
@@ -55,7 +69,13 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
 
-        let valueAsNumber = parseFloat(valueString);
+        let valueAsNumber: number
+
+        if (this.props.isInteger) {
+            valueAsNumber = parseInt(valueString);
+        } else {
+            valueAsNumber = parseFloat(valueString);
+        }
 
         this._localChange = true;
         this.setState({ value: valueString });
@@ -70,16 +90,26 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         this._store = valueAsNumber;
     }
 
-    render() {
+    lock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = true;
+        }
+    }
 
-        const step = this.props.step !== undefined ? this.props.step : 0.1;
+    unlock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
+    }
+
+    render() {
         return (
             <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
                 <div className="label">
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} step={step} />
+                    <input className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
                 </div>
             </div>
         );

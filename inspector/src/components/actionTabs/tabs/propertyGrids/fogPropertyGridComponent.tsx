@@ -4,9 +4,11 @@ import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { Color3LineComponent } from "../../lines/color3LineComponent";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";
+import { LockObject } from "./lockObject";
 
 interface IFogPropertyGridComponentProps {
     scene: Scene,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -36,15 +38,15 @@ export class FogPropertyGridComponent extends React.Component<IFogPropertyGridCo
                 }
                 {
                     (this.state.mode === BABYLON.Scene.FOGMODE_EXP || this.state.mode === BABYLON.Scene.FOGMODE_EXP2) &&
-                    <FloatLineComponent label="Fog density" target={scene} propertyName="fogDensity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Fog density" target={scene} propertyName="fogDensity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
                     this.state.mode === BABYLON.Scene.FOGMODE_LINEAR &&
-                    <FloatLineComponent label="Fog start" target={scene} propertyName="fogStart" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Fog start" target={scene} propertyName="fogStart" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
                     this.state.mode === BABYLON.Scene.FOGMODE_LINEAR &&
-                    <FloatLineComponent label="Fog end" target={scene} propertyName="fogEnd" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Fog end" target={scene} propertyName="fogEnd" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
             </div>
         );

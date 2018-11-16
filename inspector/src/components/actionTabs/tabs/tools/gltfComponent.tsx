@@ -6,7 +6,7 @@ import { GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";
 import { MessageLineComponent } from "../../lines/messageLineComponent";
-import { BooleanLineComponent } from "../../lines/booleanLineComponent";
+import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { TextLineComponent } from "../../lines/textLineComponent";
 
 interface IGLTFComponentProps {
@@ -65,7 +65,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
             return `${count} ${singularForm}s`;
         }
 
-        return `No ${singularForm}`;
+        return `${singularForm}`;
     }
 
     renderValidation() {
@@ -74,10 +74,18 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
 
         return (
             <LineContainerComponent title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
-                <BooleanLineComponent label={this.prepareText("error", issues.numErrors)} value={issues.numErrors === 0} />
-                <BooleanLineComponent label={this.prepareText("warning", issues.numWarnings)} value={issues.numWarnings === 0} />
-                <BooleanLineComponent label={this.prepareText("info", issues.numInfos)} value={issues.numInfos === 0} />
-                <BooleanLineComponent label={this.prepareText("hint", issues.numHints)} value={issues.numHints === 0} />
+                {
+                    issues.numErrors !== 0 &&
+                    <MessageLineComponent text="Your file has some validation issues" icon={faTimesCircle} color="Red" />
+                }
+                {
+                    issues.numErrors === 0 &&
+                    <MessageLineComponent text="Your file is a valid glTF file" icon={faCheck} color="Green" />
+                }
+                <TextLineComponent label="Errors" value={issues.numErrors.toString()} />
+                <TextLineComponent label="Warnings" value={issues.numWarnings.toString()} />
+                <TextLineComponent label="Infos" value={issues.numInfos.toString()} />
+                <TextLineComponent label="Hints" value={issues.numHints.toString()} />
                 <TextLineComponent label="More details" value="Click here" onLink={() => this.openValidationDetails()} />
             </LineContainerComponent>
         )
@@ -114,7 +122,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                 </LineContainerComponent>
                 <LineContainerComponent title="GLTF EXTENSIONS" closed={true}>
                     <CheckBoxLineComponent label="MSFT_lod" isSelected={() => extensionStates["MSFT_lod"].enabled} onSelect={value => extensionStates["MSFT_lod"].enabled = value} />
-                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" step={1} additionalClass="gltf-extension-property" />
+                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" additionalClass="gltf-extension-property" />
                     <CheckBoxLineComponent label="MSFT_minecraftMesh" isSelected={() => extensionStates["MSFT_minecraftMesh"].enabled} onSelect={value => extensionStates["MSFT_minecraftMesh"].enabled = value} />
                     <CheckBoxLineComponent label="MSFT_sRGBFactors" isSelected={() => extensionStates["MSFT_sRGBFactors"].enabled} onSelect={value => extensionStates["MSFT_sRGBFactors"].enabled = value} />
                     <CheckBoxLineComponent label="MSFT_audio_emitter" isSelected={() => extensionStates["MSFT_audio_emitter"].enabled} onSelect={value => extensionStates["MSFT_audio_emitter"].enabled = value} />
