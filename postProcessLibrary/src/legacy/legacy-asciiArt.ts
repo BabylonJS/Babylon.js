@@ -1,7 +1,6 @@
-import * as postProcessLibrary from "../src/index";
+import * as postProcessLibrary from "../asciiArt/index";
 
 /**
- *
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
@@ -12,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../src/index";
+export * from "../asciiArt/index";

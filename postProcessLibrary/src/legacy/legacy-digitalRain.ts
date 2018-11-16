@@ -1,4 +1,4 @@
-import * as postProcessLibrary from "../src/digitalRain/index"
+import * as postProcessLibrary from "../digitalRain/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../src/digitalRain/index";
+export * from "../digitalRain/index";

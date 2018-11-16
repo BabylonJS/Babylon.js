@@ -226,9 +226,7 @@
                 "moduleName": "BABYLON",
                 "importsToRemove": [],
                 "classMap": {
-                    "babylonjs": "BABYLON",
-                    "babylonjs-loaders": "BABYLON",
-                    "babylonjs-serializers": "BABYLON"
+                    "babylonjs": "BABYLON"
                 }
             }
         }
