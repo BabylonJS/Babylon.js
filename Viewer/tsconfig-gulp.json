@@ -23,7 +23,7 @@
         "rootDir": "./",
         "paths": {
             "babylonjs": [
-                "../../dist/preview release/babylon.d.ts"
+                "../../dist/preview release/babylon.module.d.ts"
             ],
             "babylonjs-loaders": [
                 "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
