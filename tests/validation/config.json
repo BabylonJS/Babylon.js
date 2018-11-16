@@ -37,11 +37,6 @@
       "referenceImage": "simulatePointer.png"
     },
     {
-      "title": "Camera rig",
-      "playgroundId": "#ATL1CS#9",
-      "referenceImage": "cameraRig.png"
-    },
-    {
       "title": "Color Grading",
       "playgroundId": "#8EDB5N#2",
       "referenceImage": "colorGrading.png"
