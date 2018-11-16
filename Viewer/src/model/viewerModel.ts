@@ -620,7 +620,7 @@ export class ViewerModel implements IDisposable {
         animations: Animation[],
         duration: number,
         easingFunction: any,
-        easingMode: number = BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
+        easingMode: number = 2, // BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
         onAnimationEnd: () => void): void {
 
         if (easingFunction) {

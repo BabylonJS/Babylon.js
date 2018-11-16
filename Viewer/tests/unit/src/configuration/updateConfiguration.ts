@@ -1,5 +1,6 @@
 import { Helper } from "../../../commons/helper";
 import { assert, expect, should } from "../viewerReference";
+import { SceneOptimizer } from "babylonjs";
 
 export let name = "configuration update";
 
@@ -264,22 +265,22 @@ describe(name + " scene optimizer", () => {
         let started = false;
         let constructed = false;
 
-        let optimizerFunction = BABYLON.SceneOptimizer;
+        let optimizerFunction = SceneOptimizer;
 
         //mock!
-        (<any>BABYLON.SceneOptimizer) = function() {
+        (<any>SceneOptimizer) = function() {
             constructed = true;
         };
 
-        BABYLON.SceneOptimizer.prototype.start = function() {
+        SceneOptimizer.prototype.start = function() {
             started = true;
         };
 
-        BABYLON.SceneOptimizer.prototype.stop = function() {
+        SceneOptimizer.prototype.stop = function() {
             started = false;
         };
 
-        BABYLON.SceneOptimizer.prototype.dispose = function() {
+        SceneOptimizer.prototype.dispose = function() {
         };
 
         viewer.onInitDoneObservable.add(() => {
@@ -301,7 +302,7 @@ describe(name + " scene optimizer", () => {
             assert.isUndefined(viewer.sceneManager.sceneOptimizer);
             assert.isFalse(started);
 
-            BABYLON.SceneOptimizer = optimizerFunction;
+            //SceneOptimizer = optimizerFunction;
 
             viewer.dispose();
             done();
