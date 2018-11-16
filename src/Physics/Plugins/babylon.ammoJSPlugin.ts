@@ -37,6 +37,7 @@ module BABYLON {
             this._tmpAmmoConcreteContactResultCallback = new this.BJSAMMO.ConcreteContactResultCallback();
 
             this._tmpAmmoTransform = new this.BJSAMMO.btTransform();
+            this._tmpAmmoTransform.setIdentity();
             this._tmpAmmoQuaternion = new this.BJSAMMO.btQuaternion(0,0,0,1);
             this._tmpAmmoVectorA = new this.BJSAMMO.btVector3(0,0,0);
             this._tmpAmmoVectorB = new this.BJSAMMO.btVector3(0,0,0);
@@ -138,6 +139,7 @@ module BABYLON {
                     colShape.calculateLocalInertia(mass,localInertia);
                 }
                 startTransform.setOrigin(new Ammo.btVector3(impostor.object.position.x, impostor.object.position.y, impostor.object.position.z));
+                startTransform.setRotation(new Ammo.btQuaternion(impostor.object.rotationQuaternion!.x, impostor.object.rotationQuaternion!.y, impostor.object.rotationQuaternion!.z, impostor.object.rotationQuaternion!.w));
                 var myMotionState = new Ammo.btDefaultMotionState(startTransform)
                 var rbInfo        = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, colShape, localInertia)
                 var body          = new Ammo.btRigidBody(rbInfo);
@@ -148,7 +150,9 @@ module BABYLON {
         }
 
         public removePhysicsBody(impostor: PhysicsImpostor) {
-            this.world.removeRigidBody(impostor.physicsBody);
+            if(this.world){
+                this.world.removeRigidBody(impostor.physicsBody);
+            }
         }
 
         public generateJoint(impostorJoint: PhysicsImpostorJoint) {
@@ -194,11 +198,47 @@ module BABYLON {
         public removeJoint(impostorJoint: PhysicsImpostorJoint) {
         }      
 
-        private _createShape(impostor: PhysicsImpostor) {
+        private _createShape(impostor: PhysicsImpostor, ignoreChildren=false) {
             var object = impostor.object;
 
-            var returnValue;
+            var returnValue:any;
             var extendSize = impostor.getObjectExtendSize();
+            
+            if(!ignoreChildren){
+                var meshChildren = impostor.object.getChildMeshes ? impostor.object.getChildMeshes(true) : [];
+                let currentRotation: Nullable<Quaternion> = impostor.object.rotationQuaternion;
+                if (meshChildren.length > 0) {
+                    returnValue = new Ammo.btCompoundShape();
+                    
+                    // Add shape of all children to the compound shape
+                    meshChildren.forEach((childMesh)=>{
+                        var childImpostor = childMesh.getPhysicsImpostor();
+                        if(childImpostor){
+                            var shape = this._createShape(childImpostor);
+                            this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x, childMesh.position.y,childMesh.position.z);
+                            this._tmpAmmoQuaternion.setValue(currentRotation!.x,currentRotation!.y,currentRotation!.z,currentRotation!.w)
+                            this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion)
+                            returnValue.addChildShape(this._tmpAmmoTransform, shape);
+                            
+                            childImpostor.dispose();
+                        }
+                    })
+
+                    // Add parents shape as a child if present
+                    var shape = this._createShape(impostor, true);
+                    if(shape){
+                        this._tmpAmmoTransform.getOrigin().setValue(0,0,0);
+                        //this._tmpAmmoQuaternion = new this.BJSAMMO.btQuaternion(0,0,0,1);
+                        this._tmpAmmoQuaternion.setValue(0,0,0,1)
+                        this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion)
+                        
+                        returnValue.addChildShape(this._tmpAmmoTransform, shape);
+                    }
+                    
+                    return returnValue;
+                }
+            }
+            
             switch (impostor.type) {
                 case PhysicsImpostor.SphereImpostor:
                     returnValue = new Ammo.btSphereShape(extendSize.x/2);
@@ -213,6 +253,7 @@ module BABYLON {
                 case PhysicsImpostor.MeshImpostor:
                     var tetraMesh = new Ammo.btTriangleMesh();
                     // Create mesh impostor from triangles which makeup the mesh
+                    var triangleCreated = false;
                     if(object && object.getIndices && object.getWorldMatrix){
                         var ind = object.getIndices()
                         if(!ind){
@@ -235,12 +276,17 @@ module BABYLON {
                                     object.scaling.z*p[(ind[(i*3)+point]*3)+2]
                                 ));
                             }
+                            triangleCreated = true;
                             tetraMesh.addTriangle(triPoints[0], triPoints[1], triPoints[2]);
                         }
-                    }else{
-                        throw "Unable to create MeshImpostor from object";
                     }
-                    returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
+                    
+                    if(!triangleCreated){
+                        returnValue = new Ammo.btCompoundShape();
+                    }else{
+                        returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
+                    }
+                    
                     break;
             }
 
@@ -392,17 +438,19 @@ module BABYLON {
         public dispose() {
             // Dispose of world
             Ammo.destroy(this.world);
-            Ammo.destry(this._solver);
-            Ammo.destry(this._overlappingPairCache);
-            Ammo.destry(this._dispatcher);
-            Ammo.destry(this._collisionConfiguration);
+            Ammo.destroy(this._solver);
+            Ammo.destroy(this._overlappingPairCache);
+            Ammo.destroy(this._dispatcher);
+            Ammo.destroy(this._collisionConfiguration);
             
             // Dispose of tmp variables
             Ammo.destroy(this._tmpAmmoVectorA);
             Ammo.destroy(this._tmpAmmoVectorB);
-            Ammo.destry(this._tmpAmmoTransform);
-            Ammo.destry(this._tmpAmmoQuaternion);
-            Ammo.destry(this._tmpAmmoConcreteContactResultCallback);
+            Ammo.destroy(this._tmpAmmoTransform);
+            Ammo.destroy(this._tmpAmmoQuaternion);
+            Ammo.destroy(this._tmpAmmoConcreteContactResultCallback);
+            
+            this.world = null;
         }
     }
 }
