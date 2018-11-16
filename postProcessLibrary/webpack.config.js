@@ -1,6 +1,5 @@
 const path = require('path');
 const webpack = require('webpack');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
@@ -53,10 +52,6 @@ module.exports = {
     },
     plugins: [
         new HardSourceWebpackPlugin(),
-        new CleanWebpackPlugin([
-            path.resolve(__dirname, './src/**/*.js'),
-            path.resolve(__dirname, './src/**/*.map')
-        ]),
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/,
