@@ -43,12 +43,21 @@ interface ISceneExplorerComponentProps {
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Scene }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
+
     private _once = true;
+
+    private sceneMutationFunc: () => void;
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
 
         this.state = { filter: null, selectedEntity: null, scene: this.props.scene };
+
+        this.sceneMutationFunc = this.processMutation.bind(this);
+    }
+
+    processMutation() {
+        this.forceUpdate();
     }
 
     componentWillMount() {
@@ -67,6 +76,22 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         if (this._onNewSceneAddedObserver) {
             BABYLON.Engine.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
         }
+
+        const scene = this.state.scene;
+
+        scene.onNewCameraAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewLightAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewMaterialAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewMeshAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewTextureAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewTransformNodeAddedObservable.removeCallback(this.sceneMutationFunc);
+
+        scene.onMeshRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onCameraRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onLightRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onMaterialRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onTransformNodeRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onTextureRemovedObservable.removeCallback(this.sceneMutationFunc);
     }
 
     filterContent(filter: string) {
@@ -179,6 +204,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     guiElements && guiElements.length > 0 &&
                     <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} filter={this.state.filter} />
                 }
+                {
+                    scene.animationGroups.length > 0 &&
+                    <TreeItemComponent extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.animationGroups} label="Animation groups" offset={1} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} filter={this.state.filter} />
+                }
             </div>
         )
     }
@@ -214,6 +243,22 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (this._once) {
             this._once = false;
+            const scene = this.state.scene;
+
+            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
+
+            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
+            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
+            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
+
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(() => {
                 const element = document.getElementById("sceneExplorer");

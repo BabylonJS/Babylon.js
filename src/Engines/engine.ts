@@ -516,7 +516,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.7";
+            return "4.0.0-alpha.8";
         }
 
         /**
@@ -4365,7 +4365,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                     loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
                         if (loadFailed) {
                             onInternalError("TextureLoader failed to load data");
-                        }else {
+                        } else {
                             this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
                                 done();
                                 return false;

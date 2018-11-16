@@ -541,6 +541,15 @@ import { Scalar } from "./math.scalar";
         }
 
         /**
+         * Determines equality between Color4 objects
+         * @param otherColor defines the second operand
+         * @returns true if the rgba values are equal to the given ones
+         */
+        public equals(otherColor: DeepImmutable<Color4>): boolean {
+            return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b && this.a === otherColor.a;
+        }
+
+        /**
          * Creates a new Color4 set with the added values of the current Color4 and of the given one
          * @param right defines the second operand
          * @returns a new Color4 object

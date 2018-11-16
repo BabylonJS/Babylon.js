@@ -26,6 +26,7 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
         /** @hidden */
         protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
         private _renderFunction: () => void;
+        private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
         private _debugBoxMesh: Mesh;
         private _debugSphereMesh: Mesh;
@@ -42,11 +43,14 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
             if (physicEngine) {
                 this._physicsEnginePlugin = physicEngine.getPhysicsPlugin();
             }
+
+            this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
+            this._utilityLayer.pickUtilitySceneFirst = false;
+            this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
         }
 
         /** @hidden */
         protected _updateDebugMeshes(): void {
-
             var plugin = this._physicsEnginePlugin;
 
             for (var i = 0; i < this._numMeshes; i++) {
@@ -66,26 +70,26 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
                     }
                 }
             }
-
         }
 
         /**
          * Renders a specified physic impostor
          * @param impostor defines the impostor to render
+         * @returns the new debug mesh used to render the impostor
          */
-        public showImpostor(impostor: PhysicsImpostor): void {
+        public showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh> {
 
             if (!this._scene) {
-                return;
+                return null;
             }
 
             for (var i = 0; i < this._numMeshes; i++) {
                 if (this._impostors[i] == impostor) {
-                    return;
+                    return null;
                 }
             }
 
-            var debugMesh = this._getDebugMesh(impostor, this._scene);
+            var debugMesh = this._getDebugMesh(impostor);
 
             if (debugMesh) {
                 this._impostors[this._numMeshes] = impostor;
@@ -99,6 +103,7 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
                 this._numMeshes++;
             }
 
+            return debugMesh;
         }
 
         /**
@@ -107,11 +112,12 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
          */
         public hideImpostor(impostor: Nullable<PhysicsImpostor>) {
 
-            if (!impostor || !this._scene) {
+            if (!impostor || !this._scene || !this._utilityLayer) {
                 return;
             }
 
             var removed = false;
+            const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
             for (var i = 0; i < this._numMeshes; i++) {
                 if (this._impostors[i] == impostor) {
@@ -121,7 +127,7 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
                         continue;
                     }
 
-                    this._scene.removeMesh(mesh);
+                    utilityLayerScene.removeMesh(mesh);
                     mesh.dispose();
                     this._numMeshes--;
                     if (this._numMeshes > 0) {
@@ -148,6 +154,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
             if (!this._debugMaterial) {
                 this._debugMaterial = new StandardMaterial('', scene);
                 this._debugMaterial.wireframe = true;
+                this._debugMaterial.emissiveColor = Color3.White();
+                this._debugMaterial.disableLighting = true;
             }
 
             return this._debugMaterial;
@@ -156,10 +164,8 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
         private _getDebugBoxMesh(scene: Scene): AbstractMesh {
             if (!this._debugBoxMesh) {
                 this._debugBoxMesh = MeshBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
-                this._debugBoxMesh.renderingGroupId = 1;
                 this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
                 this._debugBoxMesh.material = this._getDebugMaterial(scene);
-                scene.removeMesh(this._debugBoxMesh);
             }
 
             return this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
@@ -168,23 +174,26 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
         private _getDebugSphereMesh(scene: Scene): AbstractMesh {
             if (!this._debugSphereMesh) {
                 this._debugSphereMesh = MeshBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
-                this._debugSphereMesh.renderingGroupId = 1;
                 this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
                 this._debugSphereMesh.material = this._getDebugMaterial(scene);
-                scene.removeMesh(this._debugSphereMesh);
             }
 
             return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
         }
 
-        private _getDebugMesh(impostor: PhysicsImpostor, scene: Scene): Nullable<AbstractMesh> {
+        private _getDebugMesh(impostor: PhysicsImpostor): Nullable<AbstractMesh> {
+            if (!this._utilityLayer) {
+                return null;
+            }
+
             var mesh: Nullable<AbstractMesh> = null;
+            const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
             if (impostor.type == PhysicsImpostor.BoxImpostor) {
-                mesh = this._getDebugBoxMesh(scene);
+                mesh = this._getDebugBoxMesh(utilityLayerScene);
                 impostor.getBoxSizeToRef(mesh.scaling);
             } else if (impostor.type == PhysicsImpostor.SphereImpostor) {
-                mesh = this._getDebugSphereMesh(scene);
+                mesh = this._getDebugSphereMesh(utilityLayerScene);
                 var radius = impostor.getRadius();
                 mesh.scaling.x = radius * 2;
                 mesh.scaling.y = radius * 2;
@@ -213,5 +222,10 @@ import { PhysicsImpostor } from "Physics/physicsImpostor";
             this._impostors.length = 0;
             this._scene = null;
             this._physicsEnginePlugin = null;
+
+            if (this._utilityLayer) {
+                this._utilityLayer.dispose();
+                this._utilityLayer = null;
+            }
         }
     }

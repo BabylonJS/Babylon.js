@@ -432,6 +432,18 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
                 }
             }
 
+            // Link all Babylon bones for each glTF node with the corresponding Babylon transform node.
+            // A glTF joint is a pointer to a glTF node in the glTF node hierarchy similar to Unity3D.
+            if (this.gltf.nodes) {
+                for (const node of this.gltf.nodes) {
+                    if (node._babylonTransformNode && node._babylonBones) {
+                        for (const babylonBone of node._babylonBones) {
+                            babylonBone.linkTransformNode(node._babylonTransformNode);
+                        }
+                    }
+                }
+            }
+
             promises.push(this._loadAnimationsAsync());
 
             this.logClose();
@@ -444,9 +456,6 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
                 for (const babylonMesh of node._primitiveBabylonMeshes) {
                     callback(babylonMesh);
                 }
-            }
-            else if (node._babylonTransformNode instanceof AbstractMesh) {
-                callback(node._babylonTransformNode);
             }
         }
 
@@ -561,12 +570,6 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
                     for (const index of node.children) {
                         const childNode = ArrayItem.Get(`${context}/children/${index}`, this.gltf.nodes, index);
                         promises.push(this.loadNodeAsync(`/nodes/${childNode.index}`, childNode, (childBabylonMesh) => {
-                            // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
-                            if (childNode.skin != undefined) {
-                                childBabylonMesh.parent = this._rootBabylonMesh;
-                                return;
-                            }
-
                             childBabylonMesh.parent = babylonTransformNode;
                         }));
                     }
@@ -616,16 +619,16 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
                 const primitive = mesh.primitives[0];
                 promises.push(this._loadMeshPrimitiveAsync(`${context}/primitives/${primitive.index}`, name, node, mesh, primitive, (babylonMesh) => {
                     node._babylonTransformNode = babylonMesh;
+                    node._primitiveBabylonMeshes = [babylonMesh];
                 }));
             }
             else {
-                const babylonTransformNode = new TransformNode(name, this.babylonScene);
-                node._babylonTransformNode = babylonTransformNode;
+                node._babylonTransformNode = new TransformNode(name, this.babylonScene);
+                node._primitiveBabylonMeshes = [];
                 for (const primitive of primitives) {
                     promises.push(this._loadMeshPrimitiveAsync(`${context}/primitives/${primitive.index}`, `${name}_primitive${primitive.index}`, node, mesh, primitive, (babylonMesh) => {
-                        babylonMesh.parent = babylonTransformNode;
-                        node._primitiveBabylonMeshes = node._primitiveBabylonMeshes || [];
-                        node._primitiveBabylonMeshes.push(babylonMesh);
+                        babylonMesh.parent = node._babylonTransformNode!;
+                        node._primitiveBabylonMeshes!.push(babylonMesh);
                     }));
                 }
             }
@@ -893,14 +896,16 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
             };
 
             if (skin._data) {
-                const data = skin._data;
-                return data.promise.then(() => {
-                    assignSkeleton(data.babylonSkeleton);
-                });
+                assignSkeleton(skin._data.babylonSkeleton);
+                return skin._data.promise;
             }
 
             const skeletonId = `skeleton${skin.index}`;
             const babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this.babylonScene);
+
+            // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
+            babylonSkeleton.overrideMesh = this._rootBabylonMesh;
+
             this._loadBones(context, skin, babylonSkeleton);
             assignSkeleton(babylonSkeleton);
 
@@ -1102,12 +1107,6 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
                 return Promise.resolve();
             }
 
-            // Ignore animations targeting TRS of skinned nodes.
-            // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
-            if (targetNode.skin != undefined && channel.target.path !== AnimationChannelTargetPath.WEIGHTS) {
-                return Promise.resolve();
-            }
-
             const sampler = ArrayItem.Get(`${context}/sampler`, animation.samplers, channel.sampler);
             return this._loadAnimationSamplerAsync(`${animationContext}/samplers/${channel.sampler}`, sampler).then((data) => {
                 let targetPath: string;
@@ -1234,19 +1233,8 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
                     const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys);
 
-                    const babylonTransformNode = targetNode._babylonTransformNode!;
-                    const babylonBones = targetNode._babylonBones;
-                    if (babylonBones) {
-                        const babylonAnimationTargets = [babylonTransformNode, ...babylonBones];
-                        for (const babylonAnimationTarget of babylonAnimationTargets) {
-                            (<any>babylonAnimationTarget.animations).push(babylonAnimation);
-                        }
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonAnimationTargets);
-                    }
-                    else {
-                        babylonTransformNode.animations.push(babylonAnimation);
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTransformNode);
-                    }
+                    targetNode._babylonTransformNode!.animations.push(babylonAnimation);
+                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonTransformNode!);
                 }
             });
         }

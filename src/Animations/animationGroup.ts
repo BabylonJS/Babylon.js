@@ -30,7 +30,13 @@ import { Engine } from "Engines/engine";
         private _from = Number.MAX_VALUE;
         private _to = -Number.MAX_VALUE;
         private _isStarted: boolean;
+        private _isPaused: boolean;
         private _speedRatio = 1;
+
+        /**
+         * Gets or sets the unique id of the node
+         */
+        public uniqueId: number;
 
         /**
          * This observable will notify when one animation have ended.
@@ -46,6 +52,11 @@ import { Engine } from "Engines/engine";
          * This observable will notify when all animations have paused.
          */
         public onAnimationGroupPauseObservable = new Observable<AnimationGroup>();
+
+        /**
+         * This observable will notify when all animations are playing.
+         */
+        public onAnimationGroupPlayObservable = new Observable<AnimationGroup>();
 
         /**
          * Gets the first frame
@@ -66,6 +77,13 @@ import { Engine } from "Engines/engine";
          */
         public get isStarted(): boolean {
             return this._isStarted;
+        }
+
+        /**
+         * Gets a value indicating that the current group is playing
+         */
+        public get isPlaying(): boolean {
+            return this._isStarted && !this._isPaused;
         }
 
         /**
@@ -117,6 +135,7 @@ import { Engine } from "Engines/engine";
             public name: string,
             scene: Nullable<Scene> = null) {
             this._scene = scene || Engine.LastCreatedScene!;
+            this.uniqueId = this._scene.getUniqueId();
 
             this._scene.animationGroups.push(this);
         }
@@ -222,6 +241,9 @@ import { Engine } from "Engines/engine";
             }
 
             this._isStarted = true;
+            this._isPaused = false;
+
+            this.onAnimationGroupPlayObservable.notifyObservers(this);
 
             return this;
         }
@@ -234,6 +256,8 @@ import { Engine } from "Engines/engine";
             if (!this._isStarted) {
                 return this;
             }
+
+            this._isPaused = true;
 
             for (var index = 0; index < this._animatables.length; index++) {
                 let animatable = this._animatables[index];
@@ -265,6 +289,8 @@ import { Engine } from "Engines/engine";
                 this.stop();
                 this.start(loop, this._speedRatio);
             }
+
+            this._isPaused = false;
 
             return this;
         }
@@ -299,6 +325,8 @@ import { Engine } from "Engines/engine";
                 let animatable = this._animatables[index];
                 animatable.restart();
             }
+
+            this.onAnimationGroupPlayObservable.notifyObservers(this);
 
             return this;
         }

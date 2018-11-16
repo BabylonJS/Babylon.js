@@ -13,6 +13,8 @@ import { Constants } from "Engines/constants";
      * Class for creating a cube texture
      */
     export class CubeTexture extends BaseTexture {
+        private _delayedOnLoad: Nullable<() => void>;
+
         /**
          * The url of the texture
          */
@@ -68,6 +70,13 @@ import { Constants } from "Engines/constants";
             return this._rotationY;
         }
 
+        /**
+         * Are mip maps generated for this texture or not.
+         */
+        public get noMipmap(): boolean {
+            return this._noMipmap;
+        }
+
         private _noMipmap: boolean;
         private _files: string[];
         private _extensions: string[];
@@ -76,7 +85,7 @@ import { Constants } from "Engines/constants";
         private _createPolynomials: boolean;
 
         /** @hidden */
-        public readonly _prefiltered: boolean = false;
+        public _prefiltered: boolean = false;
 
         /**
          * Creates a cube texture from an array of image urls
@@ -200,9 +209,41 @@ import { Constants } from "Engines/constants";
         }
 
         /**
-         * Delays loading of the cube texture
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "CubeTexture"
          */
-        public delayLoad(): void {
+        public getClassName(): string {
+            return "CubeTexture";
+        }
+
+        /**
+         * Update the url (and optional buffer) of this texture if url was null during construction.
+         * @param url the url of the texture
+         * @param forcedExtension defines the extension to use
+         * @param onLoad callback called when the texture is loaded  (defaults to null)
+         */
+        public updateURL(url: string, forcedExtension?: string, onLoad?: () => void): void {
+            if (this.url) {
+                this.releaseInternalTexture();
+                this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            }
+
+            this.url = url;
+            this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+            this._prefiltered = false;
+
+            if (onLoad) {
+                this._delayedOnLoad = onLoad;
+            }
+
+            this.delayLoad(forcedExtension);
+        }
+
+        /**
+         * Delays loading of the cube texture
+         * @param forcedExtension defines the extension to use
+         */
+        public delayLoad(forcedExtension?: string): void {
             if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
                 return;
             }
@@ -217,10 +258,10 @@ import { Constants } from "Engines/constants";
 
             if (!this._texture) {
                 if (this._prefiltered) {
-                    this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, undefined, undefined, this._format, undefined, this._createPolynomials);
+                    this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
                 }
                 else {
-                    this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, undefined, undefined, this._format);
+                    this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, undefined, this._format, forcedExtension);
                 }
             }
         }
@@ -238,6 +279,14 @@ import { Constants } from "Engines/constants";
          * @param value Reflection texture matrix
          */
         public setReflectionTextureMatrix(value: Matrix): void {
+            if (value.updateFlag === this._textureMatrix.updateFlag) {
+                return;
+            }
+
+            if (value.isIdentity() !== this._textureMatrix.isIdentity()) {
+                this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
+            }
+
             this._textureMatrix = value;
         }
 

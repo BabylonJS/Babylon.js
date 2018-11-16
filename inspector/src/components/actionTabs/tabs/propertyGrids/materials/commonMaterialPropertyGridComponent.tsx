@@ -6,9 +6,11 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { LockObject } from "../lockObject";
 
 interface ICommonMaterialPropertyGridComponentProps {
     material: Material,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -65,6 +67,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         <OptionsLineComponent label="Transparency mode" options={transparencyModeOptions} target={material} propertyName="transparencyMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ transparencyMode: value })} />
                     }
                     <OptionsLineComponent label="Alpha mode" options={alphaModeOptions} target={material} propertyName="alphaMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ alphaMode: value })} />
+                    <CheckBoxLineComponent label="Separate culling pass" target={material} propertyName="separateCullingPass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>
         );

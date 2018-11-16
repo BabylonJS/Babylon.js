@@ -187,6 +187,13 @@ declare type Animation = import("Animations/animation").Animation;
         public invertZ = false;
 
         /**
+         * Are mip maps generated for this texture or not.
+         */
+        public get noMipmap(): boolean {
+            return false;
+        }
+
+        /**
          * @hidden
          */
         @serialize()
@@ -278,6 +285,9 @@ declare type Animation = import("Animations/animation").Animation;
         public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
         private _scene: Nullable<Scene>;
+
+        /** @hidden */
+        public _samplingMode: number;
 
         /** @hidden */
         public _texture: Nullable<InternalTexture>;
@@ -402,6 +412,45 @@ declare type Animation = import("Animations/animation").Animation;
             }
 
             return new Size(this._texture.baseWidth, this._texture.baseHeight);
+        }
+
+  /**
+         * Update the sampling mode of the texture.
+         * Default is Trilinear mode.
+         *
+         * | Value | Type               | Description |
+         * | ----- | ------------------ | ----------- |
+         * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
+         * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
+         * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
+         * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
+         * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
+         * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
+         * | 7    | NEAREST_LINEAR |             |
+         * | 8    | NEAREST_NEAREST |             |
+         * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
+         * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
+         * | 11   | LINEAR_LINEAR |             |
+         * | 12   | LINEAR_NEAREST |             |
+         *
+         *    > _mag_: magnification filter (close to the viewer)
+         *    > _min_: minification filter (far from the viewer)
+         *    > _mip_: filter used between mip map levels
+         *@param samplingMode Define the new sampling mode of the texture
+         */
+        public updateSamplingMode(samplingMode: number): void {
+            if (!this._texture) {
+                return;
+            }
+
+            let scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+
+            this._samplingMode = samplingMode;
+            scene.getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         }
 
         /**
