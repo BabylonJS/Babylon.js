@@ -12,9 +12,11 @@ import { Vector3LineComponent } from "../../lines/vector3LineComponent";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
 import { SliderLineComponent } from "../../lines/sliderLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";
+import { LockObject } from "./lockObject";
 
 interface IScenePropertyGridComponentProps {
     scene: Scene,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     onSelectionChangedObservable?: Observable<any>
 }
@@ -128,7 +130,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         <TextureLinkLineComponent label="Env. texture" texture={scene.environmentTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
                     }
                     <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
-                    <FogPropertyGridComponent scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FogPropertyGridComponent lockObject={this.props.lockObject} scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="IMAGE PROCESSING">
                     <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Contrast" target={imageProcessing} propertyName="contrast" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -139,7 +141,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                 {
                     dummy !== null &&
                     <LineContainerComponent title="PHYSICS" closed={true}>
-                        <FloatLineComponent label="Time step" target={dummy} propertyName="timeStep" onChange={newValue => this.updateTimeStep(newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Time step" target={dummy} propertyName="timeStep" onChange={newValue => this.updateTimeStep(newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <Vector3LineComponent label="Gravity" target={dummy} propertyName="gravity" onChange={newValue => this.updateGravity(newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }

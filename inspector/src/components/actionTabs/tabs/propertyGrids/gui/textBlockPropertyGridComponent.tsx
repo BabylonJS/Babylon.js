@@ -5,9 +5,11 @@ import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridC
 import { TextBlock } from "babylonjs-gui";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
+import { LockObject } from "../lockObject";
 
 interface ITextBlockPropertyGridComponentProps {
     textBlock: TextBlock,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -21,9 +23,9 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="TEXTBLOCK">
-                    <TextInputLineComponent label="Text" target={textBlock} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Text" target={textBlock} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>
         );

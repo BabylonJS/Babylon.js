@@ -7,9 +7,11 @@ import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
+import { LockObject } from "../lockObject";
 
 interface IPBRMaterialPropertyGridComponentProps {
     material: PBRMaterial,
+    lockObject: LockObject,
     onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
@@ -49,7 +51,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
 
         return (
             <div className="pane">
-                <CommonMaterialPropertyGridComponent material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonMaterialPropertyGridComponent lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 {this.renderTextures()}
                 <LineContainerComponent title="LIGHTING & COLORS">
                     <Color3LineComponent label="Albedo" target={material} propertyName="albedoColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
