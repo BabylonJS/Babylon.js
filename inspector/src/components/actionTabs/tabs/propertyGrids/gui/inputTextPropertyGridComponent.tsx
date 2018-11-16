@@ -11,9 +11,9 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { LockObject } from "../lockObject";
 
 interface IInputTextPropertyGridComponentProps {
-    inputText: InputText,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    inputText: InputText;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {

@@ -28,8 +28,8 @@ export class OBJExport {
             //Uses the position of the item in the scene, to the file (this back to normal in the end)
             let lastMatrix: Nullable<Matrix> = null;
             if (globalposition) {
-                var newMatrix = BABYLON.Matrix.Translation(mesh[j].position.x, mesh[j].position.y, mesh[j].position.z);
-                lastMatrix = BABYLON.Matrix.Translation(-(mesh[j].position.x), -(mesh[j].position.y), -(mesh[j].position.z));
+                var newMatrix = Matrix.Translation(mesh[j].position.x, mesh[j].position.y, mesh[j].position.z);
+                lastMatrix = Matrix.Translation(-(mesh[j].position.x), -(mesh[j].position.y), -(mesh[j].position.z));
                 mesh[j].bakeTransformIntoVertices(newMatrix);
             }
 

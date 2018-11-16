@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Scene, AbstractMesh, Nullable } from "babylonjs";
+import { Scene, AbstractMesh, Nullable, UtilityLayerRenderer, Tools, Mesh, Color3, Texture } from "babylonjs";
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 
 interface IGridPropertyGridComponentProps {
-    scene: Scene
+    scene: Scene;
 }
 
 export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps, { isEnabled: boolean }> {
@@ -15,7 +15,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     }
 
     componentWillMount() {
-        const scene = BABYLON.UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
+        const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
         for (var mesh of scene.meshes) {
             if (mesh.metadata && mesh.metadata.isInspectorGrid) {
@@ -27,11 +27,11 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     }
 
     addOrRemoveGrid() {
-        const scene = BABYLON.UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
+        const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
         if (!(BABYLON as any).GridMaterial) {
             this.setState({ isEnabled: true });
-            BABYLON.Tools.LoadScript("https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", () => {
+            Tools.LoadScript("https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", () => {
                 this.addOrRemoveGrid();
             });
             return;
@@ -42,7 +42,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             var width = (extend.max.x - extend.min.x) * 5.0;
             var depth = (extend.max.z - extend.min.z) * 5.0;
 
-            this._gridMesh = BABYLON.Mesh.CreateGround("grid", 1.0, 1.0, 1, scene);
+            this._gridMesh = Mesh.CreateGround("grid", 1.0, 1.0, 1, scene);
             if (!this._gridMesh.metadata) {
                 this._gridMesh.metadata = {};
             }
@@ -56,11 +56,11 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             groundMaterial.minorUnitVisibility = 0.3;
             groundMaterial.gridRatio = 0.01;
             groundMaterial.backFaceCulling = false;
-            groundMaterial.mainColor = new BABYLON.Color3(1, 1, 1);
-            groundMaterial.lineColor = new BABYLON.Color3(1.0, 1.0, 1.0);
+            groundMaterial.mainColor = new Color3(1, 1, 1);
+            groundMaterial.lineColor = new Color3(1.0, 1.0, 1.0);
             groundMaterial.opacity = 0.8;
             groundMaterial.zOffset = 1.0;
-            groundMaterial.opacityTexture = new BABYLON.Texture("https://assets.babylonjs.com/environments/backgroundGround.png", scene);
+            groundMaterial.opacityTexture = new Texture("https://assets.babylonjs.com/environments/backgroundGround.png", scene);
 
             this._gridMesh.material = groundMaterial;
 

@@ -8,9 +8,9 @@ import { Color3LineComponent } from "../../../lines/color3LineComponent";
 import { LockObject } from "../lockObject";
 
 interface IColorPickerPropertyGridComponentProps {
-    colorPicker: ColorPicker,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    colorPicker: ColorPicker;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {

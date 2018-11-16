@@ -3,9 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 interface ILineContainerComponentProps {
-    title: string,
-    children: any[] | any,
-    closed?: boolean
+    title: string;
+    children: any[] | any;
+    closed?: boolean;
 }
 
 export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean }> {
@@ -42,7 +42,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
                     <FontAwesomeIcon icon={faChevronDown} />
                 </div>
             </div>
-        )
+        );
     }
 
     render() {
@@ -53,7 +53,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
                         this.renderHeader()
                     }
                 </div>
-            )
+            );
         }
 
         return (

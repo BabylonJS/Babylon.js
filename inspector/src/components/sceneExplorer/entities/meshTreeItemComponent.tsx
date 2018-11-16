@@ -1,4 +1,4 @@
-import { AbstractMesh, Mesh, IExplorerExtensibilityGroup } from "babylonjs";
+import { AbstractMesh, Mesh, IExplorerExtensibilityGroup, BoundingBoxGizmo, Color3, PointerDragBehavior } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
@@ -8,9 +8,9 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface IMeshTreeItemComponentProps {
-    mesh: AbstractMesh,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onClick: () => void
+    mesh: AbstractMesh;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onClick: () => void;
 }
 
 export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, { isGizmoEnabled: boolean, isVisible: boolean }> {
@@ -19,7 +19,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
 
         const mesh = this.props.mesh;
 
-        this.state = { isGizmoEnabled: mesh.metadata && mesh.metadata.gizmo, isVisible: this.props.mesh.isVisible }
+        this.state = { isGizmoEnabled: mesh.metadata && mesh.metadata.gizmo, isVisible: this.props.mesh.isVisible };
     }
 
     showGizmos(): void {
@@ -45,9 +45,9 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
             }
 
             // Connect to gizmo
-            const dummy = BABYLON.BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(mesh as Mesh);
+            const dummy = BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(mesh as Mesh);
             dummy.metadata = { hidden: true };
-            const gizmo = new BABYLON.BoundingBoxGizmo(BABYLON.Color3.FromHexString("#0984e3"));
+            const gizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"));
             gizmo.attachedMesh = dummy;
 
             gizmo.updateBoundingBox();
@@ -55,7 +55,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
             gizmo.fixedDragMeshScreenSize = true;
             mesh.metadata.gizmo = gizmo;
 
-            var pointerDragBehavior = new BABYLON.PointerDragBehavior();
+            var pointerDragBehavior = new PointerDragBehavior();
             pointerDragBehavior.useObjectOrienationForDragging = false;
 
             dummy.addBehavior(pointerDragBehavior);
@@ -94,7 +94,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
     render() {
         const mesh = this.props.mesh;
 
-        const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />
+        const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />;
 
         return (
             <div className="meshTools">
@@ -109,6 +109,6 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
                     <ExtensionsComponent target={mesh} extensibilityGroups={this.props.extensibilityGroups} />
                 }
             </div>
-        )
+        );
     }
 }
