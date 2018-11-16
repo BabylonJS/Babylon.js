@@ -104,7 +104,7 @@ var buildDTSFiles = function(libraries, settings, cb) {
  */
 function buildExternalLibraries(settings) {
     // Clean up old build files.
-    rmDir(settings.build.dtsBundle.baseDir);
+    // rmDir(settings.build.dtsBundle.baseDir);
 
     // Creates the required tasks.
     var tasks = [];
