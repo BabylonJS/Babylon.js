@@ -7,9 +7,11 @@ import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
+import { LockObject } from "../lockObject";
 
 interface IBackgroundMaterialPropertyGridComponentProps {
     material: BackgroundMaterial,
+    lockObject: LockObject,
     onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
@@ -41,7 +43,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
 
         return (
             <div className="pane">
-                <CommonMaterialPropertyGridComponent material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonMaterialPropertyGridComponent lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="LIGHTING & COLORS">
                     <Color3LineComponent label="Primary" target={material} propertyName="primaryColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Shadow level" target={material} propertyName="primaryColorShadowLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

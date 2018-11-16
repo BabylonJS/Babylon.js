@@ -164,7 +164,7 @@ export class Container extends Control {
      * @returns the current container
      */
     public clearControls(): Container {
-        let children = this._children.slice();
+        let children = this.children.slice();
 
         for (var child of children) {
             this.removeControl(child);

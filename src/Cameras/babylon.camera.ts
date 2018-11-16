@@ -1071,6 +1071,7 @@ module BABYLON {
                 this._rigCameras[i].minZ = this.minZ;
                 this._rigCameras[i].maxZ = this.maxZ;
                 this._rigCameras[i].fov = this.fov;
+                this._rigCameras[i].upVector.copyFrom(this.upVector);
             }
 
             // only update viewport when ANAGLYPH
