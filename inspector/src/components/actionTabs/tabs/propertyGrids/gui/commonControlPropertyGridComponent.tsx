@@ -28,8 +28,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={control.getClassName()} />
                     <SliderLineComponent label="Alpha" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Color" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Background" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    {
+                        control.color &&
+                        <TextInputLineComponent lockObject={this.props.lockObject} label="Color" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        (control as any).background &&
+                        <TextInputLineComponent lockObject={this.props.lockObject} label="Background" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                 </LineContainerComponent>
                 <LineContainerComponent title="POSITION">
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Left" target={control} propertyName="left" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
