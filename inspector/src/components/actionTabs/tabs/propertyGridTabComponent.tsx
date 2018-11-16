@@ -19,10 +19,13 @@ import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPro
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
-import { ColorPicker } from "babylonjs-gui";
+import { ColorPicker, Image, Slider, ImageBasedSlider } from "babylonjs-gui";
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
 import { AnimationGroupGridComponent } from "./propertyGrids/animationGroupPropertyGridComponent";
 import { LockObject } from "./propertyGrids/lockObject";
+import { ImagePropertyGridComponent } from "./propertyGrids/gui/imagePropertyGridComponent";
+import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
+import { ImageBasedSliderPropertyGridComponent } from "./propertyGrids/gui/imageBasedSliderPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -174,6 +177,27 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "ColorPicker") {
                 const colorPicker = entity as ColorPicker;
                 return (<ColorPickerPropertyGridComponent colorPicker={colorPicker}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "Image") {
+                const image = entity as Image;
+                return (<ImagePropertyGridComponent image={image}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "Slider") {
+                const slider = entity as Slider;
+                return (<SliderPropertyGridComponent slider={slider}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "ImageBasedSlider") {
+                const imageBasedSlider = entity as ImageBasedSlider;
+                return (<ImageBasedSliderPropertyGridComponent imageBasedSlider={imageBasedSlider}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
