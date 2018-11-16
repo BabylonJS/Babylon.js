@@ -8,6 +8,7 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { LockObject } from "../lockObject";
+import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 
 interface ICommonControlPropertyGridComponentProps {
     control: Control,
@@ -23,6 +24,18 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     render() {
         const control = this.props.control;
 
+        var horizontalOptions = [
+            { label: "Left", value: BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT },
+            { label: "Right", value: BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT },
+            { label: "Center", value: BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER },
+        ];
+
+        var verticalOptions = [
+            { label: "Top", value: BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP },
+            { label: "Bottom", value: BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM },
+            { label: "Center", value: BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER },
+        ];
+
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
@@ -36,6 +49,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         (control as any).background &&
                         <TextInputLineComponent lockObject={this.props.lockObject} label="Background" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
+                </LineContainerComponent>
+                <LineContainerComponent title="ALIGNMENT">
+                    <OptionsLineComponent label="Horizontal" options={horizontalOptions} target={control} propertyName="horizontalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Vertical" options={verticalOptions} target={control} propertyName="verticalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="POSITION">
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Left" target={control} propertyName="left" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

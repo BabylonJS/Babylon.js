@@ -23,7 +23,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
     render() {
         const image = this.props.image;
 
-        var strecthOptions = [
+        var stretchOptions = [
             { label: "None", value: BABYLON.GUI.Image.STRETCH_NONE },
             { label: "Fill", value: BABYLON.GUI.Image.STRETCH_FILL },
             { label: "Uniform", value: BABYLON.GUI.Image.STRETCH_UNIFORM },
@@ -39,7 +39,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source width" target={image} propertyName="sourceWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Source height" target={image} propertyName="sourceHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Autoscale" target={image} propertyName="autoScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <OptionsLineComponent label="Stretch" options={strecthOptions} target={image} propertyName="stretch" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ mode: value })} />
+                    <OptionsLineComponent label="Stretch" options={stretchOptions} target={image} propertyName="stretch" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ mode: value })} />
                 </LineContainerComponent>
                 <LineContainerComponent title="ANIMATION SHEET">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Cell Id" isInteger={true} target={image} propertyName="cellId" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
