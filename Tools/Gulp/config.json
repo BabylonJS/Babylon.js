@@ -319,19 +319,19 @@
                 "moduleName": "BABYLON",
                 "moduleSpecifics": [
                     {
-                        "path": "babylonjs-loaders/src/glTF/1.0",
+                        "path": "babylonjs-loaders/glTF/1.0",
                         "namespace": "BABYLON.GLTF1"
                     },
                     {
-                        "path": "babylonjs-loaders/src/glTF/2.0",
+                        "path": "babylonjs-loaders/glTF/2.0",
                         "namespace": "BABYLON.GLTF2"
                     },
                     {
-                        "path": "babylonjs-loaders/src/glTF/2.0/glTFLoaderInterfaces",
+                        "path": "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces",
                         "namespace": "BABYLON.GLTF2.Loader"
                     },
                     {
-                        "path": "babylonjs-loaders/src/glTF/2.0/Extensions",
+                        "path": "babylonjs-loaders/glTF/2.0/Extensions",
                         "namespace": "BABYLON.GLTF2.Loader.Extensions"
                     }
                 ],
@@ -377,19 +377,19 @@
                 },
                 "moduleSpecifics": [
                     {
-                        "path": "babylonjs-serializers/src/glTF/2.0",
+                        "path": "babylonjs-serializers/glTF/2.0",
                         "namespace": "BABYLON.GLTF2.Exporter"
                     },
                     {
-                        "path": "babylonjs-serializers/src/glTF/2.0/Extensions",
+                        "path": "babylonjs-serializers/glTF/2.0/Extensions",
                         "namespace": "BABYLON.GLTF2.Exporter.Extensions"
                     },
                     {
-                        "path": "babylonjs-serializers/src/glTF/2.0/glTFData",
+                        "path": "babylonjs-serializers/glTF/2.0/glTFData",
                         "namespace": "BABYLON"
                     },
                     {
-                        "path": "babylonjs-serializers/src/glTF/2.0/glTFSerializer",
+                        "path": "babylonjs-serializers/glTF/2.0/glTFSerializer",
                         "namespace": "BABYLON"
                     }
                 ]
