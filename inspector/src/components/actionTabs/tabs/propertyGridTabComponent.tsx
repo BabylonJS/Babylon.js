@@ -19,13 +19,16 @@ import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPro
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
-import { ColorPicker, Image, Slider, ImageBasedSlider } from "babylonjs-gui";
+import { ColorPicker, Image, Slider, ImageBasedSlider, Rectangle, Ellipse, Checkbox } from "babylonjs-gui";
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
 import { AnimationGroupGridComponent } from "./propertyGrids/animationGroupPropertyGridComponent";
 import { LockObject } from "./propertyGrids/lockObject";
 import { ImagePropertyGridComponent } from "./propertyGrids/gui/imagePropertyGridComponent";
 import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
 import { ImageBasedSliderPropertyGridComponent } from "./propertyGrids/gui/imageBasedSliderPropertyGridComponent";
+import { RectanglePropertyGridComponent } from "./propertyGrids/gui/rectanglePropertyGridComponent";
+import { EllipsePropertyGridComponent } from "./propertyGrids/gui/ellipsePropertyGridComponent";
+import { CheckboxPropertyGridComponent } from "./propertyGrids/gui/checkboxPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -198,6 +201,27 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "ImageBasedSlider") {
                 const imageBasedSlider = entity as ImageBasedSlider;
                 return (<ImageBasedSliderPropertyGridComponent imageBasedSlider={imageBasedSlider}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "Rectangle") {
+                const rectangle = entity as Rectangle;
+                return (<RectanglePropertyGridComponent rectangle={rectangle}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "Ellipse") {
+                const ellipse = entity as Ellipse;
+                return (<EllipsePropertyGridComponent ellipse={ellipse}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "Checkbox") {
+                const checkbox = entity as Checkbox;
+                return (<CheckboxPropertyGridComponent checkbox={checkbox}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
