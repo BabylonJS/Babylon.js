@@ -12,6 +12,12 @@ module BABYLON {
         private _tmpAmmoTransform:any;
         private _tmpAmmoQuaternion:any;
         private _tmpAmmoConcreteContactResultCallback:any;
+        private _collisionConfiguration:any;
+        private _dispatcher:any;
+        private _overlappingPairCache:any;
+        private _solver:any;
+        private _tmpAmmoVectorA:any;
+        private _tmpAmmoVectorB:any;
 
         public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
             if(typeof Ammo === "function"){
@@ -23,18 +29,22 @@ module BABYLON {
                 return;
             }
 
-            var collisionConfiguration  = new this.BJSAMMO.btDefaultCollisionConfiguration();
-            var dispatcher              = new this.BJSAMMO.btCollisionDispatcher(collisionConfiguration);
-            var overlappingPairCache    = new this.BJSAMMO.btDbvtBroadphase();
-            var solver                  = new this.BJSAMMO.btSequentialImpulseConstraintSolver();
-            this.world           = new this.BJSAMMO.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+            this._collisionConfiguration  = new this.BJSAMMO.btDefaultCollisionConfiguration();
+            this._dispatcher              = new this.BJSAMMO.btCollisionDispatcher(this._collisionConfiguration);
+            this._overlappingPairCache    = new this.BJSAMMO.btDbvtBroadphase();
+            this._solver                  = new this.BJSAMMO.btSequentialImpulseConstraintSolver();
+            this.world           = new this.BJSAMMO.btDiscreteDynamicsWorld(this._dispatcher, this._overlappingPairCache, this._solver, this._collisionConfiguration);
+            this._tmpAmmoConcreteContactResultCallback = new this.BJSAMMO.ConcreteContactResultCallback();
+
             this._tmpAmmoTransform = new this.BJSAMMO.btTransform();
             this._tmpAmmoQuaternion = new this.BJSAMMO.btQuaternion(0,0,0,1);
-            this._tmpAmmoConcreteContactResultCallback = new this.BJSAMMO.ConcreteContactResultCallback();
+            this._tmpAmmoVectorA = new this.BJSAMMO.btVector3(0,0,0);
+            this._tmpAmmoVectorB = new this.BJSAMMO.btVector3(0,0,0);
         }
 
         public setGravity(gravity: Vector3): void {
-            this.world.setGravity(new this.BJSAMMO.btVector3(gravity.x, gravity.y, gravity.z));
+            this._tmpAmmoVectorA.setValue(gravity.x, gravity.y, gravity.z)
+            this.world.setGravity(this._tmpAmmoVectorA);
         }
 
         public setTimeStep(timeStep: number) {
@@ -90,15 +100,19 @@ module BABYLON {
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-            var worldPoint = new this.BJSAMMO.btVector3(contactPoint.x, contactPoint.y, contactPoint.z);
-            var impulse = new this.BJSAMMO.btVector3(force.x, force.y, force.z);
+            var worldPoint = this._tmpAmmoVectorA
+            var impulse = this._tmpAmmoVectorB
+            worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z)
+            impulse.setValue(force.x, force.y, force.z)
 
             impostor.physicsBody.applyImpulse(impulse, worldPoint);
         }
 
         public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-            var worldPoint = new this.BJSAMMO.btVector3(contactPoint.x, contactPoint.y, contactPoint.z);
-            var impulse = new this.BJSAMMO.btVector3(force.x, force.y, force.z);
+            var worldPoint = this._tmpAmmoVectorA
+            var impulse = this._tmpAmmoVectorB
+            worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z)
+            impulse.setValue(force.x, force.y, force.z)
 
             impostor.physicsBody.applyForce(impulse, worldPoint);
         }
@@ -187,17 +201,17 @@ module BABYLON {
             var extendSize = impostor.getObjectExtendSize();
             switch (impostor.type) {
                 case PhysicsImpostor.SphereImpostor:
-                    returnValue = new this.BJSAMMO.btSphereShape(extendSize.x/2);
+                    returnValue = new Ammo.btSphereShape(extendSize.x/2);
                     break;
                 case PhysicsImpostor.CylinderImpostor:
-                    returnValue = new this.BJSAMMO.btCylinderShape(new this.BJSAMMO.btVector3(extendSize.x/2,extendSize.y/2,extendSize.z/2));
+                    returnValue = new Ammo.btCylinderShape(new Ammo.btVector3(extendSize.x/2,extendSize.y/2,extendSize.z/2));
                     break;
                 case PhysicsImpostor.PlaneImpostor:
                 case PhysicsImpostor.BoxImpostor:
-                    returnValue = new this.BJSAMMO.btBoxShape(new this.BJSAMMO.btVector3(extendSize.x/2,extendSize.y/2,extendSize.z/2));
+                    returnValue = new Ammo.btBoxShape(new Ammo.btVector3(extendSize.x/2,extendSize.y/2,extendSize.z/2));
                     break;
                 case PhysicsImpostor.MeshImpostor:
-                    var tetraMesh = new this.BJSAMMO.btTriangleMesh();
+                    var tetraMesh = new Ammo.btTriangleMesh();
                     // Create mesh impostor from triangles which makeup the mesh
                     if(object && object.getIndices && object.getWorldMatrix){
                         var ind = object.getIndices()
@@ -215,7 +229,7 @@ module BABYLON {
                             var triPoints = [];
                             for(var point = 0;point<3;point++){
                                 
-                                triPoints.push(new this.BJSAMMO.btVector3(
+                                triPoints.push(new Ammo.btVector3(
                                     object.scaling.x*p[(ind[(i*3)+point]*3)+0],
                                     object.scaling.y*p[(ind[(i*3)+point]*3)+1],
                                     object.scaling.z*p[(ind[(i*3)+point]*3)+2]
@@ -226,7 +240,7 @@ module BABYLON {
                     }else{
                         throw "Unable to create MeshImpostor from object";
                     }
-                    returnValue = new this.BJSAMMO.btBvhTriangleMeshShape(tetraMesh);
+                    returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
                     break;
             }
 
@@ -278,11 +292,13 @@ module BABYLON {
         }
 
         public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-            impostor.physicsBody.setLinearVelocity(new this.BJSAMMO.btVector3(velocity.x, velocity.y, velocity.z));
+            this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z)
+            impostor.physicsBody.setLinearVelocity(this._tmpAmmoVectorA);
         }
 
         public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-            impostor.physicsBody.setAngularVelocity(new this.BJSAMMO.btVector3(velocity.x, velocity.y, velocity.z));
+            this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z)
+            impostor.physicsBody.setAngularVelocity(this._tmpAmmoVectorA);
         }
 
         public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
@@ -374,7 +390,19 @@ module BABYLON {
         }
 
         public dispose() {
-
+            // Dispose of world
+            Ammo.destroy(this.world);
+            Ammo.destry(this._solver);
+            Ammo.destry(this._overlappingPairCache);
+            Ammo.destry(this._dispatcher);
+            Ammo.destry(this._collisionConfiguration);
+            
+            // Dispose of tmp variables
+            Ammo.destroy(this._tmpAmmoVectorA);
+            Ammo.destroy(this._tmpAmmoVectorB);
+            Ammo.destry(this._tmpAmmoTransform);
+            Ammo.destry(this._tmpAmmoQuaternion);
+            Ammo.destry(this._tmpAmmoConcreteContactResultCallback);
         }
     }
 }
