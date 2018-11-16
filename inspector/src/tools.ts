@@ -21,10 +21,10 @@ export class Tools {
             return [];
         }
 
-        const finalArray = items.filter((i) => !i.metadata || !i.metadata.hidden);
+        const finalArray = items.filter((i) => !i.reservedDataStore || !i.reservedDataStore.hidden);
 
-        if (parent && parent.metadata && parent.metadata.detachedChildren) {
-            finalArray.push(...parent.metadata.detachedChildren);
+        if (parent && parent.reservedDataStore && parent.reservedDataStore.detachedChildren) {
+            finalArray.push(...parent.reservedDataStore.detachedChildren);
         }
 
         return finalArray.sort((a: any, b: any) => {
