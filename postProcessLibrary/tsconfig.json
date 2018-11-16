@@ -28,8 +28,5 @@
             ]
         },
         "outDir": "./build"
-    },
-    "include": [
-        "src/**/*"
-    ]
+    }
 }

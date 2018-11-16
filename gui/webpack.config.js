@@ -1,10 +1,9 @@
 const path = require('path');
 const webpack = require('webpack');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
-    context: __dirname,
+    context: path.resolve(__dirname, './src'),
     entry: {
         'babylonjs-gui': path.resolve(__dirname, './legacy/legacy.ts'),
     },
@@ -20,7 +19,7 @@ module.exports = {
         umdNamedDefine: true
     },
     resolve: {
-        extensions: [".js", '.ts']
+        extensions: [".ts"]
     },
     externals: [
         {
@@ -53,10 +52,6 @@ module.exports = {
     },
     plugins: [
         new HardSourceWebpackPlugin(),
-        new CleanWebpackPlugin([
-            path.resolve(__dirname, './src/**/*.js'),
-            path.resolve(__dirname, './src/**/*.map')
-        ]),
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/,
