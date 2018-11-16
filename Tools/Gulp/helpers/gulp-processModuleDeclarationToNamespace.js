@@ -6,15 +6,15 @@ var processData = function(data, options) {
 
     // Start process by extracting all lines.
     let lines = str.split('\n');
-    var firstIndex = lines.findIndex((line => { return line.indexOf(`'${options.packageName}/'`) !== -1 }));
-    var lastIndex = lines.findIndex(((line, idx) => { return line.trim() === '}' && idx > firstIndex }));
-    lines.splice(firstIndex, lastIndex - firstIndex + 1);
+    // var firstIndex = lines.findIndex((line => { return line.indexOf(`'${options.packageName}/`) !== -1 }));
+    // var lastIndex = lines.findIndex(((line, idx) => { return line.trim() === '}' && idx > firstIndex }));
+    // lines.splice(firstIndex, lastIndex - firstIndex + 1);
 
     // Let's go line by line and check if we have special folder replacements
     // Replaces declare module 'babylonjs'; by declare module BABYLON for instance
     for (var index = 0; index < lines.length; index++) {
         var namespace = options.moduleName;
-        var regex = /declare module '(.*)' {/g;
+        var regex = /declare module ["'](.*)["'] {/g;
 
         if (options.moduleSpecifics) {
             var match = regex.exec(lines[index]);
@@ -33,6 +33,46 @@ var processData = function(data, options) {
         }
 
         lines[index] = lines[index].replace(regex, `declare module ${namespace} {`);
+    }
+
+    // Replace module augmentation blocks
+    for (var index = 0; index < lines.length; index++) {
+        var namespace = options.moduleName;
+        var regex = /\smodule ["'](.*)["'] {/g;
+        var match = regex.exec(lines[index]);
+        if (!match) {
+            continue;
+        }
+        lines[index] = "";
+
+        // Find matching closing curly }
+        var opened = 0;
+        for (let endIndex = index; endIndex < lines.length; endIndex++) {
+            let scanLine = lines[endIndex].trim();
+            if (scanLine.length === 0) {
+                continue;
+            }
+            // Skip comments
+            if (scanLine[0] === "*" || scanLine[0] === "/") {
+                continue;
+            }
+
+            // Count open curly
+            if (scanLine.indexOf("{") != -1) {
+                opened++;
+            }
+            // And closing ones
+            if (scanLine.indexOf("}") != -1) {
+                opened--;
+
+                // until the closing module
+                if (opened < 0) {
+                    lines[endIndex] = "";
+                    index = endIndex;
+                    break;
+                }
+            }
+        }
     }
 
     // Recreate the file.
@@ -144,19 +184,16 @@ var processData = function(data, options) {
         });
     }
 
-    // Clean up export.
+    // Clean up named export.
     str = str.replace(/export {(.*)};/g, '');
     // Clean up left import.
     str = str.replace(/import (.*);/g, "");
-
-    // Rearrange the d.ts.
+    // Clean up export * from.
     str = str.split("\n").filter(line => line.trim()).filter(line => line.indexOf("export * from") === -1).join("\n");
 
     // Remove empty module declaration
     var cleanEmptyNamespace = function(str, moduleName) {
-        let emptyDeclareRegexp = new RegExp("declare module " + moduleName + " {\n}\n", "g");
-        str = str.replace(emptyDeclareRegexp, "");
-        emptyDeclareRegexp = new RegExp("declare module " + moduleName + " {\r\n}\r\n", "g");
+        let emptyDeclareRegexp = new RegExp("declare module " + moduleName + " {\\s*}\\s*", "gm");
         str = str.replace(emptyDeclareRegexp, "");
 
         return str;
@@ -169,6 +206,12 @@ var processData = function(data, options) {
             str = cleanEmptyNamespace(str, specific.namespace);
         });
     }
+
+    // Remove Empty Lines
+    str = str.replace(/^\s*$/g, "");
+
+    // Remove Inlined Import
+    str = str.replace(/import\("[A-Za-z0-9\/]*"\)\./g, "");
 
     return str;
 }
@@ -186,11 +229,16 @@ module.exports = function(fileLocation, options, cb) {
         if (options.prependText) {
             data = options.prependText + '\n' + data.toString();
         }
-        
+
         var newData = "";
         if (options) {
             newData = processData(data, options);
-            fs.writeFileSync(fileLocation.replace('.module', ''), newData);
+
+            var namespaceData = newData;
+            if (options.prependToNamespaceText) {
+                namespaceData = options.prependToNamespaceText + '\n' + namespaceData;
+            }
+            fs.writeFileSync(fileLocation.replace('.module', ''), namespaceData);
         }
 
         if (options.doNotAppendNamespace) {

@@ -1,4 +1,4 @@
-import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, serializeAsVector2, Vector2, SmartArray, RenderTargetTexture, Nullable, AbstractMesh, Matrix, Scene, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Mesh, Plane, Vector3, Camera, IAnimatable, SerializationHelper } from "babylonjs";
+import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, serializeAsVector2, Vector2, SmartArray, RenderTargetTexture, Nullable, AbstractMesh, Matrix, Scene, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Mesh, Plane, Vector3, Camera, IAnimatable, SerializationHelper, Constants } from "babylonjs";
 
 import "./water.fragment";
 import "./water.vertex";
@@ -510,13 +510,13 @@ export class WaterMaterial extends PushMaterial {
     private _createRenderTargets(scene: Scene, renderTargetSize: Vector2): void {
         // Render targets
         this._refractionRTT = new RenderTargetTexture(name + "_refraction", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
-        this._refractionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
-        this._refractionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+        this._refractionRTT.wrapU = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+        this._refractionRTT.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
         this._refractionRTT.ignoreCameraViewport = true;
 
         this._reflectionRTT = new RenderTargetTexture(name + "_reflection", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
-        this._reflectionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
-        this._reflectionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+        this._reflectionRTT.wrapU = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+        this._reflectionRTT.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
         this._reflectionRTT.ignoreCameraViewport = true;
 
         var isVisible: boolean;

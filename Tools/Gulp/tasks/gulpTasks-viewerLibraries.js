@@ -9,7 +9,7 @@ var path = require("path");
 var rename = require("gulp-rename");
 
 // Gulp Helpers
-var processDeclaration = require('../helpers/gulp-processTypescriptDeclaration');
+var processDeclaration = require('../helpers/gulp-processModuleDeclarationToNamespace');
 var addModuleExports = require("../helpers/gulp-addModuleExports");
 
 // Import Build Config

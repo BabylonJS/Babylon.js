@@ -1,4 +1,5 @@
-import { SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions, Scene, Nullable, AbstractMesh, IParticleSystem, Skeleton, Mesh, Tools, AssetContainer, VertexBuffer } from "babylonjs";
+import { Scene, SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions, Nullable, AbstractMesh, IParticleSystem, Skeleton, Mesh, Tools, AssetContainer, VertexBuffer } from "babylonjs";
+import "babylonjs/Helpers/sceneHelpers";
 
 /**
  * STL file type loader.
@@ -116,6 +117,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
 
         if (result) {
+            scene.createDefaultLight();
             scene.createDefaultCameraOrLight();
         }
 

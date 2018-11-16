@@ -1,4 +1,4 @@
-import { MaterialDefines, serializeAsColor3, serializeAsTexture, expandToProperty, Color3, serialize, Vector3, Vector4, Scene, AbstractMesh, SubMesh, MaterialHelper, VertexBuffer, Matrix, Mesh, SerializationHelper, BaseTexture, StandardMaterial } from "babylonjs";
+import { PushMaterial, MaterialDefines, serializeAsColor3, serializeAsTexture, expandToProperty, Color3, serialize, Vector3, Vector4, Scene, AbstractMesh, SubMesh, MaterialHelper, VertexBuffer, Matrix, Mesh, SerializationHelper, BaseTexture, StandardMaterial } from "babylonjs";
 
 import "./grid.fragment";
 import "./grid.vertex";
@@ -21,7 +21,7 @@ class GridMaterialDefines extends MaterialDefines {
  * The grid materials allows you to wrap any shape with a grid.
  * Colors are customizable.
  */
-export class GridMaterial extends BABYLON.PushMaterial {
+export class GridMaterial extends PushMaterial {
 
     /**
      * Main color of the grid (e.g. between lines)
