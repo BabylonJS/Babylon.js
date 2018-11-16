@@ -694,14 +694,8 @@ module BABYLON {
             vertexData.applyToMesh(plane, options.updatable);
 
             if (options.sourcePlane) {
-                plane.translate(options.sourcePlane.normal, options.sourcePlane.d);
-
-                var product = Math.acos(Vector3.Dot(options.sourcePlane.normal, Axis.Z));
-                var vectorProduct = Vector3.Cross(Axis.Z, options.sourcePlane.normal);
-
-                if (vectorProduct.lengthSquared() > Epsilon) {
-                    plane.rotate(vectorProduct, product);
-                }
+                plane.translate(options.sourcePlane.normal, -options.sourcePlane.d);
+                plane.setDirection(options.sourcePlane.normal);
             }
 
             return plane;

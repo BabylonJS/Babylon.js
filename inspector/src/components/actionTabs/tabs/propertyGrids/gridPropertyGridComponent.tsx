@@ -18,7 +18,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         const scene = BABYLON.UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
         for (var mesh of scene.meshes) {
-            if (mesh.metadata && mesh.metadata.isInspectorGrid) {
+            if (mesh.reservedDataStore && mesh.reservedDataStore.isInspectorGrid) {
                 this._gridMesh = mesh;
                 this.setState({ isEnabled: true });
                 return;
@@ -43,12 +43,12 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             var depth = (extend.max.z - extend.min.z) * 5.0;
 
             this._gridMesh = BABYLON.Mesh.CreateGround("grid", 1.0, 1.0, 1, scene);
-            if (!this._gridMesh.metadata) {
-                this._gridMesh.metadata = {};
+            if (!this._gridMesh.reservedDataStore) {
+                this._gridMesh.reservedDataStore = {};
             }
             this._gridMesh.scaling.x = Math.max(width, depth);
             this._gridMesh.scaling.z = this._gridMesh.scaling.x;
-            this._gridMesh.metadata.isInspectorGrid = true;
+            this._gridMesh.reservedDataStore.isInspectorGrid = true;
             this._gridMesh.isPickable = false;
 
             var groundMaterial = new (BABYLON as any).GridMaterial("GridMaterial", scene);

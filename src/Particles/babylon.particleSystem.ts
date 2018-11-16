@@ -308,7 +308,7 @@ module BABYLON {
                     particle.position.addInPlace(this._scaledDirection);
 
                     // Noise
-                    if (noiseTextureData && noiseTextureSize) {
+                    if (noiseTextureData && noiseTextureSize && particle._randomNoiseCoordinates1) {
                         let fetchedColorR = this._fetchR(particle._randomNoiseCoordinates1.x, particle._randomNoiseCoordinates1.y, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
                         let fetchedColorG = this._fetchR(particle._randomNoiseCoordinates1.z, particle._randomNoiseCoordinates2.x, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
                         let fetchedColorB = this._fetchR(particle._randomNoiseCoordinates2.y, particle._randomNoiseCoordinates2.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
