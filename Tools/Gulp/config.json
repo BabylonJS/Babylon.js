@@ -482,7 +482,8 @@
         "libraries": [
             {
                 "output": "babylon.inspector.bundle.js",
-                "entry": "././legacy/legacy.ts",
+                "maxOutput": "babylon.inspector.bundle.max.js",
+                "entry": "./legacy/legacy.ts",
                 "extendsRoot": true
             }
         ],
