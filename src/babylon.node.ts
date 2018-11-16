@@ -69,6 +69,11 @@ module BABYLON {
         public metadata: any = null;
 
         /**
+         * For internal use only. Please do not use.
+         */
+        public reservedDataStore: any = null;
+
+        /**
          * Gets or sets a boolean used to define if the node must be serialized
          */
         public doNotSerialize = false;

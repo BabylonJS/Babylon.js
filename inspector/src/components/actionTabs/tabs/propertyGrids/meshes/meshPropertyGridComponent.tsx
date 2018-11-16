@@ -9,9 +9,11 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 import { AxesViewerComponent } from "./axesViewerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { LockObject } from "../lockObject";
 
 interface IMeshPropertyGridComponentProps {
     mesh: Mesh,
+    lockObject: LockObject,
     onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
@@ -21,16 +23,16 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         super(props);
         const mesh = this.props.mesh;
 
-        this.state = { displayNormals: false, renderNormalVectors: mesh.metadata && mesh.metadata.normalLines }
+        this.state = { displayNormals: false, renderNormalVectors: mesh.reservedDataStore && mesh.reservedDataStore.normalLines }
     }
 
     renderNormalVectors() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
 
-        if (mesh.metadata && mesh.metadata.normalLines) {
-            mesh.metadata.normalLines.dispose();
-            mesh.metadata.normalLines = null;
+        if (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) {
+            mesh.reservedDataStore.normalLines.dispose();
+            mesh.reservedDataStore.normalLines = null;
 
             this.setState({ renderNormalVectors: false });
             return;
@@ -53,11 +55,11 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         normalLines.color = color;
         normalLines.parent = mesh;
 
-        if (!mesh.metadata) {
-            mesh.metadata = {};
+        if (!mesh.reservedDataStore) {
+            mesh.reservedDataStore = {};
         }
 
-        mesh.metadata.normalLines = normalLines;
+        mesh.reservedDataStore.normalLines = normalLines;
 
         this.setState({ renderNormalVectors: true });
     }
@@ -72,8 +74,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         if (mesh.material.getClassName() === "NormalMaterial") {
             mesh.material.dispose();
 
-            mesh.material = mesh.metadata.originalMaterial;
-            mesh.metadata.originalMaterial = null;
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
             this.setState({ displayNormals: false });
         } else {
 
@@ -85,15 +87,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 return;
             }
 
-            if (!mesh.metadata) {
-                mesh.metadata = {};
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
             }
 
-            mesh.metadata.originalMaterial = mesh.material;
+            mesh.reservedDataStore.originalMaterial = mesh.material;
             const normalMaterial = new (BABYLON as any).NormalMaterial("normalMaterial", scene);
             normalMaterial.disableLighting = true;
             normalMaterial.sideOrientation = mesh.material.sideOrientation;
-            normalMaterial.metadata = { hidden: true };
+            normalMaterial.reservedDataStore = { hidden: true };
             mesh.material = normalMaterial;
             this.setState({ displayNormals: true });
         }
@@ -137,7 +139,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const scene = mesh.getScene();
 
         const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
-        const renderNormalVectors = (mesh.metadata && mesh.metadata.normalLines) ? true : false;
+        const renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
 
         return (
             <div className="pane">
@@ -170,7 +172,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 </LineContainerComponent>
                 <LineContainerComponent title="DISPLAY" closed={true}>
                     <SliderLineComponent label="Visibility" target={mesh} propertyName="visibility" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="Alpha index" target={mesh} propertyName="alphaIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Alpha index" target={mesh} propertyName="alphaIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Receive shadows" target={mesh} propertyName="receiveShadows" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind) &&
@@ -204,9 +206,9 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 {
                     mesh.physicsImpostor != null &&
                     <LineContainerComponent title="PHYSICS" closed={true}>
-                        <FloatLineComponent label="Mass" target={mesh.physicsImpostor} propertyName="mass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent label="Friction" target={mesh.physicsImpostor} propertyName="friction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent label="Restitution" target={mesh.physicsImpostor} propertyName="restitution" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Mass" target={mesh.physicsImpostor} propertyName="mass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Friction" target={mesh.physicsImpostor} propertyName="friction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Restitution" target={mesh.physicsImpostor} propertyName="restitution" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <TextLineComponent label="Type" value={this.convertPhysicsTypeToString()} />
                     </LineContainerComponent>
                 }

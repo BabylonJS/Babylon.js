@@ -6,9 +6,11 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { LockObject } from "../lockObject";
 
 interface ICommonCameraPropertyGridComponentProps {
     camera: Camera,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -32,8 +34,8 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                 <TextLineComponent label="ID" value={camera.id} />
                 <TextLineComponent label="Unique ID" value={camera.uniqueId.toString()} />
                 <TextLineComponent label="Class" value={camera.getClassName()} />
-                <FloatLineComponent label="Near plane" target={camera} propertyName="minZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent label="Far plane" target={camera} propertyName="maxZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent lockObject={this.props.lockObject} label="Near plane" target={camera} propertyName="minZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent lockObject={this.props.lockObject} label="Far plane" target={camera} propertyName="maxZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <SliderLineComponent label="Inertia" target={camera} propertyName="inertia" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <OptionsLineComponent label="Mode" options={modeOptions} target={camera} propertyName="mode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ mode: value })} />
                 {
@@ -42,19 +44,19 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                 }
                 {
                     camera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA &&
-                    <FloatLineComponent label="Left" target={camera} propertyName="orthoLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Left" target={camera} propertyName="orthoLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
                     camera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA &&
-                    <FloatLineComponent label="Top" target={camera} propertyName="orthoTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Top" target={camera} propertyName="orthoTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
                     camera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA &&
-                    <FloatLineComponent label="Right" target={camera} propertyName="orthoRight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Right" target={camera} propertyName="orthoRight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
                     camera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA &&
-                    <FloatLineComponent label="Bottom" target={camera} propertyName="orthoBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Bottom" target={camera} propertyName="orthoBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
 
             </LineContainerComponent>

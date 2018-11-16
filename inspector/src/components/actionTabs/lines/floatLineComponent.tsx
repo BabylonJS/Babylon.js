@@ -1,11 +1,13 @@
 import * as React from "react";
 import { Observable } from "babylonjs";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IFloatLineComponentProps {
     label: string,
     target: any,
     propertyName: string,
+    lockObject?: LockObject,
     onChange?: (newValue: number) => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     additionalClass?: string
@@ -21,6 +23,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         let currentValue = this.props.target[this.props.propertyName];
         this.state = { value: currentValue ? currentValue.toFixed(3) : "0" }
         this._store = currentValue;
+    }
+
+
+    componentWillUnmount() {
+        this.unlock();
     }
 
     shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string }) {
@@ -74,6 +81,18 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         this._store = valueAsNumber;
     }
 
+    lock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = true;
+        }
+    }
+
+    unlock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
+    }
+
     render() {
         return (
             <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
@@ -81,7 +100,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} />
+                    <input className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
                 </div>
             </div>
         );
