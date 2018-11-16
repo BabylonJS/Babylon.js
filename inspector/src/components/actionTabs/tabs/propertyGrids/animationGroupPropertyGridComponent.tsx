@@ -5,10 +5,12 @@ import { ButtonLineComponent } from "../../lines/buttonLineComponent";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { TextLineComponent } from "../../lines/textLineComponent";
 import { SliderLineComponent } from "../../lines/sliderLineComponent";
+import { LockObject } from "./lockObject";
 
 interface IAnimationGroupGridComponentProps {
     animationGroup: AnimationGroup,
     scene: Scene,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 

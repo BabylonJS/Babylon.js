@@ -6,9 +6,11 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { LockObject } from "../lockObject";
 
 interface ICommonMaterialPropertyGridComponentProps {
     material: Material,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -58,7 +60,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     <SliderLineComponent label="Point size" target={material} propertyName="pointSize" minimum={0} maximum={100} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Z-offset" target={material} propertyName="zOffset" minimum={-10} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="TRANSPARENCY">                
+                <LineContainerComponent title="TRANSPARENCY">
                     <SliderLineComponent label="Alpha" target={material} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         (material as any).transparencyMode !== undefined &&

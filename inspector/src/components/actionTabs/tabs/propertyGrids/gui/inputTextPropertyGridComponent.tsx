@@ -8,9 +8,11 @@ import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { LockObject } from "../lockObject";
 
 interface IInputTextPropertyGridComponentProps {
     inputText: InputText,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -24,21 +26,21 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent control={inputText} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={inputText} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="INPUTTEXT">
-                    <TextInputLineComponent label="Text" target={inputText} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent label="Prompt" target={inputText} propertyName="promptMessage" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent label="Max width" target={inputText} propertyName="maxWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent label="Highlight color" target={inputText} propertyName="textHighlightColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Text" target={inputText} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Prompt" target={inputText} propertyName="promptMessage" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Max width" target={inputText} propertyName="maxWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Highlight color" target={inputText} propertyName="textHighlightColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Highligher opacity" minimum={0} maximum={1} step={0.01} target={inputText} propertyName="highligherOpacity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="On focus select all" target={inputText} propertyName="onFocusSelectAll" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent label="Focused background" target={inputText} propertyName="focusedBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent label="Max width" target={inputText} propertyName="maxWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent label="Margin" target={inputText} propertyName="margin" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Focused background" target={inputText} propertyName="focusedBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Max width" target={inputText} propertyName="maxWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Margin" target={inputText} propertyName="margin" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Auto stretch width" target={inputText} propertyName="autoStretchWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="Thickness" target={inputText} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent label="Placeholder text" target={inputText} propertyName="placeholderText" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent label="Placeholder color" target={inputText} propertyName="placeholderColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Thickness" target={inputText} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Placeholder text" target={inputText} propertyName="placeholderText" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Placeholder color" target={inputText} propertyName="placeholderColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>
         );

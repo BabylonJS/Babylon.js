@@ -9,9 +9,11 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 import { AxesViewerComponent } from "./axesViewerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { LockObject } from "../lockObject";
 
 interface IMeshPropertyGridComponentProps {
     mesh: Mesh,
+    lockObject: LockObject,
     onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
@@ -170,7 +172,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 </LineContainerComponent>
                 <LineContainerComponent title="DISPLAY" closed={true}>
                     <SliderLineComponent label="Visibility" target={mesh} propertyName="visibility" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="Alpha index" target={mesh} propertyName="alphaIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Alpha index" target={mesh} propertyName="alphaIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Receive shadows" target={mesh} propertyName="receiveShadows" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind) &&
@@ -204,9 +206,9 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 {
                     mesh.physicsImpostor != null &&
                     <LineContainerComponent title="PHYSICS" closed={true}>
-                        <FloatLineComponent label="Mass" target={mesh.physicsImpostor} propertyName="mass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent label="Friction" target={mesh.physicsImpostor} propertyName="friction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent label="Restitution" target={mesh.physicsImpostor} propertyName="restitution" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Mass" target={mesh.physicsImpostor} propertyName="mass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Friction" target={mesh.physicsImpostor} propertyName="friction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Restitution" target={mesh.physicsImpostor} propertyName="restitution" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <TextLineComponent label="Type" value={this.convertPhysicsTypeToString()} />
                     </LineContainerComponent>
                 }
