@@ -473,6 +473,11 @@ export class ColorPicker extends Control {
             options.swatchSize = options.swatchSize || 40;
             options.numSwatchesPerLine = options.numSwatchesPerLine || 10;
 
+            // Window size settings
+            var drawerMaxRows: number = options.swatchLimit / options.numSwatchesPerLine;
+            var drawerMaxSize: number = ((options.swatchSize * 1.5) * drawerMaxRows) + (options.swatchSize / 4);
+            var containerSize: string = (parseInt(options.pickerHeight) + drawerMaxSize).toString() + "px";  
+
             // Button Colors
             var buttonBackgroundColor = "#535353";
             var buttonBackgroundHoverColor = "#414141";
@@ -480,6 +485,7 @@ export class ColorPicker extends Control {
             var buttonDisabledColor = "#555555";
             var buttonDisabledBackgroundColor = "#454545";
             var buttonFontSize = 16;
+            var butEdit: Button;
 
             // Stroke Colors
             var darkStrokeColor = "#404040";
@@ -521,7 +527,9 @@ export class ColorPicker extends Control {
             * Each InputText control and the ColorPicker control will be tested to see if they are the activeField and if they
             * are will receive no update. This is to prevent the input from the user being overwritten.
             */
-            function UpdateValues(value: Color3) {
+            function UpdateValues(value: Color3, inputField: string) {
+                console.log("activeField: " + activeField);
+                activeField = inputField;
                 var pickedColor = value.toHexString();
                 newSwatch.background = pickedColor;
                 if (rValInt.name != activeField) {
@@ -580,13 +588,13 @@ export class ColorPicker extends Control {
                     var newSwatchRGB = BABYLON.Color3.FromHexString(newSwatch.background);
                     if (activeField == field.name) {
                         if (channel == "r") {
-                            UpdateValues(new BABYLON.Color3((parseInt(newValue)) / 255, newSwatchRGB.g, newSwatchRGB.b));
+                            UpdateValues(new BABYLON.Color3((parseInt(newValue)) / 255, newSwatchRGB.g, newSwatchRGB.b), field.name);
                         }
                         else if (channel == "g") {
-                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, (parseInt(newValue)) / 255, newSwatchRGB.b));
+                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, (parseInt(newValue)) / 255, newSwatchRGB.b), field.name);
                         }
                         else {
-                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, newSwatchRGB.g, (parseInt(newValue)) / 255));
+                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, newSwatchRGB.g, (parseInt(newValue)) / 255), field.name);
                         }
                     }
                 }
@@ -621,28 +629,26 @@ export class ColorPicker extends Control {
                     var newSwatchRGB = BABYLON.Color3.FromHexString(newSwatch.background);
                     if (activeField == field.name) {
                         if (channel == "r") {
-                            UpdateValues(new BABYLON.Color3(parseFloat(newValue), newSwatchRGB.g, newSwatchRGB.b));
+                            UpdateValues(new BABYLON.Color3(parseFloat(newValue), newSwatchRGB.g, newSwatchRGB.b), field.name);
                         }
                         else if (channel == "g") {
-                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, parseFloat(newValue), newSwatchRGB.b));
+                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, parseFloat(newValue), newSwatchRGB.b), field.name);
                         }
                         else {
-                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, newSwatchRGB.g, parseFloat(newValue)));
+                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, newSwatchRGB.g, parseFloat(newValue)), field.name);
                         }
                     }
                 }
-            }
-
-            // Called when the user hits the limit of saved colors in the drawer.
-            function DisableButton(button: Button) {
-                button.color = buttonDisabledColor;
-                button.background = buttonDisabledBackgroundColor;
             }
 
             // Removes the current index from the savedColors array. Drawer can then be regenerated.
             function DeleteSwatch(index: number) {
                 if (options.savedColors) {
                     options.savedColors.splice(index, 1);
+                }
+                if (options.savedColors && options.savedColors.length == 0) {
+                    setEditButtonVisibility(false);
+                    editSwatchMode = false;
                 }
             }
 
@@ -675,7 +681,7 @@ export class ColorPicker extends Control {
                     swatch.onPointerClickObservable.add(() => {
                         if (!editSwatchMode) {
                             if (options.savedColors) {
-                                UpdateValues(BABYLON.Color3.FromHexString(options.savedColors[metadata]));
+                                UpdateValues(BABYLON.Color3.FromHexString(options.savedColors[metadata]), swatch.name!);
                             }
                         }
                         else {
@@ -691,21 +697,6 @@ export class ColorPicker extends Control {
                 }
             }
 
-            function UpdateDialogSize(gridControl: Grid) {
-                // Update diaogue container sizes
-                if (gridControl.rowCount > 1) {
-                    gridControl.height = (parseInt(options.pickerHeight!) + ((options.swatchSize! * 1.5) * (rowCount!)) + (options.swatchSize! / 2)).toString() + "px";
-                    var topRow = parseInt(options.pickerHeight!) / parseInt(gridControl.height);
-                    gridControl.setRowDefinition(0, topRow, false);
-                    gridControl.setRowDefinition(1, 1.0 - topRow, false);
-                } else {
-                    gridControl.height = (parseInt(options.pickerHeight!) + ((options.swatchSize! * 1.5) + (options.swatchSize! / 2))).toString() + "px";
-                    var topRow = parseInt(options.pickerHeight!) / parseInt(gridControl.height);
-                    gridControl.setRowDefinition(0, topRow, false);
-                    gridControl.addRowDefinition(1.0 - topRow, false);
-                }
-            }
-
             /**
              * When Save Color button is pressed this function will first create a swatch drawer if one is not already
              * made. Then all controls are removed from the drawer and we step through the savedColors array and
@@ -714,20 +705,6 @@ export class ColorPicker extends Control {
              */
             function UpdateSwatches(color: string, button: Button) {
                 if (options.savedColors) {
-                    // if (!swatchDrawerOpen) {
-                    //     swatchDrawer = new Grid();
-                    //     swatchDrawer.name = "Swatch Drawer";
-                    //     swatchDrawer.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-                    //     swatchDrawer.background = buttonBackgroundColor;
-                    //     swatchDrawer.width = options.pickerWidth!;
-                    //     swatchDrawer.height = (options.swatchSize! * 1.5).toString() + "px";
-                    //     swatchDrawer.top = Math.floor(options.swatchSize! / 4).toString() + "px";
-                    //     swatchDrawer.addRowDefinition(1.0, false);
-                    //     for (var i = 0; i < options.numSwatchesPerLine!; i++) {
-                    //         swatchDrawer.addColumnDefinition(1 / options.numSwatchesPerLine!, false);
-                    //     }
-                    //     swatchDrawerOpen = true;
-                    // }
                     if (color != "") {
                         options.savedColors.push(color);
                     }
@@ -765,15 +742,15 @@ export class ColorPicker extends Control {
                     if (options.savedColors.length >= options.swatchLimit!) {
                         DisableButton(button);
                     }
-                    UpdateDialogSize(dialogContainer);
                     dialogContainer.addControl(swatchDrawer, 1, 0);
                 }
 
             }
 
-            function setEditButton(enableButton: boolean) {
-                if (!enableButton) {
-                    var butEdit = Button.CreateSimpleButton("butEdit", "Edit Swatches");
+            // Shows or hides edit swatches button depending on if there are saved swatches
+            function setEditButtonVisibility(enableButton: boolean) {
+                if (enableButton) {
+                    butEdit = Button.CreateSimpleButton("butEdit", "Edit Swatches");
                     butEdit.width = "140px";
                     butEdit.height = "35px";
                     butEdit.top = "-10px";
@@ -809,9 +786,15 @@ export class ColorPicker extends Control {
                     pickerPanel.addControl(butEdit, 1, 0);
                 }
                 else {
-                    // pickerPanel.removeControl(butEdit);
+                    pickerPanel.removeControl(butEdit);
                 }
             }
+
+            // Called when the user hits the limit of saved colors in the drawer.
+            function DisableButton(button: Button) {
+                button.color = buttonDisabledColor;
+                button.background = buttonDisabledBackgroundColor;
+            }            
 
             // Passes last chosen color back to scene and kills dialog by removing from AdvancedDynamicTexture
             function ClosePicker(color: string) {
@@ -833,12 +816,14 @@ export class ColorPicker extends Control {
             var dialogContainer = new Grid();
             dialogContainer.name = "Dialog Container";
             dialogContainer.width = options.pickerWidth;
-            if (options.savedColors && options.savedColors.length > 0) {
-                UpdateDialogSize(dialogContainer);
+            if (options.savedColors) {
+                dialogContainer.height = containerSize;
+                var topRow = parseInt(options.pickerHeight) / parseInt(containerSize);
+                dialogContainer.addRowDefinition(topRow, false);
+                dialogContainer.addRowDefinition(1.0 - topRow, false);
             }
             else {
-                var int = options.pickerHeight.split("px");
-                dialogContainer.height = parseInt(int[0]) + "px";
+                dialogContainer.height = options.pickerHeight;
                 dialogContainer.addRowDefinition(1.0, false);
             }
             advancedTexture.addControl(dialogContainer);
@@ -898,7 +883,7 @@ export class ColorPicker extends Control {
             });
             picker.onValueChangedObservable.add(function(value) { // value is a color3
                 if (activeField == picker.name) {
-                    UpdateValues(value);
+                    UpdateValues(value, picker.name);
                 }
             });
             pickerBody.addControl(picker, 0, 0);
@@ -960,7 +945,7 @@ export class ColorPicker extends Control {
             currentSwatch.thickness = 0;
             currentSwatch.onPointerClickObservable.add(() => {
                 var revertColor = Color3.FromHexString(currentSwatch.background);
-                UpdateValues(revertColor);
+                UpdateValues(revertColor, currentSwatch.name!);
             });
             currentSwatch.pointerDownAnimation = () => {};
             currentSwatch.pointerUpAnimation = () => {};
@@ -1075,10 +1060,9 @@ export class ColorPicker extends Control {
                 };
                 butSave.onPointerClickObservable.add(() => {
                     if (options.savedColors) {
-                        console.log("savedColors Length: " + options.savedColors.length);
                         rowCount = Math.ceil(options.savedColors.length / options.numSwatchesPerLine!);
                         if (options.savedColors.length == 0) {
-                            setEditButton(true);
+                            setEditButtonVisibility(true);
                         }
                         if (options.savedColors.length < options.swatchLimit!) {
                             UpdateSwatches(newSwatch.background, butSave);
@@ -1086,7 +1070,7 @@ export class ColorPicker extends Control {
                     }
                 });
                 if (options.savedColors.length > 0) {
-                    setEditButton(true);
+                    setEditButtonVisibility(true);
                 }
                 pickerSwatchesButtons.addControl(butSave, 0, 1);
             }
@@ -1303,7 +1287,7 @@ export class ColorPicker extends Control {
                     lastVal = hexVal.text;
                     newHexValue = "#" + newHexValue;
                     if (activeField == hexVal.name) {
-                        UpdateValues(Color3.FromHexString(newHexValue));
+                        UpdateValues(Color3.FromHexString(newHexValue), hexVal.name);
                     }
                 }
             });
