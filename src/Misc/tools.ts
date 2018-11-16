@@ -477,8 +477,7 @@ declare type Engine = import("Engines/engine").Engine;
 
         /**
          * Extracts text content from a DOM element hierarchy
-         * @param element defines the root element
-         * @returns a string
+         * Back Compat only, please use DomManagement.GetDOMTextContent instead.
          */
         public static GetDOMTextContent = DomManagement.GetDOMTextContent;
 
@@ -1735,7 +1734,7 @@ declare type Engine = import("Engines/engine").Engine;
 
         /**
          * Checks if the window object exists
-         * @returns true if the window object exists
+         * Back Compat only, please use DomManagement.IsWindowObjectExist instead.
          */
         public static IsWindowObjectExist = DomManagement.IsWindowObjectExist;
 
