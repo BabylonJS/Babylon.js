@@ -5,7 +5,7 @@ import { ButtonLineComponent } from "../lines/buttonLineComponent";
 import { VideoRecorder, Nullable, TransformNode, PBRMaterial, StandardMaterial, BackgroundMaterial, EnvironmentTextureTools, CubeTexture, Tools, Mesh, Texture, SceneSerializer } from "babylonjs";
 import { GLTFComponent } from "./tools/gltfComponent";
 import { GLTFData } from "babylonjs-serializers";
-import { GLTF2Export } from "babylonjs-serializers/src/index";
+import { GLTF2Export } from "babylonjs-serializers";
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
