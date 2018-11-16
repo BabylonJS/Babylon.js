@@ -6,6 +6,7 @@ import { Nullable } from "types";
 import { Animation } from "Animations/animation";
 import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverride";
 import { AbstractMesh } from "Meshes/abstractMesh";
+import { TransformNode } from "Meshes/transformNode";
 import { Node } from "node";
 
     /**

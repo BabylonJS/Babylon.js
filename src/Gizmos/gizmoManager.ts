@@ -1,4 +1,4 @@
-import { Observer } from "Misc/observable";
+import { Observer, Observable } from "Misc/observable";
 import { Nullable } from "types";
 import { PointerInfo, PointerEventTypes } from "Events/pointerEvents";
 import { Scene, IDisposable } from "scene";

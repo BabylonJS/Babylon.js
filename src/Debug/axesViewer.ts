@@ -1,8 +1,9 @@
-import { Vector3, Color3 } from "Maths/math";
+import { Vector3, Color3, Quaternion } from "Maths/math";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { Mesh } from "Meshes/mesh";
-import { LinesMesh } from "Meshes/linesMesh";
+import { AbstractMesh } from "Meshes/AbstractMesh";
+import { StandardMaterial } from "Materials/standardMaterial";
+import { AxisDragGizmo } from "Gizmos/axisDragGizmo";
 
 /**
      * The Axes viewer will show 3 axes in a specific point in space
@@ -51,27 +52,27 @@ import { LinesMesh } from "Meshes/linesMesh";
         constructor(scene: Scene, scaleLines = 1) {
             this.scaleLines = scaleLines;
 
-            var greenColoredMaterial = new BABYLON.StandardMaterial("", scene);
+            var greenColoredMaterial = new StandardMaterial("", scene);
             greenColoredMaterial.disableLighting = true;
-            greenColoredMaterial.emissiveColor = BABYLON.Color3.Green().scale(0.5);
+            greenColoredMaterial.emissiveColor = Color3.Green().scale(0.5);
 
-            var redColoredMaterial = new BABYLON.StandardMaterial("", scene);
+            var redColoredMaterial = new StandardMaterial("", scene);
             redColoredMaterial.disableLighting = true;
-            redColoredMaterial.emissiveColor = BABYLON.Color3.Red().scale(0.5);
+            redColoredMaterial.emissiveColor = Color3.Red().scale(0.5);
 
-            var blueColoredMaterial = new BABYLON.StandardMaterial("", scene);
+            var blueColoredMaterial = new StandardMaterial("", scene);
             blueColoredMaterial.disableLighting = true;
-            blueColoredMaterial.emissiveColor = BABYLON.Color3.Blue().scale(0.5);
+            blueColoredMaterial.emissiveColor = Color3.Blue().scale(0.5);
 
-            this._xmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, redColoredMaterial);
-            this._ymesh = BABYLON.AxisDragGizmo._CreateArrow(scene, greenColoredMaterial);
-            this._zmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
+            this._xmesh = AxisDragGizmo._CreateArrow(scene, redColoredMaterial);
+            this._ymesh = AxisDragGizmo._CreateArrow(scene, greenColoredMaterial);
+            this._zmesh = AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
 
-            this._xmesh.rotationQuaternion = new BABYLON.Quaternion();
+            this._xmesh.rotationQuaternion = new Quaternion();
             this._xmesh.scaling.scaleInPlace(4);
-            this._ymesh.rotationQuaternion = new BABYLON.Quaternion();
+            this._ymesh.rotationQuaternion = new Quaternion();
             this._ymesh.scaling.scaleInPlace(4);
-            this._zmesh.rotationQuaternion = new BABYLON.Quaternion();
+            this._zmesh.rotationQuaternion = new Quaternion();
             this._zmesh.scaling.scaleInPlace(4);
 
             AxesViewer._recursiveChangeRenderingGroupId(this._xmesh, 2);
@@ -79,7 +80,7 @@ import { LinesMesh } from "Meshes/linesMesh";
             AxesViewer._recursiveChangeRenderingGroupId(this._zmesh, 2);
 
             this.scene = scene;
-            this.update(new BABYLON.Vector3(), Vector3.Right(), Vector3.Up(), Vector3.Forward());
+            this.update(new Vector3(), Vector3.Right(), Vector3.Up(), Vector3.Forward());
         }
 
         /**

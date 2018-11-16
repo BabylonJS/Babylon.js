@@ -1,5 +1,5 @@
 import { Tools } from "Misc/tools";
-import { Nullable, IndicesArray } from "types";
+import { Nullable, IndicesArray, DeepImmutable } from "types";
 import { Matrix, Vector3, Plane } from "Maths/math";
 import { Engine } from "Engines/engine";
 import { VertexBuffer } from "./buffer";
