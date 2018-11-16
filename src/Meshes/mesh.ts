@@ -2957,7 +2957,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#ribbon)
          * @returns a new Mesh
          */
-        public static CreateRibbon = (name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -2971,7 +2971,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
           * @returns a new Mesh
           */
-        public static CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -2984,7 +2984,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+        public static CreateBox(name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -2998,7 +2998,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
           * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
           * @returns a new Mesh
           */
-        public static CreateSphere = (name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+        public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3015,7 +3015,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateCylinder = (name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene?: Scene, updatable?: any, sideOrientation?: number): Mesh => {
+        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene?: Scene, updatable?: any, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3031,7 +3031,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateTorus = (name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3049,7 +3049,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateTorusKnot = (name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3062,7 +3062,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines).
          * @returns a new Mesh
          */
-        public static CreateLines = (name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh => {
+        public static CreateLines(name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3078,7 +3078,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines)
          * @returns a new Mesh
          */
-        public static CreateDashedLines = (name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh => {
+        public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3098,7 +3098,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh => {
+        public static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3114,7 +3114,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static ExtrudePolygon = (name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh => {
+        public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3135,7 +3135,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#extruded-shape)
          * @returns a new Mesh
          */
-        public static ExtrudeShape = (name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3159,7 +3159,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape)
          * @returns a new Mesh
          */
-        public static ExtrudeShapeCustom = (name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3176,7 +3176,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreateLathe = (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+        public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3189,7 +3189,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
          * @returns a new Mesh
          */
-        public static CreatePlane = (name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3243,7 +3243,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param alphaFilter will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
          * @returns a new Mesh
          */
-        public static CreateGroundFromHeightMap = (name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh => {
+        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3288,7 +3288,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
           * @param scene defines the hosting scene
           * @returns a new Mesh
           */
-        public static CreatePolyhedron = (name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh => {
+        public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3307,7 +3307,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @returns a new Mesh
          * @see http://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
          */
-        public static CreateIcoSphere = (name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh => {
+        public static CreateIcoSphere(name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 
@@ -3323,7 +3323,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
          * @param angle sets the angle to rotate the decal
          * @returns a new Mesh
          */
-        public static CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh => {
+        public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh {
             throw "Import MeshBuilder before creating meshes.";
         }
 

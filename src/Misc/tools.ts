@@ -1682,6 +1682,7 @@ declare type Engine = import("Engines/engine").Engine;
 
         /**
          * Log a message to the console
+         * @param message defines the message to log
          */
         public static Log(message: string): void {
             Logger.Log(message);
@@ -1689,6 +1690,7 @@ declare type Engine = import("Engines/engine").Engine;
 
         /**
          * Write a warning message to the console
+         * @param message defines the message to log
          */
         public static Warn(message: string): void {
             Logger.Warn(message);
@@ -1696,6 +1698,7 @@ declare type Engine = import("Engines/engine").Engine;
 
         /**
          * Write an error message to the console
+         * @param message defines the message to log
          */
         public static Error(message: string): void {
             Logger.Error(message);
