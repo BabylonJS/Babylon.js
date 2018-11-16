@@ -9,6 +9,7 @@ interface IVector3LineComponentProps {
     label: string,
     target: any,
     propertyName: string,
+    onChange?: (newvalue: Vector3) => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -18,14 +19,14 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
     constructor(props: IVector3LineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName] }
+        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName].clone() }
     }
 
     shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: { isExpanded: boolean, value: Vector3 }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
-            nextState.value = nextPropsValue;
+            nextState.value = nextPropsValue.clone();
             this._localChange = false;
             return true;
         }
@@ -38,6 +39,10 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
     }
 
     raiseOnPropertyChanged(previousValue: Vector3) {
+        if (this.props.onChange) {
+            this.props.onChange(this.state.value);
+        }
+
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
@@ -53,6 +58,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         this._localChange = true;
 
         const store = this.state.value.clone();
+        this.props.target[this.props.propertyName].x = value;
         this.state.value.x = value;
         this.setState({ value: this.state.value });
 
@@ -63,6 +69,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         this._localChange = true;
 
         const store = this.state.value.clone();
+        this.props.target[this.props.propertyName].y = value;
         this.state.value.y = value;
         this.setState({ value: this.state.value });
 
@@ -73,6 +80,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         this._localChange = true;
 
         const store = this.state.value.clone();
+        this.props.target[this.props.propertyName].z = value;
         this.state.value.z = value;
         this.setState({ value: this.state.value });
 

@@ -1,12 +1,14 @@
 import * as React from "react";
 import { Observable } from "babylonjs";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IFloatLineComponentProps {
     label: string,
     target: any,
     propertyName: string,
-    step?: number,
+    lockObject?: LockObject,
+    onChange?: (newValue: number) => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     additionalClass?: string
 }
@@ -21,6 +23,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         let currentValue = this.props.target[this.props.propertyName];
         this.state = { value: currentValue ? currentValue.toFixed(3) : "0" }
         this._store = currentValue;
+    }
+
+
+    componentWillUnmount() {
+        this.unlock();
     }
 
     shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string }) {
@@ -38,6 +45,10 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     raiseOnPropertyChanged(newValue: number, previousValue: number) {
+        if (this.props.onChange) {
+            this.props.onChange(newValue);
+        }
+
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
@@ -70,16 +81,26 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         this._store = valueAsNumber;
     }
 
-    render() {
+    lock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = true;
+        }
+    }
 
-        const step = this.props.step !== undefined ? this.props.step : 0.1;
+    unlock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
+    }
+
+    render() {
         return (
             <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
                 <div className="label">
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} step={step} />
+                    <input className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
                 </div>
             </div>
         );

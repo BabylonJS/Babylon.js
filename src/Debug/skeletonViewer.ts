@@ -21,6 +21,7 @@ import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
         private _debugMesh: Nullable<LinesMesh>;
         private _isEnabled = false;
         private _renderFunction: () => void;
+        private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
         /**
          * Returns the mesh used to render the bones
@@ -36,7 +37,6 @@ import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
          * @param scene defines the hosting scene
          * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
          * @param renderingGroupId defines the rendering group id to use with the viewer
-         * @param utilityLayerRenderer defines an optional utility layer to render the helper on
          */
         constructor(
             /** defines the skeleton to render */
@@ -49,9 +49,12 @@ import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
             /** defines the rendering group id to use with the viewer */
             public renderingGroupId = 1,
             /** defines an optional utility layer to render the helper on */
-            public utilityLayerRenderer?: UtilityLayerRenderer
         ) {
             this._scene = scene;
+
+            this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
+            this._utilityLayer.pickUtilitySceneFirst = false;
+            this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
 
             this.update();
 
@@ -142,6 +145,10 @@ import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
 
         /** Update the viewer to sync with current skeleton state */
         public update() {
+            if (!this._utilityLayer) {
+                return;
+            }
+
             if (this.autoUpdateBonesMatrices) {
                 this.skeleton.computeAbsoluteTransforms();
             }
@@ -151,7 +158,7 @@ import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
             } else {
                 this._getLinesForBonesWithLength(this.skeleton.bones, this.mesh.getWorldMatrix());
             }
-            const targetScene = this.utilityLayerRenderer ? this.utilityLayerRenderer.utilityLayerScene : this._scene;
+            const targetScene = this._utilityLayer.utilityLayerScene;
 
             if (!this._debugMesh) {
                 this._debugMesh = MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
@@ -165,10 +172,18 @@ import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
 
         /** Release associated resources */
         public dispose() {
+
+            this.isEnabled = false;
+
             if (this._debugMesh) {
                 this.isEnabled = false;
                 this._debugMesh.dispose();
                 this._debugMesh = null;
+            }
+
+            if (this._utilityLayer) {
+                this._utilityLayer.dispose();
+                this._utilityLayer = null;
             }
         }
     }

@@ -135,10 +135,11 @@
 
             .text {
                 grid-column: 1;
-                display: flex;
-                align-items: center;
+                display: grid;
+                grid-template-columns: 20px 1fr;
 
                 .arrow {
+                    grid-column: 1;
                     margin-left: 0px;
                     color: white;
                     cursor: pointer;
@@ -146,10 +147,18 @@
                     margin-right: 6px;
                     opacity: 0.5;
                 }
+
+                .text-value {
+                    grid-column: 2;
+                    display: flex;
+                    align-items: center;
+                }
             }
 
-            .expandAll {
+            .expandAll {                
+                opacity: 0.5;
                 grid-column: 2;
+                margin-right: 10px;  
             }
         }
         
@@ -297,6 +306,20 @@
             .extensions {
                 width: 20px;
                 grid-column: 8;
+            }
+        }
+
+        .animationGroupTools {
+            grid-column: 2;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+            min-width: 0;
+           
+            .extensions {
+                width: 20px;
+                grid-column: 2;
             }
         }
 

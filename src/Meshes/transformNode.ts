@@ -94,7 +94,8 @@ import { Bone } from "Bones/bone";
         // Cache
         /** @hidden */
         public _poseMatrix: Matrix;
-        private _localWorld = Matrix.Zero();
+        /** @hidden */
+        public _localMatrix = Matrix.Zero();
 
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
@@ -242,7 +243,7 @@ import { Bone } from "Bones/bone";
                 return false;
             }
 
-            if (this.infiniteDistance) {
+            if (this.infiniteDistance !== this._cache.infiniteDistance) {
                 return false;
             }
 
@@ -277,6 +278,7 @@ import { Bone } from "Bones/bone";
             this._cache.rotation = Vector3.Zero();
             this._cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
             this._cache.billboardMode = -1;
+            this._cache.infiniteDistance = false;
         }
 
         /**
@@ -422,7 +424,7 @@ import { Bone } from "Bones/bone";
          */
         public setPositionWithLocalVector(vector3: Vector3): TransformNode {
             this.computeWorldMatrix();
-            this.position = Vector3.TransformNormal(vector3, this._localWorld);
+            this.position = Vector3.TransformNormal(vector3, this._localMatrix);
             return this;
         }
 
@@ -433,7 +435,7 @@ import { Bone } from "Bones/bone";
         public getPositionExpressedInLocalSpace(): Vector3 {
             this.computeWorldMatrix();
             const invLocalWorldMatrix = Tmp.Matrix[0];
-            this._localWorld.invertToRef(invLocalWorldMatrix);
+            this._localMatrix.invertToRef(invLocalWorldMatrix);
             return Vector3.TransformNormal(this.position, invLocalWorldMatrix);
         }
 
@@ -444,7 +446,7 @@ import { Bone } from "Bones/bone";
          */
         public locallyTranslate(vector3: Vector3): TransformNode {
             this.computeWorldMatrix(true);
-            this.position = Vector3.TransformCoordinates(vector3, this._localWorld);
+            this.position = Vector3.TransformCoordinates(vector3, this._localMatrix);
             return this;
         }
 
@@ -488,7 +490,7 @@ import { Bone } from "Bones/bone";
                     parentRotationMatrix.invert();
                     rotationMatrix.multiplyToRef(parentRotationMatrix, rotationMatrix);
                     this.rotationQuaternion.fromRotationMatrix(rotationMatrix);
-                }else {
+                } else {
                     // Get local rotation matrix of the looking object
                     var quaternionRotation = Tmp.Quaternion[0];
                     Quaternion.FromEulerVectorToRef(this.rotation, quaternionRotation);
@@ -853,6 +855,7 @@ import { Bone } from "Bones/bone";
             this._cache.scaling.copyFrom(this.scaling);
             this._cache.pivotMatrixUpdated = false;
             this._cache.billboardMode = this.billboardMode;
+            this._cache.infiniteDistance = this.infiniteDistance;
             this._currentRenderId = this.getScene().getRenderId();
             this._childRenderId = this.getScene().getRenderId();
             this._isDirty = false;
@@ -948,7 +951,7 @@ import { Bone } from "Bones/bone";
             }
 
             // Local world
-            Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localWorld);
+            Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localMatrix);
 
             // Parent
             if (this.parent && this.parent.getWorldMatrix) {
@@ -960,22 +963,22 @@ import { Bone } from "Bones/bone";
                         Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
                     }
 
-                    this._localWorld.getTranslationToRef(Tmp.Vector3[5]);
+                    this._localMatrix.getTranslationToRef(Tmp.Vector3[5]);
                     Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[5], Tmp.Vector3[5]);
-                    this._worldMatrix.copyFrom(this._localWorld);
+                    this._worldMatrix.copyFrom(this._localMatrix);
                     this._worldMatrix.setTranslation(Tmp.Vector3[5]);
 
                 } else {
                     if (this._transformToBoneReferal) {
-                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
+                        this._localMatrix.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
                         Tmp.Matrix[6].multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), this._worldMatrix);
                     } else {
-                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+                        this._localMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
                     }
                 }
                 this._markSyncedWithParent();
             } else {
-                this._worldMatrix.copyFrom(this._localWorld);
+                this._worldMatrix.copyFrom(this._localMatrix);
             }
 
             // Normal matrix

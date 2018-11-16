@@ -76,11 +76,11 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
             <LineContainerComponent title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
                 {
                     issues.numErrors !== 0 &&
-                    <MessageLineComponent text="Your file has some validation issues" icon={faTimesCircle} color="Red"/>
+                    <MessageLineComponent text="Your file has some validation issues" icon={faTimesCircle} color="Red" />
                 }
                 {
                     issues.numErrors === 0 &&
-                    <MessageLineComponent text="Your file is a valid glTF file" icon={faCheck} color="Green"/>
+                    <MessageLineComponent text="Your file is a valid glTF file" icon={faCheck} color="Green" />
                 }
                 <TextLineComponent label="Errors" value={issues.numErrors.toString()} />
                 <TextLineComponent label="Warnings" value={issues.numWarnings.toString()} />
@@ -122,7 +122,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                 </LineContainerComponent>
                 <LineContainerComponent title="GLTF EXTENSIONS" closed={true}>
                     <CheckBoxLineComponent label="MSFT_lod" isSelected={() => extensionStates["MSFT_lod"].enabled} onSelect={value => extensionStates["MSFT_lod"].enabled = value} />
-                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" step={1} additionalClass="gltf-extension-property" />
+                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" additionalClass="gltf-extension-property" />
                     <CheckBoxLineComponent label="MSFT_minecraftMesh" isSelected={() => extensionStates["MSFT_minecraftMesh"].enabled} onSelect={value => extensionStates["MSFT_minecraftMesh"].enabled = value} />
                     <CheckBoxLineComponent label="MSFT_sRGBFactors" isSelected={() => extensionStates["MSFT_sRGBFactors"].enabled} onSelect={value => extensionStates["MSFT_sRGBFactors"].enabled = value} />
                     <CheckBoxLineComponent label="MSFT_audio_emitter" isSelected={() => extensionStates["MSFT_audio_emitter"].enabled} onSelect={value => extensionStates["MSFT_audio_emitter"].enabled = value} />

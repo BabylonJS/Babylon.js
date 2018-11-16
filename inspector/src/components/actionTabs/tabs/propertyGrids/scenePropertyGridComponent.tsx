@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Observable, Scene, BaseTexture, Nullable } from "babylonjs";
+import { Observable, Scene, BaseTexture, Nullable, Vector3 } from "babylonjs";
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { RadioButtonLineComponent } from "../../lines/radioLineComponent";
@@ -8,15 +8,22 @@ import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 import { FogPropertyGridComponent } from "./fogPropertyGridComponent";
 import { FileButtonLineComponent } from "../../lines/fileButtonLineComponent";
 import { TextureLinkLineComponent } from "../../lines/textureLinkLineComponent";
+import { Vector3LineComponent } from "../../lines/vector3LineComponent";
+import { FloatLineComponent } from "../../lines/floatLineComponent";
+import { SliderLineComponent } from "../../lines/sliderLineComponent";
+import { OptionsLineComponent } from "../../lines/optionsLineComponent";
+import { LockObject } from "./lockObject";
 
 interface IScenePropertyGridComponentProps {
     scene: Scene,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     onSelectionChangedObservable?: Observable<any>
 }
 
 export class ScenePropertyGridComponent extends React.Component<IScenePropertyGridComponentProps> {
     private _storedEnvironmentTexture: Nullable<BaseTexture>;
+    private _renderingModeGroupObservable = new BABYLON.Observable<RadioButtonLineComponent>();
 
     constructor(props: IScenePropertyGridComponentProps) {
         super(props);
@@ -71,17 +78,47 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         }, undefined, true);
     }
 
+    updateGravity(newValue: Vector3) {
+        const scene = this.props.scene;
+        const physicsEngine = scene.getPhysicsEngine()!;
+
+        physicsEngine.setGravity(newValue);
+    }
+
+    updateTimeStep(newValue: number) {
+        const scene = this.props.scene;
+        const physicsEngine = scene.getPhysicsEngine()!;
+
+        physicsEngine.setTimeStep(newValue);
+    }
+
     render() {
         const scene = this.props.scene;
 
-        const renderingModeGroupObservable = new BABYLON.Observable<RadioButtonLineComponent>();
+
+        const physicsEngine = scene.getPhysicsEngine();
+        let dummy: Nullable<{ gravity: Vector3, timeStep: number }> = null;
+
+        if (physicsEngine) {
+            dummy = {
+                gravity: physicsEngine.gravity,
+                timeStep: physicsEngine.getTimeStep()
+            }
+        }
+
+        const imageProcessing = scene.imageProcessingConfiguration;
+
+        var toneMappingOptions = [
+            { label: "Standard", value: BABYLON.ImageProcessingConfiguration.TONEMAPPING_STANDARD },
+            { label: "ACES", value: BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES }
+        ]
 
         return (
             <div className="pane">
                 <LineContainerComponent title="RENDERING MODE">
-                    <RadioButtonLineComponent onSelectionChangedObservable={renderingModeGroupObservable} label="Point" isSelected={() => scene.forcePointsCloud} onSelect={() => this.setRenderingModes(true, false)} />
-                    <RadioButtonLineComponent onSelectionChangedObservable={renderingModeGroupObservable} label="Wireframe" isSelected={() => scene.forceWireframe} onSelect={() => this.setRenderingModes(false, true)} />
-                    <RadioButtonLineComponent onSelectionChangedObservable={renderingModeGroupObservable} label="Solid" isSelected={() => !scene.forcePointsCloud && !scene.forceWireframe} onSelect={() => this.setRenderingModes(false, false)} />
+                    <RadioButtonLineComponent onSelectionChangedObservable={this._renderingModeGroupObservable} label="Point" isSelected={() => scene.forcePointsCloud} onSelect={() => this.setRenderingModes(true, false)} />
+                    <RadioButtonLineComponent onSelectionChangedObservable={this._renderingModeGroupObservable} label="Wireframe" isSelected={() => scene.forceWireframe} onSelect={() => this.setRenderingModes(false, true)} />
+                    <RadioButtonLineComponent onSelectionChangedObservable={this._renderingModeGroupObservable} label="Solid" isSelected={() => !scene.forcePointsCloud && !scene.forceWireframe} onSelect={() => this.setRenderingModes(false, false)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT">
                     <Color3LineComponent label="Clear color" target={scene} propertyName="clearColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -92,8 +129,24 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         scene.environmentTexture &&
                         <TextureLinkLineComponent label="Env. texture" texture={scene.environmentTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
                     }
-                    <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} />
-                    <FogPropertyGridComponent scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
+                    <FogPropertyGridComponent lockObject={this.props.lockObject} scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
+                <LineContainerComponent title="IMAGE PROCESSING">
+                    <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Contrast" target={imageProcessing} propertyName="contrast" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Exposure" target={imageProcessing} propertyName="exposure" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Tone mapping" target={imageProcessing} propertyName="toneMappingEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Tone mapping type" options={toneMappingOptions} target={imageProcessing} propertyName="toneMappingType" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ mode: value })} />
+                </LineContainerComponent>
+                {
+                    dummy !== null &&
+                    <LineContainerComponent title="PHYSICS" closed={true}>
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Time step" target={dummy} propertyName="timeStep" onChange={newValue => this.updateTimeStep(newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent label="Gravity" target={dummy} propertyName="gravity" onChange={newValue => this.updateGravity(newValue)} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    </LineContainerComponent>
+                }
+                <LineContainerComponent title="COLLISIONS" closed={true}>
+                    <Vector3LineComponent label="Gravity" target={scene} propertyName="gravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>
         );

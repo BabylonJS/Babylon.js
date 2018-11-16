@@ -24,6 +24,10 @@ import { BoundingBoxGizmo } from "./boundingBoxGizmo";
          * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
          */
         public gizmos: {positionGizmo: Nullable<PositionGizmo>, rotationGizmo: Nullable<RotationGizmo>, scaleGizmo: Nullable<ScaleGizmo>, boundingBoxGizmo: Nullable<BoundingBoxGizmo>};
+        /** When true, the gizmo will be detached from the current object when a pointer down occurs with an empty picked mesh */
+        public clearGizmoOnEmptyPointerEvent = false;
+        /** Fires an event when the manager is attached to a mesh */
+        public onAttachedToMeshObservable = new Observable<Nullable<AbstractMesh>>();
         private _gizmosEnabled = {positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false};
         private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
         private _attachedMesh: Nullable<AbstractMesh> = null;
@@ -85,10 +89,14 @@ import { BoundingBoxGizmo } from "./boundingBoxGizmo";
                                 this.attachToMesh(node);
                             }
                         } else {
-                            this.attachToMesh(null);
+                            if (this.clearGizmoOnEmptyPointerEvent) {
+                                this.attachToMesh(null);
+                            }
                         }
                     }else {
-                        this.attachToMesh(null);
+                        if (this.clearGizmoOnEmptyPointerEvent) {
+                            this.attachToMesh(null);
+                        }
                     }
                 }
             });
@@ -112,6 +120,7 @@ import { BoundingBoxGizmo } from "./boundingBoxGizmo";
             if (this.boundingBoxGizmoEnabled && this._attachedMesh) {
                 this._attachedMesh.addBehavior(this.boundingBoxDragBehavior);
             }
+            this.onAttachedToMeshObservable.notifyObservers(mesh);
         }
 
         /**
@@ -197,5 +206,6 @@ import { BoundingBoxGizmo } from "./boundingBoxGizmo";
             this._defaultKeepDepthUtilityLayer.dispose();
             this._defaultUtilityLayer.dispose();
             this.boundingBoxDragBehavior.detach();
+            this.onAttachedToMeshObservable.clear();
         }
     }

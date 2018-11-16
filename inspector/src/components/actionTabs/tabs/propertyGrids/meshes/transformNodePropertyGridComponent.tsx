@@ -7,9 +7,11 @@ import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 import { AxesViewerComponent } from "./axesViewerComponent";
+import { LockObject } from "../lockObject";
 
 interface ITransformNodePropertyGridComponentProps {
     transformNode: TransformNode,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 

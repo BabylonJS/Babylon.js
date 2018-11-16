@@ -427,6 +427,8 @@ import { PhysicsImpostor } from "./physicsImpostor";
             }
 
             this._tickCallback = this._tick.bind(this);
+
+            this._prepareCylinder();
         }
 
         /**
@@ -461,6 +463,9 @@ import { PhysicsImpostor } from "./physicsImpostor";
          * @param force Specifies if the updraft should be disposed by force
          */
         public dispose(force: boolean = true) {
+            if (!this._cylinder) {
+                return;
+            }
             if (force) {
                 this._cylinder.dispose();
             } else {
@@ -522,8 +527,6 @@ import { PhysicsImpostor } from "./physicsImpostor";
         private _intersectsWithCylinder(impostor: PhysicsImpostor): boolean {
             var impostorObject = <AbstractMesh>impostor.object;
 
-            this._prepareCylinder();
-
             this._cylinder.position = this._cylinderPosition;
 
             return this._cylinder.intersectsMesh(impostorObject, true);
@@ -561,6 +564,8 @@ import { PhysicsImpostor } from "./physicsImpostor";
             this._origin.addToRef(new Vector3(0, this._height, 0), this._originTop);
 
             this._tickCallback = this._tick.bind(this);
+
+            this._prepareCylinder();
         }
 
         /**
@@ -679,8 +684,6 @@ import { PhysicsImpostor } from "./physicsImpostor";
 
         private _intersectsWithCylinder(impostor: PhysicsImpostor): boolean {
             var impostorObject = <AbstractMesh>impostor.object;
-
-            this._prepareCylinder();
 
             this._cylinder.position = this._cylinderPosition;
 

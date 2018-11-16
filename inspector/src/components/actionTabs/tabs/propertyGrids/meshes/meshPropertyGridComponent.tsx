@@ -8,9 +8,12 @@ import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 import { AxesViewerComponent } from "./axesViewerComponent";
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { LockObject } from "../lockObject";
 
 interface IMeshPropertyGridComponentProps {
     mesh: Mesh,
+    lockObject: LockObject,
     onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
@@ -107,6 +110,30 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         this.props.onSelectionChangedObservable.notifyObservers(mesh.material)
     }
 
+    convertPhysicsTypeToString(): string {
+        const mesh = this.props.mesh;
+        switch (mesh.physicsImpostor!.type) {
+            case BABYLON.PhysicsImpostor.NoImpostor:
+                return "No impostor";
+            case BABYLON.PhysicsImpostor.SphereImpostor:
+                return "Sphere";
+            case BABYLON.PhysicsImpostor.BoxImpostor:
+                return "Box";
+            case BABYLON.PhysicsImpostor.PlaneImpostor:
+                return "Plane";
+            case BABYLON.PhysicsImpostor.MeshImpostor:
+                return "Mesh";
+            case BABYLON.PhysicsImpostor.CylinderImpostor:
+                return "Cylinder";
+            case BABYLON.PhysicsImpostor.ParticleImpostor:
+                return "Particle";
+            case BABYLON.PhysicsImpostor.HeightmapImpostor:
+                return "Heightmap";
+        }
+
+        return "Unknown";
+    }
+
     render() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
@@ -145,6 +172,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 </LineContainerComponent>
                 <LineContainerComponent title="DISPLAY" closed={true}>
                     <SliderLineComponent label="Visibility" target={mesh} propertyName="visibility" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Alpha index" target={mesh} propertyName="alphaIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Receive shadows" target={mesh} propertyName="receiveShadows" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind) &&
@@ -175,6 +203,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <TextLineComponent label="has matrix weights" value={mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind) ? "Yes" : "No"} />
                     <TextLineComponent label="has matrix indices" value={mesh.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind) ? "Yes" : "No"} />
                 </LineContainerComponent>
+                {
+                    mesh.physicsImpostor != null &&
+                    <LineContainerComponent title="PHYSICS" closed={true}>
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Mass" target={mesh.physicsImpostor} propertyName="mass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Friction" target={mesh.physicsImpostor} propertyName="friction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Restitution" target={mesh.physicsImpostor} propertyName="restitution" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <TextLineComponent label="Type" value={this.convertPhysicsTypeToString()} />
+                    </LineContainerComponent>
+                }
                 <LineContainerComponent title="DEBUG" closed={true}>
                     <CheckBoxLineComponent label="Show bounding box" target={mesh} propertyName="showBoundingBox" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
