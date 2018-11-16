@@ -294,7 +294,7 @@ import { CubeMapToSphericalPolynomialTools } from "Misc/HighDynamicRange/cubemap
             }
 
             if (value.isIdentity() !== this._textureMatrix.isIdentity()) {
-                this.getScene()!.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
+                this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
             }
         }
 

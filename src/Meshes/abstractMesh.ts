@@ -1,6 +1,6 @@
 import { Tools } from "Misc/tools";
 import { Observer, Observable } from "Misc/observable";
-import { Nullable, FloatArray, IndicesArray } from "types";
+import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "types";
 import { Camera } from "Cameras/camera";
 import { Scene, IDisposable } from "scene";
 import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis, Vector2 } from "Maths/math";
