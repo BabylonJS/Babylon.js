@@ -1,0 +1,25 @@
+{
+    "forbidden": [{
+        "name": "no-circular",
+        "severity": "warn",
+        "comment": "Warn in case there's circular dependencies",
+        "from": {},
+        "to": { "circular": true }
+    }],
+    "options": {
+        "doNotFollow": "node_modules",                    /* pattern specifying which files not to follow further when encountered*/
+        "tsConfig": {                                 /* Typescript project file ('tsconfig.json') to use for (1) compilation and (2) resolution (e.g. with the paths property) */
+           "fileName": "./tsconfig.json"              /* The typescript project file to use. The fileName is relative to dependency-cruiser's current working directory. When not provided defaults to './tsconfig.json'.*/
+        },
+        "webpackConfig": {                            /* Webpack configuration to use to get resolve options from */
+           "fileName": "./webpack.config.js"
+         }
+    }
+}
+
+// "exclude" : "",                               /* pattern specifying which files to exclude (regular expression) */
+        // "moduleSystems": ["amd", "cjs", "es6", "tsd"],/* list of module systems to cruise */
+        // "prefix": "",                                 /* prefix for links in html and svg output (e.g. https://github.com/you/yourrepo/blob/develop/) */
+        // "tsPreCompilationDeps": false,                /* if true detect dependencies that only exist before typescript-to-javascript compilation */
+        // "preserveSymlinks": false,                    /* if true leave symlinks untouched, otherwise use the realpath */
+       

@@ -161,7 +161,7 @@ export class SkyMaterial extends PushMaterial {
 
         if (this._mustRebind(scene, effect)) {
 
-            BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
             // Point size
             if (this.pointsCloud) {

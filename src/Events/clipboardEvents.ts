@@ -1,5 +1,3 @@
-
-module BABYLON {
     /**
      * Gather the list of clipboard event types as constants.
      */
@@ -54,4 +52,3 @@ module BABYLON {
             }
         }
     }
-}

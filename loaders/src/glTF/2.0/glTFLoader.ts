@@ -1239,7 +1239,7 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
                     if (babylonBones) {
                         const babylonAnimationTargets = [babylonTransformNode, ...babylonBones];
                         for (const babylonAnimationTarget of babylonAnimationTargets) {
-                            babylonAnimationTarget.animations.push(babylonAnimation);
+                            (<any>babylonAnimationTarget.animations).push(babylonAnimation);
                         }
                         babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonAnimationTargets);
                     }

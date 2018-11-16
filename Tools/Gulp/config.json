@@ -81,10 +81,8 @@
                         "namespace": "BABYLON.Debug"
                     }
                 ],
-                "importsToRemove": [],
-                "classMap": {
-                    "babylonjs": "BABYLON"
-                }
+                "doNotAppendNamespace": true,
+                "prependToNamespaceText": "declare module 'babylonjs' { export = BABYLON; }"
             }
         }
     },

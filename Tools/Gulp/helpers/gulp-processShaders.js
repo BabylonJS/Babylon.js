@@ -14,8 +14,7 @@ let name = '##NAME_PLACEHOLDER##';
 let shader = \`##SHADER_PLACEHOLDER##\`;
 
 Effect.##SHADERSTORE_PLACEHOLDER##[name] = shader;
-
-//export { shader, name };
+##EXPORT_PLACEHOLDER##
 `;
 
 
@@ -113,6 +112,7 @@ function main(isCore) {
             tsContent = tsContent.replace('##NAME_PLACEHOLDER##', shaderName);
             tsContent = tsContent.replace('##SHADER_PLACEHOLDER##', fxData);
             tsContent = tsContent.replace('##SHADERSTORE_PLACEHOLDER##', shaderStore);
+            tsContent = tsContent.replace('##EXPORT_PLACEHOLDER##', `export var ${shaderName} = { name, shader };`)
 
             // Go to disk.
             fs.writeFileSync(directory + '/' + tsFilename, tsContent);

@@ -1,4 +1,4 @@
-import { MaterialDefines, PushMaterial, IShadowLight, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, SerializationHelper } from "babylonjs";
+import { MaterialDefines, PushMaterial, IShadowLight, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, SerializationHelper, Color3 } from "babylonjs";
 
 import "./shadowOnly.fragment";
 import "./shadowOnly.vertex";
@@ -29,7 +29,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
         super(name, scene);
     }
 
-    public shadowColor = BABYLON.Color3.Black();
+    public shadowColor = Color3.Black();
 
     public needAlphaBlending(): boolean {
         return true;

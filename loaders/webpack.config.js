@@ -22,14 +22,17 @@ module.exports = {
     resolve: {
         extensions: [".js", '.ts']
     },
-    externals: {
-        babylonjs: {
-            root: "BABYLON",
-            commonjs: "babylonjs",
-            commonjs2: "babylonjs",
-            amd: "babylonjs"
-        }
-    },
+    externals: [
+        {
+            babylonjs: {
+                root: "BABYLON",
+                commonjs: "babylonjs",
+                commonjs2: "babylonjs",
+                amd: "babylonjs"
+            }
+        },
+        /^babylonjs.*$/i
+    ],
     devtool: "source-map",
     module: {
         rules: [{

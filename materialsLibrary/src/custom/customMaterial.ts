@@ -116,7 +116,7 @@ export class CustomMaterial extends StandardMaterial {
             catch (e) { }
         };
 
-        BABYLON.Effect.ShadersStore[name + "VertexShader"] = this.VertexShader
+        Effect.ShadersStore[name + "VertexShader"] = this.VertexShader
             .replace('#define CUSTOM_VERTEX_BEGIN', (this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
             .replace('#define CUSTOM_VERTEX_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_BEGIN', (this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
@@ -125,7 +125,7 @@ export class CustomMaterial extends StandardMaterial {
 
             // #define CUSTOM_VERTEX_MAIN_END
 
-        BABYLON.Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
+        Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
             .replace('#define CUSTOM_FRAGMENT_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
@@ -148,8 +148,8 @@ export class CustomMaterial extends StandardMaterial {
         this.CustomParts = new ShaderSpecialParts();
         this.customShaderNameResolve = this.Builder;
 
-        this.FragmentShader = BABYLON.Effect.ShadersStore["defaultPixelShader"];
-        this.VertexShader = BABYLON.Effect.ShadersStore["defaultVertexShader"];
+        this.FragmentShader = Effect.ShadersStore["defaultPixelShader"];
+        this.VertexShader = Effect.ShadersStore["defaultVertexShader"];
     }
 
     public AddUniform(name: string, kind: string, param: any): CustomMaterial {
