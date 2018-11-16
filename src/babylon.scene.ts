@@ -276,6 +276,12 @@ module BABYLON {
          * Gets or sets user defined metadata
          */
         public metadata: any = null;
+
+        /**
+         * For internal use only. Please do not use.
+         */
+        public reservedDataStore: any = null;
+
         /**
          * Gets the name of the plugin used to load this scene (null by default)
          */

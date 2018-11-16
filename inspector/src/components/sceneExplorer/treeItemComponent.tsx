@@ -30,7 +30,7 @@ class TreeItemExpandableHeaderComponent extends React.Component<ITreeItemExpanda
                 <div className="text">
                     <div className="arrow icon" onClick={() => this.props.onClick()}>
                         {chevron}
-                    </div> 
+                    </div>
                     <div className="text-value">
                         {this.props.label}
                     </div>
@@ -113,7 +113,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
     }
 
     expandAll(expand: boolean) {
-        this.setState({isExpanded: expand, mustExpand: expand});
+        this.setState({ isExpanded: expand, mustExpand: expand });
     }
 
     render() {
