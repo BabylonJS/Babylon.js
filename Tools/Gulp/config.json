@@ -67,7 +67,19 @@
                 "moduleName": "BABYLON",
                 "moduleSpecifics": [
                     {
-                        "path": "babylonjs/Debug",
+                        "path": "babylonjs/Debug/axesViewer",
+                        "namespace": "BABYLON.Debug"
+                    },
+                    {
+                        "path": "babylonjs/Debug/boneAxesViewer",
+                        "namespace": "BABYLON.Debug"
+                    },
+                    {
+                        "path": "babylonjs/Debug/physicsViewer",
+                        "namespace": "BABYLON.Debug"
+                    },
+                    {
+                        "path": "babylonjs/Debug/skeletonViewer",
                         "namespace": "BABYLON.Debug"
                     }
                 ],
@@ -430,6 +442,7 @@
             }
         ],
         "build": {
+            "ignoreInTestMode": true,
             "webpack": "../../../inspector/webpack.config.js",
             "srcDirectory": "../../inspector/src/",
             "distOutputDirectory": "/inspector/",

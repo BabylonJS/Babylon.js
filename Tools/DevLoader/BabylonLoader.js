@@ -155,7 +155,7 @@ var BABYLONDEVTOOLS;
                 var tempDirectory = '/.temp' + module.build.distOutputDirectory;
                 this.loadScript(babylonJSPath + tempDirectory + library.output);
             }
-            else if (module.build.distOutputDirectory) {
+            else if (module.build.distOutputDirectory && (!testMode || !module.build.ignoreInTestMode)) {
                 if (min) {
                     this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
                 }
