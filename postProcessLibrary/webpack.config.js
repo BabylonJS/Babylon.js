@@ -5,7 +5,7 @@ const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 module.exports = {
     context: path.resolve(__dirname, './src'),
     entry: {
-        'babylonjs-postProcessesLibrary': path.resolve(__dirname, './legacy/legacy.ts'),
+        'babylonjs-postProcessesLibrary': path.resolve(__dirname, './src/legacy/legacy.ts'),
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/postProcessLibrary'),
