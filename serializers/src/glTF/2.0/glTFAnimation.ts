@@ -404,7 +404,7 @@ export class _GLTFAnimation {
         if (animationType === Animation.ANIMATIONTYPE_FLOAT) { // handles single component x, y, z or w component animation by using a base property and animating over a component.
             property = animation.targetProperty.split('.');
             componentName = property ? property[1] : ''; // x, y, or z component
-            value = useQuaternion ? BABYLON.Quaternion.FromArray(basePositionRotationOrScale).normalize() : BABYLON.Vector3.FromArray(basePositionRotationOrScale);
+            value = useQuaternion ? Quaternion.FromArray(basePositionRotationOrScale).normalize() : Vector3.FromArray(basePositionRotationOrScale);
 
             switch (componentName) {
                 case 'x': {
@@ -545,7 +545,7 @@ export class _GLTFAnimation {
                     }
                 }
                 else {
-                    basePositionRotationOrScale = BABYLON.Quaternion.Identity().asArray();
+                    basePositionRotationOrScale = Quaternion.Identity().asArray();
                 }
             }
             else {

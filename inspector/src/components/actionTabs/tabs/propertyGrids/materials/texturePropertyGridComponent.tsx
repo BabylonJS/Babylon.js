@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Texture, BaseTexture, CubeTexture, Observable } from "babylonjs";
+import { Texture, BaseTexture, CubeTexture, Observable, Tools } from "babylonjs";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
@@ -13,9 +13,9 @@ import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent"
 import { LockObject } from "../lockObject";
 
 interface ITexturePropertyGridComponentProps {
-    texture: BaseTexture,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    texture: BaseTexture;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
@@ -25,7 +25,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     updateTexture(file: File) {
         const texture = this.props.texture;
-        BABYLON.Tools.ReadFile(file, (data) => {
+        Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
             var url = URL.createObjectURL(blob);
 
@@ -50,9 +50,9 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const adtTexture = texture instanceof AdvancedDynamicTexture ? texture as AdvancedDynamicTexture : null;
 
         var samplingMode = [
-            { label: "Nearest", value: BABYLON.Texture.NEAREST_NEAREST },
-            { label: "Nearest & linear mip", value: BABYLON.Texture.NEAREST_LINEAR },
-            { label: "Linear", value: BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR },
+            { label: "Nearest", value: Texture.NEAREST_NEAREST },
+            { label: "Nearest & linear mip", value: Texture.NEAREST_LINEAR },
+            { label: "Linear", value: Texture.LINEAR_LINEAR_MIPLINEAR },
         ];
 
         return (
@@ -72,7 +72,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         texture.updateSamplingMode &&
-                        <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => texture.updateSamplingMode(value)} />
+                        <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
                     }
                 </LineContainerComponent>
                 {
@@ -97,8 +97,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                             <FloatLineComponent lockObject={this.props.lockObject} label="U angle" target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <FloatLineComponent lockObject={this.props.lockObject} label="V angle" target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <FloatLineComponent lockObject={this.props.lockObject} label="W angle" target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
-                            <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
+                            <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE} />
+                            <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE} />
                         </div>
                     }
                     {

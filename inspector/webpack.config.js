@@ -22,32 +22,35 @@ module.exports = {
     resolve: {
         extensions: [".js", '.ts', ".tsx"],
     },
-    externals: {
-        babylonjs: {
-            root: "BABYLON",
-            commonjs: "babylonjs",
-            commonjs2: "babylonjs",
-            amd: "babylonjs"
+    externals: [
+            {
+            babylonjs: {
+                root: "BABYLON",
+                commonjs: "babylonjs",
+                commonjs2: "babylonjs",
+                amd: "babylonjs"
+            },
+            "babylonjs-gui": {
+                root: ["BABYLON", "GUI"],
+                commonjs: "babylonjs-gui",
+                commonjs2: "babylonjs-gui",
+                amd: "babylonjs-gui"
+            },
+            "babylonjs-loaders": {
+                root: "BABYLON",
+                commonjs: "babylonjs-loaders",
+                commonjs2: "babylonjs-loaders",
+                amd: "babylonjs-loaders"
+            },
+            "babylonjs-serializers": {
+                root: "BABYLON",
+                commonjs: "babylonjs-serializers",
+                commonjs2: "babylonjs-serializers",
+                amd: "babylonjs-serializers"
+            }
         },
-        "babylonjs-gui": {
-            root: ["BABYLON", "GUI"],
-            commonjs: "babylonjs-gui",
-            commonjs2: "babylonjs-gui",
-            amd: "babylonjs-gui"
-        },
-        "babylonjs-loaders": {
-            root: "BABYLON",
-            commonjs: "babylonjs-loaders",
-            commonjs2: "babylonjs-loaders",
-            amd: "babylonjs-loaders"
-        },
-        "babylonjs-serializers": {
-            root: "BABYLON",
-            commonjs: "babylonjs-serializers",
-            commonjs2: "babylonjs-serializers",
-            amd: "babylonjs-serializers"
-        }
-    },
+        /^babylonjs.*$/i
+    ],
     devtool: "source-map",
     module: {
         rules: [{

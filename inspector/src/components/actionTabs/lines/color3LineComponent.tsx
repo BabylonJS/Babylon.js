@@ -3,10 +3,10 @@ import { Observable, Color3 } from "babylonjs";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 export interface IColor3LineComponentProps {
-    label: string,
-    target: any,
-    propertyName: string,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    label: string;
+    target: any;
+    propertyName: string;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { color: Color3 }> {
@@ -30,7 +30,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
     onChange(newValue: string) {
         this._localChange = true;
-        const newColor = BABYLON.Color3.FromHexString(newValue);
+        const newColor = Color3.FromHexString(newValue);
 
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({

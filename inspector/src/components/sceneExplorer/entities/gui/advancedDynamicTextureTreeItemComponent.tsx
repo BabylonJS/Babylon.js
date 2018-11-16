@@ -7,10 +7,10 @@ import { AdvancedDynamicTexture, Control } from 'babylonjs-gui';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface IAdvancedDynamicTextureTreeItemComponentProps {
-    texture: AdvancedDynamicTexture,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onSelectionChangedObservable?: Observable<any>,
-    onClick: () => void
+    texture: AdvancedDynamicTexture;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onSelectionChangedObservable?: Observable<any>;
+    onClick: () => void;
 }
 
 export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAdvancedDynamicTextureTreeItemComponentProps, { isInPickingMode: boolean }> {
@@ -60,6 +60,6 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
                 </div>
                 <ExtensionsComponent target={this.props.texture} extensibilityGroups={this.props.extensibilityGroups} />
             </div>
-        )
+        );
     }
 }

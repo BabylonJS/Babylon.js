@@ -9,10 +9,10 @@ import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponen
 import { LockObject } from "../lockObject";
 
 interface IStandardMaterialPropertyGridComponentProps {
-    material: StandardMaterial,
-    lockObject: LockObject,
-    onSelectionChangedObservable?: Observable<any>,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    material: StandardMaterial;
+    lockObject: LockObject;
+    onSelectionChangedObservable?: Observable<any>;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
@@ -27,7 +27,7 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
             return null;
         }
 
-        const onDebugSelectionChangeObservable = new BABYLON.Observable<BaseTexture>();
+        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
             <LineContainerComponent title="TEXTURES">
@@ -41,7 +41,7 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                 <TextureLinkLineComponent label="Ambient" texture={material.ambientTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Lightmap" texture={material.lightmapTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
             </LineContainerComponent>
-        )
+        );
     }
 
     render() {

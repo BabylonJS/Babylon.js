@@ -14,11 +14,11 @@ import { AdvancedDynamicTextureTreeItemComponent } from "./entities/gui/advanced
 import { AnimationGroupItemComponent } from "./entities/animationGroupTreeItemComponent";
 
 interface ITreeItemSpecializedComponentProps {
-    label: string,
-    entity?: any,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onSelectionChangedObservable?: Observable<any>,
-    onClick?: () => void
+    label: string;
+    entity?: any;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onSelectionChangedObservable?: Observable<any>;
+    onClick?: () => void;
 }
 
 export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpecializedComponentProps> {
@@ -86,6 +86,6 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
             <div className="meshTools">
                 <TreeItemLabelComponent label={entity.name} onClick={() => this.onClick()} icon={faProjectDiagram} color="cornflowerblue" />
             </div>
-        )
+        );
     }
 }

@@ -10,9 +10,9 @@ import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { LockObject } from "../lockObject";
 
 interface ICommonControlPropertyGridComponentProps {
-    control: Control,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    control: Control;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {

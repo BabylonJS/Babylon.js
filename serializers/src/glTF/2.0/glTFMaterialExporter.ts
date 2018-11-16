@@ -1,4 +1,4 @@
-import { Nullable, Color3, Scalar, Material, StandardMaterial, PBRMetallicRoughnessMaterial, PBRMaterial, Tools, Engine, Scene, Texture, PostProcess, RawTexture, BaseTexture, TextureTools } from "babylonjs";
+import { Nullable, Color3, Scalar, Material, StandardMaterial, PBRMetallicRoughnessMaterial, PBRMaterial, Tools, Engine, Scene, Texture, PostProcess, RawTexture, BaseTexture, TextureTools, Vector2 } from "babylonjs";
 import { ITextureInfo, ImageMimeType, IMaterial, IMaterialPbrMetallicRoughness, MaterialAlphaMode, IMaterialOcclusionTextureInfo, ISampler, TextureMagFilter, TextureMinFilter, TextureWrapMode, ITexture, IImage } from "babylonjs-gltf2interface";
 import { _Exporter } from "./glTFExporter";
 
@@ -10,11 +10,11 @@ interface _IPBRSpecularGlossiness {
     /**
      * Represents the linear diffuse factors of the material
     */
-    diffuseColor: BABYLON.Color3;
+    diffuseColor: Color3;
     /**
      * Represents the linear specular factors of the material
     */
-    specularColor: BABYLON.Color3;
+    specularColor: Color3;
     /**
      * Represents the smoothness of the material
     */
@@ -29,7 +29,7 @@ interface _IPBRMetallicRoughness {
     /**
      * Represents the albedo color of the material
     */
-    baseColor: BABYLON.Color3;
+    baseColor: Color3;
     /**
      * Represents the metallness of the material
     */
@@ -174,10 +174,10 @@ export class _GLTFMaterialExporter {
      * @returns glTF Metallic Roughness Material representation
      */
     public _convertToGLTFPBRMetallicRoughness(babylonStandardMaterial: StandardMaterial): IMaterialPbrMetallicRoughness {
-        const P0 = new BABYLON.Vector2(0, 1);
-        const P1 = new BABYLON.Vector2(0, 0.1);
-        const P2 = new BABYLON.Vector2(0, 0.1);
-        const P3 = new BABYLON.Vector2(1300, 0.1);
+        const P0 = new Vector2(0, 1);
+        const P1 = new Vector2(0, 0.1);
+        const P2 = new Vector2(0, 0.1);
+        const P3 = new Vector2(1300, 0.1);
 
         /**
          * Given the control points, solve for x based on a given t for a cubic bezier curve
@@ -246,7 +246,7 @@ export class _GLTFMaterialExporter {
         const b = diffuse * oneMinusSpecularStrength / (1.0 - this._DielectricSpecular.r) + specular - 2.0 * this._DielectricSpecular.r;
         const c = this._DielectricSpecular.r - specular;
         const D = b * b - 4.0 * a * c;
-        return BABYLON.Scalar.Clamp((-b + Math.sqrt(D)) / (2.0 * a), 0, 1);
+        return Scalar.Clamp((-b + Math.sqrt(D)) / (2.0 * a), 0, 1);
     }
 
     /**
@@ -508,7 +508,7 @@ export class _GLTFMaterialExporter {
                         resolve(dataURL);
                     }
                     else {
-                        BABYLON.Tools.ToBlob(canvas, (blob) => {
+                        Tools.ToBlob(canvas, (blob) => {
                             if (blob) {
                                 let fileReader = new FileReader();
                                 fileReader.onload = (event: any) => {

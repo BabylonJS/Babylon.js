@@ -24,7 +24,7 @@
         "rootDir": "./",
         "paths": {
             "babylonjs": [
-                "../../dist/preview release/babylon.d.ts"
+                "../../dist/preview release/babylon.module.d.ts"
             ]
         },
         "outDir": "./build"

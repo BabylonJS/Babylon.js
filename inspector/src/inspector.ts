@@ -3,7 +3,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ActionTabsComponent } from "./components/actionTabs/actionTabsComponent";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-import { Scene, Observable, Observer, Nullable, IInspectorOptions } from "babylonjs";
+import { Scene, Observable, Observer, Nullable, IInspectorOptions, SceneLoader, Engine } from "babylonjs";
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
@@ -31,8 +31,8 @@ export class Inspector {
     private static _OpenedPane = 0;
     private static _OnBeforeRenderObserver: Nullable<Observer<Scene>>;
 
-    public static OnSelectionChangeObservable = new BABYLON.Observable<string>();
-    public static OnPropertyChangedObservable = new BABYLON.Observable<PropertyChangedEvent>();
+    public static OnSelectionChangeObservable = new Observable<string>();
+    public static OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
     private static _GlobalState = new GlobalState();
 
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
@@ -284,7 +284,7 @@ export class Inspector {
 
     public static EarlyAttachToLoader() {
         if (!this._GlobalState.onPluginActivatedObserver) {
-            this._GlobalState.onPluginActivatedObserver = BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
+            this._GlobalState.onPluginActivatedObserver = SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
                 if (loader.name === "gltf") {
                     this._GlobalState.prepareGLTFPlugin(loader);
                 }
@@ -319,12 +319,12 @@ export class Inspector {
         }
 
         if (!scene) {
-            scene = BABYLON.Engine.LastCreatedScene!;
+            scene = Engine.LastCreatedScene!;
         }
 
         this._Scene = scene;
 
-        var canvas = scene ? scene.getEngine().getRenderingCanvas() : BABYLON.Engine.LastCreatedEngine!.getRenderingCanvas();
+        var canvas = scene ? scene.getEngine().getRenderingCanvas() : Engine.LastCreatedEngine!.getRenderingCanvas();
 
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
@@ -469,7 +469,7 @@ export class Inspector {
         this._Cleanup();
 
         if (!this._GlobalState.onPluginActivatedObserver) {
-            BABYLON.SceneLoader.OnPluginActivatedObservable.remove(this._GlobalState.onPluginActivatedObserver);
+            SceneLoader.OnPluginActivatedObservable.remove(this._GlobalState.onPluginActivatedObserver);
             this._GlobalState.onPluginActivatedObserver = null;
         }
     }
