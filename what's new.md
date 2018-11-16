@@ -204,7 +204,6 @@
 - Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 - Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
 - Particle emit rate and start size over time do not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
-- Fix position and rotation of plane mesh created by MeshBuilder.CreatePlane when specifying a source plane ([sable](https://github.com/thscott))
 
 ### Core Engine
 
