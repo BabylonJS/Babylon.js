@@ -5,6 +5,7 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 [![Build Status](https://travis-ci.com/BabylonJS/Babylon.js.svg?branch=master)](https://travis-ci.com/BabylonJS/Babylon.js)
 [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/babylonJS/babylon.js.svg)](https://isitmaintained.com/project/babylonJS/babylon.js "Average time to resolve an issue")
 [![Percentage of issues still open](https://isitmaintained.com/badge/open/babylonJS/babylon.js.svg)](https://isitmaintained.com/project/babylonJS/babylon.js "Percentage of issues still open")
+![Build Size](https://badge-size.herokuapp.com/BabylonJS/Babylon.js/master/dist/preview release/babylon.js?compression=gzip)
 
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
