@@ -2,7 +2,6 @@
 var gulp = require("gulp");
 var webpack = require('webpack');
 var webpackStream = require("webpack-stream");
-var dtsBundle = require('dts-bundle');
 var cp = require('child_process');
 var merge2 = require("merge2");
 var path = require("path");
@@ -34,12 +33,14 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, cb) {
     const sequence = [];
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
+    var isMinOutputName = libraries[0].output.indexOf(".min.") > -1;
+
     // Webpack Config.
     var wpConfig = require(settings.build.webpack);
     wpConfig.entry = { };
-    wpConfig.output.filename = settings.isCore ? '[name].js' : '[name].min.js';
+    wpConfig.output.filename = isMinOutputName ? '[name].js' : '[name].min.js';
     for (let library of settings.libraries) {
-        let name = library.output.replace(settings.isCore ? ".js" : ".min.js", "");
+        let name = library.output.replace(isMinOutputName ? ".js" : ".min.js", "");
         wpConfig.entry[name] = path.resolve(wpConfig.context, library.entry);
     }
 
@@ -51,7 +52,7 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, cb) {
     // Generate unminified file.
     wpConfig.mode = "development";
     // Allow babylon.max.js and babylon.js
-    wpConfig.output.filename = settings.isCore ? '[name].max.js' : '[name].js';
+    wpConfig.output.filename = isMinOutputName ? '[name].max.js' : '[name].js';
     //wpConfig.output.filename = library.maxOutput || wpConfig.output.filename.replace(".min", "");
     let wpBuildMax = webpackStream(wpConfig, webpack);
     let buildEventMax = wpBuildMax.pipe(gulp.dest(outputDirectory));

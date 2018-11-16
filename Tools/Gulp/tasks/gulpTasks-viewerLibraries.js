@@ -1,7 +1,6 @@
 // Gulp Tools
 var gulp = require("gulp");
 var webpackStream = require("webpack-stream");
-var fs = require("fs");
 var dtsBundle = require('dts-bundle');
 var merge2 = require("merge2");
 var through = require('through2');
