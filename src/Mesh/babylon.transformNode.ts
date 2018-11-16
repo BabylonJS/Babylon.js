@@ -455,17 +455,7 @@ module BABYLON {
             var dv = TransformNode._lookAtVectorCache;
             var pos = space === Space.LOCAL ? this.position : this.getAbsolutePosition();
             targetPoint.subtractToRef(pos, dv);
-            var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
-            var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
-            var pitch = Math.atan2(dv.y, len);
-            if (this.rotationQuaternion) {
-                Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
-            }
-            else {
-                this.rotation.x = pitch + pitchCor;
-                this.rotation.y = yaw + yawCor;
-                this.rotation.z = rollCor;
-            }
+            this.setDirection(dv, yawCor, pitchCor, rollCor);
 
             // Correct for parent's rotation offset
             if (space === Space.WORLD && this.parent) {
@@ -524,6 +514,29 @@ module BABYLON {
          */
         public getDirectionToRef(localAxis: Vector3, result: Vector3): TransformNode {
             Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
+            return this;
+        }
+
+        /**
+         * Sets this transform node rotation to the given local axis.
+         * @param localAxis the axis in local space
+         * @param yawCor optional yaw (y-axis) correction in radians
+         * @param pitchCor optional pitch (x-axis) correction in radians
+         * @param rollCor optional roll (z-axis) correction in radians
+         * @returns this TransformNode
+         */
+        public setDirection(localAxis: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0): TransformNode {
+            var yaw = -Math.atan2(localAxis.z, localAxis.x) - Math.PI / 2;
+            var len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
+            var pitch = Math.atan2(localAxis.y, len);
+            if (this.rotationQuaternion) {
+                Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
+            }
+            else {
+                this.rotation.x = pitch + pitchCor;
+                this.rotation.y = yaw + yawCor;
+                this.rotation.z = rollCor;
+            }
             return this;
         }
 
