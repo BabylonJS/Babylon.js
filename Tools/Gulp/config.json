@@ -1,11 +1,8 @@
 {
     "build": {
-        "filename": "babylon.max.js",
-        "minFilename": "babylon.js",
-        "declarationFilename": "babylon.d.ts",
         "outputDirectory": "../../dist/preview release",
-        "playgroundDirectory": "../../Playground/",
         "tempDirectory": "../../.temp/",
+        "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
@@ -64,13 +61,6 @@
             "webpack": "../../../src/webpack.config.js",
             "srcDirectory": "../../src/",
             "distOutputDirectory": "/",
-            "dtsBundle": {
-                "name": "babylonjs",
-                "main": "../../dist/preview release/build/index.d.ts",
-                "out": "../babylon.module.d.ts",
-                "baseDir": "../../dist/preview release/build/",
-                "headerText": "Babylon.js"
-            },
             "processDeclaration": {
                 "filename": "babylon.module.d.ts",
                 "packageName": "babylonjs",
@@ -172,22 +162,13 @@
             "webpack": "../../../materialsLibrary/webpack.config.js",
             "srcDirectory": "../../materialsLibrary/src/",
             "distOutputDirectory": "/materialsLibrary/",
-            "dtsBundle": {
-                "name": "babylonjs-materials",
-                "main": "../../dist/preview release/materialsLibrary/build/src/index.d.ts",
-                "out": "../babylonjs.materials.module.d.ts",
-                "baseDir": "../../dist/preview release/materialsLibrary/build/",
-                "headerText": "Babylon.js Materials"
-            },
             "processDeclaration": {
                 "filename": "babylonjs.materials.module.d.ts",
                 "packageName": "babylonjs-materials",
                 "moduleName": "BABYLON",
                 "importsToRemove": [],
                 "classMap": {
-                    "babylonjs": "BABYLON",
-                    "babylonjs-loaders": "BABYLON",
-                    "babylonjs-serializers": "BABYLON"
+                    "babylonjs": "BABYLON"
                 }
             }
         }
@@ -213,13 +194,6 @@
             "webpack": "../../../postProcessLibrary/webpack.config.js",
             "srcDirectory": "../../postProcessLibrary/src/",
             "distOutputDirectory": "/postProcessesLibrary/",
-            "dtsBundle": {
-                "name": "babylonjs-postProcessLibrary",
-                "main": "../../dist/preview release/postProcessesLibrary/build/src/index.d.ts",
-                "out": "../babylonjs.postProcess.module.d.ts",
-                "baseDir": "../../dist/preview release/postProcessesLibrary/build/",
-                "headerText": "Babylon.js Postprocess library"
-            },
             "processDeclaration": {
                 "filename": "babylonjs.postProcess.module.d.ts",
                 "packageName": "babylonjs-postProcessLibrary",
@@ -292,22 +266,13 @@
             "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
             "srcDirectory": "../../proceduralTexturesLibrary/src/",
             "distOutputDirectory": "/proceduralTexturesLibrary/",
-            "dtsBundle": {
-                "name": "babylonjs-procedural-textures",
-                "main": "../../dist/preview release/proceduralTexturesLibrary/build/src/index.d.ts",
-                "out": "../babylonjs.proceduralTextures.module.d.ts",
-                "baseDir": "../../dist/preview release/proceduralTexturesLibrary/build/",
-                "headerText": "Babylon.js Procedural Textures"
-            },
             "processDeclaration": {
                 "filename": "babylonjs.proceduralTextures.module.d.ts",
                 "packageName": "babylonjs-procedural-textures",
                 "moduleName": "BABYLON",
                 "importsToRemove": [],
                 "classMap": {
-                    "babylonjs": "BABYLON",
-                    "babylonjs-loaders": "BABYLON",
-                    "babylonjs-serializers": "BABYLON"
+                    "babylonjs": "BABYLON"
                 }
             }
         }
@@ -348,13 +313,6 @@
             "webpack": "../../../loaders/webpack.config.js",
             "srcDirectory": "../../loaders/src/",
             "distOutputDirectory": "/loaders/",
-            "dtsBundle": {
-                "name": "babylonjs-loaders",
-                "main": "../../dist/preview release/loaders/build/src/index.d.ts",
-                "out": "../babylonjs.loaders.module.d.ts",
-                "baseDir": "../../dist/preview release/loaders/build/",
-                "headerText": "Babylon.js Loaders"
-            },
             "processDeclaration": {
                 "filename": "babylonjs.loaders.module.d.ts",
                 "packageName": "babylonjs-loaders",
@@ -406,13 +364,6 @@
             "webpack": "../../../serializers/webpack.config.js",
             "srcDirectory": "../../serializers/src/",
             "distOutputDirectory": "/serializers/",
-            "dtsBundle": {
-                "name": "babylonjs-serializers",
-                "main": "../../dist/preview release/serializers/build/src/index.d.ts",
-                "out": "../babylonjs.serializers.module.d.ts",
-                "baseDir": "../../dist/preview release/serializers/build/",
-                "headerText": "Babylon.js serializers"
-            },
             "processDeclaration": {
                 "filename": "babylonjs.serializers.module.d.ts",
                 "packageName": "babylonjs-serializers",
@@ -456,13 +407,6 @@
             "webpack": "../../../gui/webpack.config.js",
             "srcDirectory": "../../gui/src/",
             "distOutputDirectory": "/gui/",
-            "dtsBundle": {
-                "name": "babylonjs-gui",
-                "main": "../../dist/preview release/gui/build/src/index.d.ts",
-                "out": "../babylon.gui.module.d.ts",
-                "baseDir": "../../dist/preview release/gui/build/",
-                "headerText": "Babylon.js GUI"
-            },
             "processDeclaration": {
                 "filename": "babylon.gui.module.d.ts",
                 "packageName": "babylonjs-gui",
@@ -489,13 +433,6 @@
             "webpack": "../../../inspector/webpack.config.js",
             "srcDirectory": "../../inspector/src/",
             "distOutputDirectory": "/inspector/",
-            "dtsBundle": {
-                "name": "babylonjs-inspector",
-                "main": "../../dist/preview release/inspector/build/src/index.d.ts",
-                "out": "../babylon.inspector.module.d.ts",
-                "baseDir": "../../dist/preview release/inspector/build/",
-                "headerText": "Babylon.js Inspector"
-            },
             "processDeclaration": {
                 "filename": "babylon.inspector.module.d.ts",
                 "packageName": "babylonjs-inspector",
