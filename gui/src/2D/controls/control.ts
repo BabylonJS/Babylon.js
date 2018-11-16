@@ -396,6 +396,9 @@ export class Control {
 
     /** Gets or set font family */
     public get fontFamily(): string {
+        if (!this._fontSet) {
+            return "";
+        }
         return this._fontFamily;
     }
 
