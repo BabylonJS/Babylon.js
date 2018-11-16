@@ -57,7 +57,7 @@ var processData = function(data, options) {
 
     // Add Entry point.
     str += `declare module "${moduleName}" {
-    export * from "${moduleName}/${entryPoint.replace("./","").replace(".ts", "")}";
+    export * from "${moduleName}/${entryPoint.replace(/\.\//g,"").replace(".ts", "")}";
 }`;
 
     return str;
