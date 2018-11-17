@@ -237,6 +237,7 @@ gulp.task("tests-modules", function() {
         sequencePromise = sequencePromise.then(() => {
             console.log("Running " + test.name);
             let basePath = relativeRootDir + 'tests/modules/' + test.name + '/';
+            
             rmDir(relativeRootDir + "tests/modules/build/");
             let compilePromise = Promise.resolve();
 
@@ -255,9 +256,11 @@ gulp.task("tests-modules", function() {
                 if (test.typescript && !test.bundler) {
                     compilePromise = compilePromise.then(() => {
                         return new Promise(function(resolve, reject) {
-                            var tsProject = typescript.createProject(basePath + (test.tsconfig || 'tsconfig.json'));
+                            var gulpRelativeRootDir = "../../";
+                            var gulpBasePath = gulpRelativeRootDir + 'tests/modules/' + test.name + '/';
+                            var tsProject = typescript.createProject(gulpBasePath + (test.tsconfig || 'tsconfig.json'));
 
-                            var tsResult = gulp.src(basePath + '/src/**/*.ts', { base: basePath })
+                            var tsResult = gulp.src(gulpBasePath + '/src/**/*.ts', { base: gulpBasePath })
                                 .pipe(tsProject());
 
                             let error = false;
@@ -265,7 +268,7 @@ gulp.task("tests-modules", function() {
                                 error = true;
                             });
 
-                            let jsPipe = tsResult.js.pipe(gulp.dest(relativeRootDir + "tests/modules/"));
+                            let jsPipe = tsResult.js.pipe(gulp.dest(gulpRelativeRootDir + "tests/modules/"));
 
                             jsPipe.once("finish", function() {
                                 if (error)
