@@ -114,7 +114,7 @@ gulp.task("tests-viewer-validation-transpile", function() {
     let wpBuild = webpackStream(require(relativeRootDir + 'Viewer/webpack.gulp.config.js'), webpack);
 
     // clean the built directory
-    rmDir(relativeRootDir + "Viewer/tests/build/");
+    rmDir("../../Viewer/tests/build/");
 
     return wpBuild
         .pipe(rename(function(path) {
@@ -181,7 +181,7 @@ gulp.task("tests-viewer-transpile", function() {
     let wpBuild = webpackStream(require(relativeRootDir + 'Viewer/tests/unit/webpack.config.js'), webpack);
 
     // clean the built directory
-    rmDir(relativeRootDir + "Viewer/tests/build/");
+    rmDir("../../Viewer/tests/build/");
 
     return wpBuild
         .pipe(rename(function(path) {
@@ -238,7 +238,7 @@ gulp.task("tests-modules", function() {
             console.log("Running " + test.name);
             let basePath = relativeRootDir + 'tests/modules/' + test.name + '/';
             
-            rmDir(relativeRootDir + "tests/modules/build/");
+            rmDir("../../tests/modules/build/");
             let compilePromise = Promise.resolve();
 
             if (test.dependencies) {
