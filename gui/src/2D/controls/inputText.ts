@@ -567,10 +567,12 @@ export class InputText extends Control implements IFocusableControl {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         this._startHighlightIndex = this._text.length - this._cursorOffset;
         this._endHighlightIndex = this._startHighlightIndex;
-        for (let rWord = /\w+/g, left = 1, right = 1; this._startHighlightIndex > 0 && this._endHighlightIndex < this._text.length && (left || right);) {
-            right = (this._text[this._endHighlightIndex].search(rWord) !== -1) ? ++this._endHighlightIndex : 0;
-            left = (this._text[this._startHighlightIndex - 1].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
-        }
+        let rWord = /\w+/g, moveLeft, moveRight;
+        do {
+            moveRight = this._endHighlightIndex < this._text.length && (this._text[this._endHighlightIndex].search(rWord) !== -1) ? ++this._endHighlightIndex : 0;
+            moveLeft =  this._startHighlightIndex > 0 && (this._text[this._startHighlightIndex - 1 ].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
+        } while (moveLeft || moveRight);
+
         this.onTextHighlightObservable.notifyObservers(this);
         this._isTextHighlightOn = true;
         this._clickedCoordinate = null;
