@@ -1,6 +1,6 @@
 
 
-function runTests(testType, BABYLON, GUI, INSPECTOR) {
+function runTests(testType, BABYLON, GUI) {
 
     console.log("running tests");
 
