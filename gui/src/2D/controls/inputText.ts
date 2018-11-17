@@ -548,9 +548,16 @@ export class InputText extends Control implements IFocusableControl {
                 if (this._cursorOffset === 0) {
                     this.text += key;
                 } else {
-                    let insertPosition = this._text.length - this._cursorOffset;
-
-                    this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                    if (this._isTextHighlightOn) {
+                        this.text = this._text.slice(0, this._startHighlightIndex) + key + this._text.slice(this._endHighlightIndex);
+                        this._cursorOffset = this.text.length - (this._startHighlightIndex + 1);
+                        this._isTextHighlightOn = false;
+                        this._blinkIsEven = false;
+                    }
+                    else {
+                        let insertPosition = this._text.length - this._cursorOffset;
+                        this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                    }
                 }
             }
         }
@@ -577,7 +584,7 @@ export class InputText extends Control implements IFocusableControl {
 
         this._startHighlightIndex = 0;
         this._endHighlightIndex = this._text.length;
-        this._cursorOffset = 0;
+        this._cursorOffset = this._text.length;
         this._markAsDirty();
     }
 
