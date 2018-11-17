@@ -553,6 +553,7 @@ export class InputText extends Control implements IFocusableControl {
                         this._cursorOffset = this.text.length - (this._startHighlightIndex + 1);
                         this._isTextHighlightOn = false;
                         this._blinkIsEven = false;
+                        this._markAsDirty();
                     }
                     else {
                         let insertPosition = this._text.length - this._cursorOffset;
@@ -573,7 +574,9 @@ export class InputText extends Control implements IFocusableControl {
             moveLeft =  this._startHighlightIndex > 0 && (this._text[this._startHighlightIndex - 1 ].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
         } while (moveLeft || moveRight);
 
+        this._cursorOffset = this.text.length - this._startHighlightIndex;
         this.onTextHighlightObservable.notifyObservers(this);
+
         this._isTextHighlightOn = true;
         this._clickedCoordinate = null;
         this._blinkIsEven = true;
