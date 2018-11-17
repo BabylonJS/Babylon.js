@@ -143,7 +143,7 @@ module BABYLON {
                     this._parentNode._children.splice(index, 1);
                 }
 
-                if (!parent) {
+                if (!parent && !this._isDisposed) {
                     this.addToSceneRootNodes();
                 }
             }
@@ -692,7 +692,9 @@ module BABYLON {
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
-        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {            
+            this._isDisposed = true;
+
             if (!doNotRecurse) {
                 const nodes = this.getDescendants(true);
                 for (const node of nodes) {
@@ -722,7 +724,6 @@ module BABYLON {
             }
 
             this._behaviors = [];
-            this._isDisposed = true;
         }
 
         /**
