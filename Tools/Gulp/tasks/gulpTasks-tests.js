@@ -307,7 +307,14 @@ gulp.task("tests-modules", function() {
                         singleRun: true
                     };
 
-                    var server = new karmaServer(kamaServerOptions, resolve);
+                    var server = new karmaServer(kamaServerOptions, (err) => {
+                        if (err) {
+                            reject(err);
+                        }
+                        else {
+                            resolve();
+                        }
+                    });
                     server.start();
                 });
             })
