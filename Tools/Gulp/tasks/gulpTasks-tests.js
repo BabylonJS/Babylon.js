@@ -304,7 +304,6 @@ gulp.task("tests-modules", function() {
                 return new Promise(function(resolve, reject) {
                     var kamaServerOptions = {
                         configFile: rootDir + "tests/modules/karma.conf.js",
-                        singleRun: true
                     };
 
                     var server = new karmaServer(kamaServerOptions, (err) => {
