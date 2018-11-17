@@ -1,13 +1,13 @@
 
 
-function runTests(testType, BABYLON, GUI) {
+function runTests(testType, BBL, GUI, GLTF2) {
 
     console.log("running tests");
 
     describe(testType + ' tests', function () {
 
         it("should have BABYLON loaded", function () {
-            assert.isDefined(BABYLON);
+            assert.isDefined(BBL);
         })
 
         it("should have GUI loaded", function () {
@@ -15,7 +15,7 @@ function runTests(testType, BABYLON, GUI) {
         })
 
         it("should have BABYLON.GLTF2 loaded", function () {
-            assert.isDefined(BABYLON.GLTF2);
+            assert.isDefined(GLTF2);
         })
 
         var subject;
