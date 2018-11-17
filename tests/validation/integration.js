@@ -16,6 +16,7 @@ xhr.addEventListener("load", function () {
                 require = null;
                 BABYLONDEVTOOLS.Loader
                     .require('/tests/validation/validation.js')
+                    .testMode()
                     .useDist()
                     .load(function () {
                         var info = engine.getGlInfo();
