@@ -206,7 +206,6 @@ module BABYLON {
             
             if(!ignoreChildren){
                 var meshChildren = impostor.object.getChildMeshes ? impostor.object.getChildMeshes(true) : [];
-                let currentRotation: Nullable<Quaternion> = impostor.object.rotationQuaternion;
                 if (meshChildren.length > 0) {
                     returnValue = new Ammo.btCompoundShape();
                     
@@ -216,10 +215,9 @@ module BABYLON {
                         if(childImpostor){
                             var shape = this._createShape(childImpostor);
                             this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x, childMesh.position.y,childMesh.position.z);
-                            this._tmpAmmoQuaternion.setValue(currentRotation!.x,currentRotation!.y,currentRotation!.z,currentRotation!.w)
+                            this._tmpAmmoQuaternion.setValue(childMesh.rotationQuaternion!.x,childMesh.rotationQuaternion!.y,childMesh.rotationQuaternion!.z,childMesh.rotationQuaternion!.w)
                             this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion)
                             returnValue.addChildShape(this._tmpAmmoTransform, shape);
-                            
                             childImpostor.dispose();
                         }
                     })
