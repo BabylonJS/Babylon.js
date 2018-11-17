@@ -531,7 +531,6 @@ export class InputText extends Control implements IFocusableControl {
                 this.deadKey = true;
                 break;
         }
-        this._isTextHighlightOn = false;
 
         // Printable characters
         if (key &&
@@ -567,21 +566,19 @@ export class InputText extends Control implements IFocusableControl {
         }
         this.onTextHighlightObservable.notifyObservers(this);
         this._isTextHighlightOn = true;
-        this._blinkIsEven = false;
+        this._clickedCoordinate = null;
+        this._blinkIsEven = true;
+        this._markAsDirty();
     }
     /** @hidden */
     private _selectAllText() {
-        this._blinkIsEven = false;
+        this._blinkIsEven = true;
         this._isTextHighlightOn = true;
-
-        //if already highlighted pass
-        if (this._highlightedText) {
-            return;
-        }
 
         this._startHighlightIndex = 0;
         this._endHighlightIndex = this._text.length;
         this._cursorOffset = 0;
+        this._markAsDirty();
     }
 
     /**
@@ -773,6 +770,7 @@ export class InputText extends Control implements IFocusableControl {
                     context.fillStyle = this._textHighlightColor;
                     context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width, this._fontOffset.height);
                     context.globalAlpha = 1.0;
+                    this._markAsDirty();
                 }
             }
 
