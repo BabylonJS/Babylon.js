@@ -1,7 +1,7 @@
 import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo } from 'babylonjs';
+import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo, PointerInfoPre } from 'babylonjs';
 import { Measure } from "../measure";
 import { VirtualKeyboard } from "./virtualKeyboard";
 
@@ -37,6 +37,7 @@ export class InputText extends Control implements IFocusableControl {
     private _onFocusSelectAll = false;
     private _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;
     private _onPointerDblTapObserver: Nullable<Observer<PointerInfo>>;
+    private _onPointerDragObserver: Nullable<Observer<PointerInfoPre>>;
 
     /** @hidden */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
@@ -325,6 +326,9 @@ export class InputText extends Control implements IFocusableControl {
         if (this._onPointerDblTapObserver && scene) {
             scene.onPointerObservable.remove(this._onPointerDblTapObserver);
         }
+        if (this._onPointerDragObserver && scene) {
+            scene.onPrePointerObservable.remove(this._onPointerDragObserver);
+        }
     }
 
     /** @hidden */
@@ -380,6 +384,18 @@ export class InputText extends Control implements IFocusableControl {
                 }
                 if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
                     this._processDblClick(pointerInfo);
+                }
+            });
+            let isEnabled = false;
+            this._onPointerDragObserver = scene.onPrePointerObservable.add((pointerInfo) => {
+                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                    isEnabled = true;
+                }
+                if (isEnabled && pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    this._processDrag(pointerInfo);
+                }
+                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP) {
+                    isEnabled = false;
                 }
             });
         }
@@ -500,11 +516,21 @@ export class InputText extends Control implements IFocusableControl {
                         this._startHighlightIndex = this._endHighlightIndex;
                     }
                     (this._startHighlightIndex < 0) ? 0 : --this._startHighlightIndex;
+                    this._blinkIsEven = true;
+                    this._markAsDirty();
+                    return;
                 }
-                this._cursorOffset++;
-                if (this._cursorOffset > this._text.length) {
-                    this._cursorOffset = this._text.length;
+                else if (this._isTextHighlightOn) {
+                        this._cursorOffset = this._text.length - this._startHighlightIndex;
+                        this._isTextHighlightOn = false;
                 }
+                else {
+                    this._cursorOffset++;
+                    if (this._cursorOffset > this._text.length) {
+                        this._cursorOffset = this._text.length;
+                    }
+                }
+
                 this._blinkIsEven = false;
                 this._markAsDirty();
                 return;
@@ -516,10 +542,19 @@ export class InputText extends Control implements IFocusableControl {
                         this._endHighlightIndex = this._startHighlightIndex;
                     }
                     (this._endHighlightIndex > this._text.length) ? this._text.length - 1 : ++this._endHighlightIndex;
+                    this._blinkIsEven = true;
+                    this._markAsDirty();
+                    return;
                 }
-                this._cursorOffset--;
-                if (this._cursorOffset < 0) {
-                    this._cursorOffset = 0;
+                else if (this._isTextHighlightOn) {
+                    this._cursorOffset = this._text.length - this._endHighlightIndex;
+                    this._isTextHighlightOn = false;
+                }
+                else {
+                    this._cursorOffset--;
+                    if (this._cursorOffset < 0) {
+                        this._cursorOffset = 0;
+                    }
                 }
                 this._blinkIsEven = false;
                 this._markAsDirty();
@@ -562,6 +597,10 @@ export class InputText extends Control implements IFocusableControl {
                 }
             }
         }
+    }
+
+    private _processDrag(evt: PointerInfoPre) {
+        // console.log(evt.event.clientX);
     }
     /** @hidden */
     private _processDblClick(evt: PointerInfo) {
@@ -823,6 +862,14 @@ export class InputText extends Control implements IFocusableControl {
 
         return true;
     }
+    // public _onPointerMove(target: Control, coordinates: Vector2): void {
+    //     console.log(this._isPointerDown, target.isPointerBlocker);
+    //     if (this._host.focusedControl === this && target.isPointerBlocker) {
+    //         this._clickedCoordinate = coordinates.x;
+    //         console.log(coordinates.x);
+    //         console.log(this._cursorOffset);
+    //     }
+    // }
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
