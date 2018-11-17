@@ -45,7 +45,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         control.color &&
                         <TextInputLineComponent lockObject={this.props.lockObject} label="Color" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Background" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    {
+                        (control as any).background !== undefined &&
+                        <TextInputLineComponent lockObject={this.props.lockObject} label="Background" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                 </LineContainerComponent>
                 <LineContainerComponent title="ALIGNMENT">
                     <OptionsLineComponent label="Horizontal" options={horizontalOptions} target={control} propertyName="horizontalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
