@@ -65,6 +65,10 @@ module BABYLON {
          */
         enablePopup?: boolean;
         /**
+         * Allow the panes to be closed by users (default: true)
+         */
+        enableClose?: boolean;
+        /**
          * Optional list of extensibility entries
          */
         explorerExtensibility?: IExplorerExtensibilityGroup[];
