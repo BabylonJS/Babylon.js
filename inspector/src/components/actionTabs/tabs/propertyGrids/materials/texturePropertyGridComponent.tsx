@@ -7,7 +7,6 @@ import { TextLineComponent } from "../../../lines/textLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { TextureLineComponent } from "../../../lines/textureLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import { AdvancedDynamicTexture } from "babylonjs-gui";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
 import { LockObject } from "../lockObject";
@@ -47,7 +46,6 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     render() {
         const texture = this.props.texture;
-        const adtTexture = texture instanceof AdvancedDynamicTexture ? texture as AdvancedDynamicTexture : null;
 
         var samplingMode = [
             { label: "Nearest", value: BABYLON.Texture.NEAREST_NEAREST },
@@ -76,14 +74,14 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     }
                 </LineContainerComponent>
                 {
-                    adtTexture &&
+                    (texture as any).rootContainer &&
                     <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
-                        <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={adtTexture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <CheckBoxLineComponent label="Premultiply alpha" target={adtTexture} propertyName="premulAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent lockObject={this.props.lockObject} label="Ideal width" target={adtTexture} propertyName="idealWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <FloatLineComponent lockObject={this.props.lockObject} label="Ideal height" target={adtTexture} propertyName="idealHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <CheckBoxLineComponent label="Use smallest ideal" target={adtTexture} propertyName="useSmallestIdeal" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <CheckBoxLineComponent label="Render at ideal size" target={adtTexture} propertyName="renderAtIdealSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={texture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <CheckBoxLineComponent label="Premultiply alpha" target={texture} propertyName="premulAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Ideal width" target={texture} propertyName="idealWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Ideal height" target={texture} propertyName="idealHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <CheckBoxLineComponent label="Use smallest ideal" target={texture} propertyName="useSmallestIdeal" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <CheckBoxLineComponent label="Render at ideal size" target={texture} propertyName="renderAtIdealSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
                 <LineContainerComponent title="TRANSFORM">
