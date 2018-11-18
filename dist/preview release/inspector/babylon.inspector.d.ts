@@ -1,17 +1,15 @@
 /*Babylon.js Inspector*/
 // Dependencies for this module:
-//   ../../../../Tools/gulp/babylonjs
+//   ../../../../Tools/Gulp/babylonjs
 declare module INSPECTOR {
 }
-declare module INSPECTOR {
-    export class Inspector {
-        static OnSelectionChangeObservable: BABYLON.Observable<string>;
-        static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
-        static readonly IsVisible: boolean;
-        static EarlyAttachToLoader(): void;
-        static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
-        static Hide(): void;
-    }
+export declare class Inspector {
+    static OnSelectionChangeObservable: BABYLON.Observable<string>;
+    static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
+    static readonly IsVisible: boolean;
+    static EarlyAttachToLoader(): void;
+    static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
+    static Hide(): void;
 }
 declare module INSPECTOR {
     export class PropertyChangedEvent {
