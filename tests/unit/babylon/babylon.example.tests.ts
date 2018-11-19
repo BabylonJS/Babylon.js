@@ -1,7 +1,7 @@
 /**
  * Describes the test suite.
  */
-describe('Example', function () {
+describe('Example', function() {
     /**
      * Sets the timeout of all the tests to 10 seconds.
      * Note the JavaScript function syntax in the describe callback.
@@ -12,11 +12,12 @@ describe('Example', function () {
     /**
      * Loads the dependencies.
      */
-    before(function (done) {
+    before(function(done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
-            .load(function () {
+            .testMode()
+            .load(function() {
                 // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 done();
@@ -29,19 +30,19 @@ describe('Example', function () {
      */
     describe('#ExponentOfTwo', () => {
         it('should be expoent of two', () => {
-            var result : boolean = BABYLON.Tools.IsExponentOfTwo(2);
-            expect(result).to.be.true; 
+            var result: boolean = BABYLON.Tools.IsExponentOfTwo(2);
+            expect(result).to.be.true;
 
             result = BABYLON.Tools.IsExponentOfTwo(4);
-            result.should.be.true; 
-            
+            result.should.be.true;
+
             result = BABYLON.Tools.IsExponentOfTwo(8);
             assert.isTrue(result);
         });
 
         it('should not be exponent of two', () => {
-            var result : boolean = BABYLON.Tools.IsExponentOfTwo(3);
-            expect(result).to.be.false; 
+            var result: boolean = BABYLON.Tools.IsExponentOfTwo(3);
+            expect(result).to.be.false;
 
             result = BABYLON.Tools.IsExponentOfTwo(6);
             result.should.be.false;

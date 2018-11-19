@@ -481,7 +481,7 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.7";
+            return "4.0.0-alpha.9";
         }
 
         /**
@@ -4307,6 +4307,7 @@ module BABYLON {
                         excludeLoaders.push(loader);
                         Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
                         this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
+                        return;
                     }
                 }
 
@@ -4316,6 +4317,7 @@ module BABYLON {
                     }
                     if (Tools.UseFallbackTexture) {
                         this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                        return;
                     }
                 }
 
@@ -4330,7 +4332,7 @@ module BABYLON {
                     loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
                         if (loadFailed) {
                             onInternalError("TextureLoader failed to load data");
-                        }else {
+                        } else {
                             this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
                                 done();
                                 return false;
@@ -5716,6 +5718,7 @@ module BABYLON {
                     if (fallbackUrl) {
                         excludeLoaders.push(loader);
                         this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture, excludeLoaders);
+                        return;
                     }
                 }
 

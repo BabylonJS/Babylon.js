@@ -1505,10 +1505,12 @@ module BABYLON {
                 return this;
             }
 
+            const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
+
             var sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
                 sideOrientation = this._effectiveMaterial.sideOrientation;
-                if (this._getWorldMatrixDeterminant() < 0) {
+                if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
                     sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
                 }
             }
@@ -1526,7 +1528,7 @@ module BABYLON {
                 this._bind(subMesh, effect, fillMode);
             }
 
-            var world = this.getWorldMatrix();
+            var world = effectiveMesh.getWorldMatrix();
 
             if (this._effectiveMaterial._storeEffectOnSubMeshes) {
                 this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
@@ -2008,7 +2010,7 @@ module BABYLON {
          * @param onSuccess is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
          * @param uvOffset is an optional vector2 used to offset UV.
          * @param uvScale is an optional vector2 used to scale UV.
-         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is usefull to apply on a deserialized model for instance.
+         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is useful to apply on a deserialized model for instance.
          * @returns the Mesh.
          */
         public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
@@ -2052,7 +2054,7 @@ module BABYLON {
          * @param onSuccess is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
          * @param uvOffset is an optional vector2 used to offset UV.
          * @param uvScale is an optional vector2 used to scale UV.
-         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is usefull to apply on a deserialized model for instance.
+         * @param forceUpdate defines whether or not to force an update of the generated buffers. This is useful to apply on a deserialized model for instance.
          * @returns the Mesh.
          */
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
@@ -3395,7 +3397,7 @@ module BABYLON {
           * * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`
           * * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron
           * * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (Color4, default `(1, 1, 1, 1)`) and faceUV (Vector4, default `(0, 0, 1, 1)`)
-          * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors
+          * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
           * * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored
           * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
           * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
