@@ -1,7 +1,7 @@
 /**
  * Describes the test suite.
  */
-describe('Babylon Scene Loader', function () {
+describe('Babylon Scene Loader', function() {
     let subject: BABYLON.Engine;
 
     this.timeout(10000);
@@ -9,11 +9,12 @@ describe('Babylon Scene Loader', function () {
     /**
      * Loads the dependencies.
      */
-    before(function (done) {
+    before(function(done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
-            .load(function () {
+            .testMode()
+            .load(function() {
                 // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 BABYLON.Engine.audioEngine = new BABYLON.AudioEngine();
@@ -24,7 +25,7 @@ describe('Babylon Scene Loader', function () {
     /**
      * Create a new engine subject before each test.
      */
-    beforeEach(function () {
+    beforeEach(function() {
         subject = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,

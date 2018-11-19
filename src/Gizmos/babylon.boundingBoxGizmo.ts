@@ -506,6 +506,18 @@ module BABYLON {
 
             // Reverse parenting
             mesh.removeChild(box);
+
+            // Adjust scale to avoid undefined behavior when adding child
+            if (box.scaling.y === 0) {
+                box.scaling.y = BABYLON.Epsilon;
+            }
+            if (box.scaling.x === 0) {
+                box.scaling.x = BABYLON.Epsilon;
+            }
+            if (box.scaling.z === 0) {
+                box.scaling.z = BABYLON.Epsilon;
+            }
+
             box.addChild(mesh);
             box.visibility = 0;
             return box;

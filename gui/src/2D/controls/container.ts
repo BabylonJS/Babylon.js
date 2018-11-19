@@ -13,7 +13,7 @@ export class Container extends Control {
     /** @hidden */
     protected _measureForChildren = Measure.Empty();
     /** @hidden */
-    protected _background: string;
+    protected _background = "";
     /** @hidden */
     protected _adaptWidthToChildren = false;
     /** @hidden */
@@ -164,7 +164,7 @@ export class Container extends Control {
      * @returns the current container
      */
     public clearControls(): Container {
-        let children = this._children.slice();
+        let children = this.children.slice();
 
         for (var child of children) {
             this.removeControl(child);
@@ -270,6 +270,7 @@ export class Container extends Control {
             }
 
             this._localDraw(context);
+            this._renderHighlight(context);
 
             if (this.clipChildren) {
                 this._clipForChildren(context);
@@ -283,6 +284,7 @@ export class Container extends Control {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
                     child._draw(this._measureForChildren, context);
+                    child._renderHighlight(context);
 
                     if (child.onAfterDrawObservable.hasObservers()) {
                         child.onAfterDrawObservable.notifyObservers(child);
@@ -298,16 +300,41 @@ export class Container extends Control {
             }
 
             if (this.adaptWidthToChildren && computedWidth >= 0) {
-                this.width = computedWidth + "px";
+                if (this.width !== computedWidth + "px") {
+                    this.width = computedWidth + "px";
+                    this._host._needRedraw = true;
+                }
             }
             if (this.adaptHeightToChildren && computedHeight >= 0) {
-                this.height = computedHeight + "px";
+                if (this.height !== computedHeight + "px") {
+                    this.height = computedHeight + "px";
+                    this._host._needRedraw = true;
+                }
             }
         }
         context.restore();
 
         if (this.onAfterDrawObservable.hasObservers()) {
             this.onAfterDrawObservable.notifyObservers(this);
+        }
+    }
+
+    /** @hidden */
+    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+        if (!this.children) {
+            return;
+        }
+
+        for (var index = 0; index < this.children.length; index++) {
+            var item = this.children[index];
+
+            if (!predicate || predicate(item)) {
+                results.push(item);
+            }
+
+            if (!directDescendantsOnly) {
+                item._getDescendants(results, false, predicate);
+            }
         }
     }
 

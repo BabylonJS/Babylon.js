@@ -2,6 +2,11 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Camera rig",
+      "playgroundId": "#ATL1CS#9",
+      "referenceImage": "cameraRig.png"
+    },
+    {
       "title": "XR camera container rotation",
       "playgroundId": "#JV98QW#5",
       "referenceImage": "xrCameraContainerRotation.png",
@@ -35,11 +40,6 @@
       "title": "Simulate pointer",
       "playgroundId": "#8MGKWK#78",
       "referenceImage": "simulatePointer.png"
-    },
-    {
-      "title": "Camera rig",
-      "playgroundId": "#ATL1CS#9",
-      "referenceImage": "cameraRig.png"
     },
     {
       "title": "Color Grading",

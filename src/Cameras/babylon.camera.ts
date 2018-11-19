@@ -155,7 +155,7 @@ module BABYLON {
 
         /**
          * Define wether the camera is intermediate.
-         * This is usefull to not present the output directly to the screen in case of rig without post process for instance
+         * This is useful to not present the output directly to the screen in case of rig without post process for instance
          */
         public isIntermediate = false;
 
@@ -180,7 +180,7 @@ module BABYLON {
 
         /**
          * Rig mode of the camera.
-         * This is usefull to create the camera with two "eyes" instead of one to create VR or stereoscopic scenes.
+         * This is useful to create the camera with two "eyes" instead of one to create VR or stereoscopic scenes.
          * This is normally controlled byt the camera themselves as internal use.
          */
         @serialize()
@@ -326,7 +326,7 @@ module BABYLON {
         }
 
         /**
-         * Gets a string representation of the camera usefull for debug purpose.
+         * Gets a string representation of the camera useful for debug purpose.
          * @param fullDetails Defines that a more verboe level of logging is required
          * @returns the string representation
          */
@@ -1071,6 +1071,7 @@ module BABYLON {
                 this._rigCameras[i].minZ = this.minZ;
                 this._rigCameras[i].maxZ = this.maxZ;
                 this._rigCameras[i].fov = this.fov;
+                this._rigCameras[i].upVector.copyFrom(this.upVector);
             }
 
             // only update viewport when ANAGLYPH

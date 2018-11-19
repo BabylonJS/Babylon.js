@@ -184,14 +184,14 @@ module BABYLON {
         private _blurBoxOffset = 1;
         /**
          * Gets the blur box offset: offset applied during the blur pass.
-         * Only usefull if useKernelBlur = false
+         * Only useful if useKernelBlur = false
          */
         public get blurBoxOffset(): number {
             return this._blurBoxOffset;
         }
         /**
          * Sets the blur box offset: offset applied during the blur pass.
-         * Only usefull if useKernelBlur = false
+         * Only useful if useKernelBlur = false
          */
         public set blurBoxOffset(value: number) {
             if (this._blurBoxOffset === value) {
@@ -226,14 +226,14 @@ module BABYLON {
         private _blurKernel = 1;
         /**
          * Gets the blur kernel: kernel size of the blur pass.
-         * Only usefull if useKernelBlur = true
+         * Only useful if useKernelBlur = true
          */
         public get blurKernel(): number {
             return this._blurKernel;
         }
         /**
          * Sets the blur kernel: kernel size of the blur pass.
-         * Only usefull if useKernelBlur = true
+         * Only useful if useKernelBlur = true
          */
         public set blurKernel(value: number) {
             if (this._blurKernel === value) {
@@ -247,14 +247,14 @@ module BABYLON {
         private _useKernelBlur = false;
         /**
          * Gets whether the blur pass is a kernel blur (if true) or box blur.
-         * Only usefull in filtered mode (useBlurExponentialShadowMap...)
+         * Only useful in filtered mode (useBlurExponentialShadowMap...)
          */
         public get useKernelBlur(): boolean {
             return this._useKernelBlur;
         }
         /**
          * Sets whether the blur pass is a kernel blur (if true) or box blur.
-         * Only usefull in filtered mode (useBlurExponentialShadowMap...)
+         * Only useful in filtered mode (useBlurExponentialShadowMap...)
          */
         public set useKernelBlur(value: boolean) {
             if (this._useKernelBlur === value) {
@@ -644,12 +644,12 @@ module BABYLON {
          * Creates a ShadowGenerator object.
          * A ShadowGenerator is the required tool to use the shadows.
          * Each light casting shadows needs to use its own ShadowGenerator.
-         * Documentation : http://doc.babylonjs.com/tutorials/shadows
+         * Documentation : https://doc.babylonjs.com/babylon101/shadows
          * @param mapSize The size of the texture what stores the shadows. Example : 1024.
          * @param light The light object generating the shadows.
-         * @param useFullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+         * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          */
-        constructor(mapSize: number, light: IShadowLight, useFullFloatFirst?: boolean) {
+        constructor(mapSize: number, light: IShadowLight, usefulFloatFirst?: boolean) {
             this._mapSize = mapSize;
             this._light = light;
             this._scene = light.getScene();
@@ -664,7 +664,7 @@ module BABYLON {
             // Texture type fallback from float to int if not supported.
             var caps = this._scene.getEngine().getCaps();
 
-            if (!useFullFloatFirst) {
+            if (!usefulFloatFirst) {
                 if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
                     this._textureType = Engine.TEXTURETYPE_HALF_FLOAT;
                 }
