@@ -23,16 +23,16 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         super(props);
         const mesh = this.props.mesh;
 
-        this.state = { displayNormals: false, renderNormalVectors: mesh.metadata && mesh.metadata.normalLines };
+        this.state = { displayNormals: false, renderNormalVectors: mesh.reservedDataStore && mesh.reservedDataStore.normalLines };
     }
 
     renderNormalVectors() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
 
-        if (mesh.metadata && mesh.metadata.normalLines) {
-            mesh.metadata.normalLines.dispose();
-            mesh.metadata.normalLines = null;
+        if (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) {
+            mesh.reservedDataStore.normalLines.dispose();
+            mesh.reservedDataStore.normalLines = null;
 
             this.setState({ renderNormalVectors: false });
             return;
@@ -55,11 +55,11 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         normalLines.color = color;
         normalLines.parent = mesh;
 
-        if (!mesh.metadata) {
-            mesh.metadata = {};
+        if (!mesh.reservedDataStore) {
+            mesh.reservedDataStore = {};
         }
 
-        mesh.metadata.normalLines = normalLines;
+        mesh.reservedDataStore.normalLines = normalLines;
 
         this.setState({ renderNormalVectors: true });
     }
@@ -74,8 +74,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         if (mesh.material.getClassName() === "NormalMaterial") {
             mesh.material.dispose();
 
-            mesh.material = mesh.metadata.originalMaterial;
-            mesh.metadata.originalMaterial = null;
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
             this.setState({ displayNormals: false });
         } else {
 
@@ -87,15 +87,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 return;
             }
 
-            if (!mesh.metadata) {
-                mesh.metadata = {};
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
             }
 
-            mesh.metadata.originalMaterial = mesh.material;
+            mesh.reservedDataStore.originalMaterial = mesh.material;
             const normalMaterial = new (BABYLON as any).NormalMaterial("normalMaterial", scene);
             normalMaterial.disableLighting = true;
             normalMaterial.sideOrientation = mesh.material.sideOrientation;
-            normalMaterial.metadata = { hidden: true };
+            normalMaterial.reservedDataStore = { hidden: true };
             mesh.material = normalMaterial;
             this.setState({ displayNormals: true });
         }
@@ -139,7 +139,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const scene = mesh.getScene();
 
         const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
-        const renderNormalVectors = (mesh.metadata && mesh.metadata.normalLines) ? true : false;
+        const renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
 
         return (
             <div className="pane">

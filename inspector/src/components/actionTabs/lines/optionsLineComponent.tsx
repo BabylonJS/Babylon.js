@@ -33,7 +33,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        if (newValue !== nextState.value) {
+        if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;
         }

@@ -21,18 +21,18 @@ export class DebugTabComponent extends PaneComponent {
             return;
         }
 
-        if (!scene.metadata) {
-            scene.metadata = {};
+        if (!scene.reservedDataStore) {
+            scene.reservedDataStore = {};
         }
 
         for (var mesh of scene.meshes) {
-            if (mesh.skeleton && mesh.metadata && mesh.metadata.skeletonViewer) {
-                this._skeletonViewers.push(mesh.metadata.skeletonViewer);
+            if (mesh.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
+                this._skeletonViewers.push(mesh.reservedDataStore.skeletonViewer);
             }
         }
 
         this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
-        this._physicsViewersEnabled = scene.metadata.physicsViewer != null;
+        this._physicsViewersEnabled = scene.reservedDataStore.physicsViewer != null;
     }
 
     componentWillUnmount() {
@@ -58,15 +58,15 @@ export class DebugTabComponent extends PaneComponent {
                     var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, true, 0);
                     viewer.isEnabled = true;
                     this._skeletonViewers.push(viewer);
-                    if (!mesh.metadata) {
-                        mesh.metadata = {};
+                    if (!mesh.reservedDataStore) {
+                        mesh.reservedDataStore = {};
                     }
-                    mesh.metadata.skeletonViewer = viewer;
+                    mesh.reservedDataStore.skeletonViewer = viewer;
                 }
             }
         } else {
             for (var index = 0; index < this._skeletonViewers.length; index++) {
-                this._skeletonViewers[index].mesh.metadata.skeletonViewer = null;
+                this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
                 this._skeletonViewers[index].dispose();
             }
             this._skeletonViewers = [];
@@ -80,21 +80,21 @@ export class DebugTabComponent extends PaneComponent {
 
         if (this._physicsViewersEnabled) {
             const physicsViewer = new PhysicsViewer(scene);
-            scene.metadata.physicsViewer = physicsViewer;
+            scene.reservedDataStore.physicsViewer = physicsViewer;
 
             for (var mesh of scene.meshes) {
                 if (mesh.physicsImpostor) {
                     let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor);
 
                     if (debugMesh) {
-                        debugMesh.metadata = { hidden: true };
-                        debugMesh.material!.metadata = { hidden: true };
+                        debugMesh.reservedDataStore = { hidden: true };
+                        debugMesh.material!.reservedDataStore = { hidden: true };
                     }
                 }
             }
         } else {
-            scene.metadata.physicsViewer.dispose();
-            scene.metadata.physicsViewer = null;
+            scene.reservedDataStore.physicsViewer.dispose();
+            scene.reservedDataStore.physicsViewer = null;
         }
     }
 

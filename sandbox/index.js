@@ -315,17 +315,19 @@ if (BABYLON.Engine.isSupported()) {
         if (event.keyCode === 32 && event.target.nodeName !== "INPUT") {
             if (footer.style.display === "none") {
                 footer.style.display = "block";
-                canvas.style.height = "calc(100% - 56px)";
+                canvasZone.style.height = "calc(100% - 56px)";
+                if (debugLayerEnabled) {
+                    currentScene.debugLayer.show();
+                }
                 engine.resize();
             }
             else {
                 footer.style.display = "none";
-                canvas.style.height = "100%";
+                canvasZone.style.height = "100%";
                 errorZone.style.display = "none";
                 engine.resize();
-                if (debugLayerEnabled) {
+                if (currentScene.debugLayer.isVisible()) {
                     currentScene.debugLayer.hide();
-                    debugLayerEnabled = false;
                 }
             }
         }
