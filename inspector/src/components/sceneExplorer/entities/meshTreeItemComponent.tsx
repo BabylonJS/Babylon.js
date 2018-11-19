@@ -47,7 +47,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
             // Connect to gizmo
             const dummy = BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(mesh as Mesh);
             dummy.reservedDataStore = { hidden: true };
-            const gizmo = new BoundingBoxGizmo(BABYLON.Color3.FromHexString("#0984e3"));
+            const gizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"));
             gizmo.attachedMesh = dummy;
 
             gizmo.updateBoundingBox();
