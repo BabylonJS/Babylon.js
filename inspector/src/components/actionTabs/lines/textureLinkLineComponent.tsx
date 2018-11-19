@@ -21,7 +21,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         const material = this.props.material;
         const texture = this.props.texture;
 
-        this.state = { isDebugSelected: material && material.metadata && material.metadata.debugTexture === texture };
+        this.state = { isDebugSelected: material && material.reservedDataStore && material.reservedDataStore.debugTexture === texture };
     }
 
     componentWillMount() {
@@ -50,8 +50,8 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         }
         const scene = material.getScene();
 
-        if (material.metadata && material.metadata.debugTexture === texture) {
-            const debugMaterial = material.metadata.debugMaterial;
+        if (material.reservedDataStore && material.reservedDataStore.debugTexture === texture) {
+            const debugMaterial = material.reservedDataStore.debugMaterial;
 
             for (var mesh of scene.meshes) {
                 if (mesh.material === debugMaterial) {
@@ -59,8 +59,8 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
                 }
             }
             debugMaterial.dispose();
-            material.metadata.debugTexture = null;
-            material.metadata.debugMaterial = null;
+            material.reservedDataStore.debugTexture = null;
+            material.reservedDataStore.debugMaterial = null;
 
             this.setState({ isDebugSelected: false });
             return;
@@ -68,8 +68,8 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
 
         let checkMaterial = material;
         let needToDisposeCheckMaterial = false;
-        if (material.metadata && material.metadata.debugTexture) {
-            checkMaterial = material.metadata.debugMaterial;
+        if (material.reservedDataStore && material.reservedDataStore.debugTexture) {
+            checkMaterial = material.reservedDataStore.debugMaterial;
             needToDisposeCheckMaterial = true;
         }
 
@@ -78,7 +78,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         debugMaterial.sideOrientation = material.sideOrientation;
         debugMaterial.emissiveTexture = texture!;
         debugMaterial.forceDepthWrite = true;
-        debugMaterial.metadata = { hidden: true };
+        debugMaterial.reservedDataStore = { hidden: true };
 
         for (var mesh of scene.meshes) {
             if (mesh.material === checkMaterial) {
@@ -86,12 +86,12 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             }
         }
 
-        if (!material.metadata) {
-            material.metadata = {};
+        if (!material.reservedDataStore) {
+            material.reservedDataStore = {};
         }
 
-        material.metadata.debugTexture = texture;
-        material.metadata.debugMaterial = debugMaterial;
+        material.reservedDataStore.debugTexture = texture;
+        material.reservedDataStore.debugMaterial = debugMaterial;
 
         if (this.props.onDebugSelectionChangeObservable) {
             this.props.onDebugSelectionChangeObservable.notifyObservers(texture!);

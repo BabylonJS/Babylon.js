@@ -11,6 +11,7 @@ import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp, Axis } from "Maths/
     export class TargetCamera extends Camera {
         private static _RigCamTransformMatrix = new Matrix();
         private static _TargetTransformMatrix = new Matrix();
+        private static _TargetFocalPoint = new Vector3();
 
         /**
          * Define the current direction the camera is moving to
@@ -57,6 +58,8 @@ import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp, Axis } from "Maths/
 
         /** @hidden */
         public _currentTarget = Vector3.Zero();
+        /** @hidden */
+        public _initialFocalDistance = 1;
         /** @hidden */
         public _viewMatrix = Matrix.Zero();
         /** @hidden */
@@ -216,6 +219,8 @@ import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp, Axis } from "Maths/
         /** @hidden */
         public setTarget(target: Vector3): void {
             this.upVector.normalize();
+
+            this._initialFocalDistance = target.subtract(this.position).length();
 
             if (this.position.z === target.z) {
                 this.position.z += Epsilon;
@@ -450,11 +455,8 @@ import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp, Axis } from "Maths/
                     //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
                     var leftSign = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? 1 : -1;
                     var rightSign = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? -1 : 1;
-                    this._getRigCamPosition(this._cameraRigParams.stereoHalfAngle * leftSign, camLeft.position);
-                    this._getRigCamPosition(this._cameraRigParams.stereoHalfAngle * rightSign, camRight.position);
-
-                    camLeft.setTarget(this.getTarget());
-                    camRight.setTarget(this.getTarget());
+                    this._getRigCamPositionAndTarget(this._cameraRigParams.stereoHalfAngle * leftSign, camLeft);
+                    this._getRigCamPositionAndTarget(this._cameraRigParams.stereoHalfAngle * rightSign, camRight);
                     break;
 
                 case Camera.RIG_MODE_VR:
@@ -473,15 +475,21 @@ import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp, Axis } from "Maths/
             super._updateRigCameras();
         }
 
-        private _getRigCamPosition(halfSpace: number, result: Vector3) {
+        private _getRigCamPositionAndTarget(halfSpace: number, rigCamera: TargetCamera) {
             var target = this.getTarget();
-            Matrix.TranslationToRef(-target.x, -target.y, -target.z, TargetCamera._TargetTransformMatrix);
+            target.subtractToRef(this.position, TargetCamera._TargetFocalPoint);
+
+            TargetCamera._TargetFocalPoint.normalize().scaleInPlace(this._initialFocalDistance);
+            var newFocalTarget = TargetCamera._TargetFocalPoint.addInPlace(this.position);
+
+            Matrix.TranslationToRef(-newFocalTarget.x, -newFocalTarget.y, -newFocalTarget.z, TargetCamera._TargetTransformMatrix);
             TargetCamera._TargetTransformMatrix.multiplyToRef(Matrix.RotationY(halfSpace), TargetCamera._RigCamTransformMatrix);
-            Matrix.TranslationToRef(target.x, target.y, target.z, TargetCamera._TargetTransformMatrix);
+            Matrix.TranslationToRef(newFocalTarget.x, newFocalTarget.y, newFocalTarget.z, TargetCamera._TargetTransformMatrix);
 
             TargetCamera._RigCamTransformMatrix.multiplyToRef(TargetCamera._TargetTransformMatrix, TargetCamera._RigCamTransformMatrix);
 
-            Vector3.TransformCoordinatesToRef(this.position, TargetCamera._RigCamTransformMatrix, result);
+            Vector3.TransformCoordinatesToRef(this.position, TargetCamera._RigCamTransformMatrix, rigCamera.position);
+            rigCamera.setTarget(newFocalTarget);
         }
 
         /**

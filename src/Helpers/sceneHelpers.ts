@@ -190,7 +190,7 @@ declare module "scene" {
             hdrSkybox.infiniteDistance = true;
             hdrSkybox.material = skyboxMaterial;
         }
-
+        hdrSkybox.isPickable = false;
         return hdrSkybox;
     };
 

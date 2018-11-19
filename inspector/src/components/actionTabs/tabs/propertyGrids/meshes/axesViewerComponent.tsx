@@ -11,23 +11,23 @@ export class AxesViewerComponent extends React.Component<IAxisViewerComponentPro
         super(props);
         const node = this.props.node;
 
-        if (!node.metadata) {
-            node.metadata = {};
+        if (!node.reservedDataStore) {
+            node.reservedDataStore = {};
         }
 
-        this.state = { displayAxis: (node.metadata && node.metadata.axisViewer) ? true : false };
+        this.state = { displayAxis: (node.reservedDataStore && node.reservedDataStore.axisViewer) ? true : false };
     }
 
     displayAxes() {
         const node = this.props.node;
         const scene = node.getScene();
 
-        if (node.metadata.axisViewer) {
-            node.metadata.axisViewer.dispose();
-            node.metadata.axisViewer = null;
+        if (node.reservedDataStore.axisViewer) {
+            node.reservedDataStore.axisViewer.dispose();
+            node.reservedDataStore.axisViewer = null;
 
-            scene.onBeforeRenderObservable.remove(node.metadata.onBeforeRenderObserver);
-            node.metadata.onBeforeRenderObserver = null;
+            scene.onBeforeRenderObservable.remove(node.reservedDataStore.onBeforeRenderObserver);
+            node.reservedDataStore.onBeforeRenderObserver = null;
 
             this.setState({ displayAxis: false });
 
@@ -35,16 +35,16 @@ export class AxesViewerComponent extends React.Component<IAxisViewerComponentPro
         }
 
         const viewer = new AxesViewer(scene);
-        node.metadata.axisViewer = viewer;
-        const x = new Vector3(1, 0, 0);
-        const y = new Vector3(0, 1, 0);
-        const z = new Vector3(0, 0, 1);
+        node.reservedDataStore.axisViewer = viewer;
+        const x = new BABYLON.Vector3(1, 0, 0);
+        const y = new BABYLON.Vector3(0, 1, 0);
+        const z = new BABYLON.Vector3(0, 0, 1);
 
-        viewer.xAxisMesh!.metadata = { hidden: true };
-        viewer.yAxisMesh!.metadata = { hidden: true };
-        viewer.zAxisMesh!.metadata = { hidden: true };
+        viewer.xAxisMesh!.reservedDataStore = { hidden: true };
+        viewer.yAxisMesh!.reservedDataStore = { hidden: true };
+        viewer.zAxisMesh!.reservedDataStore = { hidden: true };
 
-        node.metadata.onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+        node.reservedDataStore.onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
             let matrix = node.getWorldMatrix();
             let extend = Tmp.Vector3[0];
             const worldExtend = scene.getWorldExtends();

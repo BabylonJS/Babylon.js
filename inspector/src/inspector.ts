@@ -69,6 +69,7 @@ export class Inspector {
                 embedMode: options.embedMode,
                 handleResize: options.handleResize,
                 enablePopup: options.enablePopup,
+                enableClose: options.enablePopup,
                 explorerExtensibility: options.explorerExtensibility
             };
         }
@@ -98,6 +99,7 @@ export class Inspector {
             const sceneExplorerElement = React.createElement(SceneExplorerComponent, {
                 scene, globalState: this._GlobalState,
                 extensibilityGroups: options.explorerExtensibility,
+                noClose: !options.enableClose,
                 noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
 
@@ -152,7 +154,9 @@ export class Inspector {
         if (this._ActionTabsHost) {
             this._OpenedPane++;
             const actionTabsElement = React.createElement(ActionTabsComponent, {
-                globalState: this._GlobalState, scene: scene, noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
+                globalState: this._GlobalState, scene: scene,
+                noClose: !options.enableClose,
+                noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
 
                     this._RemoveElementFromDOM(this._ActionTabsHost);
@@ -205,7 +209,10 @@ export class Inspector {
         if (this._EmbedHost) {
             this._OpenedPane++;
             const embedHostElement = React.createElement(EmbedHostComponent, {
-                globalState: this._GlobalState, scene: scene, popupMode: options.popup, onPopup: () => {
+                globalState: this._GlobalState, scene: scene,
+                    noExpand: !options.enablePopup,
+                    noClose: !options.enableClose,
+                    popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._EmbedHost!);
 
                     if (options.popup) {
@@ -300,6 +307,7 @@ export class Inspector {
             showExplorer: true,
             showInspector: true,
             embedMode: false,
+            enableClose: true,
             handleResize: true,
             enablePopup: true,
             ...userOptions

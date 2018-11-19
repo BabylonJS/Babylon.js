@@ -5,9 +5,11 @@ import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface ITextInputLineComponentProps {
     label: string,
-    target: any,
     lockObject: LockObject,
-    propertyName: string,
+    target?: any,
+    propertyName?: string,
+    value?: string,
+    onChange?: (value: string) => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -17,7 +19,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     constructor(props: ITextInputLineComponentProps) {
         super(props);
 
-        this.state = { value: this.props.target[this.props.propertyName] || "" }
+        this.state = { value: this.props.value || this.props.target[this.props.propertyName!] || "" }
     }
 
     componentWillUnmount() {
@@ -30,7 +32,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             return true;
         }
 
-        const newValue = nextProps.target[nextProps.propertyName];
+        const newValue = nextProps.value || nextProps.target[nextProps.propertyName!];
         if (newValue !== nextState.value) {
             nextState.value = newValue || "";
             return true;
@@ -39,12 +41,18 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     raiseOnPropertyChanged(newValue: string, previousValue: string) {
+        if (this.props.onChange) {
+            this.props.onChange(newValue);
+            return;
+        }
+
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
+
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
-            property: this.props.propertyName,
+            property: this.props.propertyName!,
             value: newValue,
             initialValue: previousValue
         });
@@ -53,11 +61,14 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     updateValue(value: string) {
 
         this._localChange = true;
-        const store = this.props.target[this.props.propertyName];
+        const store = this.props.value || this.props.target[this.props.propertyName!];
         this.setState({ value: value });
 
         this.raiseOnPropertyChanged(value, store);
-        this.props.target[this.props.propertyName] = value;
+
+        if (this.props.propertyName) {
+            this.props.target[this.props.propertyName] = value;
+        }
     }
 
     render() {

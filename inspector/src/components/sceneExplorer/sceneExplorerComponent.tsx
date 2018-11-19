@@ -33,6 +33,7 @@ interface ISceneExplorerComponentProps {
     noCommands?: boolean;
     noHeader?: boolean;
     noExpand?: boolean;
+    noClose?: boolean;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     globalState: GlobalState;
     popupMode?: boolean;
@@ -126,7 +127,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 data.previousOne = item;
             }
 
-            if (item.getChildren && item.metadata && item.metadata.isExpanded) {
+            if (item.getChildren && item.reservedDataStore && item.reservedDataStore.isExpanded) {
                 if (this.findSiblings(item, item.getChildren(), target, goNext, data)) {
                     return true;
                 }
@@ -152,16 +153,16 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             goNext = true;
             search = true;
         } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) { // enter or right
-            var metadata = this.state.selectedEntity.metadata;
-            if (metadata && metadata.setExpandedState) {
-                metadata.setExpandedState(true);
+            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+            if (reservedDataStore && reservedDataStore.setExpandedState) {
+                reservedDataStore.setExpandedState(true);
             }
             keyEvent.preventDefault();
             return;
         } else if (keyEvent.keyCode === 37) { // left
-            var metadata = this.state.selectedEntity.metadata;
-            if (metadata && metadata.setExpandedState) {
-                metadata.setExpandedState(false);
+            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+            if (reservedDataStore && reservedDataStore.setExpandedState) {
+                reservedDataStore.setExpandedState(false);
             }
             keyEvent.preventDefault();
             return;
@@ -234,7 +235,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <div id="sceneExplorer">
                     {
                         !this.props.noHeader &&
-                        <HeaderComponent title="SCENE EXPLORER" noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
+                        <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
                     }
                     {this.renderContent()}
                 </div>
@@ -273,7 +274,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             <Resizable tabIndex={-1} id="sceneExplorer" ref="sceneExplorer" size={{ height: "100%" }} minWidth={300} maxWidth={600} minHeight="100%" enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
                 {
                     !this.props.noHeader &&
-                    <HeaderComponent title="SCENE EXPLORER" noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
+                    <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
                 }
                 {this.renderContent()}
             </Resizable>

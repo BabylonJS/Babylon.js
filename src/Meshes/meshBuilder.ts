@@ -975,10 +975,7 @@ Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, n
 
             if (options.sourcePlane) {
                 plane.translate(options.sourcePlane.normal, -options.sourcePlane.d);
-
-                const dot = Vector3.Dot(plane.position, options.sourcePlane.normal);
-                const flip = dot >= 0;
-                plane.lookAt(Vector3.Zero(), 0, flip ? Math.PI : 0, 0);
+                plane.setDirection(options.sourcePlane.normal);
             }
 
             return plane;

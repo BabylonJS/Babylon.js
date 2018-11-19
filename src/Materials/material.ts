@@ -178,6 +178,11 @@ declare var BABYLON: any;
         public metadata: any = null;
 
         /**
+         * For internal use only. Please do not use.
+         */
+        public reservedDataStore: any = null;
+
+        /**
          * Specifies if the ready state should be checked on each call
          */
         @serialize()

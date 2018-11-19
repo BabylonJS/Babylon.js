@@ -87,6 +87,11 @@ declare type AbstractMesh = import("Meshes/abstractMesh").AbstractMesh;
         public metadata: any = null;
 
         /**
+         * For internal use only. Please do not use.
+         */
+        public reservedDataStore: any = null;
+
+        /**
          * Gets or sets a boolean used to define if the node must be serialized
          */
         public doNotSerialize = false;
@@ -156,7 +161,7 @@ declare type AbstractMesh = import("Meshes/abstractMesh").AbstractMesh;
                     this._parentNode._children.splice(index, 1);
                 }
 
-                if (!parent) {
+                if (!parent && !this._isDisposed) {
                     this.addToSceneRootNodes();
                 }
             }
@@ -695,6 +700,8 @@ declare type AbstractMesh = import("Meshes/abstractMesh").AbstractMesh;
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
         public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+            this._isDisposed = true;
+
             if (!doNotRecurse) {
                 const nodes = this.getDescendants(true);
                 for (const node of nodes) {
@@ -718,7 +725,6 @@ declare type AbstractMesh = import("Meshes/abstractMesh").AbstractMesh;
             }
 
             this._behaviors = [];
-            this._isDisposed = true;
         }
 
         /**

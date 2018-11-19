@@ -34,6 +34,7 @@ import { WebXRSessionManager } from "./webXRSessionManager";
                 newCamera.minZ = 0;
                 newCamera.parent = this;
                 newCamera.rotationQuaternion = new Quaternion();
+                newCamera.updateUpVectorFromRotation = true;
                 this.rigCameras.push(newCamera);
             }
             while (this.rigCameras.length > viewCount) {
