@@ -11,6 +11,7 @@ module BABYLON.Debug {
         private _ymesh: Nullable<AbstractMesh>;
         private _zmesh: Nullable<AbstractMesh>;
         private _tmpVector = new BABYLON.Vector3();
+        private _scaleLinesFactor = 4;
         /**
          * Gets the hosting scene
          */
@@ -67,11 +68,11 @@ module BABYLON.Debug {
             this._zmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
 
             this._xmesh.rotationQuaternion = new BABYLON.Quaternion();
-            this._xmesh.scaling.scaleInPlace(scaleLines * 4);
+            this._xmesh.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
             this._ymesh.rotationQuaternion = new BABYLON.Quaternion();
-            this._ymesh.scaling.scaleInPlace(scaleLines * 4);
+            this._ymesh.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
             this._zmesh.rotationQuaternion = new BABYLON.Quaternion();
-            this._zmesh.scaling.scaleInPlace(scaleLines * 4);
+            this._zmesh.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
             AxesViewer._recursiveChangeRenderingGroupId(this._xmesh, 2);
             AxesViewer._recursiveChangeRenderingGroupId(this._ymesh, 2);
@@ -93,16 +94,19 @@ module BABYLON.Debug {
                 this._xmesh.position.copyFrom(position);
                 xaxis.scaleToRef(-1, this._tmpVector);
                 this._xmesh.setDirection(this._tmpVector);
+                this._xmesh.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
             }
             if (this._ymesh) {
                 this._ymesh.position.copyFrom(position);
                 yaxis.scaleToRef(-1, this._tmpVector);
                 this._ymesh.setDirection(this._tmpVector);
+                this._ymesh.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
             }
             if (this._zmesh) {
                 this._zmesh.position.copyFrom(position);
                 zaxis.scaleToRef(-1, this._tmpVector);
                 this._zmesh.setDirection(this._tmpVector);
+                this._zmesh.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
             }
 
         }
