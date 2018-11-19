@@ -411,7 +411,6 @@ module BABYLON {
                 this.object.rotationQuaternion = q;
                 //calculate the world matrix with the new rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-                console.log(size)
                 return size;
             } else {
                 return PhysicsImpostor.DEFAULT_OBJECT_SIZE;

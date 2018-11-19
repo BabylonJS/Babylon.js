@@ -18,6 +18,7 @@ module BABYLON {
         private _solver:any;
         private _tmpAmmoVectorA:any;
         private _tmpAmmoVectorB:any;
+        private _tmpAmmoVectorC:any;
 
         public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
             if(typeof Ammo === "function"){
@@ -41,6 +42,7 @@ module BABYLON {
             this._tmpAmmoQuaternion = new this.BJSAMMO.btQuaternion(0,0,0,1);
             this._tmpAmmoVectorA = new this.BJSAMMO.btVector3(0,0,0);
             this._tmpAmmoVectorB = new this.BJSAMMO.btVector3(0,0,0);
+            this._tmpAmmoVectorC = new this.BJSAMMO.btVector3(0,0,0);
         }
 
         public setGravity(gravity: Vector3): void {
@@ -198,6 +200,48 @@ module BABYLON {
         public removeJoint(impostorJoint: PhysicsImpostorJoint) {
         }      
 
+        private _addMeshVerts(btTriangleMesh:any, topLevelObject:IPhysicsEnabledObject, object:IPhysicsEnabledObject){
+            var triangleCount = 0;
+            if(object && object.getIndices && object.getWorldMatrix && object.getChildMeshes){
+                var indices = object.getIndices()
+                if(!indices){
+                    indices = [];
+                }
+                var vertexPositions = object.getVerticesData(BABYLON.VertexBuffer.PositionKind)
+                if(!vertexPositions){
+                    vertexPositions = [];
+                }
+                object.computeWorldMatrix(false);
+                var faceCount = indices.length/3;
+                for(var i =0;i<faceCount;i++){
+                    var triPoints = [];
+                    for(var point = 0;point<3;point++){
+                        var v = new BABYLON.Vector3(vertexPositions[(indices[(i*3)+point]*3)+0],vertexPositions[(indices[(i*3)+point]*3)+1],vertexPositions[(indices[(i*3)+point]*3)+2])
+                        v = Vector3.TransformCoordinates(v, object.getWorldMatrix())
+                        v.subtractInPlace(topLevelObject.position);
+                        var vec:any
+                        if(point == 0){
+                            vec = this._tmpAmmoVectorA;
+                        }else if(point == 1){
+                            vec = this._tmpAmmoVectorB;
+                        }else{
+                            vec = this._tmpAmmoVectorC;
+                        }
+                        vec.setValue(v.x, v.y, v.z)
+                        
+                        triPoints.push(vec);
+                    }
+                    btTriangleMesh.addTriangle(triPoints[0], triPoints[1], triPoints[2]);
+                    triangleCount++;
+                }
+
+                object.getChildMeshes().forEach((m)=>{
+                    triangleCount+=this._addMeshVerts(btTriangleMesh, topLevelObject, m);
+                });
+            }
+            return triangleCount;
+        }
+
         private _createShape(impostor: PhysicsImpostor, ignoreChildren=false) {
             var object = impostor.object;
 
@@ -242,44 +286,21 @@ module BABYLON {
                     returnValue = new Ammo.btSphereShape(extendSize.x/2);
                     break;
                 case PhysicsImpostor.CylinderImpostor:
-                    returnValue = new Ammo.btCylinderShape(new Ammo.btVector3(extendSize.x/2,extendSize.y/2,extendSize.z/2));
+                this._tmpAmmoVectorA.setValue(extendSize.x/2,extendSize.y/2,extendSize.z/2)
+                    returnValue = new Ammo.btCylinderShape(this._tmpAmmoVectorA);
                     break;
                 case PhysicsImpostor.PlaneImpostor:
                 case PhysicsImpostor.BoxImpostor:
-                    returnValue = new Ammo.btBoxShape(new Ammo.btVector3(extendSize.x/2,extendSize.y/2,extendSize.z/2));
+                    this._tmpAmmoVectorA.setValue(extendSize.x/2,extendSize.y/2,extendSize.z/2)
+                    returnValue = new Ammo.btBoxShape(this._tmpAmmoVectorA);
                     break;
                 case PhysicsImpostor.MeshImpostor:
-                    var tetraMesh = new Ammo.btTriangleMesh();
-                    // Create mesh impostor from triangles which makeup the mesh
-                    var triangleCreated = false;
-                    if(object && object.getIndices && object.getWorldMatrix){
-                        var ind = object.getIndices()
-                        if(!ind){
-                            ind = [];
-                        }
-
-                        var p = object.getVerticesData(BABYLON.VertexBuffer.PositionKind)
-                        if(!p){
-                            p = [];
-                        }
-                        object.computeWorldMatrix(false);
-                        var faceCount = ind.length/3;
-                        for(var i =0;i<faceCount;i++){
-                            var triPoints = [];
-                            for(var point = 0;point<3;point++){
-                                
-                                triPoints.push(new Ammo.btVector3(
-                                    object.scaling.x*p[(ind[(i*3)+point]*3)+0],
-                                    object.scaling.y*p[(ind[(i*3)+point]*3)+1],
-                                    object.scaling.z*p[(ind[(i*3)+point]*3)+2]
-                                ));
-                            }
-                            triangleCreated = true;
-                            tetraMesh.addTriangle(triPoints[0], triPoints[1], triPoints[2]);
-                        }
-                    }
                     
-                    if(!triangleCreated){
+                    var tetraMesh = new Ammo.btTriangleMesh();
+
+                    var triangeCount = this._addMeshVerts(tetraMesh, object, object);
+                    
+                    if(triangeCount == 0){
                         returnValue = new Ammo.btCompoundShape();
                     }else{
                         returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
@@ -423,7 +444,7 @@ module BABYLON {
 
         public getRadius(impostor: PhysicsImpostor): number {
             var exntend = impostor.getObjectExtendSize();
-            return exntend.x;
+            return exntend.x/2;
         }
 
         public getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
@@ -444,6 +465,7 @@ module BABYLON {
             // Dispose of tmp variables
             Ammo.destroy(this._tmpAmmoVectorA);
             Ammo.destroy(this._tmpAmmoVectorB);
+            Ammo.destroy(this._tmpAmmoVectorC);
             Ammo.destroy(this._tmpAmmoTransform);
             Ammo.destroy(this._tmpAmmoQuaternion);
             Ammo.destroy(this._tmpAmmoConcreteContactResultCallback);
