@@ -10,7 +10,7 @@ module BABYLON.Debug {
         private _xmesh: Nullable<AbstractMesh>;
         private _ymesh: Nullable<AbstractMesh>;
         private _zmesh: Nullable<AbstractMesh>;
-
+        private _tmpVector = new BABYLON.Vector3();
         /**
          * Gets the hosting scene
          */
@@ -67,11 +67,11 @@ module BABYLON.Debug {
             this._zmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
 
             this._xmesh.rotationQuaternion = new BABYLON.Quaternion();
-            this._xmesh.scaling.scaleInPlace(4);
+            this._xmesh.scaling.scaleInPlace(scaleLines * 4);
             this._ymesh.rotationQuaternion = new BABYLON.Quaternion();
-            this._ymesh.scaling.scaleInPlace(4);
+            this._ymesh.scaling.scaleInPlace(scaleLines * 4);
             this._zmesh.rotationQuaternion = new BABYLON.Quaternion();
-            this._zmesh.scaling.scaleInPlace(4);
+            this._zmesh.scaling.scaleInPlace(scaleLines * 4);
 
             AxesViewer._recursiveChangeRenderingGroupId(this._xmesh, 2);
             AxesViewer._recursiveChangeRenderingGroupId(this._ymesh, 2);
@@ -91,24 +91,18 @@ module BABYLON.Debug {
         public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
             if (this._xmesh) {
                 this._xmesh.position.copyFrom(position);
-
-                var cross = Vector3.Cross(Vector3.Forward(), xaxis);
-                this._xmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1 + Vector3.Dot(Vector3.Forward(), xaxis));
-                this._xmesh.rotationQuaternion!.normalize();
+                xaxis.scaleToRef(-1, this._tmpVector);
+                this._xmesh.setDirection(this._tmpVector);
             }
             if (this._ymesh) {
                 this._ymesh.position.copyFrom(position);
-
-                var cross = Vector3.Cross(Vector3.Forward(), yaxis);
-                this._ymesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1 + Vector3.Dot(Vector3.Forward(), yaxis));
-                this._ymesh.rotationQuaternion!.normalize();
+                yaxis.scaleToRef(-1, this._tmpVector);
+                this._ymesh.setDirection(this._tmpVector);
             }
             if (this._zmesh) {
                 this._zmesh.position.copyFrom(position);
-
-                var cross = Vector3.Cross(Vector3.Forward(), zaxis);
-                this._zmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1 + Vector3.Dot(Vector3.Forward(), zaxis));
-                this._zmesh.rotationQuaternion!.normalize();
+                zaxis.scaleToRef(-1, this._tmpVector);
+                this._zmesh.setDirection(this._tmpVector);
             }
 
         }
