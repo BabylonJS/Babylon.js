@@ -36,9 +36,9 @@ export class AxesViewerComponent extends React.Component<IAxisViewerComponentPro
 
         const viewer = new AxesViewer(scene);
         node.reservedDataStore.axisViewer = viewer;
-        const x = new BABYLON.Vector3(1, 0, 0);
-        const y = new BABYLON.Vector3(0, 1, 0);
-        const z = new BABYLON.Vector3(0, 0, 1);
+        const x = new Vector3(1, 0, 0);
+        const y = new Vector3(0, 1, 0);
+        const z = new Vector3(0, 0, 1);
 
         viewer.xAxisMesh!.reservedDataStore = { hidden: true };
         viewer.yAxisMesh!.reservedDataStore = { hidden: true };
