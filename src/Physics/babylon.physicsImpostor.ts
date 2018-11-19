@@ -149,6 +149,9 @@ module BABYLON {
          */
         public static IDENTITY_QUATERNION = Quaternion.Identity();
 
+        /** @hidden */
+        public _pluginData:any;
+
         private _physicsEngine: Nullable<IPhysicsEngine>;
         //The native cannon/oimo/energy physics body object.
         private _physicsBody: any;
