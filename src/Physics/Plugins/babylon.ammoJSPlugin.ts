@@ -121,6 +121,8 @@ module BABYLON {
         }
 
         public generatePhysicsBody(impostor: PhysicsImpostor) {
+            impostor._pluginData = {toDispose: []}
+
             //parent-child relationship
             if (impostor.parent) {
                 if (impostor.physicsBody) {
@@ -140,20 +142,28 @@ module BABYLON {
                 if (isDynamic) {
                     colShape.calculateLocalInertia(mass, localInertia);
                 }
-                startTransform.setOrigin(new Ammo.btVector3(impostor.object.position.x, impostor.object.position.y, impostor.object.position.z));
-                startTransform.setRotation(new Ammo.btQuaternion(impostor.object.rotationQuaternion!.x, impostor.object.rotationQuaternion!.y, impostor.object.rotationQuaternion!.z, impostor.object.rotationQuaternion!.w));
+                this._tmpAmmoVectorA.setValue(impostor.object.position.x, impostor.object.position.y, impostor.object.position.z)
+                this._tmpAmmoQuaternion.setValue(impostor.object.rotationQuaternion!.x, impostor.object.rotationQuaternion!.y, impostor.object.rotationQuaternion!.z, impostor.object.rotationQuaternion!.w)
+                startTransform.setOrigin(this._tmpAmmoVectorA);
+                startTransform.setRotation(this._tmpAmmoQuaternion);
                 var myMotionState = new Ammo.btDefaultMotionState(startTransform);
                 var rbInfo        = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, colShape, localInertia);
                 var body          = new Ammo.btRigidBody(rbInfo);
                 body.setRestitution(impostor.getParam("restitution"));
                 this.world.addRigidBody(body);
                 impostor.physicsBody = body;
+                
+                impostor._pluginData.toDispose.concat([body, rbInfo, myMotionState, startTransform, localInertia, colShape])
             }
         }
 
         public removePhysicsBody(impostor: PhysicsImpostor) {
             if (this.world) {
                 this.world.removeRigidBody(impostor.physicsBody);
+
+                impostor._pluginData.toDispose.forEach((d:any)=>{
+                    this.BJSAMMO.destroy(d);
+                })
             }
         }
 
@@ -297,6 +307,7 @@ module BABYLON {
                 case PhysicsImpostor.MeshImpostor:
 
                     var tetraMesh = new Ammo.btTriangleMesh();
+                    impostor._pluginData.toDispose.concat([tetraMesh]);
 
                     var triangeCount = this._addMeshVerts(tetraMesh, object, object);
 
