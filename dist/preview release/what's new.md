@@ -70,6 +70,7 @@
 - Added support for overriding the mesh used for the world matrix for a mesh with a skeleton ([bghgary](https://github.com/bghgary))
 - Added support for linking a bone to a transform node ([bghgary](https://github.com/bghgary))
 - Factored out `setDirection` function from `lookAt` for transform node ([bghgary](https://github.com/bghgary))
+- Added support for AmmoJS physics plugin ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 

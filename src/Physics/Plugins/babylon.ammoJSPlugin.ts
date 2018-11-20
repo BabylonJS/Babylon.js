@@ -33,6 +33,7 @@ module BABYLON {
                 return;
             }
 
+            // Initialize the physics world
             this._collisionConfiguration  = new this.BJSAMMO.btDefaultCollisionConfiguration();
             this._dispatcher              = new this.BJSAMMO.btCollisionDispatcher(this._collisionConfiguration);
             this._overlappingPairCache    = new this.BJSAMMO.btDbvtBroadphase();
@@ -40,6 +41,7 @@ module BABYLON {
             this.world           = new this.BJSAMMO.btDiscreteDynamicsWorld(this._dispatcher, this._overlappingPairCache, this._solver, this._collisionConfiguration);
             this._tmpAmmoConcreteContactResultCallback = new this.BJSAMMO.ConcreteContactResultCallback();
 
+            // Create temp ammo variables
             this._tmpAmmoTransform = new this.BJSAMMO.btTransform();
             this._tmpAmmoTransform.setIdentity();
             this._tmpAmmoQuaternion = new this.BJSAMMO.btQuaternion(0, 0, 0, 1);
@@ -62,7 +64,7 @@ module BABYLON {
         }
 
         // Ammo's contactTest and contactPairTest take a callback that runs synchronously, wrap them so that they are easier to consume
-        private _contactTest(impostor: PhysicsImpostor) {
+        private _isImpostorInContact(impostor: PhysicsImpostor) {
             var result = false;
             this._tmpAmmoConcreteContactResultCallback.addSingleResult = function() { result = true; };
             this.world.contactTest(impostor.physicsBody, this._tmpAmmoConcreteContactResultCallback);
@@ -71,7 +73,7 @@ module BABYLON {
         // Ammo's collision events have some weird quirks
         // contactPairTest fires too many events as it fires events even when objects are close together but contactTest does not
         // so only fire event if both contactTest and contactPairTest have a hit
-        private _contactPairTest(impostorA: PhysicsImpostor, impostorB: PhysicsImpostor) {
+        private _isImpostorPairInContact(impostorA: PhysicsImpostor, impostorB: PhysicsImpostor) {
             var result = false;
             this._tmpAmmoConcreteContactResultCallback.addSingleResult = function() { result = true; };
             this.world.contactPairTest(impostorA.physicsBody, impostorB.physicsBody, this._tmpAmmoConcreteContactResultCallback);
@@ -80,20 +82,23 @@ module BABYLON {
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
             impostors.forEach(function(impostor) {
+                // Update physics world objects to match babylon world
                 impostor.beforeStep();
             });
+
             this.world.stepSimulation(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
 
             impostors.forEach((mainImpostor) => {
+                // After physics update make babylon world objects match physics world objects
                 mainImpostor.afterStep();
 
-                // Handle collision
+                // Handle collision event
                 if (mainImpostor._onPhysicsCollideCallbacks.length > 0) {
-                    if (this._contactTest(mainImpostor)) {
+                    if (this._isImpostorInContact(mainImpostor)) {
                         mainImpostor._onPhysicsCollideCallbacks.forEach((c) => {
                             c.otherImpostors.forEach((otherImpostor) => {
                                 if (mainImpostor.physicsBody.isActive() || otherImpostor.physicsBody.isActive()) {
-                                    if (this._contactPairTest(mainImpostor, otherImpostor)) {
+                                    if (this._isImpostorPairInContact(mainImpostor, otherImpostor)) {
                                         mainImpostor.onCollide({ body: otherImpostor.physicsBody });
                                         otherImpostor.onCollide({ body: mainImpostor.physicsBody });
                                     }
@@ -124,7 +129,7 @@ module BABYLON {
         }
 
         public generatePhysicsBody(impostor: PhysicsImpostor) {
-            impostor._pluginData = {toDispose: []}
+            impostor._pluginData = {toDispose: []};
 
             //parent-child relationship
             if (impostor.parent) {
@@ -145,16 +150,16 @@ module BABYLON {
                 if (mass !== 0) {
                     colShape.calculateLocalInertia(mass, localInertia);
                 }
-                this._tmpAmmoVectorA.setValue(impostor.object.position.x, impostor.object.position.y, impostor.object.position.z)
-                this._tmpAmmoQuaternion.setValue(impostor.object.rotationQuaternion!.x, impostor.object.rotationQuaternion!.y, impostor.object.rotationQuaternion!.z, impostor.object.rotationQuaternion!.w)
+                this._tmpAmmoVectorA.setValue(impostor.object.position.x, impostor.object.position.y, impostor.object.position.z);
+                this._tmpAmmoQuaternion.setValue(impostor.object.rotationQuaternion!.x, impostor.object.rotationQuaternion!.y, impostor.object.rotationQuaternion!.z, impostor.object.rotationQuaternion!.w);
                 startTransform.setOrigin(this._tmpAmmoVectorA);
                 startTransform.setRotation(this._tmpAmmoQuaternion);
                 var myMotionState = new Ammo.btDefaultMotionState(startTransform);
                 var rbInfo        = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, colShape, localInertia);
                 var body          = new Ammo.btRigidBody(rbInfo);
 
-                // Make objects kinematic
-                if(mass === 0){
+                // Make objects kinematic if it's mass is 0
+                if (mass === 0) {
                     body.setCollisionFlags(body.getCollisionFlags() | AmmoJSPlugin.KINEMATIC_FLAG);
                     body.setActivationState(AmmoJSPlugin.DISABLE_DEACTIVATION_FLAG);
                 }
@@ -162,8 +167,8 @@ module BABYLON {
                 body.setRestitution(impostor.getParam("restitution"));
                 this.world.addRigidBody(body);
                 impostor.physicsBody = body;
-                
-                impostor._pluginData.toDispose.concat([body, rbInfo, myMotionState, startTransform, localInertia, colShape])
+
+                impostor._pluginData.toDispose.concat([body, rbInfo, myMotionState, startTransform, localInertia, colShape]);
             }
         }
 
@@ -171,9 +176,9 @@ module BABYLON {
             if (this.world) {
                 this.world.removeRigidBody(impostor.physicsBody);
 
-                impostor._pluginData.toDispose.forEach((d:any)=>{
+                impostor._pluginData.toDispose.forEach((d: any) => {
                     this.BJSAMMO.destroy(d);
-                })
+                });
             }
         }
 
@@ -197,29 +202,20 @@ module BABYLON {
                 case PhysicsJoint.BallAndSocketJoint:
                     joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
                     break;
-                // case PhysicsJoint.SpringJoint:
-                //     break;
-                // case PhysicsJoint.DistanceJoint:
-                //     break;
-                // case PhysicsJoint.PrismaticJoint:
-                //     break;
-                // case PhysicsJoint.SliderJoint:
-                //     break;
-                // case PhysicsJoint.WheelJoint:
-                //     break;
-                // case PhysicsJoint.HingeJoint:
-                //     joint = new Ammo.btHingeConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
-                //     break;
                 default:
+                    Tools.Warn("JointType not currently supported by the Ammo plugin, falling back to PhysicsJoint.BallAndSocketJoint");
                     joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
                     break;
             }
             this.world.addConstraint(joint, true);
+            impostorJoint.joint.physicsJoint = joint;
         }
 
         public removeJoint(impostorJoint: PhysicsImpostorJoint) {
+            this.world.removeConstraint(impostorJoint.joint.physicsJoint);
         }
 
+        // adds all verticies (including child verticies) to the triangle mesh
         private _addMeshVerts(btTriangleMesh: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject) {
             var triangleCount = 0;
             if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
@@ -315,18 +311,14 @@ module BABYLON {
                     returnValue = new Ammo.btBoxShape(this._tmpAmmoVectorA);
                     break;
                 case PhysicsImpostor.MeshImpostor:
-
                     var tetraMesh = new Ammo.btTriangleMesh();
                     impostor._pluginData.toDispose.concat([tetraMesh]);
-
                     var triangeCount = this._addMeshVerts(tetraMesh, object, object);
-
                     if (triangeCount == 0) {
                         returnValue = new Ammo.btCompoundShape();
                     }else {
                         returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
                     }
-
                     break;
             }
 
@@ -334,7 +326,6 @@ module BABYLON {
         }
 
         public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
-
             impostor.physicsBody.getMotionState().getWorldTransform(this._tmpAmmoTransform);
             impostor.object.position.set(this._tmpAmmoTransform.getOrigin().x(), this._tmpAmmoTransform.getOrigin().y(), this._tmpAmmoTransform.getOrigin().z());
 
@@ -349,7 +340,6 @@ module BABYLON {
         }
 
         public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
-
             var trans = impostor.physicsBody.getWorldTransform();
 
             // If rotation/position has changed update and activate riged body
@@ -362,20 +352,20 @@ module BABYLON {
                 trans.getRotation().z() != newRotation.z ||
                 trans.getRotation().w() != newRotation.w
             ) {
-                this._tmpAmmoVectorA.setValue(newPosition.x,newPosition.y,newPosition.z)
-                trans.setOrigin(this._tmpAmmoVectorA)
+                this._tmpAmmoVectorA.setValue(newPosition.x, newPosition.y, newPosition.z);
+                trans.setOrigin(this._tmpAmmoVectorA);
 
                 this._tmpAmmoQuaternion.setValue(newRotation.x, newRotation.y, newRotation.z, newRotation.w);
                 trans.setRotation(this._tmpAmmoQuaternion);
                 impostor.physicsBody.setWorldTransform(trans);
 
-                if(impostor.mass == 0){
+                if (impostor.mass == 0) {
                     // Kinematic objects must be updated using motion state
-                    var motionState = impostor.physicsBody.getMotionState()
-                    if(motionState){
-                        motionState.setWorldTransform(trans)
+                    var motionState = impostor.physicsBody.getMotionState();
+                    if (motionState) {
+                        motionState.setWorldTransform(trans);
                     }
-                }else{
+                }else {
                     impostor.physicsBody.activate();
                 }
             }
