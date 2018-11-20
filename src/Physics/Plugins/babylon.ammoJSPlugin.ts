@@ -20,6 +20,9 @@ module BABYLON {
         private _tmpAmmoVectorB: any;
         private _tmpAmmoVectorC: any;
 
+        private static KINEMATIC_FLAG = 2;
+        private static DISABLE_DEACTIVATION_FLAG = 4;
+
         public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
             if (typeof Ammo === "function") {
                 Ammo();
@@ -135,11 +138,11 @@ module BABYLON {
             if (impostor.isBodyInitRequired()) {
                 var colShape = this._createShape(impostor);
                 var mass          = impostor.getParam("mass");
-                var isDynamic     = (mass !== 0);
+                impostor._pluginData.mass = mass;
                 var localInertia  = new Ammo.btVector3(0, 0, 0);
                 var startTransform  = new Ammo.btTransform();
                 startTransform.setIdentity();
-                if (isDynamic) {
+                if (mass !== 0) {
                     colShape.calculateLocalInertia(mass, localInertia);
                 }
                 this._tmpAmmoVectorA.setValue(impostor.object.position.x, impostor.object.position.y, impostor.object.position.z)
@@ -149,6 +152,13 @@ module BABYLON {
                 var myMotionState = new Ammo.btDefaultMotionState(startTransform);
                 var rbInfo        = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, colShape, localInertia);
                 var body          = new Ammo.btRigidBody(rbInfo);
+
+                // Make objects kinematic
+                if(mass === 0){
+                    body.setCollisionFlags(body.getCollisionFlags() | AmmoJSPlugin.KINEMATIC_FLAG);
+                    body.setActivationState(AmmoJSPlugin.DISABLE_DEACTIVATION_FLAG);
+                }
+
                 body.setRestitution(impostor.getParam("restitution"));
                 this.world.addRigidBody(body);
                 impostor.physicsBody = body;
@@ -352,14 +362,22 @@ module BABYLON {
                 trans.getRotation().z() != newRotation.z ||
                 trans.getRotation().w() != newRotation.w
             ) {
-                trans.getOrigin().setX(newPosition.x);
-                trans.getOrigin().setY(newPosition.y);
-                trans.getOrigin().setZ(newPosition.z);
+                this._tmpAmmoVectorA.setValue(newPosition.x,newPosition.y,newPosition.z)
+                trans.setOrigin(this._tmpAmmoVectorA)
 
                 this._tmpAmmoQuaternion.setValue(newRotation.x, newRotation.y, newRotation.z, newRotation.w);
                 trans.setRotation(this._tmpAmmoQuaternion);
                 impostor.physicsBody.setWorldTransform(trans);
-                impostor.physicsBody.activate();
+
+                if(impostor.mass == 0){
+                    // Kinematic objects must be updated using motion state
+                    var motionState = impostor.physicsBody.getMotionState()
+                    if(motionState){
+                        motionState.setWorldTransform(trans)
+                    }
+                }else{
+                    impostor.physicsBody.activate();
+                }
             }
         }
 
@@ -394,10 +412,11 @@ module BABYLON {
 
         public setBodyMass(impostor: PhysicsImpostor, mass: number) {
             impostor.physicsBody.setMassProps(mass);
+            impostor._pluginData.mass = mass;
         }
 
         public getBodyMass(impostor: PhysicsImpostor): number {
-            return impostor.physicsBody.mass;
+            return impostor._pluginData.mass;
         }
 
         public getBodyFriction(impostor: PhysicsImpostor): number {
