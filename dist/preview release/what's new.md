@@ -116,6 +116,7 @@
 - Added a `DeepImmutable<T>` type to specifiy that a referenced object should be considered recursively immutable, meaning that all its properties are `readonly` and that if a property is a reference to an object, this object is also recursively immutable. ([barroij](https://github.com/barroij))
 - Fixed `VideoTexture` poster property when autoplay is turned off.
 - Fixed position and rotation of plane mesh created by MeshBuilder.CreatePlane when specifying a source plane ([sable](https://github.com/thscott), [bghgary](https://github.com/bghgary))
+- Fixed inspector dynamic loading ([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 
