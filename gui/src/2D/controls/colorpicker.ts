@@ -479,11 +479,13 @@ export class ColorPicker extends Control {
             var containerSize: string = (parseInt(options.pickerHeight) + drawerMaxSize).toString() + "px";  
 
             // Button Colors
+            var buttonColor: string = "#c0c0c0";
             var buttonBackgroundColor: string = "#535353";
             var buttonBackgroundHoverColor: string = "#414141";
             var buttonBackgroundClickColor: string = "515151";
             var buttonDisabledColor: string = "#555555";
             var buttonDisabledBackgroundColor: string = "#454545";
+            var currentSwatchesOutlineColor: string = "#404040";
             var luminanceLimitColor: Color3 = Color3.FromHexString("#dddddd");
             var luminanceLimit: number = luminanceLimitColor.r + luminanceLimitColor.g + luminanceLimitColor.b;
             var iconColorDark: string = "#aaaaaa";
@@ -493,9 +495,7 @@ export class ColorPicker extends Control {
             var buttonFontSize = 16;
             var butEdit: Button;
 
-            // Stroke Colors
-            var darkStrokeColor: string = "#404040";
-            var lightStrokeColor: string = "#c0c0c0";
+            // Input Text Colors
             var inputFieldLabels: string[] = ["R", "G", "B"];
             var inputTextBackgroundColor: string = "#454545";
             var inputTextColor: string = "#f0f0f0";
@@ -560,7 +560,7 @@ export class ColorPicker extends Control {
                     hexVal.text = minusPound[1];
                 }
                 if (picker.name != activeField) {
-               //     picker.value = value;
+                   picker.value = value;
                 }
             }
 
@@ -633,19 +633,23 @@ export class ColorPicker extends Control {
                 if (newValue != "" && newValue != "." && parseFloat(newValue) != 0) {
                     newValue = parseFloat(newValue).toString();
                     field.text = newValue;
-                    var newSwatchRGB = BABYLON.Color3.FromHexString(newSwatch.background);
-                    if (activeField == field.name) {
-                        if (channel == "r") {
-                            UpdateValues(new BABYLON.Color3(parseFloat(newValue), newSwatchRGB.g, newSwatchRGB.b), field.name);
-                        }
-                        else if (channel == "g") {
-                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, parseFloat(newValue), newSwatchRGB.b), field.name);
-                        }
-                        else {
-                            UpdateValues(new BABYLON.Color3(newSwatchRGB.r, newSwatchRGB.g, parseFloat(newValue)), field.name);
-                        }
+                }          
+                else {
+                    newValue = "0.0";
+                }          
+                var newSwatchRGB = BABYLON.Color3.FromHexString(newSwatch.background);
+                if (activeField == field.name) {
+                    if (channel == "r") {
+                        UpdateValues(new BABYLON.Color3(parseFloat(newValue), newSwatchRGB.g, newSwatchRGB.b), field.name);
+                    }
+                    else if (channel == "g") {
+                        UpdateValues(new BABYLON.Color3(newSwatchRGB.r, parseFloat(newValue), newSwatchRGB.b), field.name);
+                    }
+                    else {
+                        UpdateValues(new BABYLON.Color3(newSwatchRGB.r, newSwatchRGB.g, parseFloat(newValue)), field.name);
                     }
                 }
+
             }
 
             // Removes the current index from the savedColors array. Drawer can then be regenerated.
@@ -784,7 +788,10 @@ export class ColorPicker extends Control {
                         }
                     }
                     if (options.savedColors.length >= options.swatchLimit!) {
-                        DisableButton(button);
+                        DisableButton(button, true);
+                    }
+                    else {
+                        DisableButton(button, false);
                     }
                 }
             }
@@ -800,7 +807,7 @@ export class ColorPicker extends Control {
                     butEdit.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
                     butEdit.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
                     butEdit.thickness = 2;
-                    butEdit.color = lightStrokeColor;
+                    butEdit.color = buttonColor;
                     butEdit.fontSize = buttonFontSize;
                     butEdit.background = buttonBackgroundColor;
                     butEdit.onPointerEnterObservable.add(() => {
@@ -832,9 +839,15 @@ export class ColorPicker extends Control {
             }
 
             // Called when the user hits the limit of saved colors in the drawer.
-            function DisableButton(button: Button) {
-                button.color = buttonDisabledColor;
-                button.background = buttonDisabledBackgroundColor;
+            function DisableButton(button: Button, disabled: boolean) {
+                if(disabled) {
+                    button.color = buttonDisabledColor;
+                    button.background = buttonDisabledBackgroundColor;    
+                }
+                else {        
+                    button.color = buttonColor;
+                    button.background = buttonBackgroundColor;    
+                }
             }            
 
             // Passes last chosen color back to scene and kills dialog by removing from AdvancedDynamicTexture
@@ -970,7 +983,7 @@ export class ColorPicker extends Control {
             var newText = new TextBlock();
             newText.text = "new";
             newText.name = "New Color Label";
-            newText.color = lightStrokeColor;
+            newText.color = buttonColor;
             newText.fontSize = 16;
             pickerSwatches.addControl(newText, 0, 0);
 
@@ -1004,14 +1017,14 @@ export class ColorPicker extends Control {
             swatchOutline.height = "120px";
             swatchOutline.top = "5px";
             swatchOutline.thickness = 2;
-            swatchOutline.color = darkStrokeColor;
+            swatchOutline.color = currentSwatchesOutlineColor;
             swatchOutline.isHitTestVisible = false;
             pickerSwatchesButtons.addControl(swatchOutline, 0, 0);
 
             var currentText = new TextBlock();
             currentText.name = "Current Color Label";
             currentText.text = "current";
-            currentText.color = lightStrokeColor;
+            currentText.color = buttonColor;
             currentText.fontSize = 16;
             pickerSwatches.addControl(currentText, 3, 0);
 
@@ -1022,7 +1035,7 @@ export class ColorPicker extends Control {
             butOK.top = "29px";
             butOK.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
             butOK.thickness = 2;
-            butOK.color = lightStrokeColor;
+            butOK.color = buttonColor;
             butOK.fontSize = buttonFontSize;
             butOK.background = buttonBackgroundColor;
             butOK.onPointerEnterObservable.add(() => { butOK.background = buttonBackgroundHoverColor; });
@@ -1045,7 +1058,7 @@ export class ColorPicker extends Control {
             butCancel.top = "77px";
             butCancel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
             butCancel.thickness = 2;
-            butCancel.color = lightStrokeColor;
+            butCancel.color = buttonColor;
             butCancel.fontSize = buttonFontSize;
             butCancel.background = buttonBackgroundColor;
             butCancel.onPointerEnterObservable.add(() => { butCancel.background = buttonBackgroundHoverColor; });
@@ -1071,11 +1084,11 @@ export class ColorPicker extends Control {
                 butSave.thickness = 2;
                 butSave.fontSize = buttonFontSize;
                 if (options.savedColors.length < options.swatchLimit!) {
-                    butSave.color = lightStrokeColor;
+                    butSave.color = buttonColor;
                     butSave.background = buttonBackgroundColor;
                 }
                 else {
-                    DisableButton(butSave);
+                    DisableButton(butSave, true);
                 }
                 butSave.onPointerEnterObservable.add(() => {
                     if (options.savedColors) {
@@ -1139,7 +1152,7 @@ export class ColorPicker extends Control {
             for (var i = 0; i < inputFieldLabels.length; i++) {
                 var labelText = new TextBlock();
                 labelText.text = inputFieldLabels[i];
-                labelText.color = lightStrokeColor;
+                labelText.color = buttonColor;
                 labelText.fontSize = 16;
                 rgbValuesQuadrant.addControl(labelText, i, 0);
             }
@@ -1162,6 +1175,10 @@ export class ColorPicker extends Control {
                 if (activeField == rValInt.name) {
                     activeField = "";
                 }
+                if (rValInt.text == "") {
+                    rValInt.text = "0";
+                }
+                UpdateInt(rValInt, "r");
             });
             rValInt.onTextChangedObservable.add(() => {
                 UpdateInt(rValInt, "r");
@@ -1185,7 +1202,11 @@ export class ColorPicker extends Control {
                 if (activeField == gValInt.name) {
                     activeField = "";
                 }
-            });
+                if (gValInt.text == "") {
+                    gValInt.text = "0";
+                }
+                UpdateInt(gValInt, "g");
+           });
             gValInt.onTextChangedObservable.add(() => {
                 UpdateInt(gValInt, "g");
             });
@@ -1208,6 +1229,10 @@ export class ColorPicker extends Control {
                 if (activeField == bValInt.name) {
                     activeField = "";
                 }
+                if (bValInt.text == "") {
+                    bValInt.text = "0";
+                }
+                UpdateInt(bValInt, "b");
             });
             bValInt.onTextChangedObservable.add(() => {
                 UpdateInt(bValInt, "b");
@@ -1228,7 +1253,7 @@ export class ColorPicker extends Control {
                 EditSwatches(false);
             });
             rValDec.onBlurObservable.add(() => {
-                if (parseFloat(rValDec.text) == 0) {
+                if (parseFloat(rValDec.text) == 0 || rValDec.text == "") {
                     rValDec.text = "0";
                     UpdateFloat(rValDec, "r");
                 }
@@ -1255,7 +1280,7 @@ export class ColorPicker extends Control {
                 EditSwatches(false);
             });
             gValDec.onBlurObservable.add(() => {
-                if (parseFloat(gValDec.text) == 0) {
+                if (parseFloat(gValDec.text) == 0 || gValDec.text == "") {
                     gValDec.text = "0";
                     UpdateFloat(gValDec, "g");
                 }
@@ -1282,7 +1307,7 @@ export class ColorPicker extends Control {
                 EditSwatches(false);
             });
             bValDec.onBlurObservable.add(() => {
-                if (parseFloat(bValDec.text) == 0) {
+                if (parseFloat(bValDec.text) == 0 || bValDec.text == "") {
                     bValDec.text = "0";
                     UpdateFloat(bValDec, "b");
                 }
@@ -1306,7 +1331,7 @@ export class ColorPicker extends Control {
 
             var labelText = new TextBlock();
             labelText.text = "#";
-            labelText.color = lightStrokeColor;
+            labelText.color = buttonColor;
             labelText.fontSize = buttonFontSize;
             hexValueQuadrant.addControl(labelText, 0, 0);
 
@@ -1334,6 +1359,10 @@ export class ColorPicker extends Control {
                     var val = hexVal.text.split("");
                     hexVal.text = val[0] + val[0] + val[1] + val[1] + val[2] + val[2];
                 }
+                // if (hexVal.text == "") {
+                //     hexVal.text = "000000";
+                //     Update(hexVal, "b");
+                // }
             });
             hexVal.onTextChangedObservable.add(() => {
                 var newHexValue = hexVal.text;
