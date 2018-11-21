@@ -20,14 +20,25 @@ const localStorageAvailable = function () {
 }();
 
 export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean }> {
+    private static _InMemoryStorage: { [key: string]: boolean };
+
     constructor(props: ILineContainerComponentProps) {
         super(props);
 
         let initialState: boolean;
 
-        if (localStorageAvailable && localStorage.getItem(this.props.title) !== null) {
-            initialState = localStorage.getItem(this.props.title) === "true";
-        } else {
+        try {
+            if (LineContainerComponent._InMemoryStorage && LineContainerComponent._InMemoryStorage[this.props.title] !== undefined) {
+                initialState = LineContainerComponent._InMemoryStorage[this.props.title];
+            } else if (localStorageAvailable && localStorage.getItem(this.props.title) !== null) {
+                initialState = localStorage.getItem(this.props.title) === "true";
+            } else {
+                initialState = !this.props.closed;
+            }
+        }
+        catch (e) {
+            LineContainerComponent._InMemoryStorage = {};
+            LineContainerComponent._InMemoryStorage[this.props.title] = !this.props.closed
             initialState = !this.props.closed;
         }
 
@@ -35,10 +46,22 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
     }
 
     switchExpandedState(): void {
-        if (localStorageAvailable) {
-            localStorage.setItem(this.props.title, !this.state.isExpanded ? "true" : "false");
+        const newState = !this.state.isExpanded;
+
+        try {
+            if (LineContainerComponent._InMemoryStorage) {
+                LineContainerComponent._InMemoryStorage[this.props.title] = newState;
+            } else if (localStorageAvailable) {
+                localStorage.setItem(this.props.title, newState ? "true" : "false");
+            }
         }
-        this.setState({ isExpanded: !this.state.isExpanded });
+        catch (e) {
+            LineContainerComponent._InMemoryStorage = {};
+            LineContainerComponent._InMemoryStorage[this.props.title] = newState;
+        }
+
+        this.setState({ isExpanded: newState });
+
     }
 
     renderHeader() {
