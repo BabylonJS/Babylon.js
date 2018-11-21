@@ -1,13 +1,27 @@
 module BABYLON {
     declare var Ammo: any;
 
-    /** @hidden */
+    /**
+     * AmmoJS Physics plugin
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://github.com/kripken/ammo.js/
+     */
     export class AmmoJSPlugin implements IPhysicsEnginePlugin {
-        public BJSAMMO: any;
+        /**
+         * Reference to the Ammo library
+         */
+        public bjsAMMO: any;
+        /**
+         * Created ammoJS world which physics bodies are added to
+         */
         public world: any;
+        /**
+         * Name of the plugin
+         */
         public name: string = "AmmoJSPlugin";
 
-        private _fixedTimeStep: number = 1 / 60;
+        private _timeStep: number = 1 / 60;
+        private _maxSteps = 5;
         private _tmpQuaternion = new BABYLON.Quaternion();
         private _tmpAmmoTransform: any;
         private _tmpAmmoQuaternion: any;
@@ -19,97 +33,149 @@ module BABYLON {
         private _tmpAmmoVectorA: any;
         private _tmpAmmoVectorB: any;
         private _tmpAmmoVectorC: any;
+        private _tmpContactCallbackResult = false;
 
-        private static KINEMATIC_FLAG = 2;
-        private static DISABLE_DEACTIVATION_FLAG = 4;
+        private static readonly KINEMATIC_FLAG = 2;
+        private static readonly DISABLE_DEACTIVATION_FLAG = 4;
 
-        public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
+        /**
+         * Initializes the ammoJS plugin
+         * @param _useDeltaForWorldStep if the time between frames should be used when calculating physics steps (Default: true)
+         */
+        public constructor(private _useDeltaForWorldStep: boolean = true) {
             if (typeof Ammo === "function") {
                 Ammo();
             }
-            this.BJSAMMO = Ammo;
+            this.bjsAMMO = Ammo;
             if (!this.isSupported()) {
                 Tools.Error("AmmoJS is not available. Please make sure you included the js file.");
                 return;
             }
 
             // Initialize the physics world
-            this._collisionConfiguration  = new this.BJSAMMO.btDefaultCollisionConfiguration();
-            this._dispatcher              = new this.BJSAMMO.btCollisionDispatcher(this._collisionConfiguration);
-            this._overlappingPairCache    = new this.BJSAMMO.btDbvtBroadphase();
-            this._solver                  = new this.BJSAMMO.btSequentialImpulseConstraintSolver();
-            this.world           = new this.BJSAMMO.btDiscreteDynamicsWorld(this._dispatcher, this._overlappingPairCache, this._solver, this._collisionConfiguration);
-            this._tmpAmmoConcreteContactResultCallback = new this.BJSAMMO.ConcreteContactResultCallback();
+            this._collisionConfiguration  = new this.bjsAMMO.btDefaultCollisionConfiguration();
+            this._dispatcher              = new this.bjsAMMO.btCollisionDispatcher(this._collisionConfiguration);
+            this._overlappingPairCache    = new this.bjsAMMO.btDbvtBroadphase();
+            this._solver                  = new this.bjsAMMO.btSequentialImpulseConstraintSolver();
+            this.world           = new this.bjsAMMO.btDiscreteDynamicsWorld(this._dispatcher, this._overlappingPairCache, this._solver, this._collisionConfiguration);
+            this._tmpAmmoConcreteContactResultCallback = new this.bjsAMMO.ConcreteContactResultCallback();
+            this._tmpAmmoConcreteContactResultCallback.addSingleResult = () => { this._tmpContactCallbackResult = true; };
 
             // Create temp ammo variables
-            this._tmpAmmoTransform = new this.BJSAMMO.btTransform();
+            this._tmpAmmoTransform = new this.bjsAMMO.btTransform();
             this._tmpAmmoTransform.setIdentity();
-            this._tmpAmmoQuaternion = new this.BJSAMMO.btQuaternion(0, 0, 0, 1);
-            this._tmpAmmoVectorA = new this.BJSAMMO.btVector3(0, 0, 0);
-            this._tmpAmmoVectorB = new this.BJSAMMO.btVector3(0, 0, 0);
-            this._tmpAmmoVectorC = new this.BJSAMMO.btVector3(0, 0, 0);
+            this._tmpAmmoQuaternion = new this.bjsAMMO.btQuaternion(0, 0, 0, 1);
+            this._tmpAmmoVectorA = new this.bjsAMMO.btVector3(0, 0, 0);
+            this._tmpAmmoVectorB = new this.bjsAMMO.btVector3(0, 0, 0);
+            this._tmpAmmoVectorC = new this.bjsAMMO.btVector3(0, 0, 0);
         }
 
+        /**
+         * Sets the gravity of the physics world (m/(s^2))
+         * @param gravity Gravity to set
+         */
         public setGravity(gravity: Vector3): void {
             this._tmpAmmoVectorA.setValue(gravity.x, gravity.y, gravity.z);
             this.world.setGravity(this._tmpAmmoVectorA);
         }
 
+        /**
+         * Amount of time to step forward on each frame (only used if useDeltaForWorldStep is false in the constructor)
+         * @param timeStep timestep to use in seconds
+         */
         public setTimeStep(timeStep: number) {
-            this._fixedTimeStep = timeStep;
+            this._timeStep = timeStep;
         }
 
+        /**
+         * Gets the current timestep (only used if useDeltaForWorldStep is false in the constructor)
+         * @returns the current timestep in seconds
+         */
         public getTimeStep(): number {
-            return this._fixedTimeStep;
+            return this._timeStep;
         }
 
         // Ammo's contactTest and contactPairTest take a callback that runs synchronously, wrap them so that they are easier to consume
         private _isImpostorInContact(impostor: PhysicsImpostor) {
-            var result = false;
-            this._tmpAmmoConcreteContactResultCallback.addSingleResult = function() { result = true; };
+            this._tmpContactCallbackResult = false;
             this.world.contactTest(impostor.physicsBody, this._tmpAmmoConcreteContactResultCallback);
-            return result;
+            return this._tmpContactCallbackResult;
         }
         // Ammo's collision events have some weird quirks
         // contactPairTest fires too many events as it fires events even when objects are close together but contactTest does not
         // so only fire event if both contactTest and contactPairTest have a hit
         private _isImpostorPairInContact(impostorA: PhysicsImpostor, impostorB: PhysicsImpostor) {
-            var result = false;
-            this._tmpAmmoConcreteContactResultCallback.addSingleResult = function() { result = true; };
+            this._tmpContactCallbackResult = false;
             this.world.contactPairTest(impostorA.physicsBody, impostorB.physicsBody, this._tmpAmmoConcreteContactResultCallback);
-            return result;
+            return this._tmpContactCallbackResult;
         }
 
+        // Ammo's behavior when maxSteps > 0 does not behave as described in docs
+        // @see http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The_World
+        //
+        // When maxSteps is 0 do the entire simulation in one step
+        // When maxSteps is > 0, run up to maxStep times, if on the last step the (remaining step - fixedTimeStep) is < fixedTimeStep, the remainder will be used for the step. (eg. if remainder is 1.001 and fixedTimeStep is 1 the last step will be 1.001, if instead it did 2 steps (1, 0.001) issues occuered when having a tiny step in ammo)
+        // Note: To get deterministic physics, timeStep would always need to be divisible by fixedTimeStep
+        private _stepSimulation(timeStep: number = 1 / 60, maxSteps: number = 10, fixedTimeStep: number = 1 / 60) {
+            if (maxSteps == 0) {
+                this.world.stepSimulation(timeStep, 0);
+            }else {
+                while (maxSteps > 0 && timeStep > 0) {
+                    if (timeStep - fixedTimeStep <  fixedTimeStep) {
+                        this.world.stepSimulation(timeStep, 0);
+                        timeStep = 0;
+                    }else {
+                        timeStep -= fixedTimeStep;
+                        this.world.stepSimulation(fixedTimeStep, 0);
+                    }
+                    maxSteps--;
+                }
+            }
+        }
+
+        /**
+         * Moves the physics simulation forward delta seconds and updates the given physics imposters
+         * Prior to the step the imposters physics location is set to the position of the babylon meshes
+         * After the step the babylon meshes are set to the position of the physics imposters
+         * @param delta amount of time to step forward
+         * @param impostors array of imposters to update before/after the step
+         */
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
-            impostors.forEach(function(impostor) {
+            for (var impostor of impostors) {
                 // Update physics world objects to match babylon world
                 impostor.beforeStep();
-            });
+            }
 
-            this.world.stepSimulation(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
+            this._stepSimulation(this._useDeltaForWorldStep ? delta : this._timeStep, this._maxSteps);
 
-            impostors.forEach((mainImpostor) => {
+            for (var mainImpostor of impostors) {
                 // After physics update make babylon world objects match physics world objects
                 mainImpostor.afterStep();
 
                 // Handle collision event
                 if (mainImpostor._onPhysicsCollideCallbacks.length > 0) {
                     if (this._isImpostorInContact(mainImpostor)) {
-                        mainImpostor._onPhysicsCollideCallbacks.forEach((c) => {
-                            c.otherImpostors.forEach((otherImpostor) => {
+                        for (var collideCallback of mainImpostor._onPhysicsCollideCallbacks) {
+                            for (var otherImpostor of  collideCallback.otherImpostors) {
                                 if (mainImpostor.physicsBody.isActive() || otherImpostor.physicsBody.isActive()) {
                                     if (this._isImpostorPairInContact(mainImpostor, otherImpostor)) {
                                         mainImpostor.onCollide({ body: otherImpostor.physicsBody });
                                         otherImpostor.onCollide({ body: mainImpostor.physicsBody });
                                     }
                                 }
-                            });
-                        });
+                            }
+                        }
                     }
                 }
-            });
+            }
         }
 
+        /**
+         * Applies an implulse on the imposter
+         * @param impostor imposter to apply impulse
+         * @param force amount of force to be applied to the imposter
+         * @param contactPoint the location to apply the impulse on the imposter
+         */
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
             var worldPoint = this._tmpAmmoVectorA;
             var impulse = this._tmpAmmoVectorB;
@@ -119,6 +185,12 @@ module BABYLON {
             impostor.physicsBody.applyImpulse(impulse, worldPoint);
         }
 
+        /**
+         * Applies a force on the imposter
+         * @param impostor imposter to apply force
+         * @param force amount of force to be applied to the imposter
+         * @param contactPoint the location to apply the force on the imposter
+         */
         public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
             var worldPoint = this._tmpAmmoVectorA;
             var impulse = this._tmpAmmoVectorB;
@@ -128,6 +200,10 @@ module BABYLON {
             impostor.physicsBody.applyForce(impulse, worldPoint);
         }
 
+        /**
+         * Creates a physics body using the plugin
+         * @param impostor the imposter to create the physics body on
+         */
         public generatePhysicsBody(impostor: PhysicsImpostor) {
             impostor._pluginData = {toDispose: []};
 
@@ -172,16 +248,24 @@ module BABYLON {
             }
         }
 
+        /**
+         * Removes the physics body from the imposter and disposes of the body's memory
+         * @param impostor imposter to remove the physics body from
+         */
         public removePhysicsBody(impostor: PhysicsImpostor) {
             if (this.world) {
                 this.world.removeRigidBody(impostor.physicsBody);
 
                 impostor._pluginData.toDispose.forEach((d: any) => {
-                    this.BJSAMMO.destroy(d);
+                    this.bjsAMMO.destroy(d);
                 });
             }
         }
 
+        /**
+         * Generates a joint
+         * @param impostorJoint the imposter joint to create the joint with
+         */
         public generateJoint(impostorJoint: PhysicsImpostorJoint) {
             var mainBody = impostorJoint.mainImpostor.physicsBody;
             var connectedBody = impostorJoint.connectedImpostor.physicsBody;
@@ -211,6 +295,10 @@ module BABYLON {
             impostorJoint.joint.physicsJoint = joint;
         }
 
+        /**
+         * Removes a joint
+         * @param impostorJoint the imposter joint to remove the joint from
+         */
         public removeJoint(impostorJoint: PhysicsImpostorJoint) {
             this.world.removeConstraint(impostorJoint.joint.physicsJoint);
         }
@@ -325,6 +413,10 @@ module BABYLON {
             return returnValue;
         }
 
+        /**
+         * Sets the physics body position/rotation from the babylon mesh's position/rotation
+         * @param impostor imposter containing the physics body and babylon object
+         */
         public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.getMotionState().getWorldTransform(this._tmpAmmoTransform);
             impostor.object.position.set(this._tmpAmmoTransform.getOrigin().x(), this._tmpAmmoTransform.getOrigin().y(), this._tmpAmmoTransform.getOrigin().z());
@@ -339,6 +431,12 @@ module BABYLON {
             }
         }
 
+        /**
+         * Sets the babylon object's position/rotation from the physics body's position/rotation
+         * @param impostor imposter containing the physics body and babylon object
+         * @param newPosition new position
+         * @param newRotation new rotation
+         */
         public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
             var trans = impostor.physicsBody.getWorldTransform();
 
@@ -371,20 +469,39 @@ module BABYLON {
             }
         }
 
+        /**
+         * If this plugin is supported
+         * @returns true if its supported
+         */
         public isSupported(): boolean {
-            return this.BJSAMMO !== undefined;
+            return this.bjsAMMO !== undefined;
         }
 
+        /**
+         * Sets the linear velocity of the physics body
+         * @param impostor imposter to set the velocity on
+         * @param velocity velocity to set
+         */
         public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z);
             impostor.physicsBody.setLinearVelocity(this._tmpAmmoVectorA);
         }
 
+        /**
+         * Sets the angular velocity of the physics body
+         * @param impostor imposter to set the velocity on
+         * @param velocity velocity to set
+         */
         public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z);
             impostor.physicsBody.setAngularVelocity(this._tmpAmmoVectorA);
         }
 
+        /**
+         * gets the linear velocity
+         * @param impostor imposter to get linear velocity from
+         * @returns linear velocity
+         */
         public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
             var v = impostor.physicsBody.getLinearVelocity();
             if (!v) {
@@ -392,6 +509,12 @@ module BABYLON {
             }
             return new Vector3(v.x(), v.y(), v.z());
         }
+
+        /**
+         * gets the angular velocity
+         * @param impostor imposter to get angular velocity from
+         * @returns angular velocity
+         */
         public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
             var v = impostor.physicsBody.getAngularVelocity();
             if (!v) {
@@ -400,51 +523,113 @@ module BABYLON {
             return new Vector3(v.x(), v.y(), v.z());
         }
 
+        /**
+         * Sets the mass of physics body
+         * @param impostor imposter to set the mass on
+         * @param mass mass to set
+         */
         public setBodyMass(impostor: PhysicsImpostor, mass: number) {
             impostor.physicsBody.setMassProps(mass);
             impostor._pluginData.mass = mass;
         }
 
+        /**
+         * Gets the mass of the physics body
+         * @param impostor imposter to get the mass from
+         * @returns mass
+         */
         public getBodyMass(impostor: PhysicsImpostor): number {
             return impostor._pluginData.mass;
         }
 
+        /**
+         * Gets friction of the impostor
+         * @param impostor impostor to get friction from
+         * @returns friction value
+         */
         public getBodyFriction(impostor: PhysicsImpostor): number {
             return impostor.physicsBody.getFriction();
         }
 
+        /**
+         * Sets friction of the impostor
+         * @param impostor impostor to set friction on
+         * @param friction friction value
+         */
         public setBodyFriction(impostor: PhysicsImpostor, friction: number) {
             impostor.physicsBody.setFriction(friction);
         }
 
+        /**
+         * Gets restitution of the impostor
+         * @param impostor impostor to get restitution from
+         * @returns restitution value
+         */
         public getBodyRestitution(impostor: PhysicsImpostor): number {
             return impostor.physicsBody.getRestitution();
         }
 
+        /**
+         * Sets resitution of the impostor
+         * @param impostor impostor to set resitution on
+         * @param restitution resitution value
+         */
         public setBodyRestitution(impostor: PhysicsImpostor, restitution: number) {
             impostor.physicsBody.setRestitution(restitution);
         }
 
+        /**
+         * Sleeps the physics body and stops it from being active
+         * @param impostor impostor to sleep
+         */
         public sleepBody(impostor: PhysicsImpostor) {
             Tools.Warn("sleepBody is not currently supported by the Ammo physics plugin");
         }
 
+        /**
+         * Activates the physics body
+         * @param impostor impostor to activate
+         */
         public wakeUpBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.activate();
         }
 
+        /**
+         * Updates the distance parameters of the joint
+         * @param joint joint to update
+         * @param maxDistance maximum distance of the joint
+         * @param minDistance minimum distance of the joint
+         */
         public updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number) {
             Tools.Warn("updateDistanceJoint is not currently supported by the Ammo physics plugin");
         }
 
+        /**
+         * Sets a motor on the joint
+         * @param joint joint to set motor on
+         * @param speed speed of the motor
+         * @param maxForce maximum force of the motor
+         * @param motorIndex index of the motor
+         */
         public setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number) {
             Tools.Warn("setMotor is not currently supported by the Ammo physics plugin");
         }
 
+        /**
+         * Sets the motors limit
+         * @param joint joint to set limit on
+         * @param upperLimit upper limit
+         * @param lowerLimit lower limit
+         */
         public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number) {
             Tools.Warn("setLimit is not currently supported by the Ammo physics plugin");
         }
 
+        /**
+         * Syncs the position and rotation of a mesh with the impostor
+         * @param mesh mesh to sync
+         * @param impostor impostor to update the mesh with
+         */
         public syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor) {
             var body = impostor.physicsBody;
 
@@ -462,11 +647,21 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets the radius of the impostor
+         * @param impostor impostor to get radius from
+         * @returns the radius
+         */
         public getRadius(impostor: PhysicsImpostor): number {
             var exntend = impostor.getObjectExtendSize();
             return exntend.x / 2;
         }
 
+        /**
+         * Gets the box size of the impostor
+         * @param impostor impostor to get box size from
+         * @param result the resulting box size
+         */
         public getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
             var exntend = impostor.getObjectExtendSize();
             result.x = exntend.x;
@@ -474,6 +669,9 @@ module BABYLON {
             result.z = exntend.z;
         }
 
+        /**
+         * Disposes of the impostor
+         */
         public dispose() {
             // Dispose of world
             Ammo.destroy(this.world);
