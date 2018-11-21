@@ -8,13 +8,24 @@ interface ILineContainerComponentProps {
     closed?: boolean
 }
 
+const localStorageAvailable = function () {
+    const test = '_____';
+    try {
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}();
+
 export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean }> {
     constructor(props: ILineContainerComponentProps) {
         super(props);
 
         let initialState: boolean;
 
-        if (typeof (Storage) !== "undefined" && localStorage.getItem(this.props.title) !== null) {
+        if (localStorageAvailable && localStorage.getItem(this.props.title) !== null) {
             initialState = localStorage.getItem(this.props.title) === "true";
         } else {
             initialState = !this.props.closed;
@@ -24,7 +35,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
     }
 
     switchExpandedState(): void {
-        if (typeof (Storage) !== "undefined") {
+        if (localStorageAvailable) {
             localStorage.setItem(this.props.title, !this.state.isExpanded ? "true" : "false");
         }
         this.setState({ isExpanded: !this.state.isExpanded });
