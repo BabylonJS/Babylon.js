@@ -70,6 +70,7 @@
 - Added support for overriding the mesh used for the world matrix for a mesh with a skeleton ([bghgary](https://github.com/bghgary))
 - Added support for linking a bone to a transform node ([bghgary](https://github.com/bghgary))
 - Factored out `setDirection` function from `lookAt` for transform node ([bghgary](https://github.com/bghgary))
+- Add support for setting renderingGroupId and creating instances to `AxesViewer` ([bghgary](https://github.com/bghgary))
 
 ### glTF Loader
 
@@ -152,3 +153,4 @@
   - _Note: The root node is still a `Mesh` object and is still the first in the returned list of meshes_
   - `TransformNode` objects are excluded from the returned list of meshes when importing mesh
   - `TransformNode` objects do not raise `onMeshLoaded` events
+- `xAxisMesh`, `yAxisMesh`, and `zAxisMesh` of `AxesViewer` was renamed to `xAxis`, `yAxis`, and `zAxis` respectively and now return a `TransformNode` to represent the parent node of the cylinder and line of the arrow ([bghgary](https://github.com/bghgary))
