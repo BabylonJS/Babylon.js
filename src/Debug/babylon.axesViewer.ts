@@ -12,6 +12,7 @@ module BABYLON.Debug {
         private _zAxis: TransformNode;
         private _tmpVector = new Vector3();
         private _scaleLinesFactor = 4;
+        private _instanced = false;
 
         /**
          * Gets the hosting scene
@@ -127,23 +128,25 @@ module BABYLON.Debug {
             const xAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._xAxis);
             const yAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._yAxis);
             const zAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._zAxis);
-            return new AxesViewer(this.scene, this.scaleLines, undefined, xAxis, yAxis, zAxis);
+            const axesViewer = new AxesViewer(this.scene, this.scaleLines, undefined, xAxis, yAxis, zAxis);
+            axesViewer._instanced = true;
+            return axesViewer;
         }
 
         /** Releases resources */
         public dispose() {
             if (this._xAxis) {
-                this._xAxis.dispose(false, true);
+                this._xAxis.dispose(false, !this._instanced);
                 delete this._xAxis;
             }
 
             if (this._yAxis) {
-                this._yAxis.dispose(false, true);
+                this._yAxis.dispose(false, !this._instanced);
                 delete this._yAxis;
             }
 
             if (this._zAxis) {
-                this._zAxis.dispose(false, true);
+                this._zAxis.dispose(false, !this._instanced);
                 delete this._zAxis;
             }
 
