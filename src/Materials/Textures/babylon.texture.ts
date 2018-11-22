@@ -247,6 +247,9 @@ module BABYLON {
             scene.getEngine().onBeforeTextureInitObservable.notifyObservers(this);
 
             let load = () => {
+                if (this._texture && this._texture._invertVScale) {
+                    this.vScale *= -1;
+                }
                 if (this.onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
                 }
