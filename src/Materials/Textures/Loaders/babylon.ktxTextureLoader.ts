@@ -59,13 +59,11 @@ module BABYLON {
             if (Array.isArray(data)) {
                 return;
             }
-
+            texture.invertY = !texture.invertY;
             var engine = texture.getEngine();
             var ktx = new KhronosTextureContainer(data, 6);
 
             var loadMipmap = ktx.numberOfMipmapLevels > 1 && texture.generateMipMaps;
-
-            engine._unpackFlipY(true);
 
             ktx.uploadLevels(texture, texture.generateMipMaps);
 
@@ -84,6 +82,7 @@ module BABYLON {
          */
         public loadData(data: ArrayBuffer, texture: InternalTexture,
             callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void {
+            texture.invertY = !texture.invertY;
             var ktx = new KhronosTextureContainer(data, 1);
 
             callback(ktx.pixelWidth, ktx.pixelHeight, false, true, () => {
