@@ -121,6 +121,7 @@ module BABYLON.Debug {
 
         /**
          * Creates an instance of this axes viewer.
+         * @returns a new axes viewer with instanced meshes
          */
         public createInstance(): AxesViewer {
             const xAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._xAxis);
