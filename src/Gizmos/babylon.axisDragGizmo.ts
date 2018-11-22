@@ -16,26 +16,36 @@ module BABYLON {
          * Event that fires each time the gizmo snaps to a new location.
          * * snapDistance is the the change in distance
          */
-        public onSnapObservable = new Observable<{snapDistance: number}>();
+        public onSnapObservable = new Observable<{ snapDistance: number }>();
 
         /** @hidden */
-        public static _CreateArrow(scene: Scene, material: StandardMaterial) {
-            var arrow = new BABYLON.AbstractMesh("", scene);
-            var arrowMesh = BABYLON.MeshBuilder.CreateCylinder("yPosMesh", {diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96}, scene);
-            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, scene);
-            arrowTail.color = material.emissiveColor;
-            arrow.addChild(arrowMesh);
-            arrow.addChild(arrowTail);
+        public static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode {
+            var arrow = new BABYLON.TransformNode("arrow", scene);
+            var cylinder = BABYLON.MeshBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96 }, scene);
+            var line = BABYLON.MeshBuilder.CreateLines("line", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, scene);
+            line.color = material.emissiveColor;
+            cylinder.parent = arrow;
+            line.parent = arrow;
 
             // Position arrow pointing in its drag axis
-            arrowMesh.scaling.scaleInPlace(0.05);
-            arrowMesh.material = material;
-            arrowMesh.rotation.x = Math.PI / 2;
-            arrowMesh.position.z += 0.3;
-            arrowTail.scaling.scaleInPlace(0.26);
-            arrowTail.rotation.x = Math.PI / 2;
-            arrowTail.material = material;
+            cylinder.scaling.scaleInPlace(0.05);
+            cylinder.material = material;
+            cylinder.rotation.x = Math.PI / 2;
+            cylinder.position.z += 0.3;
+            line.scaling.scaleInPlace(0.26);
+            line.rotation.x = Math.PI / 2;
+            line.material = material;
             return arrow;
+        }
+
+        /** @hidden */
+        public static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode {
+            const instance = new BABYLON.TransformNode("arrow", scene);
+            for (const mesh of arrow.getChildMeshes()) {
+                const childInstance = (mesh as Mesh).createInstance(mesh.name);
+                childInstance.parent = instance;
+            }
+            return instance;
         }
 
         /**
@@ -61,14 +71,13 @@ module BABYLON {
 
             arrow.lookAt(this._rootMesh.position.subtract(dragAxis));
             arrow.scaling.scaleInPlace(1 / 3);
-
-            this._rootMesh.addChild(arrow);
+            arrow.parent = this._rootMesh;
 
             var currentSnapDragDistance = 0;
             var tmpVector = new Vector3();
-            var tmpSnapEvent = {snapDistance: 0};
+            var tmpSnapEvent = { snapDistance: 0 };
             // Add drag behavior to handle events when the gizmo is dragged
-            this.dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
+            this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
             this.dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this.dragBehavior);
 
@@ -81,13 +90,13 @@ module BABYLON {
                         this.attachedMesh.parent.computeWorldMatrix().invertToRef(tmpMatrix);
                         tmpMatrix.setTranslationFromFloats(0, 0, 0);
                         Vector3.TransformCoordinatesToRef(event.delta, tmpMatrix, localDelta);
-                    }else {
+                    } else {
                         localDelta.copyFrom(event.delta);
                     }
                     // Snapping logic
                     if (this.snapDistance == 0) {
                         this.attachedMesh.position.addInPlace(localDelta);
-                    }else {
+                    } else {
                         currentSnapDragDistance += event.dragDistance;
                         if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
                             var dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
