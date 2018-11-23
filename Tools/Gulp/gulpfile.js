@@ -793,21 +793,27 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
                 //config.stats = "minimal";
                 tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
             } else {
-                tasks.push(gulp.watch(library.files, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug());
-                }));
-                tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug())
-                }));
-                tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug())
-                }));
+                if (library.files) {
+                    tasks.push(gulp.watch(library.files, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug());
+                    }));
+                }
+                if (library.shaderFiles) {
+                    tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug())
+                    }));
+                }
+                if (library.sassFiles) {
+                    tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug())
+                    }));
+                }
             }
         });
     });
