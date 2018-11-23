@@ -108,14 +108,14 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         const hasChildren = children.length > 0;
 
-        if (!entity.metadata) {
-            entity.metadata = {};
+        if (!entity.reservedDataStore) {
+            entity.reservedDataStore = {};
         }
 
-        entity.metadata.setExpandedState = (value: boolean) => {
+        entity.reservedDataStore.setExpandedState = (value: boolean) => {
             this.setState({ isExpanded: value });
         }
-        entity.metadata.isExpanded = this.state.isExpanded;
+        entity.reservedDataStore.isExpanded = this.state.isExpanded;
 
         if (this.props.filter) {
             const lowerCaseFilter = this.props.filter.toLowerCase();

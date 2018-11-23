@@ -68,12 +68,19 @@
 - Added `Tools.CustomRequestHeaders`, `Tools.UseCustomRequestHeaders`, `Tools.InjectCustomRequestHeaders` to send Custom Request Headers alongside XMLHttpRequest's i.e. when loading files (Tools.Loadfile) from resources requiring special headers like 'Authorization' ([susares](https://github.com/susares))
 - Added `.serialize` and `.Parse` functions in `ReflectionProbe` to retrieve reflection probes when parsing a previously serialized material ([julien-moreau](https://github.com/julien-moreau))
 - GizmoManager clearGizmoOnEmptyPointerEvent options and onAttachedToMeshObservable event ([TrevorDev](https://github.com/TrevorDev))
+- Added support for overriding the mesh used for the world matrix for a mesh with a skeleton ([bghgary](https://github.com/bghgary))
+- Added support for linking a bone to a transform node ([bghgary](https://github.com/bghgary))
+- Factored out `setDirection` function from `lookAt` for transform node ([bghgary](https://github.com/bghgary))
+
 ### glTF Loader
 
 - Added support for mesh instancing for improved performance when multiple nodes point to the same mesh ([bghgary](https://github.com/bghgary))
 - Create `TransformNode` objects instead of `Mesh` objects for glTF nodes without geometry ([bghgary](https://github.com/bghgary))
 - Added glTF JSON pointers to metadata of nodes, materials, and textures ([bghgary](https://github.com/bghgary))
 - Load KTX textures in the gltf2 loader when textureFormat is set on engine ([TrevorDev](https://github.com/TrevorDev))
+- Skinned meshes now behave as intended by glTF ([bghgary](https://github.com/bghgary))
+  - Skinned meshes now set an override mesh instead of reparenting to the `__root__` transform node
+  - Loaded bones are linked with the transform node created for the corresponding glTF node
 
 ### glTF Serializer
 
@@ -82,6 +89,7 @@
 ### Materials Library
 
 ## Bug fixes
+- Fixed anaglyph mode for Free and Universal cameras ([Deltakosh](https://github.com/deltakosh))
 - Fixed FileLoader's loading of a skybox, & added a parsed value for whether to create with PBR or STDMaterial ([Palmer-JC](https://github.com/Palmer-JC))
 - Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))
 - Refocusing on input gui with pointer events ([TrevorDev](https://github.com/TrevorDev))
@@ -95,6 +103,7 @@
 - PointerDragBahavior using Mesh as base type, causing type-checking problems with AbstractMesh ([Poolminer](https://github.com/Poolminer/))
 - TransformNode lookAt not working in world space when node's parent has rotation ([TrevorDev](https://github.com/TrevorDev))
 - MakeNotPickableAndWrapInBoundingBox had unexpected behavior when input had scaling of 0 on an axis ([TrevorDev](https://github.com/TrevorDev))
+- Fixed an issue with loading base64 encoded images in the glTF loader ([bghgary](https://github.com/bghgary))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -107,6 +116,9 @@
 - Fixed effect layer compatibility with multi materials ([Sebavan](https://github.com/Sebavan))
 - Added a `DeepImmutable<T>` type to specifiy that a referenced object should be considered recursively immutable, meaning that all its properties are `readonly` and that if a property is a reference to an object, this object is also recursively immutable. ([barroij](https://github.com/barroij))
 - Fixed `VideoTexture` poster property when autoplay is turned off.
+- Fixed position and rotation of plane mesh created by MeshBuilder.CreatePlane when specifying a source plane ([sable](https://github.com/thscott), [bghgary](https://github.com/bghgary))
+- Fixed inspector dynamic loading ([Sebavan](https://github.com/Sebavan))
+- Fixed infiniteDistance not working anymore ([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 

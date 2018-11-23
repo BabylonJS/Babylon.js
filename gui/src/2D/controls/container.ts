@@ -13,7 +13,7 @@ export class Container extends Control {
     /** @hidden */
     protected _measureForChildren = Measure.Empty();
     /** @hidden */
-    protected _background: string;
+    protected _background = "";
     /** @hidden */
     protected _adaptWidthToChildren = false;
     /** @hidden */
@@ -164,7 +164,7 @@ export class Container extends Control {
      * @returns the current container
      */
     public clearControls(): Container {
-        let children = this._children.slice();
+        let children = this.children.slice();
 
         for (var child of children) {
             this.removeControl(child);

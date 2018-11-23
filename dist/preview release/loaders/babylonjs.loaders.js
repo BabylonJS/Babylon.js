@@ -4384,6 +4384,19 @@ var BABYLON;
                         }));
                     }
                 }
+                // Link all Babylon bones for each glTF node with the corresponding Babylon transform node.
+                // A glTF joint is a pointer to a glTF node in the glTF node hierarchy similar to Unity3D.
+                if (this.gltf.nodes) {
+                    for (var _b = 0, _c = this.gltf.nodes; _b < _c.length; _b++) {
+                        var node = _c[_b];
+                        if (node._babylonTransformNode && node._babylonBones) {
+                            for (var _d = 0, _e = node._babylonBones; _d < _e.length; _d++) {
+                                var babylonBone = _e[_d];
+                                babylonBone.linkTransformNode(node._babylonTransformNode);
+                            }
+                        }
+                    }
+                }
                 promises.push(this._loadAnimationsAsync());
                 this.logClose();
                 return Promise.all(promises).then(function () { });
@@ -4394,9 +4407,6 @@ var BABYLON;
                         var babylonMesh = _a[_i];
                         callback(babylonMesh);
                     }
-                }
-                else if (node._babylonTransformNode instanceof BABYLON.AbstractMesh) {
-                    callback(node._babylonTransformNode);
                 }
             };
             GLTFLoader.prototype._getMeshes = function () {
@@ -4496,20 +4506,12 @@ var BABYLON;
                         }));
                     }
                     if (node.children) {
-                        var _loop_1 = function (index) {
-                            var childNode = ArrayItem.Get(context + "/children/" + index, _this.gltf.nodes, index);
-                            promises.push(_this.loadNodeAsync("/nodes/" + childNode.index, childNode, function (childBabylonMesh) {
-                                // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
-                                if (childNode.skin != undefined) {
-                                    childBabylonMesh.parent = _this._rootBabylonMesh;
-                                    return;
-                                }
-                                childBabylonMesh.parent = babylonTransformNode;
-                            }));
-                        };
                         for (var _i = 0, _a = node.children; _i < _a.length; _i++) {
                             var index = _a[_i];
-                            _loop_1(index);
+                            var childNode = ArrayItem.Get(context + "/children/" + index, _this.gltf.nodes, index);
+                            promises.push(_this.loadNodeAsync("/nodes/" + childNode.index, childNode, function (childBabylonMesh) {
+                                childBabylonMesh.parent = babylonTransformNode;
+                            }));
                         }
                     }
                     assign(babylonTransformNode);
@@ -4546,16 +4548,16 @@ var BABYLON;
                     var primitive = mesh.primitives[0];
                     promises.push(this._loadMeshPrimitiveAsync(context + "/primitives/" + primitive.index, name, node, mesh, primitive, function (babylonMesh) {
                         node._babylonTransformNode = babylonMesh;
+                        node._primitiveBabylonMeshes = [babylonMesh];
                     }));
                 }
                 else {
-                    var babylonTransformNode_1 = new BABYLON.TransformNode(name, this.babylonScene);
-                    node._babylonTransformNode = babylonTransformNode_1;
+                    node._babylonTransformNode = new BABYLON.TransformNode(name, this.babylonScene);
+                    node._primitiveBabylonMeshes = [];
                     for (var _i = 0, primitives_1 = primitives; _i < primitives_1.length; _i++) {
                         var primitive = primitives_1[_i];
                         promises.push(this._loadMeshPrimitiveAsync(context + "/primitives/" + primitive.index, name + "_primitive" + primitive.index, node, mesh, primitive, function (babylonMesh) {
-                            babylonMesh.parent = babylonTransformNode_1;
-                            node._primitiveBabylonMeshes = node._primitiveBabylonMeshes || [];
+                            babylonMesh.parent = node._babylonTransformNode;
                             node._primitiveBabylonMeshes.push(babylonMesh);
                         }));
                     }
@@ -4783,13 +4785,13 @@ var BABYLON;
                     });
                 };
                 if (skin._data) {
-                    var data_1 = skin._data;
-                    return data_1.promise.then(function () {
-                        assignSkeleton(data_1.babylonSkeleton);
-                    });
+                    assignSkeleton(skin._data.babylonSkeleton);
+                    return skin._data.promise;
                 }
                 var skeletonId = "skeleton" + skin.index;
                 var babylonSkeleton = new BABYLON.Skeleton(skin.name || skeletonId, skeletonId, this.babylonScene);
+                // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
+                babylonSkeleton.overrideMesh = this._rootBabylonMesh;
                 this._loadBones(context, skin, babylonSkeleton);
                 assignSkeleton(babylonSkeleton);
                 var promise = this._loadSkinInverseBindMatricesDataAsync(context, skin).then(function (inverseBindMatricesData) {
@@ -4954,11 +4956,6 @@ var BABYLON;
                     (channel.target.path !== "weights" /* WEIGHTS */ && !targetNode._babylonTransformNode)) {
                     return Promise.resolve();
                 }
-                // Ignore animations targeting TRS of skinned nodes.
-                // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
-                if (targetNode.skin != undefined && channel.target.path !== "weights" /* WEIGHTS */) {
-                    return Promise.resolve();
-                }
                 var sampler = ArrayItem.Get(context + "/sampler", animation.samplers, channel.sampler);
                 return this._loadAnimationSamplerAsync(animationContext + "/samplers/" + channel.sampler, sampler).then(function (data) {
                     var targetPath;
@@ -5058,7 +5055,7 @@ var BABYLON;
                         keys[frameIndex] = getNextKey(frameIndex);
                     }
                     if (targetPath === "influence") {
-                        var _loop_2 = function (targetIndex) {
+                        var _loop_1 = function (targetIndex) {
                             var animationName = babylonAnimationGroup.name + "_channel" + babylonAnimationGroup.targetedAnimations.length;
                             var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                             babylonAnimation.setKeys(keys.map(function (key) { return ({
@@ -5075,27 +5072,15 @@ var BABYLON;
                             });
                         };
                         for (var targetIndex = 0; targetIndex < targetNode._numMorphTargets; targetIndex++) {
-                            _loop_2(targetIndex);
+                            _loop_1(targetIndex);
                         }
                     }
                     else {
                         var animationName = babylonAnimationGroup.name + "_channel" + babylonAnimationGroup.targetedAnimations.length;
                         var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys);
-                        var babylonTransformNode = targetNode._babylonTransformNode;
-                        var babylonBones = targetNode._babylonBones;
-                        if (babylonBones) {
-                            var babylonAnimationTargets = [babylonTransformNode].concat(babylonBones);
-                            for (var _i = 0, babylonAnimationTargets_1 = babylonAnimationTargets; _i < babylonAnimationTargets_1.length; _i++) {
-                                var babylonAnimationTarget = babylonAnimationTargets_1[_i];
-                                babylonAnimationTarget.animations.push(babylonAnimation);
-                            }
-                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonAnimationTargets);
-                        }
-                        else {
-                            babylonTransformNode.animations.push(babylonAnimation);
-                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTransformNode);
-                        }
+                        targetNode._babylonTransformNode.animations.push(babylonAnimation);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonTransformNode);
                     }
                 });
             };
@@ -5491,13 +5476,18 @@ var BABYLON;
                 var sampler = (texture.sampler == undefined ? GLTFLoader._DefaultSampler : ArrayItem.Get(context + "/sampler", this.gltf.samplers, texture.sampler));
                 var samplerData = this._loadSampler("/samplers/" + sampler.index, sampler);
                 var image = ArrayItem.Get(context + "/source", this.gltf.images, texture.source);
-                var textureURL = null;
-                if (image.uri && !BABYLON.Tools.IsBase64(image.uri) && this.babylonScene.getEngine().textureFormatInUse) {
-                    // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
-                    textureURL = this._uniqueRootUrl + image.uri;
+                var url = null;
+                if (image.uri) {
+                    if (BABYLON.Tools.IsBase64(image.uri)) {
+                        url = image.uri;
+                    }
+                    else if (this.babylonScene.getEngine().textureFormatInUse) {
+                        // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
+                        url = this._rootUrl + image.uri;
+                    }
                 }
                 var deferred = new BABYLON.Deferred();
-                var babylonTexture = new BABYLON.Texture(textureURL, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, function () {
+                var babylonTexture = new BABYLON.Texture(url, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, function () {
                     if (!_this._disposed) {
                         deferred.resolve();
                     }
@@ -5507,7 +5497,7 @@ var BABYLON;
                     }
                 });
                 promises.push(deferred.promise);
-                if (!textureURL) {
+                if (!url) {
                     promises.push(this.loadImageAsync("/images/" + image.index, image).then(function (data) {
                         var name = image.uri || _this._fileName + "#image" + image.index;
                         var dataUrl = "data:" + _this._uniqueRootUrl + name;

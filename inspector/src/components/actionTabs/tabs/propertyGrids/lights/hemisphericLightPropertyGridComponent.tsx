@@ -5,9 +5,11 @@ import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridCompo
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../lines/color3LineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
+import { LockObject } from "../lockObject";
 
 interface IHemisphericLightPropertyGridComponentProps {
     light: HemisphericLight,
+    lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -21,7 +23,7 @@ export class HemisphericLightPropertyGridComponent extends React.Component<IHemi
 
         return (
             <div className="pane">
-                <CommonLightPropertyGridComponent light={light} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonLightPropertyGridComponent lockObject={this.props.lockObject} light={light} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="SETUP">
                     <Color3LineComponent label="Diffuse" target={light} propertyName="diffuse" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Ground" target={light} propertyName="groundColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

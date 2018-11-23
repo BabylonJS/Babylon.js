@@ -695,10 +695,7 @@ module BABYLON {
 
             if (options.sourcePlane) {
                 plane.translate(options.sourcePlane.normal, -options.sourcePlane.d);
-
-                const dot = BABYLON.Vector3.Dot(plane.position, options.sourcePlane.normal);
-                const flip = dot >= 0;
-                plane.lookAt(BABYLON.Vector3.Zero(), 0, flip ? Math.PI : 0, 0);
+                plane.setDirection(options.sourcePlane.normal);
             }
 
             return plane;

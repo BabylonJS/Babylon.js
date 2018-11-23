@@ -9,14 +9,50 @@ interface ILineContainerComponentProps {
 }
 
 export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean }> {
+    private static _InMemoryStorage: {[key: string]: boolean};
+    
     constructor(props: ILineContainerComponentProps) {
         super(props);
 
-        this.state = { isExpanded: !this.props.closed };
+        let initialState: boolean;
+
+        try
+        { 
+            if (LineContainerComponent._InMemoryStorage && LineContainerComponent._InMemoryStorage[this.props.title] !== undefined) {
+                initialState = LineContainerComponent._InMemoryStorage[this.props.title];
+            } else if (typeof (Storage) !== "undefined" && localStorage.getItem(this.props.title) !== null) {
+                initialState = localStorage.getItem(this.props.title) === "true";
+            } else {
+                initialState = !this.props.closed;
+            }   
+        }
+        catch (e) {
+            LineContainerComponent._InMemoryStorage = {};
+            LineContainerComponent._InMemoryStorage[this.props.title] = !this.props.closed
+            initialState = !this.props.closed;
+        }
+
+        this.state = { isExpanded: initialState };
     }
 
     switchExpandedState(): void {
-        this.setState({ isExpanded: !this.state.isExpanded });
+        const newState = !this.state.isExpanded;
+        
+        try
+        { 
+            if (LineContainerComponent._InMemoryStorage) {
+                LineContainerComponent._InMemoryStorage[this.props.title] = newState;
+            } else if (typeof (Storage) !== "undefined") {
+                localStorage.setItem(this.props.title, newState ? "true" : "false");
+            }
+        }
+        catch (e) {
+            LineContainerComponent._InMemoryStorage = {};
+            LineContainerComponent._InMemoryStorage[this.props.title] = newState;
+        }
+        
+        this.setState({ isExpanded: newState });
+
     }
 
     renderHeader() {

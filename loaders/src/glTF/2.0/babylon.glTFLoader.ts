@@ -432,6 +432,18 @@ module BABYLON.GLTF2 {
                 }
             }
 
+            // Link all Babylon bones for each glTF node with the corresponding Babylon transform node.
+            // A glTF joint is a pointer to a glTF node in the glTF node hierarchy similar to Unity3D.
+            if (this.gltf.nodes) {
+                for (const node of this.gltf.nodes) {
+                    if (node._babylonTransformNode && node._babylonBones) {
+                        for (const babylonBone of node._babylonBones) {
+                            babylonBone.linkTransformNode(node._babylonTransformNode);
+                        }
+                    }
+                }
+            }
+
             promises.push(this._loadAnimationsAsync());
 
             this.logClose();
@@ -444,9 +456,6 @@ module BABYLON.GLTF2 {
                 for (const babylonMesh of node._primitiveBabylonMeshes) {
                     callback(babylonMesh);
                 }
-            }
-            else if (node._babylonTransformNode instanceof AbstractMesh) {
-                callback(node._babylonTransformNode);
             }
         }
 
@@ -561,12 +570,6 @@ module BABYLON.GLTF2 {
                     for (const index of node.children) {
                         const childNode = ArrayItem.Get(`${context}/children/${index}`, this.gltf.nodes, index);
                         promises.push(this.loadNodeAsync(`/nodes/${childNode.index}`, childNode, (childBabylonMesh) => {
-                            // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
-                            if (childNode.skin != undefined) {
-                                childBabylonMesh.parent = this._rootBabylonMesh;
-                                return;
-                            }
-
                             childBabylonMesh.parent = babylonTransformNode;
                         }));
                     }
@@ -616,16 +619,16 @@ module BABYLON.GLTF2 {
                 const primitive = mesh.primitives[0];
                 promises.push(this._loadMeshPrimitiveAsync(`${context}/primitives/${primitive.index}`, name, node, mesh, primitive, (babylonMesh) => {
                     node._babylonTransformNode = babylonMesh;
+                    node._primitiveBabylonMeshes = [babylonMesh];
                 }));
             }
             else {
-                const babylonTransformNode = new TransformNode(name, this.babylonScene);
-                node._babylonTransformNode = babylonTransformNode;
+                node._babylonTransformNode = new TransformNode(name, this.babylonScene);
+                node._primitiveBabylonMeshes = [];
                 for (const primitive of primitives) {
                     promises.push(this._loadMeshPrimitiveAsync(`${context}/primitives/${primitive.index}`, `${name}_primitive${primitive.index}`, node, mesh, primitive, (babylonMesh) => {
-                        babylonMesh.parent = babylonTransformNode;
-                        node._primitiveBabylonMeshes = node._primitiveBabylonMeshes || [];
-                        node._primitiveBabylonMeshes.push(babylonMesh);
+                        babylonMesh.parent = node._babylonTransformNode!;
+                        node._primitiveBabylonMeshes!.push(babylonMesh);
                     }));
                 }
             }
@@ -893,14 +896,16 @@ module BABYLON.GLTF2 {
             };
 
             if (skin._data) {
-                const data = skin._data;
-                return data.promise.then(() => {
-                    assignSkeleton(data.babylonSkeleton);
-                });
+                assignSkeleton(skin._data.babylonSkeleton);
+                return skin._data.promise;
             }
 
             const skeletonId = `skeleton${skin.index}`;
             const babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this.babylonScene);
+
+            // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
+            babylonSkeleton.overrideMesh = this._rootBabylonMesh;
+
             this._loadBones(context, skin, babylonSkeleton);
             assignSkeleton(babylonSkeleton);
 
@@ -1102,12 +1107,6 @@ module BABYLON.GLTF2 {
                 return Promise.resolve();
             }
 
-            // Ignore animations targeting TRS of skinned nodes.
-            // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
-            if (targetNode.skin != undefined && channel.target.path !== AnimationChannelTargetPath.WEIGHTS) {
-                return Promise.resolve();
-            }
-
             const sampler = ArrayItem.Get(`${context}/sampler`, animation.samplers, channel.sampler);
             return this._loadAnimationSamplerAsync(`${animationContext}/samplers/${channel.sampler}`, sampler).then((data) => {
                 let targetPath: string;
@@ -1234,19 +1233,8 @@ module BABYLON.GLTF2 {
                     const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys);
 
-                    const babylonTransformNode = targetNode._babylonTransformNode!;
-                    const babylonBones = targetNode._babylonBones;
-                    if (babylonBones) {
-                        const babylonAnimationTargets = [babylonTransformNode, ...babylonBones];
-                        for (const babylonAnimationTarget of babylonAnimationTargets) {
-                            babylonAnimationTarget.animations.push(babylonAnimation);
-                        }
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonAnimationTargets);
-                    }
-                    else {
-                        babylonTransformNode.animations.push(babylonAnimation);
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTransformNode);
-                    }
+                    targetNode._babylonTransformNode!.animations.push(babylonAnimation);
+                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonTransformNode!);
                 }
             });
         }
@@ -1714,14 +1702,19 @@ module BABYLON.GLTF2 {
             const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
             const image = ArrayItem.Get(`${context}/source`, this.gltf.images, texture.source);
-            let textureURL: Nullable<string> = null;
-            if (image.uri && !Tools.IsBase64(image.uri) && this.babylonScene.getEngine().textureFormatInUse) {
-                // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
-                textureURL = this._uniqueRootUrl + image.uri;
+            let url: Nullable<string> = null;
+            if (image.uri) {
+                if (Tools.IsBase64(image.uri)) {
+                    url = image.uri;
+                }
+                else if (this.babylonScene.getEngine().textureFormatInUse) {
+                    // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
+                    url = this._rootUrl + image.uri;
+                }
             }
 
             const deferred = new Deferred<void>();
-            const babylonTexture = new Texture(textureURL, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
+            const babylonTexture = new Texture(url, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
                 if (!this._disposed) {
                     deferred.resolve();
                 }
@@ -1732,7 +1725,7 @@ module BABYLON.GLTF2 {
             });
             promises.push(deferred.promise);
 
-            if (!textureURL) {
+            if (!url) {
                 promises.push(this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
                     const name = image.uri || `${this._fileName}#image${image.index}`;
                     const dataUrl = `data:${this._uniqueRootUrl}${name}`;

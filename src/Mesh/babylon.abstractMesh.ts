@@ -1136,18 +1136,19 @@ module BABYLON {
 
         /** @hidden */
         public _updateBoundingInfo(): AbstractMesh {
+            const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
             if (this._boundingInfo) {
-                this._boundingInfo.update(this.worldMatrixFromCache);
+                this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
             }
             else {
-                this._boundingInfo = new BoundingInfo(this.absolutePosition, this.absolutePosition, this.worldMatrixFromCache);
+                this._boundingInfo = new BoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
             }
-            this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
+            this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
             return this;
         }
 
         /** @hidden */
-        public _updateSubMeshesBoundingInfo(matrix: Matrix): AbstractMesh {
+        public _updateSubMeshesBoundingInfo(matrix: DeepImmutable<Matrix>): AbstractMesh {
             if (!this.subMeshes) {
                 return this;
             }

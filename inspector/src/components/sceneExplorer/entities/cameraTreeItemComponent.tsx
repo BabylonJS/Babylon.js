@@ -57,13 +57,17 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
 
     render() {
         const isActiveElement = this.state.isActive ? <FontAwesomeIcon icon={faVideo} /> : <FontAwesomeIcon icon={faVideo} className="isNotActive" />;
+        const scene = this.props.camera.getScene()!;
 
         return (
             <div className="cameraTools">
                 <TreeItemLabelComponent label={this.props.camera.name} onClick={() => this.props.onClick()} icon={faCamera} color="green" />
-                <div className="activeCamera icon" onClick={() => this.setActive()} title="Set as main camera">
-                    {isActiveElement}
-                </div>
+                {
+                    (!scene.activeCameras || scene.activeCameras.length === 0) &&
+                    <div className="activeCamera icon" onClick={() => this.setActive()} title="Set as main camera">
+                        {isActiveElement}
+                    </div>
+                }
                 <ExtensionsComponent target={this.props.camera} extensibilityGroups={this.props.extensibilityGroups} />
             </div>
         )
