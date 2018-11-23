@@ -9,6 +9,10 @@
     }
 }
 
+#__resizable_base__ {
+    display: none;
+}
+
 #sceneExplorer {
     background: #333333;
     height: 100%;
@@ -158,7 +162,7 @@
             .expandAll {                
                 opacity: 0.5;
                 grid-column: 2;
-                margin-right: 5px;  
+                margin-right: 10px;  
             }
         }
         

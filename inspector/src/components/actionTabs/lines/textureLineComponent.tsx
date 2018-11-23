@@ -20,6 +20,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         }
     }
 
+    shouldComponentUpdate(nextProps: ITextureLineComponentProps): boolean {
+        return (nextProps.texture !== this.props.texture);
+    }
+
     componentDidMount() {
         this.updatePreview();
     }

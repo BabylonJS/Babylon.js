@@ -69,6 +69,11 @@ module BABYLON {
         public metadata: any = null;
 
         /**
+         * For internal use only. Please do not use.
+         */
+        public reservedDataStore: any = null;
+
+        /**
          * Gets or sets a boolean used to define if the node must be serialized
          */
         public doNotSerialize = false;
@@ -138,7 +143,7 @@ module BABYLON {
                     this._parentNode._children.splice(index, 1);
                 }
 
-                if (!parent) {
+                if (!parent && !this._isDisposed) {
                     this.addToSceneRootNodes();
                 }
             }
@@ -688,6 +693,8 @@ module BABYLON {
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
         public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+            this._isDisposed = true;
+
             if (!doNotRecurse) {
                 const nodes = this.getDescendants(true);
                 for (const node of nodes) {
@@ -717,7 +724,6 @@ module BABYLON {
             }
 
             this._behaviors = [];
-            this._isDisposed = true;
         }
 
         /**

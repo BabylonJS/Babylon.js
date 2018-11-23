@@ -6,9 +6,11 @@ import { Color3LineComponent } from "../../../lines/color3LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
+import { LockObject } from "../lockObject";
 
 interface IStandardMaterialPropertyGridComponentProps {
     material: StandardMaterial,
+    lockObject: LockObject,
     onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
@@ -47,7 +49,7 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
 
         return (
             <div className="pane">
-                <CommonMaterialPropertyGridComponent material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonMaterialPropertyGridComponent lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 {this.renderTextures()}
                 <LineContainerComponent title="LIGHTING & COLORS">
                     <Color3LineComponent label="Diffuse" target={material} propertyName="diffuseColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

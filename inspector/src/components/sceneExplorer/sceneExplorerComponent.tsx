@@ -33,6 +33,7 @@ interface ISceneExplorerComponentProps {
     noCommands?: boolean,
     noHeader?: boolean,
     noExpand?: boolean,
+    noClose?: boolean,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
     globalState: GlobalState,
     popupMode?: boolean,
@@ -43,12 +44,21 @@ interface ISceneExplorerComponentProps {
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Scene }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
+
     private _once = true;
+
+    private sceneMutationFunc: () => void;
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
 
         this.state = { filter: null, selectedEntity: null, scene: this.props.scene };
+
+        this.sceneMutationFunc = this.processMutation.bind(this);
+    }
+
+    processMutation() {
+        this.forceUpdate();
     }
 
     componentWillMount() {
@@ -67,6 +77,22 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         if (this._onNewSceneAddedObserver) {
             BABYLON.Engine.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
         }
+
+        const scene = this.state.scene;
+
+        scene.onNewCameraAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewLightAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewMaterialAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewMeshAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewTextureAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewTransformNodeAddedObservable.removeCallback(this.sceneMutationFunc);
+
+        scene.onMeshRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onCameraRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onLightRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onMaterialRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onTransformNodeRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onTextureRemovedObservable.removeCallback(this.sceneMutationFunc);
     }
 
     filterContent(filter: string) {
@@ -101,7 +127,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 data.previousOne = item;
             }
 
-            if (item.getChildren && item.metadata && item.metadata.isExpanded) {
+            if (item.getChildren && item.reservedDataStore && item.reservedDataStore.isExpanded) {
                 if (this.findSiblings(item, item.getChildren(), target, goNext, data)) {
                     return true;
                 }
@@ -127,16 +153,16 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             goNext = true;
             search = true;
         } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) { // enter or right
-            var metadata = this.state.selectedEntity.metadata;
-            if (metadata && metadata.setExpandedState) {
-                metadata.setExpandedState(true);
+            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+            if (reservedDataStore && reservedDataStore.setExpandedState) {
+                reservedDataStore.setExpandedState(true);
             }
             keyEvent.preventDefault();
             return;
         } else if (keyEvent.keyCode === 37) { // left
-            var metadata = this.state.selectedEntity.metadata;
-            if (metadata && metadata.setExpandedState) {
-                metadata.setExpandedState(false);
+            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+            if (reservedDataStore && reservedDataStore.setExpandedState) {
+                reservedDataStore.setExpandedState(false);
             }
             keyEvent.preventDefault();
             return;
@@ -209,7 +235,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <div id="sceneExplorer">
                     {
                         !this.props.noHeader &&
-                        <HeaderComponent title="SCENE EXPLORER" noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
+                        <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
                     }
                     {this.renderContent()}
                 </div>
@@ -218,6 +244,22 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (this._once) {
             this._once = false;
+            const scene = this.state.scene;
+
+            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
+
+            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
+            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
+            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
+
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(() => {
                 const element = document.getElementById("sceneExplorer");
@@ -232,7 +274,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             <Resizable tabIndex={-1} id="sceneExplorer" ref="sceneExplorer" size={{ height: "100%" }} minWidth={300} maxWidth={600} minHeight="100%" enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }} onKeyDown={keyEvent => this.processKeys(keyEvent)}>
                 {
                     !this.props.noHeader &&
-                    <HeaderComponent title="SCENE EXPLORER" noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
+                    <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
                 }
                 {this.renderContent()}
             </Resizable>

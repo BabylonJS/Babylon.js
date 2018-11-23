@@ -33,7 +33,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        if (newValue !== nextState.value) {
+        if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;
         }
@@ -71,8 +71,6 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     render() {
-        var currentValue = this.props.target[this.props.propertyName];
-
         return (
             <div className="listLine">
                 <div className="label">
@@ -80,7 +78,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
                 </div>
                 <div className="options">
-                    <select onChange={evt => this.updateValue(evt.target.value)} defaultValue={currentValue}>
+                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value}>
                         {
                             this.props.options.map(option => {
                                 return (

@@ -19,7 +19,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
 
         const mesh = this.props.mesh;
 
-        this.state = { isGizmoEnabled: mesh.metadata && mesh.metadata.gizmo, isVisible: this.props.mesh.isVisible }
+        this.state = { isGizmoEnabled: mesh.reservedDataStore && mesh.reservedDataStore.gizmo, isVisible: this.props.mesh.isVisible }
     }
 
     showGizmos(): void {
@@ -27,60 +27,60 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
 
         if (!this.state.isGizmoEnabled) {
 
-            if (!mesh.metadata) {
-                mesh.metadata = {};
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
             }
-            mesh.metadata.previousParent = mesh.parent;
+            mesh.reservedDataStore.previousParent = mesh.parent;
 
-            if (mesh.metadata.previousParent) {
-                if (!mesh.metadata.previousParent.metadata) {
-                    mesh.metadata.previousParent.metadata = {};
+            if (mesh.reservedDataStore.previousParent) {
+                if (!mesh.reservedDataStore.previousParent.reservedDataStore) {
+                    mesh.reservedDataStore.previousParent.reservedDataStore = {};
                 }
 
-                if (!mesh.metadata.previousParent.metadata.detachedChildren) {
-                    mesh.metadata.previousParent.metadata.detachedChildren = [];
+                if (!mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren) {
+                    mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren = [];
                 }
 
-                mesh.metadata.previousParent.metadata.detachedChildren.push(mesh);
+                mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren.push(mesh);
             }
 
             // Connect to gizmo
             const dummy = BABYLON.BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(mesh as Mesh);
-            dummy.metadata = { hidden: true };
+            dummy.reservedDataStore = { hidden: true };
             const gizmo = new BABYLON.BoundingBoxGizmo(BABYLON.Color3.FromHexString("#0984e3"));
             gizmo.attachedMesh = dummy;
 
             gizmo.updateBoundingBox();
 
             gizmo.fixedDragMeshScreenSize = true;
-            mesh.metadata.gizmo = gizmo;
+            mesh.reservedDataStore.gizmo = gizmo;
 
             var pointerDragBehavior = new BABYLON.PointerDragBehavior();
             pointerDragBehavior.useObjectOrienationForDragging = false;
 
             dummy.addBehavior(pointerDragBehavior);
 
-            mesh.metadata.pointerDragBehavior = pointerDragBehavior;
-            mesh.metadata.dummy = dummy;
+            mesh.reservedDataStore.pointerDragBehavior = pointerDragBehavior;
+            mesh.reservedDataStore.dummy = dummy;
 
             this.setState({ isGizmoEnabled: true });
             return;
         }
 
-        const previousParent = mesh.metadata.previousParent;
-        mesh.removeBehavior(mesh.metadata.pointerDragBehavior);
-        mesh.metadata.gizmo.dispose();
-        mesh.metadata.gizmo = null;
+        const previousParent = mesh.reservedDataStore.previousParent;
+        mesh.removeBehavior(mesh.reservedDataStore.pointerDragBehavior);
+        mesh.reservedDataStore.gizmo.dispose();
+        mesh.reservedDataStore.gizmo = null;
         mesh.setParent(previousParent);
-        mesh.metadata.dummy.dispose();
-        mesh.metadata.dummy = null;
+        mesh.reservedDataStore.dummy.dispose();
+        mesh.reservedDataStore.dummy = null;
 
-        if (previousParent && previousParent.metadata) {
-            previousParent.metadata.detachedChildren = null;
+        if (previousParent && previousParent.reservedDataStore) {
+            previousParent.reservedDataStore.detachedChildren = null;
         }
 
-        mesh.metadata.previousParent = null;
-        mesh.metadata.pointerDragBehavior = null;
+        mesh.reservedDataStore.previousParent = null;
+        mesh.reservedDataStore.pointerDragBehavior = null;
 
         this.setState({ isGizmoEnabled: false });
     }

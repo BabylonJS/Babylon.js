@@ -14,14 +14,14 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     constructor(props: IColor3LineComponentProps) {
         super(props);
 
-        this.state = { color: this.props.target[this.props.propertyName] };
+        this.state = { color: this.props.target[this.props.propertyName].clone() };
     }
 
     shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 }) {
         const currentState = nextProps.target[nextProps.propertyName];
 
         if (!currentState.equals(nextState.color) || this._localChange) {
-            nextState.color = currentState;
+            nextState.color = currentState.clone();
             this._localChange = false;
             return true;
         }

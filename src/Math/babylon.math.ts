@@ -539,6 +539,15 @@ module BABYLON {
         }
 
         /**
+         * Determines equality between Color4 objects
+         * @param otherColor defines the second operand
+         * @returns true if the rgba values are equal to the given ones
+         */
+        public equals(otherColor: DeepImmutable<Color4>): boolean {
+            return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b && this.a === otherColor.a;
+        }
+
+        /**
          * Creates a new Color4 set with the added values of the current Color4 and of the given one
          * @param right defines the second operand
          * @returns a new Color4 object
@@ -2624,17 +2633,17 @@ module BABYLON {
             Vector3.UnprojectFromInvertedMatrixToRef(screenSource, matrix, result);
         }
 
-       /**
-         * Unproject a ray from screen space to object space
-         * @param sourceX defines the screen space x coordinate to use
-         * @param sourceY defines the screen space y coordinate to use
-         * @param viewportWidth defines the current width of the viewport
-         * @param viewportHeight defines the current height of the viewport
-         * @param world defines the world matrix to use (can be set to Identity to go to world space)
-         * @param view defines the view matrix to use
-         * @param projection defines the projection matrix to use
-         * @param ray defines the Ray where to store the result
-         */
+        /**
+          * Unproject a ray from screen space to object space
+          * @param sourceX defines the screen space x coordinate to use
+          * @param sourceY defines the screen space y coordinate to use
+          * @param viewportWidth defines the current width of the viewport
+          * @param viewportHeight defines the current height of the viewport
+          * @param world defines the world matrix to use (can be set to Identity to go to world space)
+          * @param view defines the view matrix to use
+          * @param projection defines the projection matrix to use
+          * @param ray defines the Ray where to store the result
+          */
         public static UnprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, ray: Ray): void {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix);
