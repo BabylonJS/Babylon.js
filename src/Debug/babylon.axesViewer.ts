@@ -82,7 +82,7 @@ module BABYLON.Debug {
             this._zAxis.rotationQuaternion = new Quaternion();
             this._zAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
-            if (renderingGroupId != undefined) {
+            if (renderingGroupId != null) {
                 AxesViewer._SetRenderingGroupId(this._xAxis, renderingGroupId);
                 AxesViewer._SetRenderingGroupId(this._yAxis, renderingGroupId);
                 AxesViewer._SetRenderingGroupId(this._zAxis, renderingGroupId);
@@ -100,24 +100,20 @@ module BABYLON.Debug {
          * @param zaxis defines the z axis of the viewer
          */
         public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
-            if (this._xAxis) {
-                this._xAxis.position.copyFrom(position);
-                xaxis.scaleToRef(-1, this._tmpVector);
-                this._xAxis.setDirection(this._tmpVector);
-                this._xAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
-            }
-            if (this._yAxis) {
-                this._yAxis.position.copyFrom(position);
-                yaxis.scaleToRef(-1, this._tmpVector);
-                this._yAxis.setDirection(this._tmpVector);
-                this._yAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
-            }
-            if (this._zAxis) {
-                this._zAxis.position.copyFrom(position);
-                zaxis.scaleToRef(-1, this._tmpVector);
-                this._zAxis.setDirection(this._tmpVector);
-                this._zAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
-            }
+            this._xAxis.position.copyFrom(position);
+            xaxis.scaleToRef(-1, this._tmpVector);
+            this._xAxis.setDirection(this._tmpVector);
+            this._xAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
+
+            this._yAxis.position.copyFrom(position);
+            yaxis.scaleToRef(-1, this._tmpVector);
+            this._yAxis.setDirection(this._tmpVector);
+            this._yAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
+
+            this._zAxis.position.copyFrom(position);
+            zaxis.scaleToRef(-1, this._tmpVector);
+            this._zAxis.setDirection(this._tmpVector);
+            this._zAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
         }
 
         /**
@@ -128,7 +124,7 @@ module BABYLON.Debug {
             const xAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._xAxis);
             const yAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._yAxis);
             const zAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._zAxis);
-            const axesViewer = new AxesViewer(this.scene, this.scaleLines, undefined, xAxis, yAxis, zAxis);
+            const axesViewer = new AxesViewer(this.scene, this.scaleLines, null, xAxis, yAxis, zAxis);
             axesViewer._instanced = true;
             return axesViewer;
         }
