@@ -7,7 +7,7 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Container } from "./container";
 import { TextBlock } from "./textBlock";
 
-/** 
+/**
  * Class used to hold a viewer window and sliders in a grid
 */
 export class ScrollViewer extends Rectangle {
@@ -29,7 +29,7 @@ export class ScrollViewer extends Rectangle {
     private _window: Container;
     private _windowContents: Control;
 
-    /** 
+    /**
      * Adds windowContents to the grid view window
      * @param windowContents the contents to add the grid view window
      */
