@@ -3,7 +3,6 @@ module BABYLON {
      * The action to be carried out following a trigger
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
      */
-
     export class Action {
         /**
          * Trigger for the action

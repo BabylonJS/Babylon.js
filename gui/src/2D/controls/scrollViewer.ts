@@ -7,7 +7,8 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Container } from "./container";
 import { TextBlock } from "./textBlock";
 
-/** Class used to hold a viewer window and sliders in a grid
+/** 
+ * Class used to hold a viewer window and sliders in a grid
 */
 export class ScrollViewer extends Rectangle {
     private _grid: Grid;
@@ -28,8 +29,9 @@ export class ScrollViewer extends Rectangle {
     private _window: Container;
     private _windowContents: Control;
 
-    /** Adds windowContents to the grid view window 0, 0
-     * @param windowContents the contents to add the grid view window 0, 0
+    /** 
+     * Adds windowContents to the grid view window
+     * @param windowContents the contents to add the grid view window
      */
     public addToWindow(windowContents: Control): void {
         this._window.removeControl(this._windowContents);
@@ -133,7 +135,6 @@ export class ScrollViewer extends Rectangle {
         public name?: string) {
         super(name);
 
-        //this.clipChildren = false;
         this.onDirtyObservable.add(() => {
             this._horizontalBarSpace.color = this.color;
             this._verticalBarSpace.color = this.color;
@@ -165,7 +166,6 @@ export class ScrollViewer extends Rectangle {
         this._grid.addColumnDefinition(this._scrollGridWidth, true);
         this._grid.addRowDefinition(1, true);
         this._grid.addRowDefinition(this._scrollGridHeight, true);
-        //this._grid.clipChildren = false;
 
         this.addControl(this._grid);
         this._grid.addControl(this._window, 0, 0);
