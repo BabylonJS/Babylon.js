@@ -29,18 +29,18 @@ export class ScrollViewer extends Rectangle {
     private _windowContents: Control;
 
     /** Adds windowContents to the grid view window 0, 0
-     * @param windowContents the contents to add the grid view window 0, 0 
+     * @param windowContents the contents to add the grid view window 0, 0
      */
     public addToWindow(windowContents: Control): void {
         this._window.removeControl(this._windowContents);
         this._windowContents.dispose();
         this._windowContents = windowContents;
-        if( windowContents.typeName === "TextBlock" ) {
+        if (windowContents.typeName === "TextBlock") {
             this._updateTextBlock(windowContents);
         }
         else {
             this._updateScroller(windowContents);
-        }       
+        }
         this._window.addControl(windowContents);
     }
 
@@ -139,7 +139,7 @@ export class ScrollViewer extends Rectangle {
             this._verticalBarSpace.color = this.color;
             this._dragSpace.color = this.color;
             this._updateScroller(this._windowContents);
-            if( this._windowContents.typeName === "TextBlock" ) {
+            if (this._windowContents.typeName === "TextBlock") {
                 this._updateTextBlock(this._windowContents);
             }
         });
@@ -151,7 +151,7 @@ export class ScrollViewer extends Rectangle {
         this._window = new Container();
         this._window.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._window.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-        
+
         this._windowContents = new Control();
         this._window.addControl(this._windowContents);
 
@@ -207,7 +207,7 @@ export class ScrollViewer extends Rectangle {
         this._horizontalBar.color = "grey";
         this._horizontalBar.borderColor = "#444444";
         this._horizontalBar.background = "white";
-        
+
         this._horizontalBarSpace = new Rectangle();
         this._horizontalBarSpace.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._horizontalBarSpace.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
@@ -222,10 +222,10 @@ export class ScrollViewer extends Rectangle {
 
         this._dragSpace = new Rectangle();
         this._dragSpace.color = this.color;
-        this._dragSpace.thickness = 2;;
+        this._dragSpace.thickness = 2;
         this._dragSpace.background = this._barColor;
         this._grid.addControl(this._dragSpace, 1, 1);
-    } 
+    }
 
     /** Gets or sets the bar color */
     public get barColor(): string {
@@ -279,7 +279,7 @@ export class ScrollViewer extends Rectangle {
 
         let viewerWidth = this._width.getValueInPixel(this._host, parentMeasure.width);
         let viewerHeight = this._height.getValueInPixel(this._host, parentMeasure.height);
-        
+
         let innerWidth = viewerWidth - this._scrollGridWidth - 2 * this.thickness;
         let innerHeight = viewerHeight  - this._scrollGridHeight - 2 * this.thickness;
         this._horizontalBar.width = (innerWidth * 0.8) + "px";
@@ -293,16 +293,16 @@ export class ScrollViewer extends Rectangle {
     private _updateScroller(windowContents: Control): void {
 
         let windowContentsWidth: number  = parseFloat(windowContents.width.toString());
-        if(windowContents._width.unit === 0) {
+        if (windowContents._width.unit === 0) {
             this._widthScale = windowContentsWidth / 100;
             windowContentsWidth = this._host.getSize().width * this._widthScale;
             windowContents.width = windowContentsWidth + "px";
         }
 
         let windowContentsHeight: number  = parseFloat(windowContents.height.toString());
-        if(windowContents._height.unit === 0) {
+        if (windowContents._height.unit === 0) {
             this._heightScale = windowContentsHeight / 100;
-            windowContentsHeight = this._host.getSize().height * this._heightScale
+            windowContentsHeight = this._host.getSize().height * this._heightScale;
             windowContents.height = this._host.getSize().height * this._heightScale + "px";
         }
 
@@ -312,12 +312,12 @@ export class ScrollViewer extends Rectangle {
         this._windowContents.height = windowContents.height;
 
         let viewerWidth = this._width.getValueInPixel(this._host, this._host.getSize().width);
-        let viewerHeight = this._height.getValueInPixel(this._host, this._host.getSize().height)
-        
+        let viewerHeight = this._height.getValueInPixel(this._host, this._host.getSize().height);
+
         let innerWidth = viewerWidth - this._scrollGridWidth - 2 * this.thickness;
         let innerHeight = viewerHeight  - this._scrollGridHeight - 2 * this.thickness;
-        
-        if(windowContentsWidth <= innerWidth) {
+
+        if (windowContentsWidth <= innerWidth) {
             this._grid.setRowDefinition(0, viewerHeight - 2 * this.thickness , true);
             this._grid.setRowDefinition(1, 0, true);
             this._horizontalBar.isVisible = false;
@@ -328,8 +328,8 @@ export class ScrollViewer extends Rectangle {
             this._horizontalBar.isVisible = true;
         }
 
-        if(windowContentsHeight < innerHeight) {
-            this._grid.setColumnDefinition(0, viewerWidth - 2 * this.thickness, true);            
+        if (windowContentsHeight < innerHeight) {
+            this._grid.setColumnDefinition(0, viewerWidth - 2 * this.thickness, true);
             this._grid.setColumnDefinition(1, 0, true);
             this._verticalBar.isVisible = false;
         }
@@ -347,7 +347,7 @@ export class ScrollViewer extends Rectangle {
     private _updateTextBlock(windowContents: Control): void {
         let viewerWidth = this._width.getValueInPixel(this._host, this._host.getSize().width);
         let innerWidth = viewerWidth - this._scrollGridWidth - 2 * this.thickness;
-        
+
         windowContents.width = innerWidth + "px";
 
         this._window.width = windowContents.width;
@@ -359,6 +359,6 @@ export class ScrollViewer extends Rectangle {
             this._window.height = windowContents.height;
             this._windowContents.height = windowContents.height;
             this._updateScroller(windowContents);
-        })
+        });
     }
 }
