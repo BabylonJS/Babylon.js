@@ -233,7 +233,7 @@ module BABYLON {
                 return false;
             }
 
-            if (this.infiniteDistance !== this._cache.infiniteDistance) {
+            if (this.infiniteDistance) {
                 return false;
             }
 
