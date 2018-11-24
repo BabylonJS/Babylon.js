@@ -18,7 +18,7 @@ jobs:
   - stage: BabylonJS Build and test
     env: JOB=WhatsNewUpdate
     script: 
-    - cd ./Tools/Gulp
+    - cd ../../src
     - tsc --module amd --outFile amd.js
 notifications:
   slack:
