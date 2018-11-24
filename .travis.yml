@@ -6,7 +6,7 @@ node_js:
 git:
   depth: 1
 install:
-- npm install -g typescript
+- npm install -g typescript@3.0.3
 jobs:
   include:
   - stage: BabylonJS Build and test
