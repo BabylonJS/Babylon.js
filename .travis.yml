@@ -18,6 +18,7 @@ jobs:
     env: JOB=WhatsNewUpdate
     script: 
     - cd ../../src
+    - tsc -v
     - tsc --module amd --outFile amd.js
 notifications:
   slack:
