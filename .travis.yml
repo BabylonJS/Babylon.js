@@ -14,7 +14,7 @@ jobs:
     script: 
     - cd ./src
     - tsc -v
-    - tsc --module amd --outFile -p ./tsconfig.jon amd.js
+    - tsc --module amd --outFile -p amd.js ./tsconfig.json
 notifications:
   slack:
     secure: YkE09zZ8Bf0olZtogj8rGLSxtWfumGdJbCBNH0Cn16/NYoDDAQgmBlF6NoO0n/Y2zDT1PAkUYym9PM7CYFWMyXdCSASlgAAxbHsTtUKk0Gg34PKQj1VY2JV762mncP9zWe+9zRPVdf21GPwuZtidOH6eMxqpiDIIgo9d1GzZ39Cjt/onBBRrJz2q90V6//u6086+JVMqgC1kr+81f8PB9oS6mvEzZtC7T0XhldbrWPta174DlxQgRybdUSTFEyJhuQYLeHYpFiSddyqfwl9sVxG0h6t+Qr3neEvVNawSYo3j2glQCftC2/MCYaKqEWzcGF+HCz+m1d+7x5LmkqRxIfmjF9b42rzzSiz/MjfISRxQa2uTmvj4OXS1r1Z3Ii0C7krmh1YLA1h+6u/Ot1Z9r/RUnwdw2ljNrZ9nxsNtVphEBcdyAunlReieAGxkxFcOBlB1hVYvFEUqHVVimsoXFvnCg3JYVZZtH5AIH+ereAd8q4bSum9CxEN40SNHJ9Ufrtf/PAJDm/qHn2Q7w5OB5JMlOvUgCWc0svcwxByUgM/PZERc/B6+sS6PE57V5HuHybtvGiwQdVTJue2DWlZ75IgctmzWiRZb06HELuMohpu26MsjPZW/pu/f/MMXq744gXZD4mpD/U0daYVEklzReY6LLSMFjk6UWNJ/DKYmoPg=
