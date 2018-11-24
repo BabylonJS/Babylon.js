@@ -12,7 +12,6 @@ install:
 - travis_retry npm install -g gulp@4.0.0
 - travis_retry npm install -g typescript
 - cd ./Tools/Gulp
-- travis_retry npm install
 jobs:
   include:
   - stage: BabylonJS Build and test
