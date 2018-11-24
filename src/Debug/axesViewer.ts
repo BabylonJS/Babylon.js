@@ -157,4 +157,3 @@ import { AxisDragGizmo } from "Gizmos/axisDragGizmo";
             });
         }
     }
-}
