@@ -1054,7 +1054,7 @@ module BABYLON {
             var camRight = <ArcRotateCamera>this._rigCameras[1];
 
             camLeft.beta = camRight.beta = this.beta;
-            // This looks like being an issue in rig mode. Should be looked if 
+            // This looks like being an issue in rig mode. Should be looked if
             // further issues are found. but was modifying the view matrix twice
             // Line below commented in order to fix http://www.html5gamedevs.com/topic/41454-confusion-about-camera-positions/
             // camLeft.radius = camRight.radius = this.radius;
