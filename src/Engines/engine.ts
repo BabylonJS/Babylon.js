@@ -3708,7 +3708,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                 return;
             }
 
-            this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
+            this._gl.uniformMatrix4fv(uniform, false, matrix.toArray() as Float32Array);
         }
 
         /**
