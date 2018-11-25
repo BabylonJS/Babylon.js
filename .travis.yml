@@ -4,11 +4,10 @@ language: node_js
 node_js:
 - '8'
 git:
-  depth: 3
+  depth: 2
 cache:
   directories:
   - node_modules
-  - Tools/Gulp/node_modules
   - Playground/node_modules
   - tests/unit/node_modules
 install:
