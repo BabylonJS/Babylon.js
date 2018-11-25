@@ -36,7 +36,7 @@ declare module "scene" {
         return this._outlineRenderer;
     };
 
-declare module "Meshes/AbstractMesh" {
+declare module "Meshes/abstractMesh" {
     export interface AbstractMesh {
         /** @hidden (Backing field) */
         _renderOutline: boolean;
