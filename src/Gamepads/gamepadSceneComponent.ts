@@ -41,7 +41,7 @@ declare module "scene" {
         configurable: true
     });
 
-declare module "Cameras/FreeCameraInputsManager" {
+declare module "Cameras/freeCameraInputsManager" {
     /**
      * Interface representing a free camera inputs manager
      */
@@ -62,7 +62,7 @@ declare module "Cameras/FreeCameraInputsManager" {
         return this;
     };
 
-declare module "Cameras/ArcRotateCameraInputsManager" {
+declare module "Cameras/arcRotateCameraInputsManager" {
     /**
      * Interface representing an arc rotate camera inputs manager
      */

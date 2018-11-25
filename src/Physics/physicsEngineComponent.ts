@@ -138,7 +138,7 @@ declare module "scene" {
         }
     };
 
-declare module "Meshes/AbstractMesh" {
+declare module "Meshes/abstractMesh" {
     export interface AbstractMesh {
         /** @hidden */
         _physicsImpostor: Nullable<PhysicsImpostor>;

@@ -1,7 +1,7 @@
 import { Vector3, Color3, Quaternion } from "Maths/math";
 import { Nullable } from "types";
 import { Scene } from "scene";
-import { TransformNode } from "Meshes/TransformNode";
+import { TransformNode } from "Meshes/transformNode";
 import { StandardMaterial } from "Materials/standardMaterial";
 import { AxisDragGizmo } from "Gizmos/axisDragGizmo";
 
