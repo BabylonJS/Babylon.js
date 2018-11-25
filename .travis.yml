@@ -7,11 +7,13 @@ git:
   depth: 3
 cache:
   directories:
+  - node_modules
   - Tools/Gulp/node_modules
   - Playground/node_modules
   - tests/unit/node_modules
 install:
 - travis_retry npm install -g gulp@4.0.0
+- travis_retry npm install -g typescript
 - cd ./Tools/Gulp
 - travis_retry npm install
 jobs:

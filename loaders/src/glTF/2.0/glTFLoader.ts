@@ -1702,14 +1702,19 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
             const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
             const image = ArrayItem.Get(`${context}/source`, this.gltf.images, texture.source);
-            let textureURL: Nullable<string> = null;
-            if (image.uri && !Tools.IsBase64(image.uri) && this.babylonScene.getEngine().textureFormatInUse) {
-                // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
-                textureURL = this._uniqueRootUrl + image.uri;
+            let url: Nullable<string> = null;
+            if (image.uri) {
+                if (Tools.IsBase64(image.uri)) {
+                    url = image.uri;
+                }
+                else if (this.babylonScene.getEngine().textureFormatInUse) {
+                    // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
+                    url = this._rootUrl + image.uri;
+                }
             }
 
             const deferred = new Deferred<void>();
-            const babylonTexture = new Texture(textureURL, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
+            const babylonTexture = new Texture(url, this.babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
                 if (!this._disposed) {
                     deferred.resolve();
                 }
@@ -1720,7 +1725,7 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
             });
             promises.push(deferred.promise);
 
-            if (!textureURL) {
+            if (!url) {
                 promises.push(this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
                     const name = image.uri || `${this._fileName}#image${image.index}`;
                     const dataUrl = `data:${this._uniqueRootUrl}${name}`;

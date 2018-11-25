@@ -27,7 +27,7 @@ export var _forceOcclusionQueryToBundle = true;
         public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
     }
 
-declare module "Engines/Engine" {
+declare module "Engines/engine" {
     export interface Engine {
         /**
          * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
@@ -278,7 +278,7 @@ declare module "Engines/Engine" {
         return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
     };
 
-declare module "Meshes/AbstractMesh" {
+declare module "Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
          * Backing filed

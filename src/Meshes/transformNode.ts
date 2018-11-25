@@ -243,7 +243,7 @@ import { Bone } from "Bones/bone";
                 return false;
             }
 
-            if (this.infiniteDistance !== this._cache.infiniteDistance) {
+            if (this.infiniteDistance) {
                 return false;
             }
 

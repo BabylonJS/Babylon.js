@@ -16,8 +16,8 @@ var processData = function(data, options) {
         let line = lines[index];
 
         // Replace Type Imports
-        var regex = /(.*)type ([A-Za-z0-9]*) = import\("(.*)"\)\.(.*);/g;
-        var match = regex.exec(line);
+        var regexTypeImport = /(.*)type ([A-Za-z0-9]*) = import\("(.*)"\)\.(.*);/g;
+        var match = regexTypeImport.exec(line);
         if (match) {
             var spaces = match[1]
             var module = match[3];
@@ -47,6 +47,24 @@ var processData = function(data, options) {
             line = line.replace(/import\("/g, `import("${moduleName}/`);
             // Side Effect Import
             line = line.replace(/import "/g, `import "${moduleName}/`);
+        }
+
+        // Replace Static Readonly declaration for Legacy TS Version compat
+        var regexVar = /(.*)readonly (.*) = (.*);/g;
+        match = regexVar.exec(line);
+        if (match) {
+            let spaces = match[1];
+            let name = match[2];
+            let value = match[3];
+            if (value === "true" || value === "false") {
+                line = `${spaces}readonly ${name}: boolean;`;
+            }
+            else if (value.startsWith('"')) {
+                line = `${spaces}readonly ${name}: string;`;    
+            }
+            else {
+                line = `${spaces}readonly ${name}: number;`;
+            }
         }
 
         lines[index] = line;

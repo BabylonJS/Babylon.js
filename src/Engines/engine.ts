@@ -516,7 +516,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.9";
+            return "4.0.0-alpha.10";
         }
 
         /**
@@ -3708,7 +3708,7 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                 return;
             }
 
-            this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
+            this._gl.uniformMatrix4fv(uniform, false, matrix.toArray() as Float32Array);
         }
 
         /**
