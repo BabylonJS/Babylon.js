@@ -9,7 +9,6 @@ cache:
   directories:
   - node_modules
   - Playground/node_modules
-  - tests/unit/node_modules
 install:
 - travis_retry npm install -g gulp@4.0.0
 - travis_retry npm install -g typescript
