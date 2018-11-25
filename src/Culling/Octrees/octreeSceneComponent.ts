@@ -61,7 +61,7 @@ declare module "scene" {
         configurable: true
     });
 
-declare module "Meshes/AbstractMesh" {
+declare module "Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
          * @hidden

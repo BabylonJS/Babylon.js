@@ -39,7 +39,7 @@ import "Shaders/particles.vertex";
         }
     });
 
-declare module "Engines/Engine" {
+declare module "Engines/engine" {
     export interface Engine {
         /**
          * Create an effect to use with particle systems.

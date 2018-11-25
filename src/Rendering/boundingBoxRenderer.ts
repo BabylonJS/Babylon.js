@@ -60,7 +60,7 @@ declare module "scene" {
         return this._boundingBoxRenderer;
     };
 
-declare module "Meshes/AbstractMesh" {
+declare module "Meshes/abstractMesh" {
     export interface AbstractMesh {
         /** @hidden (Backing field) */
         _showBoundingBox: boolean;
