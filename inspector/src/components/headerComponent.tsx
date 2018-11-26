@@ -7,6 +7,7 @@ export interface IHeaderComponentProps {
     title: string,
     handleBack?: boolean,
     noExpand?: boolean,
+    noClose?: boolean,
     noCommands?: boolean,
     onPopup: () => void,
     onClose: () => void,
@@ -89,7 +90,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
                         </div>
                     }
                     {
-                        !this.props.noCommands &&
+                        !this.props.noCommands && !this.props.noClose &&
                         <div className="close" onClick={() => this.props.onClose()}>
                             <FontAwesomeIcon icon={faTimes} />
                         </div>

@@ -107,14 +107,65 @@ export class Control {
     /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
     public clipChildren = true;
 
+    private _shadowOffsetX = 0;
     /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
-    public shadowOffsetX = 0;
+    public get shadowOffsetX() {
+        return this._shadowOffsetX;
+    }
+
+    public set shadowOffsetX(value: number) {
+        if (this._shadowOffsetX === value) {
+            return;
+        }
+
+        this._shadowOffsetX = value;
+        this._markAsDirty();
+    }
+
+    private _shadowOffsetY = 0;
     /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
-    public shadowOffsetY = 0;
+    public get shadowOffsetY() {
+        return this._shadowOffsetY;
+    }
+
+    public set shadowOffsetY(value: number) {
+        if (this._shadowOffsetY === value) {
+            return;
+        }
+
+        this._shadowOffsetY = value;
+        this._markAsDirty();
+    }
+
+    private _shadowBlur = 0;
     /** Gets or sets a value indicating the amount of blur to use to render the shadow */
-    public shadowBlur = 0;
+    public get shadowBlur() {
+        return this._shadowBlur;
+    }
+
+    public set shadowBlur(value: number) {
+        if (this._shadowBlur === value) {
+            return;
+        }
+
+        this._shadowBlur = value;
+        this._markAsDirty();
+    }
+
+    private _shadowColor = 'black';
     /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
-    public shadowColor = '#000';
+    public get shadowColor() {
+        return this._shadowColor;
+    }
+
+    public set shadowColor(value: string) {
+        if (this._shadowColor === value) {
+            return;
+        }
+
+        this._shadowColor = value;
+        this._markAsDirty();
+    }
 
     /** Gets or sets the cursor to use when the control is hovered */
     public hoverCursor = "";
@@ -396,6 +447,9 @@ export class Control {
 
     /** Gets or set font family */
     public get fontFamily(): string {
+        if (!this._fontSet) {
+            return "";
+        }
         return this._fontFamily;
     }
 

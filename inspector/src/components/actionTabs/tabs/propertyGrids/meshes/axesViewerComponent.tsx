@@ -40,9 +40,9 @@ export class AxesViewerComponent extends React.Component<IAxisViewerComponentPro
         const y = new BABYLON.Vector3(0, 1, 0);
         const z = new BABYLON.Vector3(0, 0, 1);
 
-        viewer.xAxisMesh!.reservedDataStore = { hidden: true };
-        viewer.yAxisMesh!.reservedDataStore = { hidden: true };
-        viewer.zAxisMesh!.reservedDataStore = { hidden: true };
+        viewer.xAxis.reservedDataStore = { hidden: true };
+        viewer.yAxis.reservedDataStore = { hidden: true };
+        viewer.zAxis.reservedDataStore = { hidden: true };
 
         node.reservedDataStore.onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
             let matrix = node.getWorldMatrix();

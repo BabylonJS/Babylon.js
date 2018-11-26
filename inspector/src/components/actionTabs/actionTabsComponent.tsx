@@ -17,6 +17,7 @@ interface IActionTabsComponentProps {
     noCommands?: boolean,
     noHeader?: boolean,
     noExpand?: boolean,
+    noClose?: boolean,
     popupMode?: boolean,
     onPopup?: () => void,
     onClose?: () => void,
@@ -101,7 +102,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                 <div id="actionTabs">
                     {
                         !this.props.noHeader &&
-                        <HeaderComponent title="INSPECTOR" handleBack={true} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
+                        <HeaderComponent title="INSPECTOR" handleBack={true} noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
                     }
                     {this.renderContent()}
                 </div>
@@ -124,7 +125,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
             <Resizable id="actionTabs" minWidth={300} maxWidth={600} size={{ height: "100%" }} minHeight="100%" enable={{ top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}>
                 {
                     !this.props.noHeader &&
-                    <HeaderComponent title="INSPECTOR" handleBack={true} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
+                    <HeaderComponent title="INSPECTOR" handleBack={true} noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
                 }
                 {this.renderContent()}
             </Resizable>
