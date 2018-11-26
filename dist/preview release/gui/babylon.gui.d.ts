@@ -2013,6 +2013,11 @@ declare module BABYLON.GUI {
             constructor(
             /** name of ScrollViewer */
             name?: string | undefined);
+            /**
+                * Gets or sets the mouse wheel precision
+                * from 0 to 1 with a default value of 0.05
+                * */
+            wheelPrecision: number;
             /** Gets or sets the bar color */
             barColor: string;
             /** Gets or sets the bar color */
