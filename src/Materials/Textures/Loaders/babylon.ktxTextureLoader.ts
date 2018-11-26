@@ -32,6 +32,10 @@ module BABYLON {
          */
         public transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string {
             var lastDot = rootUrl.lastIndexOf('.');
+            if (lastDot != -1 && rootUrl.substring(lastDot + 1) == "ktx") {
+                // Already transformed
+                return rootUrl;
+            }
             return (lastDot > -1 ? rootUrl.substring(0, lastDot) : rootUrl) + textureFormatInUse;
         }
 
