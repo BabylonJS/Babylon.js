@@ -18,7 +18,7 @@
 - GUI:
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
   - Added support for clipboard events to let users perform `cut`, `copy` and `paste` events ([Saket Saurabh](https://github.com/ssaket))
-  - Added new ScrollViewer for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/))
+  - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/))
 
 ## Updates
 
@@ -120,6 +120,7 @@
 - Fixed position and rotation of plane mesh created by MeshBuilder.CreatePlane when specifying a source plane ([sable](https://github.com/thscott), [bghgary](https://github.com/bghgary))
 - Fixed inspector dynamic loading ([Sebavan](https://github.com/Sebavan))
 - Fixed infiniteDistance not working anymore ([Sebavan](https://github.com/Sebavan))
+- Fixed bug in SolidParticle BoundingSphere update within the SolidParticleSystem ([barroij](https://github.com/barroij))
 
 ### Viewer
 
