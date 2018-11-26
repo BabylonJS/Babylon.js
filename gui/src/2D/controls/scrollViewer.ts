@@ -6,6 +6,7 @@ import { Slider } from "./slider";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Container } from "./container";
 import { TextBlock } from "./textBlock";
+import { PointerEventTypes } from "babylonjs";
 
 /**
  * Class used to hold a viewer window and sliders in a grid
@@ -402,7 +403,7 @@ export class ScrollViewer extends Rectangle {
     private _attachWheel() {
         let scene = this._host.getScene();
         scene!.onPointerObservable.add((pi, state) => {
-            if (!this._pointerIsOver || pi.type !== BABYLON.PointerEventTypes.POINTERWHEEL) {
+            if (!this._pointerIsOver || pi.type !== PointerEventTypes.POINTERWHEEL) {
                 return;
             }
             if (this._verticalBar.isVisible == true) {
