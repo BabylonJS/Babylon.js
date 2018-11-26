@@ -4279,7 +4279,7 @@ module BABYLON {
             texture.url = url;
             texture.generateMipMaps = !noMipmap;
             texture.samplingMode = samplingMode;
-            texture.invertY = invertY; // Note: texture.invertY may get inverted by the loader, eg. ktx is upsidedown by default
+            texture.invertY = invertY;
 
             if (!this._doNotHandleContextLost) {
                 // Keep a link to the buffer only if we plan to handle context lost
@@ -6182,7 +6182,6 @@ module BABYLON {
 
         private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
             processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
-            invertY = invertY === undefined ? true : invertY;
             var maxTextureSize = this.getCaps().maxTextureSize;
             var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
             var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
@@ -6202,11 +6201,7 @@ module BABYLON {
             }
 
             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-            if (isCompressed && invertY) {
-                // UNPACK_FLIP_Y_WEBGL is not supported by compressed textures so vScale needs to be inverted
-                texture._invertVScale = true;
-            }
-            this._unpackFlipY(invertY);
+            this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
             texture.baseWidth = width;
             texture.baseHeight = height;
