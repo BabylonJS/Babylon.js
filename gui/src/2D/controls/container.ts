@@ -13,7 +13,7 @@ export class Container extends Control {
     /** @hidden */
     protected _measureForChildren = Measure.Empty();
     /** @hidden */
-    protected _background: string;
+    protected _background = "";
     /** @hidden */
     protected _adaptWidthToChildren = false;
     /** @hidden */

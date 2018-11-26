@@ -33,6 +33,7 @@ interface ISceneExplorerComponentProps {
     noCommands?: boolean,
     noHeader?: boolean,
     noExpand?: boolean,
+    noClose?: boolean,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
     globalState: GlobalState,
     popupMode?: boolean,
@@ -234,7 +235,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <div id="sceneExplorer">
                     {
                         !this.props.noHeader &&
-                        <HeaderComponent title="SCENE EXPLORER" noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
+                        <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
                     }
                     {this.renderContent()}
                 </div>
@@ -273,7 +274,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             <Resizable tabIndex={-1} id="sceneExplorer" ref="sceneExplorer" size={{ height: "100%" }} minWidth={300} maxWidth={600} minHeight="100%" enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }} onKeyDown={keyEvent => this.processKeys(keyEvent)}>
                 {
                     !this.props.noHeader &&
-                    <HeaderComponent title="SCENE EXPLORER" noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
+                    <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
                 }
                 {this.renderContent()}
             </Resizable>

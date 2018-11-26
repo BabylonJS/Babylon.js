@@ -28,6 +28,7 @@ module BABYLON {
                 newCamera.minZ = 0;
                 newCamera.parent = this;
                 newCamera.rotationQuaternion = new BABYLON.Quaternion();
+                newCamera.updateUpVectorFromRotation = true;
                 this.rigCameras.push(newCamera);
             }
             while (this.rigCameras.length > viewCount) {
