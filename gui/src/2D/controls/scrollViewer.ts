@@ -28,6 +28,8 @@ export class ScrollViewer extends Rectangle {
     private _endTop: number;
     private _window: Container;
     private _windowContents: Control;
+    private _pointerIsOver: Boolean = false;
+    private _wheelPrecision: number = 0.05;
 
     /**
      * Adds windowContents to the grid view window
@@ -145,6 +147,14 @@ export class ScrollViewer extends Rectangle {
             }
         });
 
+        this.onPointerEnterObservable.add(() => {
+            this._pointerIsOver = true;
+        });
+
+        this.onPointerOutObservable.add(() => {
+            this._pointerIsOver = false;
+        });
+
         this._grid = new Grid();
         this._horizontalBar = new Slider();
         this._verticalBar = new Slider();
@@ -227,6 +237,30 @@ export class ScrollViewer extends Rectangle {
         this._grid.addControl(this._dragSpace, 1, 1);
     }
 
+    /**
+     * Gets or sets the mouse wheel precision
+     * from 0 to 1 with a default value of 0.05
+     * */
+    public get wheelPrecision(): number {
+        return this._wheelPrecision;
+    }
+
+    public set wheelPrecision(value: number) {
+        if (this._wheelPrecision === value) {
+            return;
+        }
+
+        if (value < 0) {
+            value = 0;
+        }
+
+        if (value > 1) {
+            value = 1;
+        }
+
+        this._wheelPrecision = value;
+    }
+
     /** Gets or sets the bar color */
     public get barColor(): string {
         return this._barColor;
@@ -287,6 +321,8 @@ export class ScrollViewer extends Rectangle {
 
         this._grid.setColumnDefinition(0, innerWidth, true);
         this._grid.setRowDefinition(0, innerHeight, true);
+
+        this._attachWheel();
     }
 
     /** @hidden */
@@ -359,6 +395,30 @@ export class ScrollViewer extends Rectangle {
             this._window.height = windowContents.height;
             this._windowContents.height = windowContents.height;
             this._updateScroller(windowContents);
+        });
+    }
+
+    /** @hidden */
+    private _attachWheel() {
+        let scene = this._host.getScene();
+        scene!.onPointerObservable.add((pi, state) => {
+            if (!this._pointerIsOver || pi.type !== BABYLON.PointerEventTypes.POINTERWHEEL) {
+                return;
+            }
+            if (this._verticalBar.isVisible == true) {
+                if ((<MouseWheelEvent>pi.event).deltaY < 0 && this._verticalBar.value > 0) {
+                    this._verticalBar.value -= this._wheelPrecision * 100;
+                } else if ((<MouseWheelEvent>pi.event).deltaY > 0 && this._verticalBar.value < this._verticalBar.maximum) {
+                    this._verticalBar.value += this._wheelPrecision * 100;
+                }
+            }
+            if (this._horizontalBar.isVisible == true) {
+                if ((<MouseWheelEvent>pi.event).deltaX < 0 && this._horizontalBar.value < this._horizontalBar.maximum) {
+                    this._horizontalBar.value += this._wheelPrecision * 100;
+                } else if ((<MouseWheelEvent>pi.event).deltaX > 0 && this._horizontalBar.value > 0) {
+                    this._horizontalBar.value -= this._wheelPrecision * 100;
+                }
+            }
         });
     }
 }
