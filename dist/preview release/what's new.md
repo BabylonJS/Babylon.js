@@ -120,6 +120,7 @@
 - Fixed position and rotation of plane mesh created by MeshBuilder.CreatePlane when specifying a source plane ([sable](https://github.com/thscott), [bghgary](https://github.com/bghgary))
 - Fixed inspector dynamic loading ([Sebavan](https://github.com/Sebavan))
 - Fixed infiniteDistance not working anymore ([Sebavan](https://github.com/Sebavan))
+- Fixed bug in SolidParticle BoundingSphere update within the SolidParticleSystem ([barroij](https://github.com/barroij))
 
 ### Viewer
 
