@@ -7,78 +7,89 @@ module BABYLON.Debug {
      * The Axes viewer will show 3 axes in a specific point in space
      */
     export class AxesViewer {
-        private _xmesh: Nullable<AbstractMesh>;
-        private _ymesh: Nullable<AbstractMesh>;
-        private _zmesh: Nullable<AbstractMesh>;
+        private _xAxis: TransformNode;
+        private _yAxis: TransformNode;
+        private _zAxis: TransformNode;
+        private _tmpVector = new Vector3();
+        private _scaleLinesFactor = 4;
+        private _instanced = false;
 
         /**
          * Gets the hosting scene
          */
-        public scene: Nullable<Scene>;
+        public scene: Scene;
+
         /**
          * Gets or sets a number used to scale line length
          */
         public scaleLines = 1;
 
-        /** Gets the mesh used to render x-axis */
-        public get xAxisMesh(): Nullable<AbstractMesh> {
-            return this._xmesh;
+        /** Gets the node hierarchy used to render x-axis */
+        public get xAxis(): TransformNode {
+            return this._xAxis;
         }
 
-        /** Gets the mesh used to render x-axis */
-        public get yAxisMesh(): Nullable<AbstractMesh> {
-            return this._ymesh;
+        /** Gets the node hierarchy used to render y-axis */
+        public get yAxis(): TransformNode {
+            return this._yAxis;
         }
 
-        /** Gets the mesh used to render x-axis */
-        public get zAxisMesh(): Nullable<AbstractMesh> {
-            return this._zmesh;
-        }
-
-        private static _recursiveChangeRenderingGroupId(mesh: AbstractMesh, id: number) {
-            mesh.renderingGroupId = id;
-            mesh.getChildMeshes().forEach((m) => {
-                AxesViewer._recursiveChangeRenderingGroupId(m, id);
-            });
+        /** Gets the node hierarchy used to render z-axis */
+        public get zAxis(): TransformNode {
+            return this._zAxis;
         }
 
         /**
          * Creates a new AxesViewer
          * @param scene defines the hosting scene
          * @param scaleLines defines a number used to scale line length (1 by default)
+         * @param renderingGroupId defines a number used to set the renderingGroupId of the meshes (2 by default)
+         * @param xAxis defines the node hierarchy used to render the x-axis
+         * @param yAxis defines the node hierarchy used to render the y-axis
+         * @param zAxis defines the node hierarchy used to render the z-axis
          */
-        constructor(scene: Scene, scaleLines = 1) {
+        constructor(scene: Scene, scaleLines = 1, renderingGroupId: Nullable<number> = 2, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode) {
             this.scaleLines = scaleLines;
 
-            var greenColoredMaterial = new BABYLON.StandardMaterial("", scene);
-            greenColoredMaterial.disableLighting = true;
-            greenColoredMaterial.emissiveColor = BABYLON.Color3.Green().scale(0.5);
+            if (!xAxis) {
+                var redColoredMaterial = new StandardMaterial("", scene);
+                redColoredMaterial.disableLighting = true;
+                redColoredMaterial.emissiveColor = Color3.Red().scale(0.5);
+                xAxis = AxisDragGizmo._CreateArrow(scene, redColoredMaterial);
+            }
 
-            var redColoredMaterial = new BABYLON.StandardMaterial("", scene);
-            redColoredMaterial.disableLighting = true;
-            redColoredMaterial.emissiveColor = BABYLON.Color3.Red().scale(0.5);
+            if (!yAxis) {
+                var greenColoredMaterial = new StandardMaterial("", scene);
+                greenColoredMaterial.disableLighting = true;
+                greenColoredMaterial.emissiveColor = Color3.Green().scale(0.5);
+                yAxis = AxisDragGizmo._CreateArrow(scene, greenColoredMaterial);
+            }
 
-            var blueColoredMaterial = new BABYLON.StandardMaterial("", scene);
-            blueColoredMaterial.disableLighting = true;
-            blueColoredMaterial.emissiveColor = BABYLON.Color3.Blue().scale(0.5);
+            if (!zAxis) {
+                var blueColoredMaterial = new StandardMaterial("", scene);
+                blueColoredMaterial.disableLighting = true;
+                blueColoredMaterial.emissiveColor = Color3.Blue().scale(0.5);
+                zAxis = AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
+            }
 
-            this._xmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, redColoredMaterial);
-            this._ymesh = BABYLON.AxisDragGizmo._CreateArrow(scene, greenColoredMaterial);
-            this._zmesh = BABYLON.AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
+            this._xAxis = xAxis;
+            this._xAxis.rotationQuaternion = new Quaternion();
+            this._xAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
+            this._yAxis = yAxis;
+            this._yAxis.rotationQuaternion = new Quaternion();
+            this._yAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
+            this._zAxis = zAxis;
+            this._zAxis.rotationQuaternion = new Quaternion();
+            this._zAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
-            this._xmesh.rotationQuaternion = new BABYLON.Quaternion();
-            this._xmesh.scaling.scaleInPlace(4);
-            this._ymesh.rotationQuaternion = new BABYLON.Quaternion();
-            this._ymesh.scaling.scaleInPlace(4);
-            this._zmesh.rotationQuaternion = new BABYLON.Quaternion();
-            this._zmesh.scaling.scaleInPlace(4);
-
-            AxesViewer._recursiveChangeRenderingGroupId(this._xmesh, 2);
-            AxesViewer._recursiveChangeRenderingGroupId(this._ymesh, 2);
-            AxesViewer._recursiveChangeRenderingGroupId(this._zmesh, 2);
+            if (renderingGroupId != null) {
+                AxesViewer._SetRenderingGroupId(this._xAxis, renderingGroupId);
+                AxesViewer._SetRenderingGroupId(this._yAxis, renderingGroupId);
+                AxesViewer._SetRenderingGroupId(this._zAxis, renderingGroupId);
+            }
 
             this.scene = scene;
-            this.update(new BABYLON.Vector3(), Vector3.Right(), Vector3.Up(), Vector3.Forward());
+            this.update(new Vector3(), Vector3.Right(), Vector3.Up(), Vector3.Forward());
         }
 
         /**
@@ -89,51 +100,59 @@ module BABYLON.Debug {
          * @param zaxis defines the z axis of the viewer
          */
         public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
-            if (this._xmesh) {
-                this._xmesh.position.copyFrom(position);
+            this._xAxis.position.copyFrom(position);
+            xaxis.scaleToRef(-1, this._tmpVector);
+            this._xAxis.setDirection(this._tmpVector);
+            this._xAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
-                var cross = Vector3.Cross(Vector3.Forward(), xaxis);
-                this._xmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1 + Vector3.Dot(Vector3.Forward(), xaxis));
-                this._xmesh.rotationQuaternion!.normalize();
-            }
-            if (this._ymesh) {
-                this._ymesh.position.copyFrom(position);
+            this._yAxis.position.copyFrom(position);
+            yaxis.scaleToRef(-1, this._tmpVector);
+            this._yAxis.setDirection(this._tmpVector);
+            this._yAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
-                var cross = Vector3.Cross(Vector3.Forward(), yaxis);
-                this._ymesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1 + Vector3.Dot(Vector3.Forward(), yaxis));
-                this._ymesh.rotationQuaternion!.normalize();
-            }
-            if (this._zmesh) {
-                this._zmesh.position.copyFrom(position);
+            this._zAxis.position.copyFrom(position);
+            zaxis.scaleToRef(-1, this._tmpVector);
+            this._zAxis.setDirection(this._tmpVector);
+            this._zAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
+        }
 
-                var cross = Vector3.Cross(Vector3.Forward(), zaxis);
-                this._zmesh.rotationQuaternion!.set(cross.x, cross.y, cross.z, 1 + Vector3.Dot(Vector3.Forward(), zaxis));
-                this._zmesh.rotationQuaternion!.normalize();
-            }
-
+        /**
+         * Creates an instance of this axes viewer.
+         * @returns a new axes viewer with instanced meshes
+         */
+        public createInstance(): AxesViewer {
+            const xAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._xAxis);
+            const yAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._yAxis);
+            const zAxis = AxisDragGizmo._CreateArrowInstance(this.scene, this._zAxis);
+            const axesViewer = new AxesViewer(this.scene, this.scaleLines, null, xAxis, yAxis, zAxis);
+            axesViewer._instanced = true;
+            return axesViewer;
         }
 
         /** Releases resources */
         public dispose() {
-
-            if (this._xmesh) {
-                this._xmesh.dispose();
+            if (this._xAxis) {
+                this._xAxis.dispose(false, !this._instanced);
+                delete this._xAxis;
             }
 
-            if (this._ymesh) {
-                this._ymesh.dispose();
+            if (this._yAxis) {
+                this._yAxis.dispose(false, !this._instanced);
+                delete this._yAxis;
             }
 
-            if (this._zmesh) {
-                this._zmesh.dispose();
+            if (this._zAxis) {
+                this._zAxis.dispose(false, !this._instanced);
+                delete this._zAxis;
             }
 
-            this._xmesh = null;
-            this._ymesh = null;
-            this._zmesh = null;
-
-            this.scene = null;
+            delete this.scene;
         }
 
+        private static _SetRenderingGroupId(node: TransformNode, id: number) {
+            node.getChildMeshes().forEach((mesh) => {
+                mesh.renderingGroupId = id;
+            });
+        }
     }
 }
