@@ -113,7 +113,7 @@ function buildExternalLibraries(settings) {
     // Creates the required tasks.
     var tasks = [];
 
-    var cleanup = function() { return cleanShaders(); };
+    var cleanup = function() { return cleanShaders(settings); };
     var shaders = function() { return buildShaders(settings); };
     var buildMin = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, true) };
     var buildMax = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, false) };
