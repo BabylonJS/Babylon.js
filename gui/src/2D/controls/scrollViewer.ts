@@ -400,7 +400,6 @@ export class ScrollViewer extends Rectangle {
         });
     }
 
-    
     /** @hidden */
     private _attachWheel() {
         let scene = this._host.getScene();
@@ -426,9 +425,9 @@ export class ScrollViewer extends Rectangle {
     }
 
     /** Releases associated resources */
-    public dispose() {        
+    public dispose() {
         let scene = this._host.getScene();
-        if (scene && this._onPointerObserver) {
+            if (scene && this._onPointerObserver) {
             scene.onPointerObservable.remove(this._onPointerObserver);
         }
         super.dispose();
