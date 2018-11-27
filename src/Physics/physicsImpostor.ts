@@ -158,6 +158,9 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
          */
         public static IDENTITY_QUATERNION = Quaternion.Identity();
 
+        /** @hidden */
+        public _pluginData: any;
+
         private _physicsEngine: Nullable<IPhysicsEngine>;
         //The native cannon/oimo/energy physics body object.
         private _physicsBody: any;
@@ -165,7 +168,8 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
 
         private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
         private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
-        private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = [];
+        /** @hidden */
+        public _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = [];
 
         private _deltaPosition: Vector3 = Vector3.Zero();
         private _deltaRotation: Quaternion;
@@ -419,7 +423,6 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
                 this.object.rotationQuaternion = q;
                 //calculate the world matrix with the new rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-
                 return size;
             } else {
                 return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
