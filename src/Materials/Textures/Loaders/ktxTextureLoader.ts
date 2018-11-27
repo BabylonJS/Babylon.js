@@ -39,6 +39,10 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          */
         public transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string {
             var lastDot = rootUrl.lastIndexOf('.');
+            if (lastDot != -1 && rootUrl.substring(lastDot + 1) == "ktx") {
+                // Already transformed
+                return rootUrl;
+            }
             return (lastDot > -1 ? rootUrl.substring(0, lastDot) : rootUrl) + textureFormatInUse;
         }
 
@@ -67,6 +71,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
                 return;
             }
 
+            // Need to invert vScale as invertY via UNPACK_FLIP_Y_WEBGL is not supported by compressed texture
+            texture._invertVScale = !texture.invertY;
             var engine = texture.getEngine();
             var ktx = new KhronosTextureContainer(data, 6);
 
@@ -91,6 +97,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "States";
          */
         public loadData(data: ArrayBuffer, texture: InternalTexture,
             callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void {
+            // Need to invert vScale as invertY via UNPACK_FLIP_Y_WEBGL is not supported by compressed texture
+            texture._invertVScale = !texture.invertY;
             var ktx = new KhronosTextureContainer(data, 1);
 
             callback(ktx.pixelWidth, ktx.pixelHeight, false, true, () => {
