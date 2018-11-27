@@ -67,7 +67,7 @@
         "gulp-rename": "^1.4.0",
         "gulp-replace": "~1.0.0",
         "gulp-tslint": "^8.1.3",
-        "gulp-typedoc": "^2.2.0",
+        "gulp-typedoc": "^2.2.1",
         "gulp-typescript": "4.0.2",
         "gulp-webserver": "^0.9.1",
         "hard-source-webpack-plugin": "^0.12.0",
