@@ -6,6 +6,7 @@ import { Slider } from "./slider";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Container } from "./container";
 import { TextBlock } from "./textBlock";
+import { PointerInfo, Observer, Nullable } from "babylonjs";
 
 /**
  * Class used to hold a viewer window and sliders in a grid
@@ -30,6 +31,7 @@ export class ScrollViewer extends Rectangle {
     private _windowContents: Control;
     private _pointerIsOver: Boolean = false;
     private _wheelPrecision: number = 0.05;
+    private _onPointerObserver: Nullable<Observer<PointerInfo>>;
 
     /**
      * Adds windowContents to the grid view window
@@ -398,10 +400,11 @@ export class ScrollViewer extends Rectangle {
         });
     }
 
+    
     /** @hidden */
     private _attachWheel() {
         let scene = this._host.getScene();
-        scene!.onPointerObservable.add((pi, state) => {
+        this._onPointerObserver = scene!.onPointerObservable.add((pi, state) => {
             if (!this._pointerIsOver || pi.type !== BABYLON.PointerEventTypes.POINTERWHEEL) {
                 return;
             }
@@ -420,5 +423,14 @@ export class ScrollViewer extends Rectangle {
                 }
             }
         });
+    }
+
+    /** Releases associated resources */
+    public dispose() {        
+        let scene = this._host.getScene();
+        if (scene && this._onPointerObserver) {
+            scene.onPointerObservable.remove(this._onPointerObserver);
+        }
+        super.dispose();
     }
 }
