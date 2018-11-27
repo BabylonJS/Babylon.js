@@ -10,10 +10,17 @@ var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 var processShaders = require("../helpers/gulp-processShaders");
 var processAmdDeclarationToModule = require('../helpers/gulp-processAmdDeclarationToModule');
 var processModuleDeclarationToNamespace = require('../helpers/gulp-processModuleDeclarationToNamespace');
-var rmDir = require("../helpers/gulp-rmDir");
+var del = require("del");
 
 // Import Build Config
 var config = require("../config.json");
+
+/**
+ * Clean shader ts files.
+ */
+var cleanShaders = function(settings) {
+    return del([settings.build.srcDirectory + "**/*.fx.ts"]);
+}
 
 /**
  * Create shader ts files.
@@ -103,17 +110,16 @@ var buildDTSFiles = function(libraries, settings, cb) {
  * Dynamic module creation In Serie for WebPack leaks.
  */
 function buildExternalLibraries(settings) {
-    // Clean up old build files.
-    // rmDir(settings.build.dtsBundle.baseDir);
-
     // Creates the required tasks.
     var tasks = [];
+
+    var cleanup = function() { return cleanShaders(); };
     var shaders = function() { return buildShaders(settings); };
     var buildMin = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, true) };
     var buildMax = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, false) };
     var buildDTS = function(cb) { return buildDTSFiles(settings.libraries, settings, cb) };
 
-    tasks.push(shaders, buildMin, buildMax, buildDTS);
+    tasks.push(cleanup, shaders, buildMin, buildMax, buildDTS);
 
     return gulp.series.apply(this, tasks);
 }
