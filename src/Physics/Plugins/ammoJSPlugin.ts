@@ -1,4 +1,12 @@
-module BABYLON {
+import { Quaternion, Vector3 } from "Maths/math";
+import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "Physics/IPhysicsEngine";
+import { Logger } from "Misc/logger";
+import { PhysicsImpostor, IPhysicsEnabledObject } from "Physics/physicsImpostor";
+import { PhysicsJoint, IMotorEnabledJoint } from "Physics/physicsJoint";
+import { VertexBuffer } from "Meshes/buffer";
+import { Nullable } from "types";
+import { AbstractMesh } from "Meshes/abstractMesh";
+
     declare var Ammo: any;
 
     /**
@@ -22,7 +30,7 @@ module BABYLON {
 
         private _timeStep: number = 1 / 60;
         private _maxSteps = 5;
-        private _tmpQuaternion = new BABYLON.Quaternion();
+        private _tmpQuaternion = new Quaternion();
         private _tmpAmmoTransform: any;
         private _tmpAmmoQuaternion: any;
         private _tmpAmmoConcreteContactResultCallback: any;
@@ -48,7 +56,7 @@ module BABYLON {
             }
             this.bjsAMMO = Ammo;
             if (!this.isSupported()) {
-                Tools.Error("AmmoJS is not available. Please make sure you included the js file.");
+                Logger.Error("AmmoJS is not available. Please make sure you included the js file.");
                 return;
             }
 
@@ -287,7 +295,7 @@ module BABYLON {
                     joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
                     break;
                 default:
-                    Tools.Warn("JointType not currently supported by the Ammo plugin, falling back to PhysicsJoint.BallAndSocketJoint");
+                    Logger.Warn("JointType not currently supported by the Ammo plugin, falling back to PhysicsJoint.BallAndSocketJoint");
                     joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
                     break;
             }
@@ -311,7 +319,7 @@ module BABYLON {
                 if (!indices) {
                     indices = [];
                 }
-                var vertexPositions = object.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
                 if (!vertexPositions) {
                     vertexPositions = [];
                 }
@@ -320,7 +328,7 @@ module BABYLON {
                 for (var i = 0; i < faceCount; i++) {
                     var triPoints = [];
                     for (var point = 0; point < 3; point++) {
-                        var v = new BABYLON.Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
+                        var v = new Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
                         v = Vector3.TransformCoordinates(v, object.getWorldMatrix());
                         v.subtractInPlace(topLevelObject.position);
                         var vec: any;
@@ -583,7 +591,7 @@ module BABYLON {
          * @param impostor impostor to sleep
          */
         public sleepBody(impostor: PhysicsImpostor) {
-            Tools.Warn("sleepBody is not currently supported by the Ammo physics plugin");
+            Logger.Warn("sleepBody is not currently supported by the Ammo physics plugin");
         }
 
         /**
@@ -601,7 +609,7 @@ module BABYLON {
          * @param minDistance minimum distance of the joint
          */
         public updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number) {
-            Tools.Warn("updateDistanceJoint is not currently supported by the Ammo physics plugin");
+            Logger.Warn("updateDistanceJoint is not currently supported by the Ammo physics plugin");
         }
 
         /**
@@ -612,7 +620,7 @@ module BABYLON {
          * @param motorIndex index of the motor
          */
         public setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number) {
-            Tools.Warn("setMotor is not currently supported by the Ammo physics plugin");
+            Logger.Warn("setMotor is not currently supported by the Ammo physics plugin");
         }
 
         /**
@@ -622,7 +630,7 @@ module BABYLON {
          * @param lowerLimit lower limit
          */
         public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number) {
-            Tools.Warn("setLimit is not currently supported by the Ammo physics plugin");
+            Logger.Warn("setLimit is not currently supported by the Ammo physics plugin");
         }
 
         /**
@@ -691,4 +699,3 @@ module BABYLON {
             this.world = null;
         }
     }
-}
