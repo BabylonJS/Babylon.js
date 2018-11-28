@@ -521,7 +521,7 @@ export class InputText extends Control implements IFocusableControl {
                 if (evt && evt.shiftKey) {
                     // hide the cursor
                     this._blinkIsEven = true;
-                    // ctrl/cmd + shift + <-
+                    // shift + ctrl/cmd + <-
                     if (evt.ctrlKey || evt.metaKey) {
                         this._endHighlightIndex = this._isTextHighlightOn ? this._endHighlightIndex : this._text.length - this._cursorOffset + 1;
                         this._startHighlightIndex = 0;
@@ -536,11 +536,12 @@ export class InputText extends Control implements IFocusableControl {
                         this._isTextHighlightOn = true;
                         this._cursorIndex = (this._cursorOffset >= this._text.length) ? this._text.length : this._cursorOffset - 1;
                     }
-                    //if text is already highlighted, executed only once
+                    //if text is already highlighted
                     else if (this._cursorIndex === -1) {
                         this._cursorIndex = this._text.length - this._endHighlightIndex;
                         this._cursorOffset = this._text.length - this._startHighlightIndex + 1;
                     }
+                    //set the highlight indexes
                     if (this._cursorIndex < this._cursorOffset) {
                         this._endHighlightIndex = this._text.length - this._cursorIndex;
                         this._startHighlightIndex = this._text.length - this._cursorOffset;
@@ -593,11 +594,12 @@ export class InputText extends Control implements IFocusableControl {
                         this._isTextHighlightOn = true;
                         this._cursorIndex = (this._cursorOffset <= 0) ? 0 : this._cursorOffset + 1;
                     }
-                    //if text is already highlighted, executed only once
+                    //if text is already highlighted
                     else if (this._cursorIndex === -1) {
                         this._cursorIndex = this._text.length - this._startHighlightIndex;
                         this._cursorOffset = this._text.length - this._endHighlightIndex - 1;
                     }
+                    //set the highlight indexes
                     if (this._cursorIndex < this._cursorOffset) {
                         this._endHighlightIndex = this._text.length - this._cursorIndex;
                         this._startHighlightIndex = this._text.length - this._cursorOffset;
