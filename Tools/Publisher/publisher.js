@@ -57,18 +57,18 @@ const getFiles = function(dir, files_) {
  * Update the version in the engine class for Babylon
  */
 function updateEngineVersion(newVersion) {
-    console.log("Updating version in babylon.engine.ts to: " + newVersion);
-    let engineContent = fs.readFileSync("../../src/Engine/babylon.engine.ts").toString();
+    console.log("Updating version in engine.ts to: " + newVersion);
+    let engineContent = fs.readFileSync("../../src/Engines/engine.ts").toString();
     let replaced = engineContent.replace(/(public static get Version\(\): string {\s*return ")(.*)(";\s*})/g, "$1" + newVersion + "$3");
-    fs.writeFileSync("../../src/Engine/babylon.engine.ts", replaced);
+    fs.writeFileSync("../../src/Engines/engine.ts", replaced);
 }
 
 /**
  * Get the version from the engine class for Babylon
  */
 function getEngineVersion() {
-    console.log("Get version from babylon.engine.ts");
-    const engineContent = fs.readFileSync("../../src/Engine/babylon.engine.ts").toString();
+    console.log("Get version from engine.ts");
+    const engineContent = fs.readFileSync("../../src/Engines/engine.ts").toString();
 
     const versionRegex = new RegExp(`public static get Version\\(\\): string {[\\s\\S]*return "([\\s\\S]*?)";[\\s\\S]*}`, "gm");
     const match = versionRegex.exec(engineContent);
