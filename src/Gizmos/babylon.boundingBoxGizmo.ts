@@ -517,7 +517,7 @@ module BABYLON {
             mesh.position.copyFrom(oldPos);
 
             // Reverse parenting
-            mesh.removeChild(box);            
+            mesh.removeChild(box);
 
             box.addChild(mesh);
             box.visibility = 0;
