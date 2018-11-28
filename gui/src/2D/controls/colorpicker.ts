@@ -454,6 +454,7 @@ export class ColorPicker extends Control {
         options: {
             pickerWidth?: string,
             pickerHeight?: string,
+            headerHeight?: string,
             lastColor?: string,
             swatchLimit?: number,
             swatchSize?: number,
@@ -468,6 +469,7 @@ export class ColorPicker extends Control {
             // Default options
             options.pickerWidth = options.pickerWidth || "640px";
             options.pickerHeight = options.pickerHeight || "400px";
+            options.headerHeight = options.headerHeight || "35px"
             options.lastColor = options.lastColor || "#000000";
             options.swatchLimit = options.swatchLimit || 20;
             options.swatchSize = options.swatchSize || 40;
@@ -490,6 +492,7 @@ export class ColorPicker extends Control {
             var luminanceLimit: number = luminanceLimitColor.r + luminanceLimitColor.g + luminanceLimitColor.b;
             var iconColorDark: string = "#aaaaaa";
             var iconColorLight: string = "#ffffff";
+            var closeIconColor: Color3;
 
             // Button settings
             var buttonFontSize = 16;
@@ -583,9 +586,9 @@ export class ColorPicker extends Control {
                         else if (isNaN(parseInt(newValue))) {
                             newValue = "0";
                         }
-                        if (activeField == field.name) {
-                            lastVal = newValue;
-                        }
+                    }
+                    if (activeField == field.name) {
+                        lastVal = newValue;
                     }
                 }
                 if (newValue != "") {
@@ -625,11 +628,11 @@ export class ColorPicker extends Control {
                         else if (isNaN(parseFloat(newValue))) {
                             newValue = "0.0";
                         }
-                        if (activeField == field.name) {
-                            lastVal = newValue;
-                        }
                     }
-                }
+                    if (activeField == field.name) {
+                        lastVal = newValue;
+                    }
+            }
                 if (newValue != "" && newValue != "." && parseFloat(newValue) != 0) {
                     newValue = parseFloat(newValue).toString();
                     field.text = newValue;
@@ -903,7 +906,8 @@ export class ColorPicker extends Control {
             pickerPanel.name = "Picker Panel";
             // pickerPanel.width = pickerWidth;
             pickerPanel.height = options.pickerHeight;
-            pickerPanel.addRowDefinition(35, true);
+            var panelHead = parseInt(options.headerHeight) / parseInt(options.pickerHeight);
+            pickerPanel.addRowDefinition(panelHead, false);
             pickerPanel.addRowDefinition(1.0, false);
             dialogContainer.addControl(pickerPanel, 0, 0);
 
@@ -913,6 +917,36 @@ export class ColorPicker extends Control {
             header.background = "#cccccc";
             header.thickness = 0;
             pickerPanel.addControl(header, 0, 0);
+
+            // Header close button
+            var closeButton: Button = Button.CreateSimpleButton("closeButton", "a");
+            closeButton.fontFamily = "BabylonJSglyphs";
+            var headerColor3: Color3 = Color3.FromHexString(header.background);
+            closeIconColor = new Color3(1.0 - headerColor3.r, 1.0 - headerColor3.g, 1.0 - headerColor3.b);
+            closeButton.color = closeIconColor.toHexString();
+            closeButton.fontSize = Math.floor(parseInt(options.headerHeight!) * 0.6);
+            closeButton.textBlock!.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+            closeButton.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+            closeButton.height = closeButton.width = options.headerHeight;
+            closeButton.background = header.background;
+            closeButton.thickness = 0;
+            closeButton.pointerDownAnimation = () => {
+            };
+            closeButton.pointerUpAnimation = () => {
+                closeButton.background = header.background;
+            };
+            closeButton.pointerEnterAnimation = () => {
+                closeButton.color = header.background;
+                closeButton.background = "red";
+            };
+            closeButton.pointerOutAnimation = () => {
+                closeButton.color = closeIconColor.toHexString();
+                closeButton.background = header.background;
+            };
+            closeButton.onPointerClickObservable.add(() => {
+                ClosePicker(currentSwatch.background);
+            });
+            pickerPanel.addControl(closeButton, 0, 0);
 
             // Picker container body
             var pickerBody = new Grid();
@@ -1172,16 +1206,18 @@ export class ColorPicker extends Control {
                 EditSwatches(false);
             });
             rValInt.onBlurObservable.add(() => {
-                if (activeField == rValInt.name) {
-                    activeField = "";
-                }
                 if (rValInt.text == "") {
                     rValInt.text = "0";
                 }
                 UpdateInt(rValInt, "r");
+                if (activeField == rValInt.name) {
+                    activeField = "";
+                }
             });
             rValInt.onTextChangedObservable.add(() => {
-                UpdateInt(rValInt, "r");
+                if (activeField == rValInt.name) {
+                    UpdateInt(rValInt, "r");
+                }
             });
             rgbValuesQuadrant.addControl(rValInt, 0, 1);
 
@@ -1199,16 +1235,18 @@ export class ColorPicker extends Control {
                 EditSwatches(false);
             });
             gValInt.onBlurObservable.add(() => {
-                if (activeField == gValInt.name) {
-                    activeField = "";
-                }
                 if (gValInt.text == "") {
                     gValInt.text = "0";
                 }
                 UpdateInt(gValInt, "g");
+                if (activeField == gValInt.name) {
+                    activeField = "";
+                }
            });
             gValInt.onTextChangedObservable.add(() => {
-                UpdateInt(gValInt, "g");
+                if (activeField == gValInt.name) {
+                    UpdateInt(gValInt, "g");
+                }
             });
             rgbValuesQuadrant.addControl(gValInt, 1, 1);
 
@@ -1226,16 +1264,18 @@ export class ColorPicker extends Control {
                 EditSwatches(false);
             });
             bValInt.onBlurObservable.add(() => {
-                if (activeField == bValInt.name) {
-                    activeField = "";
-                }
                 if (bValInt.text == "") {
                     bValInt.text = "0";
                 }
                 UpdateInt(bValInt, "b");
+                if (activeField == bValInt.name) {
+                    activeField = "";
+                }
             });
             bValInt.onTextChangedObservable.add(() => {
-                UpdateInt(bValInt, "b");
+                if (activeField == bValInt.name) {
+                    UpdateInt(bValInt, "b");
+                }
             });
             rgbValuesQuadrant.addControl(bValInt, 2, 1);
 
@@ -1262,7 +1302,9 @@ export class ColorPicker extends Control {
                 }
             });
             rValDec.onTextChangedObservable.add(() => {
-                UpdateFloat(rValDec, "r");
+                if (activeField == rValDec.name) {
+                    UpdateFloat(rValDec, "r");
+                }
             });
             rgbValuesQuadrant.addControl(rValDec, 0, 2);
 
@@ -1289,7 +1331,9 @@ export class ColorPicker extends Control {
                 }
             });
             gValDec.onTextChangedObservable.add(() => {
-                UpdateFloat(gValDec, "g");
+                if (activeField == gValDec.name) {
+                    UpdateFloat(gValDec, "g");
+                }
             });
             rgbValuesQuadrant.addControl(gValDec, 1, 2);
 
@@ -1316,7 +1360,9 @@ export class ColorPicker extends Control {
                 }
             });
             bValDec.onTextChangedObservable.add(() => {
-                UpdateFloat(bValDec, "b");
+                if (activeField == bValDec.name) {
+                    UpdateFloat(bValDec, "b");
+                }
             });
             rgbValuesQuadrant.addControl(bValDec, 2, 2);
 
@@ -1352,17 +1398,17 @@ export class ColorPicker extends Control {
                 EditSwatches(false);
             });
             hexVal.onBlurObservable.add(() => {
-                if (activeField == hexVal.name) {
-                    activeField = "";
-                }
                 if (hexVal.text.length == 3) {
                     var val = hexVal.text.split("");
                     hexVal.text = val[0] + val[0] + val[1] + val[1] + val[2] + val[2];
                 }
-                // if (hexVal.text == "") {
-                //     hexVal.text = "000000";
-                //     Update(hexVal, "b");
-                // }
+                if (hexVal.text == "") {
+                    hexVal.text = "000000";
+                    UpdateValues(Color3.FromHexString(hexVal.text), "b");
+                }
+                if (activeField == hexVal.name) {
+                    activeField = "";
+                }
             });
             hexVal.onTextChangedObservable.add(() => {
                 var newHexValue = hexVal.text;
