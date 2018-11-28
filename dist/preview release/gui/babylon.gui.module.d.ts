@@ -2178,6 +2178,8 @@ declare module 'babylonjs-gui/2D/controls/scrollViewer' {
             barBackground: string;
             /** @hidden */
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            /** Releases associated resources */
+            dispose(): void;
     }
 }
 
@@ -5158,6 +5160,8 @@ declare module BABYLON.GUI {
             barBackground: string;
             /** @hidden */
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            /** Releases associated resources */
+            dispose(): void;
     }
 }
 declare module BABYLON.GUI {
