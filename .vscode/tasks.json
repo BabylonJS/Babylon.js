@@ -36,7 +36,7 @@
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": "Starting \\'run\\'",
-                    "endsPattern": "Entrypoint babylonjs-gui = babylon.gui.min.js babylon.gui.min.js.map"
+                    "endsPattern": "Entrypoint babylonjs-gui"
                 }
             }
         },
