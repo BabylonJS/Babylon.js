@@ -16,22 +16,27 @@ export class Tools {
         return false;
     }
 
+    private static _RecursiveRemoveHiddenMeshesAndHoistChildren(items: Array<any>) {
+        let result: Array<any> = [];
+        for (let i of items) {
+            // If the mesh is hidden, add it's children that are not hidden, this will handle the case of bounding box parenting for bounding box gizmo
+            if (i.reservedDataStore && i.reservedDataStore.hidden) {
+                Tools._RecursiveRemoveHiddenMeshesAndHoistChildren(i.getChildMeshes()).forEach((m) => {
+                    result.push(m);
+                });
+            }else {
+                result.push(i);
+            }
+        }
+        return result;
+    }
+
     public static SortAndFilter(parent: any, items: any[]): any[] {
         if (!items) {
             return [];
         }
 
-        const finalArray = new Array<any>();
-        items.forEach((i: any) => {
-            // If the mesh is hidden, add it's children, this will handle the case of bounding box parenting for bounding box gizmo
-            if (i.reservedDataStore && i.reservedDataStore.hidden) {
-                i.getChildMeshes().forEach((m: any) => {
-                    finalArray.push(m);
-                });
-            }else {
-                finalArray.push(i);
-            }
-        });
+        const finalArray = Tools._RecursiveRemoveHiddenMeshesAndHoistChildren(items);
 
         if (parent && parent.reservedDataStore && parent.reservedDataStore.detachedChildren) {
             finalArray.push(...parent.reservedDataStore.detachedChildren);
