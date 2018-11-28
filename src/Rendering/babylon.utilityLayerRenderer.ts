@@ -82,13 +82,13 @@ module BABYLON {
             this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
             this.utilityLayerScene._allowPostProcessClearColor = false;
             originalScene.getEngine().scenes.pop();
-            
+
             // Detach controls on utility scene, events will be fired by logic below to handle picking priority
             this.utilityLayerScene.detachControl();
 
             if (handleEvents) {
                 this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo, eventState) => {
-                    if(!this.utilityLayerScene.activeCamera){
+                    if (!this.utilityLayerScene.activeCamera) {
                         return;
                     }
                     if (!this.processAllEvents) {
@@ -256,9 +256,9 @@ module BABYLON {
         }
 
         private _updateCamera() {
-            if(this.originalScene.activeCameras.length > 1){
+            if (this.originalScene.activeCameras.length > 1) {
                 this.utilityLayerScene.activeCamera = this.originalScene.activeCameras[0];
-            }else{
+            }else {
                 this.utilityLayerScene.activeCamera = this.originalScene.activeCamera;
             }
         }
