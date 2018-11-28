@@ -45,18 +45,21 @@ gulp.task("watch", function startWatch() {
                     return `${prefix}${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
                 };
 
-                var outputDirectory = config.build.tempDirectory + settings.distOutputDirectory;
-                tasks.push(webpackStream(wpConfig, webpack).pipe(gulp.dest(outputDirectory)))
+                tasks.push(
+                    gulp.src(settings.srcDirectory + "**/*.fx")
+                        .pipe(uncommentShaders())
+                        .pipe(processShaders(isCore))
+                );
 
-                tasks.push(gulp.src(settings.srcDirectory + "**/*.fx")
-                    .pipe(uncommentShaders())
-                    .pipe(processShaders(isCore))
+                var outputDirectory = config.build.tempDirectory + settings.distOutputDirectory;
+                tasks.push(
+                    webpackStream(wpConfig, webpack).pipe(gulp.dest(outputDirectory))
                 );
 
                 tasks.push(
                     gulp.watch(settings.srcDirectory + "**/*.fx", { interval: 1000 }, function() {
                         console.log(library.output + ": Shaders.");
-                        gulp.src(settings.srcDirectory + "**/*.fx")
+                        return gulp.src(settings.srcDirectory + "**/*.fx")
                             .pipe(uncommentShaders())
                             .pipe(processShaders(isCore));
                     })
