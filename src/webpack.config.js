@@ -1,6 +1,5 @@
 const path = require('path');
 const webpack = require('webpack');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
@@ -17,21 +16,12 @@ module.exports = {
             amd: "babylonjs",
             commonjs: "babylonjs"
         },
-        umdNamedDefine: true,
-        //devtoolModuleFilenameTemplate: "[absolute-resource-path]"
+        umdNamedDefine: true
     },
     resolve: {
         modules: ['./'],
         extensions: ['.ts'],
         mainFields: []
-    },
-    externals: {
-        babylonjs: {
-            root: "BABYLON",
-            commonjs: "babylonjs",
-            commonjs2: "babylonjs",
-            amd: "babylonjs"
-        }
     },
     devtool: "source-map",
     module: {
@@ -45,12 +35,6 @@ module.exports = {
         }]
     },
     mode: "production",
-    devServer: {
-        contentBase: path.join(__dirname, "dist"),
-        compress: false,
-        //open: true,
-        port: 9000
-    },
     plugins: [
         new HardSourceWebpackPlugin(),
         new webpack.WatchIgnorePlugin([
@@ -58,8 +42,5 @@ module.exports = {
             /\.d\.ts$/,
             /\.fx$/
         ])
-    ],
-    watchOptions: {
-        ignored: [path.resolve(__dirname, './dist/**/*.*'), 'node_modules']
-    }
+    ]
 }

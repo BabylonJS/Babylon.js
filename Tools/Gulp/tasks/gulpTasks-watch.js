@@ -28,8 +28,10 @@ gulp.task("watch", function startWatch() {
                 wpconfig.watch = true;
                 // dev mode and absolute path sourcemaps for debugging
                 wpconfig.mode = "development";
-                wpconfig.output.devtoolModuleFilenameTemplate = "[absolute-resource-path]";
-                //config.stats = "minimal";
+                wpconfig.devtool = "nosources-source-map";
+                wpconfig.output.devtoolModuleFilenameTemplate = (info) => {
+                    return `${info.resourcePath}`.replace('Tools/Gulp/../../', '');
+                };
 
                 var outputDirectory = config.build.tempDirectory + settings.distOutputDirectory;
                 tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))

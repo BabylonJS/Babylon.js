@@ -69,18 +69,13 @@ module.exports = {
                 "css-loader",
                 "sass-loader"
             ]
-        }, {
+        }, 
+        {
             test: /\.css$/,
             use: ['style-loader', 'css-loader']
         }]
     },
     mode: "production",
-    devServer: {
-        contentBase: path.join(__dirname, "dist"),
-        compress: false,
-        //open: true,
-        port: 9000
-    },
     performance: {
         hints: false
     },
@@ -96,8 +91,5 @@ module.exports = {
             filename: "[name].css",
             chunkFilename: "[id].css"
         })
-    ],
-    watchOptions: {
-        ignored: [path.resolve(__dirname, './dist/**/*.*'), 'node_modules']
-    }
+    ]
 }

@@ -45,6 +45,10 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     var wpConfig = require(settings.build.webpack);
     // Create multi entry list.
     wpConfig.entry = { };
+    wpConfig.output.devtoolModuleFilenameTemplate = (info) => {
+        return `webpack://${info.namespace}/${info.resourcePath.replace('../Tools/Gulp/../../', '')}`;
+    };
+
     for (let library of settings.libraries) {
         let name = library.output.replace(isMinOutputName ? ".min.js" : ".js", "");
         wpConfig.entry[name] = path.resolve(wpConfig.context, library.entry);

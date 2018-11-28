@@ -19,7 +19,7 @@ module.exports = {
         umdNamedDefine: true
     },
     resolve: {
-        extensions: [".js", '.ts']
+        extensions: ['.ts']
     },
     externals: [
         {
@@ -48,20 +48,11 @@ module.exports = {
         }]
     },
     mode: "production",
-    devServer: {
-        contentBase: path.join(__dirname, "dist"),
-        compress: false,
-        //open: true,
-        port: 9000
-    },
     plugins: [
         new HardSourceWebpackPlugin(),
         new webpack.WatchIgnorePlugin([
             /\.js$/,
             /\.d\.ts$/
         ])
-    ],
-    watchOptions: {
-        ignored: [path.resolve(__dirname, './dist/**/*.*'), 'node_modules']
-    }
+    ]
 }
