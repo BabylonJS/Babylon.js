@@ -498,15 +498,18 @@ export class InputText extends Control implements IFocusableControl {
                 return;
             case 13: // RETURN
                 this._host.focusedControl = null;
+                this._isTextHighlightOn = false;
                 return;
             case 35: // END
                 this._cursorOffset = 0;
                 this._blinkIsEven = false;
+                this._isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
             case 36: // HOME
                 this._cursorOffset = this._text.length;
                 this._blinkIsEven = false;
+                this._isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
             case 37: // LEFT
@@ -516,8 +519,18 @@ export class InputText extends Control implements IFocusableControl {
                 }
 
                 if (evt && evt.shiftKey) {
-                    //hide the cursor
+                    // hide the cursor
                     this._blinkIsEven = true;
+                    // ctrl/cmd + shift + <-
+                    if (evt.ctrlKey || evt.metaKey) {
+                        this._endHighlightIndex = this._isTextHighlightOn ? this._endHighlightIndex : this._text.length - this._cursorOffset + 1;
+                        this._startHighlightIndex = 0;
+                        this._cursorIndex = this._text.length - this._endHighlightIndex;
+                        this._cursorOffset = this._text.length;
+                        this._isTextHighlightOn = true;
+                        this._markAsDirty();
+                        return;
+                    }
                     //store the starting point
                     if (!this._isTextHighlightOn) {
                         this._isTextHighlightOn = true;
@@ -527,13 +540,6 @@ export class InputText extends Control implements IFocusableControl {
                     else if (this._cursorIndex === -1) {
                         this._cursorIndex = this._text.length - this._endHighlightIndex;
                         this._cursorOffset = this._text.length - this._startHighlightIndex + 1;
-                    }
-                    //ctrl + <-
-                    if (evt.ctrlKey || evt.metaKey) {
-                        this._endHighlightIndex = this._text.length - this._cursorOffset + 1;
-                        this._startHighlightIndex = 0;
-                        this._markAsDirty();
-                        return;
                     }
                     if (this._cursorIndex < this._cursorOffset) {
                         this._endHighlightIndex = this._text.length - this._cursorIndex;
@@ -559,9 +565,12 @@ export class InputText extends Control implements IFocusableControl {
                     evt.preventDefault();
                 }
                 this._blinkIsEven = false;
+                this._isTextHighlightOn = false;
+                this._cursorIndex = -1;
                 this._markAsDirty();
                 return;
             case 39: // RIGHT
+                console.log(this._cursorIndex, this._startHighlightIndex, this._endHighlightIndex);
                 this._cursorOffset--;
                 if (this._cursorOffset < 0) {
                     this._cursorOffset = 0;
@@ -569,6 +578,17 @@ export class InputText extends Control implements IFocusableControl {
                 if (evt && evt.shiftKey) {
                     //hide the cursor
                     this._blinkIsEven = true;
+                    //shift + ctrl/cmd + ->
+                    if (evt.ctrlKey || evt.metaKey) {
+                        this._endHighlightIndex = this._text.length;
+                        this._startHighlightIndex = (this._isTextHighlightOn) ? this._startHighlightIndex : this._text.length - this._cursorOffset - 1;
+                        this._isTextHighlightOn = true;
+                        this._cursorIndex = this._text.length - this._startHighlightIndex;
+                        this._cursorOffset = 0;
+                        this._markAsDirty();
+                        return;
+                    }
+
                     if (!this._isTextHighlightOn) {
                         this._isTextHighlightOn = true;
                         this._cursorIndex = (this._cursorOffset <= 0) ? 0 : this._cursorOffset + 1;
@@ -577,13 +597,6 @@ export class InputText extends Control implements IFocusableControl {
                     else if (this._cursorIndex === -1) {
                         this._cursorIndex = this._text.length - this._startHighlightIndex;
                         this._cursorOffset = this._text.length - this._endHighlightIndex - 1;
-                    }
-                    //shift + ctrl/cmd + ->
-                    if (evt.ctrlKey || evt.metaKey) {
-                        this._endHighlightIndex = this._text.length;
-                        this._startHighlightIndex = this._text.length - this._cursorOffset - 1;
-                        this._markAsDirty();
-                        return;
                     }
                     if (this._cursorIndex < this._cursorOffset) {
                         this._endHighlightIndex = this._text.length - this._cursorIndex;
@@ -610,17 +623,18 @@ export class InputText extends Control implements IFocusableControl {
                     evt.preventDefault();
                 }
                 this._blinkIsEven = false;
+                this._isTextHighlightOn = false;
+                this._cursorIndex = -1;
                 this._markAsDirty();
                 return;
             case 222: // Dead
                 if (evt) {
                     evt.preventDefault();
                 }
+                this._cursorIndex = -1;
                 this.deadKey = true;
                 break;
         }
-        this._cursorIndex = -1;
-
         // Printable characters
         if (key &&
             ((keyCode === -1) ||                     // Direct access
@@ -673,6 +687,7 @@ export class InputText extends Control implements IFocusableControl {
         this._isTextHighlightOn = true;
         this._clickedCoordinate = null;
         this._blinkIsEven = true;
+        this._cursorIndex = -1;
         this._markAsDirty();
     }
     /** @hidden */
