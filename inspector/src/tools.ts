@@ -21,7 +21,18 @@ export class Tools {
             return [];
         }
 
-        const finalArray = items.filter((i) => !i.reservedDataStore || !i.reservedDataStore.hidden);
+        const finalArray = new Array<any>();
+        items.forEach((i:any)=>{
+            // If the mesh is hidden, add it's children, this will handle the case of bounding box parenting for bounding box gizmo
+            if(i.reservedDataStore && i.reservedDataStore.hidden){
+                i.getChildMeshes().forEach((m:any) => {
+                    finalArray.push(m);
+                });
+            }else{
+                finalArray.push(i);
+            }
+        })
+
 
         if (parent && parent.reservedDataStore && parent.reservedDataStore.detachedChildren) {
             finalArray.push(...parent.reservedDataStore.detachedChildren);
