@@ -1,7 +1,7 @@
 import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo, PointerInfoPre } from 'babylonjs';
+import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo } from 'babylonjs';
 import { Measure } from "../measure";
 import { VirtualKeyboard } from "./virtualKeyboard";
 
@@ -36,9 +36,9 @@ export class InputText extends Control implements IFocusableControl {
     private _endHighlightIndex = 0;
     private _cursorIndex = -1;
     private _onFocusSelectAll = false;
+    private _isPointerDown = false;
     private _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;
     private _onPointerDblTapObserver: Nullable<Observer<PointerInfo>>;
-    private _onPointerDragObserver: Nullable<Observer<PointerInfoPre>>;
 
     /** @hidden */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
@@ -307,6 +307,7 @@ export class InputText extends Control implements IFocusableControl {
         super(name);
 
         this.text = text;
+        this.isPointerBlocker = true;
     }
 
     /** @hidden */
@@ -326,9 +327,6 @@ export class InputText extends Control implements IFocusableControl {
         let scene = this._host.getScene();
         if (this._onPointerDblTapObserver && scene) {
             scene.onPointerObservable.remove(this._onPointerDblTapObserver);
-        }
-        if (this._onPointerDragObserver && scene) {
-            scene.onPrePointerObservable.remove(this._onPointerDragObserver);
         }
     }
 
@@ -385,18 +383,6 @@ export class InputText extends Control implements IFocusableControl {
                 }
                 if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
                     this._processDblClick(pointerInfo);
-                }
-            });
-            let isEnabled = false;
-            this._onPointerDragObserver = scene.onPrePointerObservable.add((pointerInfo) => {
-                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                    isEnabled = true;
-                }
-                if (isEnabled && pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                    this._processDrag(pointerInfo);
-                }
-                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP) {
-                    isEnabled = false;
                 }
             });
         }
@@ -519,8 +505,8 @@ export class InputText extends Control implements IFocusableControl {
                 }
 
                 if (evt && evt.shiftKey) {
-                    // hide the cursor
-                    this._blinkIsEven = true;
+                    // update the cursor
+                    this._blinkIsEven = false;
                     // shift + ctrl/cmd + <-
                     if (evt.ctrlKey || evt.metaKey) {
                         this._endHighlightIndex = this._isTextHighlightOn ? this._endHighlightIndex : this._text.length - this._cursorOffset + 1;
@@ -551,7 +537,6 @@ export class InputText extends Control implements IFocusableControl {
                         this._startHighlightIndex = this._text.length - this._cursorIndex;
                     }
                     else {
-                        this._blinkIsEven = false;
                         this._isTextHighlightOn = false;
                     }
                     this._markAsDirty();
@@ -571,14 +556,13 @@ export class InputText extends Control implements IFocusableControl {
                 this._markAsDirty();
                 return;
             case 39: // RIGHT
-                console.log(this._cursorIndex, this._startHighlightIndex, this._endHighlightIndex);
                 this._cursorOffset--;
                 if (this._cursorOffset < 0) {
                     this._cursorOffset = 0;
                 }
                 if (evt && evt.shiftKey) {
-                    //hide the cursor
-                    this._blinkIsEven = true;
+                    //update the cursor
+                    this._blinkIsEven = false;
                     //shift + ctrl/cmd + ->
                     if (evt.ctrlKey || evt.metaKey) {
                         this._endHighlightIndex = this._text.length;
@@ -609,7 +593,6 @@ export class InputText extends Control implements IFocusableControl {
                         this._startHighlightIndex = this._text.length - this._cursorIndex;
                     }
                     else {
-                        this._blinkIsEven = false;
                         this._isTextHighlightOn = false;
                     }
                     this._markAsDirty();
@@ -669,8 +652,29 @@ export class InputText extends Control implements IFocusableControl {
         }
     }
 
-    private _processDrag(evt: PointerInfoPre) {
-        // console.log(evt.event.clientX);
+    /** @hidden */
+    private _updateValueFromCursorIndex(offset: number) {
+        //update the cursor
+        this._blinkIsEven = false;
+
+        if (this._cursorIndex === -1) {
+            this._cursorIndex = offset;
+        } else {
+            if (this._cursorIndex < this._cursorOffset) {
+                this._endHighlightIndex = this._text.length - this._cursorIndex;
+                this._startHighlightIndex = this._text.length - this._cursorOffset;
+            }
+            else if (this._cursorIndex > this._cursorOffset) {
+                this._endHighlightIndex = this._text.length - this._cursorOffset;
+                this._startHighlightIndex = this._text.length - this._cursorIndex;
+            }
+            else {
+                this._isTextHighlightOn = false;
+                this._markAsDirty();
+                return;
+            }
+        }
+        this._isTextHighlightOn = true;
     }
     /** @hidden */
     private _processDblClick(evt: PointerInfo) {
@@ -872,7 +876,9 @@ export class InputText extends Control implements IFocusableControl {
                         cursorLeft = clipTextLeft + availableWidth;
                         this._markAsDirty();
                     }
-                    context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
+                    if (!this._isTextHighlightOn) {
+                        context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
+                    }
                 }
 
                 clearTimeout(this._blinkTimeout);
@@ -920,9 +926,12 @@ export class InputText extends Control implements IFocusableControl {
         this._clickedCoordinate = coordinates.x;
         this._isTextHighlightOn = false;
         this._highlightedText = "";
+        this._cursorIndex = -1;
         if (this._host.focusedControl === this) {
             // Move cursor
             clearTimeout(this._blinkTimeout);
+            this._isPointerDown = true;
+            this._host._capturingControl[pointerId] = this;
             this._markAsDirty();
             return true;
         }
@@ -933,16 +942,21 @@ export class InputText extends Control implements IFocusableControl {
 
         return true;
     }
-    // public _onPointerMove(target: Control, coordinates: Vector2): void {
-    //     console.log(this._isPointerDown, target.isPointerBlocker);
-    //     if (this._host.focusedControl === this && target.isPointerBlocker) {
-    //         this._clickedCoordinate = coordinates.x;
-    //         console.log(coordinates.x);
-    //         console.log(this._cursorOffset);
-    //     }
-    // }
+    public _onPointerMove(target: Control, coordinates: Vector2): void {
+        if (this._host.focusedControl === this && this._isPointerDown) {
+            this._clickedCoordinate = coordinates.x;
+            this._markAsDirty();
+            this._updateValueFromCursorIndex(this._cursorOffset);
+        }
+        super._onPointerMove(target, coordinates);
+    }
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+
+        if (this._host.focusedControl === this) {
+            this._isPointerDown = false;
+            delete this._host._capturingControl[pointerId];
+        }
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
 
