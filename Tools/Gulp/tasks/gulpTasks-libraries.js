@@ -43,12 +43,22 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
 
     // Webpack Config.
     var wpConfig = require(settings.build.webpack);
-    // Create multi entry list.
-    wpConfig.entry = { };
+
+    // Map Output
+    var rootPath = path.resolve(__dirname, "../../../");
+    var absoluteSrc = path.resolve(__dirname, "../", settings.build.srcDirectory);
     wpConfig.output.devtoolModuleFilenameTemplate = (info) => {
-        return `webpack://${info.namespace}/${info.resourcePath.replace('../Tools/Gulp/../../', '')}`;
+        info.resourcePath = path.normalize(info.resourcePath);
+
+        if (!path.isAbsolute(info.resourcePath)) {
+            info.resourcePath = path.join(absoluteSrc, info.resourcePath);
+        }
+
+        return `webpack://BABYLONJS/${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
     };
 
+    // Create multi entry list.
+    wpConfig.entry = { };
     for (let library of settings.libraries) {
         let name = library.output.replace(isMinOutputName ? ".min.js" : ".js", "");
         wpConfig.entry[name] = path.resolve(wpConfig.context, library.entry);

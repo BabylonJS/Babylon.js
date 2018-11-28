@@ -174,7 +174,9 @@ declare module "scene" {
          * Hide the inspector and close its window.
          */
         public hide() {
-            this.BJSINSPECTOR.Inspector.Hide();
+            if (this.BJSINSPECTOR) {
+                this.BJSINSPECTOR.Inspector.Hide();
+            }
         }
 
         /**
