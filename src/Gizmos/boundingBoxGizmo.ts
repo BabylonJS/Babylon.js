@@ -422,8 +422,8 @@ import { StandardMaterial } from "Materials/standardMaterial";
                             rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
                             rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Forward(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
                         }
-                        if (this.fixedDragMeshScreenSize) {
-                            rotateSpheres[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
+                        if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
+                            rotateSpheres[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
                             var distanceFromCamera = this.rotationSphereSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                             rotateSpheres[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
                         } else {
@@ -443,8 +443,8 @@ import { StandardMaterial } from "Materials/standardMaterial";
                         if (scaleBoxes[index]) {
                             scaleBoxes[index].position.set(this._boundingDimensions.x * i, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
                             scaleBoxes[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
-                            if (this.fixedDragMeshScreenSize) {
-                                scaleBoxes[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera!.position, this._tmpVector);
+                            if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
+                                scaleBoxes[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
                                 var distanceFromCamera = this.scaleBoxSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
                                 scaleBoxes[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
                             } else {
@@ -511,15 +511,6 @@ import { StandardMaterial } from "Materials/standardMaterial";
             var box = MeshBuilder.CreateBox("box", { size: 1 }, mesh.getScene());
             var boundingMinMax = mesh.getHierarchyBoundingVectors();
             boundingMinMax.max.subtractToRef(boundingMinMax.min, box.scaling);
-            box.position.set((boundingMinMax.max.x + boundingMinMax.min.x) / 2, (boundingMinMax.max.y + boundingMinMax.min.y) / 2, (boundingMinMax.max.z + boundingMinMax.min.z) / 2);
-
-            // Restore original positions
-            mesh.addChild(box);
-            mesh.rotationQuaternion.copyFrom(oldRot);
-            mesh.position.copyFrom(oldPos);
-
-            // Reverse parenting
-            mesh.removeChild(box);
 
             // Adjust scale to avoid undefined behavior when adding child
             if (box.scaling.y === 0) {
@@ -531,6 +522,16 @@ import { StandardMaterial } from "Materials/standardMaterial";
             if (box.scaling.z === 0) {
                 box.scaling.z = Epsilon;
             }
+
+            box.position.set((boundingMinMax.max.x + boundingMinMax.min.x) / 2, (boundingMinMax.max.y + boundingMinMax.min.y) / 2, (boundingMinMax.max.z + boundingMinMax.min.z) / 2);
+
+            // Restore original positions
+            mesh.addChild(box);
+            mesh.rotationQuaternion.copyFrom(oldRot);
+            mesh.position.copyFrom(oldPos);
+
+            // Reverse parenting
+            mesh.removeChild(box);
 
             box.addChild(mesh);
             box.visibility = 0;

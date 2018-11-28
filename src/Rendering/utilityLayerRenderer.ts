@@ -95,7 +95,9 @@ import { AbstractMesh } from "Meshes/abstractMesh";
 
             if (handleEvents) {
                 this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo, eventState) => {
-
+                    if (!this.utilityLayerScene.activeCamera) {
+                        return;
+                    }
                     if (!this.processAllEvents) {
                         if (prePointerInfo.type !== PointerEventTypes.POINTERMOVE
                             && prePointerInfo.type !== PointerEventTypes.POINTERUP
@@ -261,6 +263,10 @@ import { AbstractMesh } from "Meshes/abstractMesh";
         }
 
         private _updateCamera() {
-            this.utilityLayerScene.activeCamera = this.originalScene.activeCamera;
+            if (this.originalScene.activeCameras.length > 1) {
+                this.utilityLayerScene.activeCamera = this.originalScene.activeCameras[0];
+            }else {
+                this.utilityLayerScene.activeCamera = this.originalScene.activeCamera;
+            }
         }
     }
