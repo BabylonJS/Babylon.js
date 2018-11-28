@@ -1127,12 +1127,12 @@
 
         protected _deleteBuffer(buffer: WebGLBufferInfo): void {
             if (buffer._nativeIndexBuffer) {
-                this._native.deleteIndexBuffer(buffer);
+                this._native.deleteIndexBuffer(buffer._nativeIndexBuffer);
                 delete buffer._nativeIndexBuffer;
             }
 
             if (buffer._nativeVertexBuffer) {
-                this._native.deleteVertexBuffer(buffer);
+                this._native.deleteVertexBuffer(buffer._nativeVertexBuffer);
                 delete buffer._nativeVertexBuffer;
             }
 
