@@ -388,7 +388,7 @@ export class Grid extends Container {
         }
     }
 
-    protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
         if (!this.isHighlighted) {
             return;
         }
