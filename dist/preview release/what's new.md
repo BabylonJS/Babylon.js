@@ -18,6 +18,7 @@
 - GUI:
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
   - Added support for clipboard events to let users perform `cut`, `copy` and `paste` events ([Saket Saurabh](https://github.com/ssaket))
+  - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/))
 
 ## Updates
 
@@ -70,6 +71,9 @@
 - Added support for overriding the mesh used for the world matrix for a mesh with a skeleton ([bghgary](https://github.com/bghgary))
 - Added support for linking a bone to a transform node ([bghgary](https://github.com/bghgary))
 - Factored out `setDirection` function from `lookAt` for transform node ([bghgary](https://github.com/bghgary))
+- Added support for AmmoJS physics plugin ([TrevorDev](https://github.com/TrevorDev))
+- Add support for setting renderingGroupId and creating instances to `AxesViewer` ([bghgary](https://github.com/bghgary))
+- Invert vScale of compressed ktx textures as they are inverted in the file and UNPACK_FLIP_Y_WEBGL is not supported by ktx ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
@@ -102,6 +106,8 @@
 - PointerDragBahavior using Mesh as base type, causing type-checking problems with AbstractMesh ([Poolminer](https://github.com/Poolminer/))
 - TransformNode lookAt not working in world space when node's parent has rotation ([TrevorDev](https://github.com/TrevorDev))
 - MakeNotPickableAndWrapInBoundingBox had unexpected behavior when input had scaling of 0 on an axis ([TrevorDev](https://github.com/TrevorDev))
+- Fixed an issue with loading base64 encoded images in the glTF loader ([bghgary](https://github.com/bghgary))
+- In multi-camera scenes the inspector would cause the camera's interaction events to get detached ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -115,6 +121,9 @@
 - Added a `DeepImmutable<T>` type to specifiy that a referenced object should be considered recursively immutable, meaning that all its properties are `readonly` and that if a property is a reference to an object, this object is also recursively immutable. ([barroij](https://github.com/barroij))
 - Fixed `VideoTexture` poster property when autoplay is turned off.
 - Fixed position and rotation of plane mesh created by MeshBuilder.CreatePlane when specifying a source plane ([sable](https://github.com/thscott), [bghgary](https://github.com/bghgary))
+- Fixed inspector dynamic loading ([Sebavan](https://github.com/Sebavan))
+- Fixed infiniteDistance not working anymore ([Sebavan](https://github.com/Sebavan))
+- Fixed bug in SolidParticle BoundingSphere update within the SolidParticleSystem ([barroij](https://github.com/barroij))
 
 ### Viewer
 
@@ -150,3 +159,4 @@
   - _Note: The root node is still a `Mesh` object and is still the first in the returned list of meshes_
   - `TransformNode` objects are excluded from the returned list of meshes when importing mesh
   - `TransformNode` objects do not raise `onMeshLoaded` events
+- `xAxisMesh`, `yAxisMesh`, and `zAxisMesh` of `AxesViewer` was renamed to `xAxis`, `yAxis`, and `zAxis` respectively and now return a `TransformNode` to represent the parent node of the cylinder and line of the arrow ([bghgary](https://github.com/bghgary))

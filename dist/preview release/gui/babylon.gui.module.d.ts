@@ -40,6 +40,7 @@ declare module 'babylonjs-gui/2D/controls' {
     export * from "babylonjs-gui/2D/controls/radioButton";
     export * from "babylonjs-gui/2D/controls/stackPanel";
     export * from "babylonjs-gui/2D/controls/selector";
+    export * from "babylonjs-gui/2D/controls/scrollViewer";
     export * from "babylonjs-gui/2D/controls/textBlock";
     export * from "babylonjs-gui/2D/controls/virtualKeyboard";
     export * from "babylonjs-gui/2D/controls/rectangle";
@@ -2099,6 +2100,86 @@ declare module 'babylonjs-gui/2D/controls/selector' {
                 * @param onVal is the function used to format the value displayed, eg radians to degrees
                 */
             addToGroupSlider(groupNb: number, label: string, func?: () => void, unit?: string, min?: number, max?: number, value?: number, onVal?: (v: number) => number): void;
+    }
+}
+
+declare module 'babylonjs-gui/2D/controls/scrollViewer' {
+    import { Measure } from "babylonjs-gui/2D/measure";
+    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    /**
+        * Class used to hold a viewer window and sliders in a grid
+     */
+    export class ScrollViewer extends Rectangle {
+            /** name of ScrollViewer */
+            name?: string | undefined;
+            /**
+                * Adds windowContents to the grid view window
+                * @param windowContents the contents to add the grid view window
+                */
+            addToWindow(windowContents: Control): void;
+            /**
+                * Gets or sets a value indicating the padding to use on the left of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            paddingLeft: string | number;
+            /**
+                * Gets a value indicating the padding in pixels to use on the left of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            readonly paddingLeftInPixels: number;
+            /**
+                * Gets or sets a value indicating the padding to use on the right of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            paddingRight: string | number;
+            /**
+                * Gets a value indicating the padding in pixels to use on the right of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            readonly paddingRightInPixels: number;
+            /**
+                * Gets or sets a value indicating the padding to use on the top of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            paddingTop: string | number;
+            /**
+                * Gets a value indicating the padding in pixels to use on the top of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            readonly paddingTopInPixels: number;
+            /**
+                * Gets or sets a value indicating the padding to use on the bottom of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            paddingBottom: string | number;
+            /**
+                * Gets a value indicating the padding in pixels to use on the bottom of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            readonly paddingBottomInPixels: number;
+            /**
+             * Creates a new ScrollViewer
+             * @param name of ScrollViewer
+             */
+            constructor(
+            /** name of ScrollViewer */
+            name?: string | undefined);
+            /**
+                * Gets or sets the mouse wheel precision
+                * from 0 to 1 with a default value of 0.05
+                * */
+            wheelPrecision: number;
+            /** Gets or sets the bar color */
+            barColor: string;
+            /** Gets or sets the bar color */
+            barBorderColor: string;
+            /** Gets or sets the bar background */
+            barBackground: string;
+            /** @hidden */
+            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            /** Releases associated resources */
+            dispose(): void;
     }
 }
 
@@ -5005,6 +5086,82 @@ declare module BABYLON.GUI {
                 * @param onVal is the function used to format the value displayed, eg radians to degrees
                 */
             addToGroupSlider(groupNb: number, label: string, func?: () => void, unit?: string, min?: number, max?: number, value?: number, onVal?: (v: number) => number): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * Class used to hold a viewer window and sliders in a grid
+     */
+    export class ScrollViewer extends Rectangle {
+            /** name of ScrollViewer */
+            name?: string | undefined;
+            /**
+                * Adds windowContents to the grid view window
+                * @param windowContents the contents to add the grid view window
+                */
+            addToWindow(windowContents: Control): void;
+            /**
+                * Gets or sets a value indicating the padding to use on the left of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            paddingLeft: string | number;
+            /**
+                * Gets a value indicating the padding in pixels to use on the left of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            readonly paddingLeftInPixels: number;
+            /**
+                * Gets or sets a value indicating the padding to use on the right of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            paddingRight: string | number;
+            /**
+                * Gets a value indicating the padding in pixels to use on the right of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            readonly paddingRightInPixels: number;
+            /**
+                * Gets or sets a value indicating the padding to use on the top of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            paddingTop: string | number;
+            /**
+                * Gets a value indicating the padding in pixels to use on the top of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            readonly paddingTopInPixels: number;
+            /**
+                * Gets or sets a value indicating the padding to use on the bottom of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            paddingBottom: string | number;
+            /**
+                * Gets a value indicating the padding in pixels to use on the bottom of the viewer window
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
+            readonly paddingBottomInPixels: number;
+            /**
+             * Creates a new ScrollViewer
+             * @param name of ScrollViewer
+             */
+            constructor(
+            /** name of ScrollViewer */
+            name?: string | undefined);
+            /**
+                * Gets or sets the mouse wheel precision
+                * from 0 to 1 with a default value of 0.05
+                * */
+            wheelPrecision: number;
+            /** Gets or sets the bar color */
+            barColor: string;
+            /** Gets or sets the bar color */
+            barBorderColor: string;
+            /** Gets or sets the bar background */
+            barBackground: string;
+            /** @hidden */
+            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            /** Releases associated resources */
+            dispose(): void;
     }
 }
 declare module BABYLON.GUI {

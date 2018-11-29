@@ -5,6 +5,10 @@
     bottom: 0px;
 }
 
+#__resizable_base__ {
+    display: none;
+}
+
 #actionTabs {
     background: #333333;
     height: 100%;
@@ -731,7 +735,7 @@
                         margin-right: 5px;
 
                         select {
-                            min-width: 115px;
+                            width: 115px;
                         }
                     }                    
                 }                   

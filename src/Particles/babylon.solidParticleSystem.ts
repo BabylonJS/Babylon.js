@@ -898,7 +898,7 @@ module BABYLON {
                     const minBbox = modelBoundingInfo.minimum.multiplyToRef(particleScaling, tempVectors[1]);
                     const maxBbox = modelBoundingInfo.maximum.multiplyToRef(particleScaling, tempVectors[2]);
 
-                    const bSphereCenter = maxBbox.addToRef(minBbox, tempVectors[3]).scaleInPlace(0.5);
+                    const bSphereCenter = maxBbox.addToRef(minBbox, tempVectors[3]).scaleInPlace(0.5).addInPlace(particleGlobalPosition);
                     const halfDiag = maxBbox.subtractToRef(minBbox, tempVectors[4]).scaleInPlace(0.5 * this._bSphereRadiusFactor);
                     const bSphereMinBbox = bSphereCenter.subtractToRef(halfDiag, tempVectors[1]);
                     const bSphereMaxBbox = bSphereCenter.addToRef(halfDiag, tempVectors[2]);
