@@ -826,16 +826,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     private _attachToOnPointerOut(scene: Scene): void {
+
         this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add((pointerEvent) => {
             if (this._lastControlOver[pointerEvent.pointerId]) {
                 this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId]);
             }
             delete this._lastControlOver[pointerEvent.pointerId];
 
-            if (this._lastControlDown[pointerEvent.pointerId]) {
+            if (this._lastControlDown[pointerEvent.pointerId] && this._lastControlDown[pointerEvent.pointerId] !== this._capturingControl[pointerEvent.pointerId]) {
                 this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
+                delete this._lastControlDown[pointerEvent.pointerId];
             }
-            delete this._lastControlDown[pointerEvent.pointerId];
         });
     }
 

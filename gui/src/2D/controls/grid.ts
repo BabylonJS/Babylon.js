@@ -72,6 +72,11 @@ export class Grid extends Container {
             return this;
         }
 
+        let current = this._rowDefinitions[index];
+        if (current && current.isPixel === isPixel && current.internalValue === height) {
+            return this;
+        }
+
         this._rowDefinitions[index] = new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE);
 
         this._markAsDirty();
@@ -88,6 +93,11 @@ export class Grid extends Container {
      */
     public setColumnDefinition(index: number, width: number, isPixel = false): Grid {
         if (index < 0 || index >= this._columnDefinitions.length) {
+            return this;
+        }
+
+        let current = this._columnDefinitions[index];
+        if (current && current.isPixel === isPixel && current.internalValue === width) {
             return this;
         }
 
@@ -389,10 +399,6 @@ export class Grid extends Container {
     }
 
     public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
-        if (!this.isHighlighted) {
-            return;
-        }
-
         super._renderHighlightSpecific(context);
 
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {

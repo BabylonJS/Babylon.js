@@ -40,7 +40,7 @@ export class BaseSlider extends Control {
 
         this._displayThumb = value;
         this._markAsDirty();
-    }
+    }  
 
     /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
     public get barOffset(): string | number {
