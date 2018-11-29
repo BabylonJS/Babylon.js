@@ -504,14 +504,14 @@ export class ColorPicker extends Control {
             var inputTextColor: string = "#f0f0f0";
 
             // This is the current color as set by either the picker or by entering a value
-            var currentColor;
+            var currentColor: Color3;
 
             // This int is used for naming swatches and serves as the index for calling them from the list
             var swatchNumber: number;
 
             // Menu Panel options. We need to know if the swatchDrawer exists so we can create it if needed.
             var swatchDrawer: Grid;
-            var editSwatchMode = false;
+            var editSwatchMode: boolean = false;
 
             // Color InputText fields that will be updated upon value change
             var picker: ColorPicker;
@@ -528,7 +528,7 @@ export class ColorPicker extends Control {
 
             // Drawer height calculations
             if (options.savedColors) {
-                var rowCount = Math.ceil(options.savedColors.length / options.numSwatchesPerLine);
+                var rowCount: number = Math.ceil(options.savedColors.length / options.numSwatchesPerLine);
             }
 
             /**
@@ -538,7 +538,7 @@ export class ColorPicker extends Control {
             */
             function UpdateValues(value: Color3, inputField: string) {
                 activeField = inputField;
-                var pickedColor = value.toHexString();
+                var pickedColor: string = value.toHexString();
                 newSwatch.background = pickedColor;
                 if (rValInt.name != activeField) {
                     rValInt.text = Math.floor(value.r * 255).toString();
@@ -559,7 +559,7 @@ export class ColorPicker extends Control {
                     bValDec.text = value.b.toString();
                 }
                 if (hexVal.name != activeField) {
-                    var minusPound = pickedColor.split("#");
+                    var minusPound: string[] = pickedColor.split("#");
                     hexVal.text = minusPound[1];
                 }
                 if (picker.name != activeField) {
@@ -569,8 +569,8 @@ export class ColorPicker extends Control {
 
             // When the user enters an integer for R, G, or B we check to make sure it is a valid number and replace if not.
             function UpdateInt(field: InputText, channel: string) {
-                var newValue = field.text;
-                var checkVal = /[^0-9]/g.test(newValue);
+                var newValue: string = field.text;
+                var checkVal: boolean = /[^0-9]/g.test(newValue);
                 if (checkVal) {
                     field.text = lastVal;
                     return;
@@ -594,7 +594,7 @@ export class ColorPicker extends Control {
                 if (newValue != "") {
                     newValue = parseInt(newValue).toString();
                     field.text = newValue;
-                    var newSwatchRGB = BABYLON.Color3.FromHexString(newSwatch.background);
+                    var newSwatchRGB: Color3 = BABYLON.Color3.FromHexString(newSwatch.background);
                     if (activeField == field.name) {
                         if (channel == "r") {
                             UpdateValues(new BABYLON.Color3((parseInt(newValue)) / 255, newSwatchRGB.g, newSwatchRGB.b), field.name);
@@ -611,8 +611,8 @@ export class ColorPicker extends Control {
 
             // When the user enters a float for R, G, or B we check to make sure it is a valid number and replace if not.
             function UpdateFloat(field: InputText, channel: string) {
-                var newValue = field.text;
-                var checkVal = /[^0-9\.]/g.test(newValue);
+                var newValue: string = field.text;
+                var checkVal: boolean = /[^0-9\.]/g.test(newValue);
                 if (checkVal) {
                     field.text = lastVal;
                     return;
@@ -761,7 +761,7 @@ export class ColorPicker extends Control {
                     }
                     swatchNumber = 0;
                     swatchDrawer.clearControls();
-                    var rowCount = Math.ceil(options.savedColors.length / options.numSwatchesPerLine!);
+                    var rowCount: number = Math.ceil(options.savedColors.length / options.numSwatchesPerLine!);
                     if (swatchDrawer.rowCount != rowCount) {
                         for (var i = 0; i < swatchDrawer.rowCount; i++) {
                             swatchDrawer.setRowDefinition(i, 1 / rowCount, false);
@@ -777,13 +777,13 @@ export class ColorPicker extends Control {
                     for (var y = 0; y < rowCount; y++) {
 
                         // Determine number of buttons to create per row based on the button limit per row and number of saved colors
-                        var  adjustedNumberButtons = options.savedColors.length - (y * options.numSwatchesPerLine!);
-                        var buttonIterations = Math.min(Math.max(adjustedNumberButtons, 0), options.numSwatchesPerLine!);
+                        var  adjustedNumberButtons: number = options.savedColors.length - (y * options.numSwatchesPerLine!);
+                        var buttonIterations: number = Math.min(Math.max(adjustedNumberButtons, 0), options.numSwatchesPerLine!);
                         for (var x = 0; x < buttonIterations; x++) {
                             if (x > options.numSwatchesPerLine!) {
                                 continue;
                             }
-                            var swatch = CreateSwatch();
+                            var swatch: Button | null = CreateSwatch();
                             if (swatch) {
                                 swatchDrawer.addControl(swatch, y, x);
                                 swatchNumber++;
@@ -870,12 +870,12 @@ export class ColorPicker extends Control {
             }
 
             // Dialogue menu container which will contain both the main dialogue window and the swatch drawer which opens once a color is saved.
-            var dialogContainer = new Grid();
+            var dialogContainer: Grid = new Grid();
             dialogContainer.name = "Dialog Container";
             dialogContainer.width = options.pickerWidth;
             if (options.savedColors) {
                 dialogContainer.height = containerSize;
-                var topRow = parseInt(options.pickerHeight) / parseInt(containerSize);
+                var topRow: number = parseInt(options.pickerHeight) / parseInt(containerSize);
                 dialogContainer.addRowDefinition(topRow, false);
                 dialogContainer.addRowDefinition(1.0 - topRow, false);
             }
@@ -902,17 +902,17 @@ export class ColorPicker extends Control {
             }
 
             // Picker container
-            var pickerPanel = new Grid();
+            var pickerPanel: Grid = new Grid();
             pickerPanel.name = "Picker Panel";
             // pickerPanel.width = pickerWidth;
             pickerPanel.height = options.pickerHeight;
-            var panelHead = parseInt(options.headerHeight) / parseInt(options.pickerHeight);
+            var panelHead: number = parseInt(options.headerHeight) / parseInt(options.pickerHeight);
             pickerPanel.addRowDefinition(panelHead, false);
             pickerPanel.addRowDefinition(1.0, false);
             dialogContainer.addControl(pickerPanel, 0, 0);
 
             // Picker container head
-            var header = new Rectangle();
+            var header: Rectangle = new Rectangle();
             header.name = "Dialogue Header Bar";
             header.background = "#cccccc";
             header.thickness = 0;
@@ -949,24 +949,22 @@ export class ColorPicker extends Control {
             pickerPanel.addControl(closeButton, 0, 0);
 
             // Picker container body
-            var pickerBody = new Grid();
+            var pickerBody: Grid = new Grid();
             pickerBody.name = "Dialogue Body";
             pickerBody.background = buttonBackgroundColor;
             pickerBody.addRowDefinition(1.0, false);
-            pickerBody.addColumnDefinition(280, true);
-            pickerBody.addColumnDefinition(1.0, false);
+            pickerBody.addColumnDefinition(0.4375, false);
+            pickerBody.addColumnDefinition(0.5625, false);
             pickerPanel.addControl(pickerBody, 1, 0);
 
             //  Picker control
             picker = new ColorPicker();
             picker.name = "GUI Color Picker";
-            picker.height = "250px";
-            picker.width = "250px";
-            picker.top = "45px";
-            picker.left = "8px";
+            picker.height = 0.89;
+            picker.width = 0.89;
             picker.value = Color3.FromHexString(options.lastColor);
             picker.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-            picker.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            picker.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             picker.onPointerDownObservable.add(() => {
                 activeField = picker.name!;
                 lastVal = "";
@@ -980,59 +978,54 @@ export class ColorPicker extends Control {
             pickerBody.addControl(picker, 0, 0);
 
             // Picker body right quarant
-            var pickerBodyRight = new Grid();
+            var pickerBodyRight: Grid = new Grid();
             pickerBodyRight.name = "Dialogue Right Half";
             pickerBodyRight.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-            pickerBodyRight.addRowDefinition(185, true);
-            pickerBodyRight.addRowDefinition(1.0, false);
+            pickerBodyRight.addRowDefinition(0.514, false);
+            pickerBodyRight.addRowDefinition(0.486, false);
             pickerBody.addControl(pickerBodyRight, 1, 1);
 
             // Picker container swatches and buttons
-            var pickerSwatchesButtons = new Grid();
+            var pickerSwatchesButtons: Grid = new Grid();
             pickerSwatchesButtons.name = "Swatches and Buttons";
             pickerSwatchesButtons.addRowDefinition(1.0, false);
-            pickerSwatchesButtons.addColumnDefinition(150, true);
-            pickerSwatchesButtons.addColumnDefinition(1.0, false);
+            pickerSwatchesButtons.addColumnDefinition(0.417, false);
+            pickerSwatchesButtons.addColumnDefinition(0.583, false);
             pickerBodyRight.addControl(pickerSwatchesButtons, 0, 0);
 
             // Picker Swatches quadrant
-            var pickerSwatches = new Grid();
+            var pickerSwatches: Grid = new Grid();
             pickerSwatches.name = "New and Current Swatches";
-            pickerSwatches.top = "5px";
-            pickerSwatches.addRowDefinition(0.5, false);
-            pickerSwatches.addRowDefinition(60, true);
-            pickerSwatches.addRowDefinition(60, true);
-            pickerSwatches.addRowDefinition(0.5, false);
+            pickerSwatches.addRowDefinition(0.04, false);
+            pickerSwatches.addRowDefinition(0.16, false);
+            pickerSwatches.addRowDefinition(0.64, false);
+            pickerSwatches.addRowDefinition(0.16, false);
             pickerSwatchesButtons.addControl(pickerSwatches, 0, 0);
 
-            // Picker color values input
-            var pickerColorValues = new Grid();
-            pickerColorValues.name = "Dialog Lower Right";
-            pickerColorValues.addRowDefinition(10, true);
-            pickerColorValues.addRowDefinition(115, true);
-            pickerColorValues.addRowDefinition(35, true);
-            pickerBodyRight.addControl(pickerColorValues, 1, 0);
+            // Active swatches
+            var activeSwatches: Grid = new Grid();
+            activeSwatches.name = "Active Swatches";
+            activeSwatches.width = 0.67;
+            activeSwatches.addRowDefinition(0.5, false);
+            activeSwatches.addRowDefinition(0.5, false);
+            pickerSwatches.addControl(activeSwatches, 2, 0)
 
             // New color swatch and old color swatch
-            var newText = new TextBlock();
+            var newText: TextBlock = new TextBlock();
             newText.text = "new";
             newText.name = "New Color Label";
             newText.color = buttonColor;
             newText.fontSize = 16;
-            pickerSwatches.addControl(newText, 0, 0);
+            pickerSwatches.addControl(newText, 1, 0);
 
             newSwatch = new Rectangle();
             newSwatch.name = "New Color Swatch";
             newSwatch.background = options.lastColor;
-            newSwatch.width = "100px";
-            newSwatch.height = "60px";
             newSwatch.thickness = 0;
-            pickerSwatches.addControl(newSwatch, 1, 0);
+            activeSwatches.addControl(newSwatch, 0, 0);
 
-            var currentSwatch = Button.CreateSimpleButton("currentSwatch", "");
+            var currentSwatch: Button = Button.CreateSimpleButton("currentSwatch", "");
             currentSwatch.background = options.lastColor;
-            currentSwatch.width = "100px";
-            currentSwatch.height = "60px";
             currentSwatch.thickness = 0;
             currentSwatch.onPointerClickObservable.add(() => {
                 var revertColor = Color3.FromHexString(currentSwatch.background);
@@ -1043,31 +1036,45 @@ export class ColorPicker extends Control {
             currentSwatch.pointerUpAnimation = () => {};
             currentSwatch.pointerEnterAnimation = () => {};
             currentSwatch.pointerOutAnimation = () => {};
-            pickerSwatches.addControl(currentSwatch, 2, 0);
+            activeSwatches.addControl(currentSwatch, 1, 0);
 
-            var swatchOutline = new Rectangle();
-            swatchOutline.name = "Swatched Outline";
-            swatchOutline.width = "100px";
-            swatchOutline.height = "120px";
-            swatchOutline.top = "5px";
+            var swatchOutline: Rectangle = new Rectangle();
+            swatchOutline.name = "Swatch Outline";
+            swatchOutline.width = 0.67;
             swatchOutline.thickness = 2;
             swatchOutline.color = currentSwatchesOutlineColor;
             swatchOutline.isHitTestVisible = false;
-            pickerSwatchesButtons.addControl(swatchOutline, 0, 0);
+            pickerSwatches.addControl(swatchOutline, 2, 0);
 
-            var currentText = new TextBlock();
+            var currentText: TextBlock = new TextBlock();
             currentText.name = "Current Color Label";
             currentText.text = "current";
             currentText.color = buttonColor;
             currentText.fontSize = 16;
             pickerSwatches.addControl(currentText, 3, 0);
 
+            // Picker color values input
+            var pickerColorValues: Grid = new Grid();
+            pickerColorValues.name = "Dialog Lower Right";
+            pickerColorValues.addRowDefinition(10, true);
+            pickerColorValues.addRowDefinition(115, true);
+            pickerColorValues.addRowDefinition(35, true);
+            pickerBodyRight.addControl(pickerColorValues, 1, 0);
+
+            // Buttons grid
+            var buttonGrid: Grid = new Grid();
+            buttonGrid.name = "Button Grid";
+            buttonGrid.height = 0.8;
+            buttonGrid.addRowDefinition(1 / 3, false);
+            buttonGrid.addRowDefinition(1 / 3, false);
+            buttonGrid.addRowDefinition(1 / 3, false);
+            pickerSwatchesButtons.addControl(buttonGrid, 0, 1);
+                        
             // Panel Buttons
-            var butOK = Button.CreateSimpleButton("butOK", "OK");
-            butOK.width = "140px";
-            butOK.height = "35px";
-            butOK.top = "29px";
-            butOK.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            var butOK: Button = Button.CreateSimpleButton("butOK", "OK");
+            butOK.width = 0.67;
+            butOK.height = 0.7;
+            butOK.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             butOK.thickness = 2;
             butOK.color = buttonColor;
             butOK.fontSize = buttonFontSize;
@@ -1084,13 +1091,12 @@ export class ColorPicker extends Control {
                 EditSwatches(false);
                 ClosePicker(newSwatch.background);
             });
-            pickerSwatchesButtons.addControl(butOK, 0, 1);
+            buttonGrid.addControl(butOK, 0, 0);
 
-            var butCancel = Button.CreateSimpleButton("butCancel", "Cancel");
-            butCancel.width = "140px";
-            butCancel.height = "35px";
-            butCancel.top = "77px";
-            butCancel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            var butCancel: Button = Button.CreateSimpleButton("butCancel", "Cancel");
+            butCancel.width = 0.67;
+            butCancel.height = 0.7;
+            butCancel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             butCancel.thickness = 2;
             butCancel.color = buttonColor;
             butCancel.fontSize = buttonFontSize;
@@ -1107,14 +1113,13 @@ export class ColorPicker extends Control {
                 EditSwatches(false);
                 ClosePicker(currentSwatch.background);
             });
-            pickerSwatchesButtons.addControl(butCancel, 0, 1);
+            buttonGrid.addControl(butCancel, 1, 0);
 
             if (options.savedColors) {
-                var butSave = Button.CreateSimpleButton("butSave", "Save Swatch");
-                butSave.width = "140px";
-                butSave.height = "35px";
-                butSave.top = "127px";
-                butSave.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+                var butSave: Button = Button.CreateSimpleButton("butSave", "Save Swatch");
+                butSave.width = 0.67;
+                butSave.height = 0.7;
+                butSave.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 butSave.thickness = 2;
                 butSave.fontSize = buttonFontSize;
                 if (options.savedColors.length < options.swatchLimit!) {
@@ -1166,14 +1171,14 @@ export class ColorPicker extends Control {
                 if (options.savedColors.length > 0) {
                     setEditButtonVisibility(true);
                 }
-                pickerSwatchesButtons.addControl(butSave, 0, 1);
+                buttonGrid.addControl(butSave, 2, 0);
             }
 
             // RGB values text boxes
             currentColor = Color3.FromHexString(options.lastColor);
-            var rgbValuesQuadrant = new Grid();
+            var rgbValuesQuadrant: Grid = new Grid();
             rgbValuesQuadrant.name = "RGB Values";
-            rgbValuesQuadrant.width = "300px";
+            rgbValuesQuadrant.width = 0.82;
             rgbValuesQuadrant.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             rgbValuesQuadrant.addRowDefinition(1 / 3, false);
             rgbValuesQuadrant.addRowDefinition(1 / 3, false);
@@ -1184,7 +1189,7 @@ export class ColorPicker extends Control {
             pickerColorValues.addControl(rgbValuesQuadrant, 1, 0);
 
             for (var i = 0; i < inputFieldLabels.length; i++) {
-                var labelText = new TextBlock();
+                var labelText: TextBlock = new TextBlock();
                 labelText.text = inputFieldLabels[i];
                 labelText.color = buttonColor;
                 labelText.fontSize = 16;
@@ -1193,8 +1198,8 @@ export class ColorPicker extends Control {
 
             // Input fields for RGB values
             rValInt = new InputText();
-            rValInt.width = "50px";
-            rValInt.height = "27px";
+            rValInt.width = 0.83;
+            rValInt.height = 0.72;
             rValInt.name = "rIntField";
             rValInt.fontSize = buttonFontSize;
             rValInt.text = (currentColor.r * 255).toString();
@@ -1222,8 +1227,8 @@ export class ColorPicker extends Control {
             rgbValuesQuadrant.addControl(rValInt, 0, 1);
 
             gValInt = new InputText();
-            gValInt.width = "50px";
-            gValInt.height = "27px";
+            gValInt.width = 0.83;
+            gValInt.height = 0.72;
             gValInt.name = "gIntField";
             gValInt.fontSize = buttonFontSize;
             gValInt.text = (currentColor.g * 255).toString();
@@ -1251,8 +1256,8 @@ export class ColorPicker extends Control {
             rgbValuesQuadrant.addControl(gValInt, 1, 1);
 
             bValInt = new InputText();
-            bValInt.width = "50px";
-            bValInt.height = "27px";
+            bValInt.width = 0.83;
+            bValInt.height = 0.72;
             bValInt.name = "bIntField";
             bValInt.fontSize = buttonFontSize;
             bValInt.text = (currentColor.b * 255).toString();
@@ -1280,8 +1285,8 @@ export class ColorPicker extends Control {
             rgbValuesQuadrant.addControl(bValInt, 2, 1);
 
             rValDec = new InputText();
-            rValDec.width = "200px";
-            rValDec.height = "27px";
+            rValDec.width = 0.95;
+            rValDec.height = 0.72;
             rValDec.name = "rDecField";
             rValDec.fontSize = buttonFontSize;
             rValDec.text = currentColor.r.toString();
@@ -1309,8 +1314,8 @@ export class ColorPicker extends Control {
             rgbValuesQuadrant.addControl(rValDec, 0, 2);
 
             gValDec = new InputText();
-            gValDec.width = "200px";
-            gValDec.height = "27px";
+            gValDec.width = 0.95;
+            gValDec.height = 0.72;
             gValDec.name = "gDecField";
             gValDec.fontSize = buttonFontSize;
             gValDec.text = currentColor.g.toString();
@@ -1338,8 +1343,8 @@ export class ColorPicker extends Control {
             rgbValuesQuadrant.addControl(gValDec, 1, 2);
 
             bValDec = new InputText();
-            bValDec.width = "200px";
-            bValDec.height = "27px";
+            bValDec.width = 0.95;
+            bValDec.height = 0.72;
             bValDec.name = "bDecField";
             bValDec.fontSize = buttonFontSize;
             bValDec.text = currentColor.b.toString();
@@ -1367,26 +1372,25 @@ export class ColorPicker extends Control {
             rgbValuesQuadrant.addControl(bValDec, 2, 2);
 
             // Hex value input
-            var hexValueQuadrant = new Grid();
+            var hexValueQuadrant: Grid = new Grid();
             hexValueQuadrant.name = "Hex Value";
-            hexValueQuadrant.width = "300px";
+            hexValueQuadrant.width = 0.82;
             hexValueQuadrant.addRowDefinition(1.0, false);
             hexValueQuadrant.addColumnDefinition(0.1, false);
             hexValueQuadrant.addColumnDefinition(0.9, false);
             pickerColorValues.addControl(hexValueQuadrant, 2, 0);
 
-            var labelText = new TextBlock();
+            var labelText: TextBlock = new TextBlock();
             labelText.text = "#";
             labelText.color = buttonColor;
             labelText.fontSize = buttonFontSize;
             hexValueQuadrant.addControl(labelText, 0, 0);
 
             hexVal = new InputText();
-            hexVal.width = "260px";
-            hexVal.height = "27px";
+            hexVal.width = 0.96;
+            hexVal.height = 0.72;
             hexVal.name = "hexField";
-            hexVal.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-            hexVal.left = "5px";
+            hexVal.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
             hexVal.fontSize = buttonFontSize;
             var minusPound = options.lastColor.split("#");
             hexVal.text = minusPound[1];
@@ -1411,20 +1415,20 @@ export class ColorPicker extends Control {
                 }
             });
             hexVal.onTextChangedObservable.add(() => {
-                var newHexValue = hexVal.text;
-                var checkHex = /[^0-9A-F]/i.test(newHexValue);
+                var newHexValue: string = hexVal.text;
+                var checkHex: boolean = /[^0-9A-F]/i.test(newHexValue);
                 if ((hexVal.text.length > 6 || checkHex) && activeField == hexVal.name) {
                     hexVal.text = lastVal;
                 }
                 else {
                     if (hexVal.text.length < 6) {
-                        var leadingZero = 6 - hexVal.text.length;
+                        var leadingZero: Number = 6 - hexVal.text.length;
                         for (var i = 0; i < leadingZero; i++) {
                             newHexValue = "0" + newHexValue;
                         }
                     }
                     if (hexVal.text.length == 3) {
-                        var val = hexVal.text.split("");
+                        var val: string[] = hexVal.text.split("");
                         newHexValue = val[0] + val[0] + val[1] + val[1] + val[2] + val[2];
                     }
                     newHexValue = "#" + newHexValue;
