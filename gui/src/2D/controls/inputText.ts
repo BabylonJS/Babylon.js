@@ -675,6 +675,7 @@ export class InputText extends Control implements IFocusableControl {
             }
         }
         this._isTextHighlightOn = true;
+        this._markAsDirty();
     }
     /** @hidden */
     private _processDblClick(evt: PointerInfo) {
@@ -893,12 +894,19 @@ export class InputText extends Control implements IFocusableControl {
                     let highlightCursorOffsetWidth = context.measureText(this.text.substring(this._startHighlightIndex)).width;
                     let highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
                     this._highlightedText = this.text.substring(this._startHighlightIndex, this._endHighlightIndex);
+                    let width = context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width;
+                    if (highlightCursorLeft < clipTextLeft) {
+                        width =  width - (clipTextLeft - highlightCursorLeft);
+                        if (!width) {
+                            width = 2; //when using left arrow on text > availableWidth;
+                        }
+                        highlightCursorLeft = clipTextLeft;
+                    }
                     //for transparancy
                     context.globalAlpha = this._highligherOpacity;
                     context.fillStyle = this._textHighlightColor;
-                    context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width, this._fontOffset.height);
+                    context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, width, this._fontOffset.height);
                     context.globalAlpha = 1.0;
-                    this._markAsDirty();
                 }
             }
 
