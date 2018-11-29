@@ -1054,7 +1054,6 @@ module BABYLON {
             var camRight = <ArcRotateCamera>this._rigCameras[1];
 
             camLeft.beta = camRight.beta = this.beta;
-            camLeft.radius = camRight.radius = this.radius;
 
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:

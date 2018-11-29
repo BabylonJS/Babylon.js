@@ -481,7 +481,7 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.8";
+            return "4.0.0-alpha.10";
         }
 
         /**
@@ -4234,7 +4234,7 @@ module BABYLON {
          * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
          * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
          * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
-         * @param invertY when true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file
+         * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
          * @param scene needed for loading to the correct scene
          * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
          * @param onLoad optional callback to be called upon successful completion
@@ -4306,7 +4306,7 @@ module BABYLON {
                         customFallback = true;
                         excludeLoaders.push(loader);
                         Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
-                        this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
+                        this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
                         return;
                     }
                 }
@@ -4316,7 +4316,7 @@ module BABYLON {
                         texture.onLoadedObservable.remove(onLoadObserver);
                     }
                     if (Tools.UseFallbackTexture) {
-                        this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                        this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
                         return;
                     }
                 }
@@ -4333,7 +4333,7 @@ module BABYLON {
                         if (loadFailed) {
                             onInternalError("TextureLoader failed to load data");
                         } else {
-                            this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
+                            this._prepareWebGLTexture(texture, scene, width, height, texture.invertY, !loadMipmap, isCompressed, () => {
                                 done();
                                 return false;
                             }, samplingMode);
@@ -4356,7 +4356,7 @@ module BABYLON {
                         texture._buffer = img;
                     }
 
-                    this._prepareWebGLTexture(texture, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight, continuationCallback) => {
+                    this._prepareWebGLTexture(texture, scene, img.width, img.height, texture.invertY, noMipmap, false, (potWidth, potHeight, continuationCallback) => {
                         let gl = this._gl;
                         var isPot = (img.width === potWidth && img.height === potHeight);
                         let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
