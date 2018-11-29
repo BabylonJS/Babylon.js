@@ -257,6 +257,11 @@ export class Container extends Control {
     }
 
     /** @hidden */
+    protected _beforeLayout() {
+        // Do nothing
+    }
+
+    /** @hidden */
     public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
         if (!this.isVisible || this.notRenderable) {
             return false;
@@ -267,6 +272,8 @@ export class Container extends Control {
         context.save();
 
         this._applyStates(context);
+
+        this._beforeLayout();
 
         do
         {

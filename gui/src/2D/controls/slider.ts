@@ -7,6 +7,21 @@ export class Slider extends BaseSlider {
     private _background = "black";
     private _borderColor = "white";
     private _isThumbCircle = false;
+    protected _displayValueBar = true;
+
+    /** Gets or sets a boolean indicating if the value bar must be rendered */
+    public get displayValueBar(): boolean {
+        return this._displayValueBar;
+    }
+
+    public set displayValueBar(value: boolean) {
+        if (this._displayValueBar === value) {
+            return;
+        }
+
+        this._displayValueBar = value;
+        this._markAsDirty();
+    }      
 
     /** Gets or sets border color */
     public get borderColor(): string {
@@ -139,36 +154,38 @@ export class Slider extends BaseSlider {
 
         // Value bar
         context.fillStyle = this.color;
-        if (this.isVertical) {
-            if (this.isThumbClamped) {
-                if (this.isThumbCircle) {
-                    context.beginPath();
-                    context.arc(left + this._backgroundBoxThickness / 2, top + this._backgroundBoxLength, radius, 0, 2 * Math.PI);
-                    context.fill();
+        if (this._displayValueBar) {
+            if (this.isVertical) {
+                if (this.isThumbClamped) {
+                    if (this.isThumbCircle) {
+                        context.beginPath();
+                        context.arc(left + this._backgroundBoxThickness / 2, top + this._backgroundBoxLength, radius, 0, 2 * Math.PI);
+                        context.fill();
+                        context.fillRect(left, top + thumbPosition, width, height - thumbPosition);
+                    }
+                    else {
+                        context.fillRect(left, top + thumbPosition, width, height - thumbPosition + this._effectiveThumbThickness);
+                    }
+                }
+                else {
                     context.fillRect(left, top + thumbPosition, width, height - thumbPosition);
                 }
-                else {
-                    context.fillRect(left, top + thumbPosition, width, height - thumbPosition + this._effectiveThumbThickness);
-                }
             }
             else {
-                context.fillRect(left, top + thumbPosition, width, height - thumbPosition);
-            }
-        }
-        else {
-            if (this.isThumbClamped) {
-                if (this.isThumbCircle) {
-                    context.beginPath();
-                    context.arc(left, top + this._backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
-                    context.fill();
-                    context.fillRect(left, top, thumbPosition, height);
+                if (this.isThumbClamped) {
+                    if (this.isThumbCircle) {
+                        context.beginPath();
+                        context.arc(left, top + this._backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
+                        context.fill();
+                        context.fillRect(left, top, thumbPosition, height);
+                    }
+                    else {
+                        context.fillRect(left, top, thumbPosition, height);
+                    }
                 }
                 else {
                     context.fillRect(left, top, thumbPosition, height);
                 }
-            }
-            else {
-                context.fillRect(left, top, thumbPosition, height);
             }
         }
 

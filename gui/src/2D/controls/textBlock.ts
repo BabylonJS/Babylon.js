@@ -246,7 +246,9 @@ export class TextBlock extends Control {
         }
 
         if (this._resizeToFit) {
-            this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
+            if (this._textWrapping === TextWrapping.Clip) {
+                this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
+            }
             this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
         }
 
@@ -305,11 +307,11 @@ export class TextBlock extends Control {
         var lines = [];
         var _lines = this.text.split("\n");
 
-        if (this._textWrapping === TextWrapping.Ellipsis && !this._resizeToFit) {
+        if (this._textWrapping === TextWrapping.Ellipsis) {
             for (var _line of _lines) {
                 lines.push(this._parseLineEllipsis(_line, refWidth, context));
             }
-        } else if (this._textWrapping === TextWrapping.WordWrap && !this._resizeToFit) {
+        } else if (this._textWrapping === TextWrapping.WordWrap) {
             for (var _line of _lines) {
                 lines.push(...this._parseLineWordWrap(_line, refWidth, context));
             }

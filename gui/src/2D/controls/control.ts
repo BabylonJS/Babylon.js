@@ -1144,13 +1144,14 @@ export class Control {
 
         context.restore();
 
+        this._isDirty = false;
+
         return true;
     }
 
     /** @hidden */
     protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
-            this._isDirty = false;
             this._currentMeasure.copyFrom(parentMeasure);
 
             // Let children take some pre-measurement actions
