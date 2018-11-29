@@ -362,7 +362,13 @@ module BABYLON {
                         var childImpostor = childMesh.getPhysicsImpostor();
                         if (childImpostor) {
                             var shape = this._createShape(childImpostor);
-                            this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x, childMesh.position.y, childMesh.position.z);
+
+                            // Position needs to be scaled based on parent's scaling
+                            var parentMat = childMesh.parent!.getWorldMatrix().clone();
+                            var s = new BABYLON.Vector3();
+                            parentMat.decompose(s);
+                            this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x * s.x, childMesh.position.y * s.y, childMesh.position.z * s.z);
+
                             this._tmpAmmoQuaternion.setValue(childMesh.rotationQuaternion!.x, childMesh.rotationQuaternion!.y, childMesh.rotationQuaternion!.z, childMesh.rotationQuaternion!.w);
                             this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
                             returnValue.addChildShape(this._tmpAmmoTransform, shape);
@@ -374,7 +380,6 @@ module BABYLON {
                     var shape = this._createShape(impostor, true);
                     if (shape) {
                         this._tmpAmmoTransform.getOrigin().setValue(0, 0, 0);
-                        //this._tmpAmmoQuaternion = new this.BJSAMMO.btQuaternion(0,0,0,1);
                         this._tmpAmmoQuaternion.setValue(0, 0, 0, 1);
                         this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
 
@@ -407,6 +412,9 @@ module BABYLON {
                     }else {
                         returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
                     }
+                    break;
+                case PhysicsImpostor.NoImpostor:
+                    returnValue = new Ammo.btCompoundShape();
                     break;
             }
 
