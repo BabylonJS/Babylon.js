@@ -10,7 +10,6 @@ export class StackPanel extends Container {
     private _manualWidth = false;
     private _manualHeight = false;
     private _doNotTrackManualChanges = false;
-    private _tempMeasureStore = Measure.Empty();
 
     /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
     public get isVertical(): boolean {
@@ -82,13 +81,34 @@ export class StackPanel extends Container {
         return "StackPanel";
     }
 
+    /** @hidden */
     protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        for (var child of this._children) {
+            if (this._isVertical) {
+                child.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            } else {
+                child.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+            }
+        }
+ 
+        super._preMeasure(parentMeasure, context);
+    }
+   
+    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        super._additionalProcessing(parentMeasure, context);
+
+        this._measureForChildren.copyFrom(parentMeasure);
+        this._measureForChildren.left = this._currentMeasure.left;
+        this._measureForChildren.top = this._currentMeasure.top;
+    }
+
+    protected _postMeasure(): void {
         var stackWidth = 0;
         var stackHeight = 0;
         for (var child of this._children) {
-            this._tempMeasureStore.copyFrom(child._currentMeasure);
-            child._currentMeasure.copyFrom(parentMeasure);
-            child._measure();
+            if (!child.isVisible || child.notRenderable) {
+                continue;
+            }
 
             if (this._isVertical) {
                 child.top = stackHeight + "px";
@@ -100,7 +120,6 @@ export class StackPanel extends Container {
                 if (child._currentMeasure.width > stackWidth) {
                     stackWidth = child._currentMeasure.width;
                 }
-                child.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
             } else {
                 child.left = stackWidth + "px";
                 if (!child._left.ignoreAdaptiveScaling) {
@@ -111,10 +130,7 @@ export class StackPanel extends Container {
                 if (child._currentMeasure.height > stackHeight) {
                     stackHeight = child._currentMeasure.height;
                 }
-                child.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             }
-
-            child._currentMeasure.copyFrom(this._tempMeasureStore);
         }
 
         this._doNotTrackManualChanges = true;
@@ -151,9 +167,9 @@ export class StackPanel extends Container {
         this._doNotTrackManualChanges = false;
 
         if (panelWidthChanged || panelHeightChanged) {
-            this._markAllAsDirty();
+            this._rebuildLayout = true;
         }
 
-        super._preMeasure(parentMeasure, context);
+        super._postMeasure();
     }
 }

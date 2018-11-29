@@ -36,7 +36,7 @@
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": "Starting \\'watch\\'",
-                    "endsPattern": "Finished \\'run\\'"
+                    "endsPattern": "Entrypoint babylonjs-inspector"
                 }
             }
         },

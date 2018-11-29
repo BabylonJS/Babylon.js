@@ -3,10 +3,9 @@ import { Rectangle } from "./rectangle";
 import { Grid } from "./grid";
 import { Control } from "./control";
 import { Slider } from "./slider";
-import { ValueAndUnit } from "../valueAndUnit";
 import { Container } from "./container";
-import { TextBlock } from "./textBlock";
 import { PointerInfo, Observer, Nullable } from "babylonjs";
+import { AdvancedDynamicTexture } from "2D";
 
 /**
  * Class used to hold a viewer window and sliders in a grid
@@ -23,111 +22,45 @@ export class ScrollViewer extends Rectangle {
     private _barBackground: string = "white";
     private _scrollGridWidth: number = 30;
     private _scrollGridHeight: number = 30;
-    private _widthScale: number;
-    private _heightScale: number;
     private _endLeft: number;
     private _endTop: number;
     private _window: Container;
-    private _windowContents: Control;
     private _pointerIsOver: Boolean = false;
     private _wheelPrecision: number = 0.05;
     private _onPointerObserver: Nullable<Observer<PointerInfo>>;
 
     /**
-     * Adds windowContents to the grid view window
-     * @param windowContents the contents to add the grid view window
+     * Adds a new control to the current container
+     * @param control defines the control to add
+     * @returns the current container
      */
-    public addToWindow(windowContents: Control): void {
-        this._window.removeControl(this._windowContents);
-        this._windowContents.dispose();
-        this._windowContents = windowContents;
-        if (windowContents.typeName === "TextBlock") {
-            this._updateTextBlock(windowContents);
+    public addControl(control: Nullable<Control>): Container {
+        if (!control) {
+            return this;
         }
-        else {
-            this._updateScroller(windowContents);
-        }
-        this._window.addControl(windowContents);
+            
+        this._window.addControl(control);
+
+        return this;
     }
 
     /**
-     * Gets or sets a value indicating the padding to use on the left of the viewer window
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * Removes a control from the current container
+     * @param control defines the control to remove
+     * @returns the current container
      */
-    public get paddingLeft(): string | number {
-        return this._windowContents.paddingLeft;
+    public removeControl(control: Control): Container {
+        this._window.removeControl(control);
+        return this;
+    }
+    
+    /** Gets the list of children */
+    public get children(): Control[] {
+        return this._window.children;
     }
 
-    /**
-     * Gets a value indicating the padding in pixels to use on the left of the viewer window
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
-     */
-    public get paddingLeftInPixels(): number {
-        return this._windowContents.paddingLeftInPixels;
-    }
-
-    public set paddingLeft(value: string | number) {
-        this._windowContents.paddingLeft = value;
-    }
-
-    /**
-     * Gets or sets a value indicating the padding to use on the right of the viewer window
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
-     */
-    public get paddingRight(): string | number {
-        return this._windowContents.paddingRight;
-    }
-
-    /**
-     * Gets a value indicating the padding in pixels to use on the right of the viewer window
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
-     */
-    public get paddingRightInPixels(): number {
-        return this._windowContents.paddingRightInPixels;
-    }
-
-    public set paddingRight(value: string | number) {
-        this._windowContents.paddingRight = value;
-    }
-
-    /**
-     * Gets or sets a value indicating the padding to use on the top of the viewer window
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
-     */
-    public get paddingTop(): string | number {
-        return this._windowContents.paddingTop;
-    }
-
-    /**
-     * Gets a value indicating the padding in pixels to use on the top of the viewer window
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
-     */
-    public get paddingTopInPixels(): number {
-        return this._windowContents.paddingTopInPixels;
-    }
-
-    public set paddingTop(value: string | number) {
-        this._windowContents.paddingTop = value;
-    }
-
-    /**
-     * Gets or sets a value indicating the padding to use on the bottom of the viewer window
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
-     */
-    public get paddingBottom(): string | number {
-        return this._windowContents.paddingBottom;
-    }
-
-    /**
-     * Gets a value indicating the padding in pixels to use on the bottom of the viewer window
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
-     */
-    public get paddingBottomInPixels(): number {
-        return this._windowContents.paddingBottomInPixels;
-    }
-
-    public set paddingBottom(value: string | number) {
-        this._windowContents.paddingBottom = value;
+    public _flagDescendantsAsMatrixDirty(): void {
+        this._window._flagDescendantsAsMatrixDirty();
     }
 
     /**
@@ -143,10 +76,6 @@ export class ScrollViewer extends Rectangle {
             this._horizontalBarSpace.color = this.color;
             this._verticalBarSpace.color = this.color;
             this._dragSpace.color = this.color;
-            this._updateScroller(this._windowContents);
-            if (this._windowContents.typeName === "TextBlock") {
-                this._updateTextBlock(this._windowContents);
-            }
         });
 
         this.onPointerEnterObservable.add(() => {
@@ -165,21 +94,12 @@ export class ScrollViewer extends Rectangle {
         this._window.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._window.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
-        this._windowContents = new Control();
-        this._window.addControl(this._windowContents);
-
-        this._width = new ValueAndUnit(0.25, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-        this._height = new ValueAndUnit(0.25, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-        this._background = "black";
-
-        this.fontSize = "16px";
-
         this._grid.addColumnDefinition(1, true);
         this._grid.addColumnDefinition(this._scrollGridWidth, true);
         this._grid.addRowDefinition(1, true);
         this._grid.addRowDefinition(this._scrollGridHeight, true);
 
-        this.addControl(this._grid);
+        super.addControl(this._grid);
         this._grid.addControl(this._window, 0, 0);
 
         this._verticalBar.paddingLeft = 0;
@@ -237,6 +157,34 @@ export class ScrollViewer extends Rectangle {
         this._dragSpace.thickness = 2;
         this._dragSpace.background = this._barColor;
         this._grid.addControl(this._dragSpace, 1, 1);
+    }
+
+    protected _getTypeName(): string {
+        return "ScrollViewer";
+    }
+
+    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        super._additionalProcessing(parentMeasure, context);
+
+        this._measureForChildren.left = 0;
+        this._measureForChildren.top = 0;
+        
+        this._measureForChildren.width = this.widthInPixels - 2 * this.thickness;
+        this._measureForChildren.height = this.heightInPixels - 2 * this.thickness;
+    }
+    
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        super._processMeasures(parentMeasure, context);
+        
+        let innerWidth = this.widthInPixels - this._scrollGridWidth - 2 * this.thickness;
+        let innerHeight = this.heightInPixels  - this._scrollGridHeight - 2 * this.thickness;
+        this._horizontalBar.width = (innerWidth * 0.8) + "px";
+        this._verticalBar.height = (innerHeight * 0.8) + "px";
+
+        this._grid.setColumnDefinition(0, innerWidth, true);
+        this._grid.setRowDefinition(0, innerHeight, true);
+
+        this._updateScroller();
     }
 
     /**
@@ -310,47 +258,12 @@ export class ScrollViewer extends Rectangle {
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-        super._additionalProcessing(parentMeasure, context);
+    private _updateScroller(): void {
+        let windowContentsWidth = this._window.widthInPixels;
+        let windowContentsHeight = this._window.heightInPixels;
 
-        let viewerWidth = this._width.getValueInPixel(this._host, parentMeasure.width);
-        let viewerHeight = this._height.getValueInPixel(this._host, parentMeasure.height);
-
-        let innerWidth = viewerWidth - this._scrollGridWidth - 2 * this.thickness;
-        let innerHeight = viewerHeight  - this._scrollGridHeight - 2 * this.thickness;
-        this._horizontalBar.width = (innerWidth * 0.8) + "px";
-        this._verticalBar.height = (innerHeight * 0.8) + "px";
-
-        this._grid.setColumnDefinition(0, innerWidth, true);
-        this._grid.setRowDefinition(0, innerHeight, true);
-
-        this._attachWheel();
-    }
-
-    /** @hidden */
-    private _updateScroller(windowContents: Control): void {
-
-        let windowContentsWidth: number  = parseFloat(windowContents.width.toString());
-        if (windowContents._width.unit === 0) {
-            this._widthScale = windowContentsWidth / 100;
-            windowContentsWidth = this._host.getSize().width * this._widthScale;
-            windowContents.width = windowContentsWidth + "px";
-        }
-
-        let windowContentsHeight: number  = parseFloat(windowContents.height.toString());
-        if (windowContents._height.unit === 0) {
-            this._heightScale = windowContentsHeight / 100;
-            windowContentsHeight = this._host.getSize().height * this._heightScale;
-            windowContents.height = this._host.getSize().height * this._heightScale + "px";
-        }
-
-        this._window.width = windowContents.width;
-        this._window.height = windowContents.height;
-        this._windowContents.width = windowContents.width;
-        this._windowContents.height = windowContents.height;
-
-        let viewerWidth = this._width.getValueInPixel(this._host, this._host.getSize().width);
-        let viewerHeight = this._height.getValueInPixel(this._host, this._host.getSize().height);
+        let viewerWidth = this.widthInPixels;
+        let viewerHeight = this.heightInPixels;
 
         let innerWidth = viewerWidth - this._scrollGridWidth - 2 * this.thickness;
         let innerHeight = viewerHeight  - this._scrollGridHeight - 2 * this.thickness;
@@ -381,27 +294,18 @@ export class ScrollViewer extends Rectangle {
         this._endTop = innerHeight - windowContentsHeight;
     }
 
-    /** @hidden */
-    private _updateTextBlock(windowContents: Control): void {
-        let viewerWidth = this._width.getValueInPixel(this._host, this._host.getSize().width);
-        let innerWidth = viewerWidth - this._scrollGridWidth - 2 * this.thickness;
+    public _link(host: AdvancedDynamicTexture): void {
+        super._link(host);
 
-        windowContents.width = innerWidth + "px";
-
-        this._window.width = windowContents.width;
-        this._windowContents.width = windowContents.width;
-
-        (<TextBlock>windowContents).onLinesReadyObservable.add(() => {
-            let windowContentsHeight = (this.fontOffset.height) * (<TextBlock>windowContents).lines.length + windowContents.paddingTopInPixels + windowContents.paddingBottomInPixels;
-            windowContents.height = windowContentsHeight + "px";
-            this._window.height = windowContents.height;
-            this._windowContents.height = windowContents.height;
-            this._updateScroller(windowContents);
-        });
+        this._attachWheel();
     }
 
     /** @hidden */
     private _attachWheel() {
+        if (this._onPointerObserver) {
+            return;
+        }
+
         let scene = this._host.getScene();
         this._onPointerObserver = scene!.onPointerObservable.add((pi, state) => {
             if (!this._pointerIsOver || pi.type !== BABYLON.PointerEventTypes.POINTERWHEEL) {
@@ -424,11 +328,24 @@ export class ScrollViewer extends Rectangle {
         });
     }
 
+    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+        if (!this.isHighlighted) {
+            return;
+        }
+
+        super._renderHighlightSpecific(context);
+
+        this._window._renderHighlightSpecific(context);
+
+        context.restore();
+    }
+
     /** Releases associated resources */
     public dispose() {
         let scene = this._host.getScene();
         if (scene && this._onPointerObserver) {
             scene.onPointerObservable.remove(this._onPointerObserver);
+            this._onPointerObserver  = null;
         }
         super.dispose();
     }
