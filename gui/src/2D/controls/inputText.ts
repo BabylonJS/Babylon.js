@@ -633,20 +633,18 @@ export class InputText extends Control implements IFocusableControl {
             this.onBeforeKeyAddObservable.notifyObservers(this);
             key = this._currentKey;
             if (this._addKey) {
-                if (this._cursorOffset === 0) {
+                if (this._isTextHighlightOn) {
+                    this.text = this._text.slice(0, this._startHighlightIndex) + key + this._text.slice(this._endHighlightIndex);
+                    this._cursorOffset = this.text.length - (this._startHighlightIndex + 1);
+                    this._isTextHighlightOn = false;
+                    this._blinkIsEven = false;
+                    this._markAsDirty();
+                }
+                else if (this._cursorOffset === 0) {
                     this.text += key;
                 } else {
-                    if (this._isTextHighlightOn) {
-                        this.text = this._text.slice(0, this._startHighlightIndex) + key + this._text.slice(this._endHighlightIndex);
-                        this._cursorOffset = this.text.length - (this._startHighlightIndex + 1);
-                        this._isTextHighlightOn = false;
-                        this._blinkIsEven = false;
-                        this._markAsDirty();
-                    }
-                    else {
-                        let insertPosition = this._text.length - this._cursorOffset;
-                        this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
-                    }
+                    let insertPosition = this._text.length - this._cursorOffset;
+                    this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
                 }
             }
         }
@@ -935,11 +933,11 @@ export class InputText extends Control implements IFocusableControl {
         this._isTextHighlightOn = false;
         this._highlightedText = "";
         this._cursorIndex = -1;
+        this._isPointerDown = true;
+        this._host._capturingControl[pointerId] = this;
         if (this._host.focusedControl === this) {
             // Move cursor
             clearTimeout(this._blinkTimeout);
-            this._isPointerDown = true;
-            this._host._capturingControl[pointerId] = this;
             this._markAsDirty();
             return true;
         }
@@ -961,10 +959,8 @@ export class InputText extends Control implements IFocusableControl {
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
 
-        if (this._host.focusedControl === this) {
-            this._isPointerDown = false;
-            delete this._host._capturingControl[pointerId];
-        }
+        this._isPointerDown = false;
+        delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
 
