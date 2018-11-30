@@ -85,11 +85,11 @@ export class ScrollBar extends BaseSlider {
         // Value bar
         context.fillStyle = this.color;
 
-        // Thumb        
+        // Thumb
         if (this.isVertical) {
             this._thumbMeasure.left = left - this._effectiveBarOffset;
             this._thumbMeasure.top = this._currentMeasure.top + thumbPosition;
-            this._thumbMeasure.width = this._currentMeasure.width;            
+            this._thumbMeasure.width = this._currentMeasure.width;
             this._thumbMeasure.height = this._effectiveThumbThickness;
         }
         else {
@@ -98,7 +98,7 @@ export class ScrollBar extends BaseSlider {
             this._thumbMeasure.width = this._effectiveThumbThickness;
             this._thumbMeasure.height = this._currentMeasure.height;
         }
-        
+
         context.fillRect(this._thumbMeasure.left, this._thumbMeasure.top, this._thumbMeasure.width , this._thumbMeasure.height);
 
         context.restore();
@@ -144,12 +144,12 @@ export class ScrollBar extends BaseSlider {
         this.value += delta * (this.maximum - this.minimum);
 
         this._originX = x;
-        this._originY = y;        
+        this._originY = y;
     }
 
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
         this._first = true;
 
         return super._onPointerDown(target, coordinates, pointerId, buttonIndex);
-    }  
+    }
 }

@@ -316,7 +316,7 @@ export class Container extends Control {
         }
         while (this._rebuildLayout && rebuildCount < 3);
 
-        if (rebuildCount > 3) {
+        if (rebuildCount >= 3) {
             BABYLON.Tools.Error(`Layout cycle detected in GUI (Container uniqueId=${this.uniqueId})`);
         }
 
@@ -335,6 +335,10 @@ export class Container extends Control {
     public _draw(context: CanvasRenderingContext2D): void {
 
         this._localDraw(context);
+       
+        if (this.clipChildren) {
+            this._clipForChildren(context);
+        }
 
         for (var child of this._children) {
             child._render(context);

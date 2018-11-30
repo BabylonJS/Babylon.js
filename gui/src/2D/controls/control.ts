@@ -850,6 +850,23 @@ export class Control {
         return "Control";
     }
 
+    /**
+     * Gets the first ascendant in the hierarchy of the given type
+     * @param className defines the required type
+     * @returns the ascendant or null if not found
+     */
+    public getAscendantOfClass(className: string): Nullable<Control> {
+        if (!this.parent) {
+            return null;
+        }
+
+        if (this.parent.getClassName() === className) {
+            return this.parent;
+        }
+
+        return this.parent.getAscendantOfClass(className);
+    }
+
     /** @hidden */
     public _resetFontCache(): void {
         this._fontSet = true;
@@ -1336,7 +1353,6 @@ export class Control {
         }
 
         context.clip();
-        this._clipForChildren(context);
     }
 
     /** @hidden */

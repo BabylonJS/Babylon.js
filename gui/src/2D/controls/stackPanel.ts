@@ -98,8 +98,15 @@ export class StackPanel extends Container {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(parentMeasure);
+
         this._measureForChildren.left = this._currentMeasure.left;
         this._measureForChildren.top = this._currentMeasure.top;
+
+        if (this.isVertical) {
+            this._measureForChildren.width = this._currentMeasure.width;
+        } else {
+            this._measureForChildren.height = this._currentMeasure.height;
+        }
     }
 
     protected _postMeasure(): void {
@@ -116,7 +123,7 @@ export class StackPanel extends Container {
                     child._markAsDirty();
                 }
                 child._top.ignoreAdaptiveScaling = true;
-                stackHeight += child._currentMeasure.height;
+                stackHeight += child._currentMeasure.height + child.paddingTopInPixels;
                 if (child._currentMeasure.width > stackWidth) {
                     stackWidth = child._currentMeasure.width;
                 }
@@ -126,7 +133,7 @@ export class StackPanel extends Container {
                     child._markAsDirty();
                 }
                 child._left.ignoreAdaptiveScaling = true;
-                stackWidth += child._currentMeasure.width;
+                stackWidth += child._currentMeasure.width + child.paddingLeftInPixels;
                 if (child._currentMeasure.height > stackHeight) {
                     stackHeight = child._currentMeasure.height;
                 }
