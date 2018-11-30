@@ -1342,6 +1342,7 @@ export class Control {
     /** @hidden */
     public _render(context: CanvasRenderingContext2D): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
+            this._isDirty = false;
             return false;
         }
         context.save();
