@@ -148,8 +148,8 @@ export class ScrollViewer extends Rectangle {
         });
 
         this._dragSpace = new Rectangle();
-        this._dragSpace.thickness = 2;
-        this._grid.addControl(this._dragSpace, 1, 1);        
+        this._dragSpace.thickness = 1;
+        this._grid.addControl(this._dragSpace, 1, 1);
 
         // Colors
         this.barColor = "grey";
@@ -223,7 +223,6 @@ export class ScrollViewer extends Rectangle {
         this._barColor = color;
         this._horizontalBar.color = color;
         this._verticalBar.color = color;
-        this._dragSpace.background = color;
     }
 
     /** Gets or sets the size of the bar */
@@ -275,6 +274,7 @@ export class ScrollViewer extends Rectangle {
         this._barBackground = color;
         this._horizontalBar.background = color;
         this._verticalBar.background = color;
+        this._dragSpace.background = color;
     }
 
     /** @hidden */

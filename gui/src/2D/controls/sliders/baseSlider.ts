@@ -158,7 +158,7 @@ export class BaseSlider extends Control {
         this._isThumbClamped = value;
         this._markAsDirty();
     }
-    
+
     /**
      * Creates a new BaseSlider
      * @param name defines the control name

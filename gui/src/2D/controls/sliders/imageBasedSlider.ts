@@ -153,7 +153,7 @@ export class ImageBasedSlider extends BaseSlider {
             } else {
                 this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
             }
-            
+
             this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
             this._thumbImage._draw(context);
         }

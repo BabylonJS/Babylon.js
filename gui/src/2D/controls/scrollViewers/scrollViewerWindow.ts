@@ -29,8 +29,8 @@ export class _ScrollViewerWindow extends Container {
         this._measureForChildren.left = this._currentMeasure.left;
         this._measureForChildren.top = this._currentMeasure.top;
 
-        this._measureForChildren.width = this._currentMeasure.width;
-        this._measureForChildren.height = this._currentMeasure.height;
+        this._measureForChildren.width = parentMeasure.width;
+        this._measureForChildren.height = parentMeasure.height;
     }
 
     protected _postMeasure(): void {
@@ -41,8 +41,16 @@ export class _ScrollViewerWindow extends Container {
                 continue;
             }
 
-            maxWidth = Math.max(maxWidth, child._currentMeasure.width);
-            maxHeight = Math.max(maxHeight, child._currentMeasure.height);
+            if (child._currentMeasure.left  < 0) {
+                child._currentMeasure.left = this._currentMeasure.left;
+            }
+
+            if (child._currentMeasure.top  < 0) {
+                child._currentMeasure.top = this._currentMeasure.top;
+            }
+
+            maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width);
+            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top +  child._currentMeasure.height);
         }
 
         if (this._currentMeasure.width !== maxWidth) {
@@ -50,6 +58,7 @@ export class _ScrollViewerWindow extends Container {
             this._currentMeasure.width = maxWidth;
             this._rebuildLayout = true;
             this._isDirty = true;
+            console.log(maxWidth);
         }
 
         if (this._currentMeasure.height !== maxHeight) {
