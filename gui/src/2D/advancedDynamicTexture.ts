@@ -574,6 +574,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         context.strokeStyle = "white";
         var measure = new Measure(0, 0, renderWidth, renderHeight);
         this._rootContainer._layout(measure, context);
+        this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
+
         this._rootContainer._render(context);
     }
 
