@@ -314,13 +314,15 @@ export class Container extends Control {
             }
             rebuildCount++;
         }
-        while(this._rebuildLayout && rebuildCount < 3);
+        while (this._rebuildLayout && rebuildCount < 3);
 
         if (rebuildCount > 3) {
             BABYLON.Tools.Error(`Layout cycle detected in GUI (Container uniqueId=${this.uniqueId})`);
         }
-        
+
         context.restore();
+
+        this._isDirty = false;
 
         return true;
     }

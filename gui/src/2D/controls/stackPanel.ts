@@ -90,10 +90,10 @@ export class StackPanel extends Container {
                 child.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             }
         }
- 
+
         super._preMeasure(parentMeasure, context);
     }
-   
+
     protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
         super._additionalProcessing(parentMeasure, context);
 
