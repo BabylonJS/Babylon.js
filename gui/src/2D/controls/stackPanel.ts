@@ -102,9 +102,9 @@ export class StackPanel extends Container {
         this._measureForChildren.left = this._currentMeasure.left;
         this._measureForChildren.top = this._currentMeasure.top;
 
-        if (this.isVertical) {
+        if (this.isVertical || this._manualWidth) {
             this._measureForChildren.width = this._currentMeasure.width;
-        } else {
+        } else if (!this.isVertical || this._manualHeight) {
             this._measureForChildren.height = this._currentMeasure.height;
         }
     }
@@ -148,20 +148,17 @@ export class StackPanel extends Container {
         let panelWidthChanged = false;
         let panelHeightChanged = false;
 
-        let previousHeight = this.height;
-        let previousWidth = this.width;
 
-        if (!this._manualHeight) {
-            // do not specify height if strictly defined by user
+        if (!this._manualHeight) { // do not specify height if strictly defined by user
+            let previousHeight = this.height;
             this.height = stackHeight + "px";
+            panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
         }
-        if (!this._manualWidth) {
-            // do not specify width if strictly defined by user
+        if (!this._manualWidth) { // do not specify width if strictly defined by user
+            let previousWidth = this.width;           
             this.width = stackWidth + "px";
+            panelWidthChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
         }
-
-        panelWidthChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
-        panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
 
         if (panelHeightChanged) {
             this._height.ignoreAdaptiveScaling = true;
