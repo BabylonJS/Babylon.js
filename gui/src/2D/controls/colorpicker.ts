@@ -497,6 +497,8 @@ export class ColorPicker extends Control {
             // Button settings
             var buttonFontSize = 16;
             var butEdit: Button;
+            var buttonWidth: string;
+            var buttonHeight: string;
 
             // Input Text Colors
             var inputFieldLabels: string[] = ["R", "G", "B"];
@@ -803,10 +805,10 @@ export class ColorPicker extends Control {
             function setEditButtonVisibility(enableButton: boolean) {
                 if (enableButton) {
                     butEdit = Button.CreateSimpleButton("butEdit", "Edit Swatches");
-                    butEdit.width = "140px";
-                    butEdit.height = "35px";
-                    butEdit.top = "-10px";
-                    butEdit.left = "10px";
+                    butEdit.width = buttonWidth;
+                    butEdit.height = butOK.height;
+                    // butEdit.top = "-10px";
+                    butEdit.left = (Math.floor(parseInt(buttonWidth) * 0.1)).toString() + "px";
                     butEdit.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
                     butEdit.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
                     butEdit.thickness = 2;
@@ -834,10 +836,10 @@ export class ColorPicker extends Control {
                         }
                         EditSwatches();
                     });
-                    pickerPanel.addControl(butEdit, 1, 0);
+                    pickerGrid.addControl(butEdit, 1, 0);
                 }
                 else {
-                    pickerPanel.removeControl(butEdit);
+                    pickerGrid.removeControl(butEdit);
                 }
             }
 
@@ -948,20 +950,32 @@ export class ColorPicker extends Control {
             });
             pickerPanel.addControl(closeButton, 0, 0);
 
-            // Picker container body
-            var pickerBody: Grid = new Grid();
-            pickerBody.name = "Dialogue Body";
-            pickerBody.background = buttonBackgroundColor;
-            pickerBody.addRowDefinition(1.0, false);
-            pickerBody.addColumnDefinition(0.4375, false);
-            pickerBody.addColumnDefinition(0.5625, false);
-            pickerPanel.addControl(pickerBody, 1, 0);
+            // Dialog container body
+            var dialogBody: Grid = new Grid();
+            dialogBody.name = "Dialogue Body";
+            dialogBody.background = buttonBackgroundColor;
+            var dialogBodyCols: number[] = [0.4375, 0.5625];
+            dialogBody.addRowDefinition(1.0, false);
+            dialogBody.addColumnDefinition(dialogBodyCols[0], false);
+            dialogBody.addColumnDefinition(dialogBodyCols[1], false);
+            pickerPanel.addControl(dialogBody, 1, 0);
+
+            // Picker grid
+            var pickerGrid: Grid = new Grid();
+            pickerGrid.name = "Picker Grid";
+            pickerGrid.addRowDefinition(0.8, false);
+            pickerGrid.addRowDefinition(0.2, false);
+            dialogBody.addControl(pickerGrid, 0, 0);
 
             //  Picker control
             picker = new ColorPicker();
             picker.name = "GUI Color Picker";
-            picker.height = 0.89;
-            picker.width = 0.89;
+            if (options.pickerHeight < options.pickerWidth) {
+                picker.width = 0.89;
+            }
+            else {
+                picker.height = 0.89;
+            }
             picker.value = Color3.FromHexString(options.lastColor);
             picker.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
             picker.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
@@ -975,7 +989,7 @@ export class ColorPicker extends Control {
                     UpdateValues(value, picker.name);
                 }
             });
-            pickerBody.addControl(picker, 0, 0);
+            pickerGrid.addControl(picker, 0, 0);
 
             // Picker body right quarant
             var pickerBodyRight: Grid = new Grid();
@@ -983,14 +997,15 @@ export class ColorPicker extends Control {
             pickerBodyRight.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             pickerBodyRight.addRowDefinition(0.514, false);
             pickerBodyRight.addRowDefinition(0.486, false);
-            pickerBody.addControl(pickerBodyRight, 1, 1);
+            dialogBody.addControl(pickerBodyRight, 1, 1);
 
             // Picker container swatches and buttons
             var pickerSwatchesButtons: Grid = new Grid();
             pickerSwatchesButtons.name = "Swatches and Buttons";
+            var pickerButtonsCol: number[] = [0.417, 0.583] 
             pickerSwatchesButtons.addRowDefinition(1.0, false);
-            pickerSwatchesButtons.addColumnDefinition(0.417, false);
-            pickerSwatchesButtons.addColumnDefinition(0.583, false);
+            pickerSwatchesButtons.addColumnDefinition(pickerButtonsCol[0], false);
+            pickerSwatchesButtons.addColumnDefinition(pickerButtonsCol[1], false);
             pickerBodyRight.addControl(pickerSwatchesButtons, 0, 0);
 
             // Picker Swatches quadrant
@@ -1053,14 +1068,6 @@ export class ColorPicker extends Control {
             currentText.fontSize = 16;
             pickerSwatches.addControl(currentText, 3, 0);
 
-            // Picker color values input
-            var pickerColorValues: Grid = new Grid();
-            pickerColorValues.name = "Dialog Lower Right";
-            pickerColorValues.addRowDefinition(10, true);
-            pickerColorValues.addRowDefinition(115, true);
-            pickerColorValues.addRowDefinition(35, true);
-            pickerBodyRight.addControl(pickerColorValues, 1, 0);
-
             // Buttons grid
             var buttonGrid: Grid = new Grid();
             buttonGrid.name = "Button Grid";
@@ -1069,10 +1076,12 @@ export class ColorPicker extends Control {
             buttonGrid.addRowDefinition(1 / 3, false);
             buttonGrid.addRowDefinition(1 / 3, false);
             pickerSwatchesButtons.addControl(buttonGrid, 0, 1);
+
+            buttonWidth = (Math.floor(parseInt(options.pickerWidth) * dialogBodyCols[1] * pickerButtonsCol[1] * 0.67)).toString() + "px";
                         
             // Panel Buttons
             var butOK: Button = Button.CreateSimpleButton("butOK", "OK");
-            butOK.width = 0.67;
+            butOK.width = buttonWidth;
             butOK.height = 0.7;
             butOK.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             butOK.thickness = 2;
@@ -1094,7 +1103,7 @@ export class ColorPicker extends Control {
             buttonGrid.addControl(butOK, 0, 0);
 
             var butCancel: Button = Button.CreateSimpleButton("butCancel", "Cancel");
-            butCancel.width = 0.67;
+            butCancel.width = buttonWidth;
             butCancel.height = 0.7;
             butCancel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             butCancel.thickness = 2;
@@ -1117,7 +1126,7 @@ export class ColorPicker extends Control {
 
             if (options.savedColors) {
                 var butSave: Button = Button.CreateSimpleButton("butSave", "Save Swatch");
-                butSave.width = 0.67;
+                butSave.width = buttonWidth;
                 butSave.height = 0.7;
                 butSave.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 butSave.thickness = 2;
@@ -1173,6 +1182,14 @@ export class ColorPicker extends Control {
                 }
                 buttonGrid.addControl(butSave, 2, 0);
             }
+
+            // Picker color values input
+            var pickerColorValues: Grid = new Grid();
+            pickerColorValues.name = "Dialog Lower Right";
+            pickerColorValues.addRowDefinition(10, true);
+            pickerColorValues.addRowDefinition(115, true);
+            pickerColorValues.addRowDefinition(35, true);
+            pickerBodyRight.addControl(pickerColorValues, 1, 0);
 
             // RGB values text boxes
             currentColor = Color3.FromHexString(options.lastColor);
