@@ -20,7 +20,7 @@ var replace = require("gulp-replace");
 var uncommentShader = require("./gulp-removeShaderComments");
 var expect = require("gulp-expect-file");
 var optimisejs = require("gulp-optimize-js");
-var webserver = require("gulp-webserver");
+var connect = require("gulp-connect");
 var path = require("path");
 const webpack = require('webpack');
 var webpackStream = require("webpack-stream");
@@ -847,16 +847,19 @@ gulp.task("deployLocalDev", function() {
  */
 gulp.task("webserver", function() {
     var options = {
+        root: "../../.",
         port: 1338,
         livereload: false,
-        middleware: [cors()]
+        middleware: function() {
+            return [cors()];
+        }
     };
 
     if (commandLineOptions.public) {
         options.host = "0.0.0.0";
     }
 
-    return gulp.src("../../.").pipe(webserver(options));
+    connect.server(options);
 });
 
 /**
