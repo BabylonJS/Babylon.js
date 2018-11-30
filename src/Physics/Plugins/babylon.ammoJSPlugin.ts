@@ -35,6 +35,7 @@ module BABYLON {
         private _tmpAmmoVectorC: any;
         private _tmpContactCallbackResult = false;
 
+        private static readonly DISABLE_COLLISION_FLAG = 4;
         private static readonly KINEMATIC_FLAG = 2;
         private static readonly DISABLE_DEACTIVATION_FLAG = 4;
 
@@ -240,6 +241,11 @@ module BABYLON {
                     body.setActivationState(AmmoJSPlugin.DISABLE_DEACTIVATION_FLAG);
                 }
 
+                // Disable collision if NoImpostor, but keep collision if shape is btCompoundShape
+                if (impostor.type == BABYLON.PhysicsImpostor.NoImpostor && !colShape.getChildShape) {
+                    body.setCollisionFlags(body.getCollisionFlags() | AmmoJSPlugin.DISABLE_COLLISION_FLAG);
+                }
+
                 body.setRestitution(impostor.getParam("restitution"));
                 this.world.addRigidBody(body);
                 impostor.physicsBody = body;
@@ -414,7 +420,8 @@ module BABYLON {
                     }
                     break;
                 case PhysicsImpostor.NoImpostor:
-                    returnValue = new Ammo.btCompoundShape();
+                    // Fill with sphere but collision is disabled on the rigid body in generatePhysicsBody, using an empty shape caused unexpected movement with joints
+                    returnValue = new Ammo.btSphereShape(extendSize.x / 2);
                     break;
             }
 
