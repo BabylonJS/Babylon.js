@@ -21,7 +21,7 @@ export class Slider extends BaseSlider {
 
         this._displayValueBar = value;
         this._markAsDirty();
-    }      
+    }
 
     /** Gets or sets border color */
     public get borderColor(): string {

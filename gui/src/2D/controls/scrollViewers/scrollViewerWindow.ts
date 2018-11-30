@@ -1,6 +1,6 @@
-import { Measure } from "../measure";
-import { Container } from "./container";
-import { ValueAndUnit } from "../valueAndUnit";
+import { Measure } from "../../measure";
+import { Container } from "../container";
+import { ValueAndUnit } from "../../valueAndUnit";
 
 /**
  * Class used to hold a the container for ScrollViewer
@@ -28,8 +28,8 @@ export class _ScrollViewerWindow extends Container {
 
         this._measureForChildren.left = this._currentMeasure.left;
         this._measureForChildren.top = this._currentMeasure.top;
-        
-        this._measureForChildren.width = this._currentMeasure.width;       
+
+        this._measureForChildren.width = this._currentMeasure.width;
         this._measureForChildren.height = this._currentMeasure.height;
     }
 
@@ -46,15 +46,17 @@ export class _ScrollViewerWindow extends Container {
         }
 
         if (this._currentMeasure.width !== maxWidth) {
-            this._width = new ValueAndUnit(maxWidth, ValueAndUnit.UNITMODE_PIXEL);
+            this._width.updateInPlace(maxWidth, ValueAndUnit.UNITMODE_PIXEL);
             this._currentMeasure.width = maxWidth;
             this._rebuildLayout = true;
+            this._isDirty = true;
         }
 
         if (this._currentMeasure.height !== maxHeight) {
-            this._height = new ValueAndUnit(maxHeight, ValueAndUnit.UNITMODE_PIXEL);
+            this._height.updateInPlace(maxHeight, ValueAndUnit.UNITMODE_PIXEL);
             this._currentMeasure.height = maxHeight;
             this._rebuildLayout = true;
+            this._isDirty = true;
         }
 
         super._postMeasure();

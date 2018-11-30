@@ -347,7 +347,7 @@ export class Image extends Control {
                     break;
             }
         }
-        
+
         context.restore();
     }
 

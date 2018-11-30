@@ -1,11 +1,11 @@
-import { Rectangle } from "./rectangle";
-import { Grid } from "./grid";
-import { Control } from "./control";
-import { Slider } from "./slider";
-import { Container } from "./container";
+import { Rectangle } from "../rectangle";
+import { Grid } from "../grid";
+import { Control } from "../control";
+import { Container } from "../container";
 import { PointerInfo, Observer, Nullable } from "babylonjs";
 import { AdvancedDynamicTexture, Measure } from "2D";
 import { _ScrollViewerWindow } from "./scrollViewerWindow";
+import { ScrollBar } from "../sliders/scrollBar";
 
 /**
  * Class used to hold a viewer window and sliders in a grid
@@ -14,8 +14,9 @@ export class ScrollViewer extends Rectangle {
     private _grid: Grid;
     private _horizontalBarSpace: Rectangle;
     private _verticalBarSpace: Rectangle;
-    private _horizontalBar: Slider;
-    private _verticalBar: Slider;
+    private _dragSpace: Rectangle;
+    private _horizontalBar: ScrollBar;
+    private _verticalBar: ScrollBar;
     private _barColor: string;
     private _barBorderColor: string;
     private _barBackground: string ;
@@ -38,7 +39,7 @@ export class ScrollViewer extends Rectangle {
         if (!control) {
             return this;
         }
-            
+
         this._window.addControl(control);
 
         return this;
@@ -53,14 +54,16 @@ export class ScrollViewer extends Rectangle {
         this._window.removeControl(control);
         return this;
     }
-    
+
     /** Gets the list of children */
     public get children(): Control[] {
         return this._window.children;
     }
 
     public _flagDescendantsAsMatrixDirty(): void {
-        this._window._flagDescendantsAsMatrixDirty();
+        for (var child of this._children) {
+            child._markMatrixAsDirty();
+        }
     }
 
     /**
@@ -73,6 +76,7 @@ export class ScrollViewer extends Rectangle {
         this.onDirtyObservable.add(() => {
             this._horizontalBarSpace.color = this.color;
             this._verticalBarSpace.color = this.color;
+            this._dragSpace.color = this.color;
         });
 
         this.onPointerEnterObservable.add(() => {
@@ -84,8 +88,8 @@ export class ScrollViewer extends Rectangle {
         });
 
         this._grid = new Grid();
-        this._horizontalBar = new Slider();
-        this._verticalBar = new Slider();
+        this._horizontalBar = new ScrollBar();
+        this._verticalBar = new ScrollBar();
 
         this._window = new _ScrollViewerWindow();
         this._window.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -107,10 +111,8 @@ export class ScrollViewer extends Rectangle {
         this._verticalBar.maximum = 1;
         this._verticalBar.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         this._verticalBar.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-        this._verticalBar.isThumbClamped = true;
         this._verticalBar.isVertical = true;
         this._verticalBar.rotation = Math.PI;
-        this._verticalBar.displayValueBar = false;
         this._verticalBar.isVisible = false;
 
         this._verticalBarSpace = new Rectangle();
@@ -132,8 +134,6 @@ export class ScrollViewer extends Rectangle {
         this._horizontalBar.maximum = 1;
         this._horizontalBar.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         this._horizontalBar.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-        this._horizontalBar.isThumbClamped = true;
-        this._horizontalBar.displayValueBar = false;
         this._horizontalBar.isVisible = false;
 
         this._horizontalBarSpace = new Rectangle();
@@ -146,6 +146,10 @@ export class ScrollViewer extends Rectangle {
         this._horizontalBar.onValueChangedObservable.add((value) => {
             this._window.left = value * this._endLeft + "px";
         });
+
+        this._dragSpace = new Rectangle();
+        this._dragSpace.thickness = 2;
+        this._grid.addControl(this._dragSpace, 1, 1);        
 
         // Colors
         this.barColor = "grey";
@@ -169,7 +173,7 @@ export class ScrollViewer extends Rectangle {
         this._clientWidth = this._window.parentClientWidth;
         this._clientHeight = this._window.parentClientHeight;
     }
-    
+
     protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
         super._additionalProcessing(parentMeasure, context);
 
@@ -219,6 +223,7 @@ export class ScrollViewer extends Rectangle {
         this._barColor = color;
         this._horizontalBar.color = color;
         this._verticalBar.color = color;
+        this._dragSpace.background = color;
     }
 
     /** Gets or sets the size of the bar */
@@ -304,6 +309,12 @@ export class ScrollViewer extends Rectangle {
         this._buildClientSizes();
         this._endLeft = this._clientWidth - windowContentsWidth;
         this._endTop = this._clientHeight - windowContentsHeight;
+
+        let horizontalMultiplicator = this._clientWidth / windowContentsWidth;
+        let verticalMultiplicator = this._clientHeight / windowContentsHeight;
+
+        this._horizontalBar.thumbWidth = (this._clientWidth * horizontalMultiplicator) + "px";
+        this._verticalBar.thumbWidth = (this._clientHeight * verticalMultiplicator) + "px";
     }
 
     public _link(host: AdvancedDynamicTexture): void {
@@ -325,16 +336,16 @@ export class ScrollViewer extends Rectangle {
             }
             if (this._verticalBar.isVisible == true) {
                 if ((<MouseWheelEvent>pi.event).deltaY < 0 && this._verticalBar.value > 0) {
-                    this._verticalBar.value -= this._wheelPrecision * 100;
+                    this._verticalBar.value -= this._wheelPrecision;
                 } else if ((<MouseWheelEvent>pi.event).deltaY > 0 && this._verticalBar.value < this._verticalBar.maximum) {
-                    this._verticalBar.value += this._wheelPrecision * 100;
+                    this._verticalBar.value += this._wheelPrecision;
                 }
             }
             if (this._horizontalBar.isVisible == true) {
                 if ((<MouseWheelEvent>pi.event).deltaX < 0 && this._horizontalBar.value < this._horizontalBar.maximum) {
-                    this._horizontalBar.value += this._wheelPrecision * 100;
+                    this._horizontalBar.value += this._wheelPrecision;
                 } else if ((<MouseWheelEvent>pi.event).deltaX > 0 && this._horizontalBar.value > 0) {
-                    this._horizontalBar.value -= this._wheelPrecision * 100;
+                    this._horizontalBar.value -= this._wheelPrecision;
                 }
             }
         });

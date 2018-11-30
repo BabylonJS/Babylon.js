@@ -43,7 +43,8 @@ export class Control {
     protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
     /** @hidden */
     protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    private _isDirty = true;
+    /** @hidden */
+    protected _isDirty = true;
     /** @hidden */
     public _tempParentMeasure = Measure.Empty();
     /** @hidden */
@@ -1308,7 +1309,6 @@ export class Control {
         // Do nothing
     }
 
-
     /** @hidden */
     protected _clipForChildren(context: CanvasRenderingContext2D): void {
         // DO nothing
@@ -1339,6 +1339,7 @@ export class Control {
         this._clipForChildren(context);
     }
 
+    /** @hidden */
     public _render(context: CanvasRenderingContext2D): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
             return false;
@@ -1354,12 +1355,12 @@ export class Control {
         if (this.clipChildren) {
             this._clip(context);
         }
-        
+
         if (this.onBeforeDrawObservable.hasObservers()) {
             this.onBeforeDrawObservable.notifyObservers(this);
         }
 
-        this._draw(context);        
+        this._draw(context);
         this._renderHighlight(context);
 
         if (this.onAfterDrawObservable.hasObservers()) {

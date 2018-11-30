@@ -1,6 +1,6 @@
 import { BaseSlider } from "./baseSlider";
-import { Measure } from "../measure";
-import { Image } from "./image";
+import { Measure } from "../../measure";
+import { Image } from "../image";
 
 /**
  * Class used to create slider controls based on images
@@ -122,6 +122,7 @@ export class ImageBasedSlider extends BaseSlider {
                     this._tempMeasure.width += this._effectiveThumbThickness;
                 }
             }
+            this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
             this._backgroundImage._draw(context);
         }
 
@@ -141,6 +142,7 @@ export class ImageBasedSlider extends BaseSlider {
                     this._tempMeasure.copyFromFloats(left, top, thumbPosition, height);
                 }
             }
+            this._valueBarImage._currentMeasure.copyFrom(this._tempMeasure);
             this._valueBarImage._draw(context);
         }
 
@@ -151,6 +153,8 @@ export class ImageBasedSlider extends BaseSlider {
             } else {
                 this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
             }
+            
+            this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
             this._thumbImage._draw(context);
         }
 

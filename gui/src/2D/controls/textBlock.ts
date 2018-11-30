@@ -230,26 +230,35 @@ export class TextBlock extends Control {
         if (!this._fontOffset) {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
-        
+
         // Prepare lines
         this._lines = this._breakLines(this._currentMeasure.width, context);
         this.onLinesReadyObservable.notifyObservers(this);
-        
+
         let maxLineWidth: number = 0;
 
         for (let i = 0; i < this._lines.length; i++) {
             const line = this._lines[i];
 
-            if (line.width > maxLineWidth) { 
-                maxLineWidth = line.width; 
+            if (line.width > maxLineWidth) {
+                maxLineWidth = line.width;
             }
         }
 
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip) {
-                this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
+                let newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
+                if (newWidth !== this._width.internalValue) {
+                    this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
+                    this._isDirty = true;
+                }
             }
-            this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
+            let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
+
+            if (newHeight !== this._height.internalValue) {
+                this._height.updateInPlace(newHeight, ValueAndUnit.UNITMODE_PIXEL);
+                this._isDirty = true;
+            }
         }
 
         super._processMeasures(parentMeasure, context);
