@@ -21,6 +21,7 @@ module BABYLON {
         public name: string = "AmmoJSPlugin";
 
         private _timeStep: number = 1 / 60;
+        private _fixedTimeStep: number = 1 / 60;
         private _maxSteps = 5;
         private _tmpQuaternion = new BABYLON.Quaternion();
         private _tmpAmmoTransform: any;
@@ -89,6 +90,22 @@ module BABYLON {
         }
 
         /**
+         * Increment to step forward in the physics engine (If timeStep is set to 1/60 and fixedTimeStep is set to 1/120 the physics engine should run 2 steps per frame) (Default: 1/60)
+         * @param fixedTimeStep fixedTimeStep to use in seconds
+         */
+        public setFixedTimeStep(fixedTimeStep: number) {
+            this._fixedTimeStep = fixedTimeStep;
+        }
+
+        /**
+         * Sets the maximum number of steps by the physics engine per frame (Default: 5)
+         * @param maxSteps the maximum number of steps by the physics engine per frame
+         */
+        public setMaxSteps(maxSteps: number) {
+            this._maxSteps = maxSteps;
+        }
+
+        /**
          * Gets the current timestep (only used if useDeltaForWorldStep is false in the constructor)
          * @returns the current timestep in seconds
          */
@@ -147,7 +164,7 @@ module BABYLON {
                 impostor.beforeStep();
             }
 
-            this._stepSimulation(this._useDeltaForWorldStep ? delta : this._timeStep, this._maxSteps);
+            this._stepSimulation(this._useDeltaForWorldStep ? delta : this._timeStep, this._maxSteps, this._fixedTimeStep);
 
             for (var mainImpostor of impostors) {
                 // After physics update make babylon world objects match physics world objects
@@ -306,7 +323,9 @@ module BABYLON {
          * @param impostorJoint the imposter joint to remove the joint from
          */
         public removeJoint(impostorJoint: PhysicsImpostorJoint) {
-            this.world.removeConstraint(impostorJoint.joint.physicsJoint);
+            if(this.world){
+                this.world.removeConstraint(impostorJoint.joint.physicsJoint);
+            }
         }
 
         // adds all verticies (including child verticies) to the triangle mesh
