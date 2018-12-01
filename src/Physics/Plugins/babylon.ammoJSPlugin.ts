@@ -323,7 +323,7 @@ module BABYLON {
          * @param impostorJoint the imposter joint to remove the joint from
          */
         public removeJoint(impostorJoint: PhysicsImpostorJoint) {
-            if(this.world){
+            if (this.world) {
                 this.world.removeConstraint(impostorJoint.joint.physicsJoint);
             }
         }
