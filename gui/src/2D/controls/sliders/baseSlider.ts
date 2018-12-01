@@ -1,5 +1,5 @@
-import { Control } from "./control";
-import { ValueAndUnit } from "../valueAndUnit";
+import { Control } from "../control";
+import { ValueAndUnit } from "../../valueAndUnit";
 import { Observable, Vector2 } from "babylonjs";
 
 /**
@@ -255,7 +255,8 @@ export class BaseSlider extends Control {
     // Events
     private _pointerIsDown = false;
 
-    private _updateValueFromPointer(x: number, y: number): void {
+    /** @hidden */
+    protected _updateValueFromPointer(x: number, y: number): void {
         if (this.rotation != 0) {
             this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
             x = this._transformedPosition.x;
