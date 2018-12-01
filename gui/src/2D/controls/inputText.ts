@@ -2,7 +2,6 @@ import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo } from 'babylonjs';
-import { Measure } from "../measure";
 import { VirtualKeyboard } from "./virtualKeyboard";
 
 /**
@@ -634,146 +633,143 @@ export class InputText extends Control implements IFocusableControl {
         this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         this._applyStates(context);
-        if (this._processMeasures(parentMeasure, context)) {
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowColor = this.shadowColor;
+            context.shadowBlur = this.shadowBlur;
+            context.shadowOffsetX = this.shadowOffsetX;
+            context.shadowOffsetY = this.shadowOffsetY;
+        }
 
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowColor = this.shadowColor;
-                context.shadowBlur = this.shadowBlur;
-                context.shadowOffsetX = this.shadowOffsetX;
-                context.shadowOffsetY = this.shadowOffsetY;
-            }
-
-            // Background
-            if (this._isFocused) {
-                if (this._focusedBackground) {
-                    context.fillStyle = this._isEnabled ? this._focusedBackground : this._disabledColor;
-
-                    context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                }
-            } else if (this._background) {
-                context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
+        // Background
+        if (this._isFocused) {
+            if (this._focusedBackground) {
+                context.fillStyle = this._isEnabled ? this._focusedBackground : this._disabledColor;
 
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
+        } else if (this._background) {
+            context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
 
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
+            context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+        }
+
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+        }
+
+        if (!this._fontOffset) {
+            this._fontOffset = Control._GetFontOffset(context.font);
+        }
+
+        // Text
+        let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
+        if (this.color) {
+            context.fillStyle = this.color;
+        }
+
+        let text = this._beforeRenderText(this._text);
+
+        if (!this._isFocused && !this._text && this._placeholderText) {
+            text = this._placeholderText;
+
+            if (this._placeholderColor) {
+                context.fillStyle = this._placeholderColor;
             }
+        }
 
-            if (!this._fontOffset) {
-                this._fontOffset = Control._GetFontOffset(context.font);
+        this._textWidth = context.measureText(text).width;
+        let marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
+        if (this._autoStretchWidth) {
+            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
+        }
+
+        let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
+        let availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
+        context.save();
+        context.beginPath();
+        context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
+        context.clip();
+
+        if (this._isFocused && this._textWidth > availableWidth) {
+            let textLeft = clipTextLeft - this._textWidth + availableWidth;
+            if (!this._scrollLeft) {
+                this._scrollLeft = textLeft;
             }
+        } else {
+            this._scrollLeft = clipTextLeft;
+        }
 
-            // Text
-            let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
-            if (this.color) {
-                context.fillStyle = this.color;
-            }
+        context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
 
-            let text = this._beforeRenderText(this._text);
+        // Cursor
+        if (this._isFocused) {
 
-            if (!this._isFocused && !this._text && this._placeholderText) {
-                text = this._placeholderText;
-
-                if (this._placeholderColor) {
-                    context.fillStyle = this._placeholderColor;
-                }
-            }
-
-            this._textWidth = context.measureText(text).width;
-            let marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
-            if (this._autoStretchWidth) {
-                this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), this._textWidth + marginWidth) + "px";
-            }
-
-            let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
-            let availableWidth = this._width.getValueInPixel(this._host, parentMeasure.width) - marginWidth;
-            context.save();
-            context.beginPath();
-            context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
-            context.clip();
-
-            if (this._isFocused && this._textWidth > availableWidth) {
-                let textLeft = clipTextLeft - this._textWidth + availableWidth;
-                if (!this._scrollLeft) {
-                    this._scrollLeft = textLeft;
-                }
-            } else {
-                this._scrollLeft = clipTextLeft;
-            }
-
-            context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
-
-            // Cursor
-            if (this._isFocused) {
-
-                // Need to move cursor
-                if (this._clickedCoordinate) {
-                    var rightPosition = this._scrollLeft + this._textWidth;
-                    var absoluteCursorPosition = rightPosition - this._clickedCoordinate;
-                    var currentSize = 0;
-                    this._cursorOffset = 0;
-                    var previousDist = 0;
-                    do {
-                        if (this._cursorOffset) {
-                            previousDist = Math.abs(absoluteCursorPosition - currentSize);
-                        }
-                        this._cursorOffset++;
-                        currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
-
-                    } while (currentSize < absoluteCursorPosition && (text.length >= this._cursorOffset));
-
-                    // Find closest move
-                    if (Math.abs(absoluteCursorPosition - currentSize) > previousDist) {
-                        this._cursorOffset--;
+            // Need to move cursor
+            if (this._clickedCoordinate) {
+                var rightPosition = this._scrollLeft + this._textWidth;
+                var absoluteCursorPosition = rightPosition - this._clickedCoordinate;
+                var currentSize = 0;
+                this._cursorOffset = 0;
+                var previousDist = 0;
+                do {
+                    if (this._cursorOffset) {
+                        previousDist = Math.abs(absoluteCursorPosition - currentSize);
                     }
+                    this._cursorOffset++;
+                    currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
 
-                    this._blinkIsEven = false;
-                    this._clickedCoordinate = null;
+                } while (currentSize < absoluteCursorPosition && (text.length >= this._cursorOffset));
+
+                // Find closest move
+                if (Math.abs(absoluteCursorPosition - currentSize) > previousDist) {
+                    this._cursorOffset--;
                 }
 
-                // Render cursor
-                if (!this._blinkIsEven) {
-                    let cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
-                    let cursorOffsetWidth = context.measureText(cursorOffsetText).width;
-                    let cursorLeft = this._scrollLeft + this._textWidth - cursorOffsetWidth;
+                this._blinkIsEven = false;
+                this._clickedCoordinate = null;
+            }
 
-                    if (cursorLeft < clipTextLeft) {
-                        this._scrollLeft += (clipTextLeft - cursorLeft);
-                        cursorLeft = clipTextLeft;
-                        this._markAsDirty();
-                    } else if (cursorLeft > clipTextLeft + availableWidth) {
-                        this._scrollLeft += (clipTextLeft + availableWidth - cursorLeft);
-                        cursorLeft = clipTextLeft + availableWidth;
-                        this._markAsDirty();
-                    }
-                    context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
-                }
+            // Render cursor
+            if (!this._blinkIsEven) {
+                let cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
+                let cursorOffsetWidth = context.measureText(cursorOffsetText).width;
+                let cursorLeft = this._scrollLeft + this._textWidth - cursorOffsetWidth;
 
-                clearTimeout(this._blinkTimeout);
-                this._blinkTimeout = <any>setTimeout(() => {
-                    this._blinkIsEven = !this._blinkIsEven;
+                if (cursorLeft < clipTextLeft) {
+                    this._scrollLeft += (clipTextLeft - cursorLeft);
+                    cursorLeft = clipTextLeft;
                     this._markAsDirty();
-                }, 500);
-
-                //show the highlighted text
-                if (this._isTextHighlightOn) {
-                    clearTimeout(this._blinkTimeout);
-                    let highlightCursorOffsetWidth = context.measureText(this.text.substring(this._startHighlightIndex)).width;
-                    let highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
-                    this._highlightedText = this.text.substring(this._startHighlightIndex, this._endHighlightIndex);
-                    //for transparancy
-                    context.globalAlpha = this._highligherOpacity;
-                    context.fillStyle = this._textHighlightColor;
-                    context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width, this._fontOffset.height);
-                    context.globalAlpha = 1.0;
+                } else if (cursorLeft > clipTextLeft + availableWidth) {
+                    this._scrollLeft += (clipTextLeft + availableWidth - cursorLeft);
+                    cursorLeft = clipTextLeft + availableWidth;
+                    this._markAsDirty();
                 }
+                context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
+            }
+
+            clearTimeout(this._blinkTimeout);
+            this._blinkTimeout = <any>setTimeout(() => {
+                this._blinkIsEven = !this._blinkIsEven;
+                this._markAsDirty();
+            }, 500);
+
+            //show the highlighted text
+            if (this._isTextHighlightOn) {
+                clearTimeout(this._blinkTimeout);
+                let highlightCursorOffsetWidth = context.measureText(this.text.substring(this._startHighlightIndex)).width;
+                let highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
+                this._highlightedText = this.text.substring(this._startHighlightIndex, this._endHighlightIndex);
+                //for transparancy
+                context.globalAlpha = this._highligherOpacity;
+                context.fillStyle = this._textHighlightColor;
+                context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width, this._fontOffset.height);
+                context.globalAlpha = 1.0;
             }
 
             context.restore();
