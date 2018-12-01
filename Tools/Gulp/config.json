@@ -61,6 +61,7 @@
             "webpack": "../../../src/webpack.config.js",
             "srcDirectory": "../../src/",
             "distOutputDirectory": "/",
+            "packageJSON": "../../package.json",
             "processDeclaration": {
                 "filename": "babylon.module.d.ts",
                 "packageName": "babylonjs",
@@ -85,6 +86,10 @@
                 ],
                 "doNotAppendNamespace": true,
                 "prependToNamespaceText": "declare module 'babylonjs' { export = BABYLON; }"
+            },
+            "es6": {
+                "packageName": "babylonjs-es6",
+                "tsFolder": "../../src/"
             }
         }
     },
@@ -182,6 +187,10 @@
                 "classMap": {
                     "babylonjs": "BABYLON"
                 }
+            },
+            "es6": {
+                "packageName": "babylonjs-materials-es6",
+                "tsFolder": "../../materialsLibrary/"
             }
         }
     },
@@ -208,12 +217,16 @@
             "distOutputDirectory": "/postProcessesLibrary/",
             "processDeclaration": {
                 "filename": "babylonjs.postProcess.module.d.ts",
-                "packageName": "babylonjs-postProcessLibrary",
+                "packageName": "babylonjs-post-process",
                 "moduleName": "BABYLON",
                 "importsToRemove": [],
                 "classMap": {
                     "babylonjs": "BABYLON"
                 }
+            },
+            "es6": {
+                "packageName": "babylonjs-post-process-es6",
+                "tsFolder": "../../postProcessLibrary/"
             }
         }
     },
@@ -286,6 +299,10 @@
                 "classMap": {
                     "babylonjs": "BABYLON"
                 }
+            },
+            "es6": {
+                "packageName": "babylonjs-procedural-textures-es6",
+                "tsFolder": "../../proceduralTexturesLibrary/"
             }
         }
     },
@@ -352,6 +369,10 @@
                     "babylonjs": "BABYLON",
                     "babylonjs-gltf2interface": "BABYLON.GLTF2"
                 }
+            },
+            "es6": {
+                "packageName": "babylonjs-loaders-es6",
+                "tsFolder": "../../loaders/"
             }
         }
     },
@@ -405,6 +426,10 @@
                         "namespace": "BABYLON"
                     }
                 ]
+            },
+            "es6": {
+                "packageName": "babylonjs-serializers-es6",
+                "tsFolder": "../../serializers/"
             }
         }
     },
@@ -429,6 +454,10 @@
                     "babylonjs-loaders": "BABYLON",
                     "babylonjs-serializers": "BABYLON"
                 }
+            },
+            "es6": {
+                "packageName": "babylonjs-gui-es6",
+                "tsFolder": "../../gui/"
             }
         }
     },
@@ -457,6 +486,10 @@
                     "babylonjs-serializers": "BABYLON",
                     "babylonjs-gui": "BABYLON.GUI"
                 }
+            },
+            "es6": {
+                "packageName": "babylonjs-inspector-es6",
+                "tsFolder": "../../inspector/"
             }
         }
     },
@@ -525,6 +558,14 @@
                         }
                     ]
                 }
+            ],
+            "es6": {
+                "packageName": "babylonjs-viewer-es6",
+                "tsFolder": "../../viewer/"
+            },
+            "requiredFiles": [
+                "../../Viewer/README.md",
+                "../../Viewer/package.json"
             ]
         }
     },

@@ -1,26 +1,7 @@
-var path = require("path");
-var fs = require("fs");
+var fs = require("fs-extra");
 
 var rmDir = function(dirPath) {
-    let files = null;
-    try { 
-        files = fs.readdirSync(dirPath); 
-    }
-    catch (e) {
-        return; 
-    }
-    
-    if (files && files.length > 0) {
-        for (var i = 0; i < files.length; i++) {
-            var filePath = path.join(dirPath, files[i]);
-            if (fs.statSync(filePath).isFile())
-                fs.unlinkSync(filePath);
-            else
-                rmDir(filePath);
-        }
-    }
-
-    fs.rmdirSync(dirPath);
+    fs.removeSync(dirPath);
 }
 
 module.exports = function(dirPath) {
