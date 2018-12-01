@@ -43,16 +43,17 @@ import { PointerInfo, PointerEventTypes } from "Events/pointerEvents";
                 var event = <MouseWheelEvent>p.event;
                 var delta = 0;
 
-                if (event.wheelDelta) {
+                let mouseWheelLegacyEvent = event as any;
+                if (mouseWheelLegacyEvent.wheelDelta) {
                     if (this.wheelDeltaPercentage) {
-                        var wheelDelta = (event.wheelDelta * 0.01 * this.wheelDeltaPercentage) * this.camera.radius;
-                        if (event.wheelDelta > 0) {
+                        var wheelDelta = (mouseWheelLegacyEvent.wheelDelta * 0.01 * this.wheelDeltaPercentage) * this.camera.radius;
+                        if (mouseWheelLegacyEvent.wheelDelta > 0) {
                             delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
                         } else {
                             delta = wheelDelta * (1.0 + this.wheelDeltaPercentage);
                         }
                     } else {
-                        delta = event.wheelDelta / (this.wheelPrecision * 40);
+                        delta = mouseWheelLegacyEvent.wheelDelta / (this.wheelPrecision * 40);
                     }
                 } else {
                     let deltaValue = event.deltaY || event.detail;
