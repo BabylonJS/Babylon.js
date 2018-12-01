@@ -4,9 +4,6 @@ const shelljs = require('shelljs');
 const fs = require('fs-extra');
 const path = require('path');
 
-// This can be changed when we have a new major release.
-const minimumDependency = '>=3.4.0-alpha';
-
 // CMD Arguments Management.
 let doNotBuild = false;
 let doNotPublish = false;
@@ -15,9 +12,10 @@ let doNotPublish = false;
 process.env.PATH += (path.delimiter + path.join(__dirname, 'node_modules', '.bin'));
 
 // Global Variables.
-const config = require("./config/config.json");
-const basePath = config.basePath;
-const packages = config.packages;
+const config = require("../gulp/config.json");
+const modules = config.modules.concat(config.viewerModules);
+const basePath = config.build.outputDirectory;
+const tempPath = config.build.tempDirectory + "es6/";
 
 /**
  * Remove a directory.
@@ -121,18 +119,22 @@ function buildBabylonJSAndDependencies() {
  * Process Legacy Packages.
  */
 function processLegacyPackages(version) {
-    packages.forEach((package) => {
-        if (package.name === "core") {
-            processCore(package, version);
+    console.log("Process Legacy Packages...");
+    modules.forEach(moduleName => {
+        let module = config[moduleName];
+
+        if (moduleName === "core") {
+            processLegacyCore(version);
         }
         else {
-            if (package.required) {
-                package.required.forEach(file => {
-                    fs.copySync(basePath + file, basePath + package.path + '/' + path.basename(file));
+            if (module.build.requiredFiles) {
+                module.build.requiredFiles.forEach(file => {
+                    console.error("    ", file, basePath + module.build.distOutputDirectory + '/' + path.basename(file));
+                    fs.copySync(file, basePath + module.build.distOutputDirectory + '/' + path.basename(file));
                 });
             }
 
-            let packageJson = require(basePath + package.path + 'package.json');
+            let packageJson = require(basePath + module.build.distOutputDirectory + 'package.json');
             packageJson.version = version;
             if (packageJson.dependencies) {
                 Object.keys(packageJson.dependencies).forEach(key => {
@@ -141,10 +143,9 @@ function processLegacyPackages(version) {
                     }
                 });
             }
-            if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
-            fs.writeFileSync(basePath + package.path + 'package.json', JSON.stringify(packageJson, null, 4));
+            fs.writeFileSync(basePath + module.build.distOutputDirectory+ 'package.json', JSON.stringify(packageJson, null, 4));
 
-            publish(version, package.name, basePath + package.path);
+            publish(version, moduleName, basePath + module.build.distOutputDirectory);
         }
     });
 }
@@ -153,85 +154,101 @@ function processLegacyPackages(version) {
  * Process ES6 Packages.
  */
 function processEs6Packages(version) {
-    let es6Packages = config.es6;
-
-    es6Packages.forEach(package => {
-        let projectPath = package.path;
-        let buildPath = path.normalize(basePath + projectPath + package.buildPath);
-
-        if (package.required) {
-            package.required.forEach(file => {
-                fs.copySync(file, basePath + '/' + path.basename(file));
-            });
+    console.log("Process ES6 Packages...");
+    modules.forEach(moduleName => {
+        let module = config[moduleName];
+        let es6Config = module.build.es6;
+        if (!es6Config) {
+            return;
         }
+
+        let projectPath = es6Config.tsFolder;
+        let buildPath = path.normalize(tempPath + moduleName);
+        let legacyPackageJson = require(module.build.packageJSON || basePath + module.build.distOutputDirectory + 'package.json');
 
         console.log("Cleanup " + buildPath);
         rmDir(buildPath);
 
-        console.log("Executing " + 'tsc -t es6 -m esNext -p ' + projectPath);
+        let command = 'tsc -t es6 -m esNext -p ' + projectPath + ' --outDir ' + buildPath;
+        console.log("Executing " + command);
 
-        let tscCompile = shelljs.exec('tsc -t es6 -m esNext -p ' + projectPath);
+        let tscCompile = shelljs.exec(command);
         if (tscCompile.code !== 0) {
             throw new Error("Tsc compilation failed");
         }
 
-        let packageJson = require("./config" + '/template.package.json');
+        if (module.build.requiredFiles) {
+            module.build.requiredFiles.forEach(file => {
+                fs.copySync(file, buildPath + '/' + path.basename(file));
+            });
+        }
+
         let files = getFiles(buildPath).map(f => f.replace(buildPath + "/", "")).filter(f => f.indexOf("assets/") === -1);
 
-        packageJson.files = files;
-        packageJson.version = version;
-
-        Object.keys(package.payload).forEach(key => {
-            packageJson[key] = package.payload[key]
-        });
+        legacyPackageJson.name = es6Config.packageName;
+        legacyPackageJson.version = version;
+        legacyPackageJson.main = "index.js";
+        legacyPackageJson.module = "index.js";
+        legacyPackageJson.esnext = "index.js";
+        legacyPackageJson.typings = "index.d.ts";
+        legacyPackageJson.files = files;
 
         ["dependencies", "peerDependencies", "devDependencies"].forEach(key => {
-            if (package.payload[key]) {
-                packageJson[key] = {};
-                Object.keys(package.payload[key]).forEach(packageName => {
-                    if (package.payload[key][packageName] === true) {
-                        packageJson[key][packageName] = version;
+            if (legacyPackageJson[key]) {
+                let dependencies = legacyPackageJson[key];
+                legacyPackageJson[key] = {};
+                Object.keys(dependencies).forEach(packageName => {
+                    if (dependencies[packageName].indexOf("babylonjs") !== -1) {
+                        legacyPackageJson[key][packageName + "-es6"] = version;
                     } else {
-                        packageJson[key][packageName] = package.payload[key][packageName];
+                        legacyPackageJson[key][packageName] = dependencies[packageName];
                     }
                 });
             }
         });
 
-        fs.writeFileSync(buildPath + '/package.json', JSON.stringify(packageJson, null, 4));
+        fs.writeFileSync(buildPath + '/package.json', JSON.stringify(legacyPackageJson, null, 4));
 
-        publish(version, package.name, buildPath);
+        publish(version, es6Config.packageName, buildPath);
     });
 }
 
 /**
- * Special treatment for core.
+ * Special treatment for legacy core.
  */
-function processCore(package, version) {
-    let packageJson = require(package.path + 'package.json');
+function processLegacyCore(version) {
+    let package = {
+        "name": "core",
+        "path": "/../../"
+    };
+    let packageJson = require('../../package.json');
 
     // make a temporary directory
-    fs.ensureDirSync(basePath + 'package/');
+    fs.ensureDirSync(basePath + '/package/');
 
     let files = [
         {
-            path: basePath + "babylon.d.ts",
+            path: basePath + "/babylon.d.ts",
             objectName: "babylon.d.ts"
         },
         {
-            path: basePath + "babylon.js",
+            path: basePath + "/babylon.js",
             objectName: "babylon.js"
         },
         {
-            path: basePath + "babylon.max.js",
+            path: basePath + "/babylon.js.map",
+            objectName: "babylon.js.map"
+        },
+        {
+            path: basePath + "/babylon.max.js",
             objectName: "babylon.max.js"
         },
         {
-            path: basePath + "babylon.worker.js",
-            objectName: "babylon.worker.js"
+            path: basePath + "/babylon.max.js.map",
+            objectName: "babylon.max.js.map"
         },
         {
-            path: basePath + "Oimo.js",
+            path: basePath + "/Oimo.js",
             objectName: "Oimo.js"
         },
         {
@@ -242,7 +259,7 @@ function processCore(package, version) {
 
     //copy them to the package path
     files.forEach(file => {
-        fs.copySync(file.path, basePath + 'package/' + file.objectName);
+        fs.copySync(file.path, basePath + '/package/' + file.objectName);
     });
 
     // update package.json
@@ -262,12 +279,12 @@ function processCore(package, version) {
     packageJson.main = "babylon.js";
     packageJson.typings = "babylon.d.ts";
 
-    fs.writeFileSync(basePath + 'package/' + 'package.json', JSON.stringify(packageJson, null, 4));
+    fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
 
-    publish(version, package.name, basePath + 'package/');
+    publish(version, package.name, basePath + '/package/');
 
     // remove package directory
-    fs.removeSync(basePath + 'package/');
+    fs.removeSync(basePath + '/package/');
 
     // now update the main package.json
     packageJson.files = packageJson.files.map(file => {
@@ -280,7 +297,7 @@ function processCore(package, version) {
     packageJson.main = "dist/preview release/babylon.js";
     packageJson.typings = "dist/preview release/babylon.d.ts";
 
-    fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
+    fs.writeFileSync('../../package.json', JSON.stringify(packageJson, null, 4));
 }
 
 const createVersion = function(version) {
