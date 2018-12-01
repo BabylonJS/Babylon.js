@@ -19,10 +19,6 @@ jobs:
   - stage: BabylonJS Build and test
     env: JOB=WhatsNewUpdate
     script: gulp tests-whatsnew
-  - env: JOB=TSCDBG
-    script:
-    - cd ../../src
-    - tsc --module amd --outFile ../.temp/amd.js --emitDeclarationOnly true
   - env: JOB=DocumentationCheck
     script: gulp typedoc-check
   - env: JOB=Styling
