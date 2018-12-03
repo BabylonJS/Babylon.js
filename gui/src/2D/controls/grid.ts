@@ -33,6 +33,32 @@ export class Grid extends Container {
     }
 
     /**
+     * Gets the definition of a specific row
+     * @param index defines the index of the row
+     * @returns the row definition
+     */
+    public getRowDefinition(index: number): Nullable<ValueAndUnit> {
+        if (index < 0 || index >= this._rowDefinitions.length) {
+            return null;
+        }
+
+        return this._rowDefinitions[index];
+    }
+
+    /**
+     * Gets the definition of a specific column
+     * @param index defines the index of the column
+     * @returns the column definition
+     */
+    public getColumnDefinition(index: number): Nullable<ValueAndUnit> {
+        if (index < 0 || index >= this._columnDefinitions.length) {
+            return null;
+        }
+
+        return this._columnDefinitions[index];
+    }
+
+    /**
      * Adds a new row to the grid
      * @param height defines the height of the row (either in pixel or a value between 0 and 1)
      * @param isPixel defines if the height is expressed in pixel (or in percentage)
