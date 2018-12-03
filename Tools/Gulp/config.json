@@ -559,13 +559,12 @@
                     ]
                 }
             ],
-            "es6": {
-                "packageName": "babylonjs-viewer-es6",
-                "tsFolder": "../../viewer/"
-            },
+            "legacyPackageOutputDirectory": "../../Viewer/build/src/",
             "requiredFiles": [
-                "../../Viewer/README.md",
-                "../../Viewer/package.json"
+                "../../dist/preview release/viewer/readme.md",
+                "../../dist/preview release/viewer/package.json",
+                "../../dist/preview release/viewer/babylon.viewer.js",
+                "../../dist/preview release/viewer/babylon.viewer.max.js"
             ]
         }
     },
@@ -599,6 +598,11 @@
                     ],
                     "minified": true
                 }
+            ],
+            "legacyPackageOutputDirectory": "../../Viewer/build/assets/",
+            "requiredFiles": [
+                "../../Viewer/assets/readme.md",
+                "../../Viewer/assets/package.json"
             ]
         }
     }

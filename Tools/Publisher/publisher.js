@@ -84,7 +84,7 @@ function getEngineVersion() {
  * Publish a package to npm.
  */
 function publish(version, packageName, basePath) {
-    console.log('Publishing ' + packageName + " from " + basePath);
+    console.log('    Publishing ' + packageName + " from " + basePath);
 
     let tag = "";
     // check for alpha or beta
@@ -94,10 +94,10 @@ function publish(version, packageName, basePath) {
 
     //publish the respected package
     if (doNotPublish) {
-        console.log("If publishing enabled: " + 'npm publish \"' + basePath + "\"" + ' ' + tag);
+        console.log("    If publishing enabled: " + 'npm publish \"' + basePath + "\"" + ' ' + tag);
     }
     else {
-        console.log("Executing: " + 'npm publish \"' + basePath + "\"" + ' ' + tag);
+        console.log("    Executing: " + 'npm publish \"' + basePath + "\"" + ' ' + tag);
         shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tag);
     }
 }
@@ -116,41 +116,6 @@ function buildBabylonJSAndDependencies() {
 }
 
 /**
- * Process Legacy Packages.
- */
-function processLegacyPackages(version) {
-    console.log("Process Legacy Packages...");
-    modules.forEach(moduleName => {
-        let module = config[moduleName];
-
-        if (moduleName === "core") {
-            processLegacyCore(version);
-        }
-        else {
-            if (module.build.requiredFiles) {
-                module.build.requiredFiles.forEach(file => {
-                    console.error("    ", file, basePath + module.build.distOutputDirectory + '/' + path.basename(file));
-                    fs.copySync(file, basePath + module.build.distOutputDirectory + '/' + path.basename(file));
-                });
-            }
-
-            let packageJson = require(basePath + module.build.distOutputDirectory + 'package.json');
-            packageJson.version = version;
-            if (packageJson.dependencies) {
-                Object.keys(packageJson.dependencies).forEach(key => {
-                    if (key.indexOf("babylonjs") !== -1) {
-                        packageJson.dependencies[key] = version;
-                    }
-                });
-            }
-            fs.writeFileSync(basePath + module.build.distOutputDirectory+ 'package.json', JSON.stringify(packageJson, null, 4));
-
-            publish(version, moduleName, basePath + module.build.distOutputDirectory);
-        }
-    });
-}
-
-/**
  * Process ES6 Packages.
  */
 function processEs6Packages(version) {
@@ -162,15 +127,17 @@ function processEs6Packages(version) {
             return;
         }
 
+        console.log("Process ES6 Package: " + moduleName);
+
         let projectPath = es6Config.tsFolder;
         let buildPath = path.normalize(tempPath + moduleName);
         let legacyPackageJson = require(module.build.packageJSON || basePath + module.build.distOutputDirectory + 'package.json');
 
-        console.log("Cleanup " + buildPath);
+        console.log("    Cleanup " + buildPath);
         rmDir(buildPath);
 
         let command = 'tsc -t es6 -m esNext -p ' + projectPath + ' --outDir ' + buildPath;
-        console.log("Executing " + command);
+        console.log("    Executing " + command);
 
         let tscCompile = shelljs.exec(command);
         if (tscCompile.code !== 0) {
@@ -211,6 +178,90 @@ function processEs6Packages(version) {
 
         publish(version, es6Config.packageName, buildPath);
     });
+    console.log();
+}
+
+/**
+ * Process Legacy Packages.
+ */
+function processLegacyPackages(version) {
+    console.log("Process Legacy Packages...");
+    modules.forEach(moduleName => {
+        let module = config[moduleName];
+        console.log("Process Package: " + moduleName);
+
+        if (moduleName === "core") {
+            processLegacyCore(version);
+        }
+        else if (moduleName === "viewer") {
+            processLegacyViewer(module, version);
+        }
+        else {
+            let outputDirectory = module.build.legacyPackageOutputDirectory || basePath + module.build.distOutputDirectory;
+
+            if (module.build.requiredFiles) {
+                module.build.requiredFiles.forEach(file => {
+                    console.log("    Copy required file: ", file, outputDirectory + '/' + path.basename(file));
+                    fs.copySync(file, outputDirectory + '/' + path.basename(file));
+                });
+            }
+
+            let packageJson = require(outputDirectory + 'package.json');
+            packageJson.version = version;
+            console.log("    Update package version to: " + version);
+
+            if (packageJson.dependencies) {
+                Object.keys(packageJson.dependencies).forEach(key => {
+                    if (key.indexOf("babylonjs") !== -1) {
+                        packageJson.dependencies[key] = version;
+                    }
+                });
+            }
+            fs.writeFileSync(outputDirectory + 'package.json', JSON.stringify(packageJson, null, 4));
+
+            publish(version, moduleName, outputDirectory);
+        }
+    });
+    console.log();
+}
+
+/**
+ * Special treatment for legacy viewer.
+ */
+function processLegacyViewer(module, version) {
+
+    let projectPath = '../../Viewer';
+    let buildPath = projectPath + "/build/src/";
+
+    if (module.build.requiredFiles) {
+        module.build.requiredFiles.forEach(file => {
+            console.log("    Copy required file: ", file, buildPath + path.basename(file));
+            fs.copySync(file, buildPath + path.basename(file));
+        });
+    }
+
+    // The viewer needs to be built using tsc on the viewer's main repository
+    // build the viewer.
+    console.log("    Executing " + 'tsc -p ' + projectPath);
+
+    let tscCompile = shelljs.exec('tsc -p ' + projectPath);
+    if (tscCompile.code !== 0) {
+        throw new Error("tsc compilation failed");
+    }
+
+    let packageJson = require(buildPath + '/package.json');
+
+    let files = getFiles(buildPath).map(f => f.replace(buildPath + "/", "")).filter(f => f.indexOf("assets/") === -1);
+
+    packageJson.files = files;
+    packageJson.version = version;
+    packageJson.module = "index.js";
+    packageJson.main = "babylon.viewer.js";
+    packageJson.typings = "index.d.ts";
+
+    fs.writeFileSync(buildPath + '/package.json', JSON.stringify(packageJson, null, 4));
+
+    publish(version, "viewer", buildPath);
 }
 
 /**
@@ -264,7 +315,7 @@ function processLegacyCore(version) {
 
     // update package.json
     packageJson.version = version;
-    console.log("Generating file list");
+    console.log("    Generating file list");
     let packageFiles = ["package.json"];
     files.forEach(file => {
         if (!file.isDir) {
@@ -274,7 +325,7 @@ function processLegacyCore(version) {
             packageFiles.push(file.objectName + "/index.js", file.objectName + "/index.d.ts", file.objectName + "/es6.js")
         }
     });
-    console.log("Updating package.json");
+    console.log("    Updating package.json");
     packageJson.files = packageFiles;
     packageJson.main = "babylon.js";
     packageJson.typings = "babylon.d.ts";
@@ -308,6 +359,9 @@ const createVersion = function(version) {
 
     // Create the packages and publish if needed.
     processLegacyPackages(version);
+
+    // Do not publish es6 yet.
+    doNotPublish = true;
     processEs6Packages(version);
 }
 
