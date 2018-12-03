@@ -1030,6 +1030,18 @@ export class Control {
     }
 
     /** @hidden */
+    public _offsetLeft(offset: number) {
+        this._isDirty = true;
+        this._currentMeasure.left += offset;
+    }
+
+    /** @hidden */
+    public _offsetTop(offset: number) {
+        this._isDirty = true;
+        this._currentMeasure.top += offset;
+    }
+
+    /** @hidden */
     public _markMatrixAsDirty(): void {
         this._isMatrixDirty = true;
         this._flagDescendantsAsMatrixDirty();
@@ -1119,7 +1131,7 @@ export class Control {
     }
 
     /** @hidden */
-    public  _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 

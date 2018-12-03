@@ -218,6 +218,24 @@ export class Container extends Control {
     }
 
     /** @hidden */
+    public _offsetLeft(offset: number) {
+        super._offsetLeft(offset);
+
+        for (var child of this._children) {
+            child._offsetLeft(offset);
+        }
+    }
+
+    /** @hidden */
+    public _offsetTop(offset: number) {
+        super._offsetTop(offset);
+
+        for (var child of this._children) {
+            child._offsetTop(offset);
+        }
+    }
+
+    /** @hidden */
     public _markAllAsDirty(): void {
         super._markAllAsDirty();
 
@@ -275,8 +293,7 @@ export class Container extends Control {
 
         this._beforeLayout();
 
-        do
-        {
+        do {
             let computedWidth = -1;
             let computedHeight = -1;
             this._rebuildLayout = false;
@@ -335,7 +352,7 @@ export class Container extends Control {
     public _draw(context: CanvasRenderingContext2D): void {
 
         this._localDraw(context);
-       
+
         if (this.clipChildren) {
             this._clipForChildren(context);
         }
