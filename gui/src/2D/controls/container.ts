@@ -1,8 +1,7 @@
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Nullable } from "babylonjs";
+import { Nullable, Logger } from "babylonjs";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { Logger } from "babylonjs/Misc/logger";
 
 /**
  * Root class for 2D containers
