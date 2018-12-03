@@ -42,7 +42,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextLineComponent label="Class" value={control.getClassName()} />
                     <SliderLineComponent label="Alpha" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
-                        control.color &&
+                        (control as any).color !== undefined &&
                         <TextInputLineComponent lockObject={this.props.lockObject} label="Color" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
