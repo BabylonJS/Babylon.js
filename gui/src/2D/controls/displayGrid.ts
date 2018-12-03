@@ -1,6 +1,5 @@
 
 import { Control } from ".";
-import { Measure } from "..";
 
 /** Class used to render a grid  */
 export class DisplayGrid extends Control {
@@ -147,12 +146,12 @@ export class DisplayGrid extends Control {
         super(name);
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         this._applyStates(context);
 
-        if (this._isEnabled && this._processMeasures(parentMeasure, context)) {
+        if (this._isEnabled) {
 
             if (this._background) {
                 context.fillStyle = this._background;

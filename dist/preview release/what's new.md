@@ -19,6 +19,7 @@
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
   - Added support for clipboard events to let users perform `cut`, `copy` and `paste` events ([Saket Saurabh](https://github.com/ssaket))
   - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/))
+  - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
 
 ## Updates
 
@@ -92,6 +93,7 @@
 ### Materials Library
 
 ## Bug fixes
+- Fixed ArcRotateCamera control when upVector was modified ([Deltakosh](https://github.com/deltakosh))
 - Fixed anaglyph mode for Free and Universal cameras ([Deltakosh](https://github.com/deltakosh))
 - Fixed FileLoader's loading of a skybox, & added a parsed value for whether to create with PBR or STDMaterial ([Palmer-JC](https://github.com/Palmer-JC))
 - Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))

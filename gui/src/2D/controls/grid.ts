@@ -33,6 +33,32 @@ export class Grid extends Container {
     }
 
     /**
+     * Gets the definition of a specific row
+     * @param index defines the index of the row
+     * @returns the row definition
+     */
+    public getRowDefinition(index: number): Nullable<ValueAndUnit> {
+        if (index < 0 || index >= this._rowDefinitions.length) {
+            return null;
+        }
+
+        return this._rowDefinitions[index];
+    }
+
+    /**
+     * Gets the definition of a specific column
+     * @param index defines the index of the column
+     * @returns the column definition
+     */
+    public getColumnDefinition(index: number): Nullable<ValueAndUnit> {
+        if (index < 0 || index >= this._columnDefinitions.length) {
+            return null;
+        }
+
+        return this._columnDefinitions[index];
+    }
+
+    /**
      * Adds a new row to the grid
      * @param height defines the height of the row (either in pixel or a value between 0 and 1)
      * @param isPixel defines if the height is expressed in pixel (or in percentage)
@@ -72,6 +98,11 @@ export class Grid extends Container {
             return this;
         }
 
+        let current = this._rowDefinitions[index];
+        if (current && current.isPixel === isPixel && current.internalValue === height) {
+            return this;
+        }
+
         this._rowDefinitions[index] = new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE);
 
         this._markAsDirty();
@@ -88,6 +119,11 @@ export class Grid extends Container {
      */
     public setColumnDefinition(index: number, width: number, isPixel = false): Grid {
         if (index < 0 || index >= this._columnDefinitions.length) {
+            return this;
+        }
+
+        let current = this._columnDefinitions[index];
+        if (current && current.isPixel === isPixel && current.internalValue === width) {
             return this;
         }
 
@@ -388,11 +424,7 @@ export class Grid extends Container {
         }
     }
 
-    protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
-        if (!this.isHighlighted) {
-            return;
-        }
-
+    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
         super._renderHighlightSpecific(context);
 
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
