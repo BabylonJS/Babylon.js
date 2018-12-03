@@ -176,7 +176,8 @@ function processEs6Packages(version) {
 
         fs.writeFileSync(buildPath + '/package.json', JSON.stringify(legacyPackageJson, null, 4));
 
-        publish(version, es6Config.packageName, buildPath);
+        // Do not publish yet.
+        // publish(version, es6Config.packageName, buildPath);
     });
     console.log();
 }
