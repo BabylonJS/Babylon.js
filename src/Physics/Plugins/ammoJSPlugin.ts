@@ -267,7 +267,7 @@ import { AbstractMesh } from "Meshes/abstractMesh";
                 }
 
                 // Disable collision if NoImpostor, but keep collision if shape is btCompoundShape
-                if (impostor.type == BABYLON.PhysicsImpostor.NoImpostor && !colShape.getChildShape) {
+                if (impostor.type == PhysicsImpostor.NoImpostor && !colShape.getChildShape) {
                     body.setCollisionFlags(body.getCollisionFlags() | AmmoJSPlugin.DISABLE_COLLISION_FLAG);
                 }
 
@@ -398,7 +398,7 @@ import { AbstractMesh } from "Meshes/abstractMesh";
 
                             // Position needs to be scaled based on parent's scaling
                             var parentMat = childMesh.parent!.getWorldMatrix().clone();
-                            var s = new BABYLON.Vector3();
+                            var s = new Vector3();
                             parentMat.decompose(s);
                             this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x * s.x, childMesh.position.y * s.y, childMesh.position.z * s.z);
 
