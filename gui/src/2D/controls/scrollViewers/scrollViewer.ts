@@ -2,7 +2,7 @@ import { Rectangle } from "../rectangle";
 import { Grid } from "../grid";
 import { Control } from "../control";
 import { Container } from "../container";
-import { PointerInfo, Observer, Nullable } from "babylonjs";
+import { PointerInfo, Observer, Nullable, PointerEventTypes } from "babylonjs";
 import { AdvancedDynamicTexture, Measure } from "2D";
 import { _ScrollViewerWindow } from "./scrollViewerWindow";
 import { ScrollBar } from "../sliders/scrollBar";
@@ -331,7 +331,7 @@ export class ScrollViewer extends Rectangle {
 
         let scene = this._host.getScene();
         this._onPointerObserver = scene!.onPointerObservable.add((pi, state) => {
-            if (!this._pointerIsOver || pi.type !== BABYLON.PointerEventTypes.POINTERWHEEL) {
+            if (!this._pointerIsOver || pi.type !== PointerEventTypes.POINTERWHEEL) {
                 return;
             }
             if (this._verticalBar.isVisible == true) {

@@ -2,6 +2,7 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { Nullable } from "babylonjs";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { Logger } from "babylonjs/Misc/logger";
 
 /**
  * Root class for 2D containers
@@ -334,7 +335,7 @@ export class Container extends Control {
         while (this._rebuildLayout && rebuildCount < 3);
 
         if (rebuildCount >= 3) {
-            BABYLON.Tools.Error(`Layout cycle detected in GUI (Container uniqueId=${this.uniqueId})`);
+            Logger.Error(`Layout cycle detected in GUI (Container uniqueId=${this.uniqueId})`);
         }
 
         context.restore();

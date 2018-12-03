@@ -1,7 +1,7 @@
 import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo } from 'babylonjs';
+import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo, PointerEventTypes } from 'babylonjs';
 import { VirtualKeyboard } from "./virtualKeyboard";
 
 /**
