@@ -20,8 +20,6 @@ export class Control {
     private _alphaSet = false;
     private _zIndex = 0;
     /** @hidden */
-    public _root: Nullable<Container>;
-    /** @hidden */
     public _host: AdvancedDynamicTexture;
     /** Gets or sets the control parent */
     public parent: Nullable<Container>;
@@ -45,7 +43,8 @@ export class Control {
     protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
     /** @hidden */
     protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    private _isDirty = true;
+    /** @hidden */
+    protected _isDirty = true;
     /** @hidden */
     public _tempParentMeasure = Measure.Empty();
     /** @hidden */
@@ -68,7 +67,6 @@ export class Control {
     protected _invertTransformMatrix = Matrix2D.Identity();
     /** @hidden */
     protected _transformedPosition = Vector2.Zero();
-    private _onlyMeasureMode = false;
     private _isMatrixDirty = true;
     private _cachedOffsetX: number;
     private _cachedOffsetY: number;
@@ -84,6 +82,10 @@ export class Control {
     private _downPointerIds: { [id: number]: boolean } = {};
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
+
+    /** @hidden */
+    public _isClipped = false;
+
     /** @hidden */
     public _tag: any;
 
@@ -575,8 +577,8 @@ export class Control {
 
         this._zIndex = value;
 
-        if (this._root) {
-            this._root._reOrderControl(this);
+        if (this.parent) {
+            this.parent._reOrderControl(this);
         }
     }
 
@@ -848,6 +850,23 @@ export class Control {
         return "Control";
     }
 
+    /**
+     * Gets the first ascendant in the hierarchy of the given type
+     * @param className defines the required type
+     * @returns the ascendant or null if not found
+     */
+    public getAscendantOfClass(className: string): Nullable<Control> {
+        if (!this.parent) {
+            return null;
+        }
+
+        if (this.parent.getClassName() === className) {
+            return this.parent;
+        }
+
+        return this.parent.getAscendantOfClass(className);
+    }
+
     /** @hidden */
     public _resetFontCache(): void {
         this._fontSet = true;
@@ -916,7 +935,7 @@ export class Control {
      * @param scene defines the hosting scene
      */
     public moveToVector3(position: Vector3, scene: Scene): void {
-        if (!this._host || this._root !== this._host._rootContainer) {
+        if (!this._host || this.parent !== this._host._rootContainer) {
             Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
             return;
         }
@@ -961,7 +980,7 @@ export class Control {
      * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
-        if (!this._host || this._root && this._root !== this._host._rootContainer) {
+        if (!this._host || this.parent && this.parent !== this._host._rootContainer) {
             if (mesh) {
                 Tools.Error("Cannot link a control to a mesh if the control is not at root level");
             }
@@ -982,7 +1001,6 @@ export class Control {
         this.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         this._linkedMesh = mesh;
-        this._onlyMeasureMode = this._currentMeasure.width === 0 || this._currentMeasure.height === 0;
         this._host._linkedControls.push(this);
     }
 
@@ -1046,8 +1064,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
-        this._root = root;
+    public _link(host: AdvancedDynamicTexture): void {
         this._host = host;
         if (this._host) {
             this.uniqueId = this._host.getScene()!.getUniqueId();
@@ -1081,7 +1098,7 @@ export class Control {
             this._isMatrixDirty = false;
             this._flagDescendantsAsMatrixDirty();
 
-            Matrix2D.ComposeToRef(-offsetX, -offsetY, this._rotation, this._scaleX, this._scaleY, this._root ? this._root._transformMatrix : null, this._transformMatrix);
+            Matrix2D.ComposeToRef(-offsetX, -offsetY, this._rotation, this._scaleX, this._scaleY, this.parent ? this.parent._transformMatrix : null, this._transformMatrix);
 
             this._transformMatrix.invertToRef(this._invertTransformMatrix);
         }
@@ -1102,7 +1119,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+    public  _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
@@ -1133,9 +1150,26 @@ export class Control {
     }
 
     /** @hidden */
-    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+        if (!this.isVisible || this.notRenderable) {
+            return false;
+        }
+        context.save();
+
+        this._applyStates(context);
+
+        this._processMeasures(parentMeasure, context);
+
+        context.restore();
+
+        this._isDirty = false;
+
+        return true;
+    }
+
+    /** @hidden */
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
-            this._isDirty = false;
             this._currentMeasure.copyFrom(parentMeasure);
 
             // Let children take some pre-measurement actions
@@ -1160,64 +1194,30 @@ export class Control {
             }
         }
 
-        if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
-            return false;
+        if (this.parent && this.parent.clipChildren) {
+            // Early clip
+            if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+                this._isClipped = true;
+                return;
+            }
+
+            if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+                this._isClipped = true;
+                return;
+            }
+
+            if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+                this._isClipped = true;
+                return;
+            }
+
+            if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+                this._isClipped = true;
+                return;
+            }
         }
 
-        if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
-            return false;
-        }
-
-        if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
-            return false;
-        }
-
-        if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
-            return false;
-        }
-
-        // Transform
-        this._transform(context);
-
-        if (this._onlyMeasureMode) {
-            this._onlyMeasureMode = false;
-            return false; // We do not want rendering for this frame as they are measure dependant information that need to be gathered
-        }
-
-        // Clip
-        if (this.clipChildren) {
-            this._clip(context);
-            context.clip();
-        }
-
-        if (this.onBeforeDrawObservable.hasObservers()) {
-            this.onBeforeDrawObservable.notifyObservers(this);
-        }
-
-        return true;
-    }
-
-    /** @hidden */
-    protected _clip(context: CanvasRenderingContext2D) {
-        context.beginPath();
-
-        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-            var shadowOffsetX = this.shadowOffsetX;
-            var shadowOffsetY = this.shadowOffsetY;
-            var shadowBlur = this.shadowBlur;
-
-            var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
-            var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
-            var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
-            var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
-
-            context.rect(this._currentMeasure.left + leftShadowOffset,
-                this._currentMeasure.top + topShadowOffset,
-                this._currentMeasure.width + rightShadowOffset - leftShadowOffset,
-                this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
-        } else {
-            context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-        }
+        this._isClipped = false;
     }
 
     /** @hidden */
@@ -1327,7 +1327,70 @@ export class Control {
     }
 
     /** @hidden */
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _clipForChildren(context: CanvasRenderingContext2D): void {
+        // DO nothing
+    }
+
+    private _clip(context: CanvasRenderingContext2D) {
+        context.beginPath();
+
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            var shadowOffsetX = this.shadowOffsetX;
+            var shadowOffsetY = this.shadowOffsetY;
+            var shadowBlur = this.shadowBlur;
+
+            var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+            var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+            var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+            var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+
+            context.rect(this._currentMeasure.left + leftShadowOffset,
+                this._currentMeasure.top + topShadowOffset,
+                this._currentMeasure.width + rightShadowOffset - leftShadowOffset,
+                this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
+        } else {
+            context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+        }
+
+        context.clip();
+    }
+
+    /** @hidden */
+    public _render(context: CanvasRenderingContext2D): boolean {
+        if (!this.isVisible || this.notRenderable || this._isClipped) {
+            this._isDirty = false;
+            return false;
+        }
+        context.save();
+
+        this._applyStates(context);
+
+        // Transform
+        this._transform(context);
+
+        // Clip
+        if (this.clipChildren) {
+            this._clip(context);
+        }
+
+        if (this.onBeforeDrawObservable.hasObservers()) {
+            this.onBeforeDrawObservable.notifyObservers(this);
+        }
+
+        this._draw(context);
+        this._renderHighlight(context);
+
+        if (this.onAfterDrawObservable.hasObservers()) {
+            this.onAfterDrawObservable.notifyObservers(this);
+        }
+
+        context.restore();
+
+        return true;
+    }
+
+    /** @hidden */
+    public _draw(context: CanvasRenderingContext2D): void {
         // Do nothing
     }
 
@@ -1550,9 +1613,9 @@ export class Control {
             this._styleObserver = null;
         }
 
-        if (this._root) {
-            this._root.removeControl(this);
-            this._root = null;
+        if (this.parent) {
+            this.parent.removeControl(this);
+            this.parent = null;
         }
 
         if (this._host) {

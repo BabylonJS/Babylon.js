@@ -51,12 +51,17 @@ export class Button extends Rectangle {
         this.thickness = 1;
         this.isPointerBlocker = true;
 
+        let alphaStore: Nullable<number> = null;
+
         this.pointerEnterAnimation = () => {
+            alphaStore = this.alpha;
             this.alpha -= 0.1;
         };
 
         this.pointerOutAnimation = () => {
-            this.alpha += 0.1;
+            if (alphaStore !== null) {
+                this.alpha = alphaStore;
+            }
         };
 
         this.pointerDownAnimation = () => {
