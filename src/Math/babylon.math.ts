@@ -1540,6 +1540,8 @@ module BABYLON {
      * Reminder: Babylon.js uses a left handed forward facing system
      */
     export class Vector3 {
+        private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+
         /**
          * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
          * @param x defines the first coordinates (on X axis)
@@ -2224,6 +2226,14 @@ module BABYLON {
         public static Up(): Vector3 {
             return new Vector3(0.0, 1.0, 0.0);
         }
+
+        /**
+         * Gets a up Vector3 that must not be updated
+         */
+        public static get UpReadOnly(): DeepImmutable<Vector3> {
+            return Vector3._UpReadOnly;
+        }
+
         /**
          * Returns a new Vector3 set to (0.0, -1.0, 0.0)
          * @returns a new down Vector3
@@ -3429,6 +3439,16 @@ module BABYLON {
             result.y = (x * m[1]) + (y * m[5]) + (z * m[9]);
             result.z = (x * m[2]) + (y * m[6]) + (z * m[10]);
             result.w = w;
+        }
+
+        /**
+         * Creates a new Vector4 from a Vector3
+         * @param source defines the source data
+         * @param w defines the 4th component (default is 0)
+         * @returns a new Vector4
+         */
+        public static FromVector3(source: Vector3, w: number = 0) {
+            return new Vector4(source.x, source.y, source.z, w);
         }
     }
 

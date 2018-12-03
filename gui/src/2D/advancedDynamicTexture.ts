@@ -69,9 +69,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _renderScale = 1;
     private _rootCanvas: Nullable<HTMLCanvasElement>;
 
-    /** @hidden */
-    public _needRedraw = false;
-
     /**
      * Define type to string to ensure compatibility across browsers
      * Safari doesn't support DataTransfer constructor
@@ -317,7 +314,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             info.skipOnPointerObservable = true;
         });
 
-        this._rootContainer._link(null, this);
+        this._rootContainer._link(this);
 
         this.hasAlpha = true;
 
@@ -576,12 +573,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         context.font = "18px Arial";
         context.strokeStyle = "white";
         var measure = new Measure(0, 0, renderWidth, renderHeight);
-        this._rootContainer._draw(measure, context);
+        this._rootContainer._layout(measure, context);
+        this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
 
-        if (this._needRedraw) { // We need to redraw as some elements dynamically adapt to their content
-            this._needRedraw = false;
-            this._render();
-        }
+        this._rootContainer._render(context);
     }
 
     /** @hidden */
@@ -833,16 +828,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     private _attachToOnPointerOut(scene: Scene): void {
+
         this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add((pointerEvent) => {
             if (this._lastControlOver[pointerEvent.pointerId]) {
                 this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId]);
             }
             delete this._lastControlOver[pointerEvent.pointerId];
 
-            if (this._lastControlDown[pointerEvent.pointerId]) {
+            if (this._lastControlDown[pointerEvent.pointerId] && this._lastControlDown[pointerEvent.pointerId] !== this._capturingControl[pointerEvent.pointerId]) {
                 this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
+                delete this._lastControlDown[pointerEvent.pointerId];
             }
-            delete this._lastControlDown[pointerEvent.pointerId];
         });
     }
 

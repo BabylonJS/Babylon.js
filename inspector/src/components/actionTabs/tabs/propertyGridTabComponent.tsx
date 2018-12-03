@@ -19,7 +19,7 @@ import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPro
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
-import { ColorPicker, Image, Slider, ImageBasedSlider, Rectangle, Ellipse, Checkbox, RadioButton, Line } from "babylonjs-gui";
+import { ColorPicker, Image, Slider, ImageBasedSlider, Rectangle, Ellipse, Checkbox, RadioButton, Line, ScrollViewer } from "babylonjs-gui";
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
 import { AnimationGroupGridComponent } from "./propertyGrids/animationGroupPropertyGridComponent";
 import { LockObject } from "./propertyGrids/lockObject";
@@ -31,6 +31,7 @@ import { EllipsePropertyGridComponent } from "./propertyGrids/gui/ellipsePropert
 import { CheckboxPropertyGridComponent } from "./propertyGrids/gui/checkboxPropertyGridComponent";
 import { RadioButtonPropertyGridComponent } from "./propertyGrids/gui/radioButtonPropertyGridComponent";
 import { LinePropertyGridComponent } from "./propertyGrids/gui/linePropertyGridComponent";
+import { ScrollViewerPropertyGridComponent } from "./propertyGrids/gui/scrollViewerPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -213,6 +214,13 @@ export class PropertyGridTabComponent extends PaneComponent {
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
+
+            if (className === "ScrollViewer") {
+                const scrollViewer = entity as ScrollViewer;
+                return (<ScrollViewerPropertyGridComponent scrollViewer={scrollViewer}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }            
 
             if (className === "Ellipse") {
                 const ellipse = entity as Ellipse;
