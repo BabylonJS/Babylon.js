@@ -442,6 +442,9 @@ module BABYLON {
                     // Fill with sphere but collision is disabled on the rigid body in generatePhysicsBody, using an empty shape caused unexpected movement with joints
                     returnValue = new Ammo.btSphereShape(extendSize.x / 2);
                     break;
+                default:
+                    Tools.Warn("The impostor type is not currently supported by the ammo plugin.");
+                    break;
             }
 
             return returnValue;
