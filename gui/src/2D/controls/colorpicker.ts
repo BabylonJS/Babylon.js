@@ -1,6 +1,5 @@
 import { Control } from "./control";
 import { Color3, Observable, Vector2 } from "babylonjs";
-import { Measure } from "../measure";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -273,58 +272,56 @@ export class ColorPicker extends Control {
     }
 
     /** @hidden */
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         this._applyStates(context);
-        if (this._processMeasures(parentMeasure, context)) {
 
-            var radius = Math.min(this._currentMeasure.width, this._currentMeasure.height) * .5;
-            var wheelThickness = radius * .2;
-            var left = this._currentMeasure.left;
-            var top = this._currentMeasure.top;
+        var radius = Math.min(this._currentMeasure.width, this._currentMeasure.height) * .5;
+        var wheelThickness = radius * .2;
+        var left = this._currentMeasure.left;
+        var top = this._currentMeasure.top;
 
-            if (!this._colorWheelCanvas || this._colorWheelCanvas.width != radius * 2) {
-                this._colorWheelCanvas = this._createColorWheelCanvas(radius, wheelThickness);
-            }
-
-            this._updateSquareProps();
-
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowColor = this.shadowColor;
-                context.shadowBlur = this.shadowBlur;
-                context.shadowOffsetX = this.shadowOffsetX;
-                context.shadowOffsetY = this.shadowOffsetY;
-
-                context.fillRect(this._squareLeft, this._squareTop, this._squareSize, this._squareSize);
-            }
-
-            context.drawImage(this._colorWheelCanvas, left, top);
-
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
-            }
-
-            this._drawGradientSquare(this._h,
-                this._squareLeft,
-                this._squareTop,
-                this._squareSize,
-                this._squareSize,
-                context);
-
-            var cx = this._squareLeft + this._squareSize * this._s;
-            var cy = this._squareTop + this._squareSize * (1 - this._v);
-
-            this._drawCircle(cx, cy, radius * .04, context);
-
-            var dist = radius - wheelThickness * .5;
-            cx = left + radius + Math.cos((this._h - 180) * Math.PI / 180) * dist;
-            cy = top + radius + Math.sin((this._h - 180) * Math.PI / 180) * dist;
-            this._drawCircle(cx, cy, wheelThickness * .35, context);
-
+        if (!this._colorWheelCanvas || this._colorWheelCanvas.width != radius * 2) {
+            this._colorWheelCanvas = this._createColorWheelCanvas(radius, wheelThickness);
         }
+
+        this._updateSquareProps();
+
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowColor = this.shadowColor;
+            context.shadowBlur = this.shadowBlur;
+            context.shadowOffsetX = this.shadowOffsetX;
+            context.shadowOffsetY = this.shadowOffsetY;
+
+            context.fillRect(this._squareLeft, this._squareTop, this._squareSize, this._squareSize);
+        }
+
+        context.drawImage(this._colorWheelCanvas, left, top);
+
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+        }
+
+        this._drawGradientSquare(this._h,
+            this._squareLeft,
+            this._squareTop,
+            this._squareSize,
+            this._squareSize,
+            context);
+
+        var cx = this._squareLeft + this._squareSize * this._s;
+        var cy = this._squareTop + this._squareSize * (1 - this._v);
+
+        this._drawCircle(cx, cy, radius * .04, context);
+
+        var dist = radius - wheelThickness * .5;
+        cx = left + radius + Math.cos((this._h - 180) * Math.PI / 180) * dist;
+        cy = top + radius + Math.sin((this._h - 180) * Math.PI / 180) * dist;
+        this._drawCircle(cx, cy, wheelThickness * .35, context);
+
         context.restore();
     }
 
