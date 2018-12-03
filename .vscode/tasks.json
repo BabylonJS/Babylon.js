@@ -35,8 +35,8 @@
                 },
                 "background": {
                     "activeOnStart": true,
-                    "beginsPattern": "Starting \\'run\\'",
-                    "endsPattern": "Entrypoint babylonjs-gui"
+                    "beginsPattern": "Starting \\'watch\\'",
+                    "endsPattern": "Entrypoint babylonjs-inspector"
                 }
             }
         },
