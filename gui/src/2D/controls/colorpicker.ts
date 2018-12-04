@@ -7,6 +7,7 @@ import { Button } from "./button";
 import { Grid } from "./grid";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { TextBlock } from ".";
+import { parse } from "url";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -495,7 +496,7 @@ export class ColorPicker extends Control {
             var closeIconColor: Color3;
 
             // Button settings
-            var buttonFontSize = 16;
+            var buttonFontSize: number;
             var butEdit: Button;
             var buttonWidth: string;
             var buttonHeight: string;
@@ -725,6 +726,7 @@ export class ColorPicker extends Control {
                 }
             }
 
+            // Mode switch to render button text and close symbols on swatch controls
             function EditSwatches(mode?: boolean) {
                 if (mode !== undefined) {
                     editSwatchMode = mode;
@@ -744,7 +746,7 @@ export class ColorPicker extends Control {
                         thisButton.textBlock!.text = "";
                     }
                     if (butEdit !== undefined) {
-                        butEdit.textBlock!.text = "Edit Swatches";
+                        butEdit.textBlock!.text = "Edit";
                     }
                 }
             }
@@ -753,7 +755,7 @@ export class ColorPicker extends Control {
              * When Save Color button is pressed this function will first create a swatch drawer if one is not already
              * made. Then all controls are removed from the drawer and we step through the savedColors array and
              * creates one swatch per color. It will also set the height of the drawer control based on how many
-             * saved colors there are and how many can be stored on one row.
+             * saved colors there are and how many can be stored per row.
              */
             function UpdateSwatches(color: string, button: Button) {
                 if (options.savedColors) {
@@ -804,11 +806,11 @@ export class ColorPicker extends Control {
             // Shows or hides edit swatches button depending on if there are saved swatches
             function setEditButtonVisibility(enableButton: boolean) {
                 if (enableButton) {
-                    butEdit = Button.CreateSimpleButton("butEdit", "Edit Swatches");
+                    butEdit = Button.CreateSimpleButton("butEdit", "Edit");
                     butEdit.width = buttonWidth;
-                    butEdit.height = butOK.height;
-                    // butEdit.top = "-10px";
+                    butEdit.height = buttonHeight;
                     butEdit.left = (Math.floor(parseInt(buttonWidth) * 0.1)).toString() + "px";
+                    butEdit.top = (parseFloat(butEdit.left) * -1).toString() + "px";
                     butEdit.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
                     butEdit.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
                     butEdit.thickness = 2;
@@ -909,8 +911,9 @@ export class ColorPicker extends Control {
             // pickerPanel.width = pickerWidth;
             pickerPanel.height = options.pickerHeight;
             var panelHead: number = parseInt(options.headerHeight) / parseInt(options.pickerHeight);
-            pickerPanel.addRowDefinition(panelHead, false);
-            pickerPanel.addRowDefinition(1.0, false);
+            var pickerPanelRows: number[] = [panelHead, 1.0 - panelHead]
+            pickerPanel.addRowDefinition(pickerPanelRows[0], false);
+            pickerPanel.addRowDefinition(pickerPanelRows[1], false);
             dialogContainer.addControl(pickerPanel, 0, 0);
 
             // Picker container head
@@ -995,8 +998,9 @@ export class ColorPicker extends Control {
             var pickerBodyRight: Grid = new Grid();
             pickerBodyRight.name = "Dialogue Right Half";
             pickerBodyRight.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-            pickerBodyRight.addRowDefinition(0.514, false);
-            pickerBodyRight.addRowDefinition(0.486, false);
+            var pickerBodyRightRows: number[] = [0.514, 0.486];
+            pickerBodyRight.addRowDefinition(pickerBodyRightRows[0], false);
+            pickerBodyRight.addRowDefinition(pickerBodyRightRows[1], false);
             dialogBody.addControl(pickerBodyRight, 1, 1);
 
             // Picker container swatches and buttons
@@ -1072,17 +1076,28 @@ export class ColorPicker extends Control {
             var buttonGrid: Grid = new Grid();
             buttonGrid.name = "Button Grid";
             buttonGrid.height = 0.8;
-            buttonGrid.addRowDefinition(1 / 3, false);
-            buttonGrid.addRowDefinition(1 / 3, false);
-            buttonGrid.addRowDefinition(1 / 3, false);
+            var buttonGridRows: number = 1 / 3;
+            buttonGrid.addRowDefinition(buttonGridRows, false);
+            buttonGrid.addRowDefinition(buttonGridRows, false);
+            buttonGrid.addRowDefinition(buttonGridRows, false);
             pickerSwatchesButtons.addControl(buttonGrid, 0, 1);
 
+            // Determine pixel width and height for all buttons from overall panel dimensions
             buttonWidth = (Math.floor(parseInt(options.pickerWidth) * dialogBodyCols[1] * pickerButtonsCol[1] * 0.67)).toString() + "px";
-                        
+            buttonHeight = (Math.floor(parseInt(options.pickerHeight) * pickerPanelRows[1] * pickerBodyRightRows[0] * (parseFloat(buttonGrid.height.toString()) / 100) * buttonGridRows * 0.7)).toString() + "px";   
+ 
+            // Determine button type size
+            if (parseFloat(buttonWidth) > parseFloat(buttonHeight)) {
+                buttonFontSize = Math.floor(parseFloat(buttonHeight) * 0.45);
+            }
+            else {
+                buttonFontSize= Math.floor(parseFloat(buttonWidth) * 0.11);
+            }
+
             // Panel Buttons
             var butOK: Button = Button.CreateSimpleButton("butOK", "OK");
             butOK.width = buttonWidth;
-            butOK.height = 0.7;
+            butOK.height = buttonHeight;
             butOK.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             butOK.thickness = 2;
             butOK.color = buttonColor;
@@ -1104,7 +1119,7 @@ export class ColorPicker extends Control {
 
             var butCancel: Button = Button.CreateSimpleButton("butCancel", "Cancel");
             butCancel.width = buttonWidth;
-            butCancel.height = 0.7;
+            butCancel.height = buttonHeight;
             butCancel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             butCancel.thickness = 2;
             butCancel.color = buttonColor;
@@ -1125,9 +1140,9 @@ export class ColorPicker extends Control {
             buttonGrid.addControl(butCancel, 1, 0);
 
             if (options.savedColors) {
-                var butSave: Button = Button.CreateSimpleButton("butSave", "Save Swatch");
+                var butSave: Button = Button.CreateSimpleButton("butSave", "Save");
                 butSave.width = buttonWidth;
-                butSave.height = 0.7;
+                butSave.height = buttonHeight;
                 butSave.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 butSave.thickness = 2;
                 butSave.fontSize = buttonFontSize;
@@ -1209,7 +1224,7 @@ export class ColorPicker extends Control {
                 var labelText: TextBlock = new TextBlock();
                 labelText.text = inputFieldLabels[i];
                 labelText.color = buttonColor;
-                labelText.fontSize = 16;
+                labelText.fontSize = buttonFontSize;
                 rgbValuesQuadrant.addControl(labelText, i, 0);
             }
 
