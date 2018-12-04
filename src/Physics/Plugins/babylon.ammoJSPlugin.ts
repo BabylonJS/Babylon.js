@@ -379,28 +379,30 @@ module BABYLON {
 
             if (!ignoreChildren) {
                 var meshChildren = impostor.object.getChildMeshes ? impostor.object.getChildMeshes(true) : [];
-                if (meshChildren.length > 0) {
-                    returnValue = new Ammo.btCompoundShape();
+                returnValue = new Ammo.btCompoundShape();
 
-                    // Add shape of all children to the compound shape
-                    meshChildren.forEach((childMesh) => {
-                        var childImpostor = childMesh.getPhysicsImpostor();
-                        if (childImpostor) {
-                            var shape = this._createShape(childImpostor);
+                // Add shape of all children to the compound shape
+                var childrenAdded = 0;
+                meshChildren.forEach((childMesh) => {
+                    var childImpostor = childMesh.getPhysicsImpostor();
+                    if (childImpostor) {
+                        var shape = this._createShape(childImpostor);
 
-                            // Position needs to be scaled based on parent's scaling
-                            var parentMat = childMesh.parent!.getWorldMatrix().clone();
-                            var s = new BABYLON.Vector3();
-                            parentMat.decompose(s);
-                            this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x * s.x, childMesh.position.y * s.y, childMesh.position.z * s.z);
+                        // Position needs to be scaled based on parent's scaling
+                        var parentMat = childMesh.parent!.getWorldMatrix().clone();
+                        var s = new BABYLON.Vector3();
+                        parentMat.decompose(s);
+                        this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x * s.x, childMesh.position.y * s.y, childMesh.position.z * s.z);
 
-                            this._tmpAmmoQuaternion.setValue(childMesh.rotationQuaternion!.x, childMesh.rotationQuaternion!.y, childMesh.rotationQuaternion!.z, childMesh.rotationQuaternion!.w);
-                            this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
-                            returnValue.addChildShape(this._tmpAmmoTransform, shape);
-                            childImpostor.dispose();
-                        }
-                    });
+                        this._tmpAmmoQuaternion.setValue(childMesh.rotationQuaternion!.x, childMesh.rotationQuaternion!.y, childMesh.rotationQuaternion!.z, childMesh.rotationQuaternion!.w);
+                        this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
+                        returnValue.addChildShape(this._tmpAmmoTransform, shape);
+                        childImpostor.dispose();
+                        childrenAdded++;
+                    }
+                });
 
+                if(childrenAdded > 0){
                     // Add parents shape as a child if present
                     var shape = this._createShape(impostor, true);
                     if (shape) {
@@ -412,6 +414,10 @@ module BABYLON {
                     }
 
                     return returnValue;
+                }else{
+                    // If no children with impostors create the actual shape below instead
+                    Ammo.destroy(returnValue);
+                    returnValue = null;
                 }
             }
 
