@@ -404,15 +404,16 @@ module BABYLON {
 
                 if (childrenAdded > 0) {
                     // Add parents shape as a child if present
-                    var shape = this._createShape(impostor, true);
-                    if (shape) {
-                        this._tmpAmmoTransform.getOrigin().setValue(0, 0, 0);
-                        this._tmpAmmoQuaternion.setValue(0, 0, 0, 1);
-                        this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
+                    if (impostor.type != PhysicsImpostor.NoImpostor) {
+                        var shape = this._createShape(impostor, true);
+                        if (shape) {
+                            this._tmpAmmoTransform.getOrigin().setValue(0, 0, 0);
+                            this._tmpAmmoQuaternion.setValue(0, 0, 0, 1);
+                            this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
 
-                        returnValue.addChildShape(this._tmpAmmoTransform, shape);
+                            returnValue.addChildShape(this._tmpAmmoTransform, shape);
+                        }
                     }
-
                     return returnValue;
                 }else {
                     // If no children with impostors create the actual shape below instead
