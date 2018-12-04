@@ -836,6 +836,7 @@ declare module 'babylonjs-gui/2D/controls/checkbox' {
 declare module 'babylonjs-gui/2D/controls/colorpicker' {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Color3, Observable, Vector2 } from "babylonjs";
+    import { Measure } from "2D";
     /** Class used to create color pickers */
     export class ColorPicker extends Control {
             name?: string | undefined;
@@ -845,7 +846,10 @@ declare module 'babylonjs-gui/2D/controls/colorpicker' {
             onValueChangedObservable: Observable<Color3>;
             /** Gets or sets the color of the color picker */
             value: Color3;
-            /** Gets or sets control width */
+            /**
+                * Gets or sets control width
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
             width: string | number;
             /** Gets or sets control height */
             height: string | number;
@@ -857,6 +861,8 @@ declare module 'babylonjs-gui/2D/controls/colorpicker' {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            /** @hidden */
+            protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             _draw(context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
@@ -3907,7 +3913,10 @@ declare module BABYLON.GUI {
             onValueChangedObservable: BABYLON.Observable<BABYLON.Color3>;
             /** Gets or sets the color of the color picker */
             value: BABYLON.Color3;
-            /** Gets or sets control width */
+            /**
+                * Gets or sets control width
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
             width: string | number;
             /** Gets or sets control height */
             height: string | number;
@@ -3919,6 +3928,8 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            /** @hidden */
+            protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             _draw(context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
