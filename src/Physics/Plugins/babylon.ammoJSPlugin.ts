@@ -402,7 +402,7 @@ module BABYLON {
                     }
                 });
 
-                if(childrenAdded > 0){
+                if (childrenAdded > 0) {
                     // Add parents shape as a child if present
                     var shape = this._createShape(impostor, true);
                     if (shape) {
@@ -414,7 +414,7 @@ module BABYLON {
                     }
 
                     return returnValue;
-                }else{
+                }else {
                     // If no children with impostors create the actual shape below instead
                     Ammo.destroy(returnValue);
                     returnValue = null;

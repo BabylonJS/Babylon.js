@@ -938,9 +938,9 @@ module BABYLON {
                 this._scene.registerBeforeRender(this.beforeRender);
             }
 
-            if(this._displayLaserPointer){
-                [this._leftController, this._rightController].forEach((controller)=>{
-                    if(controller){
+            if (this._displayLaserPointer) {
+                [this._leftController, this._rightController].forEach((controller) => {
+                    if (controller) {
                         controller._activatePointer();
                     }
                 });
@@ -1029,8 +1029,8 @@ module BABYLON {
                 // resize to update width and height when exiting vr exits fullscreen
                 this._scene.getEngine().resize();
 
-                [this._leftController, this._rightController].forEach((controller)=>{
-                    if(controller){
+                [this._leftController, this._rightController].forEach((controller) => {
+                    if (controller) {
                         controller._deactivatePointer();
                     }
                 });
@@ -1282,7 +1282,7 @@ module BABYLON {
             if (controllerMesh) {
 
                 controller._interactionsEnabled = true;
-                if(this.isInVRMode && this._displayLaserPointer){
+                if (this.isInVRMode && this._displayLaserPointer) {
                     controller._activatePointer();
                 }
                 if (this.webVROptions.laserToggle) {
