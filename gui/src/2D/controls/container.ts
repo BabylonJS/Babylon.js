@@ -18,8 +18,6 @@ export class Container extends Control {
     protected _adaptWidthToChildren = false;
     /** @hidden */
     protected _adaptHeightToChildren = false;
-    /** @hidden */
-    protected _rebuildLayout = false;
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
     public get adaptHeightToChildren(): boolean {
