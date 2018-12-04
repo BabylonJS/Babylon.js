@@ -526,7 +526,7 @@ module BABYLON {
          * @returns this TransformNode
          */
         public setDirection(localAxis: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0): TransformNode {
-            var yaw = -Math.atan2(localAxis.z, localAxis.x) - Math.PI / 2;
+            var yaw = Math.atan2(localAxis.z, localAxis.x) + 3 * Math.PI / 2;
             var len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
             var pitch = Math.atan2(localAxis.y, len);
             if (this.rotationQuaternion) {
