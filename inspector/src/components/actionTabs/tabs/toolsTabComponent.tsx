@@ -100,6 +100,7 @@ export class ToolsTabComponent extends PaneComponent {
             })
             .catch((error: any) => {
                 console.error(error);
+                alert(error);
             });
     }
 

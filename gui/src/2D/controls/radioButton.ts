@@ -1,6 +1,5 @@
 import { Control } from "./control";
 import { Observable, Vector2 } from "babylonjs";
-import { Measure } from "../measure";
 import { StackPanel, TextBlock } from ".";
 
 /**
@@ -109,51 +108,48 @@ export class RadioButton extends Control {
         return "RadioButton";
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         this._applyStates(context);
-        if (this._processMeasures(parentMeasure, context)) {
-            let actualWidth = this._currentMeasure.width - this._thickness;
-            let actualHeight = this._currentMeasure.height - this._thickness;
+        let actualWidth = this._currentMeasure.width - this._thickness;
+        let actualHeight = this._currentMeasure.height - this._thickness;
 
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowColor = this.shadowColor;
-                context.shadowBlur = this.shadowBlur;
-                context.shadowOffsetX = this.shadowOffsetX;
-                context.shadowOffsetY = this.shadowOffsetY;
-            }
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowColor = this.shadowColor;
+            context.shadowBlur = this.shadowBlur;
+            context.shadowOffsetX = this.shadowOffsetX;
+            context.shadowOffsetY = this.shadowOffsetY;
+        }
 
-            // Outer
+        // Outer
+        Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2,
+            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
+
+        context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
+        context.fill();
+
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+        }
+
+        context.strokeStyle = this.color;
+        context.lineWidth = this._thickness;
+
+        context.stroke();
+
+        // Inner
+        if (this._isChecked) {
+            context.fillStyle = this._isEnabled ? this.color : this._disabledColor;
+            let offsetWidth = actualWidth * this._checkSizeRatio;
+            let offseHeight = actualHeight * this._checkSizeRatio;
+
             Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2,
-                this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
+                offsetWidth / 2 - this._thickness / 2, offseHeight / 2 - this._thickness / 2, context);
 
-            context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
             context.fill();
-
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
-            }
-
-            context.strokeStyle = this.color;
-            context.lineWidth = this._thickness;
-
-            context.stroke();
-
-            // Inner
-            if (this._isChecked) {
-                context.fillStyle = this._isEnabled ? this.color : this._disabledColor;
-                let offsetWidth = actualWidth * this._checkSizeRatio;
-                let offseHeight = actualHeight * this._checkSizeRatio;
-
-                Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2,
-                    offsetWidth / 2 - this._thickness / 2, offseHeight / 2 - this._thickness / 2, context);
-
-                context.fill();
-            }
-
         }
         context.restore();
     }

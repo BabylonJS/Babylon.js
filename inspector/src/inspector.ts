@@ -88,7 +88,6 @@ export class Inspector {
             }
 
             if (!options.overlay) {
-                this._SceneExplorerHost.style.gridColumn = "1";
                 this._SceneExplorerHost.style.position = "relative";
             }
         }
@@ -146,7 +145,6 @@ export class Inspector {
             this._ActionTabsHost = host;
 
             if (!options.overlay) {
-                this._ActionTabsHost.style.gridColumn = "3";
                 this._ActionTabsHost.style.position = "relative";
             }
         }
@@ -201,7 +199,6 @@ export class Inspector {
             this._EmbedHost = host;
 
             if (!options.overlay) {
-                this._EmbedHost.style.gridColumn = "2";
                 this._EmbedHost.style.position = "relative";
             }
         }
@@ -210,9 +207,9 @@ export class Inspector {
             this._OpenedPane++;
             const embedHostElement = React.createElement(EmbedHostComponent, {
                 globalState: this._GlobalState, scene: scene,
-                    noExpand: !options.enablePopup,
-                    noClose: !options.enableClose,
-                    popupMode: options.popup, onPopup: () => {
+                noExpand: !options.enablePopup,
+                noClose: !options.enableClose,
+                popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._EmbedHost!);
 
                     if (options.popup) {
@@ -342,11 +339,7 @@ export class Inspector {
                 let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
 
                 if (!options.overlay && !this._NewCanvasContainer) {
-
                     this._CreateCanvasContainer(parentControl);
-                    parentControl.style.gridTemplateColumns = "1fr auto";
-                    this._NewCanvasContainer!.style.gridColumn = "1";
-
                 } else if (!options.overlay && this._NewCanvasContainer && this._NewCanvasContainer.parentElement) {
                     // the root is now the parent of the canvas container
                     parentControl = this._NewCanvasContainer.parentElement;
@@ -381,9 +374,7 @@ export class Inspector {
             let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
 
             if (!options.overlay && !this._NewCanvasContainer) {
-
                 this._CreateCanvasContainer(parentControl);
-
             } else if (!options.overlay && this._NewCanvasContainer && this._NewCanvasContainer.parentElement) {
                 // the root is now the parent of the canvas container
                 parentControl = this._NewCanvasContainer.parentElement;
@@ -410,11 +401,9 @@ export class Inspector {
 
     private static _CreateCanvasContainer(parentControl: HTMLElement) {
         // Create a container for previous elements
-        parentControl.style.display = "grid";
-        parentControl.style.gridTemplateColumns = "auto 1fr auto";
-        parentControl.style.gridTemplateRows = "100%";
-
         this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
+        this._NewCanvasContainer.style.display = parentControl.style.display;
+        parentControl.style.display = "flex";
 
         while (parentControl.childElementCount > 0) {
             var child = parentControl.childNodes[0];
@@ -424,13 +413,29 @@ export class Inspector {
 
         parentControl.appendChild(this._NewCanvasContainer);
 
-        this._NewCanvasContainer.style.gridRow = "1";
-        this._NewCanvasContainer.style.gridColumn = "2";
         this._NewCanvasContainer.style.width = "100%";
         this._NewCanvasContainer.style.height = "100%";
     }
 
+    private static _DestroyCanvasContainer() {
+        const parentControl = this._NewCanvasContainer.parentElement!;
+
+        while (this._NewCanvasContainer.childElementCount > 0) {
+            const child = this._NewCanvasContainer.childNodes[0];
+            this._NewCanvasContainer.removeChild(child);
+            parentControl.appendChild(child);
+        }
+
+        parentControl.removeChild(this._NewCanvasContainer);
+        parentControl.style.display = this._NewCanvasContainer.style.display;
+        delete this._NewCanvasContainer;
+    }
+
     private static _Cleanup() {
+        if (this._NewCanvasContainer) {
+            this._DestroyCanvasContainer();
+        }
+
         if (Inspector._OpenedPane === 0 && this._OnBeforeRenderObserver && this._Scene) {
             this._Scene.onBeforeRenderObservable.remove(this._OnBeforeRenderObserver);
             this._OnBeforeRenderObserver = null;

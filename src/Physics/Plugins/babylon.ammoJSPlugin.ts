@@ -21,6 +21,7 @@ module BABYLON {
         public name: string = "AmmoJSPlugin";
 
         private _timeStep: number = 1 / 60;
+        private _fixedTimeStep: number = 1 / 60;
         private _maxSteps = 5;
         private _tmpQuaternion = new BABYLON.Quaternion();
         private _tmpAmmoTransform: any;
@@ -35,6 +36,7 @@ module BABYLON {
         private _tmpAmmoVectorC: any;
         private _tmpContactCallbackResult = false;
 
+        private static readonly DISABLE_COLLISION_FLAG = 4;
         private static readonly KINEMATIC_FLAG = 2;
         private static readonly DISABLE_DEACTIVATION_FLAG = 4;
 
@@ -85,6 +87,22 @@ module BABYLON {
          */
         public setTimeStep(timeStep: number) {
             this._timeStep = timeStep;
+        }
+
+        /**
+         * Increment to step forward in the physics engine (If timeStep is set to 1/60 and fixedTimeStep is set to 1/120 the physics engine should run 2 steps per frame) (Default: 1/60)
+         * @param fixedTimeStep fixedTimeStep to use in seconds
+         */
+        public setFixedTimeStep(fixedTimeStep: number) {
+            this._fixedTimeStep = fixedTimeStep;
+        }
+
+        /**
+         * Sets the maximum number of steps by the physics engine per frame (Default: 5)
+         * @param maxSteps the maximum number of steps by the physics engine per frame
+         */
+        public setMaxSteps(maxSteps: number) {
+            this._maxSteps = maxSteps;
         }
 
         /**
@@ -146,7 +164,7 @@ module BABYLON {
                 impostor.beforeStep();
             }
 
-            this._stepSimulation(this._useDeltaForWorldStep ? delta : this._timeStep, this._maxSteps);
+            this._stepSimulation(this._useDeltaForWorldStep ? delta : this._timeStep, this._maxSteps, this._fixedTimeStep);
 
             for (var mainImpostor of impostors) {
                 // After physics update make babylon world objects match physics world objects
@@ -240,6 +258,11 @@ module BABYLON {
                     body.setActivationState(AmmoJSPlugin.DISABLE_DEACTIVATION_FLAG);
                 }
 
+                // Disable collision if NoImpostor, but keep collision if shape is btCompoundShape
+                if (impostor.type == BABYLON.PhysicsImpostor.NoImpostor && !colShape.getChildShape) {
+                    body.setCollisionFlags(body.getCollisionFlags() | AmmoJSPlugin.DISABLE_COLLISION_FLAG);
+                }
+
                 body.setRestitution(impostor.getParam("restitution"));
                 this.world.addRigidBody(body);
                 impostor.physicsBody = body;
@@ -300,7 +323,9 @@ module BABYLON {
          * @param impostorJoint the imposter joint to remove the joint from
          */
         public removeJoint(impostorJoint: PhysicsImpostorJoint) {
-            this.world.removeConstraint(impostorJoint.joint.physicsJoint);
+            if (this.world) {
+                this.world.removeConstraint(impostorJoint.joint.physicsJoint);
+            }
         }
 
         // adds all verticies (including child verticies) to the triangle mesh
@@ -362,7 +387,13 @@ module BABYLON {
                         var childImpostor = childMesh.getPhysicsImpostor();
                         if (childImpostor) {
                             var shape = this._createShape(childImpostor);
-                            this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x, childMesh.position.y, childMesh.position.z);
+
+                            // Position needs to be scaled based on parent's scaling
+                            var parentMat = childMesh.parent!.getWorldMatrix().clone();
+                            var s = new BABYLON.Vector3();
+                            parentMat.decompose(s);
+                            this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x * s.x, childMesh.position.y * s.y, childMesh.position.z * s.z);
+
                             this._tmpAmmoQuaternion.setValue(childMesh.rotationQuaternion!.x, childMesh.rotationQuaternion!.y, childMesh.rotationQuaternion!.z, childMesh.rotationQuaternion!.w);
                             this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
                             returnValue.addChildShape(this._tmpAmmoTransform, shape);
@@ -374,7 +405,6 @@ module BABYLON {
                     var shape = this._createShape(impostor, true);
                     if (shape) {
                         this._tmpAmmoTransform.getOrigin().setValue(0, 0, 0);
-                        //this._tmpAmmoQuaternion = new this.BJSAMMO.btQuaternion(0,0,0,1);
                         this._tmpAmmoQuaternion.setValue(0, 0, 0, 1);
                         this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
 
@@ -407,6 +437,10 @@ module BABYLON {
                     }else {
                         returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
                     }
+                    break;
+                case PhysicsImpostor.NoImpostor:
+                    // Fill with sphere but collision is disabled on the rigid body in generatePhysicsBody, using an empty shape caused unexpected movement with joints
+                    returnValue = new Ammo.btSphereShape(extendSize.x / 2);
                     break;
             }
 

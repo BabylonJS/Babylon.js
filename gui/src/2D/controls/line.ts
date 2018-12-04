@@ -159,7 +159,7 @@ export class Line extends Control {
         return "Line";
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -170,18 +170,16 @@ export class Line extends Control {
         }
 
         this._applyStates(context);
-        if (this._processMeasures(parentMeasure, context)) {
-            context.strokeStyle = this.color;
-            context.lineWidth = this._lineWidth;
-            context.setLineDash(this._dash);
+        context.strokeStyle = this.color;
+        context.lineWidth = this._lineWidth;
+        context.setLineDash(this._dash);
 
-            context.beginPath();
-            context.moveTo(this._x1.getValue(this._host), this._y1.getValue(this._host));
+        context.beginPath();
+        context.moveTo(this._x1.getValue(this._host), this._y1.getValue(this._host));
 
-            context.lineTo(this._effectiveX2, this._effectiveY2);
+        context.lineTo(this._effectiveX2, this._effectiveY2);
 
-            context.stroke();
-        }
+        context.stroke();
 
         context.restore();
     }
@@ -204,7 +202,7 @@ export class Line extends Control {
      * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
      */
     public moveToVector3(position: Vector3, scene: Scene, end: boolean = false): void {
-        if (!this._host || this._root !== this._host._rootContainer) {
+        if (!this._host || this.parent !== this._host._rootContainer) {
             Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
             return;
         }
