@@ -531,7 +531,7 @@ export class InputText extends Control implements IFocusableControl {
                     //if text is already highlighted
                     else if (this._cursorIndex === -1) {
                         this._cursorIndex = this._text.length - this._endHighlightIndex;
-                        this._cursorOffset = this._text.length - this._startHighlightIndex + 1;
+                        this._cursorOffset = (this._startHighlightIndex === 0) ? this._text.length : this._text.length - this._startHighlightIndex + 1;
                     }
                     //set the highlight indexes
                     if (this._cursorIndex < this._cursorOffset) {
@@ -594,7 +594,7 @@ export class InputText extends Control implements IFocusableControl {
                     //if text is already highlighted
                     else if (this._cursorIndex === -1) {
                         this._cursorIndex = this._text.length - this._startHighlightIndex;
-                        this._cursorOffset = this._text.length - this._endHighlightIndex - 1;
+                        this._cursorOffset = (this._text.length === this._endHighlightIndex) ? 0 : this._text.length - this._endHighlightIndex - 1;
                     }
                     //set the highlight indexes
                     if (this._cursorIndex < this._cursorOffset) {
@@ -716,6 +716,7 @@ export class InputText extends Control implements IFocusableControl {
         this._startHighlightIndex = 0;
         this._endHighlightIndex = this._text.length;
         this._cursorOffset = this._text.length;
+        this._cursorIndex = -1;
         this._markAsDirty();
     }
 
