@@ -75,12 +75,7 @@ export class ScrollBar extends BaseSlider {
         const thumbPosition = this._getThumbPosition();
         context.fillStyle = this._background;
 
-        if (this.isVertical) {
-            context.fillRect(left, top, width, height + this._effectiveThumbThickness);
-        }
-        else {
-            context.fillRect(left, top, width + this._effectiveThumbThickness, height);
-        }
+        context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
 
         // Value bar
         context.fillStyle = this.color;
@@ -99,7 +94,7 @@ export class ScrollBar extends BaseSlider {
             this._thumbMeasure.height = this._currentMeasure.height;
         }
 
-        context.fillRect(this._thumbMeasure.left, this._thumbMeasure.top, this._thumbMeasure.width , this._thumbMeasure.height);
+        context.fillRect(this._thumbMeasure.left, this._thumbMeasure.top, this._thumbMeasure.width, this._thumbMeasure.height);
 
         context.restore();
     }
