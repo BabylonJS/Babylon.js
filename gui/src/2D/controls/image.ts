@@ -1,6 +1,6 @@
 import { Control } from "./control";
 import { Nullable, Tools, Observable } from "babylonjs";
-import { Measure } from "../measure";
+import { Measure } from "2D";
 
 /**
  * Class used to create 2D images
@@ -267,7 +267,31 @@ export class Image extends Control {
         this.height = this._domImage.height + "px";
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        if (this._loaded) {
+            switch (this._stretch) {
+                case Image.STRETCH_NONE:
+                    break;
+                case Image.STRETCH_FILL:
+                    break;
+                case Image.STRETCH_UNIFORM:
+                    break;
+                case Image.STRETCH_EXTEND:
+                    if (this._autoScale) {
+                        this.synchronizeSizeWithContent();
+                    }
+                    if (this.parent && this.parent.parent) { // Will update root size if root is not the top root
+                        this.parent.adaptWidthToChildren = true;
+                        this.parent.adaptHeightToChildren = true;
+                    }
+                    break;
+            }
+        }
+
+        super._processMeasures(parentMeasure, context);
+    }
+
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -297,41 +321,33 @@ export class Image extends Control {
         }
 
         this._applyStates(context);
-        if (this._processMeasures(parentMeasure, context)) {
-            if (this._loaded) {
-                switch (this._stretch) {
-                    case Image.STRETCH_NONE:
-                        context.drawImage(this._domImage, x, y, width, height,
-                            this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                        break;
-                    case Image.STRETCH_FILL:
-                        context.drawImage(this._domImage, x, y, width, height,
-                            this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                        break;
-                    case Image.STRETCH_UNIFORM:
-                        var hRatio = this._currentMeasure.width / width;
-                        var vRatio = this._currentMeasure.height / height;
-                        var ratio = Math.min(hRatio, vRatio);
-                        var centerX = (this._currentMeasure.width - width * ratio) / 2;
-                        var centerY = (this._currentMeasure.height - height * ratio) / 2;
+        if (this._loaded) {
+            switch (this._stretch) {
+                case Image.STRETCH_NONE:
+                    context.drawImage(this._domImage, x, y, width, height,
+                        this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    break;
+                case Image.STRETCH_FILL:
+                    context.drawImage(this._domImage, x, y, width, height,
+                        this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    break;
+                case Image.STRETCH_UNIFORM:
+                    var hRatio = this._currentMeasure.width / width;
+                    var vRatio = this._currentMeasure.height / height;
+                    var ratio = Math.min(hRatio, vRatio);
+                    var centerX = (this._currentMeasure.width - width * ratio) / 2;
+                    var centerY = (this._currentMeasure.height - height * ratio) / 2;
 
-                        context.drawImage(this._domImage, x, y, width, height,
-                            this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
-                        break;
-                    case Image.STRETCH_EXTEND:
-                        context.drawImage(this._domImage, x, y, width, height,
-                            this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                        if (this._autoScale) {
-                            this.synchronizeSizeWithContent();
-                        }
-                        if (this._root && this._root.parent) { // Will update root size if root is not the top root
-                            this._root.width = this.width;
-                            this._root.height = this.height;
-                        }
-                        break;
-                }
+                    context.drawImage(this._domImage, x, y, width, height,
+                        this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
+                    break;
+                case Image.STRETCH_EXTEND:
+                    context.drawImage(this._domImage, x, y, width, height,
+                        this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    break;
             }
         }
+
         context.restore();
     }
 

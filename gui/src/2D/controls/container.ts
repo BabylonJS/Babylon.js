@@ -18,6 +18,8 @@ export class Container extends Control {
     protected _adaptWidthToChildren = false;
     /** @hidden */
     protected _adaptHeightToChildren = false;
+    /** @hidden */
+    protected _rebuildLayout = false;
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
     public get adaptHeightToChildren(): boolean {
@@ -149,7 +151,7 @@ export class Container extends Control {
         if (index !== -1) {
             return this;
         }
-        control._link(this, this._host);
+        control._link(this._host);
 
         control._markAllAsDirty();
 
@@ -216,6 +218,24 @@ export class Container extends Control {
     }
 
     /** @hidden */
+    public _offsetLeft(offset: number) {
+        super._offsetLeft(offset);
+
+        for (var child of this._children) {
+            child._offsetLeft(offset);
+        }
+    }
+
+    /** @hidden */
+    public _offsetTop(offset: number) {
+        super._offsetTop(offset);
+
+        for (var child of this._children) {
+            child._offsetTop(offset);
+        }
+    }
+
+    /** @hidden */
     public _markAllAsDirty(): void {
         super._markAllAsDirty();
 
@@ -227,6 +247,7 @@ export class Container extends Control {
     /** @hidden */
     protected _localDraw(context: CanvasRenderingContext2D): void {
         if (this._background) {
+            context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
                 context.shadowBlur = this.shadowBlur;
@@ -236,86 +257,104 @@ export class Container extends Control {
 
             context.fillStyle = this._background;
             context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
-            }
+            context.restore();
         }
     }
 
     /** @hidden */
-    public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
-        super._link(root, host);
+    public _link(host: AdvancedDynamicTexture): void {
+        super._link(host);
 
         for (var child of this._children) {
-            child._link(this, host);
+            child._link(host);
         }
     }
 
     /** @hidden */
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _beforeLayout() {
+        // Do nothing
+    }
+
+    /** @hidden */
+    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
         if (!this.isVisible || this.notRenderable) {
-            return;
+            return false;
         }
+
+        let rebuildCount = 0;
+
         context.save();
 
         this._applyStates(context);
 
-        if (this._processMeasures(parentMeasure, context)) {
+        this._beforeLayout();
 
-            if (this.onBeforeDrawObservable.hasObservers()) {
-                this.onBeforeDrawObservable.notifyObservers(this);
-            }
-
-            this._localDraw(context);
-            this._renderHighlight(context);
-
-            if (this.clipChildren) {
-                this._clipForChildren(context);
-            }
-
+        do {
             let computedWidth = -1;
             let computedHeight = -1;
+            this._rebuildLayout = false;
+            this._processMeasures(parentMeasure, context);
 
-            for (var child of this._children) {
-                if (child.isVisible && !child.notRenderable) {
+            if (!this._isClipped) {
+                for (var child of this._children) {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
-                    child._draw(this._measureForChildren, context);
-                    child._renderHighlight(context);
+                    if (child._layout(this._measureForChildren, context)) {
 
-                    if (child.onAfterDrawObservable.hasObservers()) {
-                        child.onAfterDrawObservable.notifyObservers(child);
-                    }
-
-                    if (this.adaptWidthToChildren && child._width.isPixel) {
-                        computedWidth = Math.max(computedWidth, child._currentMeasure.width);
-                    }
-                    if (this.adaptHeightToChildren && child._height.isPixel) {
-                        computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                        if (this.adaptWidthToChildren && child._width.isPixel) {
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                        }
+                        if (this.adaptHeightToChildren && child._height.isPixel) {
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                        }
                     }
                 }
-            }
 
-            if (this.adaptWidthToChildren && computedWidth >= 0) {
-                if (this.width !== computedWidth + "px") {
-                    this.width = computedWidth + "px";
-                    this._host._needRedraw = true;
+                if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    if (this.width !== computedWidth + "px") {
+                        this.width = computedWidth + "px";
+                        this._rebuildLayout = true;
+                    }
                 }
-            }
-            if (this.adaptHeightToChildren && computedHeight >= 0) {
-                if (this.height !== computedHeight + "px") {
-                    this.height = computedHeight + "px";
-                    this._host._needRedraw = true;
+                if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    if (this.height !== computedHeight + "px") {
+                        this.height = computedHeight + "px";
+                        this._rebuildLayout = true;
+                    }
                 }
+
+                this._postMeasure();
             }
+            rebuildCount++;
         }
+        while (this._rebuildLayout && rebuildCount < 3);
+
+        if (rebuildCount >= 3) {
+            BABYLON.Tools.Error(`Layout cycle detected in GUI (Container uniqueId=${this.uniqueId})`);
+        }
+
         context.restore();
 
-        if (this.onAfterDrawObservable.hasObservers()) {
-            this.onAfterDrawObservable.notifyObservers(this);
+        this._isDirty = false;
+
+        return true;
+    }
+
+    protected _postMeasure() {
+        // Do nothing by default
+    }
+
+    /** @hidden */
+    public _draw(context: CanvasRenderingContext2D): void {
+
+        this._localDraw(context);
+
+        if (this.clipChildren) {
+            this._clipForChildren(context);
+        }
+
+        for (var child of this._children) {
+            child._render(context);
         }
     }
 
@@ -364,11 +403,6 @@ export class Container extends Control {
         }
 
         return this._processObservables(type, x, y, pointerId, buttonIndex);
-    }
-
-    /** @hidden */
-    protected _clipForChildren(context: CanvasRenderingContext2D): void {
-        // DO nothing
     }
 
     /** @hidden */

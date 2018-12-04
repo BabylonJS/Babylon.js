@@ -44,6 +44,11 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
                 if (!this.props.onSelectionChangedObservable) {
                     return;
                 }
+
+                if (control.getClassName() === "ScrollViewerWindow") {
+                    control = control.getAscendantOfClass("ScrollViewer")!;
+                }
+
                 this.props.onSelectionChangedObservable.notifyObservers(control);
             });
         }

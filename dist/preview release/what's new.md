@@ -19,6 +19,7 @@
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
   - Added support for clipboard events to let users perform `cut`, `copy` and `paste` events ([Saket Saurabh](https://github.com/ssaket))
   - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/))
+  - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
 
 ## Updates
 
@@ -72,7 +73,7 @@
 - Added support for overriding the mesh used for the world matrix for a mesh with a skeleton ([bghgary](https://github.com/bghgary))
 - Added support for linking a bone to a transform node ([bghgary](https://github.com/bghgary))
 - Factored out `setDirection` function from `lookAt` for transform node ([bghgary](https://github.com/bghgary))
-- Added support for AmmoJS physics plugin ([TrevorDev](https://github.com/TrevorDev))
+- Added support for AmmoJS as a physics plugin ([TrevorDev](https://github.com/TrevorDev))
 - Add support for setting renderingGroupId and creating instances to `AxesViewer` ([bghgary](https://github.com/bghgary))
 - Invert vScale of compressed ktx textures as they are inverted in the file and UNPACK_FLIP_Y_WEBGL is not supported by ktx ([TrevorDev](https://github.com/TrevorDev))
 
@@ -93,6 +94,7 @@
 ### Materials Library
 
 ## Bug fixes
+- Fixed ArcRotateCamera control when upVector was modified ([Deltakosh](https://github.com/deltakosh))
 - Fixed anaglyph mode for Free and Universal cameras ([Deltakosh](https://github.com/deltakosh))
 - Fixed FileLoader's loading of a skybox, & added a parsed value for whether to create with PBR or STDMaterial ([Palmer-JC](https://github.com/Palmer-JC))
 - Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))
@@ -109,7 +111,8 @@
 - MakeNotPickableAndWrapInBoundingBox had unexpected behavior when input had scaling of 0 on an axis ([TrevorDev](https://github.com/TrevorDev))
 - Fixed an issue with loading base64 encoded images in the glTF loader ([bghgary](https://github.com/bghgary))
 - In multi-camera scenes the inspector would cause the camera's interaction events to get detached ([TrevorDev](https://github.com/TrevorDev))
-- Delete highlighted text on keyboard input, beat delay after double click event in InputText ([Saket Saurabh](https://github.com/ssaket))
+- Fix delete highlighted text after keyboard input, beat delay after double click event in InputText ([Saket Saurabh](https://github.com/ssaket))
+- SixDofDragBehavior will support when the camera is parented ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
