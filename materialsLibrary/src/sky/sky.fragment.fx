@@ -11,6 +11,7 @@ varying vec4 vColor;
 
 // Sky
 uniform vec3 cameraPosition;
+uniform vec3 cameraOffset;
 uniform float luminance;
 uniform float turbidity;
 uniform float rayleigh;
@@ -102,7 +103,7 @@ void main(void) {
 	float sunE = sunIntensity(dot(sunDirection, up));
 	vec3 betaR = simplifiedRayleigh() * rayleighCoefficient;
 	vec3 betaM = totalMie(lambda, K, turbidity) * mieCoefficient;
-	float zenithAngle = acos(max(0.0, dot(up, normalize(vPositionW - cameraPosition))));
+	float zenithAngle = acos(max(0.0, dot(up, normalize(vPositionW - cameraPosition + cameraOffset))));
 	float sR = rayleighZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));
 	float sM = mieZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));
 	vec3 Fex = exp(-(betaR * sR + betaM * sM));
@@ -125,7 +126,7 @@ void main(void) {
 	L0 += (sunE * 19000.0 * Fex) * sundisk;
 	
 	vec3 whiteScale = 1.0/Uncharted2Tonemap(vec3(W));
-	vec3 texColor = (Lin+L0);   
+	vec3 texColor = (Lin+L0);
 	texColor *= 0.04 ;
 	texColor += vec3(0.0,0.001,0.0025)*0.3;
 
