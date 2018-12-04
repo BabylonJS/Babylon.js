@@ -892,8 +892,6 @@ declare module 'babylonjs-gui/2D/controls/container' {
             protected _adaptWidthToChildren: boolean;
             /** @hidden */
             protected _adaptHeightToChildren: boolean;
-            /** @hidden */
-            protected _rebuildLayout: boolean;
             /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
             adaptHeightToChildren: boolean;
             /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
@@ -1032,6 +1030,8 @@ declare module 'babylonjs-gui/2D/controls/control' {
             _linkedMesh: Nullable<AbstractMesh>;
             protected _isEnabled: boolean;
             protected _disabledColor: string;
+            /** @hidden */
+            protected _rebuildLayout: boolean;
             /** @hidden */
             _isClipped: boolean;
             /** @hidden */
@@ -1767,6 +1767,7 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
             processKeyboard(evt: KeyboardEvent): void;
             _draw(context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+            _onPointerMove(target: Control, coordinates: Vector2): void;
             _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
             protected _beforeRenderText(text: string): string;
             dispose(): void;
@@ -2197,8 +2198,6 @@ declare module 'babylonjs-gui/2D/controls/scrollViewers/scrollViewer' {
             barColor: string;
             /** Gets or sets the size of the bar */
             barSize: number;
-            /** Gets or sets the bar color */
-            barBorderColor: string;
             /** Gets or sets the bar background */
             barBackground: string;
             _link(host: AdvancedDynamicTexture): void;
@@ -3954,8 +3953,6 @@ declare module BABYLON.GUI {
             protected _adaptWidthToChildren: boolean;
             /** @hidden */
             protected _adaptHeightToChildren: boolean;
-            /** @hidden */
-            protected _rebuildLayout: boolean;
             /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
             adaptHeightToChildren: boolean;
             /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
@@ -4086,6 +4083,8 @@ declare module BABYLON.GUI {
             _linkedMesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
             protected _isEnabled: boolean;
             protected _disabledColor: string;
+            /** @hidden */
+            protected _rebuildLayout: boolean;
             /** @hidden */
             _isClipped: boolean;
             /** @hidden */
@@ -4803,6 +4802,7 @@ declare module BABYLON.GUI {
             processKeyboard(evt: KeyboardEvent): void;
             _draw(context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+            _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
             _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
             protected _beforeRenderText(text: string): string;
             dispose(): void;
@@ -5206,8 +5206,6 @@ declare module BABYLON.GUI {
             barColor: string;
             /** Gets or sets the size of the bar */
             barSize: number;
-            /** Gets or sets the bar color */
-            barBorderColor: string;
             /** Gets or sets the bar background */
             barBackground: string;
             _link(host: AdvancedDynamicTexture): void;

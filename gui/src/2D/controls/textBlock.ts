@@ -252,14 +252,14 @@ export class TextBlock extends Control {
                 let newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
-                    this._isDirty = true;
+                    this._rebuildLayout = true;
                 }
             }
             let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
 
             if (newHeight !== this._height.internalValue) {
                 this._height.updateInPlace(newHeight, ValueAndUnit.UNITMODE_PIXEL);
-                this._isDirty = true;
+                this._rebuildLayout = true;
             }
         }
     }
