@@ -256,7 +256,7 @@ module BABYLON {
                                     this._boundingDimensions.multiplyToRef(this.scalePivot, this._tmpVector);
                                     Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
                                     this._anchorMesh.position.addInPlace(this._tmpVector);
-                                }else {
+                                } else {
                                     // Scale from the position of the opposite corner
                                     box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
                                     this._anchorMesh.position.subtractInPlace(this._tmpVector);
@@ -312,7 +312,7 @@ module BABYLON {
                 // Only update the bouding box if scaling has changed
                 if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
                     this.updateBoundingBox();
-                }else if (this.fixedDragMeshScreenSize) {
+                } else if (this.fixedDragMeshScreenSize) {
                     this._updateRotationSpheres();
                     this._updateScaleBoxes();
                 }
@@ -396,17 +396,17 @@ module BABYLON {
                         if (i == 0) {
                             rotateSpheres[index].position.set(this._boundingDimensions.x / 2, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
                             rotateSpheres[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
-                            rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Right(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
+                            rotateSpheres[index].lookAt(Vector3.Cross(rotateSpheres[index].position.normalizeToNew(), Vector3.Right()).normalizeToNew().add(rotateSpheres[index].position));
                         }
                         if (i == 1) {
                             rotateSpheres[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y / 2, this._boundingDimensions.z * k);
                             rotateSpheres[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
-                            rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Up(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
+                            rotateSpheres[index].lookAt(Vector3.Cross(rotateSpheres[index].position.normalizeToNew(), Vector3.Up()).normalizeToNew().add(rotateSpheres[index].position));
                         }
                         if (i == 2) {
                             rotateSpheres[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y * k, this._boundingDimensions.z / 2);
                             rotateSpheres[index].position.addInPlace(new BABYLON.Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
-                            rotateSpheres[index].lookAt(Vector3.Cross(Vector3.Forward(), rotateSpheres[index].position.normalizeToNew()).normalizeToNew().add(rotateSpheres[index].position));
+                            rotateSpheres[index].lookAt(Vector3.Cross(rotateSpheres[index].position.normalizeToNew(), Vector3.Forward()).normalizeToNew().add(rotateSpheres[index].position));
                         }
                         if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
                             rotateSpheres[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
