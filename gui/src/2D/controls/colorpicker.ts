@@ -1,8 +1,10 @@
 import { Control } from "./control";
 import { Color3, Observable, Vector2 } from "babylonjs";
+import { Measure } from "2D";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
+    private static _Epsilon = 0.000001;
     private _colorWheelCanvas: HTMLCanvasElement;
 
     private _value: Color3 = Color3.Red();
@@ -44,10 +46,41 @@ export class ColorPicker extends Control {
 
         this._markAsDirty();
 
+        if (this._value.r <= ColorPicker._Epsilon) {
+            this._value.r = 0;
+        }
+
+        if (this._value.g <= ColorPicker._Epsilon) {
+            this._value.g = 0;
+        }
+
+        if (this._value.b <= ColorPicker._Epsilon) {
+            this._value.b = 0;
+        }
+
+        if (this._value.r >= 1.0 - ColorPicker._Epsilon) {
+            this._value.r = 1.0;
+        }
+
+        if (this._value.g >= 1.0 - ColorPicker._Epsilon) {
+            this._value.g = 1.0;
+        }
+
+        if (this._value.b >= 1.0 - ColorPicker._Epsilon) {
+            this._value.b = 1.0;
+        }
+
         this.onValueChangedObservable.notifyObservers(this._value);
     }
 
-    /** Gets or sets control width */
+    /**
+     * Gets or sets control width
+     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    public get width(): string | number {
+        return this._width.toString(this._host);
+    }
+
     public set width(value: string | number) {
         if (this._width.toString(this._host) === value) {
             return;
@@ -57,6 +90,14 @@ export class ColorPicker extends Control {
             this._height.fromString(value);
             this._markAsDirty();
         }
+    }
+
+    /**
+     * Gets or sets control height
+     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    public get height(): string | number {
+        return this._height.toString(this._host);
     }
 
     /** Gets or sets control height */
@@ -93,6 +134,16 @@ export class ColorPicker extends Control {
 
     protected _getTypeName(): string {
         return "ColorPicker";
+    }
+
+    /** @hidden */
+    protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+
+        if (parentMeasure.width < parentMeasure.height) {
+            this._currentMeasure.height = parentMeasure.width;
+        } else {
+            this._currentMeasure.width = parentMeasure.height;
+        }
     }
 
     private _updateSquareProps(): void {
@@ -340,9 +391,9 @@ export class ColorPicker extends Control {
             this._s = (x - this._squareLeft) / this._squareSize;
             this._v = 1 - (y - this._squareTop) / this._squareSize;
             this._s = Math.min(this._s, 1);
-            this._s = Math.max(this._s, 0.00001);
+            this._s = Math.max(this._s, ColorPicker._Epsilon);
             this._v = Math.min(this._v, 1);
-            this._v = Math.max(this._v, 0.00001);
+            this._v = Math.max(this._v, ColorPicker._Epsilon);
         }
 
         this._HSVtoRGB(this._h, this._s, this._v, this._tmpColor);

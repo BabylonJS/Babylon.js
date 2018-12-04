@@ -247,6 +247,7 @@ export class Container extends Control {
     /** @hidden */
     protected _localDraw(context: CanvasRenderingContext2D): void {
         if (this._background) {
+            context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
                 context.shadowBlur = this.shadowBlur;
@@ -256,12 +257,7 @@ export class Container extends Control {
 
             context.fillStyle = this._background;
             context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
-            }
+            context.restore();
         }
     }
 
