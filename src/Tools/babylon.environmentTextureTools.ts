@@ -43,7 +43,7 @@ module BABYLON {
      * Defines the specular data enclosed in the file.
      * This corresponds to the version 1 of the data.
      */
-    interface EnvironmentTextureSpecularInfoV1 {
+    export interface EnvironmentTextureSpecularInfoV1 {
         /**
          * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
          */
@@ -305,14 +305,7 @@ module BABYLON {
             } as any;
         }
 
-        /**
-         * Uploads the texture info contained in the env file to the GPU.
-         * @param texture defines the internal texture to upload to
-         * @param arrayBuffer defines the buffer cotaining the data to load
-         * @param info defines the texture info retrieved through the GetEnvInfo method
-         * @returns a promise
-         */
-        public static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
+        public static CreateImageDataArrayBufferViews(arrayBuffer: any, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
             if (info.version !== 1) {
                 throw new Error(`Unsupported babylon environment map version "${info.version}"`);
             }
@@ -320,17 +313,14 @@ module BABYLON {
             let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
             if (!specularInfo) {
                 // Nothing else parsed so far
-                return Promise.resolve();
+                throw new Error(`Cannot create environment texture without specular info v1`);
             }
 
-            // Double checks the enclosed info
             let mipmapsCount = Scalar.Log2(info.width);
             mipmapsCount = Math.round(mipmapsCount) + 1;
             if (specularInfo.mipmaps.length !== 6 * mipmapsCount) {
                 throw new Error(`Unsupported specular mipmaps number "${specularInfo.mipmaps.length}"`);
             }
-
-            texture._lodGenerationScale = specularInfo.lodGenerationScale;
 
             const imageData = new Array<Array<ArrayBufferView>>(mipmapsCount);
             for (let i = 0; i < mipmapsCount; i++) {
@@ -340,6 +330,26 @@ module BABYLON {
                     imageData[i][face] = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
                 }
             }
+
+            return imageData;
+        }
+
+        /**
+         * Uploads the texture info contained in the env file to the GPU.
+         * @param texture defines the internal texture to upload to
+         * @param arrayBuffer defines the buffer cotaining the data to load
+         * @param info defines the texture info retrieved through the GetEnvInfo method
+         * @returns a promise
+         */
+        public static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
+            let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+            if (!specularInfo) {
+                // Nothing else parsed so far
+                return Promise.resolve();
+            }
+            texture._lodGenerationScale = specularInfo.lodGenerationScale;
+
+            const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(arrayBuffer, info);
 
             return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData);
         }

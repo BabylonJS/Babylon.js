@@ -739,7 +739,7 @@
         private _onContextLost: (evt: Event) => void;
         private _onContextRestored: (evt: Event) => void;
         private _contextWasLost = false;
-        private _doNotHandleContextLost = false;
+        protected _doNotHandleContextLost = false;
 
         /**
          * Gets or sets a boolean indicating if resources should be retained to be able to handle context lost events
@@ -840,7 +840,7 @@
 
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
-        private _textureFormatInUse: Nullable<string>;
+        protected _textureFormatInUse: Nullable<string>;
 
         /**
          * Gets the list of texture formats supported

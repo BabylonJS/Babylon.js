@@ -41,6 +41,7 @@
         setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
         createTexture(): WebGLTexture;
+        createCubeTextureFromData(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): void;
         loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | Blob, mipMap: boolean): void;
         getTextureWidth(texture: WebGLTexture): number;
         getTextureHeight(texture: WebGLTexture): number;
@@ -211,7 +212,7 @@
             this._caps.textureHalfFloatLinearFiltering = false;
             this._caps.textureHalfFloatRender = false;
 
-            this._caps.textureLOD = false;
+            this._caps.textureLOD = true;
             this._caps.drawBuffersExtension = false;
 
             this._caps.depthTextureExtension = false;
@@ -922,6 +923,108 @@
                     onload(Tools.DecodeBase64(buffer as string));
                 }
             }
+
+            return texture;
+        }
+
+        /**
+         * Creates a cube texture
+         * @param rootUrl defines the url where the files to load is located
+         * @param scene defines the current scene
+         * @param files defines the list of files to load (1 per face)
+         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+         * @param onLoad defines an optional callback raised when the texture is loaded
+         * @param onError defines an optional callback raised if there is an issue to load the texture
+         * @param format defines the format of the data
+         * @param forcedExtension defines the extension to use to pick the right loader
+         * @param createPolynomials if a polynomial sphere should be created for the cube texture
+         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+         * @returns the cube texture as an InternalTexture
+         */
+        public createCubeTexture(
+            rootUrl: string, 
+            scene: Nullable<Scene>, 
+            files: Nullable<string[]>, 
+            noMipmap?: boolean, 
+            onLoad: Nullable<(data?: any) => void> = null, 
+            onError: Nullable<(message?: string, exception?: any) => void> = null, 
+            format?: number, 
+            forcedExtension: any = null, 
+            createPolynomials = false, 
+            lodScale: number = 0, 
+            lodOffset: number = 0, 
+            fallback: Nullable<InternalTexture> = null): InternalTexture
+        {
+            var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+            texture.isCube = true;
+            texture.url = rootUrl;
+            texture.generateMipMaps = !noMipmap;
+            texture._lodGenerationScale = lodScale;
+            texture._lodGenerationOffset = lodOffset;
+
+            if (!this._doNotHandleContextLost) {
+                texture._extension = forcedExtension;
+                texture._files = files;
+            }
+
+            var lastDot = rootUrl.lastIndexOf('.');
+            var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
+
+            if (extension === ".env") {
+                const onloaddata = (data: any) => {
+                    data = data as ArrayBuffer;
+                    
+                    var info = EnvironmentTextureTools.GetEnvInfo(data)!;
+                    texture.width = info.width;
+                    texture.height = info.width;
+
+                    EnvironmentTextureTools.UploadEnvSpherical(texture, info);
+
+                    if (info.version !== 1) {
+                        throw new Error(`Unsupported babylon environment map version "${info.version}"`);
+                    }
+        
+                    let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+                    if (!specularInfo) {
+                        throw new Error(`Nothing else parsed so far`);
+                    }
+        
+                    texture._lodGenerationScale = specularInfo.lodGenerationScale;
+                    const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
+                    
+                    texture.format = Engine.TEXTUREFORMAT_RGBA;
+                    texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                    texture.generateMipMaps = true;
+                    texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
+                    texture._isRGBD = true;
+                    texture.invertY = true;
+                    this._native.createCubeTextureFromData(texture._webGLTexture!, imageData, true);
+
+                    texture.isReady = true;
+                    if (onLoad) {
+                        onLoad();
+                    }
+                };
+                if (files && files.length === 6) {
+                    throw new Error(`Multi-file loading not yet supported.`);
+                }
+                else {
+                    let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
+                        if (onError && request) {
+                            onError(request.status + " " + request.statusText, exception);
+                        }
+                    }
+
+                    this._loadFile(rootUrl, onloaddata, undefined, undefined, true, onInternalError);
+                }
+            }
+            else {
+                throw new Error("Cannot load cubemap: non-ENV format not supported.");
+            }
+
+            this._internalTexturesCache.push(texture);
 
             return texture;
         }
