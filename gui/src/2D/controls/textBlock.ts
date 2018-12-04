@@ -231,6 +231,8 @@ export class TextBlock extends Control {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
 
+        super._processMeasures(parentMeasure, context);
+
         // Prepare lines
         this._lines = this._breakLines(this._currentMeasure.width, context);
         this.onLinesReadyObservable.notifyObservers(this);
@@ -260,8 +262,6 @@ export class TextBlock extends Control {
                 this._isDirty = true;
             }
         }
-
-        super._processMeasures(parentMeasure, context);
     }
 
     private _drawText(text: string, textWidth: number, y: number, context: CanvasRenderingContext2D): void {
