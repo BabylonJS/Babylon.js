@@ -82,6 +82,8 @@ export class Control {
     private _downPointerIds: { [id: number]: boolean } = {};
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
+    /** @hidden */
+    protected _rebuildLayout = false;
 
     /** @hidden */
     public _isClipped = false;
@@ -1170,7 +1172,17 @@ export class Control {
 
         this._applyStates(context);
 
-        this._processMeasures(parentMeasure, context);
+        let rebuildCount = 0;
+        do {
+            this._rebuildLayout = false;
+            this._processMeasures(parentMeasure, context);
+            rebuildCount++;
+        }
+        while (this._rebuildLayout && rebuildCount < 3);
+
+        if (rebuildCount >= 3) {
+            BABYLON.Tools.Error(`Layout cycle detected in GUI (Control uniqueId=${this.uniqueId})`);
+        }
 
         context.restore();
 

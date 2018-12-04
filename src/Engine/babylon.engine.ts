@@ -1994,27 +1994,33 @@ module BABYLON {
          * @param clearColor defines the clear color
          */
         public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void {
-            let gl = this._gl;
+            this.enableScissor(x, y, width, height);
+            this.clear(clearColor, true, true, true);
+            this.disableScissor();
+        }
 
-            // Save state
-            var curScissor = gl.getParameter(gl.SCISSOR_TEST);
-            var curScissorBox = gl.getParameter(gl.SCISSOR_BOX);
+        /**
+         * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
+         * @param x defines the x-coordinate of the top left corner of the clear rectangle
+         * @param y defines the y-coordinate of the corner of the clear rectangle
+         * @param width defines the width of the clear rectangle
+         * @param height defines the height of the clear rectangle
+         */
+        public enableScissor(x: number, y: number, width: number, height: number): void {
+            let gl = this._gl;
 
             // Change state
             gl.enable(gl.SCISSOR_TEST);
             gl.scissor(x, y, width, height);
+        }
 
-            // Clear
-            this.clear(clearColor, true, true, true);
+        /**
+         * Disable previously set scissor test rectangle
+         */
+        public disableScissor() {
+            let gl = this._gl;
 
-            // Restore state
-            gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
-
-            if (curScissor === true) {
-                gl.enable(gl.SCISSOR_TEST);
-            } else {
-                gl.disable(gl.SCISSOR_TEST);
-            }
+            gl.disable(gl.SCISSOR_TEST);
         }
 
         private _viewportCached = new BABYLON.Vector4(0, 0, 0, 0);
