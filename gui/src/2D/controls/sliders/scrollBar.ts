@@ -68,9 +68,6 @@ export class ScrollBar extends BaseSlider {
         this._applyStates(context);
         this._prepareRenderingData("rectangle");
         var left = this._renderLeft;
-        var top = this._renderTop;
-        var width = this._renderWidth;
-        var height = this._renderHeight;
 
         const thumbPosition = this._getThumbPosition();
         context.fillStyle = this._background;
