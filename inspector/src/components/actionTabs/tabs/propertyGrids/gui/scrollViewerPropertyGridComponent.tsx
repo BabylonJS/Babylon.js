@@ -32,7 +32,6 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                 <LineContainerComponent title="SCROLLVIEWER">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Bar size" target={scrollViewer} propertyName="barSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Bar color" target={scrollViewer} propertyName="barColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Bar border color" target={scrollViewer} propertyName="barBorderColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Bar background" target={scrollViewer} propertyName="barBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Wheel precision" target={scrollViewer} propertyName="wheelPrecision" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
