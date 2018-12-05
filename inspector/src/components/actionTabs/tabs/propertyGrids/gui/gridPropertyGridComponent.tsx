@@ -4,8 +4,8 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LockObject } from "../lockObject";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
-import { LineContainerComponent } from "components/actionTabs/lineContainerComponent";
-import { TextLineComponent } from "components/actionTabs/lines/textLineComponent";
+import { LineContainerComponent } from "../../../lineContainerComponent";
+import { TextLineComponent } from "../../../lines/textLineComponent";
 
 interface IGridPropertyGridComponentProps {
     grid: Grid,
@@ -13,27 +13,27 @@ interface IGridPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
-export class ControlPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
+export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
     constructor(props: IGridPropertyGridComponentProps) {
         super(props);
     }
 
-    // renderRows() {
-    //     const grid = this.props.grid;
-    //     const rows = [];
+    renderRows() {
+        const grid = this.props.grid;
+        const rows = [];
 
-    //     for (var index = 0; index < grid.rowCount; index++) {
-    //         rows.push(grid.getRowDefinition(index)!);
-    //     }
+        for (var index = 0; index < grid.rowCount; index++) {
+            rows.push(grid.getRowDefinition(index)!);
+        }
 
-    //     return (
-    //         rows.map((rd, i) => {
-    //             return (
-    //                 <TextLineComponent label={`Row #${i}`} value={rd.internalValue} />
-    //             )
-    //         })
-    //     );
-    // }
+        return (
+            rows.map((rd, i) => {
+                return (
+                    <TextLineComponent label={`Row #${i}`} value={rd.toString(grid.host)} />
+                )
+            })
+        );
+    }
 
     render() {
         const grid = this.props.grid;
@@ -51,7 +51,7 @@ export class ControlPropertyGridComponent extends React.Component<IGridPropertyG
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={grid} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="GRID">
                     {
-                        //     this.renderRows()
+                        this.renderRows()
                     }
                 </LineContainerComponent>
             </div>
