@@ -1002,6 +1002,10 @@ declare module BABYLON.GUI {
                 * An event triggered after the control was drawn
                 */
             onAfterDrawObservable: BABYLON.Observable<Control>;
+            /**
+                * Get the hosting AdvancedDynamicTexture
+                */
+            readonly host: AdvancedDynamicTexture;
             /** Gets or set information about font offsets (used to render and align text) */
             fontOffset: {
                     ascent: number;
