@@ -4,6 +4,7 @@ interface ITextLineComponentProps {
     label: string,
     value: string,
     color?: string,
+    underline?: boolean,
     onLink?: () => void
 }
 
@@ -37,7 +38,7 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
 
     render() {
         return (
-            <div className="textLine">
+            <div className={this.props.underline ? "textLine underline" : "textLine"}>
                 <div className="label">
                     {this.props.label}
                 </div>

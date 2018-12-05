@@ -29,7 +29,24 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             rows.map((rd, i) => {
                 return (
-                    <TextLineComponent label={`Row #${i}`} value={rd.toString(grid.host)} />
+                    <TextLineComponent key={`r${i}`} label={`Row #${i}`} value={rd.toString(grid.host)} underline={i === grid.rowCount - 1} />
+                )
+            })
+        );
+    }
+
+    renderColumns() {
+        const grid = this.props.grid;
+        const cols = [];
+
+        for (var index = 0; index < grid.columnCount; index++) {
+            cols.push(grid.getColumnDefinition(index)!);
+        }
+
+        return (
+            cols.map((cd, i) => {
+                return (
+                    <TextLineComponent key={`c${i}`} label={`Column #${i}`} value={cd.toString(grid.host)} />
                 )
             })
         );
@@ -52,6 +69,9 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 <LineContainerComponent title="GRID">
                     {
                         this.renderRows()
+                    }
+                    {
+                        this.renderColumns()
                     }
                 </LineContainerComponent>
             </div>
