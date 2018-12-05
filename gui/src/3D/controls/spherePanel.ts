@@ -40,10 +40,10 @@ export class SpherePanel extends VolumeBasedPanel {
 
         switch (this.orientation) {
             case Container3D.FACEORIGIN_ORIENTATION:
-                mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
+                mesh.lookAt(new BABYLON.Vector3(2 * newPos.x, 2 * newPos.y, 2 * newPos.z));
                 break;
             case Container3D.FACEORIGINREVERSED_ORIENTATION:
-                mesh.lookAt(new BABYLON.Vector3(2 * newPos.x, 2 * newPos.y, 2 * newPos.z));
+                mesh.lookAt(new BABYLON.Vector3(-newPos.x, -newPos.y, -newPos.z));
                 break;
             case Container3D.FACEFORWARD_ORIENTATION:
                 break;
