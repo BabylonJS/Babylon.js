@@ -695,7 +695,7 @@ module BABYLON {
 
             if (options.sourcePlane) {
                 plane.translate(options.sourcePlane.normal, -options.sourcePlane.d);
-                plane.setDirection(options.sourcePlane.normal);
+                plane.setDirection(options.sourcePlane.normal.scale(-1));
             }
 
             return plane;
