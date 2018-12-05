@@ -144,6 +144,10 @@
                 -moz-user-select: none;   
                 -ms-user-select: none;    
                 user-select: none;     
+
+                .underline {
+                    border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);
+                }
                 
                 .textureLinkLine {
                     display: grid;

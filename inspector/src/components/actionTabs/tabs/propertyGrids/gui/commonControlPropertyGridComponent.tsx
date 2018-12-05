@@ -9,6 +9,7 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { LockObject } from "../lockObject";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { Grid } from "babylonjs-gui";
 
 interface ICommonControlPropertyGridComponentProps {
     control: Control,
@@ -19,6 +20,30 @@ interface ICommonControlPropertyGridComponentProps {
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
+    }
+
+    renderGridInformation() {
+        const control = this.props.control;
+
+        if (!control.parent || !control.parent.parent) {
+            return null;
+        }
+
+        const gridParent = control.parent.parent;
+
+        if ((gridParent as any).rowCount === undefined) {
+            return null;
+        }
+
+        const grid = gridParent as Grid;
+        const cellInfos = grid.getChildCellInfo(control).split(":");
+
+        return (
+            <LineContainerComponent title="GRID">
+                <TextLineComponent label={"Row"} value={cellInfos[0]} />
+                <TextLineComponent label={"Column"} value={cellInfos[1]} />
+            </LineContainerComponent>
+        );
     }
 
     render() {
@@ -50,6 +75,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextInputLineComponent lockObject={this.props.lockObject} label="Background" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                 </LineContainerComponent>
+                {
+                    this.renderGridInformation()
+                }
                 <LineContainerComponent title="ALIGNMENT">
                     <OptionsLineComponent label="Horizontal" options={horizontalOptions} target={control} propertyName="horizontalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Vertical" options={verticalOptions} target={control} propertyName="verticalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

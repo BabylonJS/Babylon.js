@@ -1552,6 +1552,12 @@ declare module 'babylonjs-gui/2D/controls/grid' {
                 */
             getChildrenAt(row: number, column: number): Nullable<Array<Control>>;
             /**
+                * Gets a string representing the child cell info (row x column)
+                * @param child defines the control to get info from
+                * @returns a string containing the child cell info (row x column)
+                */
+            getChildCellInfo(child: Control): string;
+            /**
                 * Remove a column definition at specified index
                 * @param index defines the index of the column to remove
                 * @returns the current grid
@@ -4599,6 +4605,12 @@ declare module BABYLON.GUI {
                 * @returns the list of controls
                 */
             getChildrenAt(row: number, column: number): BABYLON.Nullable<Array<Control>>;
+            /**
+                * Gets a string representing the child cell info (row x column)
+                * @param child defines the control to get info from
+                * @returns a string containing the child cell info (row x column)
+                */
+            getChildCellInfo(child: Control): string;
             /**
                 * Remove a column definition at specified index
                 * @param index defines the index of the column to remove
