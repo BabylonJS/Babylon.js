@@ -10,7 +10,6 @@ module BABYLON.Debug {
         private _xAxis: TransformNode;
         private _yAxis: TransformNode;
         private _zAxis: TransformNode;
-        private _tmpVector = new Vector3();
         private _scaleLinesFactor = 4;
         private _instanced = false;
 
@@ -73,13 +72,10 @@ module BABYLON.Debug {
             }
 
             this._xAxis = xAxis;
-            this._xAxis.rotationQuaternion = new Quaternion();
             this._xAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
             this._yAxis = yAxis;
-            this._yAxis.rotationQuaternion = new Quaternion();
             this._yAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
             this._zAxis = zAxis;
-            this._zAxis.rotationQuaternion = new Quaternion();
             this._zAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
             if (renderingGroupId != null) {
@@ -101,18 +97,15 @@ module BABYLON.Debug {
          */
         public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
             this._xAxis.position.copyFrom(position);
-            xaxis.scaleToRef(-1, this._tmpVector);
-            this._xAxis.setDirection(this._tmpVector);
+            this._xAxis.setDirection(xaxis);
             this._xAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
             this._yAxis.position.copyFrom(position);
-            yaxis.scaleToRef(-1, this._tmpVector);
-            this._yAxis.setDirection(this._tmpVector);
+            this._yAxis.setDirection(yaxis);
             this._yAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
 
             this._zAxis.position.copyFrom(position);
-            zaxis.scaleToRef(-1, this._tmpVector);
-            this._zAxis.setDirection(this._tmpVector);
+            this._zAxis.setDirection(zaxis);
             this._zAxis.scaling.setAll(this.scaleLines * this._scaleLinesFactor);
         }
 
