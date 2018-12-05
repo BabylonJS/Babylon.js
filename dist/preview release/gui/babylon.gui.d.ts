@@ -1,7 +1,7 @@
 /*Babylon.js GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/gulp/babylonjs
-//   ../../../../Tools/gulp/2D
+//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../Tools/Gulp/2D
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
@@ -1002,6 +1002,10 @@ declare module BABYLON.GUI {
                 * An event triggered after the control was drawn
                 */
             onAfterDrawObservable: BABYLON.Observable<Control>;
+            /**
+                * Get the hosting AdvancedDynamicTexture
+                */
+            readonly host: AdvancedDynamicTexture;
             /** Gets or set information about font offsets (used to render and align text) */
             fontOffset: {
                     ascent: number;

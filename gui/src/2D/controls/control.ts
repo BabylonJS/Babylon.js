@@ -239,6 +239,13 @@ export class Control {
      */
     public onAfterDrawObservable = new Observable<Control>();
 
+    /**
+     * Get the hosting AdvancedDynamicTexture
+     */
+    public get host(): AdvancedDynamicTexture {
+        return this._host;
+    }
+
     /** Gets or set information about font offsets (used to render and align text) */
     public get fontOffset(): { ascent: number, height: number, descent: number } {
         return this._fontOffset;
