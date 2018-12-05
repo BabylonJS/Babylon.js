@@ -41,8 +41,8 @@
         setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
         createTexture(): WebGLTexture;
-        createCubeTextureFromData(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): void;
         loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | Blob, mipMap: boolean): void;
+        loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): void;
         getTextureWidth(texture: WebGLTexture): number;
         getTextureHeight(texture: WebGLTexture): number;
         setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -1000,7 +1000,7 @@
                     texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                     texture._isRGBD = true;
                     texture.invertY = true;
-                    this._native.createCubeTextureFromData(texture._webGLTexture!, imageData, true);
+                    this._native.loadCubeTexture(texture._webGLTexture!, imageData, true);
 
                     texture.isReady = true;
                     if (onLoad) {
