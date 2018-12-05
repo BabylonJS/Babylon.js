@@ -62,7 +62,7 @@ module BABYLON {
         /**
          *  Initializes the behavior
          */
-        public init() {}
+        public init() { }
 
         /**
          * Attaches the scale behavior the passed in mesh
@@ -103,7 +103,7 @@ module BABYLON {
 
                         // Set position and orientation of the controller
                         this._virtualOriginMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.subtract(pointerInfo.pickInfo.ray.direction));
+                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
 
                         // Attach the virtual drag mesh to the virtual origin mesh so it can be dragged
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
@@ -128,14 +128,14 @@ module BABYLON {
                             if (this._scene.activeCamera.inputs.attachedElement) {
                                 attachedElement = this._scene.activeCamera.inputs.attachedElement;
                                 this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
-                            }else {
+                            } else {
                                 attachedElement = null;
                             }
                         }
                         BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
                         this.onDragStartObservable.notifyObservers({});
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP) {
+                } else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
                         this.dragging = false;
                         this._moving = false;
@@ -149,7 +149,7 @@ module BABYLON {
                         }
                         this.onDragEndObservable.notifyObservers({});
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE) {
+                } else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh) {
                         var zDragFactor = this.zDragFactor;
                         if (this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
@@ -171,7 +171,7 @@ module BABYLON {
 
                         // Update the controller position
                         this._virtualOriginMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.subtract(pointerInfo.pickInfo.ray.direction));
+                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
 
                         // Move the virtualObjectsPosition into the picked mesh's space if needed

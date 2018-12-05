@@ -48,15 +48,15 @@ module BABYLON {
          *  * dragPlaneNormal normal of the current drag plane used during the drag
          *  * dragPlanePoint in world space where the drag intersects the drag plane
          */
-        public onDragObservable = new Observable<{delta: Vector3, dragPlanePoint: Vector3, dragPlaneNormal: Vector3, dragDistance: number, pointerId: number}>();
+        public onDragObservable = new Observable<{ delta: Vector3, dragPlanePoint: Vector3, dragPlaneNormal: Vector3, dragDistance: number, pointerId: number }>();
         /**
          *  Fires each time a drag begins (eg. mouse down on mesh)
          */
-        public onDragStartObservable = new Observable<{dragPlanePoint: Vector3, pointerId: number}>();
+        public onDragStartObservable = new Observable<{ dragPlanePoint: Vector3, pointerId: number }>();
         /**
          *  Fires each time a drag ends (eg. mouse release after drag)
          */
-        public onDragEndObservable = new Observable<{dragPlanePoint: Vector3, pointerId: number}>();
+        public onDragEndObservable = new Observable<{ dragPlanePoint: Vector3, pointerId: number }>();
         /**
          *  If the attached mesh should be moved when dragged
          */
@@ -76,12 +76,12 @@ module BABYLON {
          */
         public useObjectOrienationForDragging = true;
 
-        private _options: {dragAxis?: Vector3, dragPlaneNormal?: Vector3};
+        private _options: { dragAxis?: Vector3, dragPlaneNormal?: Vector3 };
         /**
          * Creates a pointer drag behavior that can be attached to a mesh
          * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
          */
-        constructor(options?: {dragAxis?: Vector3, dragPlaneNormal?: Vector3}) {
+        constructor(options?: { dragAxis?: Vector3, dragPlaneNormal?: Vector3 }) {
             this._options = options ? options : {};
 
             var optionCount = 0;
@@ -106,7 +106,7 @@ module BABYLON {
         /**
          *  Initializes the behavior
          */
-        public init() {}
+        public init() { }
 
         private _tmpVector = new Vector3(0, 0, 0);
         private _alternatePickedPoint = new Vector3(0, 0, 0);
@@ -125,7 +125,7 @@ module BABYLON {
             if (!PointerDragBehavior._planeScene) {
                 if (this._debugMode) {
                     PointerDragBehavior._planeScene = this._scene;
-                }else {
+                } else {
                     PointerDragBehavior._planeScene = new BABYLON.Scene(this._scene.getEngine());
                     PointerDragBehavior._planeScene.detachControl();
                     this._scene.getEngine().scenes.pop();
@@ -154,11 +154,11 @@ module BABYLON {
                     if (!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
                         this._startDrag((<PointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP) {
+                } else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
                         this.releaseDrag();
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE) {
+                } else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE) {
                     var pointerId = (<PointerEvent>pointerInfo.event).pointerId;
 
                     // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
@@ -180,7 +180,7 @@ module BABYLON {
 
                         if (this.currentDraggingPointerID == pointerId && this.dragging) {
                             this._moveDrag(pointerInfo.pickInfo.ray);
-                         }
+                        }
                     }
                 }
             });
@@ -203,7 +203,7 @@ module BABYLON {
          */
         public releaseDrag() {
             this.dragging = false;
-            this.onDragEndObservable.notifyObservers({dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID});
+            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
             this.currentDraggingPointerID = -1;
             this._moving = false;
 
@@ -214,7 +214,7 @@ module BABYLON {
         }
 
         private _startDragRay = new BABYLON.Ray(new BABYLON.Vector3(), new BABYLON.Vector3());
-        private _lastPointerRay: {[key: number]: Ray} = {};
+        private _lastPointerRay: { [key: number]: Ray } = {};
         /**
          * Simulates the start of a pointer drag event on the behavior
          * @param pointerId pointerID of the pointer that should be simulated (Default: Any mouse pointer ID)
@@ -224,7 +224,7 @@ module BABYLON {
         public startDrag(pointerId: number = PointerDragBehavior._AnyMouseID, fromRay?: Ray, startPickedPoint?: Vector3) {
             this._startDrag(pointerId, fromRay, startPickedPoint);
 
-            var lastRay =  this._lastPointerRay[pointerId];
+            var lastRay = this._lastPointerRay[pointerId];
             if (pointerId === PointerDragBehavior._AnyMouseID) {
                 lastRay = this._lastPointerRay[<any>Object.keys(this._lastPointerRay)[0]];
             }
@@ -245,7 +245,7 @@ module BABYLON {
             if (fromRay) {
                 this._startDragRay.direction.copyFrom(fromRay.direction);
                 this._startDragRay.origin.copyFrom(fromRay.origin);
-            }else {
+            } else {
                 this._startDragRay.origin.copyFrom(this._scene.activeCamera.position);
                 this._attachedNode.getWorldMatrix().getTranslationToRef(this._tmpVector);
                 this._tmpVector.subtractToRef(this._scene.activeCamera.position, this._startDragRay.direction);
@@ -258,7 +258,7 @@ module BABYLON {
                 this.dragging = true;
                 this.currentDraggingPointerID = pointerId;
                 this.lastDragPosition.copyFrom(pickedPoint);
-                this.onDragStartObservable.notifyObservers({dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerID});
+                this.onDragStartObservable.notifyObservers({ dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerID });
                 this._targetPosition.copyFrom((this._attachedNode).absolutePosition);
 
                 // Detatch camera controls
@@ -266,7 +266,7 @@ module BABYLON {
                     if (this._scene.activeCamera.inputs.attachedElement) {
                         this._attachedElement = this._scene.activeCamera.inputs.attachedElement;
                         this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
-                    }else {
+                    } else {
                         this._attachedElement = null;
                     }
                 }
@@ -294,12 +294,12 @@ module BABYLON {
                     pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
                     dragLength = BABYLON.Vector3.Dot(this._tmpVector, this._worldDragAxis);
                     this._worldDragAxis.scaleToRef(dragLength, this._dragDelta);
-                }else {
+                } else {
                     dragLength = this._dragDelta.length();
                     pickedPoint.subtractToRef(this.lastDragPosition, this._dragDelta);
                 }
                 this._targetPosition.addInPlace(this._dragDelta);
-                this.onDragObservable.notifyObservers({dragDistance: dragLength, delta: this._dragDelta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerID});
+                this.onDragObservable.notifyObservers({ dragDistance: dragLength, delta: this._dragDelta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerID });
                 this.lastDragPosition.copyFrom(pickedPoint);
             }
         }
@@ -332,15 +332,15 @@ module BABYLON {
                     this._alternatePickedPoint.addInPlace(this._tmpVector);
                     this._alternatePickedPoint.addInPlace((this._attachedNode).absolutePosition);
                     return this._alternatePickedPoint;
-                }else {
+                } else {
                     return null;
                 }
             }
 
-            var pickResult = PointerDragBehavior._planeScene.pickWithRay(ray, (m) => {return m == this._dragPlane; });
+            var pickResult = PointerDragBehavior._planeScene.pickWithRay(ray, (m) => { return m == this._dragPlane; });
             if (pickResult && pickResult.hit && pickResult.pickedMesh && pickResult.pickedPoint) {
                 return pickResult.pickedPoint;
-            }else {
+            } else {
                 return null;
             }
         }
@@ -372,14 +372,14 @@ module BABYLON {
                 this._lookAt.normalize();
 
                 this._dragPlane.position.copyFrom(this._pointA);
-                this._pointA.subtractToRef(this._lookAt, this._lookAt);
+                this._pointA.addToRef(this._lookAt, this._lookAt);
                 this._dragPlane.lookAt(this._lookAt);
-            }else if (this._options.dragPlaneNormal) {
+            } else if (this._options.dragPlaneNormal) {
                 this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragPlaneNormal, this._attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this._options.dragPlaneNormal);
                 this._dragPlane.position.copyFrom(this._pointA);
-                this._pointA.subtractToRef(this._localAxis, this._lookAt);
+                this._pointA.addToRef(this._localAxis, this._lookAt);
                 this._dragPlane.lookAt(this._lookAt);
-            }else {
+            } else {
                 this._dragPlane.position.copyFrom(this._pointA);
                 this._dragPlane.lookAt(ray.origin);
             }
