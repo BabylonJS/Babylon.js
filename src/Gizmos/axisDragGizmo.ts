@@ -84,7 +84,7 @@ import { Scene } from "scene";
             // Build mesh on root node
             var arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, coloredMaterial);
 
-            arrow.lookAt(this._rootMesh.position.subtract(dragAxis));
+            arrow.lookAt(this._rootMesh.position.add(dragAxis));
             arrow.scaling.scaleInPlace(1 / 3);
             arrow.parent = this._rootMesh;
 

@@ -18,8 +18,7 @@ export class ScrollViewer extends Rectangle {
     private _horizontalBar: ScrollBar;
     private _verticalBar: ScrollBar;
     private _barColor: string;
-    private _barBorderColor: string;
-    private _barBackground: string ;
+    private _barBackground: string;
     private _barSize: number = 20;
     private _endLeft: number;
     private _endTop: number;
@@ -246,21 +245,6 @@ export class ScrollViewer extends Rectangle {
         }
     }
 
-    /** Gets or sets the bar color */
-    public get barBorderColor(): string {
-        return this._barBorderColor;
-    }
-
-    public set barBorderColor(color: string) {
-        if (this._barBorderColor === color) {
-            return;
-        }
-
-        this._barBorderColor = color;
-        this._horizontalBar.borderColor = color;
-        this._verticalBar.borderColor = color;
-    }
-
     /** Gets or sets the bar background */
     public get barBackground(): string {
         return this._barBackground;
@@ -368,7 +352,7 @@ export class ScrollViewer extends Rectangle {
         let scene = this._host.getScene();
         if (scene && this._onPointerObserver) {
             scene.onPointerObservable.remove(this._onPointerObserver);
-            this._onPointerObserver  = null;
+            this._onPointerObserver = null;
         }
         super.dispose();
     }
