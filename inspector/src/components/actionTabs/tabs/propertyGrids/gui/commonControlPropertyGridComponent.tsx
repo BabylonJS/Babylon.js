@@ -9,6 +9,7 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { LockObject } from "../lockObject";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { Grid } from "babylonjs-gui";
 
 interface ICommonControlPropertyGridComponentProps {
     control: Control,
@@ -19,6 +20,30 @@ interface ICommonControlPropertyGridComponentProps {
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
+    }
+
+    renderGridInformation() {
+        const control = this.props.control;
+
+        if (!control.parent || !control.parent.parent) {
+            return null;
+        }
+
+        const gridParent = control.parent.parent;
+
+        if ((gridParent as any).rowCount === undefined) {
+            return null;
+        }
+
+        const grid = gridParent as Grid;
+        const cellInfos = grid.getChildCellInfo(control).split(":");
+
+        return (
+            <LineContainerComponent title="GRID">
+                <TextLineComponent label={"Row"} value={cellInfos[0]} />
+                <TextLineComponent label={"Column"} value={cellInfos[1]} />
+            </LineContainerComponent>
+        );
     }
 
     render() {
@@ -42,14 +67,17 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextLineComponent label="Class" value={control.getClassName()} />
                     <SliderLineComponent label="Alpha" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
-                        control.color &&
+                        (control as any).color !== undefined &&
                         <TextInputLineComponent lockObject={this.props.lockObject} label="Color" target={control} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
-                        (control as any).background &&
+                        (control as any).background !== undefined &&
                         <TextInputLineComponent lockObject={this.props.lockObject} label="Background" target={control} propertyName="background" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                 </LineContainerComponent>
+                {
+                    this.renderGridInformation()
+                }
                 <LineContainerComponent title="ALIGNMENT">
                     <OptionsLineComponent label="Horizontal" options={horizontalOptions} target={control} propertyName="horizontalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Vertical" options={verticalOptions} target={control} propertyName="verticalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -76,6 +104,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Size" target={control} propertyName="fontSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Weight" target={control} propertyName="fontWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Style" target={control} propertyName="fontStyle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
+                <LineContainerComponent title="SHADOWS" closed={true}>
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Color" target={control} propertyName="shadowColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Offset X" target={control} propertyName="shadowOffsetX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Offset Y" target={control} propertyName="shadowOffsetY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Blur" target={control} propertyName="shadowBlur" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>
         );

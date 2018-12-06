@@ -13,12 +13,13 @@ export * from "./multiLine";
 export * from "./radioButton";
 export * from "./stackPanel";
 export * from "./selector";
+export * from "./scrollViewers/scrollViewer";
 export * from "./textBlock";
 export * from "./virtualKeyboard";
 export * from "./rectangle";
 export * from "./displayGrid";
-export * from "./baseSlider";
-export * from "./slider";
-export * from "./imageBasedSlider";
+export * from "./sliders/baseSlider";
+export * from "./sliders/slider";
+export * from "./sliders/imageBasedSlider";
 
 export * from "./statics";

@@ -2,14 +2,14 @@ import * as React from "react";
 import { Scene, AbstractMesh, Nullable } from "babylonjs";
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 
-interface IGridPropertyGridComponentProps {
+interface IRenderGridPropertyGridComponentProps {
     scene: Scene
 }
 
-export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps, { isEnabled: boolean }> {
+export class RenderGridPropertyGridComponent extends React.Component<IRenderGridPropertyGridComponentProps, { isEnabled: boolean }> {
     private _gridMesh: Nullable<AbstractMesh>;
 
-    constructor(props: IGridPropertyGridComponentProps) {
+    constructor(props: IRenderGridPropertyGridComponentProps) {
         super(props);
         this.state = { isEnabled: false };
     }

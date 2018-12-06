@@ -4,7 +4,7 @@ import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Checkbox } from "./checkbox";
 import { RadioButton } from "./radioButton";
-import { Slider } from "./slider";
+import { Slider } from "./sliders/slider";
 import { Container } from "./container";
 
 /** Class used to create a RadioGroup

@@ -17,7 +17,7 @@ module BABYLON {
          * Event that fires each time the gizmo snaps to a new location.
          * * snapDistance is the the change in distance
          */
-        public onSnapObservable = new Observable<{snapDistance: number}>();
+        public onSnapObservable = new Observable<{ snapDistance: number }>();
         /**
          * If the scaling operation should be done on all axis (default: false)
          */
@@ -42,8 +42,8 @@ module BABYLON {
 
             // Build mesh on root node
             var arrow = new BABYLON.AbstractMesh("", gizmoLayer.utilityLayerScene);
-            var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", {size: 0.4}, gizmoLayer.utilityLayerScene);
-            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", {points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)]}, gizmoLayer.utilityLayerScene);
+            var arrowMesh = BABYLON.MeshBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
+            var arrowTail = BABYLON.MeshBuilder.CreateLines("yPosMesh", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, gizmoLayer.utilityLayerScene);
             arrowTail.color = this._coloredMaterial.emissiveColor;
             arrow.addChild(arrowMesh);
             arrow.addChild(arrowTail);
@@ -56,18 +56,18 @@ module BABYLON {
             arrowTail.scaling.scaleInPlace(0.26);
             arrowTail.rotation.x = Math.PI / 2;
             arrowTail.material = this._coloredMaterial;
-            arrow.lookAt(this._rootMesh.position.subtract(dragAxis));
+            arrow.lookAt(this._rootMesh.position.add(dragAxis));
             this._rootMesh.addChild(arrow);
             arrow.scaling.scaleInPlace(1 / 3);
 
             // Add drag behavior to handle events when the gizmo is dragged
-            this.dragBehavior = new PointerDragBehavior({dragAxis: dragAxis});
+            this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
             this.dragBehavior.moveAttached = false;
             this._rootMesh.addBehavior(this.dragBehavior);
 
             var currentSnapDragDistance = 0;
             var tmpVector = new Vector3();
-            var tmpSnapEvent = {snapDistance: 0};
+            var tmpSnapEvent = { snapDistance: 0 };
             this.dragBehavior.onDragObservable.add((event) => {
                 if (this.attachedMesh) {
                     // Snapping logic
@@ -78,19 +78,19 @@ module BABYLON {
                         if (tmpVector.y < 0) {
                             tmpVector.scaleInPlace(-1);
                         }
-                    }else {
+                    } else {
                         tmpVector.copyFrom(dragAxis);
                     }
                     if (this.snapDistance == 0) {
                         tmpVector.scaleToRef(event.dragDistance, tmpVector);
-                    }else {
+                    } else {
                         currentSnapDragDistance += event.dragDistance;
                         if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
                             dragSteps = Math.floor(currentSnapDragDistance / this.snapDistance);
                             currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                             tmpVector.scaleToRef(this.snapDistance * dragSteps, tmpVector);
                             snapped = true;
-                        }else {
+                        } else {
                             tmpVector.scaleInPlace(0);
                         }
                     }

@@ -170,7 +170,7 @@ export class MultiLine extends Control {
         return "MultiLine";
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -182,32 +182,30 @@ export class MultiLine extends Control {
 
         this._applyStates(context);
 
-        if (this._processMeasures(parentMeasure, context)) {
-            context.strokeStyle = this.color;
-            context.lineWidth = this._lineWidth;
-            context.setLineDash(this._dash);
+        context.strokeStyle = this.color;
+        context.lineWidth = this._lineWidth;
+        context.setLineDash(this._dash);
 
-            context.beginPath();
+        context.beginPath();
 
-            var first: boolean = true; //first index is not necessarily 0
+        var first: boolean = true; //first index is not necessarily 0
 
-            this._points.forEach((point) => {
-                if (!point) {
-                    return;
-                }
+        this._points.forEach((point) => {
+            if (!point) {
+                return;
+            }
 
-                if (first) {
-                    context.moveTo(point._point.x, point._point.y);
+            if (first) {
+                context.moveTo(point._point.x, point._point.y);
 
-                    first = false;
-                }
-                else {
-                    context.lineTo(point._point.x, point._point.y);
-                }
-            });
+                first = false;
+            }
+            else {
+                context.lineTo(point._point.x, point._point.y);
+            }
+        });
 
-            context.stroke();
-        }
+        context.stroke();
 
         context.restore();
     }

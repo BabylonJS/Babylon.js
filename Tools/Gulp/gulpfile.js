@@ -20,7 +20,7 @@ var replace = require("gulp-replace");
 var uncommentShader = require("./gulp-removeShaderComments");
 var expect = require("gulp-expect-file");
 var optimisejs = require("gulp-optimize-js");
-var webserver = require("gulp-webserver");
+var connect = require("gulp-connect");
 var path = require("path");
 const webpack = require('webpack');
 var webpackStream = require("webpack-stream");
@@ -793,21 +793,27 @@ gulp.task("watch", gulp.series("srcTscWatch", function startWatch() {
                 //config.stats = "minimal";
                 tasks.push(webpackStream(wpconfig, webpack).pipe(gulp.dest(outputDirectory)))
             } else {
-                tasks.push(gulp.watch(library.files, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug());
-                }));
-                tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug())
-                }));
-                tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
-                    console.log(library.output);
-                    return buildExternalLibrary(library, config[module], true)
-                        .pipe(debug())
-                }));
+                if (library.files) {
+                    tasks.push(gulp.watch(library.files, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug());
+                    }));
+                }
+                if (library.shaderFiles) {
+                    tasks.push(gulp.watch(library.shaderFiles, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug())
+                    }));
+                }
+                if (library.sassFiles) {
+                    tasks.push(gulp.watch(library.sassFiles, { interval: interval }, function() {
+                        console.log(library.output);
+                        return buildExternalLibrary(library, config[module], true)
+                            .pipe(debug())
+                    }));
+                }
             }
         });
     });
@@ -841,16 +847,19 @@ gulp.task("deployLocalDev", function() {
  */
 gulp.task("webserver", function() {
     var options = {
+        root: "../../.",
         port: 1338,
         livereload: false,
-        middleware: [cors()]
+        middleware: function() {
+            return [cors()];
+        }
     };
 
     if (commandLineOptions.public) {
         options.host = "0.0.0.0";
     }
 
-    return gulp.src("../../.").pipe(webserver(options));
+    connect.server(options);
 });
 
 /**

@@ -481,7 +481,7 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.8";
+            return "4.0.0-alpha.10";
         }
 
         /**
@@ -1994,27 +1994,33 @@ module BABYLON {
          * @param clearColor defines the clear color
          */
         public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void {
-            let gl = this._gl;
+            this.enableScissor(x, y, width, height);
+            this.clear(clearColor, true, true, true);
+            this.disableScissor();
+        }
 
-            // Save state
-            var curScissor = gl.getParameter(gl.SCISSOR_TEST);
-            var curScissorBox = gl.getParameter(gl.SCISSOR_BOX);
+        /**
+         * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
+         * @param x defines the x-coordinate of the top left corner of the clear rectangle
+         * @param y defines the y-coordinate of the corner of the clear rectangle
+         * @param width defines the width of the clear rectangle
+         * @param height defines the height of the clear rectangle
+         */
+        public enableScissor(x: number, y: number, width: number, height: number): void {
+            let gl = this._gl;
 
             // Change state
             gl.enable(gl.SCISSOR_TEST);
             gl.scissor(x, y, width, height);
+        }
 
-            // Clear
-            this.clear(clearColor, true, true, true);
+        /**
+         * Disable previously set scissor test rectangle
+         */
+        public disableScissor() {
+            let gl = this._gl;
 
-            // Restore state
-            gl.scissor(curScissorBox[0], curScissorBox[1], curScissorBox[2], curScissorBox[3]);
-
-            if (curScissor === true) {
-                gl.enable(gl.SCISSOR_TEST);
-            } else {
-                gl.disable(gl.SCISSOR_TEST);
-            }
+            gl.disable(gl.SCISSOR_TEST);
         }
 
         private _viewportCached = new BABYLON.Vector4(0, 0, 0, 0);
@@ -4234,7 +4240,7 @@ module BABYLON {
          * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
          * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
          * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
-         * @param invertY when true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file
+         * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
          * @param scene needed for loading to the correct scene
          * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
          * @param onLoad optional callback to be called upon successful completion
@@ -4306,7 +4312,7 @@ module BABYLON {
                         customFallback = true;
                         excludeLoaders.push(loader);
                         Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
-                        this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
+                        this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
                         return;
                     }
                 }
@@ -4316,7 +4322,7 @@ module BABYLON {
                         texture.onLoadedObservable.remove(onLoadObserver);
                     }
                     if (Tools.UseFallbackTexture) {
-                        this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                        this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
                         return;
                     }
                 }
@@ -4333,7 +4339,7 @@ module BABYLON {
                         if (loadFailed) {
                             onInternalError("TextureLoader failed to load data");
                         } else {
-                            this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
+                            this._prepareWebGLTexture(texture, scene, width, height, texture.invertY, !loadMipmap, isCompressed, () => {
                                 done();
                                 return false;
                             }, samplingMode);
@@ -4356,7 +4362,7 @@ module BABYLON {
                         texture._buffer = img;
                     }
 
-                    this._prepareWebGLTexture(texture, scene, img.width, img.height, invertY, noMipmap, false, (potWidth, potHeight, continuationCallback) => {
+                    this._prepareWebGLTexture(texture, scene, img.width, img.height, texture.invertY, noMipmap, false, (potWidth, potHeight, continuationCallback) => {
                         let gl = this._gl;
                         var isPot = (img.width === potWidth && img.height === potHeight);
                         let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
