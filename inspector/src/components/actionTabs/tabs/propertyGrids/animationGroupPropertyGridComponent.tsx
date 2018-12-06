@@ -75,9 +75,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         this.connect(this.props.animationGroup);
 
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
-            if (this.props.animationGroup.isPlaying) {
-                this.updateCurrentFrame(this.props.animationGroup);
-            }
+            this.updateCurrentFrame(this.props.animationGroup);
         });
     }
 
