@@ -458,7 +458,7 @@ import { AbstractMesh } from "Meshes/abstractMesh";
                     returnValue = new Ammo.btSphereShape(extendSize.x / 2);
                     break;
                 default:
-                    Tools.Warn("The impostor type is not currently supported by the ammo plugin.");
+                    Logger.Warn("The impostor type is not currently supported by the ammo plugin.");
                     break;
             }
 
