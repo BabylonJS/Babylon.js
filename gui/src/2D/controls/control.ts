@@ -1,7 +1,7 @@
 import { Container } from "./container";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes } from "babylonjs";
+import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes, Logger } from "babylonjs";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
@@ -1188,7 +1188,7 @@ export class Control {
         while (this._rebuildLayout && rebuildCount < 3);
 
         if (rebuildCount >= 3) {
-            BABYLON.Tools.Error(`Layout cycle detected in GUI (Control uniqueId=${this.uniqueId})`);
+            Logger.Error(`Layout cycle detected in GUI (Control uniqueId=${this.uniqueId})`);
         }
 
         context.restore();

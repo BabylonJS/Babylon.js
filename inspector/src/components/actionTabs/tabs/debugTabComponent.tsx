@@ -3,6 +3,7 @@ import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 import { CheckBoxLineComponent } from "../lines/checkBoxLineComponent";
 import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
+import { SkeletonViewer, PhysicsViewer, StandardMaterial } from "babylonjs";
 
 export class DebugTabComponent extends PaneComponent {
     private _skeletonViewersEnabled = false;
