@@ -1,11 +1,13 @@
 import { Control } from "./control";
-import { Nullable, Tools, Observable } from "babylonjs";
+import { Nullable, Tools, Observable, Engine } from "babylonjs";
 import { Measure } from "2D";
 
 /**
  * Class used to create 2D images
  */
 export class Image extends Control {
+    private static _WorkingCanvas: Nullable<HTMLCanvasElement> = null;
+
     private _domImage: HTMLImageElement;
     private _imageWidth: number;
     private _imageHeight: number;
@@ -23,6 +25,13 @@ export class Image extends Control {
     private _cellHeight: number = 0;
     private _cellId: number = -1;
 
+    private _useNinePatch = false;
+    private _populateNinePatchSlicesFromImage = false;
+    private _sliceLeft: number;
+    private _sliceRight: number;
+    private _sliceTop: number;
+    private _sliceBottom: number;
+
     /**
      * Observable notified when the content is loaded
      */
@@ -33,6 +42,111 @@ export class Image extends Control {
      */
     public get isLoaded(): boolean {
         return this._loaded;
+    }
+
+    /**
+     * Gets or sets a boolean indicating if nine patch should be used
+     */
+    public get useNinePatch(): boolean {
+        return this._useNinePatch;
+    }
+
+    public set useNinePatch(value: boolean) {
+        if (this._useNinePatch === value) {
+            return;
+        }
+
+        this._useNinePatch = value;
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+     */
+    public get populateNinePatchSlicesFromImage(): boolean {
+        return this._populateNinePatchSlicesFromImage;
+    }
+
+    public set populateNinePatchSlicesFromImage(value: boolean) {
+        if (this._populateNinePatchSlicesFromImage === value) {
+            return;
+        }
+
+        this._populateNinePatchSlicesFromImage = value;
+
+
+        if (this._populateNinePatchSlicesFromImage && this._loaded) {
+            this._extractNinePatchSliceDataFromImage();
+        }
+    }
+
+    /**
+     * Gets or sets the left value for slicing (9-patch)
+     */
+    public get sliceLeft(): number {
+        return this._sliceLeft;
+    }
+
+    public set sliceLeft(value: number) {
+        if (this._sliceLeft === value) {
+            return;
+        }
+
+        this._sliceLeft = value;
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets the right value for slicing (9-patch)
+     */
+    public get sliceRight(): number {
+        return this._sliceRight;
+    }
+
+    public set sliceRight(value: number) {
+        if (this._sliceRight === value) {
+            return;
+        }
+
+        this._sliceRight = value;
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets the top value for slicing (9-patch)
+     */
+    public get sliceTop(): number {
+        return this._sliceTop;
+    }
+
+    public set sliceTop(value: number) {
+        if (this._sliceTop === value) {
+            return;
+        }
+
+        this._sliceTop = value;
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets the bottom value for slicing (9-patch)
+     */
+    public get sliceBottom(): number {
+        return this._sliceBottom;
+    }
+
+    public set sliceBottom(value: number) {
+        if (this._sliceBottom === value) {
+            return;
+        }
+
+        this._sliceBottom = value;
+
+        this._markAsDirty();
     }
 
     /**
@@ -163,6 +277,10 @@ export class Image extends Control {
         this._imageHeight = this._domImage.height;
         this._loaded = true;
 
+        if (this._populateNinePatchSlicesFromImage) {
+            this._extractNinePatchSliceDataFromImage();
+        }
+
         if (this._autoScale) {
             this.synchronizeSizeWithContent();
         }
@@ -170,6 +288,19 @@ export class Image extends Control {
         this.onImageLoadedObservable.notifyObservers(this);
 
         this._markAsDirty();
+    }
+
+    private _extractNinePatchSliceDataFromImage() {
+        if (!Image._WorkingCanvas) {
+            Image._WorkingCanvas = document.createElement('canvas');
+        }
+        const canvas = Image._WorkingCanvas;
+        const context = canvas.getContext('2d')!;
+        canvas.width = this._domImage.width;
+        canvas.height = this._domImage.height;
+
+        context.drawImage(this._domImage, 0, 0, this._domImage.width, this._domImage.height);
+        const data = context.getImageData(0, 0, this._domImage.width, this._domImage.height);
     }
 
     /**
