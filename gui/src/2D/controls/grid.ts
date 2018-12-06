@@ -150,6 +150,15 @@ export class Grid extends Container {
         return cell.children;
     }
 
+    /**
+     * Gets a string representing the child cell info (row x column)
+     * @param child defines the control to get info from
+     * @returns a string containing the child cell info (row x column)
+     */
+    public getChildCellInfo(child: Control): string {
+        return child._tag;
+    }
+
     private _removeCell(cell: Container, key: string) {
         if (!cell) {
             return;

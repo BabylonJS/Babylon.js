@@ -696,7 +696,7 @@ export class InputText extends Control implements IFocusableControl {
         let rWord = /\w+/g, moveLeft, moveRight;
         do {
             moveRight = this._endHighlightIndex < this._text.length && (this._text[this._endHighlightIndex].search(rWord) !== -1) ? ++this._endHighlightIndex : 0;
-            moveLeft =  this._startHighlightIndex > 0 && (this._text[this._startHighlightIndex - 1 ].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
+            moveLeft = this._startHighlightIndex > 0 && (this._text[this._startHighlightIndex - 1].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
         } while (moveLeft || moveRight);
 
         this._cursorOffset = this.text.length - this._startHighlightIndex;
@@ -828,7 +828,10 @@ export class InputText extends Control implements IFocusableControl {
 
         let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
         let availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
-        context.save();
+
+        if (this._isFocused) {
+            context.save();
+        }
         context.beginPath();
         context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
         context.clip();
@@ -906,7 +909,7 @@ export class InputText extends Control implements IFocusableControl {
                 this._highlightedText = this.text.substring(this._startHighlightIndex, this._endHighlightIndex);
                 let width = context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width;
                 if (highlightCursorLeft < clipTextLeft) {
-                    width =  width - (clipTextLeft - highlightCursorLeft);
+                    width = width - (clipTextLeft - highlightCursorLeft);
                     if (!width) {
                         // when using left arrow on text.length > availableWidth;
                         // assigns the width of the first letter after clipTextLeft

@@ -379,39 +379,46 @@ module BABYLON {
 
             if (!ignoreChildren) {
                 var meshChildren = impostor.object.getChildMeshes ? impostor.object.getChildMeshes(true) : [];
-                if (meshChildren.length > 0) {
-                    returnValue = new Ammo.btCompoundShape();
+                returnValue = new Ammo.btCompoundShape();
 
-                    // Add shape of all children to the compound shape
-                    meshChildren.forEach((childMesh) => {
-                        var childImpostor = childMesh.getPhysicsImpostor();
-                        if (childImpostor) {
-                            var shape = this._createShape(childImpostor);
+                // Add shape of all children to the compound shape
+                var childrenAdded = 0;
+                meshChildren.forEach((childMesh) => {
+                    var childImpostor = childMesh.getPhysicsImpostor();
+                    if (childImpostor) {
+                        var shape = this._createShape(childImpostor);
 
-                            // Position needs to be scaled based on parent's scaling
-                            var parentMat = childMesh.parent!.getWorldMatrix().clone();
-                            var s = new BABYLON.Vector3();
-                            parentMat.decompose(s);
-                            this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x * s.x, childMesh.position.y * s.y, childMesh.position.z * s.z);
+                        // Position needs to be scaled based on parent's scaling
+                        var parentMat = childMesh.parent!.getWorldMatrix().clone();
+                        var s = new BABYLON.Vector3();
+                        parentMat.decompose(s);
+                        this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x * s.x, childMesh.position.y * s.y, childMesh.position.z * s.z);
 
-                            this._tmpAmmoQuaternion.setValue(childMesh.rotationQuaternion!.x, childMesh.rotationQuaternion!.y, childMesh.rotationQuaternion!.z, childMesh.rotationQuaternion!.w);
-                            this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
-                            returnValue.addChildShape(this._tmpAmmoTransform, shape);
-                            childImpostor.dispose();
-                        }
-                    });
-
-                    // Add parents shape as a child if present
-                    var shape = this._createShape(impostor, true);
-                    if (shape) {
-                        this._tmpAmmoTransform.getOrigin().setValue(0, 0, 0);
-                        this._tmpAmmoQuaternion.setValue(0, 0, 0, 1);
+                        this._tmpAmmoQuaternion.setValue(childMesh.rotationQuaternion!.x, childMesh.rotationQuaternion!.y, childMesh.rotationQuaternion!.z, childMesh.rotationQuaternion!.w);
                         this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
-
                         returnValue.addChildShape(this._tmpAmmoTransform, shape);
+                        childImpostor.dispose();
+                        childrenAdded++;
                     }
+                });
 
+                if (childrenAdded > 0) {
+                    // Add parents shape as a child if present
+                    if (impostor.type != PhysicsImpostor.NoImpostor) {
+                        var shape = this._createShape(impostor, true);
+                        if (shape) {
+                            this._tmpAmmoTransform.getOrigin().setValue(0, 0, 0);
+                            this._tmpAmmoQuaternion.setValue(0, 0, 0, 1);
+                            this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
+
+                            returnValue.addChildShape(this._tmpAmmoTransform, shape);
+                        }
+                    }
                     return returnValue;
+                }else {
+                    // If no children with impostors create the actual shape below instead
+                    Ammo.destroy(returnValue);
+                    returnValue = null;
                 }
             }
 
@@ -441,6 +448,9 @@ module BABYLON {
                 case PhysicsImpostor.NoImpostor:
                     // Fill with sphere but collision is disabled on the rigid body in generatePhysicsBody, using an empty shape caused unexpected movement with joints
                     returnValue = new Ammo.btSphereShape(extendSize.x / 2);
+                    break;
+                default:
+                    Tools.Warn("The impostor type is not currently supported by the ammo plugin.");
                     break;
             }
 
