@@ -836,7 +836,7 @@ declare module 'babylonjs-gui/2D/controls/checkbox' {
 declare module 'babylonjs-gui/2D/controls/colorpicker' {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Color3, Observable, Vector2 } from "babylonjs";
-    import { Measure } from "2D";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /** Class used to create color pickers */
     export class ColorPicker extends Control {
             name?: string | undefined;

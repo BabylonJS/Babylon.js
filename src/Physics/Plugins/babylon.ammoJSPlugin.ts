@@ -306,6 +306,25 @@ module BABYLON {
 
             var joint: any;
             switch (impostorJoint.joint.type) {
+                case PhysicsJoint.DistanceJoint:
+                    var distance = (<DistanceJointData>jointData).maxDistance;
+                    if (distance) {
+                        jointData.mainPivot = new Vector3(0, -distance / 2, 0);
+                        jointData.connectedPivot = new Vector3(0, distance / 2, 0);
+                    }
+                    joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
+                    break;
+                case PhysicsJoint.HingeJoint:
+                    if (!jointData.mainAxis) {
+                        jointData.mainAxis = new Vector3(0, 0, 0);
+                    }
+                    if (!jointData.connectedAxis) {
+                        jointData.connectedAxis = new Vector3(0, 0, 0);
+                    }
+                    var mainAxis = new Ammo.btVector3(jointData.mainAxis.x, jointData.mainAxis.y, jointData.mainAxis.z);
+                    var connectedAxis = new Ammo.btVector3(jointData.connectedAxis.x, jointData.connectedAxis.y, jointData.connectedAxis.z);
+                    joint = new Ammo.btHingeConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z), mainAxis, connectedAxis);
+                    break;
                 case PhysicsJoint.BallAndSocketJoint:
                     joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
                     break;
@@ -656,7 +675,7 @@ module BABYLON {
          * @param motorIndex index of the motor
          */
         public setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number) {
-            Tools.Warn("setMotor is not currently supported by the Ammo physics plugin");
+            joint.physicsJoint.enableAngularMotor(true, speed, maxForce);
         }
 
         /**

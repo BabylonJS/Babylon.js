@@ -1,6 +1,6 @@
 import { Control } from "./control";
 import { Color3, Observable, Vector2 } from "babylonjs";
-import { Measure } from "2D";
+import { Measure } from "../measure";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
