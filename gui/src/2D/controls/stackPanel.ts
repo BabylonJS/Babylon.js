@@ -118,21 +118,23 @@ export class StackPanel extends Container {
             }
 
             if (this._isVertical) {
-                child.top = stackHeight + "px";
-                if (!child._top.ignoreAdaptiveScaling) {
-                    child._markAsDirty();
+                if (child.top !== stackHeight + "px") {
+                    child.top = stackHeight + "px";
+                    this._rebuildLayout = true;
+                    child._top.ignoreAdaptiveScaling = true;
                 }
-                child._top.ignoreAdaptiveScaling = true;
+
                 stackHeight += child._currentMeasure.height + child.paddingTopInPixels;
                 if (child._currentMeasure.width > stackWidth) {
                     stackWidth = child._currentMeasure.width;
                 }
             } else {
-                child.left = stackWidth + "px";
-                if (!child._left.ignoreAdaptiveScaling) {
-                    child._markAsDirty();
+                if (child.left !== stackWidth + "px") {
+                    child.left = stackWidth + "px";
+                    this._rebuildLayout = true;
+                    child._left.ignoreAdaptiveScaling = true;
                 }
-                child._left.ignoreAdaptiveScaling = true;
+
                 stackWidth += child._currentMeasure.width + child.paddingLeftInPixels;
                 if (child._currentMeasure.height > stackHeight) {
                     stackHeight = child._currentMeasure.height;
