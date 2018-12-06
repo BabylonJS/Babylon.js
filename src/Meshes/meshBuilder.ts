@@ -975,7 +975,7 @@ Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, n
 
             if (options.sourcePlane) {
                 plane.translate(options.sourcePlane.normal, -options.sourcePlane.d);
-                plane.setDirection(options.sourcePlane.normal);
+                plane.setDirection(options.sourcePlane.normal.scale(-1));
             }
 
             return plane;

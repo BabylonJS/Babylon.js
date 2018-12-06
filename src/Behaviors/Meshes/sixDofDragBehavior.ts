@@ -71,7 +71,7 @@ import { Camera } from "Cameras/camera";
         /**
          *  Initializes the behavior
          */
-        public init() {}
+        public init() { }
 
         /**
          * Attaches the scale behavior the passed in mesh
@@ -112,7 +112,7 @@ import { Camera } from "Cameras/camera";
 
                         // Set position and orientation of the controller
                         this._virtualOriginMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.subtract(pointerInfo.pickInfo.ray.direction));
+                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
 
                         // Attach the virtual drag mesh to the virtual origin mesh so it can be dragged
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
@@ -137,14 +137,14 @@ import { Camera } from "Cameras/camera";
                             if (this._scene.activeCamera.inputs.attachedElement) {
                                 attachedElement = this._scene.activeCamera.inputs.attachedElement;
                                 this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
-                            }else {
+                            } else {
                                 attachedElement = null;
                             }
                         }
                         BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
                         this.onDragStartObservable.notifyObservers({});
                     }
-                }else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
+                } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
                         this.dragging = false;
                         this._moving = false;
@@ -158,7 +158,7 @@ import { Camera } from "Cameras/camera";
                         }
                         this.onDragEndObservable.notifyObservers({});
                     }
-                }else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
+                } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh) {
                         var zDragFactor = this.zDragFactor;
                         if (this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
@@ -180,7 +180,7 @@ import { Camera } from "Cameras/camera";
 
                         // Update the controller position
                         this._virtualOriginMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.subtract(pointerInfo.pickInfo.ray.direction));
+                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
 
                         // Move the virtualObjectsPosition into the picked mesh's space if needed

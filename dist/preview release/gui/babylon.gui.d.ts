@@ -1,7 +1,7 @@
 /*Babylon.js GUI*/
 // Dependencies for this module:
-//   ../../../../Tools/gulp/babylonjs
-//   ../../../../Tools/gulp/2D
+//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../Tools/Gulp/2D
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
@@ -752,7 +752,10 @@ declare module BABYLON.GUI {
             onValueChangedObservable: BABYLON.Observable<BABYLON.Color3>;
             /** Gets or sets the color of the color picker */
             value: BABYLON.Color3;
-            /** Gets or sets control width */
+            /**
+                * Gets or sets control width
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
             width: string | number;
             /** Gets or sets control height */
             height: string | number;
@@ -764,6 +767,8 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            /** @hidden */
+            protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             _draw(context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
@@ -788,8 +793,6 @@ declare module BABYLON.GUI {
             protected _adaptWidthToChildren: boolean;
             /** @hidden */
             protected _adaptHeightToChildren: boolean;
-            /** @hidden */
-            protected _rebuildLayout: boolean;
             /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
             adaptHeightToChildren: boolean;
             /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
@@ -921,6 +924,8 @@ declare module BABYLON.GUI {
             protected _isEnabled: boolean;
             protected _disabledColor: string;
             /** @hidden */
+            protected _rebuildLayout: boolean;
+            /** @hidden */
             _isClipped: boolean;
             /** @hidden */
             _tag: any;
@@ -997,6 +1002,10 @@ declare module BABYLON.GUI {
                 * An event triggered after the control was drawn
                 */
             onAfterDrawObservable: BABYLON.Observable<Control>;
+            /**
+                * Get the hosting AdvancedDynamicTexture
+                */
+            readonly host: AdvancedDynamicTexture;
             /** Gets or set information about font offsets (used to render and align text) */
             fontOffset: {
                     ascent: number;
@@ -1427,6 +1436,12 @@ declare module BABYLON.GUI {
                 */
             getChildrenAt(row: number, column: number): BABYLON.Nullable<Array<Control>>;
             /**
+                * Gets a string representing the child cell info (row x column)
+                * @param child defines the control to get info from
+                * @returns a string containing the child cell info (row x column)
+                */
+            getChildCellInfo(child: Control): string;
+            /**
                 * Remove a column definition at specified index
                 * @param index defines the index of the column to remove
                 * @returns the current grid
@@ -1637,6 +1652,7 @@ declare module BABYLON.GUI {
             processKeyboard(evt: KeyboardEvent): void;
             _draw(context: CanvasRenderingContext2D): void;
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+            _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
             _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
             protected _beforeRenderText(text: string): string;
             dispose(): void;
@@ -2040,8 +2056,6 @@ declare module BABYLON.GUI {
             barColor: string;
             /** Gets or sets the size of the bar */
             barSize: number;
-            /** Gets or sets the bar color */
-            barBorderColor: string;
             /** Gets or sets the bar background */
             barBackground: string;
             _link(host: AdvancedDynamicTexture): void;

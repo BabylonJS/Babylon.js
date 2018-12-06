@@ -207,9 +207,9 @@ export class Inspector {
             this._OpenedPane++;
             const embedHostElement = React.createElement(EmbedHostComponent, {
                 globalState: this._GlobalState, scene: scene,
-                    noExpand: !options.enablePopup,
-                    noClose: !options.enableClose,
-                    popupMode: options.popup, onPopup: () => {
+                noExpand: !options.enablePopup,
+                noClose: !options.enableClose,
+                popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._EmbedHost!);
 
                     if (options.popup) {
@@ -432,7 +432,7 @@ export class Inspector {
     }
 
     private static _Cleanup() {
-        if (!this._NewCanvasContainer) {
+        if (this._NewCanvasContainer) {
             this._DestroyCanvasContainer();
         }
 

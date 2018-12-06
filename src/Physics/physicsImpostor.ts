@@ -647,7 +647,7 @@ import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
                 this._tmpQuat.copyFrom(this.object.rotationQuaternion || new Quaternion());
             }
             if (!this._options.disableBidirectionalTransformation) {
-                this.object.rotationQuaternion && this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePivotPoint(), this._tmpQuat);
+                this.object.rotationQuaternion && this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePosition(), this._tmpQuat);
             }
 
             this._onBeforePhysicsStepCallbacks.forEach((func) => {
