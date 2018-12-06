@@ -3,7 +3,7 @@ import { Scene, AbstractMesh, Nullable, UtilityLayerRenderer, Tools, Mesh, Color
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 
 interface IRenderGridPropertyGridComponentProps {
-    scene: Scene
+    scene: Scene;
 }
 
 export class RenderGridPropertyGridComponent extends React.Component<IRenderGridPropertyGridComponentProps, { isEnabled: boolean }> {
