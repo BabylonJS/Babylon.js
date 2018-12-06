@@ -1,4 +1,4 @@
-import { Vector3, Color3, Quaternion } from "Maths/math";
+import { Vector3, Color3 } from "Maths/math";
 import { Nullable } from "types";
 import { Scene } from "scene";
 import { TransformNode } from "Meshes/transformNode";
