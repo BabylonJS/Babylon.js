@@ -408,9 +408,10 @@ module BABYLON {
          * @param loop defines if the current animation must loop
          * @param speedRatio defines the current speed ratio
          * @param weight defines the weight of the animation (default is -1 so no weight)
+         * @param onLoop optional callback called when animation loops
          * @returns a boolean indicating if the animation is running
          */
-        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
+        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0, onLoop?: () => void): boolean {
             let targetPropertyPath = this._animation.targetPropertyPath;
             if (!targetPropertyPath || targetPropertyPath.length < 1) {
                 this._stopped = true;
@@ -547,6 +548,10 @@ module BABYLON {
             let events = this._events;
             if (range > 0 && this.currentFrame > currentFrame ||
                 range < 0 && this.currentFrame < currentFrame) {
+                if (onLoop) {
+                    onLoop();
+                }
+
                 // Need to reset animation events
                 for (var index = 0; index < events.length; index++) {
                     if (!events[index].onlyOnce) {
