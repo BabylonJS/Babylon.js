@@ -232,7 +232,7 @@ module BABYLON {
                 };
                 animatable.onAnimationLoop = () => {
                     this.onAnimationLoopObservable.notifyObservers(targetedAnimation);
-                }
+                };
                 this._animatables.push(animatable);
             }
 

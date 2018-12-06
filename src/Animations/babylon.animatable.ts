@@ -111,7 +111,7 @@ module BABYLON {
             public onAnimationEnd?: Nullable<() => void>,
             animations?: Animation[],
             /** defines a callback to call when animation loops */
-            public onAnimationLoop?: Nullable<() => void>, ) {
+            public onAnimationLoop?: Nullable<() => void>) {
             this._scene = scene;
             if (animations) {
                 this.appendAnimations(target, animations);
