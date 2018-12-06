@@ -38,6 +38,8 @@
 
 ### Core Engine
 
+- Added `animatable.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
+- Added `animationGroup.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein))
 - Added support for Scissor testing ([Deltakosh](https://github.com/deltakosh))
 - Added `Engine.onNewSceneAddedObservable` ([Deltakosh](https://github.com/deltakosh))
