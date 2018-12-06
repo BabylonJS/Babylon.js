@@ -1,6 +1,6 @@
 import { BaseSlider } from "./baseSlider";
-import { Measure } from "../measure";
-import { Image } from "./image";
+import { Measure } from "../../measure";
+import { Image } from "../image";
 
 /**
  * Class used to create slider controls based on images
@@ -100,60 +100,62 @@ export class ImageBasedSlider extends BaseSlider {
         return "ImageBasedSlider";
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         this._applyStates(context);
-        if (this._processMeasures(parentMeasure, context)) {
 
-            this._prepareRenderingData("rectangle");
-            const thumbPosition = this._getThumbPosition();
-            var left = this._renderLeft;
-            var top = this._renderTop;
-            var width = this._renderWidth;
-            var height = this._renderHeight;
+        this._prepareRenderingData("rectangle");
+        const thumbPosition = this._getThumbPosition();
+        var left = this._renderLeft;
+        var top = this._renderTop;
+        var width = this._renderWidth;
+        var height = this._renderHeight;
 
-            // Background
-            if (this._backgroundImage) {
-                this._tempMeasure.copyFromFloats(left, top, width, height);
+        // Background
+        if (this._backgroundImage) {
+            this._tempMeasure.copyFromFloats(left, top, width, height);
+            if (this.isThumbClamped && this.displayThumb) {
+                if (this.isVertical) {
+                    this._tempMeasure.height += this._effectiveThumbThickness;
+                } else {
+                    this._tempMeasure.width += this._effectiveThumbThickness;
+                }
+            }
+            this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
+            this._backgroundImage._draw(context);
+        }
+
+        // Bar
+        if (this._valueBarImage) {
+            if (this.isVertical) {
                 if (this.isThumbClamped && this.displayThumb) {
-                    if (this.isVertical) {
-                        this._tempMeasure.height += this._effectiveThumbThickness;
-                    } else {
-                        this._tempMeasure.width += this._effectiveThumbThickness;
-                    }
+                    this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition + this._effectiveThumbThickness);
+                } else {
+                    this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
                 }
-                this._backgroundImage._draw(this._tempMeasure, context);
+            } else {
+                if (this.isThumbClamped && this.displayThumb) {
+                    this._tempMeasure.copyFromFloats(left, top, thumbPosition + this._effectiveThumbThickness / 2, height);
+                }
+                else {
+                    this._tempMeasure.copyFromFloats(left, top, thumbPosition, height);
+                }
+            }
+            this._valueBarImage._currentMeasure.copyFrom(this._tempMeasure);
+            this._valueBarImage._draw(context);
+        }
+
+        // Thumb
+        if (this.displayThumb) {
+            if (this.isVertical) {
+                this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
+            } else {
+                this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
             }
 
-            // Bar
-            if (this._valueBarImage) {
-                if (this.isVertical) {
-                    if (this.isThumbClamped && this.displayThumb) {
-                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition + this._effectiveThumbThickness);
-                    } else {
-                        this._tempMeasure.copyFromFloats(left, top + thumbPosition, width, height - thumbPosition);
-                    }
-                } else {
-                    if (this.isThumbClamped && this.displayThumb) {
-                        this._tempMeasure.copyFromFloats(left, top, thumbPosition + this._effectiveThumbThickness / 2, height);
-                    }
-                    else {
-                        this._tempMeasure.copyFromFloats(left, top, thumbPosition, height);
-                    }
-                }
-                this._valueBarImage._draw(this._tempMeasure, context);
-            }
-
-            // Thumb
-            if (this.displayThumb) {
-                if (this.isVertical) {
-                    this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
-                } else {
-                    this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
-                }
-                this._thumbImage._draw(this._tempMeasure, context);
-            }
+            this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
+            this._thumbImage._draw(context);
         }
 
         context.restore();

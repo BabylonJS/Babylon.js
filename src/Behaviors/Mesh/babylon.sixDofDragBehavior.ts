@@ -16,7 +16,11 @@ module BABYLON {
         /**
          * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
          */
-         private zDragFactor = 3;
+        private zDragFactor = 3;
+        /**
+         * If the object should rotate to face the drag origin
+         */
+        public rotateDraggedObject = true;
         /**
          * If the behavior is currently in a dragging state
          */
@@ -58,7 +62,7 @@ module BABYLON {
         /**
          *  Initializes the behavior
          */
-        public init() {}
+        public init() { }
 
         /**
          * Attaches the scale behavior the passed in mesh
@@ -90,7 +94,7 @@ module BABYLON {
                 if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     if (!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
                         if (this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
-                            pointerInfo.pickInfo.ray.origin.copyFrom(this._scene.activeCamera!.position);
+                            pointerInfo.pickInfo.ray.origin.copyFrom(this._scene.activeCamera!.globalPosition);
                         }
 
                         pickedMesh = this._ownerNode;
@@ -99,7 +103,7 @@ module BABYLON {
 
                         // Set position and orientation of the controller
                         this._virtualOriginMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.subtract(pointerInfo.pickInfo.ray.direction));
+                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
 
                         // Attach the virtual drag mesh to the virtual origin mesh so it can be dragged
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
@@ -124,14 +128,14 @@ module BABYLON {
                             if (this._scene.activeCamera.inputs.attachedElement) {
                                 attachedElement = this._scene.activeCamera.inputs.attachedElement;
                                 this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
-                            }else {
+                            } else {
                                 attachedElement = null;
                             }
                         }
                         BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
                         this.onDragStartObservable.notifyObservers({});
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP) {
+                } else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERUP) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
                         this.dragging = false;
                         this._moving = false;
@@ -145,11 +149,11 @@ module BABYLON {
                         }
                         this.onDragEndObservable.notifyObservers({});
                     }
-                }else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE) {
+                } else if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERMOVE) {
                     if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh) {
                         var zDragFactor = this.zDragFactor;
                         if (this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
-                            pointerInfo.pickInfo.ray.origin.copyFrom(this._scene.activeCamera!.position);
+                            pointerInfo.pickInfo.ray.origin.copyFrom(this._scene.activeCamera!.globalPosition);
                             zDragFactor = 0;
                         }
 
@@ -167,7 +171,7 @@ module BABYLON {
 
                         // Update the controller position
                         this._virtualOriginMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.subtract(pointerInfo.pickInfo.ray.direction));
+                        this._virtualOriginMesh.lookAt(pointerInfo.pickInfo.ray.origin.add(pointerInfo.pickInfo.ray.direction));
                         this._virtualOriginMesh.removeChild(this._virtualDragMesh);
 
                         // Move the virtualObjectsPosition into the picked mesh's space if needed
@@ -192,21 +196,23 @@ module BABYLON {
                     // Slowly move mesh to avoid jitter
                     pickedMesh.position.addInPlace(this._targetPosition.subtract(pickedMesh.position).scale(this.dragDeltaRatio));
 
-                    // Get change in rotation
-                    tmpQuaternion.copyFrom(this._startingOrientation);
-                    tmpQuaternion.x = -tmpQuaternion.x;
-                    tmpQuaternion.y = -tmpQuaternion.y;
-                    tmpQuaternion.z = -tmpQuaternion.z;
-                    this._virtualDragMesh.rotationQuaternion!.multiplyToRef(tmpQuaternion, tmpQuaternion);
-                    // Convert change in rotation to only y axis rotation
-                    Quaternion.RotationYawPitchRollToRef(tmpQuaternion.toEulerAngles("xyz").y, 0, 0, tmpQuaternion);
-                    tmpQuaternion.multiplyToRef(this._startingOrientation, tmpQuaternion);
-                    // Slowly move mesh to avoid jitter
-                    var oldParent = pickedMesh.parent;
-                    pickedMesh.setParent(null);
-                    Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
-                    pickedMesh.setParent(oldParent);
-                    BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
+                    if (this.rotateDraggedObject) {
+                        // Get change in rotation
+                        tmpQuaternion.copyFrom(this._startingOrientation);
+                        tmpQuaternion.x = -tmpQuaternion.x;
+                        tmpQuaternion.y = -tmpQuaternion.y;
+                        tmpQuaternion.z = -tmpQuaternion.z;
+                        this._virtualDragMesh.rotationQuaternion!.multiplyToRef(tmpQuaternion, tmpQuaternion);
+                        // Convert change in rotation to only y axis rotation
+                        Quaternion.RotationYawPitchRollToRef(tmpQuaternion.toEulerAngles("xyz").y, 0, 0, tmpQuaternion);
+                        tmpQuaternion.multiplyToRef(this._startingOrientation, tmpQuaternion);
+                        // Slowly move mesh to avoid jitter
+                        var oldParent = pickedMesh.parent;
+                        pickedMesh.setParent(null);
+                        Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
+                        pickedMesh.setParent(oldParent);
+                        BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
+                    }
                 }
             });
         }

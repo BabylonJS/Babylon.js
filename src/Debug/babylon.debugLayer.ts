@@ -65,6 +65,10 @@ module BABYLON {
          */
         enablePopup?: boolean;
         /**
+         * Allow the panes to be closed by users (default: true)
+         */
+        enableClose?: boolean;
+        /**
          * Optional list of extensibility entries
          */
         explorerExtensibility?: IExplorerExtensibilityGroup[];
@@ -160,7 +164,7 @@ module BABYLON {
          * @returns true if visible otherwise, false
          */
         public isVisible(): boolean {
-            return this.BJSINSPECTOR.Inspector.IsVisible;
+            return this.BJSINSPECTOR && this.BJSINSPECTOR.Inspector.IsVisible;
         }
 
         /**

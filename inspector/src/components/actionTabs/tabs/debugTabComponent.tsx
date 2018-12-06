@@ -2,7 +2,7 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 import { CheckBoxLineComponent } from "../lines/checkBoxLineComponent";
-import { GridPropertyGridComponent } from "./propertyGrids/gridPropertyGridComponent";
+import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
 
 export class DebugTabComponent extends PaneComponent {
     private _skeletonViewersEnabled = false;
@@ -107,7 +107,7 @@ export class DebugTabComponent extends PaneComponent {
         return (
             <div className="pane">
                 <LineContainerComponent title="HELPERS">
-                    <GridPropertyGridComponent scene={scene} />
+                    <RenderGridPropertyGridComponent scene={scene} />
                     <CheckBoxLineComponent label="Bones" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
                     <CheckBoxLineComponent label="Physics" isSelected={() => this._physicsViewersEnabled} onSelect={() => this.switchPhysicsViewers()} />
                 </LineContainerComponent>

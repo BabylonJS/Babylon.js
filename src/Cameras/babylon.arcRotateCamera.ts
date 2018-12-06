@@ -544,6 +544,8 @@ module BABYLON {
         protected _targetBoundingCenter: Nullable<Vector3>;
 
         private _computationVector: Vector3 = Vector3.Zero();
+        private _tempAxisVector: Vector3;
+        private _tempAxisRotationMatrix: Matrix;
 
         /**
          * Instantiates a new ArcRotateCamera in a given scene
@@ -907,6 +909,26 @@ module BABYLON {
 
             var target = this._getTargetPosition();
             this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
+
+            // Rotate according to up vector
+            if (this.upVector.x !== 0 || this.upVector.y !== 1.0 || this.upVector.z !== 0) {
+
+                if (!this._tempAxisVector) {
+                    this._tempAxisVector = new Vector3();
+                    this._tempAxisRotationMatrix = new Matrix();
+                }
+
+                Vector3.CrossToRef(Vector3.Up(), this.upVector, this._tempAxisVector);
+                this._tempAxisVector.normalize();
+
+                let angle = Math.acos(Vector3.Dot(Vector3.UpReadOnly, this.upVector));
+
+                Matrix.RotationAxisToRef(this._tempAxisVector, angle, this._tempAxisRotationMatrix);
+
+                this._tempAxisVector.copyFrom(this._computationVector);
+                Vector3.TransformCoordinatesToRef(this._tempAxisVector, this._tempAxisRotationMatrix, this._computationVector);
+            }
+
             target.addToRef(this._computationVector, this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 if (!this._collider) {
@@ -1054,7 +1076,6 @@ module BABYLON {
             var camRight = <ArcRotateCamera>this._rigCameras[1];
 
             camLeft.beta = camRight.beta = this.beta;
-            camLeft.radius = camRight.radius = this.radius;
 
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:

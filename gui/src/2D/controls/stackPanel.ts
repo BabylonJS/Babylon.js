@@ -10,7 +10,6 @@ export class StackPanel extends Container {
     private _manualWidth = false;
     private _manualHeight = false;
     private _doNotTrackManualChanges = false;
-    private _tempMeasureStore = Measure.Empty();
 
     /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
     public get isVertical(): boolean {
@@ -82,39 +81,65 @@ export class StackPanel extends Container {
         return "StackPanel";
     }
 
+    /** @hidden */
     protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        for (var child of this._children) {
+            if (this._isVertical) {
+                child.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            } else {
+                child.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+            }
+        }
+
+        super._preMeasure(parentMeasure, context);
+    }
+
+    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        super._additionalProcessing(parentMeasure, context);
+
+        this._measureForChildren.copyFrom(parentMeasure);
+
+        this._measureForChildren.left = this._currentMeasure.left;
+        this._measureForChildren.top = this._currentMeasure.top;
+
+        if (this.isVertical || this._manualWidth) {
+            this._measureForChildren.width = this._currentMeasure.width;
+        } else if (!this.isVertical || this._manualHeight) {
+            this._measureForChildren.height = this._currentMeasure.height;
+        }
+    }
+
+    protected _postMeasure(): void {
         var stackWidth = 0;
         var stackHeight = 0;
         for (var child of this._children) {
-            this._tempMeasureStore.copyFrom(child._currentMeasure);
-            child._currentMeasure.copyFrom(parentMeasure);
-            child._measure();
+            if (!child.isVisible || child.notRenderable) {
+                continue;
+            }
 
             if (this._isVertical) {
-                child.top = stackHeight + "px";
-                if (!child._top.ignoreAdaptiveScaling) {
-                    child._markAsDirty();
+                if (child.top !== stackHeight + "px") {
+                    child.top = stackHeight + "px";
+                    this._rebuildLayout = true;
+                    child._top.ignoreAdaptiveScaling = true;
                 }
-                child._top.ignoreAdaptiveScaling = true;
-                stackHeight += child._currentMeasure.height;
+
+                stackHeight += child._currentMeasure.height + child.paddingTopInPixels;
                 if (child._currentMeasure.width > stackWidth) {
                     stackWidth = child._currentMeasure.width;
                 }
-                child.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
             } else {
-                child.left = stackWidth + "px";
-                if (!child._left.ignoreAdaptiveScaling) {
-                    child._markAsDirty();
+                if (child.left !== stackWidth + "px") {
+                    child.left = stackWidth + "px";
+                    this._rebuildLayout = true;
+                    child._left.ignoreAdaptiveScaling = true;
                 }
-                child._left.ignoreAdaptiveScaling = true;
-                stackWidth += child._currentMeasure.width;
+
+                stackWidth += child._currentMeasure.width + child.paddingLeftInPixels;
                 if (child._currentMeasure.height > stackHeight) {
                     stackHeight = child._currentMeasure.height;
                 }
-                child.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             }
-
-            child._currentMeasure.copyFrom(this._tempMeasureStore);
         }
 
         this._doNotTrackManualChanges = true;
@@ -125,20 +150,16 @@ export class StackPanel extends Container {
         let panelWidthChanged = false;
         let panelHeightChanged = false;
 
-        let previousHeight = this.height;
-        let previousWidth = this.width;
-
-        if (!this._manualHeight) {
-            // do not specify height if strictly defined by user
+        if (!this._manualHeight) { // do not specify height if strictly defined by user
+            let previousHeight = this.height;
             this.height = stackHeight + "px";
+            panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
         }
-        if (!this._manualWidth) {
-            // do not specify width if strictly defined by user
+        if (!this._manualWidth) { // do not specify width if strictly defined by user
+            let previousWidth = this.width;
             this.width = stackWidth + "px";
+            panelWidthChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
         }
-
-        panelWidthChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
-        panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
 
         if (panelHeightChanged) {
             this._height.ignoreAdaptiveScaling = true;
@@ -151,9 +172,9 @@ export class StackPanel extends Container {
         this._doNotTrackManualChanges = false;
 
         if (panelWidthChanged || panelHeightChanged) {
-            this._markAllAsDirty();
+            this._rebuildLayout = true;
         }
 
-        super._preMeasure(parentMeasure, context);
+        super._postMeasure();
     }
 }

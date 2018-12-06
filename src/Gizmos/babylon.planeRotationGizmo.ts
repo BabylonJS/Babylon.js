@@ -17,7 +17,7 @@ module BABYLON {
          * Event that fires each time the gizmo snaps to a new location.
          * * snapDistance is the the change in distance
          */
-        public onSnapObservable = new Observable<{snapDistance: number}>();
+        public onSnapObservable = new Observable<{ snapDistance: number }>();
 
         /**
          * Creates a PlaneRotationGizmo
@@ -56,14 +56,14 @@ module BABYLON {
             rotationMesh.material = coloredMaterial;
             rotationMesh.rotation.x = Math.PI / 2;
             parentMesh.addChild(rotationMesh);
-            parentMesh.lookAt(this._rootMesh.position.subtract(planeNormal));
+            parentMesh.lookAt(this._rootMesh.position.add(planeNormal));
 
             this._rootMesh.addChild(parentMesh);
             parentMesh.scaling.scaleInPlace(1 / 3);
             // Add drag behavior to handle events when the gizmo is dragged
-            this.dragBehavior = new PointerDragBehavior({dragPlaneNormal: planeNormal});
+            this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: planeNormal });
             this.dragBehavior.moveAttached = false;
-            this.dragBehavior.maxDragAngle =  Math.PI * 9 / 20;
+            this.dragBehavior.maxDragAngle = Math.PI * 9 / 20;
             this.dragBehavior._useAlternatePickedPointAboveMaxDragAngle = true;
             this._rootMesh.addBehavior(this.dragBehavior);
 
@@ -79,7 +79,7 @@ module BABYLON {
             var planeNormalTowardsCamera = new Vector3();
             var localPlaneNormalTowardsCamera = new Vector3();
 
-            var tmpSnapEvent = {snapDistance: 0};
+            var tmpSnapEvent = { snapDistance: 0 };
             var currentSnapDragDistance = 0;
             var tmpMatrix = new BABYLON.Matrix();
             var tmpVector = new BABYLON.Vector3();
@@ -121,7 +121,7 @@ module BABYLON {
                             currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                             angle = this.snapDistance * dragSteps;
                             snapped = true;
-                        }else {
+                        } else {
                             angle = 0;
                         }
                     }
@@ -144,13 +144,13 @@ module BABYLON {
                         BABYLON.Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
                     }
 
-                     if (this.updateGizmoRotationToMatchAttachedMesh) {
+                    if (this.updateGizmoRotationToMatchAttachedMesh) {
                         // Rotate selected mesh quaternion over fixed axis
                         this.attachedMesh.rotationQuaternion.multiplyToRef(amountToRotate, this.attachedMesh.rotationQuaternion);
-                     }else {
-                         // Rotate selected mesh quaternion over rotated axis
+                    } else {
+                        // Rotate selected mesh quaternion over rotated axis
                         amountToRotate.multiplyToRef(this.attachedMesh.rotationQuaternion, this.attachedMesh.rotationQuaternion);
-                     }
+                    }
 
                     lastDragPosition.copyFrom(event.dragPlanePoint);
                     if (snapped) {

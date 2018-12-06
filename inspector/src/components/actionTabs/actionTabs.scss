@@ -5,6 +5,10 @@
     bottom: 0px;
 }
 
+#__resizable_base__ {
+    display: none;
+}
+
 #actionTabs {
     background: #333333;
     height: 100%;
@@ -140,6 +144,10 @@
                 -moz-user-select: none;   
                 -ms-user-select: none;    
                 user-select: none;     
+
+                .underline {
+                    border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);
+                }
                 
                 .textureLinkLine {
                     display: grid;
@@ -729,6 +737,10 @@
                         display: flex;
                         align-items: center;   
                         margin-right: 5px;
+
+                        select {
+                            width: 115px;
+                        }
                     }                    
                 }                   
 

@@ -6815,357 +6815,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    /** @hidden */
-    class Collider {
-        /** Define if a collision was found */
-        collisionFound: boolean;
-        /**
-         * Define last intersection point in local space
-         */
-        intersectionPoint: Vector3;
-        /**
-         * Define last collided mesh
-         */
-        collidedMesh: Nullable<AbstractMesh>;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        /** @hidden */
-
-        /** @hidden */
-
-        private _velocity;
-        private _basePoint;
-        private _epsilon;
-        /** @hidden */
-
-        /** @hidden */
-
-        private _velocityWorld;
-        private _normalizedVelocity;
-        /** @hidden */
-
-        /** @hidden */
-
-        private _nearestDistance;
-        private _collisionMask;
-        collisionMask: number;
-        /**
-         * Gets the plane normal used to compute the sliding response (in local space)
-         */
-        readonly slidePlaneNormal: Vector3;
-        /** @hidden */
-
-        /** @hidden */
-
-        /** @hidden */
-
-        /** @hidden */
-
-        /** @hidden */
-
-        /** @hidden */
-
-    }
-}
-
-declare module BABYLON {
-    /** @hidden */
-    var CollisionWorker: string;
-    /** @hidden */
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    /** @hidden */
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    /** @hidden */
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    /**
-     * Interface describing the value associated with a geometry.
-     * @hidden
-     */
-    interface SerializedGeometry {
-        /**
-         * Defines the unique ID of the geometry
-         */
-        id: string;
-        /**
-         * Defines the array containing the positions
-         */
-        positions: Float32Array;
-        /**
-         * Defines the array containing the indices
-         */
-        indices: Uint32Array;
-        /**
-         * Defines the array containing the normals
-         */
-        normals: Float32Array;
-    }
-    /** @hidden */
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    /** @hidden */
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    /** Defines supported task for worker process */
-    enum WorkerTaskType {
-        /** Initialization */
-        INIT = 0,
-        /** Update of geometry */
-        UPDATE = 1,
-        /** Evaluate collision */
-        COLLIDE = 2
-    }
-    /** @hidden */
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    /** @hidden */
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    /** @hidden */
-    interface InitPayload {
-    }
-    /** @hidden */
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    /** @hidden */
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    /** Defines kind of replies returned by worker */
-    enum WorkerReplyType {
-        /** Success */
-        SUCCESS = 0,
-        /** Unkown error */
-        UNKNOWN_ERROR = 1
-    }
-    /** @hidden */
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (transformNode: TransformNode) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    /** @hidden */
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld;
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare const safePostMessage: any;
-declare module BABYLON {
-    /** @hidden */
-    var WorkerIncluded: boolean;
-    /** @hidden */
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    /** @hidden */
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-        private checkCollision;
-        private processCollisionsForSubMeshes;
-        private collideForSubMesh;
-        private checkSubmeshCollision;
-    }
-    /** @hidden */
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    /** @hidden */
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     */
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    /**
-     * Information about the result of picking within a scene
-     * @see https://doc.babylonjs.com/babylon101/picking_collisions
-     */
-    class PickingInfo {
-        /**
-         * If the pick collided with an object
-         */
-        hit: boolean;
-        /**
-         * Distance away where the pick collided
-         */
-        distance: number;
-        /**
-         * The location of pick collision
-         */
-        pickedPoint: Nullable<Vector3>;
-        /**
-         * The mesh corresponding the the pick collision
-         */
-        pickedMesh: Nullable<AbstractMesh>;
-        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
-        bu: number;
-        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
-        bv: number;
-        /** The id of the face on the mesh that was picked  */
-        faceId: number;
-        /** Id of the the submesh that was picked */
-        subMeshId: number;
-        /** If a sprite was picked, this will be the sprite the pick collided with */
-        pickedSprite: Nullable<Sprite>;
-        /**
-         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
-         */
-        originMesh: Nullable<AbstractMesh>;
-        /**
-         * The ray that was used to perform the picking.
-         */
-        ray: Nullable<Ray>;
-        /**
-         * Gets the normal correspodning to the face the pick collided with
-         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
-         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
-         * @returns The normal correspodning to the face the pick collided with
-         */
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        /**
-         * Gets the texture coordinates of where the pick occured
-         * @returns the vector containing the coordnates of the texture
-         */
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-declare module BABYLON {
     /**
      * This represents an orbital type of camera.
      *
@@ -7411,6 +7060,8 @@ declare module BABYLON {
         protected _collisionTriggered: boolean;
         protected _targetBoundingCenter: Nullable<Vector3>;
         private _computationVector;
+        private _tempAxisVector;
+        private _tempAxisRotationMatrix;
         /**
          * Instantiates a new ArcRotateCamera in a given scene
          * @param name Defines the name of the camera
@@ -9614,6 +9265,357 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON {
+    /** @hidden */
+    class Collider {
+        /** Define if a collision was found */
+        collisionFound: boolean;
+        /**
+         * Define last intersection point in local space
+         */
+        intersectionPoint: Vector3;
+        /**
+         * Define last collided mesh
+         */
+        collidedMesh: Nullable<AbstractMesh>;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        /** @hidden */
+
+        /** @hidden */
+
+        private _velocity;
+        private _basePoint;
+        private _epsilon;
+        /** @hidden */
+
+        /** @hidden */
+
+        private _velocityWorld;
+        private _normalizedVelocity;
+        /** @hidden */
+
+        /** @hidden */
+
+        private _nearestDistance;
+        private _collisionMask;
+        collisionMask: number;
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        readonly slidePlaneNormal: Vector3;
+        /** @hidden */
+
+        /** @hidden */
+
+        /** @hidden */
+
+        /** @hidden */
+
+        /** @hidden */
+
+        /** @hidden */
+
+    }
+}
+
+declare module BABYLON {
+    /** @hidden */
+    var CollisionWorker: string;
+    /** @hidden */
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+    }
+    /** @hidden */
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    /** @hidden */
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    /**
+     * Interface describing the value associated with a geometry.
+     * @hidden
+     */
+    interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
+        id: string;
+        /**
+         * Defines the array containing the positions
+         */
+        positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */
+        indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */
+        normals: Float32Array;
+    }
+    /** @hidden */
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    /** @hidden */
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    /** Defines supported task for worker process */
+    enum WorkerTaskType {
+        /** Initialization */
+        INIT = 0,
+        /** Update of geometry */
+        UPDATE = 1,
+        /** Evaluate collision */
+        COLLIDE = 2
+    }
+    /** @hidden */
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    /** @hidden */
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    /** @hidden */
+    interface InitPayload {
+    }
+    /** @hidden */
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    /** @hidden */
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    /** Defines kind of replies returned by worker */
+    enum WorkerReplyType {
+        /** Success */
+        SUCCESS = 0,
+        /** Unkown error */
+        UNKNOWN_ERROR = 1
+    }
+    /** @hidden */
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    /** @hidden */
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld;
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare const safePostMessage: any;
+declare module BABYLON {
+    /** @hidden */
+    var WorkerIncluded: boolean;
+    /** @hidden */
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    /** @hidden */
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+        private checkCollision;
+        private processCollisionsForSubMeshes;
+        private collideForSubMesh;
+        private checkSubmeshCollision;
+    }
+    /** @hidden */
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    /** @hidden */
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    /**
+     * Information about the result of picking within a scene
+     * @see https://doc.babylonjs.com/babylon101/picking_collisions
+     */
+    class PickingInfo {
+        /**
+         * If the pick collided with an object
+         */
+        hit: boolean;
+        /**
+         * Distance away where the pick collided
+         */
+        distance: number;
+        /**
+         * The location of pick collision
+         */
+        pickedPoint: Nullable<Vector3>;
+        /**
+         * The mesh corresponding the the pick collision
+         */
+        pickedMesh: Nullable<AbstractMesh>;
+        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
+        bu: number;
+        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
+        bv: number;
+        /** The id of the face on the mesh that was picked  */
+        faceId: number;
+        /** Id of the the submesh that was picked */
+        subMeshId: number;
+        /** If a sprite was picked, this will be the sprite the pick collided with */
+        pickedSprite: Nullable<Sprite>;
+        /**
+         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
+         */
+        originMesh: Nullable<AbstractMesh>;
+        /**
+         * The ray that was used to perform the picking.
+         */
+        ray: Nullable<Ray>;
+        /**
+         * Gets the normal correspodning to the face the pick collided with
+         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
+         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
+         * @returns The normal correspodning to the face the pick collided with
+         */
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        /**
+         * Gets the texture coordinates of where the pick occured
+         * @returns the vector containing the coordnates of the texture
+         */
+        getTextureCoordinates(): Nullable<Vector2>;
+    }
+}
+
 /**
  * Module Debug contains the (visual) components to debug a scene correctly
  */
@@ -9622,30 +9624,35 @@ declare module BABYLON.Debug {
      * The Axes viewer will show 3 axes in a specific point in space
      */
     class AxesViewer {
-        private _xmesh;
-        private _ymesh;
-        private _zmesh;
+        private _xAxis;
+        private _yAxis;
+        private _zAxis;
+        private _scaleLinesFactor;
+        private _instanced;
         /**
          * Gets the hosting scene
          */
-        scene: Nullable<Scene>;
+        scene: Scene;
         /**
          * Gets or sets a number used to scale line length
          */
         scaleLines: number;
-        /** Gets the mesh used to render x-axis */
-        readonly xAxisMesh: Nullable<AbstractMesh>;
-        /** Gets the mesh used to render x-axis */
-        readonly yAxisMesh: Nullable<AbstractMesh>;
-        /** Gets the mesh used to render x-axis */
-        readonly zAxisMesh: Nullable<AbstractMesh>;
-        private static _recursiveChangeRenderingGroupId;
+        /** Gets the node hierarchy used to render x-axis */
+        readonly xAxis: TransformNode;
+        /** Gets the node hierarchy used to render y-axis */
+        readonly yAxis: TransformNode;
+        /** Gets the node hierarchy used to render z-axis */
+        readonly zAxis: TransformNode;
         /**
          * Creates a new AxesViewer
          * @param scene defines the hosting scene
          * @param scaleLines defines a number used to scale line length (1 by default)
+         * @param renderingGroupId defines a number used to set the renderingGroupId of the meshes (2 by default)
+         * @param xAxis defines the node hierarchy used to render the x-axis
+         * @param yAxis defines the node hierarchy used to render the y-axis
+         * @param zAxis defines the node hierarchy used to render the z-axis
          */
-        constructor(scene: Scene, scaleLines?: number);
+        constructor(scene: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
         /**
          * Force the viewer to update
          * @param position defines the position of the viewer
@@ -9654,8 +9661,14 @@ declare module BABYLON.Debug {
          * @param zaxis defines the z axis of the viewer
          */
         update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        /**
+         * Creates an instance of this axes viewer.
+         * @returns a new axes viewer with instanced meshes
+         */
+        createInstance(): AxesViewer;
         /** Releases resources */
         dispose(): void;
+        private static _SetRenderingGroupId;
     }
 }
 
@@ -9757,6 +9770,10 @@ declare module BABYLON {
          * Allow the panes to popup (default: true)
          */
         enablePopup?: boolean;
+        /**
+         * Allow the panes to be closed by users (default: true)
+         */
+        enableClose?: boolean;
         /**
          * Optional list of extensibility entries
          */
@@ -10988,6 +11005,18 @@ private static _TextureLoaders: IInternalTextureLoader[];
          * @param clearColor defines the clear color
          */
         scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void;
+        /**
+         * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
+         * @param x defines the x-coordinate of the top left corner of the clear rectangle
+         * @param y defines the y-coordinate of the corner of the clear rectangle
+         * @param width defines the width of the clear rectangle
+         * @param height defines the height of the clear rectangle
+         */
+        enableScissor(x: number, y: number, width: number, height: number): void;
+        /**
+         * Disable previously set scissor test rectangle
+         */
+        disableScissor(): void;
         private _viewportCached;
         /** @hidden */
 
@@ -11633,7 +11662,7 @@ private static _TextureLoaders: IInternalTextureLoader[];
          * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
          * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
          * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
-         * @param invertY when true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file
+         * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
          * @param scene needed for loading to the correct scene
          * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
          * @param onLoad optional callback to be called upon successful completion
@@ -13183,7 +13212,9 @@ declare module BABYLON {
             snapDistance: number;
         }>;
         /** @hidden */
-private static _CreateArrow(scene: Scene, material: StandardMaterial): AbstractMesh;
+private static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode;
+        /** @hidden */
+private static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode;
         /**
          * Creates an AxisDragGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -21337,6 +21368,7 @@ declare module BABYLON {
          * Defines the third coordinates (on Z axis)
          */
         z: number;
+        private static _UpReadOnly;
         /**
          * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
          * @param x defines the first coordinates (on X axis)
@@ -21749,6 +21781,10 @@ declare module BABYLON {
          * @returns a new up Vector3
          */
         static Up(): Vector3;
+        /**
+         * Gets a up Vector3 that must not be updated
+         */
+        static readonly UpReadOnly: DeepImmutable<Vector3>;
         /**
          * Returns a new Vector3 set to (0.0, -1.0, 0.0)
          * @returns a new down Vector3
@@ -22446,6 +22482,13 @@ declare module BABYLON {
          * @param result the vector to store the results in
          */
         static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: DeepImmutable<Matrix>, result: Vector4): void;
+        /**
+         * Creates a new Vector4 from a Vector3
+         * @param source defines the source data
+         * @param w defines the 4th component (default is 0)
+         * @returns a new Vector4
+         */
+        static FromVector3(source: Vector3, w?: number): Vector4;
     }
     /**
      * Interface for the size containing width and height
@@ -24414,6 +24457,211 @@ declare module BABYLON {
          * @returns the spherical harmonics
          */
         static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Defines a target to use with MorphTargetManager
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTarget implements IAnimatable {
+        /** defines the name of the target */
+        name: string;
+        /**
+         * Gets or sets the list of animations
+         */
+        animations: Animation[];
+        private _scene;
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        /**
+         * Observable raised when the influence changes
+         */
+        onInfluenceChanged: Observable<boolean>;
+        /** @hidden */
+
+        /**
+         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
+         */
+        influence: number;
+        /**
+         * Gets or sets the id of the morph Target
+         */
+        id: string;
+        private _animationPropertiesOverride;
+        /**
+         * Gets or sets the animation properties override
+         */
+        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        /**
+         * Creates a new MorphTarget
+         * @param name defines the name of the target
+         * @param influence defines the influence to use
+         */
+        constructor(
+        /** defines the name of the target */
+        name: string, influence?: number, scene?: Nullable<Scene>);
+        /**
+         * Gets a boolean defining if the target contains position data
+         */
+        readonly hasPositions: boolean;
+        /**
+         * Gets a boolean defining if the target contains normal data
+         */
+        readonly hasNormals: boolean;
+        /**
+         * Gets a boolean defining if the target contains tangent data
+         */
+        readonly hasTangents: boolean;
+        /**
+         * Affects position data to this target
+         * @param data defines the position data to use
+         */
+        setPositions(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the position data stored in this target
+         * @returns a FloatArray containing the position data (or null if not present)
+         */
+        getPositions(): Nullable<FloatArray>;
+        /**
+         * Affects normal data to this target
+         * @param data defines the normal data to use
+         */
+        setNormals(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the normal data stored in this target
+         * @returns a FloatArray containing the normal data (or null if not present)
+         */
+        getNormals(): Nullable<FloatArray>;
+        /**
+         * Affects tangent data to this target
+         * @param data defines the tangent data to use
+         */
+        setTangents(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the tangent data stored in this target
+         * @returns a FloatArray containing the tangent data (or null if not present)
+         */
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Returns the string "MorphTarget"
+         * @returns "MorphTarget"
+         */
+        getClassName(): string;
+        /**
+         * Creates a new target from serialized data
+         * @param serializationObject defines the serialized data to use
+         * @returns a new MorphTarget
+         */
+        static Parse(serializationObject: any): MorphTarget;
+        /**
+         * Creates a MorphTarget from mesh data
+         * @param mesh defines the source mesh
+         * @param name defines the name to use for the new target
+         * @param influence defines the influence to attach to the target
+         * @returns a new MorphTarget
+         */
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class is used to deform meshes using morphing between different targets
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
+    class MorphTargetManager {
+        private _targets;
+        private _targetInfluenceChangedObservers;
+        private _targetDataLayoutChangedObservers;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        /**
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
+         */
+        constructor(scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        readonly uniqueId: number;
+        /**
+         * Gets the number of vertices handled by this manager
+         */
+        readonly vertexCount: number;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of normals
+         */
+        readonly supportsNormals: boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of tangents
+         */
+        readonly supportsTangents: boolean;
+        /**
+         * Gets the number of targets stored in this manager
+         */
+        readonly numTargets: number;
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
+        readonly numInfluencers: number;
+        /**
+         * Gets the list of influences (one per target)
+         */
+        readonly influences: Float32Array;
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getActiveTarget(index: number): MorphTarget;
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getTarget(index: number): MorphTarget;
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
+        addTarget(target: MorphTarget): void;
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        private _syncActiveTargets;
+        /**
+         * Syncrhonize the targets with all the meshes using this morph target manager
+         */
+        synchronize(): void;
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -30203,211 +30451,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Defines a target to use with MorphTargetManager
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTarget implements IAnimatable {
-        /** defines the name of the target */
-        name: string;
-        /**
-         * Gets or sets the list of animations
-         */
-        animations: Animation[];
-        private _scene;
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        /**
-         * Observable raised when the influence changes
-         */
-        onInfluenceChanged: Observable<boolean>;
-        /** @hidden */
-
-        /**
-         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
-         */
-        influence: number;
-        /**
-         * Gets or sets the id of the morph Target
-         */
-        id: string;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        /**
-         * Creates a new MorphTarget
-         * @param name defines the name of the target
-         * @param influence defines the influence to use
-         */
-        constructor(
-        /** defines the name of the target */
-        name: string, influence?: number, scene?: Nullable<Scene>);
-        /**
-         * Gets a boolean defining if the target contains position data
-         */
-        readonly hasPositions: boolean;
-        /**
-         * Gets a boolean defining if the target contains normal data
-         */
-        readonly hasNormals: boolean;
-        /**
-         * Gets a boolean defining if the target contains tangent data
-         */
-        readonly hasTangents: boolean;
-        /**
-         * Affects position data to this target
-         * @param data defines the position data to use
-         */
-        setPositions(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the position data stored in this target
-         * @returns a FloatArray containing the position data (or null if not present)
-         */
-        getPositions(): Nullable<FloatArray>;
-        /**
-         * Affects normal data to this target
-         * @param data defines the normal data to use
-         */
-        setNormals(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the normal data stored in this target
-         * @returns a FloatArray containing the normal data (or null if not present)
-         */
-        getNormals(): Nullable<FloatArray>;
-        /**
-         * Affects tangent data to this target
-         * @param data defines the tangent data to use
-         */
-        setTangents(data: Nullable<FloatArray>): void;
-        /**
-         * Gets the tangent data stored in this target
-         * @returns a FloatArray containing the tangent data (or null if not present)
-         */
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        /**
-         * Returns the string "MorphTarget"
-         * @returns "MorphTarget"
-         */
-        getClassName(): string;
-        /**
-         * Creates a new target from serialized data
-         * @param serializationObject defines the serialized data to use
-         * @returns a new MorphTarget
-         */
-        static Parse(serializationObject: any): MorphTarget;
-        /**
-         * Creates a MorphTarget from mesh data
-         * @param mesh defines the source mesh
-         * @param name defines the name to use for the new target
-         * @param influence defines the influence to attach to the target
-         * @returns a new MorphTarget
-         */
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class is used to deform meshes using morphing between different targets
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    class MorphTargetManager {
-        private _targets;
-        private _targetInfluenceChangedObservers;
-        private _targetDataLayoutChangedObservers;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        /**
-         * Creates a new MorphTargetManager
-         * @param scene defines the current scene
-         */
-        constructor(scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        readonly uniqueId: number;
-        /**
-         * Gets the number of vertices handled by this manager
-         */
-        readonly vertexCount: number;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of normals
-         */
-        readonly supportsNormals: boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of tangents
-         */
-        readonly supportsTangents: boolean;
-        /**
-         * Gets the number of targets stored in this manager
-         */
-        readonly numTargets: number;
-        /**
-         * Gets the number of influencers (ie. the number of targets with influences > 0)
-         */
-        readonly numInfluencers: number;
-        /**
-         * Gets the list of influences (one per target)
-         */
-        readonly influences: Float32Array;
-        /**
-         * Gets the active target at specified index. An active target is a target with an influence > 0
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getActiveTarget(index: number): MorphTarget;
-        /**
-         * Gets the target at specified index
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getTarget(index: number): MorphTarget;
-        /**
-         * Add a new target to this manager
-         * @param target defines the target to add
-         */
-        addTarget(target: MorphTarget): void;
-        /**
-         * Removes a target from the manager
-         * @param target defines the target to remove
-         */
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        private _syncActiveTargets;
-        /**
-         * Syncrhonize the targets with all the meshes using this morph target manager
-         */
-        synchronize(): void;
-        /**
-         * Creates a new MorphTargetManager from serialized data
-         * @param serializationObject defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns the new MorphTargetManager
-         */
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
-    /**
    * This represents the base class for particle system in Babylon.
    * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
    * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
@@ -33885,12 +33928,15 @@ declare module BABYLON {
          * The identity quaternion of the imposter
          */
         static IDENTITY_QUATERNION: Quaternion;
+        /** @hidden */
+
         private _physicsEngine;
         private _physicsBody;
         private _bodyUpdateRequired;
         private _onBeforePhysicsStepCallbacks;
         private _onAfterPhysicsStepCallbacks;
-        private _onPhysicsCollideCallbacks;
+        /** @hidden */
+>;
         private _deltaPosition;
         private _deltaRotation;
         private _deltaRotationConjugated;
@@ -34491,6 +34537,108 @@ declare module BABYLON {
         damping: number;
         /** this callback will be called when applying the force to the impostors. */
         forceApplicationCallback: () => void;
+    }
+}
+
+declare module BABYLON {
+    interface AbstractScene {
+        /**
+         * The list of reflection probes added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         */
+        reflectionProbes: Array<ReflectionProbe>;
+        /**
+         * Removes the given reflection probe from this scene.
+         * @param toRemove The reflection probe to remove
+         * @returns The index of the removed reflection probe
+         */
+        removeReflectionProbe(toRemove: ReflectionProbe): number;
+        /**
+         * Adds the given reflection probe to this scene.
+         * @param newReflectionProbe The reflection probe to add
+         */
+        addReflectionProbe(newReflectionProbe: ReflectionProbe): void;
+    }
+    /**
+     * Class used to generate realtime reflection / refraction cube textures
+     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+     */
+    class ReflectionProbe {
+        /** defines the name of the probe */
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        /** Gets or sets probe position (center of the cube map) */
+        position: Vector3;
+        /**
+         * Creates a new reflection probe
+         * @param name defines the name of the probe
+         * @param size defines the texture resolution (for each face)
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
+         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+         */
+        constructor(
+        /** defines the name of the probe */
+        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
+        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
+        samples: number;
+        /** Gets or sets the refresh rate to use (on every frame by default) */
+        refreshRate: number;
+        /**
+         * Gets the hosting scene
+         * @returns a Scene
+         */
+        getScene(): Scene;
+        /** Gets the internal CubeTexture used to render to */
+        readonly cubeTexture: RenderTargetTexture;
+        /** Gets the list of meshes to render */
+        readonly renderList: Nullable<AbstractMesh[]>;
+        /**
+         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
+         * @param mesh defines the mesh to attach to
+         */
+        attachToMesh(mesh: Nullable<AbstractMesh>): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        /**
+         * Clean all associated resources
+         */
+        dispose(): void;
+        /**
+         * Converts the reflection probe information to a readable string for debug purpose.
+         * @param fullDetails Supports for multiple levels of logging within scene loading
+         * @returns the human readable reflection probe info
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+         * Get the class name of the relfection probe.
+         * @returns "ReflectionProbe"
+         */
+        getClassName(): string;
+        /**
+         * Serialize the reflection probe to a JSON representation we can easily use in the resepective Parse function.
+         * @returns The JSON representation of the texture
+         */
+        serialize(): any;
+        /**
+         * Parse the JSON representation of a reflection probe in order to recreate the reflection probe in the given scene.
+         * @param parsedReflectionProbe Define the JSON representation of the reflection probe
+         * @param scene Define the scene the parsed reflection probe should be instantiated in
+         * @param rootUrl Define the root url of the parsing sequence in the case of relative dependencies
+         * @returns The parsed reflection probe if successful
+         */
+        static Parse(parsedReflectionProbe: any, scene: Scene, rootUrl: string): Nullable<ReflectionProbe>;
     }
 }
 
@@ -35978,108 +36126,6 @@ declare module BABYLON {
          * @param vrMetrics All the required metrics for the VR camera
          */
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    interface AbstractScene {
-        /**
-         * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-         */
-        reflectionProbes: Array<ReflectionProbe>;
-        /**
-         * Removes the given reflection probe from this scene.
-         * @param toRemove The reflection probe to remove
-         * @returns The index of the removed reflection probe
-         */
-        removeReflectionProbe(toRemove: ReflectionProbe): number;
-        /**
-         * Adds the given reflection probe to this scene.
-         * @param newReflectionProbe The reflection probe to add
-         */
-        addReflectionProbe(newReflectionProbe: ReflectionProbe): void;
-    }
-    /**
-     * Class used to generate realtime reflection / refraction cube textures
-     * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
-     */
-    class ReflectionProbe {
-        /** defines the name of the probe */
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        /** Gets or sets probe position (center of the cube map) */
-        position: Vector3;
-        /**
-         * Creates a new reflection probe
-         * @param name defines the name of the probe
-         * @param size defines the texture resolution (for each face)
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-         * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
-         */
-        constructor(
-        /** defines the name of the probe */
-        name: string, size: number, scene: Scene, generateMipMaps?: boolean, useFloat?: boolean);
-        /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
-        samples: number;
-        /** Gets or sets the refresh rate to use (on every frame by default) */
-        refreshRate: number;
-        /**
-         * Gets the hosting scene
-         * @returns a Scene
-         */
-        getScene(): Scene;
-        /** Gets the internal CubeTexture used to render to */
-        readonly cubeTexture: RenderTargetTexture;
-        /** Gets the list of meshes to render */
-        readonly renderList: Nullable<AbstractMesh[]>;
-        /**
-         * Attach the probe to a specific mesh (Rendering will be done from attached mesh's position)
-         * @param mesh defines the mesh to attach to
-         */
-        attachToMesh(mesh: Nullable<AbstractMesh>): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        /**
-         * Clean all associated resources
-         */
-        dispose(): void;
-        /**
-         * Converts the reflection probe information to a readable string for debug purpose.
-         * @param fullDetails Supports for multiple levels of logging within scene loading
-         * @returns the human readable reflection probe info
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-         * Get the class name of the relfection probe.
-         * @returns "ReflectionProbe"
-         */
-        getClassName(): string;
-        /**
-         * Serialize the reflection probe to a JSON representation we can easily use in the resepective Parse function.
-         * @returns The JSON representation of the texture
-         */
-        serialize(): any;
-        /**
-         * Parse the JSON representation of a reflection probe in order to recreate the reflection probe in the given scene.
-         * @param parsedReflectionProbe Define the JSON representation of the reflection probe
-         * @param scene Define the scene the parsed reflection probe should be instantiated in
-         * @param rootUrl Define the root url of the parsing sequence in the case of relative dependencies
-         * @returns The parsed reflection probe if successful
-         */
-        static Parse(parsedReflectionProbe: any, scene: Scene, rootUrl: string): Nullable<ReflectionProbe>;
     }
 }
 
@@ -41390,6 +41436,10 @@ declare module BABYLON {
          */
         private zDragFactor;
         /**
+         * If the object should rotate to face the drag origin
+         */
+        rotateDraggedObject: boolean;
+        /**
          * If the behavior is currently in a dragging state
          */
         dragging: boolean;
@@ -41434,192 +41484,6 @@ declare module BABYLON {
          *  Detaches the behavior from the mesh
          */
         detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new AnaglyphArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphFreeCamera extends FreeCamera {
-        /**
-         * Creates a new AnaglyphFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new AnaglyphGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
-     */
-    class AnaglyphUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new AnaglyphUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns AnaglyphUniversalCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        /**
-         * Creates a new StereoscopicArcRotateCamera
-         * @param name defines camera name
-         * @param alpha defines alpha angle (in radians)
-         * @param beta defines beta angle (in radians)
-         * @param radius defines radius
-         * @param target defines camera target
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicArcRotateCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicFreeCamera extends FreeCamera {
-        /**
-         * Creates a new StereoscopicFreeCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicFreeCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        /**
-         * Creates a new StereoscopicGamepadCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicGamepadCamera
-         */
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    class StereoscopicUniversalCamera extends UniversalCamera {
-        /**
-         * Creates a new StereoscopicUniversalCamera
-         * @param name defines camera name
-         * @param position defines initial position
-         * @param interaxialDistance defines distance between each color axis
-         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-         * @param scene defines the hosting scene
-         */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
-        /**
-         * Gets camera class name
-         * @returns StereoscopicUniversalCamera
-         */
-        getClassName(): string;
     }
 }
 
@@ -43217,6 +43081,192 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new AnaglyphArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphFreeCamera extends FreeCamera {
+        /**
+         * Creates a new AnaglyphFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new AnaglyphGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+     */
+    class AnaglyphUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new AnaglyphUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns AnaglyphUniversalCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        /**
+         * Creates a new StereoscopicArcRotateCamera
+         * @param name defines camera name
+         * @param alpha defines alpha angle (in radians)
+         * @param beta defines beta angle (in radians)
+         * @param radius defines radius
+         * @param target defines camera target
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicArcRotateCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on FreeCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicFreeCamera extends FreeCamera {
+        /**
+         * Creates a new StereoscopicFreeCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicFreeCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        /**
+         * Creates a new StereoscopicGamepadCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicGamepadCamera
+         */
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
+     * @see http://doc.babylonjs.com/features/cameras
+     */
+    class StereoscopicUniversalCamera extends UniversalCamera {
+        /**
+         * Creates a new StereoscopicUniversalCamera
+         * @param name defines camera name
+         * @param position defines initial position
+         * @param interaxialDistance defines distance between each color axis
+         * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+         * @param scene defines the hosting scene
+         */
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        /**
+         * Gets camera class name
+         * @returns StereoscopicUniversalCamera
+         */
+        getClassName(): string;
     }
 }
 
@@ -47479,6 +47529,8 @@ declare module BABYLON {
 
         /** @hidden */
 
+        /** @hidden */
+
         private _engine;
         /**
          * Gets the Engine the texture belongs to.
@@ -49498,6 +49550,255 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * AmmoJS Physics plugin
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://github.com/kripken/ammo.js/
+     */
+    class AmmoJSPlugin implements IPhysicsEnginePlugin {
+        private _useDeltaForWorldStep;
+        /**
+         * Reference to the Ammo library
+         */
+        bjsAMMO: any;
+        /**
+         * Created ammoJS world which physics bodies are added to
+         */
+        world: any;
+        /**
+         * Name of the plugin
+         */
+        name: string;
+        private _timeStep;
+        private _fixedTimeStep;
+        private _maxSteps;
+        private _tmpQuaternion;
+        private _tmpAmmoTransform;
+        private _tmpAmmoQuaternion;
+        private _tmpAmmoConcreteContactResultCallback;
+        private _collisionConfiguration;
+        private _dispatcher;
+        private _overlappingPairCache;
+        private _solver;
+        private _tmpAmmoVectorA;
+        private _tmpAmmoVectorB;
+        private _tmpAmmoVectorC;
+        private _tmpContactCallbackResult;
+        private static readonly DISABLE_COLLISION_FLAG;
+        private static readonly KINEMATIC_FLAG;
+        private static readonly DISABLE_DEACTIVATION_FLAG;
+        /**
+         * Initializes the ammoJS plugin
+         * @param _useDeltaForWorldStep if the time between frames should be used when calculating physics steps (Default: true)
+         */
+        constructor(_useDeltaForWorldStep?: boolean);
+        /**
+         * Sets the gravity of the physics world (m/(s^2))
+         * @param gravity Gravity to set
+         */
+        setGravity(gravity: Vector3): void;
+        /**
+         * Amount of time to step forward on each frame (only used if useDeltaForWorldStep is false in the constructor)
+         * @param timeStep timestep to use in seconds
+         */
+        setTimeStep(timeStep: number): void;
+        /**
+         * Increment to step forward in the physics engine (If timeStep is set to 1/60 and fixedTimeStep is set to 1/120 the physics engine should run 2 steps per frame) (Default: 1/60)
+         * @param fixedTimeStep fixedTimeStep to use in seconds
+         */
+        setFixedTimeStep(fixedTimeStep: number): void;
+        /**
+         * Sets the maximum number of steps by the physics engine per frame (Default: 5)
+         * @param maxSteps the maximum number of steps by the physics engine per frame
+         */
+        setMaxSteps(maxSteps: number): void;
+        /**
+         * Gets the current timestep (only used if useDeltaForWorldStep is false in the constructor)
+         * @returns the current timestep in seconds
+         */
+        getTimeStep(): number;
+        private _isImpostorInContact;
+        private _isImpostorPairInContact;
+        private _stepSimulation;
+        /**
+         * Moves the physics simulation forward delta seconds and updates the given physics imposters
+         * Prior to the step the imposters physics location is set to the position of the babylon meshes
+         * After the step the babylon meshes are set to the position of the physics imposters
+         * @param delta amount of time to step forward
+         * @param impostors array of imposters to update before/after the step
+         */
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        /**
+         * Applies an implulse on the imposter
+         * @param impostor imposter to apply impulse
+         * @param force amount of force to be applied to the imposter
+         * @param contactPoint the location to apply the impulse on the imposter
+         */
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        /**
+         * Applies a force on the imposter
+         * @param impostor imposter to apply force
+         * @param force amount of force to be applied to the imposter
+         * @param contactPoint the location to apply the force on the imposter
+         */
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        /**
+         * Creates a physics body using the plugin
+         * @param impostor the imposter to create the physics body on
+         */
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        /**
+         * Removes the physics body from the imposter and disposes of the body's memory
+         * @param impostor imposter to remove the physics body from
+         */
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        /**
+         * Generates a joint
+         * @param impostorJoint the imposter joint to create the joint with
+         */
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        /**
+         * Removes a joint
+         * @param impostorJoint the imposter joint to remove the joint from
+         */
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        private _addMeshVerts;
+        private _createShape;
+        /**
+         * Sets the physics body position/rotation from the babylon mesh's position/rotation
+         * @param impostor imposter containing the physics body and babylon object
+         */
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        /**
+         * Sets the babylon object's position/rotation from the physics body's position/rotation
+         * @param impostor imposter containing the physics body and babylon object
+         * @param newPosition new position
+         * @param newRotation new rotation
+         */
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        /**
+         * If this plugin is supported
+         * @returns true if its supported
+         */
+        isSupported(): boolean;
+        /**
+         * Sets the linear velocity of the physics body
+         * @param impostor imposter to set the velocity on
+         * @param velocity velocity to set
+         */
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        /**
+         * Sets the angular velocity of the physics body
+         * @param impostor imposter to set the velocity on
+         * @param velocity velocity to set
+         */
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        /**
+         * gets the linear velocity
+         * @param impostor imposter to get linear velocity from
+         * @returns linear velocity
+         */
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        /**
+         * gets the angular velocity
+         * @param impostor imposter to get angular velocity from
+         * @returns angular velocity
+         */
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        /**
+         * Sets the mass of physics body
+         * @param impostor imposter to set the mass on
+         * @param mass mass to set
+         */
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        /**
+         * Gets the mass of the physics body
+         * @param impostor imposter to get the mass from
+         * @returns mass
+         */
+        getBodyMass(impostor: PhysicsImpostor): number;
+        /**
+         * Gets friction of the impostor
+         * @param impostor impostor to get friction from
+         * @returns friction value
+         */
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        /**
+         * Sets friction of the impostor
+         * @param impostor impostor to set friction on
+         * @param friction friction value
+         */
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        /**
+         * Gets restitution of the impostor
+         * @param impostor impostor to get restitution from
+         * @returns restitution value
+         */
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        /**
+         * Sets resitution of the impostor
+         * @param impostor impostor to set resitution on
+         * @param restitution resitution value
+         */
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        /**
+         * Sleeps the physics body and stops it from being active
+         * @param impostor impostor to sleep
+         */
+        sleepBody(impostor: PhysicsImpostor): void;
+        /**
+         * Activates the physics body
+         * @param impostor impostor to activate
+         */
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        /**
+         * Updates the distance parameters of the joint
+         * @param joint joint to update
+         * @param maxDistance maximum distance of the joint
+         * @param minDistance minimum distance of the joint
+         */
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        /**
+         * Sets a motor on the joint
+         * @param joint joint to set motor on
+         * @param speed speed of the motor
+         * @param maxForce maximum force of the motor
+         * @param motorIndex index of the motor
+         */
+        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Sets the motors limit
+         * @param joint joint to set limit on
+         * @param upperLimit upper limit
+         * @param lowerLimit lower limit
+         */
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
+        /**
+         * Syncs the position and rotation of a mesh with the impostor
+         * @param mesh mesh to sync
+         * @param impostor impostor to update the mesh with
+         */
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        /**
+         * Gets the radius of the impostor
+         * @param impostor impostor to get radius from
+         * @returns the radius
+         */
+        getRadius(impostor: PhysicsImpostor): number;
+        /**
+         * Gets the box size of the impostor
+         * @param impostor impostor to get box size from
+         * @param result the resulting box size
+         */
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        /**
+         * Disposes of the impostor
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     /** @hidden */
     class CannonJSPlugin implements IPhysicsEnginePlugin {
         private _useDeltaForWorldStep;
@@ -50029,6 +50330,18 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+}
+
+declare module BABYLON {
+}
+
+declare module BABYLON {
+}
+
+declare module BABYLON {
+}
+
+declare module BABYLON {
     /**
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
      * Custom Procedural textures are the easiest way to create your own procedural in your application.
@@ -50361,18 +50674,6 @@ declare module BABYLON {
         dispose(): void;
         private _beforeClear;
     }
-}
-
-declare module BABYLON {
-}
-
-declare module BABYLON {
-}
-
-declare module BABYLON {
-}
-
-declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -51267,6 +51568,7 @@ declare module BABYLON {
 /*Babylon.js GUI*/
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
+//   ../../../../Tools/Gulp/2D
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
@@ -51309,7 +51611,6 @@ declare module BABYLON.GUI {
             /** @hidden */;
             /** @hidden */;
             /** @hidden */;
-            /** @hidden */
             /** @hidden */
             /** @hidden */
             /** @hidden */
@@ -51757,6 +52058,13 @@ declare module BABYLON.GUI {
                 */
             getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
             /**
+                * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+                * @param value defines the value to store
+                * @param unit defines the unit to store
+                * @returns the current ValueAndUnit
+                */
+            updateInPlace(value: number, unit?: number): ValueAndUnit;
+            /**
                 * Gets the value accordingly to its unit
                 * @param host  defines the root host
                 * @returns the value
@@ -51970,7 +52278,10 @@ declare module BABYLON.GUI {
             onValueChangedObservable: BABYLON.Observable<BABYLON.Color3>;
             /** Gets or sets the color of the color picker */
             value: BABYLON.Color3;
-            /** Gets or sets control width */
+            /**
+                * Gets or sets control width
+                * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+                */
             width: string | number;
             /** Gets or sets control height */
             height: string | number;
@@ -51982,6 +52293,8 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            /** @hidden */
+            protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
     }
 }
@@ -52054,14 +52367,18 @@ declare module BABYLON.GUI {
             removeControl(control: Control): Container;
             /** @hidden */
             /** @hidden */
+            /** @hidden */
+            /** @hidden */
             /** @hidden */
             protected _localDraw(context: CanvasRenderingContext2D): void;
             /** @hidden */
-            /** @hidden */
-            /** @hidden */
-            /** @hidden */
             /** @hidden */
-            protected _clipForChildren(context: CanvasRenderingContext2D): void;
+            protected _beforeLayout(): void;
+            /** @hidden */
+            protected _postMeasure(): void;
+            /** @hidden */
+            /** @hidden */
+            /** @hidden */
             /** @hidden */
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** Releases associated resources */
@@ -52081,7 +52398,6 @@ declare module BABYLON.GUI {
                 */
             static AllowAlphaInheritance: boolean;
             /** @hidden */
-            /** @hidden */
             /** Gets or sets the control parent */
             parent: BABYLON.Nullable<Container>;
             /** @hidden */
@@ -52097,6 +52413,8 @@ declare module BABYLON.GUI {
             protected _horizontalAlignment: number;
             /** @hidden */
             protected _verticalAlignment: number;
+            /** @hidden */
+            protected _isDirty: boolean;
             /** @hidden */
             /** @hidden */
             protected _cachedParentMeasure: Measure;
@@ -52109,6 +52427,9 @@ declare module BABYLON.GUI {
             /** @hidden */
             protected _isEnabled: boolean;
             protected _disabledColor: string;
+            /** @hidden */
+            protected _rebuildLayout: boolean;
+            /** @hidden */
             /** @hidden */
             /**
                 * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
@@ -52183,6 +52504,10 @@ declare module BABYLON.GUI {
                 * An event triggered after the control was drawn
                 */
             onAfterDrawObservable: BABYLON.Observable<Control>;
+            /**
+                * Get the hosting AdvancedDynamicTexture
+                */
+            readonly host: AdvancedDynamicTexture;
             /** Gets or set information about font offsets (used to render and align text) */
             fontOffset: {
                     ascent: number;
@@ -52372,6 +52697,12 @@ declare module BABYLON.GUI {
             name?: string | undefined);
             /** @hidden */
             protected _getTypeName(): string;
+            /**
+                * Gets the first ascendant in the hierarchy of the given type
+                * @param className defines the required type
+                * @returns the ascendant or null if not found
+                */
+            getAscendantOfClass(className: string): BABYLON.Nullable<Control>;
             /** @hidden */
             /**
                 * Determines if a container is an ascendant of the current control
@@ -52424,17 +52755,17 @@ declare module BABYLON.GUI {
             /** @hidden */
             /** @hidden */
             /** @hidden */
+            /** @hidden */
+            /** @hidden */
             /** @hidden */
             protected _transform(context: CanvasRenderingContext2D): void;
             /** @hidden */
-            /** @hidden */
-            protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+            /** @hidden */
             /** @hidden */
             protected _applyStates(context: CanvasRenderingContext2D): void;
+            /** @hidden */
             /** @hidden */
-            protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
-            /** @hidden */
-            protected _clip(context: CanvasRenderingContext2D): void;
+            protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             /** @hidden */
             protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -52442,6 +52773,9 @@ declare module BABYLON.GUI {
             protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            /** @hidden */
+            protected _clipForChildren(context: CanvasRenderingContext2D): void;
+            /** @hidden */
             /** @hidden */
             /**
                 * Tests if a given coordinates belong to the current control
@@ -52529,6 +52863,18 @@ declare module BABYLON.GUI {
             /** Gets the list of children */
             readonly children: Control[];
             /**
+                * Gets the definition of a specific row
+                * @param index defines the index of the row
+                * @returns the row definition
+                */
+            getRowDefinition(index: number): BABYLON.Nullable<ValueAndUnit>;
+            /**
+                * Gets the definition of a specific column
+                * @param index defines the index of the column
+                * @returns the column definition
+                */
+            getColumnDefinition(index: number): BABYLON.Nullable<ValueAndUnit>;
+            /**
                 * Adds a new row to the grid
                 * @param height defines the height of the row (either in pixel or a value between 0 and 1)
                 * @param isPixel defines if the height is expressed in pixel (or in percentage)
@@ -52566,6 +52912,12 @@ declare module BABYLON.GUI {
                 */
             getChildrenAt(row: number, column: number): BABYLON.Nullable<Array<Control>>;
             /**
+                * Gets a string representing the child cell info (row x column)
+                * @param child defines the control to get info from
+                * @returns a string containing the child cell info (row x column)
+                */
+            getChildCellInfo(child: Control): string;
+            /**
                 * Remove a column definition at specified index
                 * @param index defines the index of the column to remove
                 * @returns the current grid
@@ -52598,8 +52950,7 @@ declare module BABYLON.GUI {
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
             protected _getGridDefinitions(definitionCallback: (lefts: number[], tops: number[], widths: number[], heights: number[]) => void): void;
-            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
-            protected _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
+            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** Releases associated resources */
             dispose(): void;
     }
@@ -52672,7 +53023,8 @@ declare module BABYLON.GUI {
             constructor(name?: string | undefined, url?: BABYLON.Nullable<string>);
             protected _getTypeName(): string;
             /** Force the control to synchronize with its content */
-            synchronizeSizeWithContent(): void;
+            synchronizeSizeWithContent(): void;
+            protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             dispose(): void;
             /** STRETCH_NONE */
             static readonly STRETCH_NONE: number;
@@ -52769,7 +53121,7 @@ declare module BABYLON.GUI {
                 * Handles the keyboard event
                 * @param evt Defines the KeyboardEvent
                 */
-            processKeyboard(evt: KeyboardEvent): void;
+            processKeyboard(evt: KeyboardEvent): void;
             protected _beforeRenderText(text: string): string;
             dispose(): void;
     }
@@ -52946,7 +53298,10 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
+            /** @hidden */
             protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            protected _postMeasure(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -53112,6 +53467,50 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+        * Class used to hold a viewer window and sliders in a grid
+     */
+    export class ScrollViewer extends Rectangle {
+            /**
+                * Adds a new control to the current container
+                * @param control defines the control to add
+                * @returns the current container
+                */
+            addControl(control: BABYLON.Nullable<Control>): Container;
+            /**
+                * Removes a control from the current container
+                * @param control defines the control to remove
+                * @returns the current container
+                */
+            removeControl(control: Control): Container;
+            /** Gets the list of children */
+            readonly children: Control[];
+            /**
+             * Creates a new ScrollViewer
+             * @param name of ScrollViewer
+             */
+            constructor(name?: string);
+            /** Reset the scroll viewer window to initial size */
+            resetWindow(): void;
+            protected _getTypeName(): string;
+            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            protected _postMeasure(): void;
+            /**
+                * Gets or sets the mouse wheel precision
+                * from 0 to 1 with a default value of 0.05
+                * */
+            wheelPrecision: number;
+            /** Gets or sets the bar color */
+            barColor: string;
+            /** Gets or sets the size of the bar */
+            barSize: number;
+            /** Gets or sets the bar background */
+            barBackground: string;
+            /** Releases associated resources */
+            dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
         * Enum that determines the text-wrapping mode to use.
         */
     export enum TextWrapping {
@@ -53191,9 +53590,9 @@ declare module BABYLON.GUI {
                 */
             name?: string | undefined, text?: string);
             protected _getTypeName(): string;
+            protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             /** @hidden */
             protected _applyStates(context: CanvasRenderingContext2D): void;
-            protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
             protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
             protected _parseLineEllipsis(line: string | undefined, width: number, context: CanvasRenderingContext2D): object;
@@ -53394,7 +53793,9 @@ declare module BABYLON.GUI {
             protected _getTypeName(): string;
             protected _getThumbPosition(): number;
             protected _getThumbThickness(type: string): number;
-            protected _prepareRenderingData(type: string): void;
+            protected _prepareRenderingData(type: string): void;
+            /** @hidden */
+            protected _updateValueFromPointer(x: number, y: number): void;
     }
 }
 declare module BABYLON.GUI {
@@ -53403,6 +53804,9 @@ declare module BABYLON.GUI {
         */
     export class Slider extends BaseSlider {
             name?: string | undefined;
+            protected _displayValueBar: boolean;
+            /** Gets or sets a boolean indicating if the value bar must be rendered */
+            displayValueBar: boolean;
             /** Gets or sets border color */
             borderColor: string;
             /** Gets or sets background color */
