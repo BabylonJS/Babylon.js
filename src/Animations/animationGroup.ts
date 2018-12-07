@@ -39,9 +39,14 @@ import { Engine } from "Engines/engine";
         public uniqueId: number;
 
         /**
-         * This observable will notify when one animation have ended.
+         * This observable will notify when one animation have ended
          */
         public onAnimationEndObservable = new Observable<TargetedAnimation>();
+
+        /**
+         * Observer raised when one animation loops
+         */
+        public onAnimationLoopObservable = new Observable<TargetedAnimation>();
 
         /**
          * This observable will notify when all animations have ended.
@@ -231,6 +236,9 @@ import { Engine } from "Engines/engine";
                     this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                     this._checkAnimationGroupEnded(animatable);
                 };
+                animatable.onAnimationLoop = () => {
+                    this.onAnimationLoopObservable.notifyObservers(targetedAnimation);
+                };
                 this._animatables.push(animatable);
             }
 
@@ -410,6 +418,12 @@ import { Engine } from "Engines/engine";
             if (index > -1) {
                 this._scene.animationGroups.splice(index, 1);
             }
+
+            this.onAnimationEndObservable.clear();
+            this.onAnimationGroupEndObservable.clear();
+            this.onAnimationGroupPauseObservable.clear();
+            this.onAnimationGroupPlayObservable.clear();
+            this.onAnimationLoopObservable.clear();
         }
 
         private _checkAnimationGroupEnded(animatable: Animatable) {
