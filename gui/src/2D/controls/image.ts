@@ -1,5 +1,5 @@
 import { Control } from "./control";
-import { Nullable, Tools, Observable, Engine } from "babylonjs";
+import { Nullable, Tools, Observable } from "babylonjs";
 import { Measure } from "2D";
 
 /**
@@ -307,8 +307,37 @@ export class Image extends Control {
         const imageData = context.getImageData(0, 0, width, height);
 
         // Left and right
+        this._sliceLeft = -1;
+        this._sliceRight = -1;
         for (var x = 0; x < width; x++) {
+            const alpha = imageData.data[x * 4 + 3];
 
+            if (alpha > 127 && this._sliceLeft === -1) {
+                this._sliceLeft = x;
+                continue;
+            }
+
+            if (alpha < 127 && this._sliceLeft > -1) {
+                this._sliceRight = x;
+                break;
+            }
+        }
+
+        // top and bottom
+        this._sliceTop = -1;
+        this._sliceBottom = -1;
+        for (var y = 0; y < height; y++) {
+            const alpha = imageData.data[y * width * 4 + 3];
+
+            if (alpha > 127 && this._sliceTop === -1) {
+                this._sliceTop = y;
+                continue;
+            }
+
+            if (alpha < 127 && this._sliceTop > -1) {
+                this._sliceBottom = y;
+                break;
+            }
         }
     }
 
@@ -485,10 +514,33 @@ export class Image extends Control {
                     context.drawImage(this._domImage, x, y, width, height,
                         this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
+                case Image.STRETCH_NINE_PATCH:
+                    this._renderNinePatch(context);
+                    break;
             }
         }
 
         context.restore();
+    }
+
+    private _renderCornerPatch(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, targetX: number, targetY: number): void {
+        context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left + targetX, this._currentMeasure.top + targetY, width, height);
+    }
+
+    private _renderNinePatch(context: CanvasRenderingContext2D): void {
+        const width = this._imageWidth - 2;
+        const height = this._imageHeight - 2;
+
+        // Corners
+        this._renderCornerPatch(context, 1, 1, this._sliceLeft, this._sliceTop, 0, 0);
+        this._renderCornerPatch(context, 1, this._sliceBottom, this._sliceLeft, height - this._sliceBottom, 0, this._currentMeasure.height - height + this._sliceBottom);
+
+        this._renderCornerPatch(context, this._sliceRight, 1, width - this._sliceRight, this._sliceTop, this._currentMeasure.width - width + this._sliceRight, 0);
+        this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, width - this._sliceRight, height - this._sliceBottom, this._currentMeasure.width - width + this._sliceRight, this._currentMeasure.height - height + this._sliceBottom);
+
+        // Center
+        context.drawImage(this._domImage, this._sliceLeft, this._sliceTop, this._sliceRight - this._sliceLeft, this._sliceBottom - this._sliceTop,
+            this._currentMeasure.left + this._sliceLeft, this._currentMeasure.top + this._sliceTop, this._currentMeasure.width - width + this._sliceRight - this.sliceLeft, this._currentMeasure.height - height + this._sliceBottom - this._sliceTop);
     }
 
     public dispose() {
@@ -505,4 +557,6 @@ export class Image extends Control {
     public static readonly STRETCH_UNIFORM = 2;
     /** STRETCH_EXTEND */
     public static readonly STRETCH_EXTEND = 3;
+    /** NINE_PATCH */
+    public static readonly STRETCH_NINE_PATCH = 4;
 }
