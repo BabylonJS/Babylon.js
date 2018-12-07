@@ -1622,6 +1622,26 @@ declare module 'babylonjs-gui/2D/controls/image' {
                 */
             readonly isLoaded: boolean;
             /**
+                * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+                */
+            populateNinePatchSlicesFromImage: boolean;
+            /**
+                * Gets or sets the left value for slicing (9-patch)
+                */
+            sliceLeft: number;
+            /**
+                * Gets or sets the right value for slicing (9-patch)
+                */
+            sliceRight: number;
+            /**
+                * Gets or sets the top value for slicing (9-patch)
+                */
+            sliceTop: number;
+            /**
+                * Gets or sets the bottom value for slicing (9-patch)
+                */
+            sliceBottom: number;
+            /**
                 * Gets or sets the left coordinate in the source image
                 */
             sourceLeft: number;
@@ -1687,6 +1707,8 @@ declare module 'babylonjs-gui/2D/controls/image' {
             static readonly STRETCH_UNIFORM: number;
             /** STRETCH_EXTEND */
             static readonly STRETCH_EXTEND: number;
+            /** NINE_PATCH */
+            static readonly STRETCH_NINE_PATCH: number;
     }
 }
 
@@ -4682,6 +4704,26 @@ declare module BABYLON.GUI {
                 */
             readonly isLoaded: boolean;
             /**
+                * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+                */
+            populateNinePatchSlicesFromImage: boolean;
+            /**
+                * Gets or sets the left value for slicing (9-patch)
+                */
+            sliceLeft: number;
+            /**
+                * Gets or sets the right value for slicing (9-patch)
+                */
+            sliceRight: number;
+            /**
+                * Gets or sets the top value for slicing (9-patch)
+                */
+            sliceTop: number;
+            /**
+                * Gets or sets the bottom value for slicing (9-patch)
+                */
+            sliceBottom: number;
+            /**
                 * Gets or sets the left coordinate in the source image
                 */
             sourceLeft: number;
@@ -4747,6 +4789,8 @@ declare module BABYLON.GUI {
             static readonly STRETCH_UNIFORM: number;
             /** STRETCH_EXTEND */
             static readonly STRETCH_EXTEND: number;
+            /** NINE_PATCH */
+            static readonly STRETCH_NINE_PATCH: number;
     }
 }
 declare module BABYLON.GUI {
