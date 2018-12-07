@@ -2481,10 +2481,13 @@ import { Logger } from "Misc/logger";
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the animatable object created for this animation
          */
-        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean): Animatable {
-            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask);
+        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0,
+            onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable {
+
+            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask, onAnimationLoop);
             returnedAnimatable.weight = weight;
 
             return returnedAnimatable;
@@ -2500,10 +2503,13 @@ import { Logger } from "Misc/logger";
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
-         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the animatable object created for this animation
          */
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable {
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
+            onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
+            targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable {
 
             if (from > to && speedRatio > 0) {
                 speedRatio *= -1;
@@ -2514,7 +2520,7 @@ import { Logger } from "Misc/logger";
             }
 
             if (!animatable) {
-                animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
+                animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, undefined, onAnimationLoop);
             }
 
             const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
@@ -2527,7 +2533,7 @@ import { Logger } from "Misc/logger";
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, onAnimationLoop);
                 }
             }
 
@@ -2548,9 +2554,13 @@ import { Logger } from "Misc/logger";
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
          * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the list of created animatables
          */
-        public beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true, targetMask?: (target: any) => boolean): Animatable[] {
+        public beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
+            onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
+            targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[] {
+
             let children = target.getDescendants(directDescendantsOnly);
 
             let result = [];
@@ -2571,14 +2581,15 @@ import { Logger } from "Misc/logger";
          * @param loop defines if you want animation to loop (off by default)
          * @param speedRatio defines the speed ratio to apply to all animations
          * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the list of created animatables
          */
-        public beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable {
+        public beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
             }
 
-            var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations);
+            var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop);
 
             return animatable;
         }
@@ -2593,15 +2604,16 @@ import { Logger } from "Misc/logger";
          * @param loop defines if you want animation to loop (off by default)
          * @param speedRatio defines the speed ratio to apply to all animations
          * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the list of animatables created for all nodes
          */
-        public beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable[] {
+        public beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[] {
             let children = target.getDescendants(directDescendantsOnly);
 
             let result = [];
-            result.push(this.beginDirectAnimation(target, animations, from, to, loop, speedRatio, onAnimationEnd));
+            result.push(this.beginDirectAnimation(target, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop));
             for (var child of children) {
-                result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd));
+                result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop));
             }
 
             return result;

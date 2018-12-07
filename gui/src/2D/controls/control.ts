@@ -46,6 +46,8 @@ export class Control {
     /** @hidden */
     protected _isDirty = true;
     /** @hidden */
+    protected _wasDirty = false;
+    /** @hidden */
     public _tempParentMeasure = Measure.Empty();
     /** @hidden */
     protected _cachedParentMeasure = Measure.Empty();
@@ -110,6 +112,13 @@ export class Control {
 
     /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
     public clipChildren = true;
+
+    /**
+     * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
+     */
+    public useBitmapCache = false;
+
+    private _cacheData: Nullable<ImageData>;
 
     private _shadowOffsetX = 0;
     /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
@@ -1193,6 +1202,7 @@ export class Control {
 
         context.restore();
 
+        this._wasDirty = this._isDirty;
         this._isDirty = false;
 
         return true;
@@ -1408,7 +1418,16 @@ export class Control {
             this.onBeforeDrawObservable.notifyObservers(this);
         }
 
-        this._draw(context);
+        if (this.useBitmapCache && !this._wasDirty && this._cacheData) {
+            context.putImageData(this._cacheData, this._currentMeasure.left, this._currentMeasure.top);
+        } else {
+            this._draw(context);
+        }
+
+        if (this.useBitmapCache && this._wasDirty) {
+            this._cacheData = context.getImageData(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+        }
+
         this._renderHighlight(context);
 
         if (this.onAfterDrawObservable.hasObservers()) {
