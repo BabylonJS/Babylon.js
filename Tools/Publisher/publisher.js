@@ -136,7 +136,7 @@ function processEs6Packages(version) {
         console.log("    Cleanup " + buildPath);
         rmDir(buildPath);
 
-        let command = 'tsc -t es6 -m esNext -p ' + projectPath + ' --outDir ' + buildPath;
+        let command = 'tsc -t es5 -m esNext -p ' + projectPath + ' --outDir ' + buildPath;
         console.log("    Executing " + command);
 
         let tscCompile = shelljs.exec(command);
