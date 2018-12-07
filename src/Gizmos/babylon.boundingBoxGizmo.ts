@@ -67,6 +67,10 @@ module BABYLON {
         private _anchorMesh: AbstractMesh;
         private _existingMeshScale = new Vector3();
 
+        // Dragging
+        private _dragMesh: Nullable<Mesh> = null;
+        private pointerDragBehavior = new BABYLON.PointerDragBehavior();
+
         // Stores the state of the pivot cache (_oldPivotPoint, _pivotTranslation)
         // store/remove pivot point should only be applied during their outermost calls
         private static _PivotCached = 0;
@@ -209,6 +213,7 @@ module BABYLON {
 
                         BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
                     }
+                    this._updateDummy();
                 });
 
                 // Selection/deselection
@@ -219,6 +224,7 @@ module BABYLON {
                 _dragBehavior.onDragEndObservable.add(() => {
                     this.onRotationSphereDragEndObservable.notifyObservers({});
                     this._selectNode(null);
+                    this._updateDummy();
                 });
 
                 this._rotateSpheresParent.addChild(sphere);
@@ -271,6 +277,7 @@ module BABYLON {
 
                                 BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
                             }
+                            this._updateDummy();
                         });
 
                         // Selection/deselection
@@ -281,6 +288,7 @@ module BABYLON {
                         _dragBehavior.onDragEndObservable.add(() => {
                             this.onScaleBoxDragEndObservable.notifyObservers({});
                             this._selectNode(null);
+                            this._updateDummy();
                         });
 
                         this._scaleBoxesParent.addChild(box);
@@ -316,6 +324,12 @@ module BABYLON {
                     this._updateRotationSpheres();
                     this._updateScaleBoxes();
                 }
+
+                // If dragg mesh is enabled and dragging, update the attached mesh pose to match the drag mesh
+                if (this._dragMesh && this.attachedMesh && this.pointerDragBehavior.dragging) {
+                    this._lineBoundingBox.position.rotateByQuaternionToRef(this._rootMesh.rotationQuaternion!, this._tmpVector);
+                    this.attachedMesh.setAbsolutePosition(this._dragMesh.position.add(this._tmpVector.scale(-1)));
+                }
             });
             this.updateBoundingBox();
         }
@@ -329,6 +343,10 @@ module BABYLON {
                 this._anchorMesh.removeChild(value);
                 BoundingBoxGizmo._RestorePivotPoint(value);
                 this.updateBoundingBox();
+
+                this.gizmoLayer.utilityLayerScene.onAfterRenderObservable.addOnce(() => {
+                    this._updateDummy();
+                });
             }
         }
 
@@ -458,6 +476,25 @@ module BABYLON {
             });
         }
 
+        private _updateDummy() {
+            if (this._dragMesh) {
+                this._dragMesh.position.copyFrom(this._lineBoundingBox.getAbsolutePosition());
+                this._dragMesh.scaling.copyFrom(this._lineBoundingBox.scaling);
+                this._dragMesh.rotationQuaternion!.copyFrom(this._rootMesh.rotationQuaternion!);
+            }
+        }
+
+        /**
+         * Enables a pointer drag behavior on the bounding box of the gizmo
+         */
+        public enableDragBehavior() {
+            this._dragMesh = BABYLON.Mesh.CreateBox("dummy", 1, this.gizmoLayer.utilityLayerScene);
+            this._dragMesh.visibility = 0;
+            this._dragMesh.rotationQuaternion = new BABYLON.Quaternion();
+            this.pointerDragBehavior.useObjectOrienationForDragging = false;
+            this._dragMesh.addBehavior(this.pointerDragBehavior);
+        }
+
         /**
          * Disposes of the gizmo
          */
@@ -467,6 +504,9 @@ module BABYLON {
             this._lineBoundingBox.dispose();
             this._rotateSpheresParent.dispose();
             this._scaleBoxesParent.dispose();
+            if (this._dragMesh) {
+                this._dragMesh.dispose();
+            }
             super.dispose();
         }
 
