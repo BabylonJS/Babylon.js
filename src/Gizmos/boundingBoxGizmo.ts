@@ -83,7 +83,7 @@ import { StandardMaterial } from "Materials/standardMaterial";
 
         // Dragging
         private _dragMesh: Nullable<Mesh> = null;
-        private pointerDragBehavior = new BABYLON.PointerDragBehavior();
+        private pointerDragBehavior = new PointerDragBehavior();
 
         // Stores the state of the pivot cache (_oldPivotPoint, _pivotTranslation)
         // store/remove pivot point should only be applied during their outermost calls
@@ -502,9 +502,9 @@ import { StandardMaterial } from "Materials/standardMaterial";
          * Enables a pointer drag behavior on the bounding box of the gizmo
          */
         public enableDragBehavior() {
-            this._dragMesh = BABYLON.Mesh.CreateBox("dummy", 1, this.gizmoLayer.utilityLayerScene);
+            this._dragMesh = Mesh.CreateBox("dummy", 1, this.gizmoLayer.utilityLayerScene);
             this._dragMesh.visibility = 0;
-            this._dragMesh.rotationQuaternion = new BABYLON.Quaternion();
+            this._dragMesh.rotationQuaternion = new Quaternion();
             this.pointerDragBehavior.useObjectOrienationForDragging = false;
             this._dragMesh.addBehavior(this.pointerDragBehavior);
         }
