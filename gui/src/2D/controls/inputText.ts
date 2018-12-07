@@ -12,6 +12,7 @@ export class InputText extends Control implements IFocusableControl {
     private _placeholderText = "";
     private _background = "#222222";
     private _focusedBackground = "#000000";
+    private _focusedColor = "white";
     private _placeholderColor = "gray";
     private _thickness = 1;
     private _margin = new ValueAndUnit(10, ValueAndUnit.UNITMODE_PIXEL);
@@ -61,6 +62,8 @@ export class InputText extends Control implements IFocusableControl {
     public onTextCutObservable = new Observable<InputText>();
     /** Observable raised when paste event is triggered */
     public onTextPasteObservable = new Observable<InputText>();
+    /** Observable raised when a key event was processed */
+    public onKeyboardEventProcessedObservable = new Observable<KeyboardEvent>();
 
     /** Gets or sets the maximum width allowed by the control */
     public get maxWidth(): string | number {
@@ -180,6 +183,20 @@ export class InputText extends Control implements IFocusableControl {
         }
 
         this._focusedBackground = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets the background color when focused */
+    public get focusedColor(): string {
+        return this._focusedColor;
+    }
+
+    public set focusedColor(value: string) {
+        if (this._focusedColor === value) {
+            return;
+        }
+
+        this._focusedColor = value;
         this._markAsDirty();
     }
 
@@ -727,6 +744,8 @@ export class InputText extends Control implements IFocusableControl {
     public processKeyboard(evt: KeyboardEvent): void {
         // process pressed key
         this.processKey(evt.keyCode, evt.key, evt);
+
+        this.onKeyboardEventProcessedObservable.notifyObservers(evt);
     }
 
     /** @hidden */
@@ -829,9 +848,7 @@ export class InputText extends Control implements IFocusableControl {
         let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
         let availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
 
-        if (this._isFocused) {
-            context.save();
-        }
+        context.save();
         context.beginPath();
         context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
         context.clip();
@@ -923,20 +940,27 @@ export class InputText extends Control implements IFocusableControl {
                 context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, width, this._fontOffset.height);
                 context.globalAlpha = 1.0;
             }
+        }
+        context.restore();
 
-            context.restore();
-
-            // Border
-            if (this._thickness) {
+        // Border
+        if (this._thickness) {
+            if (this._isFocused) {
+                if (this.focusedColor) {
+                    context.strokeStyle = this.focusedColor;
+                }
+            } else {
                 if (this.color) {
                     context.strokeStyle = this.color;
                 }
-                context.lineWidth = this._thickness;
-
-                context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2,
-                    this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
             }
+
+            context.lineWidth = this._thickness;
+
+            context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2,
+                this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
         }
+
         context.restore();
     }
 
@@ -994,5 +1018,6 @@ export class InputText extends Control implements IFocusableControl {
         this.onTextCutObservable.clear();
         this.onTextPasteObservable.clear();
         this.onTextHighlightObservable.clear();
+        this.onKeyboardEventProcessedObservable.clear();
     }
 }

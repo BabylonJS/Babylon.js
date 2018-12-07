@@ -1740,6 +1740,8 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
             thickness: number;
             /** Gets or sets the background color when focused */
             focusedBackground: string;
+            /** Gets or sets the background color when focused */
+            focusedColor: string;
             /** Gets or sets the background color */
             background: string;
             /** Gets or sets the placeholder color */
@@ -4791,6 +4793,8 @@ declare module BABYLON.GUI {
             thickness: number;
             /** Gets or sets the background color when focused */
             focusedBackground: string;
+            /** Gets or sets the background color when focused */
+            focusedColor: string;
             /** Gets or sets the background color */
             background: string;
             /** Gets or sets the placeholder color */
