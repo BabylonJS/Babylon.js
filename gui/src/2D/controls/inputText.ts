@@ -62,6 +62,8 @@ export class InputText extends Control implements IFocusableControl {
     public onTextCutObservable = new Observable<InputText>();
     /** Observable raised when paste event is triggered */
     public onTextPasteObservable = new Observable<InputText>();
+    /** Observable raised when a key event was processed */
+    public onKeyboardEventProcessedObservable = new Observable<KeyboardEvent>();
 
     /** Gets or sets the maximum width allowed by the control */
     public get maxWidth(): string | number {
@@ -742,6 +744,8 @@ export class InputText extends Control implements IFocusableControl {
     public processKeyboard(evt: KeyboardEvent): void {
         // process pressed key
         this.processKey(evt.keyCode, evt.key, evt);
+
+        this.onKeyboardEventProcessedObservable.notifyObservers(evt);
     }
 
     /** @hidden */
@@ -1014,5 +1018,6 @@ export class InputText extends Control implements IFocusableControl {
         this.onTextCutObservable.clear();
         this.onTextPasteObservable.clear();
         this.onTextHighlightObservable.clear();
+        this.onKeyboardEventProcessedObservable.clear();
     }
 }
