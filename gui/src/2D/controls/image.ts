@@ -75,7 +75,6 @@ export class Image extends Control {
 
         this._populateNinePatchSlicesFromImage = value;
 
-
         if (this._populateNinePatchSlicesFromImage && this._loaded) {
             this._extractNinePatchSliceDataFromImage();
         }
@@ -302,7 +301,6 @@ export class Image extends Control {
         canvas.width = width;
         canvas.height = height;
 
-
         context.drawImage(this._domImage, 0, 0, width, height);
         const imageData = context.getImageData(0, 0, width, height);
 
@@ -528,19 +526,51 @@ export class Image extends Control {
     }
 
     private _renderNinePatch(context: CanvasRenderingContext2D): void {
-        const width = this._imageWidth - 2;
-        const height = this._imageHeight - 2;
+        let height = this._imageHeight;
+        let leftWidth = this._sliceLeft;
+        let topHeight = this._sliceTop;
+        let bottomHeight = this._imageHeight - this._sliceBottom;
+        let rightWidth = this._imageWidth - this._sliceRight;
+        let left = 0;
+        let top = 0;
+
+        if (this._populateNinePatchSlicesFromImage) {
+            left = 1;
+            top = 1;
+            height -= 2;
+            leftWidth -= 1;
+            topHeight -= 1;
+            bottomHeight -= 1;
+            rightWidth -= 1;
+        }
+
+        const centerWidth = this._sliceRight - this._sliceLeft + 1;
+        const targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft + 1;
+        const targetTopHeight = this._currentMeasure.height - height + this._sliceBottom;
 
         // Corners
-        this._renderCornerPatch(context, 1, 1, this._sliceLeft, this._sliceTop, 0, 0);
-        this._renderCornerPatch(context, 1, this._sliceBottom, this._sliceLeft, height - this._sliceBottom, 0, this._currentMeasure.height - height + this._sliceBottom);
+        this._renderCornerPatch(context, left, top, leftWidth, topHeight, 0, 0);
+        this._renderCornerPatch(context, left, this._sliceBottom, leftWidth, height - this._sliceBottom, 0, targetTopHeight);
 
-        this._renderCornerPatch(context, this._sliceRight, 1, width - this._sliceRight, this._sliceTop, this._currentMeasure.width - width + this._sliceRight, 0);
-        this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, width - this._sliceRight, height - this._sliceBottom, this._currentMeasure.width - width + this._sliceRight, this._currentMeasure.height - height + this._sliceBottom);
+        this._renderCornerPatch(context, this._sliceRight, top, rightWidth, topHeight, this._currentMeasure.width - rightWidth, 0);
+        this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, rightWidth, height - this._sliceBottom, this._currentMeasure.width - rightWidth, targetTopHeight);
 
         // Center
-        context.drawImage(this._domImage, this._sliceLeft, this._sliceTop, this._sliceRight - this._sliceLeft, this._sliceBottom - this._sliceTop,
-            this._currentMeasure.left + this._sliceLeft, this._currentMeasure.top + this._sliceTop, this._currentMeasure.width - width + this._sliceRight - this.sliceLeft, this._currentMeasure.height - height + this._sliceBottom - this._sliceTop);
+        context.drawImage(this._domImage, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop + 1,
+            this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight + 1);
+
+        // Borders
+        context.drawImage(this._domImage, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
+            this._currentMeasure.left, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
+
+        context.drawImage(this._domImage, this._sliceRight, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
+            this._currentMeasure.left + this._currentMeasure.width - rightWidth, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
+
+        context.drawImage(this._domImage, this._sliceLeft, top, centerWidth, topHeight,
+            this._currentMeasure.left + leftWidth, this._currentMeasure.top, targetCenterWidth, topHeight);
+
+        context.drawImage(this._domImage, this._sliceLeft, this._sliceBottom, centerWidth, bottomHeight,
+            this._currentMeasure.left + leftWidth, this._currentMeasure.top + targetTopHeight, targetCenterWidth, bottomHeight);
     }
 
     public dispose() {

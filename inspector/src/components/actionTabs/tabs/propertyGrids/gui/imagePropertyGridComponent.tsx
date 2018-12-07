@@ -27,7 +27,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
             { label: "None", value: BABYLON.GUI.Image.STRETCH_NONE },
             { label: "Fill", value: BABYLON.GUI.Image.STRETCH_FILL },
             { label: "Uniform", value: BABYLON.GUI.Image.STRETCH_UNIFORM },
-            { label: "Extend", value: BABYLON.GUI.Image.STRETCH_EXTEND }
+            { label: "Extend", value: BABYLON.GUI.Image.STRETCH_EXTEND },
             { label: "NinePatch", value: BABYLON.GUI.Image.STRETCH_NINE_PATCH }
         ];
 
