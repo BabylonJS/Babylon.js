@@ -1720,6 +1720,8 @@ declare module 'babylonjs-gui/2D/controls/inputText' {
             onTextCutObservable: Observable<InputText>;
             /** Observable raised when paste event is triggered */
             onTextPasteObservable: Observable<InputText>;
+            /** Observable raised when a key event was processed */
+            onKeyboardEventProcessedObservable: Observable<KeyboardEvent>;
             /** Gets or sets the maximum width allowed by the control */
             maxWidth: string | number;
             /** Gets the maximum width allowed by the control in pixels */
@@ -4773,6 +4775,8 @@ declare module BABYLON.GUI {
             onTextCutObservable: BABYLON.Observable<InputText>;
             /** BABYLON.Observable raised when paste event is triggered */
             onTextPasteObservable: BABYLON.Observable<InputText>;
+            /** BABYLON.Observable raised when a key event was processed */
+            onKeyboardEventProcessedObservable: BABYLON.Observable<KeyboardEvent>;
             /** Gets or sets the maximum width allowed by the control */
             maxWidth: string | number;
             /** Gets the maximum width allowed by the control in pixels */
