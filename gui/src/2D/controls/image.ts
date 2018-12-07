@@ -25,7 +25,6 @@ export class Image extends Control {
     private _cellHeight: number = 0;
     private _cellId: number = -1;
 
-    private _useNinePatch = false;
     private _populateNinePatchSlicesFromImage = false;
     private _sliceLeft: number;
     private _sliceRight: number;
@@ -42,23 +41,6 @@ export class Image extends Control {
      */
     public get isLoaded(): boolean {
         return this._loaded;
-    }
-
-    /**
-     * Gets or sets a boolean indicating if nine patch should be used
-     */
-    public get useNinePatch(): boolean {
-        return this._useNinePatch;
-    }
-
-    public set useNinePatch(value: boolean) {
-        if (this._useNinePatch === value) {
-            return;
-        }
-
-        this._useNinePatch = value;
-
-        this._markAsDirty();
     }
 
     /**
