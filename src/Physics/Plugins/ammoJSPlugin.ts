@@ -2,7 +2,7 @@ import { Quaternion, Vector3 } from "Maths/math";
 import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "Physics/IPhysicsEngine";
 import { Logger } from "Misc/logger";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "Physics/physicsImpostor";
-import { PhysicsJoint, IMotorEnabledJoint } from "Physics/physicsJoint";
+import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData } from "Physics/physicsJoint";
 import { VertexBuffer } from "Meshes/buffer";
 import { Nullable } from "types";
 import { AbstractMesh } from "Meshes/abstractMesh";
