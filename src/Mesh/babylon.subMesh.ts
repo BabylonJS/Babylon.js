@@ -368,7 +368,7 @@ module BABYLON {
 
                 if (fastCheck || !intersectInfo || length < intersectInfo.distance) {
                     intersectInfo = new IntersectionInfo(null, null, length);
-
+                    intersectInfo.faceId = index / 2;
                     if (fastCheck) {
                         break;
                     }
