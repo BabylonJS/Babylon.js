@@ -923,19 +923,17 @@ export class InputText extends Control implements IFocusableControl {
                 context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, width, this._fontOffset.height);
                 context.globalAlpha = 1.0;
             }
-
-            context.restore();
-
-            // Border
-            if (this._thickness) {
-                if (this.color) {
-                    context.strokeStyle = this.color;
-                }
-                context.lineWidth = this._thickness;
-
-                context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2,
-                    this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
+        }
+        context.restore();
+        // Border
+        if (this._thickness) {
+            if (this.color) {
+                context.strokeStyle = this.color;
             }
+            context.lineWidth = this._thickness;
+
+            context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2,
+                this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
         }
         context.restore();
     }
