@@ -496,7 +496,8 @@ export class ColorPicker extends Control {
     /**
      *
      * @param advancedTexture defines the AdvancedDynamicTexture the dialog is assigned to
-     * @param options
+     * @param options defines size for dialog and options for saved colors. Also accepts last color picked as hex string and saved colors array as hex strings.
+     * @returns picked color as a hex string and the saved colors array as hex strings.
      */
 
     public static ShowPickerDialogAsync(advancedTexture: AdvancedDynamicTexture,
@@ -506,7 +507,6 @@ export class ColorPicker extends Control {
             headerHeight?: string,
             lastColor?: string,
             swatchLimit?: number,
-            swatchSize?: number,
             numSwatchesPerLine?: number,
             savedColors?: Array<string>}
     ): Promise<{
@@ -521,13 +521,17 @@ export class ColorPicker extends Control {
             options.headerHeight = options.headerHeight || "35px"
             options.lastColor = options.lastColor || "#000000";
             options.swatchLimit = options.swatchLimit || 20;
-            options.swatchSize = options.swatchSize || 40;
             options.numSwatchesPerLine = options.numSwatchesPerLine || 10;
 
             // Window size settings
             var drawerMaxRows: number = options.swatchLimit / options.numSwatchesPerLine;
-            var drawerMaxSize: number = ((options.swatchSize * 1.5) * drawerMaxRows) + (options.swatchSize / 4);
+            var rawSwatchSize: number = parseFloat(<string>options.pickerWidth) / options.numSwatchesPerLine;
+            var gutterSize: number = Math.floor(rawSwatchSize * 0.25);
+            var colGutters: number = gutterSize * (options.numSwatchesPerLine + 1);
+            var swatchSize: number = Math.floor((parseFloat(<string>options.pickerWidth) - colGutters) / options.numSwatchesPerLine);
+            var drawerMaxSize: number = (swatchSize * drawerMaxRows) + (gutterSize * (drawerMaxRows + 1));
             var containerSize: string = (parseInt(options.pickerHeight) + drawerMaxSize).toString() + "px";  
+            console.log( "Swatch size: " + swatchSize + "\nGutter size: " + gutterSize + "\nMax rows: " + drawerMaxRows + " \nDrawer max size: " + drawerMaxSize);
 
             // Button Colors
             var buttonColor: string = "#c0c0c0";
@@ -738,9 +742,9 @@ export class ColorPicker extends Control {
                     else {
                         swatch.color = iconColorLight;
                     }
-                    swatch.fontSize = Math.floor(options.swatchSize! * 0.7);
+                    swatch.fontSize = Math.floor(swatchSize * 0.7);
                     swatch.textBlock!.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-                    swatch.height = swatch.width = (options.swatchSize!).toString() + "px";
+                    swatch.height = swatch.width = (swatchSize).toString() + "px";
                     swatch.background = options.savedColors[swatchNumber];
                     swatch.thickness = 2;
                     let metadata = swatchNumber;
@@ -813,32 +817,48 @@ export class ColorPicker extends Control {
                     }
                     swatchNumber = 0;
                     swatchDrawer.clearControls();
+
                     var rowCount: number = Math.ceil(options.savedColors.length / options.numSwatchesPerLine!);
-                    if (swatchDrawer.rowCount != rowCount) {
-                        for (var i = 0; i < swatchDrawer.rowCount; i++) {
-                            swatchDrawer.setRowDefinition(i, 1 / rowCount, false);
-                        }
-                        if (swatchDrawer.rowCount < rowCount) {
-                            swatchDrawer.addRowDefinition(1 / rowCount, false);
-                        }
-                        else {
-                            swatchDrawer.removeRowDefinition(swatchDrawer.rowCount - 1);
-                        }                      
+                    if (rowCount == 0) {
+                        var gutterCount: number = 0;
                     }
-                    swatchDrawer.height = ((options.swatchSize! * 1.5) * rowCount).toString() + "px";
-                    for (var y = 0; y < rowCount; y++) {
+                    else {
+                        var gutterCount: number = rowCount + 1;
+                    }
+                    if (swatchDrawer.rowCount != rowCount + gutterCount) {
+                        var currentRows: number = swatchDrawer.rowCount;
+                        for (var i = 1; i < currentRows; i++) {
+                            swatchDrawer.removeRowDefinition(i);                           
+                        }
+                        for (var i = 1; i < rowCount * 2 + 1; i++) {
+                            if (i % 2 != 0) {
+                                swatchDrawer.addRowDefinition(swatchSize, true);
+                            }
+                            else {
+                                swatchDrawer.addRowDefinition(gutterSize, true);
+                            }
+                        }
+                    }
+                    swatchDrawer.height = ((swatchSize * rowCount) + (gutterCount * gutterSize)).toString() + "px";
+                    console.log( "Drawer height: " + swatchDrawer.height);
+
+                    for (var y = 1; y < rowCount + gutterCount; y += 2) {
 
                         // Determine number of buttons to create per row based on the button limit per row and number of saved colors
-                        var  adjustedNumberButtons: number = options.savedColors.length - (y * options.numSwatchesPerLine!);
+                        var  adjustedNumberButtons: number = options.savedColors.length;
                         var buttonIterations: number = Math.min(Math.max(adjustedNumberButtons, 0), options.numSwatchesPerLine!);
-                        for (var x = 0; x < buttonIterations; x++) {
+                        for (var x = 0, w = 1; x < buttonIterations; x++) {
                             if (x > options.numSwatchesPerLine!) {
                                 continue;
                             }
                             var swatch: Button | null = CreateSwatch();
-                            if (swatch) {
-                                swatchDrawer.addControl(swatch, y, x);
+                            if (swatch != null) {
+                                swatchDrawer.addControl(swatch, y, w);
+                                w += 2;
                                 swatchNumber++;
+                            }
+                            else {
+                                continue;
                             }
                         }
                     }
@@ -906,7 +926,7 @@ export class ColorPicker extends Control {
             }            
 
             // Passes last chosen color back to scene and kills dialog by removing from AdvancedDynamicTexture
-            function ClosePicker(color: string) {
+            function ClosePicker (color: string) {
                 if (options.savedColors && options.savedColors.length > 0) {
                     resolve({
                         savedColors: options.savedColors,
@@ -937,18 +957,38 @@ export class ColorPicker extends Control {
             }
             advancedTexture.addControl(dialogContainer);
 
-            // Swatch Drawer
+            // Swatch drawer which contains all saved color buttons
             if (options.savedColors) {
                 swatchDrawer = new Grid();
                 swatchDrawer.name = "Swatch Drawer";
                 swatchDrawer.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
                 swatchDrawer.background = buttonBackgroundColor;
                 swatchDrawer.width = options.pickerWidth!;
-                swatchDrawer.height = ((options.swatchSize! * 1.5) * rowCount!).toString() + "px";
-                swatchDrawer.top = Math.floor(options.swatchSize! / 4).toString() + "px";
-                swatchDrawer.addRowDefinition(1.0, false);
-                for (var i = 0; i < options.numSwatchesPerLine!; i++) {
-                    swatchDrawer.addColumnDefinition(1 / options.numSwatchesPerLine!, false);
+                var initialRows: number = options.savedColors.length / options.numSwatchesPerLine;
+                if (initialRows == 0) {
+                    var gutterCount: number = 0;
+                }
+                else {
+                    var gutterCount: number = initialRows + 1;
+                }
+                swatchDrawer.height = ((swatchSize * initialRows) + (gutterCount * gutterSize)).toString() + "px";
+                swatchDrawer.top = Math.floor(swatchSize * 0.25).toString() + "px";
+                for (var i = 0; i < (Math.ceil(options.savedColors.length / options.numSwatchesPerLine) * 2) + 1; i++) {
+                    if (i % 2 != 0) {
+                        swatchDrawer.addRowDefinition(swatchSize, true);
+                    }
+                    else {
+                        swatchDrawer.addRowDefinition(gutterSize, true);
+                    }
+                }
+                // swatchDrawer.addRowDefinition(1.0, false);
+                for (var i = 0; i < options.numSwatchesPerLine! * 2 + 1; i++) {
+                    if (i % 2 != 0) {
+                        swatchDrawer.addColumnDefinition(swatchSize, true);
+                    }
+                    else {
+                        swatchDrawer.addColumnDefinition(gutterSize, true);
+                    }
                 }    
                 dialogContainer.addControl(swatchDrawer, 1, 0);
             }
@@ -956,7 +996,6 @@ export class ColorPicker extends Control {
             // Picker container
             var pickerPanel: Grid = new Grid();
             pickerPanel.name = "Picker Panel";
-            // pickerPanel.width = pickerWidth;
             pickerPanel.height = options.pickerHeight;
             var panelHead: number = parseInt(options.headerHeight) / parseInt(options.pickerHeight);
             var pickerPanelRows: number[] = [panelHead, 1.0 - panelHead]
@@ -964,7 +1003,7 @@ export class ColorPicker extends Control {
             pickerPanel.addRowDefinition(pickerPanelRows[1], false);
             dialogContainer.addControl(pickerPanel, 0, 0);
 
-            // Picker container head
+            // Picker container header
             var header: Rectangle = new Rectangle();
             header.name = "Dialogue Header Bar";
             header.background = "#cccccc";
@@ -1014,8 +1053,8 @@ export class ColorPicker extends Control {
             // Picker grid
             var pickerGrid: Grid = new Grid();
             pickerGrid.name = "Picker Grid";
-            pickerGrid.addRowDefinition(0.8, false);
-            pickerGrid.addRowDefinition(0.2, false);
+            pickerGrid.addRowDefinition(0.85, false);
+            pickerGrid.addRowDefinition(0.15, false);
             dialogBody.addControl(pickerGrid, 0, 0);
 
             //  Picker control
@@ -1063,10 +1102,11 @@ export class ColorPicker extends Control {
             // Picker Swatches quadrant
             var pickerSwatches: Grid = new Grid();
             pickerSwatches.name = "New and Current Swatches";
-            pickerSwatches.addRowDefinition(0.04, false);
-            pickerSwatches.addRowDefinition(0.16, false);
-            pickerSwatches.addRowDefinition(0.64, false);
-            pickerSwatches.addRowDefinition(0.16, false);
+            var pickeSwatchesRows: number[] = [0.04, 0.16, 0.64, 0.16];
+            pickerSwatches.addRowDefinition(pickeSwatchesRows[0], false);
+            pickerSwatches.addRowDefinition(pickeSwatchesRows[1], false);
+            pickerSwatches.addRowDefinition(pickeSwatchesRows[2], false);
+            pickerSwatches.addRowDefinition(pickeSwatchesRows[3], false);
             pickerSwatchesButtons.addControl(pickerSwatches, 0, 0);
 
             // Active swatches
@@ -1077,12 +1117,21 @@ export class ColorPicker extends Control {
             activeSwatches.addRowDefinition(0.5, false);
             pickerSwatches.addControl(activeSwatches, 2, 0)
 
-            // New color swatch and old color swatch
+            var labelWidth: number = (Math.floor(parseInt(options.pickerWidth) * dialogBodyCols[1] * pickerButtonsCol[0] * 0.11));
+            var labelHeight: number = (Math.floor(parseInt(options.pickerHeight) * pickerPanelRows[1] * pickerBodyRightRows[0] * pickeSwatchesRows[1] * 0.5));   
+
+            if (options.pickerWidth > options.pickerHeight) {
+                var labelTextSize: number = labelHeight;
+            }
+            else {
+                var labelTextSize: number = labelWidth;
+            }
+            // New color swatch and previous color button
             var newText: TextBlock = new TextBlock();
             newText.text = "new";
             newText.name = "New Color Label";
             newText.color = buttonColor;
-            newText.fontSize = 16;
+            newText.fontSize = labelTextSize;
             pickerSwatches.addControl(newText, 1, 0);
 
             newSwatch = new Rectangle();
@@ -1117,7 +1166,7 @@ export class ColorPicker extends Control {
             currentText.name = "Current Color Label";
             currentText.text = "current";
             currentText.color = buttonColor;
-            currentText.fontSize = 16;
+            currentText.fontSize = labelTextSize;
             pickerSwatches.addControl(currentText, 3, 0);
 
             // Buttons grid
@@ -1249,9 +1298,10 @@ export class ColorPicker extends Control {
             // Picker color values input
             var pickerColorValues: Grid = new Grid();
             pickerColorValues.name = "Dialog Lower Right";
-            pickerColorValues.addRowDefinition(10, true);
-            pickerColorValues.addRowDefinition(115, true);
-            pickerColorValues.addRowDefinition(35, true);
+            pickerColorValues.addRowDefinition(0.02, false);
+            pickerColorValues.addRowDefinition(0.63, false);
+            pickerColorValues.addRowDefinition(0.21, false);
+            pickerColorValues.addRowDefinition(0.14, false);
             pickerBodyRight.addControl(pickerColorValues, 1, 0);
 
             // RGB values text boxes
