@@ -1780,9 +1780,10 @@ protected readonly _isAlternateRenderingEnabled: boolean;
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the animatable object created for this animation
          */
-        beginWeightedAnimation(target: any, from: number, to: number, weight?: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean): Animatable;
+        beginWeightedAnimation(target: any, from: number, to: number, weight?: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
         /**
          * Will start the animation sequence of a given target
          * @param target defines the target
@@ -1793,10 +1794,11 @@ protected readonly _isAlternateRenderingEnabled: boolean;
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
-         * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the animatable object created for this animation
          */
-        beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean): Animatable;
+        beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
         /**
          * Will start the animation sequence of a given target and its hierarchy
          * @param target defines the target
@@ -1809,9 +1811,10 @@ protected readonly _isAlternateRenderingEnabled: boolean;
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
          * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the list of created animatables
          */
-        beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean): Animatable[];
+        beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[];
         /**
          * Begin a new animation on a given node
          * @param target defines the target where the animation will take place
@@ -1821,9 +1824,10 @@ protected readonly _isAlternateRenderingEnabled: boolean;
          * @param loop defines if you want animation to loop (off by default)
          * @param speedRatio defines the speed ratio to apply to all animations
          * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the list of created animatables
          */
-        beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable;
+        beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable;
         /**
          * Begin a new animation on a given node and its hierarchy
          * @param target defines the root node where the animation will take place
@@ -1834,9 +1838,10 @@ protected readonly _isAlternateRenderingEnabled: boolean;
          * @param loop defines if you want animation to loop (off by default)
          * @param speedRatio defines the speed ratio to apply to all animations
          * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @param onAnimationLoop defines the callback to call when an animation loops
          * @returns the list of animatables created for all nodes
          */
-        beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable[];
+        beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[];
         /**
          * Gets the animatable associated with a specific target
          * @param target defines the target of the animatable
@@ -3840,6 +3845,8 @@ declare module BABYLON {
         loopAnimation: boolean;
         /** defines a callback to call when animation ends if it is not looping */
         onAnimationEnd?: (() => void) | null | undefined;
+        /** defines a callback to call when animation loops */
+        onAnimationLoop?: (() => void) | null | undefined;
         private _localDelayOffset;
         private _pausedDelay;
         private _runtimeAnimations;
@@ -3861,6 +3868,10 @@ declare module BABYLON {
          * Observer raised when the animation ends
          */
         onAnimationEndObservable: Observable<Animatable>;
+        /**
+         * Observer raised when the animation loops
+         */
+        onAnimationLoopObservable: Observable<Animatable>;
         /**
          * Gets the root Animatable used to synchronize and normalize animations
          */
@@ -3888,6 +3899,7 @@ declare module BABYLON {
          * @param speedRatio defines the factor to apply to animation speed (default is 1)
          * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
          * @param animations defines a group of animation to add to the new Animatable
+         * @param onAnimationLoop defines a callback to call when animation loops
          */
         constructor(scene: Scene, 
         /** defines the target object */
@@ -3899,7 +3911,9 @@ declare module BABYLON {
         /** defines if the animation must loop (default is false)  */
         loopAnimation?: boolean, speedRatio?: number, 
         /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[]);
+        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
+        /** defines a callback to call when animation loops */
+        onAnimationLoop?: (() => void) | null | undefined);
         /**
          * Synchronize and normalize current Animatable with a source Animatable
          * This is useful when using animation weights and when animations are not of the same length
@@ -4597,9 +4611,13 @@ declare module BABYLON {
          */
         uniqueId: number;
         /**
-         * This observable will notify when one animation have ended.
+         * This observable will notify when one animation have ended
          */
         onAnimationEndObservable: Observable<TargetedAnimation>;
+        /**
+         * Observer raised when one animation loops
+         */
+        onAnimationLoopObservable: Observable<TargetedAnimation>;
         /**
          * This observable will notify when all animations have ended.
          */
@@ -5187,9 +5205,10 @@ declare module BABYLON {
          * @param loop defines if the current animation must loop
          * @param speedRatio defines the current speed ratio
          * @param weight defines the weight of the animation (default is -1 so no weight)
+         * @param onLoop optional callback called when animation loops
          * @returns a boolean indicating if the animation is running
          */
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number, onLoop?: () => void): boolean;
     }
 }
 
@@ -8781,357 +8800,6 @@ interface Gamepad {
 }
 
 declare module BABYLON {
-    /** @hidden */
-    class Collider {
-        /** Define if a collision was found */
-        collisionFound: boolean;
-        /**
-         * Define last intersection point in local space
-         */
-        intersectionPoint: Vector3;
-        /**
-         * Define last collided mesh
-         */
-        collidedMesh: Nullable<AbstractMesh>;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        /** @hidden */
-
-        /** @hidden */
-
-        private _velocity;
-        private _basePoint;
-        private _epsilon;
-        /** @hidden */
-
-        /** @hidden */
-
-        private _velocityWorld;
-        private _normalizedVelocity;
-        /** @hidden */
-
-        /** @hidden */
-
-        private _nearestDistance;
-        private _collisionMask;
-        collisionMask: number;
-        /**
-         * Gets the plane normal used to compute the sliding response (in local space)
-         */
-        readonly slidePlaneNormal: Vector3;
-        /** @hidden */
-
-        /** @hidden */
-
-        /** @hidden */
-
-        /** @hidden */
-
-        /** @hidden */
-
-        /** @hidden */
-
-    }
-}
-
-declare module BABYLON {
-    /** @hidden */
-    var CollisionWorker: string;
-    /** @hidden */
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    /** @hidden */
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    /** @hidden */
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    /**
-     * Interface describing the value associated with a geometry.
-     * @hidden
-     */
-    interface SerializedGeometry {
-        /**
-         * Defines the unique ID of the geometry
-         */
-        id: string;
-        /**
-         * Defines the array containing the positions
-         */
-        positions: Float32Array;
-        /**
-         * Defines the array containing the indices
-         */
-        indices: Uint32Array;
-        /**
-         * Defines the array containing the normals
-         */
-        normals: Float32Array;
-    }
-    /** @hidden */
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    /** @hidden */
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    /** Defines supported task for worker process */
-    enum WorkerTaskType {
-        /** Initialization */
-        INIT = 0,
-        /** Update of geometry */
-        UPDATE = 1,
-        /** Evaluate collision */
-        COLLIDE = 2
-    }
-    /** @hidden */
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    /** @hidden */
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    /** @hidden */
-    interface InitPayload {
-    }
-    /** @hidden */
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    /** @hidden */
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    /** Defines kind of replies returned by worker */
-    enum WorkerReplyType {
-        /** Success */
-        SUCCESS = 0,
-        /** Unkown error */
-        UNKNOWN_ERROR = 1
-    }
-    /** @hidden */
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (transformNode: TransformNode) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    /** @hidden */
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld;
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare const safePostMessage: any;
-declare module BABYLON {
-    /** @hidden */
-    var WorkerIncluded: boolean;
-    /** @hidden */
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    /** @hidden */
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-        private checkCollision;
-        private processCollisionsForSubMeshes;
-        private collideForSubMesh;
-        private checkSubmeshCollision;
-    }
-    /** @hidden */
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    /** @hidden */
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     */
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    /**
-     * Information about the result of picking within a scene
-     * @see https://doc.babylonjs.com/babylon101/picking_collisions
-     */
-    class PickingInfo {
-        /**
-         * If the pick collided with an object
-         */
-        hit: boolean;
-        /**
-         * Distance away where the pick collided
-         */
-        distance: number;
-        /**
-         * The location of pick collision
-         */
-        pickedPoint: Nullable<Vector3>;
-        /**
-         * The mesh corresponding the the pick collision
-         */
-        pickedMesh: Nullable<AbstractMesh>;
-        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
-        bu: number;
-        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
-        bv: number;
-        /** The id of the face on the mesh that was picked  */
-        faceId: number;
-        /** Id of the the submesh that was picked */
-        subMeshId: number;
-        /** If a sprite was picked, this will be the sprite the pick collided with */
-        pickedSprite: Nullable<Sprite>;
-        /**
-         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
-         */
-        originMesh: Nullable<AbstractMesh>;
-        /**
-         * The ray that was used to perform the picking.
-         */
-        ray: Nullable<Ray>;
-        /**
-         * Gets the normal correspodning to the face the pick collided with
-         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
-         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
-         * @returns The normal correspodning to the face the pick collided with
-         */
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        /**
-         * Gets the texture coordinates of where the pick occured
-         * @returns the vector containing the coordnates of the texture
-         */
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-declare module BABYLON {
     /**
      * Class used to store bounding box information
      */
@@ -9613,6 +9281,750 @@ declare module BABYLON {
          * @param result ray to store result in
          */
         static TransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
+    /** @hidden */
+    class Collider {
+        /** Define if a collision was found */
+        collisionFound: boolean;
+        /**
+         * Define last intersection point in local space
+         */
+        intersectionPoint: Vector3;
+        /**
+         * Define last collided mesh
+         */
+        collidedMesh: Nullable<AbstractMesh>;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        /** @hidden */
+
+        /** @hidden */
+
+        private _velocity;
+        private _basePoint;
+        private _epsilon;
+        /** @hidden */
+
+        /** @hidden */
+
+        private _velocityWorld;
+        private _normalizedVelocity;
+        /** @hidden */
+
+        /** @hidden */
+
+        private _nearestDistance;
+        private _collisionMask;
+        collisionMask: number;
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        readonly slidePlaneNormal: Vector3;
+        /** @hidden */
+
+        /** @hidden */
+
+        /** @hidden */
+
+        /** @hidden */
+
+        /** @hidden */
+
+        /** @hidden */
+
+    }
+}
+
+declare module BABYLON {
+    /** @hidden */
+    var CollisionWorker: string;
+    /** @hidden */
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+    }
+    /** @hidden */
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    /** @hidden */
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    /**
+     * Interface describing the value associated with a geometry.
+     * @hidden
+     */
+    interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
+        id: string;
+        /**
+         * Defines the array containing the positions
+         */
+        positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */
+        indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */
+        normals: Float32Array;
+    }
+    /** @hidden */
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    /** @hidden */
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    /** Defines supported task for worker process */
+    enum WorkerTaskType {
+        /** Initialization */
+        INIT = 0,
+        /** Update of geometry */
+        UPDATE = 1,
+        /** Evaluate collision */
+        COLLIDE = 2
+    }
+    /** @hidden */
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    /** @hidden */
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    /** @hidden */
+    interface InitPayload {
+    }
+    /** @hidden */
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    /** @hidden */
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    /** Defines kind of replies returned by worker */
+    enum WorkerReplyType {
+        /** Success */
+        SUCCESS = 0,
+        /** Unkown error */
+        UNKNOWN_ERROR = 1
+    }
+    /** @hidden */
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    /** @hidden */
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld;
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare const safePostMessage: any;
+declare module BABYLON {
+    /** @hidden */
+    var WorkerIncluded: boolean;
+    /** @hidden */
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    /** @hidden */
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+        private checkCollision;
+        private processCollisionsForSubMeshes;
+        private collideForSubMesh;
+        private checkSubmeshCollision;
+    }
+    /** @hidden */
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    /** @hidden */
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    /**
+     * Information about the result of picking within a scene
+     * @see https://doc.babylonjs.com/babylon101/picking_collisions
+     */
+    class PickingInfo {
+        /**
+         * If the pick collided with an object
+         */
+        hit: boolean;
+        /**
+         * Distance away where the pick collided
+         */
+        distance: number;
+        /**
+         * The location of pick collision
+         */
+        pickedPoint: Nullable<Vector3>;
+        /**
+         * The mesh corresponding the the pick collision
+         */
+        pickedMesh: Nullable<AbstractMesh>;
+        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
+        bu: number;
+        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
+        bv: number;
+        /** The id of the face on the mesh that was picked  */
+        faceId: number;
+        /** Id of the the submesh that was picked */
+        subMeshId: number;
+        /** If a sprite was picked, this will be the sprite the pick collided with */
+        pickedSprite: Nullable<Sprite>;
+        /**
+         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
+         */
+        originMesh: Nullable<AbstractMesh>;
+        /**
+         * The ray that was used to perform the picking.
+         */
+        ray: Nullable<Ray>;
+        /**
+         * Gets the normal correspodning to the face the pick collided with
+         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
+         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
+         * @returns The normal correspodning to the face the pick collided with
+         */
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        /**
+         * Gets the texture coordinates of where the pick occured
+         * @returns the vector containing the coordnates of the texture
+         */
+        getTextureCoordinates(): Nullable<Vector2>;
+    }
+}
+
+/**
+ * Module Debug contains the (visual) components to debug a scene correctly
+ */
+declare module BABYLON.Debug {
+    /**
+     * The Axes viewer will show 3 axes in a specific point in space
+     */
+    class AxesViewer {
+        private _xAxis;
+        private _yAxis;
+        private _zAxis;
+        private _scaleLinesFactor;
+        private _instanced;
+        /**
+         * Gets the hosting scene
+         */
+        scene: Scene;
+        /**
+         * Gets or sets a number used to scale line length
+         */
+        scaleLines: number;
+        /** Gets the node hierarchy used to render x-axis */
+        readonly xAxis: TransformNode;
+        /** Gets the node hierarchy used to render y-axis */
+        readonly yAxis: TransformNode;
+        /** Gets the node hierarchy used to render z-axis */
+        readonly zAxis: TransformNode;
+        /**
+         * Creates a new AxesViewer
+         * @param scene defines the hosting scene
+         * @param scaleLines defines a number used to scale line length (1 by default)
+         * @param renderingGroupId defines a number used to set the renderingGroupId of the meshes (2 by default)
+         * @param xAxis defines the node hierarchy used to render the x-axis
+         * @param yAxis defines the node hierarchy used to render the y-axis
+         * @param zAxis defines the node hierarchy used to render the z-axis
+         */
+        constructor(scene: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
+        /**
+         * Force the viewer to update
+         * @param position defines the position of the viewer
+         * @param xaxis defines the x axis of the viewer
+         * @param yaxis defines the y axis of the viewer
+         * @param zaxis defines the z axis of the viewer
+         */
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        /**
+         * Creates an instance of this axes viewer.
+         * @returns a new axes viewer with instanced meshes
+         */
+        createInstance(): AxesViewer;
+        /** Releases resources */
+        dispose(): void;
+        private static _SetRenderingGroupId;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
+     */
+    class BoneAxesViewer extends AxesViewer {
+        /**
+         * Gets or sets the target mesh where to display the axes viewer
+         */
+        mesh: Nullable<Mesh>;
+        /**
+         * Gets or sets the target bone where to display the axes viewer
+         */
+        bone: Nullable<Bone>;
+        /** Gets current position */
+        pos: Vector3;
+        /** Gets direction of X axis */
+        xaxis: Vector3;
+        /** Gets direction of Y axis */
+        yaxis: Vector3;
+        /** Gets direction of Z axis */
+        zaxis: Vector3;
+        /**
+         * Creates a new BoneAxesViewer
+         * @param scene defines the hosting scene
+         * @param bone defines the target bone
+         * @param mesh defines the target mesh
+         * @param scaleLines defines a scaling factor for line length (1 by default)
+         */
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        /**
+         * Force the viewer to update
+         */
+        update(): void;
+        /** Releases resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface used to define scene explorer extensibility option
+     */
+    interface IExplorerExtensibilityOption {
+        /**
+         * Define the option label
+         */
+        label: string;
+        /**
+         * Defines the action to execute on click
+         */
+        action: (entity: any) => void;
+    }
+    /**
+     * Defines a group of actions associated with a predicate to use when extending the Inspector scene explorer
+     */
+    interface IExplorerExtensibilityGroup {
+        /**
+         * Defines a predicate to test if a given type mut be extended
+         */
+        predicate: (entity: any) => boolean;
+        /**
+         * Gets the list of options added to a type
+         */
+        entries: IExplorerExtensibilityOption[];
+    }
+    /**
+     * Interface used to define the options to use to create the Inspector
+     */
+    interface IInspectorOptions {
+        /**
+         * Display in overlay mode (default: false)
+         */
+        overlay?: boolean;
+        /**
+         * HTML element to use as root (the parent of the rendering canvas will be used as default value)
+         */
+        globalRoot?: HTMLElement;
+        /**
+         * Display the Scene explorer
+         */
+        showExplorer?: boolean;
+        /**
+         * Display the property inspector
+         */
+        showInspector?: boolean;
+        /**
+         * Display in embed mode (both panes on the right)
+         */
+        embedMode?: boolean;
+        /**
+         * let the Inspector handles resize of the canvas when panes are resized (default to true)
+         */
+        handleResize?: boolean;
+        /**
+         * Allow the panes to popup (default: true)
+         */
+        enablePopup?: boolean;
+        /**
+         * Allow the panes to be closed by users (default: true)
+         */
+        enableClose?: boolean;
+        /**
+         * Optional list of extensibility entries
+         */
+        explorerExtensibility?: IExplorerExtensibilityGroup[];
+    }
+    interface Scene {
+        /**
+         * @hidden
+         * Backing field
+         */
+
+        /**
+         * Gets the debug layer (aka Inspector) associated with the scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         */
+        debugLayer: DebugLayer;
+    }
+    /**
+     * The debug layer (aka Inspector) is the go to tool in order to better understand
+     * what is happening in your scene
+     * @see http://doc.babylonjs.com/features/playground_debuglayer
+     */
+    class DebugLayer {
+        /**
+         * Define the url to get the inspector script from.
+         * By default it uses the babylonjs CDN.
+         * @ignoreNaming
+         */
+        static InspectorURL: string;
+        private _scene;
+        private BJSINSPECTOR;
+        /**
+         * Observable triggered when a property is changed through the inspector.
+         */
+        onPropertyChangedObservable: Observable<{
+            object: any;
+            property: string;
+            value: any;
+            initialValue: any;
+        }>;
+        /**
+         * Instantiates a new debug layer.
+         * The debug layer (aka Inspector) is the go to tool in order to better understand
+         * what is happening in your scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         * @param scene Defines the scene to inspect
+         */
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector;
+        /**
+         * Get if the inspector is visible or not.
+         * @returns true if visible otherwise, false
+         */
+        isVisible(): boolean;
+        /**
+         * Hide the inspector and close its window.
+         */
+        hide(): void;
+        /**
+          * Launch the debugLayer.
+          * @param config Define the configuration of the inspector
+          */
+        show(config?: IInspectorOptions): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Used to show the physics impostor around the specific mesh
+     */
+    class PhysicsViewer {
+        /** @hidden */
+        protected _impostors: Array<Nullable<PhysicsImpostor>>;
+        /** @hidden */
+        protected _meshes: Array<Nullable<AbstractMesh>>;
+        /** @hidden */
+        protected _scene: Nullable<Scene>;
+        /** @hidden */
+        protected _numMeshes: number;
+        /** @hidden */
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+        private _renderFunction;
+        private _utilityLayer;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        /**
+         * Creates a new PhysicsViewer
+         * @param scene defines the hosting scene
+         */
+        constructor(scene: Scene);
+        /** @hidden */
+        protected _updateDebugMeshes(): void;
+        /**
+         * Renders a specified physic impostor
+         * @param impostor defines the impostor to render
+         * @returns the new debug mesh used to render the impostor
+         */
+        showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh>;
+        /**
+         * Hides a specified physic impostor
+         * @param impostor defines the impostor to hide
+         */
+        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+        private _getDebugMaterial;
+        private _getDebugBoxMesh;
+        private _getDebugSphereMesh;
+        private _getDebugMesh;
+        /** Releases all resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+     * in order to better appreciate the issue one might have.
+     * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+     */
+    class RayHelper {
+        /**
+         * Defines the ray we are currently tryin to visualize.
+         */
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        /**
+         * Helper function to create a colored helper in a scene in one line.
+         * @param ray Defines the ray we are currently tryin to visualize
+         * @param scene Defines the scene the ray is used in
+         * @param color Defines the color we want to see the ray in
+         * @returns The newly created ray helper.
+         */
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        /**
+         * Instantiate a new ray helper.
+         * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+         * in order to better appreciate the issue one might have.
+         * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+         * @param ray Defines the ray we are currently tryin to visualize
+         */
+        constructor(ray: Ray);
+        /**
+         * Shows the ray we are willing to debug.
+         * @param scene Defines the scene the ray needs to be rendered in
+         * @param color Defines the color the ray needs to be rendered in
+         */
+        show(scene: Scene, color?: Color3): void;
+        /**
+         * Hides the ray we are debugging.
+         */
+        hide(): void;
+        private _render;
+        /**
+         * Attach a ray helper to a mesh so that we can easily see its orientation for instance or information like its normals.
+         * @param mesh Defines the mesh we want the helper attached to
+         * @param meshSpaceDirection Defines the direction of the Ray in mesh space (local space of the mesh node)
+         * @param meshSpaceOrigin Defines the origin of the Ray in mesh space (local space of the mesh node)
+         * @param length Defines the length of the ray
+         */
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        /**
+         * Detach the ray helper from the mesh it has previously been attached to.
+         */
+        detachFromMesh(): void;
+        private _updateToMesh;
+        /**
+         * Dispose the helper and release its associated resources.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Class used to render a debug view of a given skeleton
+     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
+     */
+    class SkeletonViewer {
+        /** defines the skeleton to render */
+        skeleton: Skeleton;
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh;
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices: boolean;
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId: number;
+        /** Gets or sets the color used to render the skeleton */
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        private _utilityLayer;
+        /**
+         * Returns the mesh used to render the bones
+         */
+        readonly debugMesh: Nullable<LinesMesh>;
+        /**
+         * Creates a new SkeletonViewer
+         * @param skeleton defines the skeleton to render
+         * @param mesh defines the mesh attached to the skeleton
+         * @param scene defines the hosting scene
+         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
+         * @param renderingGroupId defines the rendering group id to use with the viewer
+         */
+        constructor(
+        /** defines the skeleton to render */
+        skeleton: Skeleton, 
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh, scene: Scene, 
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices?: boolean, 
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId?: number);
+        /** Gets or sets a boolean indicating if the viewer is enabled */
+        isEnabled: boolean;
+        private _getBonePosition;
+        private _getLinesForBonesWithLength;
+        private _getLinesForBonesNoLength;
+        /** Update the viewer to sync with current skeleton state */
+        update(): void;
+        /** Release associated resources */
+        dispose(): void;
     }
 }
 
@@ -11999,399 +12411,6 @@ declare var WebGLVertexArrayObject: {
     new (): WebGLVertexArrayObject;
 };
 
-/**
- * Module Debug contains the (visual) components to debug a scene correctly
- */
-declare module BABYLON.Debug {
-    /**
-     * The Axes viewer will show 3 axes in a specific point in space
-     */
-    class AxesViewer {
-        private _xAxis;
-        private _yAxis;
-        private _zAxis;
-        private _scaleLinesFactor;
-        private _instanced;
-        /**
-         * Gets the hosting scene
-         */
-        scene: Scene;
-        /**
-         * Gets or sets a number used to scale line length
-         */
-        scaleLines: number;
-        /** Gets the node hierarchy used to render x-axis */
-        readonly xAxis: TransformNode;
-        /** Gets the node hierarchy used to render y-axis */
-        readonly yAxis: TransformNode;
-        /** Gets the node hierarchy used to render z-axis */
-        readonly zAxis: TransformNode;
-        /**
-         * Creates a new AxesViewer
-         * @param scene defines the hosting scene
-         * @param scaleLines defines a number used to scale line length (1 by default)
-         * @param renderingGroupId defines a number used to set the renderingGroupId of the meshes (2 by default)
-         * @param xAxis defines the node hierarchy used to render the x-axis
-         * @param yAxis defines the node hierarchy used to render the y-axis
-         * @param zAxis defines the node hierarchy used to render the z-axis
-         */
-        constructor(scene: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
-        /**
-         * Force the viewer to update
-         * @param position defines the position of the viewer
-         * @param xaxis defines the x axis of the viewer
-         * @param yaxis defines the y axis of the viewer
-         * @param zaxis defines the z axis of the viewer
-         */
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        /**
-         * Creates an instance of this axes viewer.
-         * @returns a new axes viewer with instanced meshes
-         */
-        createInstance(): AxesViewer;
-        /** Releases resources */
-        dispose(): void;
-        private static _SetRenderingGroupId;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
-     */
-    class BoneAxesViewer extends AxesViewer {
-        /**
-         * Gets or sets the target mesh where to display the axes viewer
-         */
-        mesh: Nullable<Mesh>;
-        /**
-         * Gets or sets the target bone where to display the axes viewer
-         */
-        bone: Nullable<Bone>;
-        /** Gets current position */
-        pos: Vector3;
-        /** Gets direction of X axis */
-        xaxis: Vector3;
-        /** Gets direction of Y axis */
-        yaxis: Vector3;
-        /** Gets direction of Z axis */
-        zaxis: Vector3;
-        /**
-         * Creates a new BoneAxesViewer
-         * @param scene defines the hosting scene
-         * @param bone defines the target bone
-         * @param mesh defines the target mesh
-         * @param scaleLines defines a scaling factor for line length (1 by default)
-         */
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        /**
-         * Force the viewer to update
-         */
-        update(): void;
-        /** Releases resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface used to define scene explorer extensibility option
-     */
-    interface IExplorerExtensibilityOption {
-        /**
-         * Define the option label
-         */
-        label: string;
-        /**
-         * Defines the action to execute on click
-         */
-        action: (entity: any) => void;
-    }
-    /**
-     * Defines a group of actions associated with a predicate to use when extending the Inspector scene explorer
-     */
-    interface IExplorerExtensibilityGroup {
-        /**
-         * Defines a predicate to test if a given type mut be extended
-         */
-        predicate: (entity: any) => boolean;
-        /**
-         * Gets the list of options added to a type
-         */
-        entries: IExplorerExtensibilityOption[];
-    }
-    /**
-     * Interface used to define the options to use to create the Inspector
-     */
-    interface IInspectorOptions {
-        /**
-         * Display in overlay mode (default: false)
-         */
-        overlay?: boolean;
-        /**
-         * HTML element to use as root (the parent of the rendering canvas will be used as default value)
-         */
-        globalRoot?: HTMLElement;
-        /**
-         * Display the Scene explorer
-         */
-        showExplorer?: boolean;
-        /**
-         * Display the property inspector
-         */
-        showInspector?: boolean;
-        /**
-         * Display in embed mode (both panes on the right)
-         */
-        embedMode?: boolean;
-        /**
-         * let the Inspector handles resize of the canvas when panes are resized (default to true)
-         */
-        handleResize?: boolean;
-        /**
-         * Allow the panes to popup (default: true)
-         */
-        enablePopup?: boolean;
-        /**
-         * Allow the panes to be closed by users (default: true)
-         */
-        enableClose?: boolean;
-        /**
-         * Optional list of extensibility entries
-         */
-        explorerExtensibility?: IExplorerExtensibilityGroup[];
-    }
-    interface Scene {
-        /**
-         * @hidden
-         * Backing field
-         */
-
-        /**
-         * Gets the debug layer (aka Inspector) associated with the scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
-         */
-        debugLayer: DebugLayer;
-    }
-    /**
-     * The debug layer (aka Inspector) is the go to tool in order to better understand
-     * what is happening in your scene
-     * @see http://doc.babylonjs.com/features/playground_debuglayer
-     */
-    class DebugLayer {
-        /**
-         * Define the url to get the inspector script from.
-         * By default it uses the babylonjs CDN.
-         * @ignoreNaming
-         */
-        static InspectorURL: string;
-        private _scene;
-        private BJSINSPECTOR;
-        /**
-         * Observable triggered when a property is changed through the inspector.
-         */
-        onPropertyChangedObservable: Observable<{
-            object: any;
-            property: string;
-            value: any;
-            initialValue: any;
-        }>;
-        /**
-         * Instantiates a new debug layer.
-         * The debug layer (aka Inspector) is the go to tool in order to better understand
-         * what is happening in your scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
-         * @param scene Defines the scene to inspect
-         */
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector;
-        /**
-         * Get if the inspector is visible or not.
-         * @returns true if visible otherwise, false
-         */
-        isVisible(): boolean;
-        /**
-         * Hide the inspector and close its window.
-         */
-        hide(): void;
-        /**
-          * Launch the debugLayer.
-          * @param config Define the configuration of the inspector
-          */
-        show(config?: IInspectorOptions): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Used to show the physics impostor around the specific mesh
-     */
-    class PhysicsViewer {
-        /** @hidden */
-        protected _impostors: Array<Nullable<PhysicsImpostor>>;
-        /** @hidden */
-        protected _meshes: Array<Nullable<AbstractMesh>>;
-        /** @hidden */
-        protected _scene: Nullable<Scene>;
-        /** @hidden */
-        protected _numMeshes: number;
-        /** @hidden */
-        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-        private _renderFunction;
-        private _utilityLayer;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        /**
-         * Creates a new PhysicsViewer
-         * @param scene defines the hosting scene
-         */
-        constructor(scene: Scene);
-        /** @hidden */
-        protected _updateDebugMeshes(): void;
-        /**
-         * Renders a specified physic impostor
-         * @param impostor defines the impostor to render
-         * @returns the new debug mesh used to render the impostor
-         */
-        showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh>;
-        /**
-         * Hides a specified physic impostor
-         * @param impostor defines the impostor to hide
-         */
-        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-        private _getDebugMaterial;
-        private _getDebugBoxMesh;
-        private _getDebugSphereMesh;
-        private _getDebugMesh;
-        /** Releases all resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * As raycast might be hard to debug, the RayHelper can help rendering the different rays
-     * in order to better appreciate the issue one might have.
-     * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
-     */
-    class RayHelper {
-        /**
-         * Defines the ray we are currently tryin to visualize.
-         */
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        /**
-         * Helper function to create a colored helper in a scene in one line.
-         * @param ray Defines the ray we are currently tryin to visualize
-         * @param scene Defines the scene the ray is used in
-         * @param color Defines the color we want to see the ray in
-         * @returns The newly created ray helper.
-         */
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        /**
-         * Instantiate a new ray helper.
-         * As raycast might be hard to debug, the RayHelper can help rendering the different rays
-         * in order to better appreciate the issue one might have.
-         * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
-         * @param ray Defines the ray we are currently tryin to visualize
-         */
-        constructor(ray: Ray);
-        /**
-         * Shows the ray we are willing to debug.
-         * @param scene Defines the scene the ray needs to be rendered in
-         * @param color Defines the color the ray needs to be rendered in
-         */
-        show(scene: Scene, color?: Color3): void;
-        /**
-         * Hides the ray we are debugging.
-         */
-        hide(): void;
-        private _render;
-        /**
-         * Attach a ray helper to a mesh so that we can easily see its orientation for instance or information like its normals.
-         * @param mesh Defines the mesh we want the helper attached to
-         * @param meshSpaceDirection Defines the direction of the Ray in mesh space (local space of the mesh node)
-         * @param meshSpaceOrigin Defines the origin of the Ray in mesh space (local space of the mesh node)
-         * @param length Defines the length of the ray
-         */
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        /**
-         * Detach the ray helper from the mesh it has previously been attached to.
-         */
-        detachFromMesh(): void;
-        private _updateToMesh;
-        /**
-         * Dispose the helper and release its associated resources.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Class used to render a debug view of a given skeleton
-     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
-     */
-    class SkeletonViewer {
-        /** defines the skeleton to render */
-        skeleton: Skeleton;
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh;
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices: boolean;
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId: number;
-        /** Gets or sets the color used to render the skeleton */
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        private _utilityLayer;
-        /**
-         * Returns the mesh used to render the bones
-         */
-        readonly debugMesh: Nullable<LinesMesh>;
-        /**
-         * Creates a new SkeletonViewer
-         * @param skeleton defines the skeleton to render
-         * @param mesh defines the mesh attached to the skeleton
-         * @param scene defines the hosting scene
-         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
-         * @param renderingGroupId defines the rendering group id to use with the viewer
-         */
-        constructor(
-        /** defines the skeleton to render */
-        skeleton: Skeleton, 
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh, scene: Scene, 
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices?: boolean, 
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId?: number);
-        /** Gets or sets a boolean indicating if the viewer is enabled */
-        isEnabled: boolean;
-        private _getBonePosition;
-        private _getLinesForBonesWithLength;
-        private _getLinesForBonesNoLength;
-        /** Update the viewer to sync with current skeleton state */
-        update(): void;
-        /** Release associated resources */
-        dispose(): void;
-    }
-}
-
 declare module BABYLON {
     /**
      * Gather the list of clipboard event types as constants.
@@ -13342,6 +13361,8 @@ declare module BABYLON {
         scalePivot: Nullable<Vector3>;
         private _anchorMesh;
         private _existingMeshScale;
+        private _dragMesh;
+        private pointerDragBehavior;
         private static _PivotCached;
         private static _OldPivotPoint;
         private static _PivotTranslation;
@@ -13369,6 +13390,11 @@ private static _RestorePivotPoint(mesh: AbstractMesh): void;
          * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
          */
         setEnabledRotationAxis(axis: string): void;
+        private _updateDummy;
+        /**
+         * Enables a pointer drag behavior on the bounding box of the gizmo
+         */
+        enableDragBehavior(): void;
         /**
          * Disposes of the gizmo
          */
@@ -52415,6 +52441,8 @@ declare module BABYLON.GUI {
             protected _verticalAlignment: number;
             /** @hidden */
             protected _isDirty: boolean;
+            /** @hidden */
+            protected _wasDirty: boolean;
             /** @hidden */
             /** @hidden */
             protected _cachedParentMeasure: Measure;
@@ -52447,6 +52475,10 @@ declare module BABYLON.GUI {
             isFocusInvisible: boolean;
             /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
             clipChildren: boolean;
+            /**
+                * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
+                */
+            useBitmapCache: boolean;
             /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
             shadowOffsetX: number;
             /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
@@ -53081,6 +53113,8 @@ declare module BABYLON.GUI {
             thickness: number;
             /** Gets or sets the background color when focused */
             focusedBackground: string;
+            /** Gets or sets the background color when focused */
+            focusedColor: string;
             /** Gets or sets the background color */
             background: string;
             /** Gets or sets the placeholder color */

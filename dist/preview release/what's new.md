@@ -16,6 +16,7 @@
   - WebXRInput manage controllers for the XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXR camera rotation using parent container ([TrevorDev](https://github.com/TrevorDev))
 - GUI:
+  - Added `control.useBitmapCache` to optimize re-rendering of complex controls by keeping a cached version ([Deltakosh](https://github.com/deltakosh))
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
   - Added support for clipboard events to let users perform `cut`, `copy` and `paste` events ([Saket Saurabh](https://github.com/ssaket))
   - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/) / [Deltakosh](https://github.com/deltakosh))
@@ -37,6 +38,8 @@
 
 ### Core Engine
 
+- Added `animatable.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
+- Added `animationGroup.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein))
 - Added support for Scissor testing ([Deltakosh](https://github.com/deltakosh))
 - Added `Engine.onNewSceneAddedObservable` ([Deltakosh](https://github.com/deltakosh))
@@ -77,6 +80,7 @@
 - Factored out `setDirection` function from `lookAt` for transform node ([bghgary](https://github.com/bghgary))
 - Add support for setting renderingGroupId and creating instances to `AxesViewer` ([bghgary](https://github.com/bghgary))
 - Invert vScale of compressed ktx textures as they are inverted in the file and UNPACK_FLIP_Y_WEBGL is not supported by ktx ([TrevorDev](https://github.com/TrevorDev))
+- Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 

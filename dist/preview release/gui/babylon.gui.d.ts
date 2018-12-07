@@ -908,6 +908,8 @@ declare module BABYLON.GUI {
             /** @hidden */
             protected _isDirty: boolean;
             /** @hidden */
+            protected _wasDirty: boolean;
+            /** @hidden */
             _tempParentMeasure: Measure;
             /** @hidden */
             protected _cachedParentMeasure: Measure;
@@ -945,6 +947,10 @@ declare module BABYLON.GUI {
             isFocusInvisible: boolean;
             /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
             clipChildren: boolean;
+            /**
+                * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
+                */
+            useBitmapCache: boolean;
             /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
             shadowOffsetX: number;
             /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
@@ -1609,6 +1615,8 @@ declare module BABYLON.GUI {
             thickness: number;
             /** Gets or sets the background color when focused */
             focusedBackground: string;
+            /** Gets or sets the background color when focused */
+            focusedColor: string;
             /** Gets or sets the background color */
             background: string;
             /** Gets or sets the placeholder color */
