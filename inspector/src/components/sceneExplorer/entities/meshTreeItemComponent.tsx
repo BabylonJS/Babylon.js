@@ -1,4 +1,4 @@
-import { AbstractMesh, IExplorerExtensibilityGroup } from "babylonjs";
+import { AbstractMesh, IExplorerExtensibilityGroup, Color3, BoundingBoxGizmo } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
@@ -44,7 +44,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
                 mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren.push(mesh);
             }
 
-            const gizmo = new BoundingBoxGizmo(BABYLON.Color3.FromHexString("#0984e3"));
+            const gizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"));
             gizmo.attachedMesh = mesh;
             gizmo.enableDragBehavior();
 
