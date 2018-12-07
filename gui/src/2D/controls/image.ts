@@ -296,11 +296,20 @@ export class Image extends Control {
         }
         const canvas = Image._WorkingCanvas;
         const context = canvas.getContext('2d')!;
-        canvas.width = this._domImage.width;
-        canvas.height = this._domImage.height;
+        const width = this._domImage.width;
+        const height = this._domImage.height;
 
-        context.drawImage(this._domImage, 0, 0, this._domImage.width, this._domImage.height);
-        const data = context.getImageData(0, 0, this._domImage.width, this._domImage.height);
+        canvas.width = width;
+        canvas.height = height;
+
+
+        context.drawImage(this._domImage, 0, 0, width, height);
+        const imageData = context.getImageData(0, 0, width, height);
+
+        // Left and right
+        for (var x = 0; x < width; x++) {
+
+        }
     }
 
     /**
