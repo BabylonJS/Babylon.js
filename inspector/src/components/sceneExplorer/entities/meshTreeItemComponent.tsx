@@ -1,4 +1,4 @@
-import { AbstractMesh, Mesh, IExplorerExtensibilityGroup } from "babylonjs";
+import { AbstractMesh, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
@@ -44,36 +44,22 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
                 mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren.push(mesh);
             }
 
-            // Connect to gizmo
-            const dummy = BABYLON.BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(mesh as Mesh);
-            dummy.reservedDataStore = { hidden: true };
             const gizmo = new BABYLON.BoundingBoxGizmo(BABYLON.Color3.FromHexString("#0984e3"));
-            gizmo.attachedMesh = dummy;
+            gizmo.attachedMesh = mesh;
+            gizmo.enableDragBehavior();
 
             gizmo.updateBoundingBox();
 
             gizmo.fixedDragMeshScreenSize = true;
             mesh.reservedDataStore.gizmo = gizmo;
-
-            var pointerDragBehavior = new BABYLON.PointerDragBehavior();
-            pointerDragBehavior.useObjectOrienationForDragging = false;
-
-            dummy.addBehavior(pointerDragBehavior);
-
-            mesh.reservedDataStore.pointerDragBehavior = pointerDragBehavior;
-            mesh.reservedDataStore.dummy = dummy;
-
             this.setState({ isGizmoEnabled: true });
             return;
         }
 
         const previousParent = mesh.reservedDataStore.previousParent;
-        mesh.removeBehavior(mesh.reservedDataStore.pointerDragBehavior);
         mesh.reservedDataStore.gizmo.dispose();
         mesh.reservedDataStore.gizmo = null;
         mesh.setParent(previousParent);
-        mesh.reservedDataStore.dummy.dispose();
-        mesh.reservedDataStore.dummy = null;
 
         if (previousParent && previousParent.reservedDataStore) {
             previousParent.reservedDataStore.detachedChildren = null;
