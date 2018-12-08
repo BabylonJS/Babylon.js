@@ -36,6 +36,7 @@
 - Added `AdvancedDynamicTexture.onClipboardObservable` to observe for clipboard events in AdvancedDynamicTexture([Saket Saurabh](https://github.com/ssaket))
 - Added `inputText.onFocusSelectAll` to allow complete selection of text on focus event.([Saket Saurabh](https://github.com/ssaket))
 - Added mouse drag to highlight text in inputText ([Saket Saurabh](https://github.com/ssaket))
+- Added `inputText.onEnterKeyObservable` for inputText ([Unintellisense](https://github.com/unintellisense))
 
 ### Core Engine
 
