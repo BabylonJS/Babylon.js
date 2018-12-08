@@ -1,5 +1,5 @@
 Before creating an issue, please make sure to provide the following template (based on why you create the issue):
-(Please do not use Github issues for questions - We have a really active forum to help answering questions (http://www.html5gamedevs.com/forum/16-babylonjs/))
+(Please do not use Github issues for questions - We have a really active forum to help answering questions (https://forum.babylonjs.com/))
 
 # Bugs
 
@@ -9,7 +9,7 @@ Before creating an issue, please make sure to provide the following template (ba
 
 # Feature request
 
-- Link to [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) discussion about the feature:
+- Link to [forum](https://forum.babylonjs.com/) discussion about the feature:
 - Feature description
 - Additional links that could help implementing the feature:
 
