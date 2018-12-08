@@ -8,7 +8,7 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 [![Percentage of issues still open](https://isitmaintained.com/badge/open/babylonJS/babylon.js.svg)](https://isitmaintained.com/project/babylonJS/babylon.js "Percentage of issues still open")
 [![Build Size](https://img.badgesize.io/BabylonJS/Babylon.js/master/dist/preview%20release/babylon.js.svg?compression=gzip)](https://img.badgesize.io/BabylonJS/Babylon.js/master/dist/preview%20release/babylon.js.svg?compression=gzip)
 
-**Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
+**Any questions?** Here is our official [forum](https://forum.babylonjs.com/).
 
 ## CDN
 
