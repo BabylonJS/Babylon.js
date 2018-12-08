@@ -825,6 +825,7 @@ export class ColorPicker extends Control {
                     else {
                         var gutterCount: number = rowCount + 1;
                     }
+                    console.log("Drawer row count: " + swatchDrawer.rowCount + " | Row and Gutter Count: " + (rowCount + gutterCount));
                     if (swatchDrawer.rowCount != rowCount + gutterCount) {
                         var currentRows: number = swatchDrawer.rowCount;
                         for (var i = 1; i < currentRows; i++) {
@@ -842,11 +843,12 @@ export class ColorPicker extends Control {
                     swatchDrawer.height = ((swatchSize * rowCount) + (gutterCount * gutterSize)).toString() + "px";
                     console.log( "Drawer height: " + swatchDrawer.height);
 
-                    for (var y = 1; y < rowCount + gutterCount; y += 2) {
+                    for (var y = 1, thisRow = 0; y < rowCount + gutterCount; y += 2, thisRow++) {
 
                         // Determine number of buttons to create per row based on the button limit per row and number of saved colors
+                        var totalButtonsThisRow = Math.max(options.savedColors.length - (thisRow * options.numSwatchesPerLine!), options.savedColors.length);
                         var  adjustedNumberButtons: number = options.savedColors.length;
-                        var buttonIterations: number = Math.min(Math.max(adjustedNumberButtons, 0), options.numSwatchesPerLine!);
+                        var buttonIterations: number = (Math.min(Math.max(totalButtonsThisRow, 0), options.numSwatchesPerLine!));
                         for (var x = 0, w = 1; x < buttonIterations; x++) {
                             if (x > options.numSwatchesPerLine!) {
                                 continue;
