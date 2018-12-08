@@ -54,6 +54,8 @@ export class InputText extends Control implements IFocusableControl {
     public onFocusObservable = new Observable<InputText>();
     /** Observable raised when the control loses the focus */
     public onBlurObservable = new Observable<InputText>();
+    /** Observable raised when the enter key is pressed */
+    public onEnterKeyObservable = new Observable<InputText>();
     /**Observable raised when the text is highlighted */
     public onTextHighlightObservable = new Observable<InputText>();
     /**Observable raised when copy event is triggered */
@@ -501,6 +503,7 @@ export class InputText extends Control implements IFocusableControl {
             case 13: // RETURN
                 this._host.focusedControl = null;
                 this._isTextHighlightOn = false;
+                this.onEnterKeyObservable.notifyObservers(this);
                 return;
             case 35: // END
                 this._cursorOffset = 0;
