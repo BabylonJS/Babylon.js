@@ -44,19 +44,6 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     // Webpack Config.
     var wpConfig = require(settings.build.webpack);
 
-    // Map Output
-    var rootPath = path.resolve(__dirname, "../../../");
-    var absoluteSrc = path.resolve(__dirname, "../", settings.build.srcDirectory);
-    wpConfig.output.devtoolModuleFilenameTemplate = (info) => {
-        info.resourcePath = path.normalize(info.resourcePath);
-
-        if (!path.isAbsolute(info.resourcePath)) {
-            info.resourcePath = path.join(absoluteSrc, info.resourcePath);
-        }
-
-        return `webpack://BABYLONJS/${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
-    };
-
     // Create multi entry list.
     wpConfig.entry = { };
     for (let library of settings.libraries) {
@@ -66,9 +53,25 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
 
     // Create output by type (min vs max).
     if (isMin) {
+        delete wpConfig.devtool;
         wpConfig.output.filename = isMinOutputName ? '[name].min.js' : '[name].js';
+        wpConfig.output.devtoolModuleFilenameTemplate
     }
     else {
+        // Map Output
+        wpConfig.devtool = "source-map";
+        var rootPath = path.resolve(__dirname, "../../../");
+        var absoluteSrc = path.resolve(__dirname, "../", settings.build.srcDirectory);
+        wpConfig.output.devtoolModuleFilenameTemplate = (info) => {
+            info.resourcePath = path.normalize(info.resourcePath);
+
+            if (!path.isAbsolute(info.resourcePath)) {
+                info.resourcePath = path.join(absoluteSrc, info.resourcePath);
+            }
+
+            return `webpack://BABYLONJS/${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
+        };
+
         // Generate unminified file.
         wpConfig.mode = "development";
         wpConfig.output.filename = isMinOutputName ? '[name].js' : '[name].max.js';
