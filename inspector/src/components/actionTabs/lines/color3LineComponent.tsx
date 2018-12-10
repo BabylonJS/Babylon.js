@@ -106,7 +106,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     render() {
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
-        const colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new BABYLON.Color3(this.state.color.r, this.state.color.g, this.state.color.b);
+        const colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
 
         return (
             <div className="color3Line">
