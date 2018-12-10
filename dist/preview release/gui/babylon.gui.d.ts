@@ -2112,6 +2112,14 @@ declare module BABYLON.GUI {
      */
     export class ScrollViewer extends Rectangle {
             /**
+                * Gets the horizontal scrollbar
+                */
+            readonly horizontalBar: ScrollBar;
+            /**
+                * Gets the vertical scrollbar
+                */
+            readonly verticalBar: ScrollBar;
+            /**
                 * Adds a new control to the current container
                 * @param control defines the control to add
                 * @returns the current container
@@ -3029,5 +3037,28 @@ declare module BABYLON.GUI {
             serialize(): any;
             getClassName(): string;
             static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * Class used to create slider controls
+        */
+    export class ScrollBar extends BaseSlider {
+            name?: string | undefined;
+            /** Gets or sets border color */
+            borderColor: string;
+            /** Gets or sets background color */
+            background: string;
+            /**
+                * Creates a new Slider
+                * @param name defines the control name
+                */
+            constructor(name?: string | undefined);
+            protected _getTypeName(): string;
+            protected _getThumbThickness(): number;
+            _draw(context: CanvasRenderingContext2D): void;
+            /** @hidden */
+            protected _updateValueFromPointer(x: number, y: number): void;
+            _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
     }
 }
