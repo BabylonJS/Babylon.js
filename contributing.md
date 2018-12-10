@@ -26,7 +26,7 @@ You can always add to an API, you cannot ever remove anything from one. If the d
 
 ## Forum and Github issues
 
-Since the very beginning, Babylon.js relies on a great forum and a tremendous community: http://www.html5gamedevs.com/forum/16-babylonjs/.
+Since the very beginning, Babylon.js relies on a great forum and a tremendous community: https://forum.babylonjs.com/.
 Please use the forum for **ANY questions you may have**.
 
 Please use the Github issues (after discussing them on the forum) **only** for:
