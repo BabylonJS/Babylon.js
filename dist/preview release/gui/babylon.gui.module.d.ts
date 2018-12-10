@@ -11,6 +11,7 @@ declare module 'babylonjs-gui' {
 declare module 'babylonjs-gui/2D' {
     export * from "babylonjs-gui/2D/controls";
     export * from "babylonjs-gui/2D/advancedDynamicTexture";
+    export * from "babylonjs-gui/2D/adtInstrumentation";
     export * from "babylonjs-gui/2D/math2D";
     export * from "babylonjs-gui/2D/measure";
     export * from "babylonjs-gui/2D/multiLinePoint";
@@ -115,6 +116,22 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 * Observable event triggered each time a pointer down is intercepted by a control
                 */
             onControlPickedObservable: Observable<Control>;
+            /**
+                * Observable event triggered before layout is evaluated
+                */
+            onBeginLayoutObservable: Observable<AdvancedDynamicTexture>;
+            /**
+                * Observable event triggered after the layout was evaluated
+                */
+            onEndLayoutObservable: Observable<AdvancedDynamicTexture>;
+            /**
+                * Observable event triggered before the texture is rendered
+                */
+            onBeginRenderObservable: Observable<AdvancedDynamicTexture>;
+            /**
+                * Observable event triggered after the texture was rendered
+                */
+            onEndRenderObservable: Observable<AdvancedDynamicTexture>;
             /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
@@ -291,6 +308,50 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 * @returns a new AdvancedDynamicTexture
                 */
             static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number): AdvancedDynamicTexture;
+    }
+}
+
+declare module 'babylonjs-gui/2D/adtInstrumentation' {
+    import { IDisposable, PerfCounter } from "babylonjs";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    /**
+        * This class can be used to get instrumentation data from a AdvancedDynamicTexture object
+        */
+    export class AdvancedDynamicTextureInstrumentation implements IDisposable {
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture;
+            /**
+                * Gets the perf counter used to capture render time
+                */
+            readonly renderTimeCounter: PerfCounter;
+            /**
+                * Gets the perf counter used to capture layout time
+                */
+            readonly layoutTimeCounter: PerfCounter;
+            /**
+                * Enable or disable the render time capture
+                */
+            captureRenderTime: boolean;
+            /**
+                * Enable or disable the layout time capture
+                */
+            captureLayoutTime: boolean;
+            /**
+                * Instantiates a new advanced dynamic texture instrumentation.
+                * This class can be used to get instrumentation data from an AdvancedDynamicTexture object
+                * @param texture Defines the AdvancedDynamicTexture to instrument
+                */
+            constructor(
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture);
+            /**
+                * Dispose and release associated resources.
+                */
+            dispose(): void;
     }
 }
 
@@ -3272,6 +3333,22 @@ declare module BABYLON.GUI {
                 */
             onControlPickedObservable: BABYLON.Observable<Control>;
             /**
+                * BABYLON.Observable event triggered before layout is evaluated
+                */
+            onBeginLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
+                * BABYLON.Observable event triggered after the layout was evaluated
+                */
+            onEndLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
+                * BABYLON.Observable event triggered before the texture is rendered
+                */
+            onBeginRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
+                * BABYLON.Observable event triggered after the texture was rendered
+                */
+            onEndRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
             premulAlpha: boolean;
@@ -3447,6 +3524,47 @@ declare module BABYLON.GUI {
                 * @returns a new AdvancedDynamicTexture
                 */
             static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number): AdvancedDynamicTexture;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * This class can be used to get instrumentation data from a AdvancedDynamicTexture object
+        */
+    export class AdvancedDynamicTextureInstrumentation implements BABYLON.IDisposable {
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture;
+            /**
+                * Gets the perf counter used to capture render time
+                */
+            readonly renderTimeCounter: BABYLON.PerfCounter;
+            /**
+                * Gets the perf counter used to capture layout time
+                */
+            readonly layoutTimeCounter: BABYLON.PerfCounter;
+            /**
+                * Enable or disable the render time capture
+                */
+            captureRenderTime: boolean;
+            /**
+                * Enable or disable the layout time capture
+                */
+            captureLayoutTime: boolean;
+            /**
+                * Instantiates a new advanced dynamic texture instrumentation.
+                * This class can be used to get instrumentation data from an AdvancedDynamicTexture object
+                * @param texture Defines the AdvancedDynamicTexture to instrument
+                */
+            constructor(
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture);
+            /**
+                * Dispose and release associated resources.
+                */
+            dispose(): void;
     }
 }
 declare module BABYLON.GUI {
