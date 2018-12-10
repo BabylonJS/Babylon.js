@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Texture, BaseTexture, CubeTexture, Observable } from "babylonjs";
+import { Texture, BaseTexture, CubeTexture, Observable, Nullable } from "babylonjs";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
@@ -10,6 +10,7 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
 import { LockObject } from "../lockObject";
+import { ValueLineComponent } from "../../../lines/valueLineComponent";
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
@@ -18,8 +19,32 @@ interface ITexturePropertyGridComponentProps {
 }
 
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
+
+    private _adtInstrumentation: Nullable<BABYLON.GUI.AdvancedDynamicTextureInstrumentation>;
+
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
+    }
+
+    componentWillMount() {
+        const texture = this.props.texture
+
+        if (!texture || !(texture as any).rootContainer) {
+            return;
+        }
+
+        const adt = texture as BABYLON.GUI.AdvancedDynamicTexture;
+
+        this._adtInstrumentation = new BABYLON.GUI.AdvancedDynamicTextureInstrumentation(adt);
+        this._adtInstrumentation.captureRenderTime = true;
+        this._adtInstrumentation.captureLayoutTime = true;
+    }
+
+    componentWillUnmount() {
+        if (this._adtInstrumentation) {
+            this._adtInstrumentation.dispose();
+            this._adtInstrumentation = null;
+        }
     }
 
     updateTexture(file: File) {
@@ -76,6 +101,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 {
                     (texture as any).rootContainer &&
                     <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
+                        <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
+                        <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={texture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Premultiply alpha" target={texture} propertyName="premulAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <FloatLineComponent lockObject={this.props.lockObject} label="Ideal width" target={texture} propertyName="idealWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
