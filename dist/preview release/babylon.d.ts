@@ -6834,357 +6834,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    /** @hidden */
-    class Collider {
-        /** Define if a collision was found */
-        collisionFound: boolean;
-        /**
-         * Define last intersection point in local space
-         */
-        intersectionPoint: Vector3;
-        /**
-         * Define last collided mesh
-         */
-        collidedMesh: Nullable<AbstractMesh>;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        /** @hidden */
-        _radius: Vector3;
-        /** @hidden */
-        _retry: number;
-        private _velocity;
-        private _basePoint;
-        private _epsilon;
-        /** @hidden */
-        _velocityWorldLength: number;
-        /** @hidden */
-        _basePointWorld: Vector3;
-        private _velocityWorld;
-        private _normalizedVelocity;
-        /** @hidden */
-        _initialVelocity: Vector3;
-        /** @hidden */
-        _initialPosition: Vector3;
-        private _nearestDistance;
-        private _collisionMask;
-        collisionMask: number;
-        /**
-         * Gets the plane normal used to compute the sliding response (in local space)
-         */
-        readonly slidePlaneNormal: Vector3;
-        /** @hidden */
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        /** @hidden */
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        /** @hidden */
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        /** @hidden */
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        /** @hidden */
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        /** @hidden */
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    /** @hidden */
-    var CollisionWorker: string;
-    /** @hidden */
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    /** @hidden */
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    /** @hidden */
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    /**
-     * Interface describing the value associated with a geometry.
-     * @hidden
-     */
-    interface SerializedGeometry {
-        /**
-         * Defines the unique ID of the geometry
-         */
-        id: string;
-        /**
-         * Defines the array containing the positions
-         */
-        positions: Float32Array;
-        /**
-         * Defines the array containing the indices
-         */
-        indices: Uint32Array;
-        /**
-         * Defines the array containing the normals
-         */
-        normals: Float32Array;
-    }
-    /** @hidden */
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    /** @hidden */
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    /** Defines supported task for worker process */
-    enum WorkerTaskType {
-        /** Initialization */
-        INIT = 0,
-        /** Update of geometry */
-        UPDATE = 1,
-        /** Evaluate collision */
-        COLLIDE = 2
-    }
-    /** @hidden */
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    /** @hidden */
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    /** @hidden */
-    interface InitPayload {
-    }
-    /** @hidden */
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    /** @hidden */
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    /** Defines kind of replies returned by worker */
-    enum WorkerReplyType {
-        /** Success */
-        SUCCESS = 0,
-        /** Unkown error */
-        UNKNOWN_ERROR = 1
-    }
-    /** @hidden */
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (transformNode: TransformNode) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    /** @hidden */
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld;
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare const safePostMessage: any;
-declare module BABYLON {
-    /** @hidden */
-    var WorkerIncluded: boolean;
-    /** @hidden */
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    /** @hidden */
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-        private checkCollision;
-        private processCollisionsForSubMeshes;
-        private collideForSubMesh;
-        private checkSubmeshCollision;
-    }
-    /** @hidden */
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    /** @hidden */
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     */
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    /**
-     * Information about the result of picking within a scene
-     * @see https://doc.babylonjs.com/babylon101/picking_collisions
-     */
-    class PickingInfo {
-        /**
-         * If the pick collided with an object
-         */
-        hit: boolean;
-        /**
-         * Distance away where the pick collided
-         */
-        distance: number;
-        /**
-         * The location of pick collision
-         */
-        pickedPoint: Nullable<Vector3>;
-        /**
-         * The mesh corresponding the the pick collision
-         */
-        pickedMesh: Nullable<AbstractMesh>;
-        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
-        bu: number;
-        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
-        bv: number;
-        /** The id of the face on the mesh that was picked  */
-        faceId: number;
-        /** Id of the the submesh that was picked */
-        subMeshId: number;
-        /** If a sprite was picked, this will be the sprite the pick collided with */
-        pickedSprite: Nullable<Sprite>;
-        /**
-         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
-         */
-        originMesh: Nullable<AbstractMesh>;
-        /**
-         * The ray that was used to perform the picking.
-         */
-        ray: Nullable<Ray>;
-        /**
-         * Gets the normal correspodning to the face the pick collided with
-         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
-         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
-         * @returns The normal correspodning to the face the pick collided with
-         */
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        /**
-         * Gets the texture coordinates of where the pick occured
-         * @returns the vector containing the coordnates of the texture
-         */
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-declare module BABYLON {
     /**
      * This represents an orbital type of camera.
      *
@@ -9632,6 +9281,357 @@ declare module BABYLON {
          * @param result ray to store result in
          */
         static TransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
+    /** @hidden */
+    class Collider {
+        /** Define if a collision was found */
+        collisionFound: boolean;
+        /**
+         * Define last intersection point in local space
+         */
+        intersectionPoint: Vector3;
+        /**
+         * Define last collided mesh
+         */
+        collidedMesh: Nullable<AbstractMesh>;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        /** @hidden */
+        _radius: Vector3;
+        /** @hidden */
+        _retry: number;
+        private _velocity;
+        private _basePoint;
+        private _epsilon;
+        /** @hidden */
+        _velocityWorldLength: number;
+        /** @hidden */
+        _basePointWorld: Vector3;
+        private _velocityWorld;
+        private _normalizedVelocity;
+        /** @hidden */
+        _initialVelocity: Vector3;
+        /** @hidden */
+        _initialPosition: Vector3;
+        private _nearestDistance;
+        private _collisionMask;
+        collisionMask: number;
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        readonly slidePlaneNormal: Vector3;
+        /** @hidden */
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        /** @hidden */
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        /** @hidden */
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        /** @hidden */
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        /** @hidden */
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        /** @hidden */
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    /** @hidden */
+    var CollisionWorker: string;
+    /** @hidden */
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+    }
+    /** @hidden */
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    /** @hidden */
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    /**
+     * Interface describing the value associated with a geometry.
+     * @hidden
+     */
+    interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
+        id: string;
+        /**
+         * Defines the array containing the positions
+         */
+        positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */
+        indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */
+        normals: Float32Array;
+    }
+    /** @hidden */
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    /** @hidden */
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    /** Defines supported task for worker process */
+    enum WorkerTaskType {
+        /** Initialization */
+        INIT = 0,
+        /** Update of geometry */
+        UPDATE = 1,
+        /** Evaluate collision */
+        COLLIDE = 2
+    }
+    /** @hidden */
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    /** @hidden */
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    /** @hidden */
+    interface InitPayload {
+    }
+    /** @hidden */
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    /** @hidden */
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    /** Defines kind of replies returned by worker */
+    enum WorkerReplyType {
+        /** Success */
+        SUCCESS = 0,
+        /** Unkown error */
+        UNKNOWN_ERROR = 1
+    }
+    /** @hidden */
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    /** @hidden */
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld;
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare const safePostMessage: any;
+declare module BABYLON {
+    /** @hidden */
+    var WorkerIncluded: boolean;
+    /** @hidden */
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    /** @hidden */
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+        private checkCollision;
+        private processCollisionsForSubMeshes;
+        private collideForSubMesh;
+        private checkSubmeshCollision;
+    }
+    /** @hidden */
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    /** @hidden */
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    /**
+     * Information about the result of picking within a scene
+     * @see https://doc.babylonjs.com/babylon101/picking_collisions
+     */
+    class PickingInfo {
+        /**
+         * If the pick collided with an object
+         */
+        hit: boolean;
+        /**
+         * Distance away where the pick collided
+         */
+        distance: number;
+        /**
+         * The location of pick collision
+         */
+        pickedPoint: Nullable<Vector3>;
+        /**
+         * The mesh corresponding the the pick collision
+         */
+        pickedMesh: Nullable<AbstractMesh>;
+        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
+        bu: number;
+        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
+        bv: number;
+        /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
+        faceId: number;
+        /** Id of the the submesh that was picked */
+        subMeshId: number;
+        /** If a sprite was picked, this will be the sprite the pick collided with */
+        pickedSprite: Nullable<Sprite>;
+        /**
+         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
+         */
+        originMesh: Nullable<AbstractMesh>;
+        /**
+         * The ray that was used to perform the picking.
+         */
+        ray: Nullable<Ray>;
+        /**
+         * Gets the normal correspodning to the face the pick collided with
+         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
+         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
+         * @returns The normal correspodning to the face the pick collided with
+         */
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        /**
+         * Gets the texture coordinates of where the pick occured
+         * @returns the vector containing the coordnates of the texture
+         */
+        getTextureCoordinates(): Nullable<Vector2>;
     }
 }
 
@@ -13211,520 +13211,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Single axis drag gizmo
-     */
-    class AxisDragGizmo extends Gizmo {
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        /** @hidden */
-        static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode;
-        /** @hidden */
-        static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode;
-        /**
-         * Creates an AxisDragGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragAxis The axis which the gizmo will be able to drag on
-         * @param color The color of the gizmo
-         */
-        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Single axis scale gizmo
-     */
-    class AxisScaleGizmo extends Gizmo {
-        private _coloredMaterial;
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        /**
-         * If the scaling operation should be done on all axis (default: false)
-         */
-        uniformScaling: boolean;
-        /**
-         * Creates an AxisScaleGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragAxis The axis which the gizmo will be able to scale on
-         * @param color The color of the gizmo
-         */
-        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * Disposes and replaces the current meshes in the gizmo with the specified mesh
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         * @param useGizmoMaterial If the gizmo's default material should be used (default: false)
-         */
-        setCustomMesh(mesh: Mesh, useGizmoMaterial?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Bounding box gizmo
-     */
-    class BoundingBoxGizmo extends Gizmo {
-        private _lineBoundingBox;
-        private _rotateSpheresParent;
-        private _scaleBoxesParent;
-        private _boundingDimensions;
-        private _renderObserver;
-        private _pointerObserver;
-        private _scaleDragSpeed;
-        private _tmpQuaternion;
-        private _tmpVector;
-        private _tmpRotationMatrix;
-        /**
-         * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
-         */
-        ignoreChildren: boolean;
-        /**
-         * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
-         */
-        includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean>;
-        /**
-         * The size of the rotation spheres attached to the bounding box (Default: 0.1)
-         */
-        rotationSphereSize: number;
-        /**
-         * The size of the scale boxes attached to the bounding box (Default: 0.1)
-         */
-        scaleBoxSize: number;
-        /**
-         * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
-         */
-        fixedDragMeshScreenSize: boolean;
-        /**
-         * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
-         */
-        fixedDragMeshScreenSizeDistanceFactor: number;
-        /**
-         * Fired when a rotation sphere or scale box is dragged
-         */
-        onDragStartObservable: Observable<{}>;
-        /**
-         * Fired when a scale box is dragged
-         */
-        onScaleBoxDragObservable: Observable<{}>;
-        /**
-          * Fired when a scale box drag is ended
-         */
-        onScaleBoxDragEndObservable: Observable<{}>;
-        /**
-         * Fired when a rotation sphere is dragged
-         */
-        onRotationSphereDragObservable: Observable<{}>;
-        /**
-         * Fired when a rotation sphere drag is ended
-         */
-        onRotationSphereDragEndObservable: Observable<{}>;
-        /**
-         * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
-         */
-        scalePivot: Nullable<Vector3>;
-        private _anchorMesh;
-        private _existingMeshScale;
-        private static _PivotCached;
-        private static _OldPivotPoint;
-        private static _PivotTranslation;
-        private static _PivotTmpVector;
-        /** @hidden */
-        static _RemoveAndStorePivotPoint(mesh: AbstractMesh): void;
-        /** @hidden */
-        static _RestorePivotPoint(mesh: AbstractMesh): void;
-        /**
-         * Creates an BoundingBoxGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param color The color of the gizmo
-         */
-        constructor(color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        private _selectNode;
-        /**
-         * Updates the bounding box information for the Gizmo
-         */
-        updateBoundingBox(): void;
-        private _updateRotationSpheres;
-        private _updateScaleBoxes;
-        /**
-         * Enables rotation on the specified axis and disables rotation on the others
-         * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
-         */
-        setEnabledRotationAxis(axis: string): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * Makes a mesh not pickable and wraps the mesh inside of a bounding box mesh that is pickable. (This is useful to avoid picking within complex geometry)
-         * @param mesh the mesh to wrap in the bounding box mesh and make not pickable
-         * @returns the bounding box mesh with the passed in mesh as a child
-         */
-        static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
-     */
-    class Gizmo implements IDisposable {
-        /** The utility layer the gizmo will be added to */
-        gizmoLayer: UtilityLayerRenderer;
-        /**
-         * The root mesh of the gizmo
-         */
-        protected _rootMesh: Mesh;
-        private _attachedMesh;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        private _tmpMatrix;
-        /**
-         * If a custom mesh has been set (Default: false)
-         */
-        protected _customMeshSet: boolean;
-        /**
-         * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
-         * * When set, interactions will be enabled
-         */
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Disposes and replaces the current meshes in the gizmo with the specified mesh
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-        /**
-         * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
-         */
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
-         */
-        updateGizmoPositionToMatchAttachedMesh: boolean;
-        /**
-         * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
-         */
-        protected _updateScale: boolean;
-        protected _interactionsEnabled: boolean;
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        private _beforeRenderObserver;
-        /**
-         * Creates a gizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(
-        /** The utility layer the gizmo will be added to */
-        gizmoLayer?: UtilityLayerRenderer);
-        private _tempVector;
-        /**
-         * @hidden
-         * Updates the gizmo to match the attached mesh's position/rotation
-         */
-        protected _update(): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Helps setup gizmo's in the scene to rotate/scale/position meshes
-     */
-    class GizmoManager implements IDisposable {
-        private scene;
-        /**
-         * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
-         */
-        gizmos: {
-            positionGizmo: Nullable<PositionGizmo>;
-            rotationGizmo: Nullable<RotationGizmo>;
-            scaleGizmo: Nullable<ScaleGizmo>;
-            boundingBoxGizmo: Nullable<BoundingBoxGizmo>;
-        };
-        /** When true, the gizmo will be detached from the current object when a pointer down occurs with an empty picked mesh */
-        clearGizmoOnEmptyPointerEvent: boolean;
-        /** Fires an event when the manager is attached to a mesh */
-        onAttachedToMeshObservable: Observable<Nullable<AbstractMesh>>;
-        private _gizmosEnabled;
-        private _pointerObserver;
-        private _attachedMesh;
-        private _boundingBoxColor;
-        private _defaultUtilityLayer;
-        private _defaultKeepDepthUtilityLayer;
-        /**
-         * When bounding box gizmo is enabled, this can be used to track drag/end events
-         */
-        boundingBoxDragBehavior: SixDofDragBehavior;
-        /**
-         * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
-         */
-        attachableMeshes: Nullable<Array<AbstractMesh>>;
-        /**
-         * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
-         */
-        usePointerToAttachGizmos: boolean;
-        /**
-         * Instatiates a gizmo manager
-         * @param scene the scene to overlay the gizmos on top of
-         */
-        constructor(scene: Scene);
-        /**
-         * Attaches a set of gizmos to the specified mesh
-         * @param mesh The mesh the gizmo's should be attached to
-         */
-        attachToMesh(mesh: Nullable<AbstractMesh>): void;
-        /**
-         * If the position gizmo is enabled
-         */
-        positionGizmoEnabled: boolean;
-        /**
-         * If the rotation gizmo is enabled
-         */
-        rotationGizmoEnabled: boolean;
-        /**
-         * If the scale gizmo is enabled
-         */
-        scaleGizmoEnabled: boolean;
-        /**
-         * If the boundingBox gizmo is enabled
-         */
-        boundingBoxGizmoEnabled: boolean;
-        /**
-         * Disposes of the gizmo manager
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Single plane rotation gizmo
-     */
-    class PlaneRotationGizmo extends Gizmo {
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Rotation distance in radians that the gizmo will snap to (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        /**
-         * Creates a PlaneRotationGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
-         * @param color The color of the gizmo
-         * @param tessellation Amount of tessellation to be used when creating rotation circles
-         */
-        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gizmo that enables dragging a mesh along 3 axis
-     */
-    class PositionGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: AxisDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: AxisDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: AxisDragGizmo;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a PositionGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer);
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gizmo that enables rotating a mesh along 3 axis
-     */
-    class RotationGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: PlaneRotationGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: PlaneRotationGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: PlaneRotationGizmo;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a RotationGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param tessellation Amount of tessellation to be used when creating rotation circles
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gizmo that enables scaling a mesh along 3 axis
-     */
-    class ScaleGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: AxisScaleGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: AxisScaleGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: AxisScaleGizmo;
-        /**
-         * Internal gizmo used to scale all axis equally
-         */
-        uniformScaleGizmo: AxisScaleGizmo;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a ScaleGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer);
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Represents the different options available during the creation of
      * a Environment helper.
      *
@@ -14191,6 +13677,527 @@ declare module BABYLON {
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Single axis drag gizmo
+     */
+    class AxisDragGizmo extends Gizmo {
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        /** @hidden */
+        static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode;
+        /** @hidden */
+        static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode;
+        /**
+         * Creates an AxisDragGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param dragAxis The axis which the gizmo will be able to drag on
+         * @param color The color of the gizmo
+         */
+        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Single axis scale gizmo
+     */
+    class AxisScaleGizmo extends Gizmo {
+        private _coloredMaterial;
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        /**
+         * If the scaling operation should be done on all axis (default: false)
+         */
+        uniformScaling: boolean;
+        /**
+         * Creates an AxisScaleGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param dragAxis The axis which the gizmo will be able to scale on
+         * @param color The color of the gizmo
+         */
+        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * Disposes and replaces the current meshes in the gizmo with the specified mesh
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         * @param useGizmoMaterial If the gizmo's default material should be used (default: false)
+         */
+        setCustomMesh(mesh: Mesh, useGizmoMaterial?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Bounding box gizmo
+     */
+    class BoundingBoxGizmo extends Gizmo {
+        private _lineBoundingBox;
+        private _rotateSpheresParent;
+        private _scaleBoxesParent;
+        private _boundingDimensions;
+        private _renderObserver;
+        private _pointerObserver;
+        private _scaleDragSpeed;
+        private _tmpQuaternion;
+        private _tmpVector;
+        private _tmpRotationMatrix;
+        /**
+         * If child meshes should be ignored when calculating the boudning box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
+         */
+        ignoreChildren: boolean;
+        /**
+         * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored. (Default: null)
+         */
+        includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean>;
+        /**
+         * The size of the rotation spheres attached to the bounding box (Default: 0.1)
+         */
+        rotationSphereSize: number;
+        /**
+         * The size of the scale boxes attached to the bounding box (Default: 0.1)
+         */
+        scaleBoxSize: number;
+        /**
+         * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
+         */
+        fixedDragMeshScreenSize: boolean;
+        /**
+         * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
+         */
+        fixedDragMeshScreenSizeDistanceFactor: number;
+        /**
+         * Fired when a rotation sphere or scale box is dragged
+         */
+        onDragStartObservable: Observable<{}>;
+        /**
+         * Fired when a scale box is dragged
+         */
+        onScaleBoxDragObservable: Observable<{}>;
+        /**
+          * Fired when a scale box drag is ended
+         */
+        onScaleBoxDragEndObservable: Observable<{}>;
+        /**
+         * Fired when a rotation sphere is dragged
+         */
+        onRotationSphereDragObservable: Observable<{}>;
+        /**
+         * Fired when a rotation sphere drag is ended
+         */
+        onRotationSphereDragEndObservable: Observable<{}>;
+        /**
+         * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
+         */
+        scalePivot: Nullable<Vector3>;
+        private _anchorMesh;
+        private _existingMeshScale;
+        private _dragMesh;
+        private pointerDragBehavior;
+        private static _PivotCached;
+        private static _OldPivotPoint;
+        private static _PivotTranslation;
+        private static _PivotTmpVector;
+        /** @hidden */
+        static _RemoveAndStorePivotPoint(mesh: AbstractMesh): void;
+        /** @hidden */
+        static _RestorePivotPoint(mesh: AbstractMesh): void;
+        /**
+         * Creates an BoundingBoxGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param color The color of the gizmo
+         */
+        constructor(color?: Color3, gizmoLayer?: UtilityLayerRenderer);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        private _selectNode;
+        /**
+         * Updates the bounding box information for the Gizmo
+         */
+        updateBoundingBox(): void;
+        private _updateRotationSpheres;
+        private _updateScaleBoxes;
+        /**
+         * Enables rotation on the specified axis and disables rotation on the others
+         * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
+         */
+        setEnabledRotationAxis(axis: string): void;
+        private _updateDummy;
+        /**
+         * Enables a pointer drag behavior on the bounding box of the gizmo
+         */
+        enableDragBehavior(): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * Makes a mesh not pickable and wraps the mesh inside of a bounding box mesh that is pickable. (This is useful to avoid picking within complex geometry)
+         * @param mesh the mesh to wrap in the bounding box mesh and make not pickable
+         * @returns the bounding box mesh with the passed in mesh as a child
+         */
+        static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
+     */
+    class Gizmo implements IDisposable {
+        /** The utility layer the gizmo will be added to */
+        gizmoLayer: UtilityLayerRenderer;
+        /**
+         * The root mesh of the gizmo
+         */
+        protected _rootMesh: Mesh;
+        private _attachedMesh;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        private _tmpMatrix;
+        /**
+         * If a custom mesh has been set (Default: false)
+         */
+        protected _customMeshSet: boolean;
+        /**
+         * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
+         * * When set, interactions will be enabled
+         */
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Disposes and replaces the current meshes in the gizmo with the specified mesh
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+        /**
+         * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
+         */
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
+         */
+        updateGizmoPositionToMatchAttachedMesh: boolean;
+        /**
+         * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
+         */
+        protected _updateScale: boolean;
+        protected _interactionsEnabled: boolean;
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        private _beforeRenderObserver;
+        /**
+         * Creates a gizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(
+        /** The utility layer the gizmo will be added to */
+        gizmoLayer?: UtilityLayerRenderer);
+        private _tempVector;
+        /**
+         * @hidden
+         * Updates the gizmo to match the attached mesh's position/rotation
+         */
+        protected _update(): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Helps setup gizmo's in the scene to rotate/scale/position meshes
+     */
+    class GizmoManager implements IDisposable {
+        private scene;
+        /**
+         * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
+         */
+        gizmos: {
+            positionGizmo: Nullable<PositionGizmo>;
+            rotationGizmo: Nullable<RotationGizmo>;
+            scaleGizmo: Nullable<ScaleGizmo>;
+            boundingBoxGizmo: Nullable<BoundingBoxGizmo>;
+        };
+        /** When true, the gizmo will be detached from the current object when a pointer down occurs with an empty picked mesh */
+        clearGizmoOnEmptyPointerEvent: boolean;
+        /** Fires an event when the manager is attached to a mesh */
+        onAttachedToMeshObservable: Observable<Nullable<AbstractMesh>>;
+        private _gizmosEnabled;
+        private _pointerObserver;
+        private _attachedMesh;
+        private _boundingBoxColor;
+        private _defaultUtilityLayer;
+        private _defaultKeepDepthUtilityLayer;
+        /**
+         * When bounding box gizmo is enabled, this can be used to track drag/end events
+         */
+        boundingBoxDragBehavior: SixDofDragBehavior;
+        /**
+         * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
+         */
+        attachableMeshes: Nullable<Array<AbstractMesh>>;
+        /**
+         * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
+         */
+        usePointerToAttachGizmos: boolean;
+        /**
+         * Instatiates a gizmo manager
+         * @param scene the scene to overlay the gizmos on top of
+         */
+        constructor(scene: Scene);
+        /**
+         * Attaches a set of gizmos to the specified mesh
+         * @param mesh The mesh the gizmo's should be attached to
+         */
+        attachToMesh(mesh: Nullable<AbstractMesh>): void;
+        /**
+         * If the position gizmo is enabled
+         */
+        positionGizmoEnabled: boolean;
+        /**
+         * If the rotation gizmo is enabled
+         */
+        rotationGizmoEnabled: boolean;
+        /**
+         * If the scale gizmo is enabled
+         */
+        scaleGizmoEnabled: boolean;
+        /**
+         * If the boundingBox gizmo is enabled
+         */
+        boundingBoxGizmoEnabled: boolean;
+        /**
+         * Disposes of the gizmo manager
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Single plane rotation gizmo
+     */
+    class PlaneRotationGizmo extends Gizmo {
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Rotation distance in radians that the gizmo will snap to (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        /**
+         * Creates a PlaneRotationGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
+         * @param color The color of the gizmo
+         * @param tessellation Amount of tessellation to be used when creating rotation circles
+         */
+        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gizmo that enables dragging a mesh along 3 axis
+     */
+    class PositionGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: AxisDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: AxisDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: AxisDragGizmo;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<{}>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<{}>;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a PositionGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gizmo that enables rotating a mesh along 3 axis
+     */
+    class RotationGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: PlaneRotationGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: PlaneRotationGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: PlaneRotationGizmo;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<{}>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<{}>;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a RotationGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param tessellation Amount of tessellation to be used when creating rotation circles
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gizmo that enables scaling a mesh along 3 axis
+     */
+    class ScaleGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: AxisScaleGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: AxisScaleGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: AxisScaleGizmo;
+        /**
+         * Internal gizmo used to scale all axis equally
+         */
+        uniformScaleGizmo: AxisScaleGizmo;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<{}>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<{}>;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a ScaleGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
     }
 }
 

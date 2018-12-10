@@ -21,11 +21,13 @@
   - Added support for clipboard events to let users perform `cut`, `copy` and `paste` events ([Saket Saurabh](https://github.com/ssaket))
   - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/) / [Deltakosh](https://github.com/deltakosh))
   - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
+  - Added support for [nine patch stretch](https://www.babylonjs-playground.com/#G5H9IN#2) mode for images. ([Deltakosh](https://github.com/deltakosh))
 
 ## Updates
 
 ### GUI
 
+- Added `inputText.onKeyboardEventProcessedObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added `button.image` and `button.textBlock` to simplify access to button internal parts ([Deltakosh](https://github.com/deltakosh))
 - Added `sldier.displayThumb` to show/hide slider's thumb ([Deltakosh](https://github.com/deltakosh))
 - Added `grid.rowCount`, `grid.columnCount` and `grid.getChildrenAt()` ([Deltakosh](https://github.com/deltakosh))
@@ -137,6 +139,7 @@
 - Fixed inspector dynamic loading ([Sebavan](https://github.com/Sebavan))
 - Fixed infiniteDistance not working anymore ([Sebavan](https://github.com/Sebavan))
 - Fixed bug in SolidParticle BoundingSphere update within the SolidParticleSystem ([barroij](https://github.com/barroij))
+- Update Picking so that when the picked Mesh is a LinesMesh, the index of the picked line is returned in the `faceId` property of the `PickingInfo`, as we do with face index the picked Mesh is made of triangle faces ([barroij](https://github.com/barroij))
 
 ### Viewer
 
