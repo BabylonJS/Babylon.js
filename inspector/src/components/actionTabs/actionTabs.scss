@@ -235,6 +235,10 @@
                         margin:5px;
                         margin-top: 6px;
                         max-width: 200px;
+                        -webkit-user-select: text; 
+                        -moz-user-select: text;   
+                        -ms-user-select: text;    
+                        user-select: text;                
 
                         &.check {
                             color: green;
@@ -326,7 +330,7 @@
                     padding-left: 5px;
                     height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr 30px;
+                    grid-template-columns: 1fr 24px;
 
                     .label {
                         grid-column: 1;
@@ -681,41 +685,80 @@
                 
                 .color3Line {
                     padding-left: 5px;
-                    height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr auto;
 
+                    .firstLine {
+                        height: 30px;
+                        display: grid;
+                        grid-template-columns: 1fr auto 20px;
 
-                    .label {
-                        grid-column: 1;
-                        display: flex;
-                        align-items: center;
-                    }
+                        .label {
+                            grid-column: 1;
+                            display: flex;
+                            align-items: center;
+                        }
 
-                    .color3 {
-                        grid-column: 2;
-                        
-                        display: flex;
-                        align-items: center;   
+                        .color3 {
+                            grid-column: 2;
+                            
+                            display: flex;
+                            align-items: center;   
 
-                        input[type="color"] {
-                            -webkit-appearance: none;
-                            border: none;
-                            padding: 0;
-                            width: 20px;
-                            height: 20px;
+                            input[type="color"] {
+                                -webkit-appearance: none;
+                                border: none;
+                                padding: 0;
+                                width: 30px;
+                                height: 20px;
+                            }
+                            input[type="color"]::-webkit-color-swatch-wrapper {
+                                padding: 0;
+                            }
+                            input[type="color"]::-webkit-color-swatch {
+                                border: none;
+                            }
+                            
+                            input {
+                                margin-right: 5px;
+                            }
                         }
-                        input[type="color"]::-webkit-color-swatch-wrapper {
-                            padding: 0;
+
+                        .expand {
+                            grid-column: 3;
+                            display: grid;
+                            align-items: center;
+                            justify-items: center;
+                            cursor: pointer;
                         }
-                        input[type="color"]::-webkit-color-swatch {
-                            border: none;
+                    }   
+
+                    .secondLine {
+                        display: grid;
+                        padding-right: 5px;  
+                        border-left: 1px solid rgb(51, 122, 183);
+
+                        .numeric {
+                            display: grid;
+                            grid-template-columns: 1fr auto;
                         }
-                        
-                        input {
-                            margin-right: 5px;
+
+                        .numeric-label {
+                            text-align: right;
+                            grid-column: 1;
+                            display: flex;
+                            align-items: center;                            
+                            justify-self: right;
+                            margin-right: 10px;                          
                         }
-                    }                    
+
+                        .numeric-value {
+                            width: 120px;
+                            grid-column: 2;
+                            display: flex;
+                            align-items: center;  
+                            border: 1px solid  rgb(51, 122, 183);
+                        }                        
+                    }                  
                 }     
                 
                 .listLine {
