@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Texture, BaseTexture, CubeTexture, Observable, Nullable } from "babylonjs";
+import { Texture, BaseTexture, CubeTexture, Observable, Nullable, Tools } from "babylonjs";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
@@ -11,6 +11,7 @@ import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
 import { LockObject } from "../lockObject";
 import { ValueLineComponent } from "../../../lines/valueLineComponent";
+import { AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation } from "babylonjs-gui";
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture;
@@ -20,24 +21,24 @@ interface ITexturePropertyGridComponentProps {
 
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
 
-    private _adtInstrumentation: Nullable<BABYLON.GUI.AdvancedDynamicTextureInstrumentation>;
+    private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
 
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
     }
 
     componentWillMount() {
-        const texture = this.props.texture
+        const texture = this.props.texture;
 
         if (!texture || !(texture as any).rootContainer) {
             return;
         }
 
-        const adt = texture as BABYLON.GUI.AdvancedDynamicTexture;
+        const adt = texture as AdvancedDynamicTexture;
 
-        this._adtInstrumentation = new BABYLON.GUI.AdvancedDynamicTextureInstrumentation(adt);
-        this._adtInstrumentation.captureRenderTime = true;
-        this._adtInstrumentation.captureLayoutTime = true;
+        this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
+        this._adtInstrumentation!.captureRenderTime = true;
+        this._adtInstrumentation!.captureLayoutTime = true;
     }
 
     componentWillUnmount() {
