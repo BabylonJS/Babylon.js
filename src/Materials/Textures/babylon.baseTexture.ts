@@ -147,13 +147,41 @@ module BABYLON {
          * Define if the texture is a cube texture or if false a 2d texture.
          */
         @serialize()
-        public isCube = false;
+        public get isCube(): boolean {
+            if (!this._texture) {
+                return false;
+            }
+
+            return this._texture.isCube;
+        }
+
+        public set isCube(value: boolean) {
+            if (!this._texture) {
+                return;
+            }
+
+            this._texture.isCube = value;
+        }
 
         /**
          * Define if the texture is a 3d texture (webgl 2) or if false a 2d texture.
          */
         @serialize()
-        public is3D = false;
+        public get is3D(): boolean {
+            if (!this._texture) {
+                return false;
+            }
+
+            return this._texture.is3D;
+        }
+
+        public set is3D(value: boolean) {
+            if (!this._texture) {
+                return;
+            }
+
+            this._texture.is3D = value;
+        }
 
         /**
          * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
@@ -275,9 +303,6 @@ module BABYLON {
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
 
         private _scene: Nullable<Scene>;
-
-        /** @hidden */
-        public _samplingMode: number;
 
         /** @hidden */
         public _texture: Nullable<InternalTexture>;
@@ -439,7 +464,6 @@ module BABYLON {
                 return;
             }
 
-            this._samplingMode = samplingMode;
             scene.getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         }
 

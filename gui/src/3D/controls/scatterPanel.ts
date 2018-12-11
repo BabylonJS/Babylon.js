@@ -39,11 +39,11 @@ export class ScatterPanel extends VolumeBasedPanel {
         switch (this.orientation) {
             case Container3D.FACEORIGIN_ORIENTATION:
             case Container3D.FACEFORWARD_ORIENTATION:
-                mesh.lookAt(new Vector3(0, 0, -1));
+                mesh.lookAt(new Vector3(0, 0, 1));
                 break;
             case Container3D.FACEFORWARDREVERSED_ORIENTATION:
             case Container3D.FACEORIGINREVERSED_ORIENTATION:
-                mesh.lookAt(new Vector3(0, 0, 1));
+                mesh.lookAt(new Vector3(0, 0, -1));
                 break;
         }
 

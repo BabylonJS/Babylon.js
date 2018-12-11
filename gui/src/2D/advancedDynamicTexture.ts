@@ -69,9 +69,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _renderScale = 1;
     private _rootCanvas: Nullable<HTMLCanvasElement>;
 
-    /** @hidden */
-    public _needRedraw = false;
-
     /**
      * Define type to string to ensure compatibility across browsers
      * Safari doesn't support DataTransfer constructor
@@ -87,6 +84,26 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Observable event triggered each time a pointer down is intercepted by a control
      */
     public onControlPickedObservable = new Observable<Control>();
+
+    /**
+     * Observable event triggered before layout is evaluated
+     */
+    public onBeginLayoutObservable = new Observable<AdvancedDynamicTexture>();
+
+    /**
+     * Observable event triggered after the layout was evaluated
+     */
+    public onEndLayoutObservable = new Observable<AdvancedDynamicTexture>();
+
+    /**
+     * Observable event triggered before the texture is rendered
+     */
+    public onBeginRenderObservable = new Observable<AdvancedDynamicTexture>();
+
+    /**
+     * Observable event triggered after the texture was rendered
+     */
+    public onEndRenderObservable = new Observable<AdvancedDynamicTexture>();
 
     /**
      * Gets or sets a boolean defining if alpha is stored as premultiplied
@@ -317,7 +334,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             info.skipOnPointerObservable = true;
         });
 
-        this._rootContainer._link(null, this);
+        this._rootContainer._link(this);
 
         this.hasAlpha = true;
 
@@ -438,6 +455,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer.dispose();
         this.onClipboardObservable.clear();
         this.onControlPickedObservable.clear();
+        this.onBeginRenderObservable.clear();
+        this.onEndRenderObservable.clear();
+        this.onBeginLayoutObservable.clear();
+        this.onEndLayoutObservable.clear();
 
         super.dispose();
     }
@@ -575,13 +596,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         // Render
         context.font = "18px Arial";
         context.strokeStyle = "white";
-        var measure = new Measure(0, 0, renderWidth, renderHeight);
-        this._rootContainer._draw(measure, context);
 
-        if (this._needRedraw) { // We need to redraw as some elements dynamically adapt to their content
-            this._needRedraw = false;
-            this._render();
-        }
+        this.onBeginLayoutObservable.notifyObservers(this);
+        var measure = new Measure(0, 0, renderWidth, renderHeight);
+        this._rootContainer._layout(measure, context);
+        this.onEndLayoutObservable.notifyObservers(this);
+
+        this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
+
+        this.onBeginRenderObservable.notifyObservers(this);
+        this._rootContainer._render(context);
+        this.onEndRenderObservable.notifyObservers(this);
     }
 
     /** @hidden */
@@ -833,16 +858,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     private _attachToOnPointerOut(scene: Scene): void {
+
         this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add((pointerEvent) => {
             if (this._lastControlOver[pointerEvent.pointerId]) {
                 this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId]);
             }
             delete this._lastControlOver[pointerEvent.pointerId];
 
-            if (this._lastControlDown[pointerEvent.pointerId]) {
+            if (this._lastControlDown[pointerEvent.pointerId] && this._lastControlDown[pointerEvent.pointerId] !== this._capturingControl[pointerEvent.pointerId]) {
                 this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
+                delete this._lastControlDown[pointerEvent.pointerId];
             }
-            delete this._lastControlDown[pointerEvent.pointerId];
         });
     }
 

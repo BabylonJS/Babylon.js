@@ -90,7 +90,7 @@ module BABYLON {
 
             this._engine = this.getScene()!.getEngine();
             this._generateMipMaps = generateMipMaps;
-            this._samplingMode = samplingMode;
+            this._initialSamplingMode = samplingMode;
             this.autoUpdateTexture = settings.autoUpdateTexture;
 
             this.name = name || this._getName(src);
@@ -184,7 +184,7 @@ module BABYLON {
                 this.video.videoWidth,
                 this.video.videoHeight,
                 this._generateMipMaps,
-                this._samplingMode
+                this.samplingMode
             );
 
             if (!this.video.autoplay && !this._settings.poster) {

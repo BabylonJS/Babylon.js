@@ -1115,6 +1115,17 @@ module BABYLON {
 
                         defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
 
+                        defines.REFLECTIONMAP_CUBIC = false;
+                        defines.REFLECTIONMAP_EXPLICIT = false;
+                        defines.REFLECTIONMAP_PLANAR = false;
+                        defines.REFLECTIONMAP_PROJECTION = false;
+                        defines.REFLECTIONMAP_SKYBOX = false;
+                        defines.REFLECTIONMAP_SPHERICAL = false;
+                        defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
+                        defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+                        defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+                        defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
+
                         switch (reflectionTexture.coordinatesMode) {
                             case Texture.EXPLICIT_MODE:
                                 defines.REFLECTIONMAP_EXPLICIT = true;

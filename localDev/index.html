@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
     <script src="../dist/preview%20release/cannon.js"></script>
     <script src="../dist/preview%20release/Oimo.js"></script>
+    <script src="../dist/preview%20release/ammo.js"></script>
     <script src="../dist/preview%20release/gltf_validator.js"></script>
     <script src="../Tools/DevLoader/BabylonLoader.js"></script>
     <script src="src/webgl-debug.js"></script>
@@ -41,6 +42,13 @@
             width: 60px;
             height: 20px;
         }
+
+        @font-face {
+            font-family: BabylonJSglyphs;
+           /* src: url("http://www.killer-squid.com/fonts/BabylonJSglyphs.otf"); */
+            src: local("BabylonJSglyphs");
+        }
+        
     </style>
 </head>
 
@@ -65,6 +73,8 @@
             indexjs += matches[1];
         }
         indexjs += '.js';
+
+        // var indexjs = "http://localhost:1234/index.js"
 
         // Load the scripts + map file to allow vscode debug.
         BABYLONDEVTOOLS.Loader

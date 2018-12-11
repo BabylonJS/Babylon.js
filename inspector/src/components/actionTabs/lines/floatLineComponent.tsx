@@ -109,7 +109,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
+                    <input type="number" step="0.01" className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
                 </div>
             </div>
         );
