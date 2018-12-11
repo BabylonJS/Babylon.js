@@ -31,7 +31,7 @@ import { Scene } from "scene";
                 true,
                 (<InternalTexture>texture._texture).type,
                 false,
-                texture._samplingMode,
+                texture.samplingMode,
                 false
             );
 

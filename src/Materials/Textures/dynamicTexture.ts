@@ -78,7 +78,7 @@ import { Constants } from "Engines/constants";
 
             this.releaseInternalTexture();
 
-            this._texture = this._engine.createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this._samplingMode);
+            this._texture = this._engine.createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this.samplingMode);
         }
 
         /**

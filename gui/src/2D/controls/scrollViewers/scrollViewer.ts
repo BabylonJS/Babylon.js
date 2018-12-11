@@ -30,6 +30,20 @@ export class ScrollViewer extends Rectangle {
     private _clientHeight: number;
 
     /**
+     * Gets the horizontal scrollbar
+     */
+    public get horizontalBar(): ScrollBar {
+        return this._horizontalBar;
+    }
+
+    /**
+     * Gets the vertical scrollbar
+     */
+    public get verticalBar(): ScrollBar {
+        return this._verticalBar;
+    }
+
+    /**
      * Adds a new control to the current container
      * @param control defines the control to add
      * @returns the current container
@@ -293,6 +307,19 @@ export class ScrollViewer extends Rectangle {
         this._buildClientSizes();
         this._endLeft = this._clientWidth - windowContentsWidth;
         this._endTop = this._clientHeight - windowContentsHeight;
+
+        const newLeft = this._horizontalBar.value * this._endLeft + "px";
+        const newTop = this._verticalBar.value * this._endTop + "px";
+
+        if (newLeft !== this._window.left) {
+            this._window.left = newLeft;
+            this._rebuildLayout = true;
+        }
+
+        if (newTop !== this._window.top) {
+            this._window.top = newTop;
+            this._rebuildLayout = true;
+        }
 
         let horizontalMultiplicator = this._clientWidth / windowContentsWidth;
         let verticalMultiplicator = this._clientHeight / windowContentsHeight;

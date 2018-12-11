@@ -11,6 +11,7 @@ declare module 'babylonjs-gui' {
 declare module 'babylonjs-gui/2D' {
     export * from "babylonjs-gui/2D/controls";
     export * from "babylonjs-gui/2D/advancedDynamicTexture";
+    export * from "babylonjs-gui/2D/adtInstrumentation";
     export * from "babylonjs-gui/2D/math2D";
     export * from "babylonjs-gui/2D/measure";
     export * from "babylonjs-gui/2D/multiLinePoint";
@@ -115,6 +116,22 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 * Observable event triggered each time a pointer down is intercepted by a control
                 */
             onControlPickedObservable: Observable<Control>;
+            /**
+                * Observable event triggered before layout is evaluated
+                */
+            onBeginLayoutObservable: Observable<AdvancedDynamicTexture>;
+            /**
+                * Observable event triggered after the layout was evaluated
+                */
+            onEndLayoutObservable: Observable<AdvancedDynamicTexture>;
+            /**
+                * Observable event triggered before the texture is rendered
+                */
+            onBeginRenderObservable: Observable<AdvancedDynamicTexture>;
+            /**
+                * Observable event triggered after the texture was rendered
+                */
+            onEndRenderObservable: Observable<AdvancedDynamicTexture>;
             /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
@@ -291,6 +308,50 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
                 * @returns a new AdvancedDynamicTexture
                 */
             static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number): AdvancedDynamicTexture;
+    }
+}
+
+declare module 'babylonjs-gui/2D/adtInstrumentation' {
+    import { IDisposable, PerfCounter } from "babylonjs";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    /**
+        * This class can be used to get instrumentation data from a AdvancedDynamicTexture object
+        */
+    export class AdvancedDynamicTextureInstrumentation implements IDisposable {
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture;
+            /**
+                * Gets the perf counter used to capture render time
+                */
+            readonly renderTimeCounter: PerfCounter;
+            /**
+                * Gets the perf counter used to capture layout time
+                */
+            readonly layoutTimeCounter: PerfCounter;
+            /**
+                * Enable or disable the render time capture
+                */
+            captureRenderTime: boolean;
+            /**
+                * Enable or disable the layout time capture
+                */
+            captureLayoutTime: boolean;
+            /**
+                * Instantiates a new advanced dynamic texture instrumentation.
+                * This class can be used to get instrumentation data from an AdvancedDynamicTexture object
+                * @param texture Defines the AdvancedDynamicTexture to instrument
+                */
+            constructor(
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture);
+            /**
+                * Dispose and release associated resources.
+                */
+            dispose(): void;
     }
 }
 
@@ -2202,10 +2263,19 @@ declare module 'babylonjs-gui/2D/controls/scrollViewers/scrollViewer' {
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Nullable } from "babylonjs";
     import { AdvancedDynamicTexture, Measure } from "2D";
+    import { ScrollBar } from "babylonjs-gui/2D/controls/sliders/scrollBar";
     /**
         * Class used to hold a viewer window and sliders in a grid
      */
     export class ScrollViewer extends Rectangle {
+            /**
+                * Gets the horizontal scrollbar
+                */
+            readonly horizontalBar: ScrollBar;
+            /**
+                * Gets the vertical scrollbar
+                */
+            readonly verticalBar: ScrollBar;
             /**
                 * Adds a new control to the current container
                 * @param control defines the control to add
@@ -3199,6 +3269,33 @@ declare module 'babylonjs-gui/3D/materials/fluentMaterial' {
     }
 }
 
+declare module 'babylonjs-gui/2D/controls/sliders/scrollBar' {
+    import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
+    import { Control } from "babylonjs-gui/2D/controls";
+    import { Vector2 } from "babylonjs";
+    /**
+        * Class used to create slider controls
+        */
+    export class ScrollBar extends BaseSlider {
+            name?: string | undefined;
+            /** Gets or sets border color */
+            borderColor: string;
+            /** Gets or sets background color */
+            background: string;
+            /**
+                * Creates a new Slider
+                * @param name defines the control name
+                */
+            constructor(name?: string | undefined);
+            protected _getTypeName(): string;
+            protected _getThumbThickness(): number;
+            _draw(context: CanvasRenderingContext2D): void;
+            /** @hidden */
+            protected _updateValueFromPointer(x: number, y: number): void;
+            _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+    }
+}
+
 
 /*Babylon.js GUI*/
 // Dependencies for this module:
@@ -3271,6 +3368,22 @@ declare module BABYLON.GUI {
                 * BABYLON.Observable event triggered each time a pointer down is intercepted by a control
                 */
             onControlPickedObservable: BABYLON.Observable<Control>;
+            /**
+                * BABYLON.Observable event triggered before layout is evaluated
+                */
+            onBeginLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
+                * BABYLON.Observable event triggered after the layout was evaluated
+                */
+            onEndLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
+                * BABYLON.Observable event triggered before the texture is rendered
+                */
+            onBeginRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
+                * BABYLON.Observable event triggered after the texture was rendered
+                */
+            onEndRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
             /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
@@ -3447,6 +3560,47 @@ declare module BABYLON.GUI {
                 * @returns a new AdvancedDynamicTexture
                 */
             static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number): AdvancedDynamicTexture;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * This class can be used to get instrumentation data from a AdvancedDynamicTexture object
+        */
+    export class AdvancedDynamicTextureInstrumentation implements BABYLON.IDisposable {
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture;
+            /**
+                * Gets the perf counter used to capture render time
+                */
+            readonly renderTimeCounter: BABYLON.PerfCounter;
+            /**
+                * Gets the perf counter used to capture layout time
+                */
+            readonly layoutTimeCounter: BABYLON.PerfCounter;
+            /**
+                * Enable or disable the render time capture
+                */
+            captureRenderTime: boolean;
+            /**
+                * Enable or disable the layout time capture
+                */
+            captureLayoutTime: boolean;
+            /**
+                * Instantiates a new advanced dynamic texture instrumentation.
+                * This class can be used to get instrumentation data from an AdvancedDynamicTexture object
+                * @param texture Defines the AdvancedDynamicTexture to instrument
+                */
+            constructor(
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture);
+            /**
+                * Dispose and release associated resources.
+                */
+            dispose(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -5257,6 +5411,14 @@ declare module BABYLON.GUI {
      */
     export class ScrollViewer extends Rectangle {
             /**
+                * Gets the horizontal scrollbar
+                */
+            readonly horizontalBar: ScrollBar;
+            /**
+                * Gets the vertical scrollbar
+                */
+            readonly verticalBar: ScrollBar;
+            /**
                 * Adds a new control to the current container
                 * @param control defines the control to add
                 * @returns the current container
@@ -6174,5 +6336,28 @@ declare module BABYLON.GUI {
             serialize(): any;
             getClassName(): string;
             static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * Class used to create slider controls
+        */
+    export class ScrollBar extends BaseSlider {
+            name?: string | undefined;
+            /** Gets or sets border color */
+            borderColor: string;
+            /** Gets or sets background color */
+            background: string;
+            /**
+                * Creates a new Slider
+                * @param name defines the control name
+                */
+            constructor(name?: string | undefined);
+            protected _getTypeName(): string;
+            protected _getThumbThickness(): number;
+            _draw(context: CanvasRenderingContext2D): void;
+            /** @hidden */
+            protected _updateValueFromPointer(x: number, y: number): void;
+            _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
     }
 }

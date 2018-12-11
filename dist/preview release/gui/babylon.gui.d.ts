@@ -70,6 +70,22 @@ declare module BABYLON.GUI {
                 */
             onControlPickedObservable: BABYLON.Observable<Control>;
             /**
+                * BABYLON.Observable event triggered before layout is evaluated
+                */
+            onBeginLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
+                * BABYLON.Observable event triggered after the layout was evaluated
+                */
+            onEndLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
+                * BABYLON.Observable event triggered before the texture is rendered
+                */
+            onBeginRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
+                * BABYLON.Observable event triggered after the texture was rendered
+                */
+            onEndRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
+            /**
                 * Gets or sets a boolean defining if alpha is stored as premultiplied
                 */
             premulAlpha: boolean;
@@ -245,6 +261,47 @@ declare module BABYLON.GUI {
                 * @returns a new AdvancedDynamicTexture
                 */
             static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number): AdvancedDynamicTexture;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * This class can be used to get instrumentation data from a AdvancedDynamicTexture object
+        */
+    export class AdvancedDynamicTextureInstrumentation implements BABYLON.IDisposable {
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture;
+            /**
+                * Gets the perf counter used to capture render time
+                */
+            readonly renderTimeCounter: BABYLON.PerfCounter;
+            /**
+                * Gets the perf counter used to capture layout time
+                */
+            readonly layoutTimeCounter: BABYLON.PerfCounter;
+            /**
+                * Enable or disable the render time capture
+                */
+            captureRenderTime: boolean;
+            /**
+                * Enable or disable the layout time capture
+                */
+            captureLayoutTime: boolean;
+            /**
+                * Instantiates a new advanced dynamic texture instrumentation.
+                * This class can be used to get instrumentation data from an AdvancedDynamicTexture object
+                * @param texture Defines the AdvancedDynamicTexture to instrument
+                */
+            constructor(
+            /**
+                * Define the instrumented AdvancedDynamicTexture.
+                */
+            texture: AdvancedDynamicTexture);
+            /**
+                * Dispose and release associated resources.
+                */
+            dispose(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -2055,6 +2112,14 @@ declare module BABYLON.GUI {
      */
     export class ScrollViewer extends Rectangle {
             /**
+                * Gets the horizontal scrollbar
+                */
+            readonly horizontalBar: ScrollBar;
+            /**
+                * Gets the vertical scrollbar
+                */
+            readonly verticalBar: ScrollBar;
+            /**
                 * Adds a new control to the current container
                 * @param control defines the control to add
                 * @returns the current container
@@ -2972,5 +3037,28 @@ declare module BABYLON.GUI {
             serialize(): any;
             getClassName(): string;
             static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): FluentMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+        * Class used to create slider controls
+        */
+    export class ScrollBar extends BaseSlider {
+            name?: string | undefined;
+            /** Gets or sets border color */
+            borderColor: string;
+            /** Gets or sets background color */
+            background: string;
+            /**
+                * Creates a new Slider
+                * @param name defines the control name
+                */
+            constructor(name?: string | undefined);
+            protected _getTypeName(): string;
+            protected _getThumbThickness(): number;
+            _draw(context: CanvasRenderingContext2D): void;
+            /** @hidden */
+            protected _updateValueFromPointer(x: number, y: number): void;
+            _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
     }
 }

@@ -86,6 +86,26 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public onControlPickedObservable = new Observable<Control>();
 
     /**
+     * Observable event triggered before layout is evaluated
+     */
+    public onBeginLayoutObservable = new Observable<AdvancedDynamicTexture>();
+
+    /**
+     * Observable event triggered after the layout was evaluated
+     */
+    public onEndLayoutObservable = new Observable<AdvancedDynamicTexture>();
+
+    /**
+     * Observable event triggered before the texture is rendered
+     */
+    public onBeginRenderObservable = new Observable<AdvancedDynamicTexture>();
+
+    /**
+     * Observable event triggered after the texture was rendered
+     */
+    public onEndRenderObservable = new Observable<AdvancedDynamicTexture>();
+
+    /**
      * Gets or sets a boolean defining if alpha is stored as premultiplied
      */
     public premulAlpha = false;
@@ -435,6 +455,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer.dispose();
         this.onClipboardObservable.clear();
         this.onControlPickedObservable.clear();
+        this.onBeginRenderObservable.clear();
+        this.onEndRenderObservable.clear();
+        this.onBeginLayoutObservable.clear();
+        this.onEndLayoutObservable.clear();
 
         super.dispose();
     }
@@ -572,11 +596,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         // Render
         context.font = "18px Arial";
         context.strokeStyle = "white";
+
+        this.onBeginLayoutObservable.notifyObservers(this);
         var measure = new Measure(0, 0, renderWidth, renderHeight);
         this._rootContainer._layout(measure, context);
+        this.onEndLayoutObservable.notifyObservers(this);
+
         this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
 
+        this.onBeginRenderObservable.notifyObservers(this);
         this._rootContainer._render(context);
+        this.onEndRenderObservable.notifyObservers(this);
     }
 
     /** @hidden */
