@@ -312,7 +312,9 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
                 // Deep copy
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId",
                     "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
-                    "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw"
+                    "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw",
+                    "onAfterWorldMatrixUpdateObservable", "onCollideObservable", "onCollisionPositionChangeObservable", "onRebuildObservable",
+                    "onDisposeObservable"
                 ],
                     ["_poseMatrix"]);
 
