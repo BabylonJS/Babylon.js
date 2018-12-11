@@ -481,7 +481,7 @@ module BABYLON {
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.11";
+            return "4.0.0-alpha.12";
         }
 
         /**
