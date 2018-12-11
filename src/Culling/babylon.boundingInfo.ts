@@ -146,21 +146,32 @@ module BABYLON {
         }
 
         /**
-         * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
-         * @param frustumPlanes defines the frustum to test
-         * @param strategy defines the strategy to use for the culling (default is BABYLON.Scene.CULLINGSTRATEGY_STANDARD)
-         * @returns true if the bounding info is in the frustum planes
+         * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.  
+         * @param frustumPlanes defines the frustum to test  
+         * @param strategy defines the strategy to use for the culling (default is BABYLON.Scene.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY)  
+         * @returns true if the bounding info is in the frustum planes  
          */
         public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = AbstractMesh.CULLINGSTRATEGY_STANDARD): boolean {
+            let inclusionTest = (strategy === AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION || strategy === AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY);
+            let bSphereOnlyTest = (strategy === AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY || strategy === AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY);
+            
+            if (inclusionTest) {
+                if (this.boundingSphere.isCenterInFrustum(frustumPlanes)) {
+                    return true;
+                }
+            }
+            
             if (!this.boundingSphere.isInFrustum(frustumPlanes)) {
                 return false;
             }
 
-            if (strategy === AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY) {
+            if (bSphereOnlyTest) {
                 return true;
             }
+
             return this.boundingBox.isInFrustum(frustumPlanes);
         }
+
 
         /**
 		 * Gets the world distance between the min and max points of the bounding box
