@@ -140,6 +140,7 @@
 - Fixed infiniteDistance not working anymore ([Sebavan](https://github.com/Sebavan))
 - Fixed bug in SolidParticle BoundingSphere update within the SolidParticleSystem ([barroij](https://github.com/barroij))
 - Update Picking so that when the picked Mesh is a LinesMesh, the index of the picked line is returned in the `faceId` property of the `PickingInfo`, as we do with face index the picked Mesh is made of triangle faces ([barroij](https://github.com/barroij))
+- Do not clone mesh observables ([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 
