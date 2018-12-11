@@ -366,7 +366,7 @@ declare type RenderTargetTexture = import ("Materials/Textures/renderTargetTextu
                 return;
             }
 
-            this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode);
 
             if (!this._texture) {
