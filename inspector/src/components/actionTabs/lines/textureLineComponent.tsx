@@ -20,8 +20,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         }
     }
 
-    shouldComponentUpdate(nextProps: ITextureLineComponentProps): boolean {
-        return (nextProps.texture !== this.props.texture);
+    shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }): boolean {
+        return (nextProps.texture !== this.props.texture || nextState.displayRed !== this.state.displayRed || nextState.displayGreen !== this.state.displayGreen || nextState.displayBlue !== this.state.displayBlue || nextState.displayAlpha !== this.state.displayAlpha || nextState.face !== this.state.face);
     }
 
     componentDidMount() {
