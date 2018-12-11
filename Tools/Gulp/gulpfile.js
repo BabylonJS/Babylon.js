@@ -13,6 +13,7 @@ require("./tasks/gulpTasks-watch");
 require("./tasks/gulpTasks-typedoc");
 require("./tasks/gulpTasks-intellisense");
 require("./tasks/gulpTasks-tests");
+require("./tasks/gulpTasks-remapPaths");
 
 // Import Build Config
 var config = require("./config.json");
