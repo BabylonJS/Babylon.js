@@ -44,10 +44,41 @@ module BABYLON {
         /** Use a conservative occlusion algorithm */
         public static OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
 
-        /** Default culling strategy with bounding box and bounding sphere and then frustum culling */
+        /** Default culling strategy : this is an exclusion test and it's the more accurate.   
+         *  Test order :  
+         *  Is the bounding sphere outside the frustum ?  
+         *  If not, are the bounding box vertices outside the frustum ?  
+         *  It not, then the cullable object is in the frustum.  
+         */
         public static readonly CULLINGSTRATEGY_STANDARD = 0;
-        /** Culling strategy with bounding sphere only and then frustum culling */
+        /** Culling strategy : Bounding Sphere Only.  
+         *  This is an exclusion test. It's faster than the standard strategy because the bounding box is not tested.  
+         *  It's also less accurate than the standard because some not visible objects can still be selected.  
+         *  Test : is the bounding sphere outside the frustum ?  
+         *  If not, then the cullable object is in the frustum.  
+         */
         public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;
+        /** Culling strategy : Optimistic Inclusion.  
+         *  This in an inclusion test first, then the standard exclusion test.  
+         *  This can be faster when a cullable object is expected to be almost always in the camera frustum.  
+         *  This can also be a little slower than the standard test when the tested object center is not the frustum.  
+         *  Anyway, it's as accurate as the standard strategy.  
+         *  Test :  
+         *  Is the cullable object bounding sphere center in the frustum ?  
+         *  If not, apply the default culling strategy.  
+         */
+        public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = 2;
+        /** Culling strategy : Optimistic Inclusion then Bounding Sphere Only.  
+         *  This in an inclusion test first, then the bounding sphere only exclusion test.  
+         *  This can be the fastest test when a cullable object is expected to be almost always in the camera frustum.  
+         *  This can also be a little slower than the BoundingSphereOnly stratagy when the tested object center is not in the frustum.   
+         *  It's less accurate than the standard strategy and as accurate as the BoundingSphereOnly strategy.  
+         *  Test :  
+         *  Is the cullable object bounding sphere center in the frustum ?  
+         *  If not, apply the Bounding Sphere Only strategy. No Bounding Box is tested here.  
+         */
+        public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = 3;
+
 
         /**
          * No billboard
@@ -78,7 +109,16 @@ module BABYLON {
 
         private _facetData = new _FacetDataStorage();
 
-        /** Gets ot sets the culling strategy to use to find visible meshes */
+        /** 
+         * The culling strategy to use to check whether the mesh must be rendered or not.  
+         * This value can be changed at any time and will be used on the next render mesh selection.  
+         * The possible values are :   
+         * - AbstractMesh.CULLINGSTRATEGY_STANDARD  
+         * - AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY  
+         * - AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION  
+         * - AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY   
+         * Please read each static variable documentation to get details about the culling process.  
+         * */
         public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_STANDARD;
 
         /**
