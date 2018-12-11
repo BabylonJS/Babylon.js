@@ -124,11 +124,11 @@ module BABYLON {
         public isCenterInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
             let center = this.centerWorld;
             for (let i = 0; i < 6; i++) {
-                if (frustumPlanes[i].dotCoordinate(center) >= 0) {
-                    return true;
+                if (frustumPlanes[i].dotCoordinate(center) < 0) {
+                    return false;
                 }
             }
-            return false;
+            return true;
         }
 
         /**
