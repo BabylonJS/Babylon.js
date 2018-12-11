@@ -56,7 +56,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                         {`${this.props.label}: `}
                     </div>
                 }
-                <input className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt)} />
+                <input type="number" step="1" className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt)} />
             </div>
         )
     }

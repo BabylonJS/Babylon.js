@@ -4,9 +4,9 @@
 
 - [Inspector v2.0](https://doc.babylonjs.com/features/playground_debuglayer). [Dev log](https://medium.com/@babylonjs/dev-log-creating-the-new-inspector-b15c50900205) ([Deltakosh](https://github.com/deltakosh))
 - Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
-- Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein)) [@NEED DEMO]
 - Added [Object Based Motion Blur](http://doc.babylonjs.com/how_to/using_motionblurpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
-- WebXR ([TrevorDev](https://github.com/TrevorDev)) [@NEED DEMO]
+- Added [support for AmmoJS](https://doc.babylonjs.com/how_to/using_the_physics_engine) as a physics plugin (Composite objects, joints, motors) ([TrevorDev](https://github.com/TrevorDev))
+- Added support for [WebXR](https://doc.babylonjs.com/how_to/webxr) ([TrevorDev](https://github.com/TrevorDev))
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
   - webXR camera which can be updated by a webXRSession ([TrevorDev](https://github.com/TrevorDev))
@@ -16,14 +16,18 @@
   - WebXRInput manage controllers for the XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXR camera rotation using parent container ([TrevorDev](https://github.com/TrevorDev))
 - GUI:
+  - Added `control.useBitmapCache` to optimize re-rendering of complex controls by keeping a cached version ([Deltakosh](https://github.com/deltakosh))
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
   - Added support for clipboard events to let users perform `cut`, `copy` and `paste` events ([Saket Saurabh](https://github.com/ssaket))
-  - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/))
+  - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/) / [Deltakosh](https://github.com/deltakosh))
+  - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
+  - Added support for [nine patch stretch](https://www.babylonjs-playground.com/#G5H9IN#2) mode for images. ([Deltakosh](https://github.com/deltakosh))
 
 ## Updates
 
 ### GUI
 
+- Added `inputText.onKeyboardEventProcessedObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added `button.image` and `button.textBlock` to simplify access to button internal parts ([Deltakosh](https://github.com/deltakosh))
 - Added `sldier.displayThumb` to show/hide slider's thumb ([Deltakosh](https://github.com/deltakosh))
 - Added `grid.rowCount`, `grid.columnCount` and `grid.getChildrenAt()` ([Deltakosh](https://github.com/deltakosh))
@@ -32,9 +36,14 @@
 - Added `inputText.onTextCopyObservable`, `inputText.onTextCutObservable` and `inputText.onTextPasteObservable` to inputText ([Saket Saurabh](https://github.com/ssaket))
 - Added `AdvancedDynamicTexture.onClipboardObservable` to observe for clipboard events in AdvancedDynamicTexture([Saket Saurabh](https://github.com/ssaket))
 - Added `inputText.onFocusSelectAll` to allow complete selection of text on focus event.([Saket Saurabh](https://github.com/ssaket))
+- Added mouse drag to highlight text in inputText ([Saket Saurabh](https://github.com/ssaket))
 
 ### Core Engine
 
+- Added `animatable.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
+- Added `animationGroup.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
+- Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein))
+- Added support for Scissor testing ([Deltakosh](https://github.com/deltakosh))
 - Added `Engine.onNewSceneAddedObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added new `PassCubePostProcess` to render cube map content ([Deltakosh](https://github.com/deltakosh))
 - Added support for utility layer for SkeletonViewer ([Deltakosh](https://github.com/deltakosh))
@@ -72,6 +81,8 @@
 - Added support for linking a bone to a transform node ([bghgary](https://github.com/bghgary))
 - Factored out `setDirection` function from `lookAt` for transform node ([bghgary](https://github.com/bghgary))
 - Add support for setting renderingGroupId and creating instances to `AxesViewer` ([bghgary](https://github.com/bghgary))
+- Invert vScale of compressed ktx textures as they are inverted in the file and UNPACK_FLIP_Y_WEBGL is not supported by ktx ([TrevorDev](https://github.com/TrevorDev))
+- Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
 
 ### glTF Loader
 
@@ -90,6 +101,8 @@
 ### Materials Library
 
 ## Bug fixes
+- Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
+- Fixed ArcRotateCamera control when upVector was modified ([Deltakosh](https://github.com/deltakosh))
 - Fixed anaglyph mode for Free and Universal cameras ([Deltakosh](https://github.com/deltakosh))
 - Fixed FileLoader's loading of a skybox, & added a parsed value for whether to create with PBR or STDMaterial ([Palmer-JC](https://github.com/Palmer-JC))
 - Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))
@@ -105,6 +118,11 @@
 - TransformNode lookAt not working in world space when node's parent has rotation ([TrevorDev](https://github.com/TrevorDev))
 - MakeNotPickableAndWrapInBoundingBox had unexpected behavior when input had scaling of 0 on an axis ([TrevorDev](https://github.com/TrevorDev))
 - Fixed an issue with loading base64 encoded images in the glTF loader ([bghgary](https://github.com/bghgary))
+- In multi-camera scenes the inspector would cause the camera's interaction events to get detached ([TrevorDev](https://github.com/TrevorDev))
+- Fix delete highlighted text after keyboard input, beat delay after double click event in InputText ([Saket Saurabh](https://github.com/ssaket))
+- SixDofDragBehavior will support when the camera is parented ([TrevorDev](https://github.com/TrevorDev))
+- Deactivate webvr lasers when not in vr ([TrevorDev](https://github.com/TrevorDev))
+- Update physics position using absolutePosition instead of pivotPosition ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -120,6 +138,8 @@
 - Fixed position and rotation of plane mesh created by MeshBuilder.CreatePlane when specifying a source plane ([sable](https://github.com/thscott), [bghgary](https://github.com/bghgary))
 - Fixed inspector dynamic loading ([Sebavan](https://github.com/Sebavan))
 - Fixed infiniteDistance not working anymore ([Sebavan](https://github.com/Sebavan))
+- Fixed bug in SolidParticle BoundingSphere update within the SolidParticleSystem ([barroij](https://github.com/barroij))
+- Update Picking so that when the picked Mesh is a LinesMesh, the index of the picked line is returned in the `faceId` property of the `PickingInfo`, as we do with face index the picked Mesh is made of triangle faces ([barroij](https://github.com/barroij))
 
 ### Viewer
 

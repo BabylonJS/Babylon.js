@@ -38,7 +38,7 @@ module BABYLON {
         public bu = 0;
         /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
         public bv = 0;
-        /** The id of the face on the mesh that was picked  */
+        /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
         public faceId = -1;
         /** Id of the the submesh that was picked */
         public subMeshId = 0;

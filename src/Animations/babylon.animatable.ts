@@ -29,6 +29,11 @@ module BABYLON {
         public onAnimationEndObservable = new Observable<Animatable>();
 
         /**
+         * Observer raised when the animation loops
+         */
+        public onAnimationLoopObservable = new Observable<Animatable>();
+
+        /**
          * Gets the root Animatable used to synchronize and normalize animations
          */
         public get syncRoot(): Animatable {
@@ -90,6 +95,7 @@ module BABYLON {
          * @param speedRatio defines the factor to apply to animation speed (default is 1)
          * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
          * @param animations defines a group of animation to add to the new Animatable
+         * @param onAnimationLoop defines a callback to call when animation loops
          */
         constructor(scene: Scene,
             /** defines the target object */
@@ -103,7 +109,9 @@ module BABYLON {
             speedRatio: number = 1.0,
             /** defines a callback to call when animation ends if it is not looping */
             public onAnimationEnd?: Nullable<() => void>,
-            animations?: Animation[]) {
+            animations?: Animation[],
+            /** defines a callback to call when animation loops */
+            public onAnimationLoop?: Nullable<() => void>) {
             this._scene = scene;
             if (animations) {
                 this.appendAnimations(target, animations);
@@ -368,7 +376,15 @@ module BABYLON {
 
             for (index = 0; index < runtimeAnimations.length; index++) {
                 var animation = runtimeAnimations[index];
-                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this._speedRatio, this._weight);
+                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame,
+                    this.toFrame, this.loopAnimation, this._speedRatio, this._weight,
+                    () => {
+                        this.onAnimationLoopObservable.notifyObservers(this);
+                        if (this.onAnimationLoop) {
+                            this.onAnimationLoop();
+                        }
+                    }
+                );
                 running = running || isRunning;
             }
 
@@ -390,6 +406,8 @@ module BABYLON {
 
                 if (this.disposeOnEnd) {
                     this.onAnimationEnd = null;
+                    this.onAnimationLoop = null;
+                    this.onAnimationLoopObservable.clear();
                     this.onAnimationEndObservable.clear();
                 }
             }

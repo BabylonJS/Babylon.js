@@ -2,7 +2,6 @@ import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo } from 'babylonjs';
-import { Measure } from "../measure";
 import { VirtualKeyboard } from "./virtualKeyboard";
 
 /**
@@ -13,6 +12,7 @@ export class InputText extends Control implements IFocusableControl {
     private _placeholderText = "";
     private _background = "#222222";
     private _focusedBackground = "#000000";
+    private _focusedColor = "white";
     private _placeholderColor = "gray";
     private _thickness = 1;
     private _margin = new ValueAndUnit(10, ValueAndUnit.UNITMODE_PIXEL);
@@ -34,7 +34,9 @@ export class InputText extends Control implements IFocusableControl {
     private _highlightedText = "";
     private _startHighlightIndex = 0;
     private _endHighlightIndex = 0;
+    private _cursorIndex = -1;
     private _onFocusSelectAll = false;
+    private _isPointerDown = false;
     private _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;
     private _onPointerDblTapObserver: Nullable<Observer<PointerInfo>>;
 
@@ -60,6 +62,8 @@ export class InputText extends Control implements IFocusableControl {
     public onTextCutObservable = new Observable<InputText>();
     /** Observable raised when paste event is triggered */
     public onTextPasteObservable = new Observable<InputText>();
+    /** Observable raised when a key event was processed */
+    public onKeyboardEventProcessedObservable = new Observable<KeyboardEvent>();
 
     /** Gets or sets the maximum width allowed by the control */
     public get maxWidth(): string | number {
@@ -179,6 +183,20 @@ export class InputText extends Control implements IFocusableControl {
         }
 
         this._focusedBackground = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets the background color when focused */
+    public get focusedColor(): string {
+        return this._focusedColor;
+    }
+
+    public set focusedColor(value: string) {
+        if (this._focusedColor === value) {
+            return;
+        }
+
+        this._focusedColor = value;
         this._markAsDirty();
     }
 
@@ -305,6 +323,7 @@ export class InputText extends Control implements IFocusableControl {
         super(name);
 
         this.text = text;
+        this.isPointerBlocker = true;
     }
 
     /** @hidden */
@@ -481,58 +500,156 @@ export class InputText extends Control implements IFocusableControl {
                 return;
             case 13: // RETURN
                 this._host.focusedControl = null;
+                this._isTextHighlightOn = false;
                 return;
             case 35: // END
                 this._cursorOffset = 0;
                 this._blinkIsEven = false;
+                this._isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
             case 36: // HOME
                 this._cursorOffset = this._text.length;
                 this._blinkIsEven = false;
+                this._isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
             case 37: // LEFT
-                if (evt && evt.shiftKey) {
-                    if (!this._isTextHighlightOn) {
-                        this._isTextHighlightOn = true;
-                        this._endHighlightIndex = this._text.length - this._cursorOffset;
-                        this._startHighlightIndex = this._endHighlightIndex;
-                    }
-                    (this._startHighlightIndex < 0) ? 0 : --this._startHighlightIndex;
-                }
                 this._cursorOffset++;
                 if (this._cursorOffset > this._text.length) {
                     this._cursorOffset = this._text.length;
                 }
+
+                if (evt && evt.shiftKey) {
+                    // update the cursor
+                    this._blinkIsEven = false;
+                    // shift + ctrl/cmd + <-
+                    if (evt.ctrlKey || evt.metaKey) {
+                        if (!this._isTextHighlightOn) {
+                            if (this._text.length === this._cursorOffset) {
+                                return;
+                            }
+                            else {
+                                this._endHighlightIndex = this._text.length - this._cursorOffset + 1;
+                            }
+                        }
+                        this._startHighlightIndex = 0;
+                        this._cursorIndex = this._text.length - this._endHighlightIndex;
+                        this._cursorOffset = this._text.length;
+                        this._isTextHighlightOn = true;
+                        this._markAsDirty();
+                        return;
+                    }
+                    //store the starting point
+                    if (!this._isTextHighlightOn) {
+                        this._isTextHighlightOn = true;
+                        this._cursorIndex = (this._cursorOffset >= this._text.length) ? this._text.length : this._cursorOffset - 1;
+                    }
+                    //if text is already highlighted
+                    else if (this._cursorIndex === -1) {
+                        this._cursorIndex = this._text.length - this._endHighlightIndex;
+                        this._cursorOffset = (this._startHighlightIndex === 0) ? this._text.length : this._text.length - this._startHighlightIndex + 1;
+                    }
+                    //set the highlight indexes
+                    if (this._cursorIndex < this._cursorOffset) {
+                        this._endHighlightIndex = this._text.length - this._cursorIndex;
+                        this._startHighlightIndex = this._text.length - this._cursorOffset;
+                    }
+                    else if (this._cursorIndex > this._cursorOffset) {
+                        this._endHighlightIndex = this._text.length - this._cursorOffset;
+                        this._startHighlightIndex = this._text.length - this._cursorIndex;
+                    }
+                    else {
+                        this._isTextHighlightOn = false;
+                    }
+                    this._markAsDirty();
+                    return;
+                }
+                if (this._isTextHighlightOn) {
+                    this._cursorOffset = this._text.length - this._startHighlightIndex;
+                    this._isTextHighlightOn = false;
+                }
+                if (evt && (evt.ctrlKey || evt.metaKey)) {
+                    this._cursorOffset = this.text.length;
+                    evt.preventDefault();
+                }
                 this._blinkIsEven = false;
+                this._isTextHighlightOn = false;
+                this._cursorIndex = -1;
                 this._markAsDirty();
                 return;
             case 39: // RIGHT
-                if (evt && evt.shiftKey) {
-                    if (!this._isTextHighlightOn) {
-                        this._isTextHighlightOn = true;
-                        this._startHighlightIndex = this._text.length - this._cursorOffset;
-                        this._endHighlightIndex = this._startHighlightIndex;
-                    }
-                    (this._endHighlightIndex > this._text.length) ? this._text.length - 1 : ++this._endHighlightIndex;
-                }
                 this._cursorOffset--;
                 if (this._cursorOffset < 0) {
                     this._cursorOffset = 0;
                 }
+                if (evt && evt.shiftKey) {
+                    //update the cursor
+                    this._blinkIsEven = false;
+                    //shift + ctrl/cmd + ->
+                    if (evt.ctrlKey || evt.metaKey) {
+                        if (!this._isTextHighlightOn) {
+                            if (this._cursorOffset === 0) {
+                                return;
+                            }
+                            else {
+                                this._startHighlightIndex = this._text.length - this._cursorOffset - 1;
+                            }
+                        }
+                        this._endHighlightIndex = this._text.length;
+                        this._isTextHighlightOn = true;
+                        this._cursorIndex = this._text.length - this._startHighlightIndex;
+                        this._cursorOffset = 0;
+                        this._markAsDirty();
+                        return;
+                    }
+
+                    if (!this._isTextHighlightOn) {
+                        this._isTextHighlightOn = true;
+                        this._cursorIndex = (this._cursorOffset <= 0) ? 0 : this._cursorOffset + 1;
+                    }
+                    //if text is already highlighted
+                    else if (this._cursorIndex === -1) {
+                        this._cursorIndex = this._text.length - this._startHighlightIndex;
+                        this._cursorOffset = (this._text.length === this._endHighlightIndex) ? 0 : this._text.length - this._endHighlightIndex - 1;
+                    }
+                    //set the highlight indexes
+                    if (this._cursorIndex < this._cursorOffset) {
+                        this._endHighlightIndex = this._text.length - this._cursorIndex;
+                        this._startHighlightIndex = this._text.length - this._cursorOffset;
+                    }
+                    else if (this._cursorIndex > this._cursorOffset) {
+                        this._endHighlightIndex = this._text.length - this._cursorOffset;
+                        this._startHighlightIndex = this._text.length - this._cursorIndex;
+                    }
+                    else {
+                        this._isTextHighlightOn = false;
+                    }
+                    this._markAsDirty();
+                    return;
+                }
+                if (this._isTextHighlightOn) {
+                    this._cursorOffset = this._text.length - this._endHighlightIndex;
+                    this._isTextHighlightOn = false;
+                }
+                //ctr + ->
+                if (evt && (evt.ctrlKey || evt.metaKey)) {
+                    this._cursorOffset = 0;
+                    evt.preventDefault();
+                }
                 this._blinkIsEven = false;
+                this._isTextHighlightOn = false;
+                this._cursorIndex = -1;
                 this._markAsDirty();
                 return;
             case 222: // Dead
                 if (evt) {
                     evt.preventDefault();
                 }
+                this._cursorIndex = -1;
                 this.deadKey = true;
                 break;
         }
-        this._isTextHighlightOn = false;
-
         // Printable characters
         if (key &&
             ((keyCode === -1) ||                     // Direct access
@@ -546,42 +663,78 @@ export class InputText extends Control implements IFocusableControl {
             this.onBeforeKeyAddObservable.notifyObservers(this);
             key = this._currentKey;
             if (this._addKey) {
-                if (this._cursorOffset === 0) {
+                if (this._isTextHighlightOn) {
+                    this.text = this._text.slice(0, this._startHighlightIndex) + key + this._text.slice(this._endHighlightIndex);
+                    this._cursorOffset = this.text.length - (this._startHighlightIndex + 1);
+                    this._isTextHighlightOn = false;
+                    this._blinkIsEven = false;
+                    this._markAsDirty();
+                }
+                else if (this._cursorOffset === 0) {
                     this.text += key;
                 } else {
                     let insertPosition = this._text.length - this._cursorOffset;
-
                     this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
                 }
             }
         }
+    }
+
+    /** @hidden */
+    private _updateValueFromCursorIndex(offset: number) {
+        //update the cursor
+        this._blinkIsEven = false;
+
+        if (this._cursorIndex === -1) {
+            this._cursorIndex = offset;
+        } else {
+            if (this._cursorIndex < this._cursorOffset) {
+                this._endHighlightIndex = this._text.length - this._cursorIndex;
+                this._startHighlightIndex = this._text.length - this._cursorOffset;
+            }
+            else if (this._cursorIndex > this._cursorOffset) {
+                this._endHighlightIndex = this._text.length - this._cursorOffset;
+                this._startHighlightIndex = this._text.length - this._cursorIndex;
+            }
+            else {
+                this._isTextHighlightOn = false;
+                this._markAsDirty();
+                return;
+            }
+        }
+        this._isTextHighlightOn = true;
+        this._markAsDirty();
     }
     /** @hidden */
     private _processDblClick(evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         this._startHighlightIndex = this._text.length - this._cursorOffset;
         this._endHighlightIndex = this._startHighlightIndex;
-        for (let rWord = /\w+/g, left = 1, right = 1; this._startHighlightIndex > 0 && this._endHighlightIndex < this._text.length && (left || right);) {
-            right = (this._text[this._endHighlightIndex].search(rWord) !== -1) ? ++this._endHighlightIndex : 0;
-            left = (this._text[this._startHighlightIndex - 1].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
-        }
+        let rWord = /\w+/g, moveLeft, moveRight;
+        do {
+            moveRight = this._endHighlightIndex < this._text.length && (this._text[this._endHighlightIndex].search(rWord) !== -1) ? ++this._endHighlightIndex : 0;
+            moveLeft = this._startHighlightIndex > 0 && (this._text[this._startHighlightIndex - 1].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
+        } while (moveLeft || moveRight);
+
+        this._cursorOffset = this.text.length - this._startHighlightIndex;
         this.onTextHighlightObservable.notifyObservers(this);
+
         this._isTextHighlightOn = true;
-        this._blinkIsEven = false;
+        this._clickedCoordinate = null;
+        this._blinkIsEven = true;
+        this._cursorIndex = -1;
+        this._markAsDirty();
     }
     /** @hidden */
     private _selectAllText() {
-        this._blinkIsEven = false;
+        this._blinkIsEven = true;
         this._isTextHighlightOn = true;
-
-        //if already highlighted pass
-        if (this._highlightedText) {
-            return;
-        }
 
         this._startHighlightIndex = 0;
         this._endHighlightIndex = this._text.length;
-        this._cursorOffset = 0;
+        this._cursorOffset = this._text.length;
+        this._cursorIndex = -1;
+        this._markAsDirty();
     }
 
     /**
@@ -591,6 +744,8 @@ export class InputText extends Control implements IFocusableControl {
     public processKeyboard(evt: KeyboardEvent): void {
         // process pressed key
         this.processKey(evt.keyCode, evt.key, evt);
+
+        this.onKeyboardEventProcessedObservable.notifyObservers(evt);
     }
 
     /** @hidden */
@@ -634,161 +789,178 @@ export class InputText extends Control implements IFocusableControl {
         this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         this._applyStates(context);
-        if (this._processMeasures(parentMeasure, context)) {
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowColor = this.shadowColor;
+            context.shadowBlur = this.shadowBlur;
+            context.shadowOffsetX = this.shadowOffsetX;
+            context.shadowOffsetY = this.shadowOffsetY;
+        }
 
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowColor = this.shadowColor;
-                context.shadowBlur = this.shadowBlur;
-                context.shadowOffsetX = this.shadowOffsetX;
-                context.shadowOffsetY = this.shadowOffsetY;
-            }
-
-            // Background
-            if (this._isFocused) {
-                if (this._focusedBackground) {
-                    context.fillStyle = this._isEnabled ? this._focusedBackground : this._disabledColor;
-
-                    context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                }
-            } else if (this._background) {
-                context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
+        // Background
+        if (this._isFocused) {
+            if (this._focusedBackground) {
+                context.fillStyle = this._isEnabled ? this._focusedBackground : this._disabledColor;
 
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
+        } else if (this._background) {
+            context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
 
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
+            context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+        }
+
+        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+        }
+
+        if (!this._fontOffset) {
+            this._fontOffset = Control._GetFontOffset(context.font);
+        }
+
+        // Text
+        let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
+        if (this.color) {
+            context.fillStyle = this.color;
+        }
+
+        let text = this._beforeRenderText(this._text);
+
+        if (!this._isFocused && !this._text && this._placeholderText) {
+            text = this._placeholderText;
+
+            if (this._placeholderColor) {
+                context.fillStyle = this._placeholderColor;
             }
+        }
 
-            if (!this._fontOffset) {
-                this._fontOffset = Control._GetFontOffset(context.font);
+        this._textWidth = context.measureText(text).width;
+        let marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
+        if (this._autoStretchWidth) {
+            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
+        }
+
+        let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
+        let availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
+
+        context.save();
+        context.beginPath();
+        context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
+        context.clip();
+
+        if (this._isFocused && this._textWidth > availableWidth) {
+            let textLeft = clipTextLeft - this._textWidth + availableWidth;
+            if (!this._scrollLeft) {
+                this._scrollLeft = textLeft;
             }
+        } else {
+            this._scrollLeft = clipTextLeft;
+        }
 
-            // Text
-            let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
-            if (this.color) {
-                context.fillStyle = this.color;
-            }
+        context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
 
-            let text = this._beforeRenderText(this._text);
+        // Cursor
+        if (this._isFocused) {
 
-            if (!this._isFocused && !this._text && this._placeholderText) {
-                text = this._placeholderText;
-
-                if (this._placeholderColor) {
-                    context.fillStyle = this._placeholderColor;
-                }
-            }
-
-            this._textWidth = context.measureText(text).width;
-            let marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
-            if (this._autoStretchWidth) {
-                this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), this._textWidth + marginWidth) + "px";
-            }
-
-            let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
-            let availableWidth = this._width.getValueInPixel(this._host, parentMeasure.width) - marginWidth;
-            context.save();
-            context.beginPath();
-            context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
-            context.clip();
-
-            if (this._isFocused && this._textWidth > availableWidth) {
-                let textLeft = clipTextLeft - this._textWidth + availableWidth;
-                if (!this._scrollLeft) {
-                    this._scrollLeft = textLeft;
-                }
-            } else {
-                this._scrollLeft = clipTextLeft;
-            }
-
-            context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
-
-            // Cursor
-            if (this._isFocused) {
-
-                // Need to move cursor
-                if (this._clickedCoordinate) {
-                    var rightPosition = this._scrollLeft + this._textWidth;
-                    var absoluteCursorPosition = rightPosition - this._clickedCoordinate;
-                    var currentSize = 0;
-                    this._cursorOffset = 0;
-                    var previousDist = 0;
-                    do {
-                        if (this._cursorOffset) {
-                            previousDist = Math.abs(absoluteCursorPosition - currentSize);
-                        }
-                        this._cursorOffset++;
-                        currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
-
-                    } while (currentSize < absoluteCursorPosition && (text.length >= this._cursorOffset));
-
-                    // Find closest move
-                    if (Math.abs(absoluteCursorPosition - currentSize) > previousDist) {
-                        this._cursorOffset--;
+            // Need to move cursor
+            if (this._clickedCoordinate) {
+                var rightPosition = this._scrollLeft + this._textWidth;
+                var absoluteCursorPosition = rightPosition - this._clickedCoordinate;
+                var currentSize = 0;
+                this._cursorOffset = 0;
+                var previousDist = 0;
+                do {
+                    if (this._cursorOffset) {
+                        previousDist = Math.abs(absoluteCursorPosition - currentSize);
                     }
+                    this._cursorOffset++;
+                    currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
 
-                    this._blinkIsEven = false;
-                    this._clickedCoordinate = null;
+                } while (currentSize < absoluteCursorPosition && (text.length >= this._cursorOffset));
+
+                // Find closest move
+                if (Math.abs(absoluteCursorPosition - currentSize) > previousDist) {
+                    this._cursorOffset--;
                 }
 
-                // Render cursor
-                if (!this._blinkIsEven) {
-                    let cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
-                    let cursorOffsetWidth = context.measureText(cursorOffsetText).width;
-                    let cursorLeft = this._scrollLeft + this._textWidth - cursorOffsetWidth;
+                this._blinkIsEven = false;
+                this._clickedCoordinate = null;
+            }
 
-                    if (cursorLeft < clipTextLeft) {
-                        this._scrollLeft += (clipTextLeft - cursorLeft);
-                        cursorLeft = clipTextLeft;
-                        this._markAsDirty();
-                    } else if (cursorLeft > clipTextLeft + availableWidth) {
-                        this._scrollLeft += (clipTextLeft + availableWidth - cursorLeft);
-                        cursorLeft = clipTextLeft + availableWidth;
-                        this._markAsDirty();
-                    }
+            // Render cursor
+            if (!this._blinkIsEven) {
+                let cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
+                let cursorOffsetWidth = context.measureText(cursorOffsetText).width;
+                let cursorLeft = this._scrollLeft + this._textWidth - cursorOffsetWidth;
+
+                if (cursorLeft < clipTextLeft) {
+                    this._scrollLeft += (clipTextLeft - cursorLeft);
+                    cursorLeft = clipTextLeft;
+                    this._markAsDirty();
+                } else if (cursorLeft > clipTextLeft + availableWidth) {
+                    this._scrollLeft += (clipTextLeft + availableWidth - cursorLeft);
+                    cursorLeft = clipTextLeft + availableWidth;
+                    this._markAsDirty();
+                }
+                if (!this._isTextHighlightOn) {
                     context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
                 }
-
-                clearTimeout(this._blinkTimeout);
-                this._blinkTimeout = <any>setTimeout(() => {
-                    this._blinkIsEven = !this._blinkIsEven;
-                    this._markAsDirty();
-                }, 500);
-
-                //show the highlighted text
-                if (this._isTextHighlightOn) {
-                    clearTimeout(this._blinkTimeout);
-                    let highlightCursorOffsetWidth = context.measureText(this.text.substring(this._startHighlightIndex)).width;
-                    let highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
-                    this._highlightedText = this.text.substring(this._startHighlightIndex, this._endHighlightIndex);
-                    //for transparancy
-                    context.globalAlpha = this._highligherOpacity;
-                    context.fillStyle = this._textHighlightColor;
-                    context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width, this._fontOffset.height);
-                    context.globalAlpha = 1.0;
-                }
             }
 
-            context.restore();
+            clearTimeout(this._blinkTimeout);
+            this._blinkTimeout = <any>setTimeout(() => {
+                this._blinkIsEven = !this._blinkIsEven;
+                this._markAsDirty();
+            }, 500);
 
-            // Border
-            if (this._thickness) {
+            //show the highlighted text
+            if (this._isTextHighlightOn) {
+                clearTimeout(this._blinkTimeout);
+                let highlightCursorOffsetWidth = context.measureText(this.text.substring(this._startHighlightIndex)).width;
+                let highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
+                this._highlightedText = this.text.substring(this._startHighlightIndex, this._endHighlightIndex);
+                let width = context.measureText(this.text.substring(this._startHighlightIndex, this._endHighlightIndex)).width;
+                if (highlightCursorLeft < clipTextLeft) {
+                    width = width - (clipTextLeft - highlightCursorLeft);
+                    if (!width) {
+                        // when using left arrow on text.length > availableWidth;
+                        // assigns the width of the first letter after clipTextLeft
+                        width = context.measureText(this.text.charAt(this.text.length - this._cursorOffset)).width;
+                    }
+                    highlightCursorLeft = clipTextLeft;
+                }
+                //for transparancy
+                context.globalAlpha = this._highligherOpacity;
+                context.fillStyle = this._textHighlightColor;
+                context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, width, this._fontOffset.height);
+                context.globalAlpha = 1.0;
+            }
+        }
+        context.restore();
+
+        // Border
+        if (this._thickness) {
+            if (this._isFocused) {
+                if (this.focusedColor) {
+                    context.strokeStyle = this.focusedColor;
+                }
+            } else {
                 if (this.color) {
                     context.strokeStyle = this.color;
                 }
-                context.lineWidth = this._thickness;
-
-                context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2,
-                    this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
             }
+
+            context.lineWidth = this._thickness;
+
+            context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2,
+                this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
         }
+
         context.restore();
     }
 
@@ -800,6 +972,9 @@ export class InputText extends Control implements IFocusableControl {
         this._clickedCoordinate = coordinates.x;
         this._isTextHighlightOn = false;
         this._highlightedText = "";
+        this._cursorIndex = -1;
+        this._isPointerDown = true;
+        this._host._capturingControl[pointerId] = this;
         if (this._host.focusedControl === this) {
             // Move cursor
             clearTimeout(this._blinkTimeout);
@@ -813,8 +988,19 @@ export class InputText extends Control implements IFocusableControl {
 
         return true;
     }
+    public _onPointerMove(target: Control, coordinates: Vector2): void {
+        if (this._host.focusedControl === this && this._isPointerDown) {
+            this._clickedCoordinate = coordinates.x;
+            this._markAsDirty();
+            this._updateValueFromCursorIndex(this._cursorOffset);
+        }
+        super._onPointerMove(target, coordinates);
+    }
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+
+        this._isPointerDown = false;
+        delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
 
@@ -832,5 +1018,6 @@ export class InputText extends Control implements IFocusableControl {
         this.onTextCutObservable.clear();
         this.onTextPasteObservable.clear();
         this.onTextHighlightObservable.clear();
+        this.onKeyboardEventProcessedObservable.clear();
     }
 }

@@ -1,11 +1,13 @@
 import { Control } from "./control";
 import { Nullable, Tools, Observable } from "babylonjs";
-import { Measure } from "../measure";
+import { Measure } from "2D";
 
 /**
  * Class used to create 2D images
  */
 export class Image extends Control {
+    private static _WorkingCanvas: Nullable<HTMLCanvasElement> = null;
+
     private _domImage: HTMLImageElement;
     private _imageWidth: number;
     private _imageHeight: number;
@@ -23,6 +25,12 @@ export class Image extends Control {
     private _cellHeight: number = 0;
     private _cellId: number = -1;
 
+    private _populateNinePatchSlicesFromImage = false;
+    private _sliceLeft: number;
+    private _sliceRight: number;
+    private _sliceTop: number;
+    private _sliceBottom: number;
+
     /**
      * Observable notified when the content is loaded
      */
@@ -33,6 +41,93 @@ export class Image extends Control {
      */
     public get isLoaded(): boolean {
         return this._loaded;
+    }
+
+    /**
+     * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+     */
+    public get populateNinePatchSlicesFromImage(): boolean {
+        return this._populateNinePatchSlicesFromImage;
+    }
+
+    public set populateNinePatchSlicesFromImage(value: boolean) {
+        if (this._populateNinePatchSlicesFromImage === value) {
+            return;
+        }
+
+        this._populateNinePatchSlicesFromImage = value;
+
+        if (this._populateNinePatchSlicesFromImage && this._loaded) {
+            this._extractNinePatchSliceDataFromImage();
+        }
+    }
+
+    /**
+     * Gets or sets the left value for slicing (9-patch)
+     */
+    public get sliceLeft(): number {
+        return this._sliceLeft;
+    }
+
+    public set sliceLeft(value: number) {
+        if (this._sliceLeft === value) {
+            return;
+        }
+
+        this._sliceLeft = value;
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets the right value for slicing (9-patch)
+     */
+    public get sliceRight(): number {
+        return this._sliceRight;
+    }
+
+    public set sliceRight(value: number) {
+        if (this._sliceRight === value) {
+            return;
+        }
+
+        this._sliceRight = value;
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets the top value for slicing (9-patch)
+     */
+    public get sliceTop(): number {
+        return this._sliceTop;
+    }
+
+    public set sliceTop(value: number) {
+        if (this._sliceTop === value) {
+            return;
+        }
+
+        this._sliceTop = value;
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets the bottom value for slicing (9-patch)
+     */
+    public get sliceBottom(): number {
+        return this._sliceBottom;
+    }
+
+    public set sliceBottom(value: number) {
+        if (this._sliceBottom === value) {
+            return;
+        }
+
+        this._sliceBottom = value;
+
+        this._markAsDirty();
     }
 
     /**
@@ -163,6 +258,10 @@ export class Image extends Control {
         this._imageHeight = this._domImage.height;
         this._loaded = true;
 
+        if (this._populateNinePatchSlicesFromImage) {
+            this._extractNinePatchSliceDataFromImage();
+        }
+
         if (this._autoScale) {
             this.synchronizeSizeWithContent();
         }
@@ -170,6 +269,56 @@ export class Image extends Control {
         this.onImageLoadedObservable.notifyObservers(this);
 
         this._markAsDirty();
+    }
+
+    private _extractNinePatchSliceDataFromImage() {
+        if (!Image._WorkingCanvas) {
+            Image._WorkingCanvas = document.createElement('canvas');
+        }
+        const canvas = Image._WorkingCanvas;
+        const context = canvas.getContext('2d')!;
+        const width = this._domImage.width;
+        const height = this._domImage.height;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        context.drawImage(this._domImage, 0, 0, width, height);
+        const imageData = context.getImageData(0, 0, width, height);
+
+        // Left and right
+        this._sliceLeft = -1;
+        this._sliceRight = -1;
+        for (var x = 0; x < width; x++) {
+            const alpha = imageData.data[x * 4 + 3];
+
+            if (alpha > 127 && this._sliceLeft === -1) {
+                this._sliceLeft = x;
+                continue;
+            }
+
+            if (alpha < 127 && this._sliceLeft > -1) {
+                this._sliceRight = x;
+                break;
+            }
+        }
+
+        // top and bottom
+        this._sliceTop = -1;
+        this._sliceBottom = -1;
+        for (var y = 0; y < height; y++) {
+            const alpha = imageData.data[y * width * 4 + 3];
+
+            if (alpha > 127 && this._sliceTop === -1) {
+                this._sliceTop = y;
+                continue;
+            }
+
+            if (alpha < 127 && this._sliceTop > -1) {
+                this._sliceBottom = y;
+                break;
+            }
+        }
     }
 
     /**
@@ -267,7 +416,31 @@ export class Image extends Control {
         this.height = this._domImage.height + "px";
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        if (this._loaded) {
+            switch (this._stretch) {
+                case Image.STRETCH_NONE:
+                    break;
+                case Image.STRETCH_FILL:
+                    break;
+                case Image.STRETCH_UNIFORM:
+                    break;
+                case Image.STRETCH_EXTEND:
+                    if (this._autoScale) {
+                        this.synchronizeSizeWithContent();
+                    }
+                    if (this.parent && this.parent.parent) { // Will update root size if root is not the top root
+                        this.parent.adaptWidthToChildren = true;
+                        this.parent.adaptHeightToChildren = true;
+                    }
+                    break;
+            }
+        }
+
+        super._processMeasures(parentMeasure, context);
+    }
+
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -297,42 +470,89 @@ export class Image extends Control {
         }
 
         this._applyStates(context);
-        if (this._processMeasures(parentMeasure, context)) {
-            if (this._loaded) {
-                switch (this._stretch) {
-                    case Image.STRETCH_NONE:
-                        context.drawImage(this._domImage, x, y, width, height,
-                            this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                        break;
-                    case Image.STRETCH_FILL:
-                        context.drawImage(this._domImage, x, y, width, height,
-                            this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                        break;
-                    case Image.STRETCH_UNIFORM:
-                        var hRatio = this._currentMeasure.width / width;
-                        var vRatio = this._currentMeasure.height / height;
-                        var ratio = Math.min(hRatio, vRatio);
-                        var centerX = (this._currentMeasure.width - width * ratio) / 2;
-                        var centerY = (this._currentMeasure.height - height * ratio) / 2;
+        if (this._loaded) {
+            switch (this._stretch) {
+                case Image.STRETCH_NONE:
+                    context.drawImage(this._domImage, x, y, width, height,
+                        this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    break;
+                case Image.STRETCH_FILL:
+                    context.drawImage(this._domImage, x, y, width, height,
+                        this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    break;
+                case Image.STRETCH_UNIFORM:
+                    var hRatio = this._currentMeasure.width / width;
+                    var vRatio = this._currentMeasure.height / height;
+                    var ratio = Math.min(hRatio, vRatio);
+                    var centerX = (this._currentMeasure.width - width * ratio) / 2;
+                    var centerY = (this._currentMeasure.height - height * ratio) / 2;
 
-                        context.drawImage(this._domImage, x, y, width, height,
-                            this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
-                        break;
-                    case Image.STRETCH_EXTEND:
-                        context.drawImage(this._domImage, x, y, width, height,
-                            this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-                        if (this._autoScale) {
-                            this.synchronizeSizeWithContent();
-                        }
-                        if (this._root && this._root.parent) { // Will update root size if root is not the top root
-                            this._root.width = this.width;
-                            this._root.height = this.height;
-                        }
-                        break;
-                }
+                    context.drawImage(this._domImage, x, y, width, height,
+                        this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
+                    break;
+                case Image.STRETCH_EXTEND:
+                    context.drawImage(this._domImage, x, y, width, height,
+                        this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    break;
+                case Image.STRETCH_NINE_PATCH:
+                    this._renderNinePatch(context);
+                    break;
             }
         }
+
         context.restore();
+    }
+
+    private _renderCornerPatch(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, targetX: number, targetY: number): void {
+        context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left + targetX, this._currentMeasure.top + targetY, width, height);
+    }
+
+    private _renderNinePatch(context: CanvasRenderingContext2D): void {
+        let height = this._imageHeight;
+        let leftWidth = this._sliceLeft;
+        let topHeight = this._sliceTop;
+        let bottomHeight = this._imageHeight - this._sliceBottom;
+        let rightWidth = this._imageWidth - this._sliceRight;
+        let left = 0;
+        let top = 0;
+
+        if (this._populateNinePatchSlicesFromImage) {
+            left = 1;
+            top = 1;
+            height -= 2;
+            leftWidth -= 1;
+            topHeight -= 1;
+            bottomHeight -= 1;
+            rightWidth -= 1;
+        }
+
+        const centerWidth = this._sliceRight - this._sliceLeft + 1;
+        const targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft + 1;
+        const targetTopHeight = this._currentMeasure.height - height + this._sliceBottom;
+
+        // Corners
+        this._renderCornerPatch(context, left, top, leftWidth, topHeight, 0, 0);
+        this._renderCornerPatch(context, left, this._sliceBottom, leftWidth, height - this._sliceBottom, 0, targetTopHeight);
+
+        this._renderCornerPatch(context, this._sliceRight, top, rightWidth, topHeight, this._currentMeasure.width - rightWidth, 0);
+        this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, rightWidth, height - this._sliceBottom, this._currentMeasure.width - rightWidth, targetTopHeight);
+
+        // Center
+        context.drawImage(this._domImage, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop + 1,
+            this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight + 1);
+
+        // Borders
+        context.drawImage(this._domImage, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
+            this._currentMeasure.left, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
+
+        context.drawImage(this._domImage, this._sliceRight, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
+            this._currentMeasure.left + this._currentMeasure.width - rightWidth, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
+
+        context.drawImage(this._domImage, this._sliceLeft, top, centerWidth, topHeight,
+            this._currentMeasure.left + leftWidth, this._currentMeasure.top, targetCenterWidth, topHeight);
+
+        context.drawImage(this._domImage, this._sliceLeft, this._sliceBottom, centerWidth, bottomHeight,
+            this._currentMeasure.left + leftWidth, this._currentMeasure.top + targetTopHeight, targetCenterWidth, bottomHeight);
     }
 
     public dispose() {
@@ -349,4 +569,6 @@ export class Image extends Control {
     public static readonly STRETCH_UNIFORM = 2;
     /** STRETCH_EXTEND */
     public static readonly STRETCH_EXTEND = 3;
+    /** NINE_PATCH */
+    public static readonly STRETCH_NINE_PATCH = 4;
 }

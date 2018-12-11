@@ -138,6 +138,8 @@ module BABYLON {
 
         // Private
         /** @hidden */
+        public _invertVScale = false;
+        /** @hidden */
         public _initialSlot = -1;
         /** @hidden */
         public _designatedSlot = -1;

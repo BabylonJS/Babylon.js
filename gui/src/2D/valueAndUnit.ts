@@ -57,6 +57,19 @@ export class ValueAndUnit {
     }
 
     /**
+     * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+     * @param value defines the value to store
+     * @param unit defines the unit to store
+     * @returns the current ValueAndUnit
+     */
+    public updateInPlace(value: number, unit = ValueAndUnit.UNITMODE_PIXEL): ValueAndUnit {
+        this._value = value;
+        this.unit = unit;
+
+        return this;
+    }
+
+    /**
      * Gets the value accordingly to its unit
      * @param host  defines the root host
      * @returns the value

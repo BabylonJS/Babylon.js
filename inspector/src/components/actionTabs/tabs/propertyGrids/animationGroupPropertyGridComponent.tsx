@@ -75,9 +75,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         this.connect(this.props.animationGroup);
 
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
-            if (this.props.animationGroup.isPlaying) {
-                this.updateCurrentFrame(this.props.animationGroup);
-            }
+            this.updateCurrentFrame(this.props.animationGroup);
         });
     }
 
@@ -127,7 +125,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                 <LineContainerComponent title="CONTROLS">
                     <ButtonLineComponent label={playButtonText} onClick={() => this.playOrPause()} />
                     <SliderLineComponent label="Speed ratio" minimum={0} maximum={10} step={0.1} target={animationGroup} propertyName="speedRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent ref="timeline" label="Current frame" minimum={animationGroup.from} maximum={animationGroup.to} step={(animationGroup.to - animationGroup.from) / 100.0} directValue={this.state.currentFrame} onInput={value => this.onCurrentFrameChange(value)} />
+                    <SliderLineComponent ref="timeline" label="Current frame" minimum={animationGroup.from} maximum={animationGroup.to} step={(animationGroup.to - animationGroup.from) / 1000.0} directValue={this.state.currentFrame} onInput={value => this.onCurrentFrameChange(value)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="INFOS">
                     <TextLineComponent label="Animation count" value={animationGroup.targetedAnimations.length.toString()} />
