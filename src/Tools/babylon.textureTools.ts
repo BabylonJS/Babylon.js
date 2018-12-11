@@ -24,7 +24,7 @@ module BABYLON {
                 true,
                 (<InternalTexture>texture._texture).type,
                 false,
-                texture._samplingMode,
+                texture.samplingMode,
                 false
             );
 
