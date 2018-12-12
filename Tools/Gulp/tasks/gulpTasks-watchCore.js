@@ -24,7 +24,6 @@ var cleanShaders = function(settings) {
 gulp.task("watchCore", async function startWatch() {
     var module = "core";
     var settings = config[module].build;
-    var isCore = config[module].isCore;
     var library = config[module].libraries[0];
 
     // Clean shaders
@@ -33,7 +32,7 @@ gulp.task("watchCore", async function startWatch() {
     // Generate shaders.
     gulp.src(settings.srcDirectory + "**/*.fx")
         .pipe(uncommentShaders())
-        .pipe(processShaders(isCore))
+        .pipe(processShaders(true))
 
     // Clean Folder.
     rmDir('../../.temp/es6LocalDev/core');
@@ -58,6 +57,6 @@ gulp.task("watchCore", async function startWatch() {
         console.log(library.output + ": Shaders.");
         return gulp.src(settings.srcDirectory + "**/*.fx")
             .pipe(uncommentShaders())
-            .pipe(processShaders(isCore));
+            .pipe(processShaders(true));
     });
 });

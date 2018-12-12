@@ -17,8 +17,7 @@ gulp.task("watchLibraries", function startWatch() {
 
     config.modules.map(function(module) {
         var settings = config[module].build;
-        var isCore = config[module].isCore;
-        if (!isCore && settings && settings.webpack) {
+        if (!config[module].isCore && settings && settings.webpack) {
             for (var index = 0; index < config[module].libraries.length; index++) {
                 var library = config[module].libraries[index];
                 if (library.preventLoadLibrary) { 
@@ -34,7 +33,6 @@ gulp.task("watchLibraries", function startWatch() {
 
                 var rootPath = path.resolve(__dirname, "../../../");
                 var absoluteSrc = path.resolve(__dirname, "../", settings.srcDirectory);
-                var prefix = isCore ? "../" : "../../";
                 wpConfig.output.devtoolModuleFilenameTemplate = (info) => {
                     info.resourcePath = path.normalize(info.resourcePath);
 
@@ -42,13 +40,13 @@ gulp.task("watchLibraries", function startWatch() {
                         info.resourcePath = path.join(absoluteSrc, info.resourcePath);
                     }
 
-                    return `${prefix}${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
+                    return `"../../${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
                 };
 
                 tasks.push(
                     gulp.src(settings.srcDirectory + "**/*.fx")
                         .pipe(uncommentShaders())
-                        .pipe(processShaders(isCore))
+                        .pipe(processShaders(false))
                 );
 
                 var outputDirectory = config.build.tempDirectory + settings.distOutputDirectory;
@@ -61,7 +59,7 @@ gulp.task("watchLibraries", function startWatch() {
                         console.log(library.output + ": Shaders.");
                         return gulp.src(settings.srcDirectory + "**/*.fx")
                             .pipe(uncommentShaders())
-                            .pipe(processShaders(isCore));
+                            .pipe(processShaders(false));
                     })
                 );
             }
