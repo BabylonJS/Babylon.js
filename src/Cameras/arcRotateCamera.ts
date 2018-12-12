@@ -1,21 +1,21 @@
-import { serialize, serializeAsVector3 } from "Misc/decorators";
-import { Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Epsilon } from "Maths/math";
-import { Node } from "node";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { AutoRotationBehavior } from "Behaviors/Cameras/autoRotationBehavior";
-import { BouncingBehavior } from "Behaviors/Cameras/bouncingBehavior";
-import { FramingBehavior } from "Behaviors/Cameras/framingBehavior";
-import { Collider } from "Collisions/collider";
+import { serialize, serializeAsVector3 } from "../Misc/decorators";
+import { Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { Matrix, Vector3, Vector2, Epsilon } from "../Maths/math";
+import { Node } from "../node";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { AutoRotationBehavior } from "../Behaviors/Cameras/autoRotationBehavior";
+import { BouncingBehavior } from "../Behaviors/Cameras/bouncingBehavior";
+import { FramingBehavior } from "../Behaviors/Cameras/framingBehavior";
+import { Collider } from "../Collisions/collider";
 import { Camera } from "./camera";
 import { TargetCamera } from "./targetCamera";
-import { ArcRotateCameraPointersInput } from "Cameras/Inputs/arcRotateCameraPointersInput";
-import { ArcRotateCameraKeyboardMoveInput } from "Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
-import { ArcRotateCameraMouseWheelInput } from "Cameras/Inputs/arcRotateCameraMouseWheelInput";
-import { ArcRotateCameraInputsManager } from "Cameras/arcRotateCameraInputsManager";
+import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
+import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
+import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
+import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
 
     Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
         return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);

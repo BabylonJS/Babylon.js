@@ -1,10 +1,10 @@
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
-import { Engine } from "Engines/engine";
-import { Camera } from "Cameras/camera";
+import { Effect } from "../Materials/effect";
+import { Texture } from "../Materials/Textures/texture";
+import { Engine } from "../Engines/engine";
+import { Camera } from "../Cameras/camera";
 
-import "Shaders/colorCorrection.fragment";
+import "../Shaders/colorCorrection.fragment";
 
     /**
      *

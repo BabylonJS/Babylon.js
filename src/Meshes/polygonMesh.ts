@@ -1,8 +1,8 @@
-import { Logger } from "Misc/logger";
-import { Scene } from "scene";
-import { Vector3, Vector2, Path2 } from "Maths/math";
-import { VertexBuffer } from "Meshes/buffer";
-import { Mesh } from "Meshes/mesh";
+import { Logger } from "../Misc/logger";
+import { Scene } from "../scene";
+import { Vector3, Vector2, Path2 } from "../Maths/math";
+import { VertexBuffer } from "../Meshes/buffer";
+import { Mesh } from "../Meshes/mesh";
 
     declare var earcut: any;
     /**

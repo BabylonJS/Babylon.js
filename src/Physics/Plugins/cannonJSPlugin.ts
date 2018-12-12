@@ -1,12 +1,12 @@
-import { Nullable, FloatArray } from "types";
-import { Logger } from "Misc/logger";
-import { Vector3, Matrix, Quaternion } from "Maths/math";
-import { VertexBuffer } from "Meshes/buffer";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "Physics/IPhysicsEngine";
-import { PhysicsImpostor, IPhysicsEnabledObject } from "Physics/physicsImpostor";
-import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "Physics/physicsJoint";
-import { PhysicsEngine } from "Physics/physicsEngine";
+import { Nullable, FloatArray } from "../../types";
+import { Logger } from "../../Misc/logger";
+import { Vector3, Matrix, Quaternion } from "../../Maths/math";
+import { VertexBuffer } from "../../Meshes/buffer";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
+import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
+import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
+import { PhysicsEngine } from "../../Physics/physicsEngine";
 
     //declare var require: any;
     declare var CANNON: any;

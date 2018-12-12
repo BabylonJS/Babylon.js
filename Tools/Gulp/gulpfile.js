@@ -9,7 +9,8 @@ require("./tasks/gulpTasks-tsLint");
 require("./tasks/gulpTasks-netlify");
 require("./tasks/gulpTasks-whatsNew");
 require("./tasks/gulpTasks-localRun");
-require("./tasks/gulpTasks-watch");
+require("./tasks/gulpTasks-watchLibraries");
+require("./tasks/gulpTasks-watchCore");
 require("./tasks/gulpTasks-typedoc");
 require("./tasks/gulpTasks-intellisense");
 require("./tasks/gulpTasks-tests");
@@ -43,7 +44,7 @@ gulp.task("typedoc-check", gulp.series("core", "gui", "loaders", "serializers", 
 /**
  * Combine Webserver and Watch as long as vscode does not handle multi tasks.
  */
-gulp.task("run", gulp.series("watch", "webserver"));
+gulp.task("run", gulp.series("watchCore", "watchLibraries", "webserver"));
 
 /**
  * Do it all (Build).

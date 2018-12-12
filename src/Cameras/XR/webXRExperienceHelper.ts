@@ -1,10 +1,10 @@
-import { Nullable } from "types";
-import { Observable } from "Misc/observable";
-import { IDisposable, Scene } from "scene";
-import { Quaternion, Vector3 } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Ray } from "Culling/ray";
-import { Camera } from "Cameras/camera";
+import { Nullable } from "../../types";
+import { Observable } from "../../Misc/observable";
+import { IDisposable, Scene } from "../../scene";
+import { Quaternion, Vector3 } from "../../Maths/math";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Ray } from "../../Culling/ray";
+import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
     /**

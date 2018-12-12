@@ -1,18 +1,18 @@
-import { Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { Quaternion, Matrix, Vector3, Tmp } from "Maths/math";
-import { Node } from "node";
-import { TransformNode } from "Meshes/transformNode";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Ray } from "Culling/ray";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Engine } from "Engines/engine";
+import { Observable } from "../../Misc/observable";
+import { Nullable } from "../../types";
+import { Quaternion, Matrix, Vector3, Tmp } from "../../Maths/math";
+import { Node } from "../../node";
+import { TransformNode } from "../../Meshes/transformNode";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Ray } from "../../Culling/ray";
+import { _TimeToken } from "../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
+import { Engine } from "../../Engines/engine";
 
-import { Gamepad } from "Gamepads/gamepad";
+import { Gamepad } from "../../Gamepads/gamepad";
 import { ExtendedGamepadButton } from "./poseEnabledController";
-import { WebVRFreeCamera, PoseControlled, DevicePose } from "Cameras/VR/webVRCamera";
-import { TargetCamera } from "Cameras/targetCamera";
+import { WebVRFreeCamera, PoseControlled, DevicePose } from "../../Cameras/VR/webVRCamera";
+import { TargetCamera } from "../../Cameras/targetCamera";
     /**
     * Defines the types of pose enabled controllers that are supported
     */

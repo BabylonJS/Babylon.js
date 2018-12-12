@@ -1,16 +1,16 @@
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { _InstancesBatch } from "Meshes/mesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Scene } from "scene";
-import { Engine } from "Engines/engine";
-import { Constants } from "Engines/constants";
-import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
+import { VertexBuffer } from "../Meshes/buffer";
+import { SubMesh } from "../Meshes/subMesh";
+import { _InstancesBatch } from "../Meshes/mesh";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Scene } from "../scene";
+import { Engine } from "../Engines/engine";
+import { Constants } from "../Engines/constants";
+import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
 
-import "Shaders/outline.fragment";
-import "Shaders/outline.vertex";
+import "../Shaders/outline.fragment";
+import "../Shaders/outline.vertex";
 
 declare module "scene" {
     export interface Scene {

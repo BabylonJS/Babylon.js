@@ -1,8 +1,8 @@
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Nullable } from "types";
-import { Sprite } from "Sprites/sprite";
-import { Scene } from "scene";
-import { Vector2 } from "Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Nullable } from "../types";
+import { Sprite } from "../Sprites/sprite";
+import { Scene } from "../scene";
+import { Vector2 } from "../Maths/math";
 
     /**
      * ActionEvent is the event being sent when an action is triggered.

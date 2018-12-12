@@ -1,6 +1,6 @@
-import { Nullable } from "types";
-import { Engine } from "Engines/engine";
-import { _TimeToken } from "Instrumentation/timeToken";
+import { Nullable } from "../../types";
+import { Engine } from "../../Engines/engine";
+import { _TimeToken } from "../../Instrumentation/timeToken";
 
 /** @hidden */
 export var _forceTransformFeedbackToBundle = true;

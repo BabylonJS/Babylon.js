@@ -1,9 +1,9 @@
 import { FreeCamera } from "./freeCamera";
-import { FreeCameraTouchInput } from "Cameras/Inputs/freeCameraTouchInput";
-import { FreeCameraMouseInput } from "Cameras/Inputs/freeCameraMouseInput";
-import { Scene } from "scene";
-import { Vector3 } from "Maths/math";
-import { Node } from "node";
+import { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
+import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
+import { Scene } from "../scene";
+import { Vector3 } from "../Maths/math";
+import { Node } from "../node";
 
     Node.AddNodeConstructor("TouchCamera", (name, scene) => {
         return () => new TouchCamera(name, Vector3.Zero(), scene);

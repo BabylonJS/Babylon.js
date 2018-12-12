@@ -1,15 +1,15 @@
-import { Scene } from "scene";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { IParticleSystem } from "Particles/IParticleSystem";
-import { Skeleton } from "Bones/skeleton";
-import { SceneLoader } from "Loading/sceneLoader";
+import { Scene } from "../scene";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { IParticleSystem } from "../Particles/IParticleSystem";
+import { Skeleton } from "../Bones/skeleton";
+import { SceneLoader } from "../Loading/sceneLoader";
 import { Tools } from "./tools";
 import { Observable } from "./observable";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Texture } from "Materials/Textures/texture";
-import { CubeTexture } from "Materials/Textures/cubeTexture";
-import { HDRCubeTexture } from "Materials/Textures/hdrCubeTexture";
-import { Logger } from "Misc/logger";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Texture } from "../Materials/Textures/texture";
+import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
+import { Logger } from "../Misc/logger";
 
     /**
      * Defines the list of states available for a task inside a AssetsManager

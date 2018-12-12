@@ -1,6 +1,6 @@
-import { Vector3, Matrix } from "Maths/math";
-import { Effect } from "Materials/effect";
-import { Particle } from "Particles/particle";
+import { Vector3, Matrix } from "../../Maths/math";
+import { Effect } from "../../Materials/effect";
+import { Particle } from "../../Particles/particle";
     /**
      * Particle emitter represents a volume emitting particles.
      * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.

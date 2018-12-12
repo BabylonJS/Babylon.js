@@ -1,9 +1,9 @@
-import { Nullable } from "types";
-import { Vector2 } from "Maths/math";
-import { PickingInfo } from "Collisions/pickingInfo";
-import { Ray } from "Culling/ray";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Nullable } from "../types";
+import { Vector2 } from "../Maths/math";
+import { PickingInfo } from "../Collisions/pickingInfo";
+import { Ray } from "../Culling/ray";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
     /**
      * Gather the list of pointer event types as constants.
      */

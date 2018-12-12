@@ -1,6 +1,6 @@
-import { Tags } from "Misc/tags";
-import { Nullable } from "types";
-import { Color4, Quaternion, Color3, Vector2, Vector3 } from "Maths/math";
+import { Tags } from "../Misc/tags";
+import { Nullable } from "../types";
+import { Color4, Quaternion, Color3, Vector2, Vector3 } from "../Maths/math";
 
 declare type Scene = import("scene").Scene;
 declare type Camera = import("Cameras/camera").Camera;

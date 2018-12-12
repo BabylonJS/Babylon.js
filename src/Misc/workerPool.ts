@@ -1,4 +1,4 @@
-import { IDisposable } from "scene";
+import { IDisposable } from "../scene";
 
     interface WorkerInfo {
         worker: Worker;

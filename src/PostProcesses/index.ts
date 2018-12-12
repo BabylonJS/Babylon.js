@@ -22,7 +22,7 @@ export * from "./passPostProcess";
 export * from "./postProcess";
 export * from "./postProcessManager";
 export * from "./refractionPostProcess";
-export * from "./RenderPipeline";
+export * from "./RenderPipeline/index";
 export * from "./sharpenPostProcess";
 export * from "./stereoscopicInterlacePostProcess";
 export * from "./tonemapPostProcess";

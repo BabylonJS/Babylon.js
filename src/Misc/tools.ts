@@ -1,16 +1,16 @@
-import { FloatArray, IndicesArray, Nullable } from "types";
-import { Animation } from "Animations/animation";
-import { Color4, Color3, Vector2, Vector3 } from "Maths/math";
-import { Scalar } from "Maths/math.scalar";
-import { IOfflineProvider } from "Offline/IOfflineProvider";
-import { Camera } from "Cameras/camera";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { FxaaPostProcess } from "PostProcesses/fxaaPostProcess";
+import { FloatArray, IndicesArray, Nullable } from "../types";
+import { Animation } from "../Animations/animation";
+import { Color4, Color3, Vector2, Vector3 } from "../Maths/math";
+import { Scalar } from "../Maths/math.scalar";
+import { IOfflineProvider } from "../Offline/IOfflineProvider";
+import { Camera } from "../Cameras/camera";
+import { Texture } from "../Materials/Textures/texture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { FxaaPostProcess } from "../PostProcesses/fxaaPostProcess";
 import { Observable } from "./observable";
 import { FilesInput } from "./filesInput";
 import { TGATools } from "./tga";
-import { Constants } from "Engines/constants";
+import { Constants } from "../Engines/constants";
 import { DomManagement } from "./domManagement";
 import { Logger } from "./logger";
 

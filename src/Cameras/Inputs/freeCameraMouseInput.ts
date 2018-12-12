@@ -1,9 +1,9 @@
-import { Observer, EventState } from "Misc/observable";
-import { serialize } from "Misc/decorators";
-import { Nullable } from "types";
-import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
-import { FreeCamera } from "Cameras/freeCamera";
-import { PointerInfo, PointerEventTypes } from "Events/pointerEvents";
+import { Observer, EventState } from "../../Misc/observable";
+import { serialize } from "../../Misc/decorators";
+import { Nullable } from "../../types";
+import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { FreeCamera } from "../../Cameras/freeCamera";
+import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
     /**
      * Manage the mouse inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs

@@ -103,8 +103,9 @@ function main(isCore) {
             });
 
             // Chose shader store.
-            const shaderStore = directory.indexOf("ShadersInclude") > -1 ? "IncludesShadersStore" : "ShadersStore";
-            const effectLocation = isCore ? "Materials/effect" : "babylonjs";
+            const isInclude = directory.indexOf("ShadersInclude") > -1;
+            const shaderStore = isInclude ? "IncludesShadersStore" : "ShadersStore";
+            const effectLocation = isCore ? (isInclude ? "../../Materials/effect" : "../Materials/effect") : "babylonjs";
 
             // Fill template in.
             let tsContent = tsShaderTemplate.replace('##EFFECTLOCATION_PLACEHOLDER##', effectLocation);

@@ -1,10 +1,10 @@
-import { Nullable } from "types";
-import { Material } from "Materials/material";
-import { InternalTexture } from "Materials/Textures/internalTexture";
+import { Nullable } from "../types";
+import { Material } from "../Materials/material";
+import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { PostProcess } from "./postProcess";
-import { Scene } from "scene";
-import { VertexBuffer } from "Meshes/buffer";
-import { Constants } from "Engines/constants";
+import { Scene } from "../scene";
+import { VertexBuffer } from "../Meshes/buffer";
+import { Constants } from "../Engines/constants";
     /**
 	 * PostProcessManager is used to manage one or more post processes or post process pipelines
      * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses

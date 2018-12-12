@@ -1,11 +1,11 @@
-import { Vector2 } from "Maths/math";
-import { Camera } from "Cameras/camera";
-import { VRCameraMetrics } from "Cameras/VR/vrCameraMetrics";
-import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
+import { Vector2 } from "../Maths/math";
+import { Camera } from "../Cameras/camera";
+import { VRCameraMetrics } from "../Cameras/VR/vrCameraMetrics";
+import { Effect } from "../Materials/effect";
+import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 
-import "Shaders/vrDistortionCorrection.fragment";
+import "../Shaders/vrDistortionCorrection.fragment";
 
     /**
      * VRDistortionCorrectionPostProcess used for mobile VR

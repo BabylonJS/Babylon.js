@@ -1,13 +1,13 @@
-﻿import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
+import { Nullable } from "../types";
+import { Camera } from "../Cameras/camera";
+import { Effect } from "../Materials/effect";
+import { Texture } from "../Materials/Textures/texture";
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "Engines/engine";
-import { Constants } from "Engines/constants";
+import { Engine } from "../Engines/engine";
+import { Constants } from "../Engines/constants";
 
-import "Shaders/fxaa.fragment";
-import "Shaders/fxaa.vertex";
+import "../Shaders/fxaa.fragment";
+import "../Shaders/fxaa.vertex";
 
     /**
      * Fxaa post process

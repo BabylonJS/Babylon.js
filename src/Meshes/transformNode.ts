@@ -1,14 +1,14 @@
-import { DeepImmutable } from "types";
-import { serialize, serializeAsVector3, serializeAsQuaternion, SerializationHelper } from "Misc/decorators";
-import { Tags } from "Misc/tags";
-import { Observable } from "Misc/observable";
+import { DeepImmutable } from "../types";
+import { serialize, serializeAsVector3, serializeAsQuaternion, SerializationHelper } from "../Misc/decorators";
+import { Tags } from "../Misc/tags";
+import { Observable } from "../Misc/observable";
 
-import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
-import { Scene } from "scene";
-import { Quaternion, Matrix, Vector3, Tmp, Space } from "Maths/math";
-import { Node } from "node";
-import { Bone } from "Bones/bone";
+import { Nullable } from "../types";
+import { Camera } from "../Cameras/camera";
+import { Scene } from "../scene";
+import { Quaternion, Matrix, Vector3, Tmp, Space } from "../Maths/math";
+import { Node } from "../node";
+import { Bone } from "../Bones/bone";
     /**
      * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
      * @see https://doc.babylonjs.com/how_to/transformnode

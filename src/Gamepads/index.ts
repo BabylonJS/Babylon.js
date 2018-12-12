@@ -1,4 +1,4 @@
-export * from "./Controllers";
+export * from "./Controllers/index";
 export * from "./gamepad";
 export * from "./gamepadManager";
 export * from "./gamepadSceneComponent";

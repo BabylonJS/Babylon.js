@@ -1,4 +1,4 @@
-import { Nullable } from "types";
+import { Nullable } from "../types";
 
     /**
      * Interface used to define a behavior

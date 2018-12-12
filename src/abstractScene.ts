@@ -1,21 +1,21 @@
-import { Scene } from "scene";
-import { Nullable } from "types";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { TransformNode } from "Meshes/transformNode";
-import { Geometry } from "Meshes/geometry";
-import { Skeleton } from "Bones/skeleton";
-import { MorphTargetManager } from "Morph/morphTargetManager";
-import { AssetContainer } from "assetContainer";
-import { IParticleSystem } from "Particles/IParticleSystem";
-import { Animation } from "Animations/animation";
-import { AnimationGroup } from "Animations/animationGroup";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Material } from "Materials/material";
-import { MultiMaterial } from "Materials/multiMaterial";
-import { ActionManager } from "Actions/actionManager";
-import { Camera } from "Cameras/camera";
-import { Light } from "Lights/light";
-import { Node } from "node";
+import { Scene } from "./scene";
+import { Nullable } from "./types";
+import { AbstractMesh } from "./Meshes/abstractMesh";
+import { TransformNode } from "./Meshes/transformNode";
+import { Geometry } from "./Meshes/geometry";
+import { Skeleton } from "./Bones/skeleton";
+import { MorphTargetManager } from "./Morph/morphTargetManager";
+import { AssetContainer } from "./assetContainer";
+import { IParticleSystem } from "./Particles/IParticleSystem";
+import { Animation } from "./Animations/animation";
+import { AnimationGroup } from "./Animations/animationGroup";
+import { BaseTexture } from "./Materials/Textures/baseTexture";
+import { Material } from "./Materials/material";
+import { MultiMaterial } from "./Materials/multiMaterial";
+import { ActionManager } from "./Actions/actionManager";
+import { Camera } from "./Cameras/camera";
+import { Light } from "./Lights/light";
+import { Node } from "./node";
 
     /**
      * Defines how the parser contract is defined.

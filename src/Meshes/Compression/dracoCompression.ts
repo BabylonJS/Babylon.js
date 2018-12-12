@@ -1,7 +1,7 @@
-import { Tools } from "Misc/tools";
-import { Nullable } from "types";
-import { IDisposable } from "scene";
-import { VertexData } from "Meshes/mesh.vertexData";
+import { Tools } from "../../Misc/tools";
+import { Nullable } from "../../types";
+import { IDisposable } from "../../scene";
+import { VertexData } from "../../Meshes/mesh.vertexData";
 
 declare var DracoDecoderModule: any;
 declare var WebAssembly: any;

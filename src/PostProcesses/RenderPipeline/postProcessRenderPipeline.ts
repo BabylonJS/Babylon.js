@@ -1,8 +1,8 @@
-import { Nullable } from "types";
-import { Tools } from "Misc/tools";
-import { serialize } from "Misc/decorators";
-import { Camera } from "Cameras/camera";
-import { Engine } from "Engines/engine";
+import { Nullable } from "../../types";
+import { Tools } from "../../Misc/tools";
+import { serialize } from "../../Misc/decorators";
+import { Camera } from "../../Cameras/camera";
+import { Engine } from "../../Engines/engine";
 import { PostProcessRenderEffect } from "./postProcessRenderEffect";
     /**
      * PostProcessRenderPipeline

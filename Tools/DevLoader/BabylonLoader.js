@@ -131,8 +131,6 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.loadCss = function(url) {
-            var head = document.getElementsByTagName('head')[0];
-
             var style = document.createElement('link');
             style.href = url;
             style.rel = "stylesheet";
@@ -165,9 +163,19 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadModule = function(module) {
+        Loader.prototype.loadCoreDev = async function() {
+            // Es6 core import
+            await import("/.temp/es6LocalDev/core/legacy/legacy.js")
+        }
+
+        Loader.prototype.loadModule = async function(module) {
             for (var i = 0; i < module.libraries.length; i++) {
-                this.loadLibrary(module.libraries[i], module);
+                if (!useDist && module.isCore) {
+                    await this.loadCoreDev();
+                }
+                else {
+                    this.loadLibrary(module.libraries[i], module);
+                }
             }
         }
 
@@ -189,10 +197,10 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadBJSScripts = function(settings) {
+        Loader.prototype.loadBJSScripts = async function(settings) {
             // Load all the modules from the config.json.
             for (var i = 0; i < settings.modules.length; i++) {
-                this.loadModule(settings[settings.modules[i]]);
+                await this.loadModule(settings[settings.modules[i]]);
             }
         }
 
@@ -203,12 +211,13 @@ var BABYLONDEVTOOLS;
             }
             getJson('/Tools/Gulp/config.json',
                 function(data) {
-                    self.loadBJSScripts(data);
-                    if (dependencies) {
-                        self.loadScripts(dependencies);
-                    }
+                    self.loadBJSScripts(data).then(() => {
+                        if (dependencies) {
+                            self.loadScripts(dependencies);
+                        }
 
-                    self.dequeue();
+                        self.dequeue();
+                    });
                 },
                 function(reason) {
                     console.error(reason);

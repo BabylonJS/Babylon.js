@@ -1,19 +1,19 @@
-import { Observer, Observable } from "Misc/observable";
-import { Tools } from "Misc/tools";
-import { SmartArray } from "Misc/smartArray";
-import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
-import { Scene } from "scene";
-import { Matrix, Vector3, Color4 } from "Maths/math";
-import { Engine, RenderTargetCreationOptions } from "Engines/engine";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { SubMesh } from "Meshes/subMesh";
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { Texture } from "Materials/Textures/texture";
-import { PostProcessManager } from "PostProcesses/postProcessManager";
-import { PostProcess } from "PostProcesses/postProcess";
-import { RenderingManager } from "Rendering/renderingManager";
-import { Constants } from "Engines/constants";
+import { Observer, Observable } from "../../Misc/observable";
+import { Tools } from "../../Misc/tools";
+import { SmartArray } from "../../Misc/smartArray";
+import { Nullable } from "../../types";
+import { Camera } from "../../Cameras/camera";
+import { Scene } from "../../scene";
+import { Matrix, Vector3, Color4 } from "../../Maths/math";
+import { Engine, RenderTargetCreationOptions } from "../../Engines/engine";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { SubMesh } from "../../Meshes/subMesh";
+import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { Texture } from "../../Materials/Textures/texture";
+import { PostProcessManager } from "../../PostProcesses/postProcessManager";
+import { PostProcess } from "../../PostProcesses/postProcess";
+import { RenderingManager } from "../../Rendering/renderingManager";
+import { Constants } from "../../Engines/constants";
     /**
      * This Helps creating a texture that will be created from a camera in your scene.
      * It is basically a dynamic texture that could be used to create special effects for instance.

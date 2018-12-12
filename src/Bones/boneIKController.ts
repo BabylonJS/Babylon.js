@@ -1,8 +1,8 @@
 import { Bone } from "./bone";
 
-import { Vector3, Quaternion, Matrix, Space } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Nullable } from "types";
+import { Vector3, Quaternion, Matrix, Space } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Nullable } from "../types";
 
     /**
      * Class used to apply inverse kinematics to bones

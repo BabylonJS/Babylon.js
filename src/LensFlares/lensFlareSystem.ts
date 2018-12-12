@@ -1,23 +1,23 @@
-import { Tools } from "Misc/tools";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Matrix, Vector3, Color3, Viewport } from "Maths/math";
-import { Scalar } from "Maths/math.scalar";
-import { Engine } from "Engines/engine";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { VertexBuffer } from "Meshes/buffer";
-import { Ray } from "Culling/ray";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { SceneComponentConstants } from "sceneComponent";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Tools } from "../Misc/tools";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { Matrix, Vector3, Color3, Viewport } from "../Maths/math";
+import { Scalar } from "../Maths/math.scalar";
+import { Engine } from "../Engines/engine";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { VertexBuffer } from "../Meshes/buffer";
+import { Ray } from "../Culling/ray";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { SceneComponentConstants } from "../sceneComponent";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { LensFlare } from "./lensFlare";
 import { LensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent";
-import { Constants } from "Engines/constants";
+import { Constants } from "../Engines/constants";
 
-import "Shaders/lensFlare.fragment";
-import "Shaders/lensFlare.vertex";
+import "../Shaders/lensFlare.fragment";
+import "../Shaders/lensFlare.vertex";
 
     /**
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.

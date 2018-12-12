@@ -1,5 +1,5 @@
-import { DeepImmutable, Nullable, FloatArray, float } from "types";
-import { ArrayTools } from "Misc/arrayTools";
+import { DeepImmutable, Nullable, FloatArray, float } from "../types";
+import { ArrayTools } from "../Misc/arrayTools";
 import { Scalar } from "./math.scalar";
     /**
      * Constant used to convert a value to gamma space

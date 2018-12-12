@@ -1,13 +1,13 @@
-import { Scene } from "scene";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { SubMesh, } from "Meshes/subMesh";
-import { _InstancesBatch } from "Meshes/mesh";
-import { SmartArrayNoDuplicate } from "Misc/smartArray";
-import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { PickingInfo } from "Collisions/pickingInfo";
-import { AbstractScene } from "abstractScene";
+import { Scene } from "./scene";
+import { AbstractMesh } from "./Meshes/abstractMesh";
+import { SubMesh, } from "./Meshes/subMesh";
+import { _InstancesBatch } from "./Meshes/mesh";
+import { SmartArrayNoDuplicate } from "./Misc/smartArray";
+import { Nullable } from "./types";
+import { Camera } from "./Cameras/camera";
+import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
+import { PickingInfo } from "./Collisions/pickingInfo";
+import { AbstractScene } from "./abstractScene";
 
     /**
      * Groups all the scene component constants in one place to ease maintenance.

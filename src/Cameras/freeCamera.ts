@@ -1,14 +1,14 @@
-import { Nullable } from "types";
-import { serializeAsVector3, serialize } from "Misc/decorators";
-import { Vector3, Vector2 } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Collider } from "Collisions/collider";
-import { Scene } from "scene";
-import { Engine } from "Engines/engine";
+import { Nullable } from "../types";
+import { serializeAsVector3, serialize } from "../Misc/decorators";
+import { Vector3, Vector2 } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Collider } from "../Collisions/collider";
+import { Scene } from "../scene";
+import { Engine } from "../Engines/engine";
 import { TargetCamera } from "./targetCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
-import { FreeCameraMouseInput } from "Cameras/Inputs/freeCameraMouseInput";
-import { FreeCameraKeyboardMoveInput } from "Cameras/Inputs/freeCameraKeyboardMoveInput";
+import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
+import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 
     /**
      * This represents a free type of camera. It can be useful in First Person Shooter game for instance.

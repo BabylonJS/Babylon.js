@@ -1,8 +1,8 @@
-import { Tools } from "Misc/tools";
-import { Nullable, FloatArray, IndicesArray } from "types";
-import { Camera } from "Cameras/camera";
-import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color3, Color4, Plane, Tmp, Vector4, Path3D, PositionNormalVertex } from "Maths/math";
+import { Tools } from "../Misc/tools";
+import { Nullable, FloatArray, IndicesArray } from "../types";
+import { Camera } from "../Cameras/camera";
+import { Scene } from "../scene";
+import { Matrix, Vector3, Vector2, Color3, Color4, Plane, Tmp, Vector4, Path3D, PositionNormalVertex } from "../Maths/math";
 import { Mesh, _CreationDataStorage } from "./mesh";
 import { AbstractMesh } from "./abstractMesh";
 import { VertexBuffer } from "./buffer";
@@ -10,7 +10,7 @@ import { LinesMesh } from "./linesMesh";
 import { VertexData } from "./mesh.vertexData";
 import { GroundMesh } from "./groundMesh";
 import { PolygonMeshBuilder } from "./polygonMesh";
-import { BoundingInfo } from "Culling/boundingInfo";
+import { BoundingInfo } from "../Culling/boundingInfo";
 
 Mesh.CreateRibbon = (name: string, pathArray: Vector3[][], closeArray: boolean = false, closePath: boolean, offset: number, scene?: Scene, updatable: boolean = false, sideOrientation?: number, instance?: Mesh) => {
     return MeshBuilder.CreateRibbon(name, {

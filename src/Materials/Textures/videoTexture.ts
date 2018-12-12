@@ -1,10 +1,10 @@
-import { Observable } from "Misc/observable";
-import { Tools } from "Misc/tools";
-import { Logger } from "Misc/logger";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Engine } from "Engines/engine";
-import { Texture } from "Materials/Textures/texture";
+import { Observable } from "../../Misc/observable";
+import { Tools } from "../../Misc/tools";
+import { Logger } from "../../Misc/logger";
+import { Nullable } from "../../types";
+import { Scene } from "../../scene";
+import { Engine } from "../../Engines/engine";
+import { Texture } from "../../Materials/Textures/texture";
     /**
      * Settings for finer control over video usage
      */

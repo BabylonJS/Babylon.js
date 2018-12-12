@@ -1,14 +1,14 @@
-import { Nullable } from "types";
-import { Logger } from "Misc/logger";
-import { Vector2 } from "Maths/math";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
+import { Nullable } from "../types";
+import { Logger } from "../Misc/logger";
+import { Vector2 } from "../Maths/math";
+import { Camera } from "../Cameras/camera";
+import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Constants } from "Engines/constants";
-import { GeometryBufferRenderer } from "Rendering/geometryBufferRenderer";
-import { Scene } from "scene";
+import { Constants } from "../Engines/constants";
+import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
+import { Scene } from "../scene";
 
-import "Shaders/motionBlur.fragment";
+import "../Shaders/motionBlur.fragment";
 
 declare type Engine = import("Engines/engine").Engine;
 

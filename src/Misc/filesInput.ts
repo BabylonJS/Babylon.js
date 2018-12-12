@@ -1,8 +1,8 @@
-import { Engine } from "Engines/engine";
-import { Scene } from "scene";
-import { SceneLoaderProgressEvent, SceneLoader } from "Loading/sceneLoader";
+import { Engine } from "../Engines/engine";
+import { Scene } from "../scene";
+import { SceneLoaderProgressEvent, SceneLoader } from "../Loading/sceneLoader";
 import { Tools } from "./tools";
-import { Logger } from "Misc/logger";
+import { Logger } from "../Misc/logger";
 
     /**
      * Class used to help managing file picking and drag'n'drop

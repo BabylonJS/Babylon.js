@@ -1,18 +1,18 @@
-import { Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { ArcRotateCamera } from "Cameras/arcRotateCamera";
-import { Scene } from "scene";
-import { Vector3, Color3, Color4, Plane } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Texture } from "Materials/Textures/texture";
-import { MirrorTexture } from "Materials/Textures/mirrorTexture";
-import { CubeTexture } from "Materials/Textures/cubeTexture";
-import { BackgroundMaterial } from "Materials/Background/backgroundMaterial";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Constants } from "Engines/constants";
+import { Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
+import { Scene } from "../scene";
+import { Vector3, Color3, Color4, Plane } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Texture } from "../Materials/Textures/texture";
+import { MirrorTexture } from "../Materials/Textures/mirrorTexture";
+import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+import { Constants } from "../Engines/constants";
     /**
      * Represents the different options available during the creation of
      * a Environment helper.

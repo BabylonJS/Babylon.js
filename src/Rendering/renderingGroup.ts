@@ -1,15 +1,15 @@
-import { SmartArray } from "Misc/smartArray";
-import { SubMesh } from "Meshes/subMesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Nullable } from "types";
-import { Vector3 } from "Maths/math";
-import { IParticleSystem } from "Particles/IParticleSystem";
+import { SmartArray } from "../Misc/smartArray";
+import { SubMesh } from "../Meshes/subMesh";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Nullable } from "../types";
+import { Vector3 } from "../Maths/math";
+import { IParticleSystem } from "../Particles/IParticleSystem";
 import { IEdgesRenderer } from "./edgesRenderer";
-import { ISpriteManager } from "Sprites/spriteManager";
-import { Constants } from "Engines/constants";
-import { Material } from "Materials/material";
-import { Scene } from "scene";
-import { Camera } from "Cameras/camera";
+import { ISpriteManager } from "../Sprites/spriteManager";
+import { Constants } from "../Engines/constants";
+import { Material } from "../Materials/material";
+import { Scene } from "../scene";
+import { Camera } from "../Cameras/camera";
 
     /**
      * This represents the object necessary to create a rendering group.

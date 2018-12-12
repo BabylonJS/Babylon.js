@@ -1,4 +1,4 @@
-import { Camera } from "Cameras/camera";
+import { Camera } from "../../Cameras/camera";
 import { PostProcessRenderPipeline } from "./postProcessRenderPipeline";
     /**
      * PostProcessRenderPipelineManager class

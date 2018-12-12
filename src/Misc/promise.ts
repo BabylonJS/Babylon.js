@@ -1,4 +1,4 @@
-import { Nullable } from "types";
+import { Nullable } from "../types";
 import { Tools } from "./tools";
 
     enum PromiseStates {

@@ -1,16 +1,16 @@
-import { Observer, Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { PointerInfo } from "Events/pointerEvents";
-import { Quaternion, Matrix, Vector3, Color3 } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { LinesMesh } from "Meshes/linesMesh";
-import { PointerDragBehavior } from "Behaviors/Meshes/pointerDragBehavior";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Observer, Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { PointerInfo } from "../Events/pointerEvents";
+import { Quaternion, Matrix, Vector3, Color3 } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { LinesMesh } from "../Meshes/linesMesh";
+import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
-import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
-import { StandardMaterial } from "Materials/standardMaterial";
+import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { StandardMaterial } from "../Materials/standardMaterial";
     /**
      * Single plane rotation gizmo
      */

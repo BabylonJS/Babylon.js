@@ -1,10 +1,10 @@
-import { Behavior } from "Behaviors/behavior";
-import { Camera } from "Cameras/camera";
-import { ArcRotateCamera } from "Cameras/arcRotateCamera";
-import { Nullable } from "types";
-import { Tools } from "Misc/tools";
-import { Observer } from "Misc/observable";
-import { PointerInfoPre, PointerEventTypes } from "Events/pointerEvents";
+import { Behavior } from "../../Behaviors/behavior";
+import { Camera } from "../../Cameras/camera";
+import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { Nullable } from "../../types";
+import { Tools } from "../../Misc/tools";
+import { Observer } from "../../Misc/observable";
+import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
 
     /**
      * The autoRotation behavior (AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.

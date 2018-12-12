@@ -1,8 +1,8 @@
-import { DeepImmutable } from "types";
-import { ArrayTools } from "Misc/arrayTools";
-import { Matrix, Vector3, Plane } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Collider } from "Collisions/collider";
+import { DeepImmutable } from "../types";
+import { ArrayTools } from "../Misc/arrayTools";
+import { Matrix, Vector3, Plane } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Collider } from "../Collisions/collider";
 
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";

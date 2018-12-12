@@ -1,5 +1,5 @@
-import { Observable } from "Misc/observable";
-import { Vector2, Vector3, Color3, Color4 } from "Maths/math";
+import { Observable } from "../Misc/observable";
+import { Vector2, Vector3, Color3, Color4 } from "../Maths/math";
 import { Condition } from "./condition";
 
 declare type Scene = import("scene").Scene;

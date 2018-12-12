@@ -1,19 +1,19 @@
-import { Nullable } from "types";
-import { Observer } from "Misc/observable";
-import { serialize } from "Misc/decorators";
-import { Color4 } from "Maths/math";
-import { Camera } from "Cameras/camera";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Effect } from "Materials/effect";
-import { ColorCurves } from "Materials/colorCurves";
-import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "Materials/imageProcessingConfiguration";
+import { Nullable } from "../types";
+import { Observer } from "../Misc/observable";
+import { serialize } from "../Misc/decorators";
+import { Color4 } from "../Maths/math";
+import { Camera } from "../Cameras/camera";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Effect } from "../Materials/effect";
+import { ColorCurves } from "../Materials/colorCurves";
+import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "Engines/engine";
-import { Scene } from "scene";
-import { Constants } from "Engines/constants";
+import { Engine } from "../Engines/engine";
+import { Scene } from "../scene";
+import { Constants } from "../Engines/constants";
 
-import "Shaders/imageProcessing.fragment";
-import "Shaders/postprocess.vertex";
+import "../Shaders/imageProcessing.fragment";
+import "../Shaders/postprocess.vertex";
 
     /**
      * ImageProcessingPostProcess

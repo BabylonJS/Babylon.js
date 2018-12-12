@@ -1,10 +1,10 @@
-import { Scene } from "scene";
-import { Nullable } from "types";
-import { Matrix } from "Maths/math";
-import { Engine } from "Engines/engine";
-import { IBehaviorAware, Behavior } from "Behaviors/behavior";
-import { serialize } from "Misc/decorators";
-import { Observable, Observer } from "Misc/observable";
+import { Scene } from "./scene";
+import { Nullable } from "./types";
+import { Matrix } from "./Maths/math";
+import { Engine } from "./Engines/engine";
+import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
+import { serialize } from "./Misc/decorators";
+import { Observable, Observer } from "./Misc/observable";
 
 declare type Animatable = import("Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("Animations/animationPropertiesOverride").AnimationPropertiesOverride;

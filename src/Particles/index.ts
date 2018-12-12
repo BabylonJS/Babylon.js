@@ -1,5 +1,5 @@
 export * from "./baseParticleSystem";
-export * from "./EmitterTypes";
+export * from "./EmitterTypes/index";
 export * from "./gpuParticleSystem";
 export * from "./IParticleSystem";
 export * from "./particle";

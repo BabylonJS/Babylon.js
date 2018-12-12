@@ -1,15 +1,15 @@
-import { Nullable } from "types";
-import { Color3 } from "Maths/math";
-import { TransformNode } from "Meshes/transformNode";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { MeshBuilder } from "Meshes/meshBuilder";
+import { Nullable } from "../types";
+import { Color3 } from "../Maths/math";
+import { TransformNode } from "../Meshes/transformNode";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { MeshBuilder } from "../Meshes/meshBuilder";
 import { IParticleSystem } from "./IParticleSystem";
 import { ParticleHelper } from "./particleHelper";
 import { GPUParticleSystem } from "./gpuParticleSystem";
-import { Engine } from "Engines/engine";
-import { ParticleSystem } from "Particles/particleSystem";
-import { Scene, IDisposable } from "scene";
-import { StandardMaterial } from "Materials/standardMaterial";
+import { Engine } from "../Engines/engine";
+import { ParticleSystem } from "../Particles/particleSystem";
+import { Scene, IDisposable } from "../scene";
+import { StandardMaterial } from "../Materials/standardMaterial";
     /** Internal class used to store shapes for emitters */
     class ParticleSystemSetEmitterCreationOptions {
         public kind: string;

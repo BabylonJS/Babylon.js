@@ -1,11 +1,11 @@
-import { serializeAsMeshReference, serializeAsVector3, SerializationHelper } from "Misc/decorators";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { Matrix, Vector3 } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Nullable } from "types";
-import { AbstractScene } from "abstractScene";
-import { Scene } from "scene";
-import { Constants } from "Engines/constants";
+import { serializeAsMeshReference, serializeAsVector3, SerializationHelper } from "../Misc/decorators";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { Matrix, Vector3 } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Nullable } from "../types";
+import { AbstractScene } from "../abstractScene";
+import { Scene } from "../scene";
+import { Constants } from "../Engines/constants";
 
 declare module "abstractScene" {
     export interface AbstractScene {

@@ -1,10 +1,10 @@
-import { serialize } from "Misc/decorators";
-import { Observer } from "Misc/observable";
-import { Nullable } from "types";
-import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
-import { FreeCamera } from "Cameras/freeCamera";
-import { Matrix, Vector3, Vector2 } from "Maths/math";
-import { Gamepad } from "Gamepads/gamepad";
+import { serialize } from "../../Misc/decorators";
+import { Observer } from "../../Misc/observable";
+import { Nullable } from "../../types";
+import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { FreeCamera } from "../../Cameras/freeCamera";
+import { Matrix, Vector3, Vector2 } from "../../Maths/math";
+import { Gamepad } from "../../Gamepads/gamepad";
 
     /**
      * Manage the gamepad inputs to control a free camera.

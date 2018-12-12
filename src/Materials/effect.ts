@@ -1,9 +1,9 @@
-import { Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "Maths/math";
-import { Constants } from "Engines/constants";
-import { DomManagement } from "Misc/domManagement";
-import { Logger } from "Misc/logger";
+import { Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math";
+import { Constants } from "../Engines/constants";
+import { DomManagement } from "../Misc/domManagement";
+import { Logger } from "../Misc/logger";
 
 declare type Engine = import("Engines/engine").Engine;
 declare type InternalTexture = import("Materials/Textures/internalTexture").InternalTexture;

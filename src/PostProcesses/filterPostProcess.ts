@@ -1,11 +1,11 @@
-import { Nullable } from "types";
-import { Matrix } from "Maths/math";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
+import { Nullable } from "../types";
+import { Matrix } from "../Maths/math";
+import { Camera } from "../Cameras/camera";
+import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "Engines/engine";
+import { Engine } from "../Engines/engine";
 
-import "Shaders/filter.fragment";
+import "../Shaders/filter.fragment";
 
     /**
      * Applies a kernel filter to the image

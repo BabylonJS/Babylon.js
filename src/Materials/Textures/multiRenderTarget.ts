@@ -1,9 +1,9 @@
-import { Scene } from "scene";
-import { Engine } from "Engines/engine";
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { Constants } from "Engines/constants";
+import { Scene } from "../../scene";
+import { Engine } from "../../Engines/engine";
+import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { Texture } from "../../Materials/Textures/texture";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { Constants } from "../../Engines/constants";
 
     /**
      * Creation options of the multi render target texture.

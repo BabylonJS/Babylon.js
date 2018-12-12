@@ -1,8 +1,8 @@
 import { Sound } from "./sound";
 import { Analyser } from "./analyser";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Engine } from "Engines/engine";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { Engine } from "../Engines/engine";
 
     /**
      * Options allowed during the creation of a sound track.

@@ -1,8 +1,8 @@
-import { Logger } from "Misc/logger";
-import { Vector3 } from "Maths/math";
+import { Logger } from "../Misc/logger";
+import { Vector3 } from "../Maths/math";
 import { Action } from "./action";
 import { Condition } from "./condition";
-import { Constants } from "Engines/constants";
+import { Constants } from "../Engines/constants";
 
 declare type ActionEvent = import("./actionEvent").ActionEvent;
 

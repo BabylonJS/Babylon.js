@@ -1,10 +1,10 @@
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { PassPostProcess } from "PostProcesses/passPostProcess";
-import { Constants } from "Engines/constants";
-import { Scene } from "scene";
+import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Texture } from "../Materials/Textures/texture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { PassPostProcess } from "../PostProcesses/passPostProcess";
+import { Constants } from "../Engines/constants";
+import { Scene } from "../scene";
 
     /**
      * Class used to host texture specific utilities

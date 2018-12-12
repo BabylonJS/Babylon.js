@@ -1,4 +1,4 @@
-export * from "./Background";
+export * from "./Background/index";
 export * from "./colorCurves";
 export * from "./effect";
 export * from "./fresnelParameters";
@@ -7,9 +7,9 @@ export * from "./material";
 export * from "./materialDefines";
 export * from "./materialHelper";
 export * from "./multiMaterial";
-export * from "./PBR";
+export * from "./PBR/index";
 export * from "./pushMaterial";
 export * from "./shaderMaterial";
 export * from "./standardMaterial";
-export * from "./Textures";
+export * from "./Textures/index";
 export * from "./uniformBuffer";

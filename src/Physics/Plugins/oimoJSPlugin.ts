@@ -1,11 +1,11 @@
-import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "Physics/IPhysicsEngine";
-import { PhysicsImpostor, IPhysicsEnabledObject } from "Physics/physicsImpostor";
-import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "Physics/physicsJoint";
-import { PhysicsEngine } from "Physics/physicsEngine";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Vector3, Quaternion } from "Maths/math";
-import { Nullable } from "types";
-import { Logger } from "Misc/logger";
+import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
+import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
+import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
+import { PhysicsEngine } from "../../Physics/physicsEngine";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Vector3, Quaternion } from "../../Maths/math";
+import { Nullable } from "../../types";
+import { Logger } from "../../Misc/logger";
 
     declare var OIMO: any;
 

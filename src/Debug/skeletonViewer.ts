@@ -1,12 +1,12 @@
-import { Color3, Vector3, Matrix, Tmp } from "Maths/math";
-import { Scene } from "scene";
-import { Nullable } from "types";
-import { Bone } from "Bones/bone";
-import { Skeleton } from "Bones/skeleton";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { LinesMesh } from "Meshes/linesMesh";
-import { MeshBuilder } from "Meshes/meshBuilder";
-import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
+import { Color3, Vector3, Matrix, Tmp } from "../Maths/math";
+import { Scene } from "../scene";
+import { Nullable } from "../types";
+import { Bone } from "../Bones/bone";
+import { Skeleton } from "../Bones/skeleton";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { LinesMesh } from "../Meshes/linesMesh";
+import { MeshBuilder } from "../Meshes/meshBuilder";
+import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 
 /**
      * Class used to render a debug view of a given skeleton

@@ -1,12 +1,12 @@
-import { Logger } from "Misc/logger";
-import { Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { Vector3, Color3 } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
+import { Logger } from "../Misc/logger";
+import { Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { Vector3, Color3 } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
-import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
+import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
     /**
      * Gizmo that enables scaling a mesh along 3 axis
      */

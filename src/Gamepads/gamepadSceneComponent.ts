@@ -1,15 +1,15 @@
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { SceneComponentConstants, ISceneComponent } from "sceneComponent";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 
 import { GamepadManager } from "./gamepadManager";
 
-import { FreeCameraInputsManager } from "Cameras/freeCameraInputsManager";
-import { FreeCameraGamepadInput } from "Cameras/Inputs/freeCameraGamepadInput";
-import { ArcRotateCameraInputsManager } from "Cameras/arcRotateCameraInputsManager";
-import { ArcRotateCameraGamepadInput } from "Cameras/Inputs/arcRotateCameraGamepadInput";
+import { FreeCameraInputsManager } from "../Cameras/freeCameraInputsManager";
+import { FreeCameraGamepadInput } from "../Cameras/Inputs/freeCameraGamepadInput";
+import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
+import { ArcRotateCameraGamepadInput } from "../Cameras/Inputs/arcRotateCameraGamepadInput";
 
 declare module "scene" {
     export interface Scene {

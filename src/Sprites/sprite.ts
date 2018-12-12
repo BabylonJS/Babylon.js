@@ -1,6 +1,6 @@
-import { Vector3, Color4 } from "Maths/math";
-import { Nullable } from "types";
-import { ActionManager } from "Actions/actionManager";
+import { Vector3, Color4 } from "../Maths/math";
+import { Nullable } from "../types";
+import { ActionManager } from "../Actions/actionManager";
 import { ISpriteManager } from "./spriteManager";
 
     /**

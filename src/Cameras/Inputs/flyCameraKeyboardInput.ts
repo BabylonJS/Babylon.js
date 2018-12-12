@@ -1,12 +1,12 @@
-import { Nullable } from "types";
-import { serialize } from "Misc/decorators";
-import { Observer } from "Misc/observable";
-import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
-import { FlyCamera } from "Cameras/flyCamera";
-import { Engine } from "Engines/engine";
-import { KeyboardInfo, KeyboardEventTypes } from "Events/keyboardEvents";
-import { Scene } from "scene";
-import { Vector3 } from "Maths/math";
+import { Nullable } from "../../types";
+import { serialize } from "../../Misc/decorators";
+import { Observer } from "../../Misc/observable";
+import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { FlyCamera } from "../../Cameras/flyCamera";
+import { Engine } from "../../Engines/engine";
+import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
+import { Scene } from "../../scene";
+import { Vector3 } from "../../Maths/math";
 
     /**
      * Listen to keyboard events to control the camera.

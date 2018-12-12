@@ -1,6 +1,6 @@
-import { Tools } from "Misc/tools";
-import { Observable } from "Misc/observable";
-import { Scene } from "scene";
+import { Tools } from "../Misc/tools";
+import { Observable } from "../Misc/observable";
+import { Scene } from "../scene";
 
     // declare INSPECTOR namespace for compilation issue
     declare var INSPECTOR: any;

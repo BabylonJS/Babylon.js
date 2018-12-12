@@ -1,4 +1,4 @@
-export * from "./Inputs";
+export * from "./Inputs/index";
 export * from "./cameraInputsManager";
 export * from "./camera";
 export * from "./targetCamera";
@@ -12,8 +12,8 @@ export * from "./flyCamera";
 export * from "./flyCameraInputsManager";
 export * from "./followCamera";
 export * from "./gamepadCamera";
-export * from "./Stereoscopic";
+export * from "./Stereoscopic/index";
 export * from "./universalCamera";
 export * from "./virtualJoysticksCamera";
-export * from "./VR";
-export * from "./XR";
+export * from "./VR/index";
+export * from "./XR/index";

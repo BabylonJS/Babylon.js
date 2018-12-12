@@ -1,18 +1,18 @@
-    import { Nullable, FloatArray, DataArray, IndicesArray } from "types";
-    import { Scene } from "scene";
-    import { Vector3, Vector2, Color4 } from "Maths/math";
-    import { Engine } from "Engines/engine";
-    import { IGetSetVerticesData, VertexData } from "Meshes/mesh.vertexData";
-    import { VertexBuffer } from "Meshes/buffer";
-    import { SubMesh } from "Meshes/subMesh";
-    import { AbstractMesh } from "Meshes/abstractMesh";
-    import { Mesh } from "Meshes/mesh";
-    import { Effect } from "Materials/effect";
-    import { SceneLoader } from "Loading/sceneLoader";
-    import { BoundingInfo } from "Culling/boundingInfo";
-    import { Constants } from "Engines/constants";
-    import { Tools } from "Misc/tools";
-    import { Tags } from "Misc/tags";
+    import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
+    import { Scene } from "../scene";
+    import { Vector3, Vector2, Color4 } from "../Maths/math";
+    import { Engine } from "../Engines/engine";
+    import { IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
+    import { VertexBuffer } from "../Meshes/buffer";
+    import { SubMesh } from "../Meshes/subMesh";
+    import { AbstractMesh } from "../Meshes/abstractMesh";
+    import { Mesh } from "../Meshes/mesh";
+    import { Effect } from "../Materials/effect";
+    import { SceneLoader } from "../Loading/sceneLoader";
+    import { BoundingInfo } from "../Culling/boundingInfo";
+    import { Constants } from "../Engines/constants";
+    import { Tools } from "../Misc/tools";
+    import { Tags } from "../Misc/tags";
     /**
      * Class used to store geometry data (vertex buffers + index buffer)
      */

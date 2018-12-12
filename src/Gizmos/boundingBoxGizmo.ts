@@ -1,18 +1,18 @@
-import { Observer, Observable } from "Misc/observable";
-import { Logger } from "Misc/logger";
-import { Nullable } from "types";
-import { PointerInfo } from "Events/pointerEvents";
-import { Scene } from "scene";
-import { Quaternion, Matrix, Vector3, Color3, Epsilon } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { MeshBuilder } from "Meshes/meshBuilder";
-import { PointerDragBehavior } from "Behaviors/Meshes/pointerDragBehavior";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Observer, Observable } from "../Misc/observable";
+import { Logger } from "../Misc/logger";
+import { Nullable } from "../types";
+import { PointerInfo } from "../Events/pointerEvents";
+import { Scene } from "../scene";
+import { Quaternion, Matrix, Vector3, Color3, Epsilon } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { MeshBuilder } from "../Meshes/meshBuilder";
+import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
-import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
-import { StandardMaterial } from "Materials/standardMaterial";
+import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { StandardMaterial } from "../Materials/standardMaterial";
     /**
      * Bounding box gizmo
      */

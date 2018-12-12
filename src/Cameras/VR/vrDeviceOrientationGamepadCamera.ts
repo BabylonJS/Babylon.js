@@ -1,8 +1,8 @@
 import { VRDeviceOrientationFreeCamera } from "./vrDeviceOrientationFreeCamera";
 import { VRCameraMetrics } from "./vrCameraMetrics";
-import { Scene } from "scene";
-import { Vector3 } from "Maths/math";
-import { Node } from "node";
+import { Scene } from "../../scene";
+import { Vector3 } from "../../Maths/math";
+import { Node } from "../../node";
 
     Node.AddNodeConstructor("VRDeviceOrientationGamepadCamera", (name, scene) => {
         return () => new VRDeviceOrientationGamepadCamera(name, Vector3.Zero(), scene);

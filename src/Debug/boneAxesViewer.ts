@@ -1,9 +1,9 @@
-import { Nullable } from "types";
-import { AxesViewer } from "Debug/axesViewer";
-import { Vector3, Axis } from "Maths/math";
-import { Mesh } from "Meshes/mesh";
-import { Bone } from "Bones/bone";
-import { Scene } from "scene";
+import { Nullable } from "../types";
+import { AxesViewer } from "../Debug/axesViewer";
+import { Vector3, Axis } from "../Maths/math";
+import { Mesh } from "../Meshes/mesh";
+import { Bone } from "../Bones/bone";
+import { Scene } from "../scene";
 
 /**
      * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh

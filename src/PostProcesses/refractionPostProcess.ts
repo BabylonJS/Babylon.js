@@ -1,11 +1,11 @@
-import { Color3 } from "Maths/math";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
+import { Color3 } from "../Maths/math";
+import { Camera } from "../Cameras/camera";
+import { Effect } from "../Materials/effect";
+import { Texture } from "../Materials/Textures/texture";
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "Engines/engine";
+import { Engine } from "../Engines/engine";
 
-import "Shaders/refraction.fragment";
+import "../Shaders/refraction.fragment";
 
     /**
      * Post process which applies a refractin texture

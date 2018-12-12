@@ -1,33 +1,33 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "Misc/decorators";
-import { Observer } from "Misc/observable";
-import { SmartArray } from "Misc/smartArray";
-import { IAnimatable } from "Misc/tools";
+import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
+import { Observer } from "../Misc/observable";
+import { SmartArray } from "../Misc/smartArray";
+import { IAnimatable } from "../Misc/tools";
 
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Matrix, Color3 } from "Maths/math";
-import { Engine } from "Engines/engine";
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { Matrix, Color3 } from "../Maths/math";
+import { Engine } from "../Engines/engine";
+import { VertexBuffer } from "../Meshes/buffer";
+import { SubMesh } from "../Meshes/subMesh";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
 import { EffectFallbacks, EffectCreationOptions } from "./effect";
-import { MaterialDefines } from "Materials/materialDefines";
+import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
 
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Texture } from "Materials/Textures/texture";
-import { CubeTexture } from "Materials/Textures/cubeTexture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Texture } from "../Materials/Textures/texture";
+import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
-import "Shaders/default.fragment";
-import "Shaders/default.vertex";
-import { Constants } from "Engines/constants";
+import "../Shaders/default.fragment";
+import "../Shaders/default.vertex";
+import { Constants } from "../Engines/constants";
 
     /** @hidden */
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {

@@ -1,12 +1,12 @@
-import { Behavior } from "Behaviors/behavior";
-import { Camera } from "Cameras/camera";
-import { ArcRotateCamera } from "Cameras/arcRotateCamera";
-import { BackEase, EasingFunction } from "Animations/easing";
-import { Nullable } from "types";
-import { Observer } from "Misc/observable";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Animatable } from "Animations/animatable";
-import { Animation } from "Animations/animation";
+import { Behavior } from "../../Behaviors/behavior";
+import { Camera } from "../../Cameras/camera";
+import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { BackEase, EasingFunction } from "../../Animations/easing";
+import { Nullable } from "../../types";
+import { Observer } from "../../Misc/observable";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Animatable } from "../../Animations/animatable";
+import { Animation } from "../../Animations/animation";
 
     /**
      * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius

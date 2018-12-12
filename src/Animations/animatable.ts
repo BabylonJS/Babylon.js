@@ -1,9 +1,9 @@
 import { Animation } from "./animation";
 import { RuntimeAnimation } from "./runtimeAnimation";
 
-import { Nullable } from "types";
-import { Observable } from "Misc/observable";
-import { Scene } from "scene";
+import { Nullable } from "../types";
+import { Observable } from "../Misc/observable";
+import { Scene } from "../scene";
 
     /**
      * Class used to store an actual running animation

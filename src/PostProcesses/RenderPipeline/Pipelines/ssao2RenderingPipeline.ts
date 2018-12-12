@@ -1,20 +1,20 @@
-import { Logger } from "Misc/logger";
-import { serialize, SerializationHelper } from "Misc/decorators";
-import { Vector3, Tmp } from "Maths/math";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
-import { DynamicTexture } from "Materials/Textures/dynamicTexture";
-import { PostProcess } from "PostProcesses/postProcess";
-import { PostProcessRenderPipeline } from "PostProcesses/RenderPipeline/postProcessRenderPipeline";
-import { PostProcessRenderEffect } from "PostProcesses/RenderPipeline/postProcessRenderEffect";
-import { PassPostProcess } from "PostProcesses/passPostProcess";
-import { Engine } from "Engines/engine";
-import { GeometryBufferRenderer } from "Rendering/geometryBufferRenderer";
-import { Scene } from "scene";
+import { Logger } from "../../../Misc/logger";
+import { serialize, SerializationHelper } from "../../../Misc/decorators";
+import { Vector3, Tmp } from "../../../Maths/math";
+import { Camera } from "../../../Cameras/camera";
+import { Effect } from "../../../Materials/effect";
+import { Texture } from "../../../Materials/Textures/texture";
+import { DynamicTexture } from "../../../Materials/Textures/dynamicTexture";
+import { PostProcess } from "../../../PostProcesses/postProcess";
+import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
+import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
+import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
+import { Engine } from "../../../Engines/engine";
+import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
+import { Scene } from "../../../scene";
 
-import "Shaders/ssao2.fragment";
-import "Shaders/ssaoCombine.fragment";
+import "../../../Shaders/ssao2.fragment";
+import "../../../Shaders/ssaoCombine.fragment";
 
     /**
      * Render pipeline to produce ssao effect

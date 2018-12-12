@@ -17,6 +17,6 @@ gulp.task("remapPaths", function() {
     const path = commandLineOptions.path;
 
     return gulp.src(path + "/**/*.ts", { base: path })
-        .pipe(remapPaths())
+        .pipe(remapPaths({ basePath: path }))
         .pipe(gulp.dest(path));
 });

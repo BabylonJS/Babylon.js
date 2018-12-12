@@ -1,3 +1,3 @@
 export * from "./behavior";
-export * from "./Cameras";
-export * from "./Meshes";
+export * from "./Cameras/index";
+export * from "./Meshes/index";

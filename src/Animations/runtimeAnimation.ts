@@ -1,9 +1,9 @@
-import { DeepImmutable } from "types";
-import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "Maths/math";
+import { DeepImmutable } from "../types";
+import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "../Maths/math";
 import { Animatable } from "./animatable";
 import { Animation, AnimationEvent } from "./animation";
 
-import { Scene } from "scene";
+import { Scene } from "../scene";
 
     // Static values to help the garbage collector
 

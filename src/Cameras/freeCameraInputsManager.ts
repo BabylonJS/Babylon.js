@@ -1,10 +1,10 @@
 import { FreeCamera } from "./freeCamera";
 import { CameraInputsManager } from "./cameraInputsManager";
-import { FreeCameraKeyboardMoveInput } from "Cameras/Inputs/freeCameraKeyboardMoveInput";
-import { FreeCameraMouseInput } from "Cameras/Inputs/freeCameraMouseInput";
-import { FreeCameraDeviceOrientationInput } from "Cameras/Inputs/freeCameraDeviceOrientationInput";
-import { FreeCameraTouchInput } from "Cameras/Inputs/freeCameraTouchInput";
-import { FreeCameraVirtualJoystickInput } from "Cameras/Inputs/freeCameraVirtualJoystickInput";
+import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
+import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
+import { FreeCameraDeviceOrientationInput } from "../Cameras/Inputs/freeCameraDeviceOrientationInput";
+import { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
+import { FreeCameraVirtualJoystickInput } from "../Cameras/Inputs/freeCameraVirtualJoystickInput";
 
     /**
      * Default Inputs manager for the FreeCamera.

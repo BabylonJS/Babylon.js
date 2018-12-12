@@ -1,19 +1,19 @@
-import { Scene } from "scene";
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { VertexData } from "Meshes/mesh.vertexData";
-import { Color3, Matrix } from "Maths/math";
-import { SmartArray } from "Misc/smartArray";
-import { Nullable, FloatArray } from "types";
-import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
-import { BoundingBox } from "Culling/boundingBox";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { ShaderMaterial } from "Materials/shaderMaterial";
+import { Scene } from "../scene";
+import { VertexBuffer } from "../Meshes/buffer";
+import { SubMesh } from "../Meshes/subMesh";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { VertexData } from "../Meshes/mesh.vertexData";
+import { Color3, Matrix } from "../Maths/math";
+import { SmartArray } from "../Misc/smartArray";
+import { Nullable, FloatArray } from "../types";
+import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import { BoundingBox } from "../Culling/boundingBox";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { ShaderMaterial } from "../Materials/shaderMaterial";
 
-import "Shaders/color.fragment";
-import "Shaders/color.vertex";
+import "../Shaders/color.fragment";
+import "../Shaders/color.vertex";
 
 declare module "scene" {
     export interface Scene {

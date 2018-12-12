@@ -1,6 +1,6 @@
-import { DeepImmutable } from "types";
-import { ArrayTools } from "Misc/arrayTools";
-import { Matrix, Vector3, Plane } from "Maths/math";
+import { DeepImmutable } from "../types";
+import { ArrayTools } from "../Misc/arrayTools";
+import { Matrix, Vector3, Plane } from "../Maths/math";
 
     /**
      * Class used to store bounding sphere information

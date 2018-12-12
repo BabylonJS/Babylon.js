@@ -1,8 +1,8 @@
-import { Camera } from "Cameras/camera";
-import { UniversalCamera } from "Cameras/universalCamera";
-import { Scene } from "scene";
-import { Vector3 } from "Maths/math";
-import { Node } from "node";
+import { Camera } from "../../Cameras/camera";
+import { UniversalCamera } from "../../Cameras/universalCamera";
+import { Scene } from "../../scene";
+import { Vector3 } from "../../Maths/math";
+import { Node } from "../../node";
 
     Node.AddNodeConstructor("StereoscopicFreeCamera", (name, scene, options) => {
         return () => new StereoscopicUniversalCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
