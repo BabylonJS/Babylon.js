@@ -1071,6 +1071,28 @@ export class Control {
     }
 
     /** @hidden */
+    public intersectsRect(rect: Measure) {
+        var hit = ! (this._currentMeasure.left > rect.left + rect.width ||
+             this._currentMeasure.left + this._currentMeasure.width < rect.left ||
+             this._currentMeasure.top > rect.top + rect.height ||
+             this._currentMeasure.top + this._currentMeasure.height < rect.top
+        );
+        return hit;
+    }
+
+    /** @hidden */
+    protected invalidateRect() {
+        if (this.host) {
+            this.host.invalidateRect(
+                this._currentMeasure.left,
+                this._currentMeasure.top,
+                this._currentMeasure.left + this._currentMeasure.width,
+                this._currentMeasure.top + this._currentMeasure.height
+            );
+        }
+    }
+
+    /** @hidden */
     public _markAsDirty(force = false): void {
         if (!this._isVisible && !force) {
             return;
@@ -1078,10 +1100,11 @@ export class Control {
 
         this._isDirty = true;
 
-        if (!this._host) {
-            return; // Not yet connected
+        // Redraw only the this rectangle
+        if (this._host) {
+            this._host.markAsDirty();
+            this.invalidateRect();
         }
-        this._host.markAsDirty();
     }
 
     /** @hidden */
@@ -1180,7 +1203,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable) {
             return false;
         }
@@ -1397,7 +1420,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _render(context: CanvasRenderingContext2D): boolean {
+    public _render(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
             this._isDirty = false;
             return false;
@@ -1421,7 +1444,7 @@ export class Control {
         if (this.useBitmapCache && !this._wasDirty && this._cacheData) {
             context.putImageData(this._cacheData, this._currentMeasure.left, this._currentMeasure.top);
         } else {
-            this._draw(context);
+            this._draw(context, invalidatedRectangle);
         }
 
         if (this.useBitmapCache && this._wasDirty) {
@@ -1440,7 +1463,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
     }
 
