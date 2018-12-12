@@ -26,7 +26,7 @@ gulp.task("watchCore", async function startWatch() {
     var settings = config[module].build;
     var library = config[module].libraries[0];
 
-    // Clean shaders
+    // Clean shaders.
     await cleanShaders(settings);
 
     // Generate shaders.
