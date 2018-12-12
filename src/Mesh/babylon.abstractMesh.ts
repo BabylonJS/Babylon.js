@@ -61,7 +61,7 @@ module BABYLON {
         /** Culling strategy : Optimistic Inclusion.  
          *  This in an inclusion test first, then the standard exclusion test.  
          *  This can be faster when a cullable object is expected to be almost always in the camera frustum.  
-         *  This can also be a little slower than the standard test when the tested object center is not the frustum.  
+         *  This could also be a little slower than the standard test when the tested object center is not the frustum but one of its bounding box vertex is still inside.  
          *  Anyway, it's as accurate as the standard strategy.  
          *  Test :  
          *  Is the cullable object bounding sphere center in the frustum ?  
@@ -71,7 +71,7 @@ module BABYLON {
         /** Culling strategy : Optimistic Inclusion then Bounding Sphere Only.  
          *  This in an inclusion test first, then the bounding sphere only exclusion test.  
          *  This can be the fastest test when a cullable object is expected to be almost always in the camera frustum.  
-         *  This can also be a little slower than the BoundingSphereOnly stratagy when the tested object center is not in the frustum.   
+         *  This could also be a little slower than the BoundingSphereOnly strategy when the tested object center is not in the frustum but its bounding sphere still intersects it.   
          *  It's less accurate than the standard strategy and as accurate as the BoundingSphereOnly strategy.  
          *  Test :  
          *  Is the cullable object bounding sphere center in the frustum ?  
