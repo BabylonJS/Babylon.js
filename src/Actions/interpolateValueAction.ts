@@ -1,10 +1,10 @@
 import { Action } from "./action";
 import { Condition } from "./condition";
 
-import { Logger } from "Misc/logger";
-import { Observable } from "Misc/observable";
-import { Color3, Vector3, Matrix, Quaternion } from "Maths/math";
-import { Animation } from "Animations/animation";
+import { Logger } from "../Misc/logger";
+import { Observable } from "../Misc/observable";
+import { Color3, Vector3, Matrix, Quaternion } from "../Maths/math";
+import { Animation } from "../Animations/animation";
 
     /**
      * This defines an action responsible to change the value of a property

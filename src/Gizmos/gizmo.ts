@@ -1,13 +1,13 @@
-import { Observer } from "Misc/observable";
-import { Nullable } from "types";
-import { WebVRFreeCamera } from "Cameras/VR/webVRCamera";
-import { Scene, IDisposable } from "scene";
-import { Quaternion, Matrix, Vector3 } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
+import { Observer } from "../Misc/observable";
+import { Nullable } from "../types";
+import { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
+import { Scene, IDisposable } from "../scene";
+import { Quaternion, Matrix, Vector3 } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
     /**
      * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
      */

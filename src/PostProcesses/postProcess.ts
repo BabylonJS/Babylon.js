@@ -1,15 +1,15 @@
-import { Nullable } from "types";
-import { Tools } from "Misc/tools";
-import { SmartArray } from "Misc/smartArray";
-import { Observable, Observer } from "Misc/observable";
-import { Color4, Vector2 } from "Maths/math";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
-import { Scene } from "scene";
-import { Animation } from "Animations/animation";
-import { Constants } from "Engines/constants";
+import { Nullable } from "../types";
+import { Tools } from "../Misc/tools";
+import { SmartArray } from "../Misc/smartArray";
+import { Observable, Observer } from "../Misc/observable";
+import { Color4, Vector2 } from "../Maths/math";
+import { Camera } from "../Cameras/camera";
+import { Effect } from "../Materials/effect";
+import { Scene } from "../scene";
+import { Animation } from "../Animations/animation";
+import { Constants } from "../Engines/constants";
 
-import "Shaders/postprocess.vertex";
+import "../Shaders/postprocess.vertex";
 
 declare type InternalTexture  = import("Materials/Textures/internalTexture").InternalTexture;
 declare type WebVRFreeCamera = import("Cameras/VR/webVRCamera").WebVRFreeCamera;

@@ -36,16 +36,9 @@
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": "Starting \\'watch\\'",
-                    "endsPattern": "Entrypoint babylonjs-inspector"
+                    "endsPattern": "Watching for file changes"
                 }
             }
-        },
-        {
-            "taskName": "typescript-all",
-            "isBuildCommand": true,
-            "problemMatcher": [
-                "$tsc"
-            ]
         },
         {
             "label": "serve-viewer",

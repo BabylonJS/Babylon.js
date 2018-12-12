@@ -1,5 +1,5 @@
-import { Nullable, DataArray } from "types";
-import { Engine } from "Engines/engine";
+import { Nullable, DataArray } from "../types";
+import { Engine } from "../Engines/engine";
 
     /**
      * Class used to store data that will be store in GPU memory

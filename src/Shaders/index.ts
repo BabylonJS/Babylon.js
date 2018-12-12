@@ -59,7 +59,7 @@ export * from "./procedural.vertex";
 export * from "./refraction.fragment";
 export * from "./rgbdDecode.fragment";
 export * from "./rgbdEncode.fragment";
-export * from "./ShadersInclude";
+export * from "./ShadersInclude/index";
 export * from "./shadowMap.fragment";
 export * from "./shadowMap.vertex";
 export * from "./sharpen.fragment";

@@ -1,16 +1,16 @@
-import { Tools } from "Misc/tools";
-import { Nullable, IndicesArray, DeepImmutable } from "types";
-import { Matrix, Vector3, Plane } from "Maths/math";
-import { Engine } from "Engines/engine";
+import { Tools } from "../Misc/tools";
+import { Nullable, IndicesArray, DeepImmutable } from "../types";
+import { Matrix, Vector3, Plane } from "../Maths/math";
+import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "./buffer";
-import { Collider } from "Collisions/collider";
-import { IntersectionInfo } from "Collisions/pickingInfo";
-import { Ray } from "Culling/ray";
-import { ICullable, BoundingInfo } from "Culling/boundingInfo";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { MaterialDefines } from "Materials/materialDefines";
-import { MultiMaterial } from "Materials/multiMaterial";
+import { Collider } from "../Collisions/collider";
+import { IntersectionInfo } from "../Collisions/pickingInfo";
+import { Ray } from "../Culling/ray";
+import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { MaterialDefines } from "../Materials/materialDefines";
+import { MultiMaterial } from "../Materials/multiMaterial";
 
 declare type AbstractMesh = import("./abstractMesh").AbstractMesh;
 declare type Mesh = import("./mesh").Mesh;

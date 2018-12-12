@@ -1,12 +1,12 @@
-import { Nullable, IndicesArray } from "types";
-import { Logger } from "Misc/logger";
-import { ArrayTools } from "Misc/arrayTools";
-import { Vector3, Matrix, Quaternion, Space } from "Maths/math";
-import { TransformNode } from "Meshes/transformNode";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Scene } from "scene";
-import { Bone } from "Bones/bone";
-import { BoundingInfo } from "Culling/boundingInfo";
+import { Nullable, IndicesArray } from "../types";
+import { Logger } from "../Misc/logger";
+import { ArrayTools } from "../Misc/arrayTools";
+import { Vector3, Matrix, Quaternion, Space } from "../Maths/math";
+import { TransformNode } from "../Meshes/transformNode";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Scene } from "../scene";
+import { Bone } from "../Bones/bone";
+import { BoundingInfo } from "../Culling/boundingInfo";
 import { IPhysicsEngine } from "./IPhysicsEngine";
 import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
     /**

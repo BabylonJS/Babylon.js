@@ -1,8 +1,8 @@
-import { Nullable } from "types";
-import { Color4, Vector3, Matrix, Tmp, Quaternion, Vector4 } from "Maths/math";
-import { Mesh } from "Meshes/mesh";
-import { BoundingInfo } from "Culling/boundingInfo";
-import { BoundingSphere } from "Culling/boundingSphere";
+import { Nullable } from "../types";
+import { Color4, Vector3, Matrix, Tmp, Quaternion, Vector4 } from "../Maths/math";
+import { Mesh } from "../Meshes/mesh";
+import { BoundingInfo } from "../Culling/boundingInfo";
+import { BoundingSphere } from "../Culling/boundingSphere";
 import { SolidParticleSystem } from "./solidParticleSystem";
     /**
      * Represents one particle of a solid particle system.

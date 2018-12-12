@@ -1,25 +1,25 @@
-import { serialize, SerializationHelper } from "Misc/decorators";
-import { Tools } from "Misc/tools";
-import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
-import { Scene } from "scene";
-import { Vector2, Color4 } from "Maths/math";
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { PostProcess } from "PostProcesses/postProcess";
-import { BlurPostProcess } from "PostProcesses/blurPostProcess";
+import { serialize, SerializationHelper } from "../Misc/decorators";
+import { Tools } from "../Misc/tools";
+import { Nullable } from "../types";
+import { Camera } from "../Cameras/camera";
+import { Scene } from "../scene";
+import { Vector2, Color4 } from "../Maths/math";
+import { VertexBuffer } from "../Meshes/buffer";
+import { SubMesh } from "../Meshes/subMesh";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { Texture } from "../Materials/Textures/texture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { PostProcess } from "../PostProcesses/postProcess";
+import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
-import { AbstractScene } from "abstractScene";
-import { Constants } from "Engines/constants";
+import { AbstractScene } from "../abstractScene";
+import { Constants } from "../Engines/constants";
 
-import "Shaders/glowMapMerge.fragment";
-import "Shaders/glowMapMerge.vertex";
+import "../Shaders/glowMapMerge.fragment";
+import "../Shaders/glowMapMerge.vertex";
 
 declare module "abstractScene" {
     export interface AbstractScene {

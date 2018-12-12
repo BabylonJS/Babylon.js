@@ -1,8 +1,8 @@
-import { Tools } from "Misc/tools";
-import { Vector3, Matrix } from "Maths/math";
-import { Scalar } from "Maths/math.scalar";
-import { Effect } from "Materials/effect";
-import { Particle } from "Particles/particle";
+import { Tools } from "../../Misc/tools";
+import { Vector3, Matrix } from "../../Maths/math";
+import { Scalar } from "../../Maths/math.scalar";
+import { Effect } from "../../Materials/effect";
+import { Particle } from "../../Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
     /**
      * Particle emitter emitting particles from the inside of a hemisphere.

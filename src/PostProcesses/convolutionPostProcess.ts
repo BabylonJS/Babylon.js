@@ -1,11 +1,11 @@
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
-import { Engine } from "Engines/engine";
-import { Effect } from "Materials/effect";
-import { Constants } from "Engines/constants";
+import { Nullable } from "../types";
+import { Camera } from "../Cameras/camera";
+import { Engine } from "../Engines/engine";
+import { Effect } from "../Materials/effect";
+import { Constants } from "../Engines/constants";
 
-import "Shaders/convolution.fragment";
+import "../Shaders/convolution.fragment";
 
     /**
      * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the

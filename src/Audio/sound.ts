@@ -1,14 +1,14 @@
-import { Tools } from "Misc/tools";
-import { Observable } from "Misc/observable";
-import { Vector3, Tmp } from "Maths/math";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Engine } from "Engines/engine";
-import { AudioSceneComponent } from "Audio/audioSceneComponent";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { TransformNode } from "Meshes/transformNode";
-import { SceneComponentConstants } from "sceneComponent";
-import { Logger } from "Misc/logger";
+import { Tools } from "../Misc/tools";
+import { Observable } from "../Misc/observable";
+import { Vector3, Tmp } from "../Maths/math";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { Engine } from "../Engines/engine";
+import { AudioSceneComponent } from "../Audio/audioSceneComponent";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { TransformNode } from "../Meshes/transformNode";
+import { SceneComponentConstants } from "../sceneComponent";
+import { Logger } from "../Misc/logger";
 
     /**
      * Defines a sound that can be played in the application.

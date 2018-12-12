@@ -1,21 +1,21 @@
-import { serialize } from "Misc/decorators";
-import { Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color3, Color4 } from "Maths/math";
-import { Engine } from "Engines/engine";
-import { VertexBuffer } from "Meshes/buffer";
-import { SceneComponentConstants } from "sceneComponent";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { serialize } from "../../../Misc/decorators";
+import { Observable } from "../../../Misc/observable";
+import { Nullable } from "../../../types";
+import { Scene } from "../../../scene";
+import { Matrix, Vector3, Vector2, Color3, Color4 } from "../../../Maths/math";
+import { Engine } from "../../../Engines/engine";
+import { VertexBuffer } from "../../../Meshes/buffer";
+import { SceneComponentConstants } from "../../../sceneComponent";
+import { _TimeToken } from "../../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 
-import { Material } from "Materials/material";
-import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Material } from "../../../Materials/material";
+import { Effect } from "../../../Materials/effect";
+import { Texture } from "../../../Materials/Textures/texture";
+import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
-import "Shaders/procedural.vertex";
+import "../../../Shaders/procedural.vertex";
 
     /**
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.

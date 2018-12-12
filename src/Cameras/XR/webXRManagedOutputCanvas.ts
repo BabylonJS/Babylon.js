@@ -1,5 +1,5 @@
-import { Nullable } from "types";
-import { IDisposable } from "scene";
+import { Nullable } from "../../types";
+import { IDisposable } from "../../scene";
 import { WebXRExperienceHelper, WebXRState } from "./webXRExperienceHelper";
     /**
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR

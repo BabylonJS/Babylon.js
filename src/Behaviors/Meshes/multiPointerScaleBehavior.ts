@@ -1,10 +1,10 @@
-import { Mesh } from "Meshes/mesh";
+import { Mesh } from "../../Meshes/mesh";
 import { Behavior } from "../behavior";
 import { PointerDragBehavior } from "./pointerDragBehavior";
-import { Vector3 } from "Maths/math";
-import { Nullable } from "types";
-import { Observer } from "Misc/observable";
-import { Scene } from "scene";
+import { Vector3 } from "../../Maths/math";
+import { Nullable } from "../../types";
+import { Observer } from "../../Misc/observable";
+import { Scene } from "../../scene";
 
     /**
      * A behavior that when attached to a mesh will allow the mesh to be scaled

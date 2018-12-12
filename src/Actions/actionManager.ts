@@ -1,17 +1,17 @@
-import { Nullable } from "types";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Scene } from "scene";
-import { Vector3, Vector4, Color3, Color4 } from "Maths/math";
+import { Nullable } from "../types";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Scene } from "../scene";
+import { Vector3, Vector4, Color3, Color4 } from "../Maths/math";
 
 import { Condition, ValueCondition } from "./condition";
 import { Action } from "./action";
 import { DoNothingAction } from "./directActions";
 
-import { Engine } from "Engines/engine";
-import { Constants } from "Engines/constants";
-import { Tools } from "Misc/tools";
-import { ActionEvent } from "Actions/actionEvent";
-import { Logger } from "Misc/logger";
+import { Engine } from "../Engines/engine";
+import { Constants } from "../Engines/constants";
+import { Tools } from "../Misc/tools";
+import { ActionEvent } from "../Actions/actionEvent";
+import { Logger } from "../Misc/logger";
 
     /**
      * Action Manager manages all events to be triggered on a given mesh or the global scene.

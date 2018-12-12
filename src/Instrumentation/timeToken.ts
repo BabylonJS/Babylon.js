@@ -1,5 +1,5 @@
-﻿import { Nullable } from "types";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Nullable } from "../types";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
     /**
      * @hidden
      **/

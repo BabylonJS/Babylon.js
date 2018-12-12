@@ -1,6 +1,6 @@
-import { Nullable } from "types";
+import { Nullable } from "../types";
 import { Tools } from "./tools";
-import { Engine } from "Engines/engine";
+import { Engine } from "../Engines/engine";
 
 interface MediaRecorder {
     /** Starts recording */

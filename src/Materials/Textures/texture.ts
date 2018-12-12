@@ -1,12 +1,12 @@
-import { serialize, SerializationHelper } from "Misc/decorators";
-import { Observable } from "Misc/observable";
-import { Tools } from "Misc/tools";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Matrix, Vector3, Plane } from "Maths/math";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Constants } from "Engines/constants";
-import { _AlphaState } from "States";
+import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { Observable } from "../../Misc/observable";
+import { Tools } from "../../Misc/tools";
+import { Nullable } from "../../types";
+import { Scene } from "../../scene";
+import { Matrix, Vector3, Plane } from "../../Maths/math";
+import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { Constants } from "../../Engines/constants";
+import { _AlphaState } from "../../States/index";
 
 declare type Animation = import("Animations/animation").Animation;
 declare type CubeTexture = import("Materials/Textures/cubeTexture").CubeTexture;

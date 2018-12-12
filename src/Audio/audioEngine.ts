@@ -1,10 +1,10 @@
-import { IDisposable } from "scene";
+import { IDisposable } from "../scene";
 import { Analyser } from "./analyser";
 
-import { Nullable } from "types";
-import { Observable } from "Misc/observable";
-import { Logger } from "Misc/logger";
-import { Engine } from "Engines/engine";
+import { Nullable } from "../types";
+import { Observable } from "../Misc/observable";
+import { Logger } from "../Misc/logger";
+import { Engine } from "../Engines/engine";
 
     /**
      * This represents an audio engine and it is responsible

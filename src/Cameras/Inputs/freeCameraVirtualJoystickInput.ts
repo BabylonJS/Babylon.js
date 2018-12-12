@@ -1,8 +1,8 @@
-import { VirtualJoystick, JoystickAxis } from "Misc/virtualJoystick";
-import { Nullable } from "types";
-import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
-import { FreeCamera } from "Cameras/freeCamera";
-import { Matrix, Vector3 } from "Maths/math";
+import { VirtualJoystick, JoystickAxis } from "../../Misc/virtualJoystick";
+import { Nullable } from "../../types";
+import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { FreeCamera } from "../../Cameras/freeCamera";
+import { Matrix, Vector3 } from "../../Maths/math";
     /**
      * Manage the Virtual Joystick inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs

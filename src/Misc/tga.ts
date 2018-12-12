@@ -1,5 +1,5 @@
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { Logger } from "Misc/logger";
+import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { Logger } from "../Misc/logger";
 
     /**
      * Based on jsTGALoader - Javascript loader for TGA file

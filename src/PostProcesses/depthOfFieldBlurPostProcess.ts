@@ -1,13 +1,13 @@
-import { Nullable } from "types";
-import { Vector2 } from "Maths/math";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
+import { Nullable } from "../types";
+import { Vector2 } from "../Maths/math";
+import { Camera } from "../Cameras/camera";
+import { Effect } from "../Materials/effect";
+import { Texture } from "../Materials/Textures/texture";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
-import { Engine } from "Engines/engine";
-import { Scene } from "scene";
-import { Constants } from "Engines/constants";
+import { Engine } from "../Engines/engine";
+import { Scene } from "../scene";
+import { Constants } from "../Engines/constants";
 
     /**
      * The DepthOfFieldBlurPostProcess applied a blur in a give direction.

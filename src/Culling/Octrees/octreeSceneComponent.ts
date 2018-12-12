@@ -1,11 +1,11 @@
-import { ISmartArrayLike } from "Misc/smartArray";
-import { Scene } from "scene";
-import { Vector3 } from "Maths/math";
-import { SubMesh } from "Meshes/subMesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Collider } from "Collisions/collider";
-import { Ray } from "Culling/ray";
-import { SceneComponentConstants } from "sceneComponent";
+import { ISmartArrayLike } from "../../Misc/smartArray";
+import { Scene } from "../../scene";
+import { Vector3 } from "../../Maths/math";
+import { SubMesh } from "../../Meshes/subMesh";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Collider } from "../../Collisions/collider";
+import { Ray } from "../../Culling/ray";
+import { SceneComponentConstants } from "../../sceneComponent";
 
 import { Octree } from "./octree";
 

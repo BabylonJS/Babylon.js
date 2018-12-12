@@ -1,13 +1,13 @@
-import { Behavior } from "Behaviors/behavior";
-import { Mesh } from "Meshes/mesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Scene } from "scene";
-import { Nullable } from "types";
-import { Observer, Observable } from "Misc/observable";
-import { Vector3 } from "Maths/math";
-import { PointerInfo, PointerEventTypes } from "Events/pointerEvents";
-import { BoundingBoxGizmo } from "Gizmos/boundingBoxGizmo";
-import { Ray } from "Culling/ray";
+import { Behavior } from "../../Behaviors/behavior";
+import { Mesh } from "../../Meshes/mesh";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Scene } from "../../scene";
+import { Nullable } from "../../types";
+import { Observer, Observable } from "../../Misc/observable";
+import { Vector3 } from "../../Maths/math";
+import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import { BoundingBoxGizmo } from "../../Gizmos/boundingBoxGizmo";
+import { Ray } from "../../Culling/ray";
 
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events

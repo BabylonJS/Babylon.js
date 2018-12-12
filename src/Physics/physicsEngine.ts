@@ -1,10 +1,10 @@
-import { Nullable } from "types";
-import { Vector3 } from "Maths/math";
+import { Nullable } from "../types";
+import { Vector3 } from "../Maths/math";
 import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IPhysicsEngine";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
 
-import { CannonJSPlugin } from "Physics/Plugins/cannonJSPlugin";
+import { CannonJSPlugin } from "../Physics/Plugins/cannonJSPlugin";
 
     /**
      * Class used to control physics engine

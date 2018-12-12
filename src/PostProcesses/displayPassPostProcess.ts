@@ -1,9 +1,9 @@
-﻿import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
+import { Nullable } from "../types";
+import { Camera } from "../Cameras/camera";
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "Engines/engine";
+import { Engine } from "../Engines/engine";
 
-import "Shaders/displayPass.fragment";
+import "../Shaders/displayPass.fragment";
 
     /**
      * DisplayPassPostProcess which produces an output the same as it's input

@@ -1,37 +1,37 @@
-import { serialize, serializeAsImageProcessingConfiguration } from "Misc/decorators";
-import { Observer } from "Misc/observable";
-import { IAnimatable } from "Misc/tools";
-import { Logger } from "Misc/logger";
-import { SmartArray } from "Misc/smartArray";
-import { TextureTools } from "Misc/textureTools";
-import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
-import { Scene } from "scene";
-import { Matrix, Color3, Vector4, Tmp } from "Maths/math";
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { serialize, serializeAsImageProcessingConfiguration } from "../../Misc/decorators";
+import { Observer } from "../../Misc/observable";
+import { IAnimatable } from "../../Misc/tools";
+import { Logger } from "../../Misc/logger";
+import { SmartArray } from "../../Misc/smartArray";
+import { TextureTools } from "../../Misc/textureTools";
+import { Nullable } from "../../types";
+import { Camera } from "../../Cameras/camera";
+import { Scene } from "../../scene";
+import { Matrix, Color3, Vector4, Tmp } from "../../Maths/math";
+import { VertexBuffer } from "../../Meshes/buffer";
+import { SubMesh } from "../../Meshes/subMesh";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Mesh } from "../../Meshes/mesh";
+import { _TimeToken } from "../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 
-import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "Materials/imageProcessingConfiguration";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "Materials/effect";
-import { Material } from "Materials/material";
-import { MaterialDefines } from "Materials/materialDefines";
-import { PushMaterial } from "Materials/pushMaterial";
-import { MaterialHelper } from "Materials/materialHelper";
+import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
+import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
+import { Material } from "../../Materials/material";
+import { MaterialDefines } from "../../Materials/materialDefines";
+import { PushMaterial } from "../../Materials/pushMaterial";
+import { MaterialHelper } from "../../Materials/materialHelper";
 
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { CubeTexture } from "Materials/Textures/cubeTexture";
+import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { Texture } from "../../Materials/Textures/texture";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
-import { StandardMaterial } from "Materials/standardMaterial";
-import { Constants } from "Engines/constants";
+import { StandardMaterial } from "../../Materials/standardMaterial";
+import { Constants } from "../../Engines/constants";
 
-import "Shaders/pbr.fragment";
-import "Shaders/pbr.vertex";
+import "../../Shaders/pbr.fragment";
+import "../../Shaders/pbr.vertex";
 
     /**
      * Manages the defines for the PBR Material.

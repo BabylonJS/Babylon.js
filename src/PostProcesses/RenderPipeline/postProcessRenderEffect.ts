@@ -1,8 +1,8 @@
-import { Nullable } from "types";
-import { Tools } from "Misc/tools";
-import { Camera } from "Cameras/camera";
-import { PostProcess } from "PostProcesses/postProcess";
-import { Engine } from "Engines/engine";
+import { Nullable } from "../../types";
+import { Tools } from "../../Misc/tools";
+import { Camera } from "../../Cameras/camera";
+import { PostProcess } from "../../PostProcesses/postProcess";
+import { Engine } from "../../Engines/engine";
     /**
      * This represents a set of one or more post processes in Babylon.
      * A post process can be used to apply a shader to a texture after it is rendered.

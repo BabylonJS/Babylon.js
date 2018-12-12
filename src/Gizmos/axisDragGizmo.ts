@@ -1,19 +1,19 @@
-import { Observer, Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { PointerInfo } from "Events/pointerEvents";
-import { Vector3, Color3, Matrix } from "Maths/math";
-import { TransformNode } from "Meshes/transformNode";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { LinesMesh } from "Meshes/linesMesh";
-import { MeshBuilder } from "Meshes/meshBuilder";
-import { PointerDragBehavior } from "Behaviors/Meshes/pointerDragBehavior";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Observer, Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { PointerInfo } from "../Events/pointerEvents";
+import { Vector3, Color3, Matrix } from "../Maths/math";
+import { TransformNode } from "../Meshes/transformNode";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { LinesMesh } from "../Meshes/linesMesh";
+import { MeshBuilder } from "../Meshes/meshBuilder";
+import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
-import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
-import { StandardMaterial } from "Materials/standardMaterial";
-import { Scene } from "scene";
+import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { StandardMaterial } from "../Materials/standardMaterial";
+import { Scene } from "../scene";
     /**
      * Single axis drag gizmo
      */

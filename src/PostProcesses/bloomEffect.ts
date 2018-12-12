@@ -1,12 +1,12 @@
-import { PostProcessRenderEffect } from "PostProcesses/RenderPipeline/postProcessRenderEffect";
+import { PostProcessRenderEffect } from "../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { PostProcess } from "./postProcess";
 import { ExtractHighlightsPostProcess } from "./extractHighlightsPostProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import { BloomMergePostProcess } from "./bloomMergePostProcess";
-import { Vector2 } from "Maths/math";
-import { Camera } from "Cameras/camera";
-import { Texture } from "Materials/Textures/texture";
-import { Scene } from "scene";
+import { Vector2 } from "../Maths/math";
+import { Camera } from "../Cameras/camera";
+import { Texture } from "../Materials/Textures/texture";
+import { Scene } from "../scene";
 
     /**
      * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras

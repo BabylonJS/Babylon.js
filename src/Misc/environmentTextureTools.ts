@@ -1,18 +1,18 @@
-import { Nullable } from "types";
+import { Nullable } from "../types";
 import { Tools } from "./tools";
-import { Vector3 } from "Maths/math";
-import { Scalar } from "Maths/math.scalar";
-import { SphericalPolynomial } from "Maths/sphericalPolynomial";
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { CubeTexture } from "Materials/Textures/cubeTexture";
-import { Constants } from "Engines/constants";
-import { Scene } from "scene";
-import { PostProcess } from "PostProcesses/postProcess";
-import { Logger } from "Misc/logger";
+import { Vector3 } from "../Maths/math";
+import { Scalar } from "../Maths/math.scalar";
+import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
+import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import { Constants } from "../Engines/constants";
+import { Scene } from "../scene";
+import { PostProcess } from "../PostProcesses/postProcess";
+import { Logger } from "../Misc/logger";
 
-import "Shaders/rgbdEncode.fragment";
-import "Shaders/rgbdDecode.fragment";
+import "../Shaders/rgbdEncode.fragment";
+import "../Shaders/rgbdDecode.fragment";
 
     /**
      * Raw texture data and descriptor sufficient for WebGL texture upload

@@ -1,20 +1,20 @@
-import { Nullable } from "types";
-import { Color4 } from "Maths/math";
-import { SubMesh } from "Meshes/subMesh";
-import { VertexBuffer } from "Meshes/buffer";
-import { SmartArray } from "Misc/smartArray";
-import { Scene } from "scene";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { Camera } from "Cameras/camera";
-import { Constants } from "Engines/constants";
-import { SceneComponentConstants } from "sceneComponent";
+import { Nullable } from "../types";
+import { Color4 } from "../Maths/math";
+import { SubMesh } from "../Meshes/subMesh";
+import { VertexBuffer } from "../Meshes/buffer";
+import { SmartArray } from "../Misc/smartArray";
+import { Scene } from "../scene";
+import { Texture } from "../Materials/Textures/texture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { Camera } from "../Cameras/camera";
+import { Constants } from "../Engines/constants";
+import { SceneComponentConstants } from "../sceneComponent";
 import { DepthRendererSceneComponent } from "./depthRendererSceneComponent";
 
-import "Shaders/depth.fragment";
-import "Shaders/depth.vertex";
+import "../Shaders/depth.fragment";
+import "../Shaders/depth.vertex";
 
     /**
      * This represents a depth renderer in Babylon.

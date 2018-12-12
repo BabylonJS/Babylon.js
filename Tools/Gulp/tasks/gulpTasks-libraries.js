@@ -55,7 +55,6 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     if (isMin) {
         delete wpConfig.devtool;
         wpConfig.output.filename = isMinOutputName ? '[name].min.js' : '[name].js';
-        wpConfig.output.devtoolModuleFilenameTemplate
     }
     else {
         // Map Output

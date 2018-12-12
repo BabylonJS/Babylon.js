@@ -1,11 +1,11 @@
-import { Logger } from "Misc/logger";
-import { Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { IDisposable, Scene } from "scene";
-import { Vector3, Matrix } from "Maths/math";
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { Ray } from "Culling/ray";
+import { Logger } from "../../Misc/logger";
+import { Observable } from "../../Misc/observable";
+import { Nullable } from "../../types";
+import { IDisposable, Scene } from "../../scene";
+import { Vector3, Matrix } from "../../Maths/math";
+import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { Ray } from "../../Culling/ray";
     /**
      * Manages an XRSession
      * @see https://doc.babylonjs.com/how_to/webxr

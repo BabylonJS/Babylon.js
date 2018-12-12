@@ -1,31 +1,31 @@
-import { SerializationHelper, serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3, serializeAsImageProcessingConfiguration } from "Misc/decorators";
-import { SmartArray } from "Misc/smartArray";
-import { Observer } from "Misc/observable";
-import { Logger } from "Misc/logger";
-import { Nullable, int, float } from "types";
-import { Scene } from "scene";
-import { Matrix, Vector3, Color3, Vector4 } from "Maths/math";
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "Materials/effect";
-import { MaterialHelper } from "Materials/materialHelper";
-import { MaterialDefines } from "Materials/materialDefines";
-import { PushMaterial } from "Materials/pushMaterial";
-import { StandardMaterial } from "Materials/standardMaterial";
-import { ColorCurves } from "Materials/colorCurves";
-import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "Materials/imageProcessingConfiguration";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { IShadowLight } from "Lights/shadowLight";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Constants } from "Engines/constants";
+import { SerializationHelper, serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3, serializeAsImageProcessingConfiguration } from "../../Misc/decorators";
+import { SmartArray } from "../../Misc/smartArray";
+import { Observer } from "../../Misc/observable";
+import { Logger } from "../../Misc/logger";
+import { Nullable, int, float } from "../../types";
+import { Scene } from "../../scene";
+import { Matrix, Vector3, Color3, Vector4 } from "../../Maths/math";
+import { VertexBuffer } from "../../Meshes/buffer";
+import { SubMesh } from "../../Meshes/subMesh";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Mesh } from "../../Meshes/mesh";
+import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
+import { MaterialHelper } from "../../Materials/materialHelper";
+import { MaterialDefines } from "../../Materials/materialDefines";
+import { PushMaterial } from "../../Materials/pushMaterial";
+import { StandardMaterial } from "../../Materials/standardMaterial";
+import { ColorCurves } from "../../Materials/colorCurves";
+import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
+import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { Texture } from "../../Materials/Textures/texture";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { IShadowLight } from "../../Lights/shadowLight";
+import { _TimeToken } from "../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
+import { Constants } from "../../Engines/constants";
 
-import "Shaders/background.fragment";
-import "Shaders/background.vertex";
+import "../../Shaders/background.fragment";
+import "../../Shaders/background.vertex";
 
     /**
      * Background material defines definition.

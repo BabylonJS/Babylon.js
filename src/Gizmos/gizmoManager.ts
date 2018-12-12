@@ -1,14 +1,14 @@
-import { Observer, Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { PointerInfo, PointerEventTypes } from "Events/pointerEvents";
-import { Scene, IDisposable } from "scene";
-import { Node } from "node";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { UtilityLayerRenderer } from "Rendering/utilityLayerRenderer";
-import { Color3 } from "Maths/math";
-import { SixDofDragBehavior } from "Behaviors/Meshes/sixDofDragBehavior";
+import { Observer, Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
+import { Scene, IDisposable } from "../scene";
+import { Node } from "../node";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { Color3 } from "../Maths/math";
+import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
 
 import { Gizmo } from "./gizmo";
 import { RotationGizmo } from "./rotationGizmo";

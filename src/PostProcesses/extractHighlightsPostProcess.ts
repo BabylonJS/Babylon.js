@@ -1,12 +1,12 @@
-import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
+import { Nullable } from "../types";
+import { Camera } from "../Cameras/camera";
+import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "Engines/engine";
-import { ToGammaSpace } from "Maths/math";
-import { Constants } from "Engines/constants";
+import { Engine } from "../Engines/engine";
+import { ToGammaSpace } from "../Maths/math";
+import { Constants } from "../Engines/constants";
 
-import "Shaders/extractHighlights.fragment";
+import "../Shaders/extractHighlights.fragment";
 
     /**
      * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.

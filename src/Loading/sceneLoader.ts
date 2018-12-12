@@ -1,18 +1,18 @@
-import { IFileRequest, Tools } from "Misc/tools";
-import { Observable } from "Misc/observable";
-import { FilesInput } from "Misc/filesInput";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Engine } from "Engines/engine";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { AnimationGroup } from "Animations/animationGroup";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { IOfflineProvider } from "Offline/IOfflineProvider";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { AssetContainer } from "assetContainer";
-import { IParticleSystem } from "Particles/IParticleSystem";
-import { Skeleton } from "Bones/skeleton";
-import { Logger } from "Misc/logger";
+import { IFileRequest, Tools } from "../Misc/tools";
+import { Observable } from "../Misc/observable";
+import { FilesInput } from "../Misc/filesInput";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { Engine } from "../Engines/engine";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { AnimationGroup } from "../Animations/animationGroup";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { IOfflineProvider } from "../Offline/IOfflineProvider";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+import { AssetContainer } from "../assetContainer";
+import { IParticleSystem } from "../Particles/IParticleSystem";
+import { Skeleton } from "../Bones/skeleton";
+import { Logger } from "../Misc/logger";
     /**
      * Class used to represent data loading progression
      */

@@ -1,8 +1,8 @@
-import { Camera } from "Cameras/camera";
-import { FreeCamera } from "Cameras/freeCamera";
-import { Scene } from "scene";
-import { Vector3 } from "Maths/math";
-import { Node } from "node";
+import { Camera } from "../../Cameras/camera";
+import { FreeCamera } from "../../Cameras/freeCamera";
+import { Scene } from "../../scene";
+import { Vector3 } from "../../Maths/math";
+import { Node } from "../../node";
 
     Node.AddNodeConstructor("AnaglyphFreeCamera", (name, scene, options) => {
         return () => new AnaglyphFreeCamera(name, Vector3.Zero(), options.interaxial_distance, scene);

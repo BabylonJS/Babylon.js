@@ -1,17 +1,17 @@
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Color3 } from "Maths/math";
-import { Node } from "node";
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { Mesh } from "Meshes/mesh";
-import { InstancedMesh } from "Meshes/instancedMesh";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { ShaderMaterial } from "Materials/shaderMaterial";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { Color3 } from "../Maths/math";
+import { Node } from "../node";
+import { VertexBuffer } from "../Meshes/buffer";
+import { SubMesh } from "../Meshes/subMesh";
+import { Mesh } from "../Meshes/mesh";
+import { InstancedMesh } from "../Meshes/instancedMesh";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { ShaderMaterial } from "../Materials/shaderMaterial";
 
-import "Shaders/color.fragment";
-import "Shaders/color.vertex";
+import "../Shaders/color.fragment";
+import "../Shaders/color.vertex";
 
     /**
      * Line mesh

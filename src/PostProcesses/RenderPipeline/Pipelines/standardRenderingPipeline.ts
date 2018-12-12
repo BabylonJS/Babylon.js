@@ -1,26 +1,26 @@
-import { Nullable } from "types";
-import { serialize, serializeAsTexture, SerializationHelper } from "Misc/decorators";
-import { IAnimatable } from "Misc/tools";
-import { Logger } from "Misc/logger";
-import { Vector2, Vector3, Matrix, Vector4 } from "Maths/math";
-import { Scalar } from "Maths/math.scalar";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
-import { PostProcess } from "PostProcesses/postProcess";
-import { PostProcessRenderPipeline } from "PostProcesses/RenderPipeline/postProcessRenderPipeline";
-import { PostProcessRenderEffect } from "PostProcesses/RenderPipeline/postProcessRenderEffect";
-import { BlurPostProcess } from "PostProcesses/blurPostProcess";
-import { FxaaPostProcess } from "PostProcesses/fxaaPostProcess";
-import { IDisposable } from "scene";
-import { SpotLight } from "Lights/spotLight";
-import { DirectionalLight } from "Lights/directionalLight";
-import { GeometryBufferRenderer } from "Rendering/geometryBufferRenderer";
-import { Scene } from "scene";
-import { Animation } from "Animations/animation";
-import { Constants } from "Engines/constants";
+import { Nullable } from "../../../types";
+import { serialize, serializeAsTexture, SerializationHelper } from "../../../Misc/decorators";
+import { IAnimatable } from "../../../Misc/tools";
+import { Logger } from "../../../Misc/logger";
+import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math";
+import { Scalar } from "../../../Maths/math.scalar";
+import { Camera } from "../../../Cameras/camera";
+import { Effect } from "../../../Materials/effect";
+import { Texture } from "../../../Materials/Textures/texture";
+import { PostProcess } from "../../../PostProcesses/postProcess";
+import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
+import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
+import { BlurPostProcess } from "../../../PostProcesses/blurPostProcess";
+import { FxaaPostProcess } from "../../../PostProcesses/fxaaPostProcess";
+import { IDisposable } from "../../../scene";
+import { SpotLight } from "../../../Lights/spotLight";
+import { DirectionalLight } from "../../../Lights/directionalLight";
+import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
+import { Scene } from "../../../scene";
+import { Animation } from "../../../Animations/animation";
+import { Constants } from "../../../Engines/constants";
 
-import "Shaders/standard.fragment";
+import "../../../Shaders/standard.fragment";
     /**
      * Standard rendering pipeline
      * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.

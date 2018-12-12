@@ -1,13 +1,13 @@
 import { Skeleton } from "./skeleton";
 
-import { Vector3, Quaternion, Matrix, Space } from "Maths/math";
-import { ArrayTools } from "Misc/arrayTools";
-import { Nullable } from "types";
-import { Animation } from "Animations/animation";
-import { AnimationPropertiesOverride } from "Animations/animationPropertiesOverride";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { TransformNode } from "Meshes/transformNode";
-import { Node } from "node";
+import { Vector3, Quaternion, Matrix, Space } from "../Maths/math";
+import { ArrayTools } from "../Misc/arrayTools";
+import { Nullable } from "../types";
+import { Animation } from "../Animations/animation";
+import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { TransformNode } from "../Meshes/transformNode";
+import { Node } from "../node";
 
     /**
      * Class used to store bone information

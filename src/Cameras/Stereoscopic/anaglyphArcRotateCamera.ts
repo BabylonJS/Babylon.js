@@ -1,8 +1,8 @@
-import { Camera } from "Cameras/camera";
-import { ArcRotateCamera } from "Cameras/arcRotateCamera";
-import { Scene } from "scene";
-import { Vector3 } from "Maths/math";
-import { Node } from "node";
+import { Camera } from "../../Cameras/camera";
+import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { Scene } from "../../scene";
+import { Vector3 } from "../../Maths/math";
+import { Node } from "../../node";
 
     Node.AddNodeConstructor("AnaglyphArcRotateCamera", (name, scene, options) => {
         return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, scene);

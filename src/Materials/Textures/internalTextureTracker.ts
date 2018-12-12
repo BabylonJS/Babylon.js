@@ -1,6 +1,6 @@
-import { Nullable } from "types";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Nullable } from "../../types";
+import { _TimeToken } from "../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
     /**
      * Internal interface used to track InternalTexture already bound to the GL context
      */

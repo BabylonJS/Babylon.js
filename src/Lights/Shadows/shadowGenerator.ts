@@ -1,33 +1,33 @@
-import { SmartArray } from "Misc/smartArray";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Matrix, Vector3, Vector2, Color4 } from "Maths/math";
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
+import { SmartArray } from "../../Misc/smartArray";
+import { Nullable } from "../../types";
+import { Scene } from "../../scene";
+import { Matrix, Vector3, Vector2, Color4 } from "../../Maths/math";
+import { VertexBuffer } from "../../Meshes/buffer";
+import { SubMesh } from "../../Meshes/subMesh";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Mesh } from "../../Meshes/mesh";
 
-import { IShadowLight } from "Lights/shadowLight";
-import { Light } from "Lights/light";
+import { IShadowLight } from "../../Lights/shadowLight";
+import { Light } from "../../Lights/light";
 import { ShadowGeneratorSceneComponent } from "./shadowGeneratorSceneComponent";
 
-import { Material } from "Materials/material";
-import { MaterialDefines } from "Materials/materialDefines";
-import { MaterialHelper } from "Materials/materialHelper";
-import { Effect } from "Materials/effect";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Material } from "../../Materials/material";
+import { MaterialDefines } from "../../Materials/materialDefines";
+import { MaterialHelper } from "../../Materials/materialHelper";
+import { Effect } from "../../Materials/effect";
+import { Texture } from "../../Materials/Textures/texture";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
-import { PostProcess } from "PostProcesses/postProcess";
-import { BlurPostProcess } from "PostProcesses/blurPostProcess";
-import { SceneComponentConstants } from "sceneComponent";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Constants } from "Engines/constants";
+import { PostProcess } from "../../PostProcesses/postProcess";
+import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
+import { SceneComponentConstants } from "../../sceneComponent";
+import { _TimeToken } from "../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
+import { Constants } from "../../Engines/constants";
 
-import "Shaders/shadowMap.fragment";
-import "Shaders/shadowMap.vertex";
-import "Shaders/depthBoxBlur.fragment";
+import "../../Shaders/shadowMap.fragment";
+import "../../Shaders/shadowMap.vertex";
+import "../../Shaders/depthBoxBlur.fragment";
 
     /**
      * Interface to implement to create a shadow generator compatible with BJS.

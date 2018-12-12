@@ -1,4 +1,4 @@
-import { Animation } from "Animations/animation";
+import { Animation } from "../Animations/animation";
 
     /**
      * Class used to override all child animations of a given target

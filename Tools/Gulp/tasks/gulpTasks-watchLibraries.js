@@ -12,13 +12,13 @@ var config = require("../config.json");
 /**
  * Watch ts files and fire repective tasks.
  */
-gulp.task("watch", function startWatch() {
+gulp.task("watchLibraries", function startWatch() {
     var tasks = [];
 
     config.modules.map(function(module) {
         var settings = config[module].build;
         var isCore = config[module].isCore;
-        if (settings && settings.webpack) {
+        if (!isCore && settings && settings.webpack) {
             for (var index = 0; index < config[module].libraries.length; index++) {
                 var library = config[module].libraries[index];
                 if (library.preventLoadLibrary) { 

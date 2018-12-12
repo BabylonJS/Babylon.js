@@ -1,12 +1,12 @@
-import { Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { TransformNode } from "Meshes/transformNode";
-import { Mesh } from "Meshes/mesh";
-import { Texture } from "Materials/Textures/texture";
-import { BackgroundMaterial } from "Materials/Background/backgroundMaterial";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { TransformNode } from "../Meshes/transformNode";
+import { Mesh } from "../Meshes/mesh";
+import { Texture } from "../Materials/Textures/texture";
+import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
     /**
      * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
      * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.

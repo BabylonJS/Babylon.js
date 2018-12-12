@@ -1,4 +1,4 @@
-export * from "./Pipelines";
+export * from "./Pipelines/index";
 export * from "./postProcessRenderEffect";
 export * from "./postProcessRenderPipeline";
 export * from "./postProcessRenderPipelineManager";

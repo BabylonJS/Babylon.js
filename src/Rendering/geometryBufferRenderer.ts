@@ -1,19 +1,19 @@
-import { Matrix, Color4 } from "Maths/math";
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { Mesh } from "Meshes/mesh";
-import { Constants } from "Engines/constants";
-import { SmartArray } from "Misc/smartArray";
-import { Texture } from "Materials/Textures/texture";
-import { MultiRenderTarget } from "Materials/Textures/multiRenderTarget";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
+import { Matrix, Color4 } from "../Maths/math";
+import { VertexBuffer } from "../Meshes/buffer";
+import { SubMesh } from "../Meshes/subMesh";
+import { Mesh } from "../Meshes/mesh";
+import { Constants } from "../Engines/constants";
+import { SmartArray } from "../Misc/smartArray";
+import { Texture } from "../Materials/Textures/texture";
+import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
 import { GeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent";
-import { Scene } from "scene";
-import { SceneComponentConstants } from "sceneComponent";
+import { Scene } from "../scene";
+import { SceneComponentConstants } from "../sceneComponent";
 
-import "Shaders/geometry.fragment";
-import "Shaders/geometry.vertex";
+import "../Shaders/geometry.fragment";
+import "../Shaders/geometry.vertex";
 
     /**
      * This renderer is helpfull to fill one of the render target with a geometry buffer.

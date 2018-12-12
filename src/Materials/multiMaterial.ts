@@ -1,10 +1,10 @@
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { BaseSubMesh } from "Meshes/subMesh";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Material } from "Materials/material";
-import { Tags } from "Misc/tags";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { BaseSubMesh } from "../Meshes/subMesh";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Material } from "../Materials/material";
+import { Tags } from "../Misc/tags";
     /**
      * A multi-material is used to apply different materials to different parts of the same object without the need of
      * separate meshes. This can be use to improve performances.

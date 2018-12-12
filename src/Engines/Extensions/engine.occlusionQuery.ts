@@ -1,7 +1,7 @@
-import { Nullable, int } from "types";
-import { Engine } from "Engines/engine";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { _TimeToken } from "Instrumentation/timeToken";
+import { Nullable, int } from "../../types";
+import { Engine } from "../../Engines/engine";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { _TimeToken } from "../../Instrumentation/timeToken";
 
 /** @hidden */
 export var _forceOcclusionQueryToBundle = true;

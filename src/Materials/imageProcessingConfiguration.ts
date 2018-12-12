@@ -1,12 +1,12 @@
-import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "Misc/decorators";
-import { Observable } from "Misc/observable";
-import { Tools } from "Misc/tools";
-import { Nullable } from "types";
-import { Color4 } from "Maths/math";
-import { MaterialDefines } from "Materials/materialDefines";
-import { Effect } from "Materials/effect";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { ColorCurves } from "Materials/colorCurves";
+import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "../Misc/decorators";
+import { Observable } from "../Misc/observable";
+import { Tools } from "../Misc/tools";
+import { Nullable } from "../types";
+import { Color4 } from "../Maths/math";
+import { MaterialDefines } from "../Materials/materialDefines";
+import { Effect } from "../Materials/effect";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { ColorCurves } from "../Materials/colorCurves";
 
     /**
      * Interface to follow in your material defines to integrate easily the

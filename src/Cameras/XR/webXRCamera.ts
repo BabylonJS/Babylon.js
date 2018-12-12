@@ -1,8 +1,8 @@
-import { Vector3, Matrix, Quaternion, Viewport } from "Maths/math";
-import { Scene } from "scene";
-import { Camera } from "Cameras/camera";
-import { FreeCamera } from "Cameras/freeCamera";
-import { TargetCamera } from "Cameras/targetCamera";
+import { Vector3, Matrix, Quaternion, Viewport } from "../../Maths/math";
+import { Scene } from "../../scene";
+import { Camera } from "../../Cameras/camera";
+import { FreeCamera } from "../../Cameras/freeCamera";
+import { TargetCamera } from "../../Cameras/targetCamera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 
     /**

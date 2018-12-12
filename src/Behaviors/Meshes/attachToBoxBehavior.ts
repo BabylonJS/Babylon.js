@@ -1,10 +1,10 @@
-import { Vector3, Matrix, Quaternion } from "Maths/math";
-import { Mesh } from "Meshes/mesh";
-import { TransformNode } from "Meshes/transformNode";
-import { Scene } from "scene";
-import { Nullable } from "types";
-import { Observer } from "Misc/observable";
-import { Behavior } from "Behaviors/behavior";
+import { Vector3, Matrix, Quaternion } from "../../Maths/math";
+import { Mesh } from "../../Meshes/mesh";
+import { TransformNode } from "../../Meshes/transformNode";
+import { Scene } from "../../scene";
+import { Nullable } from "../../types";
+import { Observer } from "../../Misc/observable";
+import { Behavior } from "../../Behaviors/behavior";
 
     /**
      * @hidden

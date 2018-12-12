@@ -1,3 +1,3 @@
 export * from "./loadingScreen";
-export * from "./Plugins";
+export * from "./Plugins/index";
 export * from "./sceneLoader";

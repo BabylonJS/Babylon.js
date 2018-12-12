@@ -1,22 +1,22 @@
-import { IDisposable, Scene } from "scene";
-import { Nullable } from "types";
-import { Observable, Observer } from "Misc/observable";
-import { Buffer } from "Meshes/buffer";
-import { VertexBuffer } from "Meshes/buffer";
-import { Vector3 } from "Maths/math";
+import { IDisposable, Scene } from "../scene";
+import { Nullable } from "../types";
+import { Observable, Observer } from "../Misc/observable";
+import { Buffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Meshes/buffer";
+import { Vector3 } from "../Maths/math";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";
-import { Ray } from "Culling/ray";
-import { PickingInfo } from "Collisions/pickingInfo";
-import { Camera } from "Cameras/camera";
-import { Texture } from "Materials/Textures/texture";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { SceneComponentConstants } from "sceneComponent";
-import { Constants } from "Engines/constants";
+import { Ray } from "../Culling/ray";
+import { PickingInfo } from "../Collisions/pickingInfo";
+import { Camera } from "../Cameras/camera";
+import { Texture } from "../Materials/Textures/texture";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { SceneComponentConstants } from "../sceneComponent";
+import { Constants } from "../Engines/constants";
 
-import "Shaders/sprites.fragment";
-import "Shaders/sprites.vertex";
+import "../Shaders/sprites.fragment";
+import "../Shaders/sprites.vertex";
 
     /**
      * Defines the minimum interface to fullfil in order to be a sprite manager.

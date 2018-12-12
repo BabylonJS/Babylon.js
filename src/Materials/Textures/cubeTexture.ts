@@ -1,14 +1,14 @@
-import { serialize, SerializationHelper } from "Misc/decorators";
-import { Tools } from "Misc/tools";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Matrix, Vector3 } from "Maths/math";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Texture } from "Materials/Textures/texture";
-import { Animation } from "Animations/animation";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Constants } from "Engines/constants";
+import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { Tools } from "../../Misc/tools";
+import { Nullable } from "../../types";
+import { Scene } from "../../scene";
+import { Matrix, Vector3 } from "../../Maths/math";
+import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { Texture } from "../../Materials/Textures/texture";
+import { Animation } from "../../Animations/animation";
+import { _TimeToken } from "../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
+import { Constants } from "../../Engines/constants";
     /**
      * Class for creating a cube texture
      */

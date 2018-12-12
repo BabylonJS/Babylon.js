@@ -1,11 +1,11 @@
-import { Scene } from "scene";
-import { TransformNode } from "Meshes/transformNode";
-import { Mesh } from "Meshes/mesh";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Texture } from "Materials/Textures/texture";
-import { VideoTexture, VideoTextureSettings } from "Materials/Textures/videoTexture";
-import { BackgroundMaterial } from "Materials/Background/backgroundMaterial";
+import { Scene } from "../scene";
+import { TransformNode } from "../Meshes/transformNode";
+import { Mesh } from "../Meshes/mesh";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+import { Texture } from "../Materials/Textures/texture";
+import { VideoTexture, VideoTextureSettings } from "../Materials/Textures/videoTexture";
+import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 
     /**
      * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.

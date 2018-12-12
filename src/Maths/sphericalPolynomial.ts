@@ -1,4 +1,4 @@
-import { Vector3, Color3 } from "Maths/math";
+import { Vector3, Color3 } from "../Maths/math";
     /**
      * Class representing spherical polynomial coefficients to the 3rd degree
      */

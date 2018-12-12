@@ -1,7 +1,7 @@
-import { Nullable } from "types";
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Nullable } from "../../types";
+import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { _TimeToken } from "../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
     /**
      * This represents the required contract to create a new type of texture loader.
      */

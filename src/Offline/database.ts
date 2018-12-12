@@ -1,7 +1,7 @@
-import { Tools } from "Misc/tools";
-import { Logger } from "Misc/logger";
-import { Nullable } from "types";
-import { Engine } from "Engines/engine";
+import { Tools } from "../Misc/tools";
+import { Logger } from "../Misc/logger";
+import { Nullable } from "../types";
+import { Engine } from "../Engines/engine";
 import { IOfflineProvider } from "./IOfflineProvider";
     // Sets the default offline provider to Babylon.js
     Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) => { return new Database(urlToScene, callbackManifestChecked, disableManifestCheck); };

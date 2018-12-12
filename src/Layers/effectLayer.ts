@@ -1,31 +1,31 @@
-import { serialize, serializeAsColor4, serializeAsCameraReference } from "Misc/decorators";
-import { Tools } from "Misc/tools";
-import { SmartArray } from "Misc/smartArray";
-import { Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { Camera } from "Cameras/camera";
-import { Scene } from "scene";
-import { Color4, ISize } from "Maths/math";
-import { Engine } from "Engines/engine";
-import { VertexBuffer } from "Meshes/buffer";
-import { SubMesh } from "Meshes/subMesh";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { PostProcess } from "PostProcesses/postProcess";
-import { SceneComponentConstants } from "sceneComponent";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { serialize, serializeAsColor4, serializeAsCameraReference } from "../Misc/decorators";
+import { Tools } from "../Misc/tools";
+import { SmartArray } from "../Misc/smartArray";
+import { Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { Camera } from "../Cameras/camera";
+import { Scene } from "../scene";
+import { Color4, ISize } from "../Maths/math";
+import { Engine } from "../Engines/engine";
+import { VertexBuffer } from "../Meshes/buffer";
+import { SubMesh } from "../Meshes/subMesh";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { PostProcess } from "../PostProcesses/postProcess";
+import { SceneComponentConstants } from "../sceneComponent";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { EffectLayerSceneComponent } from "./effectLayerSceneComponent";
-import { BaseTexture } from "Materials/Textures/baseTexture";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { MaterialHelper } from "Materials/materialHelper";
-import { Constants } from "Engines/constants";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Texture } from "../Materials/Textures/texture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { MaterialHelper } from "../Materials/materialHelper";
+import { Constants } from "../Engines/constants";
 
-import "Shaders/glowMapGeneration.fragment";
-import "Shaders/glowMapGeneration.vertex";
+import "../Shaders/glowMapGeneration.fragment";
+import "../Shaders/glowMapGeneration.vertex";
 
     /**
      * Effect layer options. This helps customizing the behaviour

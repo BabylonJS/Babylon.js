@@ -1,11 +1,11 @@
-import { Nullable } from "types";
-import { serialize } from "Misc/decorators";
-import { Observer } from "Misc/observable";
-import { Scene } from "scene";
-import { ArcRotateCamera } from "Cameras/arcRotateCamera";
-import { ICameraInput, CameraInputTypes } from "Cameras/cameraInputsManager";
-import { Engine } from "Engines/engine";
-import { KeyboardInfo, KeyboardEventTypes } from "Events/keyboardEvents";
+import { Nullable } from "../../types";
+import { serialize } from "../../Misc/decorators";
+import { Observer } from "../../Misc/observable";
+import { Scene } from "../../scene";
+import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { Engine } from "../../Engines/engine";
+import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 
     /**
      * Manage the keyboard inputs to control the movement of an arc rotate camera.

@@ -1,9 +1,9 @@
-import { Vector3, Color3 } from "Maths/math";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { TransformNode } from "Meshes/transformNode";
-import { StandardMaterial } from "Materials/standardMaterial";
-import { AxisDragGizmo } from "Gizmos/axisDragGizmo";
+import { Vector3, Color3 } from "../Maths/math";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { TransformNode } from "../Meshes/transformNode";
+import { StandardMaterial } from "../Materials/standardMaterial";
+import { AxisDragGizmo } from "../Gizmos/axisDragGizmo";
 
 /**
      * The Axes viewer will show 3 axes in a specific point in space

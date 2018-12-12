@@ -1,8 +1,8 @@
-import { Scene, IDisposable } from "scene";
-import { Engine } from "Engines/engine";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { Mesh } from "Meshes/mesh";
-import { Nullable } from "types";
+import { Scene, IDisposable } from "../scene";
+import { Engine } from "../Engines/engine";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { Nullable } from "../types";
 import { Observer, Observable } from "./observable";
 
     /**

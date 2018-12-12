@@ -1,9 +1,9 @@
 import { ArcRotateCamera } from "./arcRotateCamera";
-import { ArcRotateCameraVRDeviceOrientationInput } from "Cameras/Inputs/arcRotateCameraVRDeviceOrientationInput";
-import { ArcRotateCameraPointersInput } from "Cameras/Inputs/arcRotateCameraPointersInput";
-import { ArcRotateCameraKeyboardMoveInput } from "Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
-import { ArcRotateCameraMouseWheelInput } from "Cameras/Inputs/arcRotateCameraMouseWheelInput";
-import { CameraInputsManager } from "Cameras/cameraInputsManager";
+import { ArcRotateCameraVRDeviceOrientationInput } from "../Cameras/Inputs/arcRotateCameraVRDeviceOrientationInput";
+import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
+import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
+import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
+import { CameraInputsManager } from "../Cameras/cameraInputsManager";
 
     /**
      * Default Inputs manager for the ArcRotateCamera.

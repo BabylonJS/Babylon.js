@@ -1,10 +1,10 @@
-import { Scalar } from "Maths/math.scalar";
-import { SphericalPolynomial } from "Maths/sphericalPolynomial";
-import { Constants } from "Engines/constants";
-import { InternalTexture } from "Materials/Textures/internalTexture";
-import { Nullable } from "types";
-import { Logger } from "Misc/logger";
-import { CubeMapToSphericalPolynomialTools } from "Misc/HighDynamicRange/cubemapToSphericalPolynomial";
+import { Scalar } from "../Maths/math.scalar";
+import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
+import { Constants } from "../Engines/constants";
+import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { Nullable } from "../types";
+import { Logger } from "../Misc/logger";
+import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 
 declare type Engine = import("Engines/engine").Engine;
 

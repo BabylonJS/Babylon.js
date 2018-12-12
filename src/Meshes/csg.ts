@@ -1,11 +1,11 @@
-import { Nullable, FloatArray, IndicesArray } from "types";
-import { Scene } from "scene";
-import { Quaternion, Matrix, Vector3, Vector2 } from "Maths/math";
-import { VertexBuffer } from "Meshes/buffer";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { SubMesh } from "Meshes/subMesh";
-import { Mesh } from "Meshes/mesh";
-import { Material } from "Materials/material";
+import { Nullable, FloatArray, IndicesArray } from "../types";
+import { Scene } from "../scene";
+import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math";
+import { VertexBuffer } from "../Meshes/buffer";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { SubMesh } from "../Meshes/subMesh";
+import { Mesh } from "../Meshes/mesh";
+import { Material } from "../Materials/material";
     /**
      * Unique ID when we import meshes from Babylon to CSG
      */

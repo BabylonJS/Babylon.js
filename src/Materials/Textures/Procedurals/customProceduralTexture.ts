@@ -1,10 +1,10 @@
-import { Tools } from "Misc/tools";
-import { Logger } from "Misc/logger";
-import { Scene } from "scene";
-import { Vector3, Vector2, Color3, Color4 } from "Maths/math";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Texture } from "Materials/Textures/texture";
+import { Tools } from "../../../Misc/tools";
+import { Logger } from "../../../Misc/logger";
+import { Scene } from "../../../scene";
+import { Vector3, Vector2, Color3, Color4 } from "../../../Maths/math";
+import { _TimeToken } from "../../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
+import { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
     /**
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.

@@ -1,11 +1,11 @@
-import { SmartArrayNoDuplicate } from "Misc/smartArray";
-import { Scene } from "scene";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
+import { Scene } from "../../scene";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { ShadowGenerator } from "./shadowGenerator";
-import { SceneComponentConstants, ISceneSerializableComponent } from "sceneComponent";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { AbstractScene } from "abstractScene";
+import { SceneComponentConstants, ISceneSerializableComponent } from "../../sceneComponent";
+import { _TimeToken } from "../../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
+import { AbstractScene } from "../../abstractScene";
     // Adds the parser to the scene parsers.
     AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
         // Shadows

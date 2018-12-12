@@ -1,6 +1,6 @@
-import { Nullable } from "types";
-import { Vector3 } from "Maths/math";
-import { Constants } from "Engines/constants";
+import { Nullable } from "../../types";
+import { Vector3 } from "../../Maths/math";
+import { Constants } from "../../Engines/constants";
 
     /**
      * CubeMap information grouping all the data for each faces as well as the cubemap size.

@@ -1,24 +1,24 @@
-import { serializeAsVector3, serialize, serializeAsMeshReference } from "Misc/decorators";
-import { SmartArray } from "Misc/smartArray";
-import { Logger } from "Misc/logger";
-import { Color4, Color3, Vector2, Vector3, Matrix, Viewport } from "Maths/math";
-import { VertexBuffer } from "Meshes/buffer";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { SubMesh } from "Meshes/subMesh";
-import { Mesh } from "Meshes/mesh";
-import { Camera } from "Cameras/camera";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { StandardMaterial } from "Materials/standardMaterial";
-import { Texture } from "Materials/Textures/texture";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { serializeAsVector3, serialize, serializeAsMeshReference } from "../Misc/decorators";
+import { SmartArray } from "../Misc/smartArray";
+import { Logger } from "../Misc/logger";
+import { Color4, Color3, Vector2, Vector3, Matrix, Viewport } from "../Maths/math";
+import { VertexBuffer } from "../Meshes/buffer";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { SubMesh } from "../Meshes/subMesh";
+import { Mesh } from "../Meshes/mesh";
+import { Camera } from "../Cameras/camera";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { StandardMaterial } from "../Materials/standardMaterial";
+import { Texture } from "../Materials/Textures/texture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PostProcess } from "./postProcess";
-import { Constants } from "Engines/constants";
-import { Scene } from "scene";
+import { Constants } from "../Engines/constants";
+import { Scene } from "../scene";
 
-import "Shaders/depth.vertex";
-import "Shaders/volumetricLightScattering.fragment";
-import "Shaders/volumetricLightScatteringPass.fragment";
+import "../Shaders/depth.vertex";
+import "../Shaders/volumetricLightScattering.fragment";
+import "../Shaders/volumetricLightScatteringPass.fragment";
 
 declare type Engine = import("Engines/engine").Engine;
 

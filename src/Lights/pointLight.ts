@@ -1,13 +1,13 @@
-import { serialize } from "Misc/decorators";
-import { Scene } from "scene";
-import { Matrix, Vector3 } from "Maths/math";
-import { Node } from "node";
-import { AbstractMesh } from "Meshes/abstractMesh";
+import { serialize } from "../Misc/decorators";
+import { Scene } from "../scene";
+import { Matrix, Vector3 } from "../Maths/math";
+import { Node } from "../node";
+import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
-import { Effect } from "Materials/effect";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+import { Effect } from "../Materials/effect";
 
     Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
         return () => new PointLight(name, Vector3.Zero(), scene);

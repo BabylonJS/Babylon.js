@@ -1,21 +1,21 @@
-import { Observer, Observable } from "Misc/observable";
-import { Nullable } from "types";
-import { Scene } from "scene";
-import { Vector2, Color4 } from "Maths/math";
-import { Engine } from "Engines/engine";
-import { VertexBuffer } from "Meshes/buffer";
-import { Effect } from "Materials/effect";
-import { Material } from "Materials/material";
-import { Texture } from "Materials/Textures/texture";
-import { SceneComponentConstants } from "sceneComponent";
-import { _TimeToken } from "Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "States";
+import { Observer, Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { Scene } from "../scene";
+import { Vector2, Color4 } from "../Maths/math";
+import { Engine } from "../Engines/engine";
+import { VertexBuffer } from "../Meshes/buffer";
+import { Effect } from "../Materials/effect";
+import { Material } from "../Materials/material";
+import { Texture } from "../Materials/Textures/texture";
+import { SceneComponentConstants } from "../sceneComponent";
+import { _TimeToken } from "../Instrumentation/timeToken";
+import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { LayerSceneComponent } from "./layerSceneComponent";
-import { Constants } from "Engines/constants";
-import { RenderTargetTexture } from "Materials/Textures/renderTargetTexture";
+import { Constants } from "../Engines/constants";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
-import "Shaders/layer.fragment";
-import "Shaders/layer.vertex";
+import "../Shaders/layer.fragment";
+import "../Shaders/layer.vertex";
 
     /**
      * This represents a full screen 2d layer.

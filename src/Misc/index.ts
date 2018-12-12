@@ -5,7 +5,7 @@ export * from "./decorators";
 export * from "./deferred";
 export * from "./environmentTextureTools";
 export * from "./filesInput";
-export * from "./HighDynamicRange";
+export * from "./HighDynamicRange/index";
 export * from "./khronosTextureContainer";
 export * from "./observable";
 export * from "./performanceMonitor";

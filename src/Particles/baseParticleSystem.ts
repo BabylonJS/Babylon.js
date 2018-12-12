@@ -1,15 +1,15 @@
-import { Nullable } from "types";
-import { Color4, Vector2, Vector3 } from "Maths/math";
-import { AbstractMesh } from "Meshes/abstractMesh";
-import { ImageProcessingConfiguration, ImageProcessingConfigurationDefines } from "Materials/imageProcessingConfiguration";
-import { Texture } from "Materials/Textures/texture";
-import { ProceduralTexture } from "Materials/Textures/Procedurals/proceduralTexture";
-import { RawTexture } from "Materials/Textures/rawTexture";
-import { Scene } from "scene";
-import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "Misc/tools";
-import { Animation } from "Animations/animation";
-import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "Particles/EmitterTypes";
-import { Constants } from "Engines/constants";
+import { Nullable } from "../types";
+import { Color4, Vector2, Vector3 } from "../Maths/math";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { ImageProcessingConfiguration, ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
+import { Texture } from "../Materials/Textures/texture";
+import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import { RawTexture } from "../Materials/Textures/rawTexture";
+import { Scene } from "../scene";
+import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/tools";
+import { Animation } from "../Animations/animation";
+import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
+import { Constants } from "../Engines/constants";
 
     /**
      * This represents the base class for particle system in Babylon.

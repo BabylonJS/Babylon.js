@@ -1,6 +1,6 @@
-import { ISceneComponent, SceneComponentConstants } from "sceneComponent";
+import { ISceneComponent, SceneComponentConstants } from "../../sceneComponent";
 import { PostProcessRenderPipelineManager } from "./postProcessRenderPipelineManager";
-import { Scene } from "scene";
+import { Scene } from "../../scene";
 
 declare module "scene" {
     export interface Scene {
