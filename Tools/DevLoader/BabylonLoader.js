@@ -36,6 +36,9 @@ var BABYLONDEVTOOLS;
         var min;
         var babylonJSPath;
 
+        var localDevES6FolderName;
+        var localDevUMDFolderName;
+
         function Loader() {
             queue = [];
             esmQueue = [];
@@ -161,7 +164,7 @@ var BABYLONDEVTOOLS;
             }
 
             if (!useDist) {
-                var tempDirectory = '/.temp/localDevUMD' + module.build.distOutputDirectory;
+                var tempDirectory = '/.temp/' + localDevUMDFolderName + module.build.distOutputDirectory;
                 this.loadScript(babylonJSPath + tempDirectory + library.output);
             }
             else if (module.build.distOutputDirectory && (!testMode || !module.build.ignoreInTestMode)) {
@@ -176,7 +179,7 @@ var BABYLONDEVTOOLS;
 
         Loader.prototype.loadCoreDev = function() {
             // Es6 core import
-            this.loadESMScript("/.temp/LocalDevES6/core/legacy/legacy.js");
+            this.loadESMScript(babylonJSPath + "/.temp/" + localDevES6FolderName + "/core/legacy/legacy.js");
         }
 
         Loader.prototype.loadModule = function(module) {
@@ -222,6 +225,9 @@ var BABYLONDEVTOOLS;
             }
             getJson('/Tools/Gulp/config.json',
                 function(data) {
+                    localDevES6FolderName = data.build.localDevES6FolderName;
+                    localDevUMDFolderName = data.build.localDevUMDFolderName;
+
                     self.loadBJSScripts(data);
                     if (dependencies) {
                         self.loadScripts(dependencies);

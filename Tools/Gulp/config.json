@@ -2,6 +2,8 @@
     "build": {
         "outputDirectory": "../../dist/preview release",
         "tempDirectory": "../../.temp/",
+        "localDevES6FolderName": "localDevES6",
+        "localDevUMDFolderName": "localDevUMD",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
