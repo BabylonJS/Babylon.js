@@ -4344,14 +4344,8 @@ declare type RenderTargetTexture = import("Materials/Textures/renderTargetTextur
                         // Add Back
                         customFallback = true;
                         excludeLoaders.push(loader);
-<<<<<<< HEAD:src/Engines/engine.ts
-                        Logger.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
-                        this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
-                        return;
-=======
                         Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
                         this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, null, buffer, texture, undefined, undefined, excludeLoaders);
->>>>>>> upstream/master:src/Engine/babylon.engine.ts
                     }
                 }
 
