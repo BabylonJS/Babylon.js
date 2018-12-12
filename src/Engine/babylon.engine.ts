@@ -4312,8 +4312,7 @@ module BABYLON {
                         customFallback = true;
                         excludeLoaders.push(loader);
                         Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
-                        this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
-                        return;
+                        this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, null, buffer, texture, undefined, undefined, excludeLoaders);
                     }
                 }
 
@@ -4322,8 +4321,7 @@ module BABYLON {
                         texture.onLoadedObservable.remove(onLoadObserver);
                     }
                     if (Tools.UseFallbackTexture) {
-                        this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
-                        return;
+                        this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, null, buffer, texture);
                     }
                 }
 
