@@ -100,7 +100,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                         {`X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}, Z: ${this.state.value.z.toFixed(2)}`}
 
                     </div>
-                    <div className="expand" onClick={() => this.switchExpandState()}>
+                    <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
                 </div>
