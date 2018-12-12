@@ -69,7 +69,7 @@ module BABYLON {
          * Defines that scene should keep up-to-date a map of geometry to enable fast look-up by uniqueId
          * It will improve performance when the number of geometries becomes important.
          */
-        useGeometryIdsMap?: boolean;
+        useGeometryUniqueIdsMap?: boolean;
 
         /**
          * Defines that each material of the scene should keep up-to-date a map of referencing meshes for fast diposing
@@ -1271,11 +1271,11 @@ module BABYLON {
 
             this.setDefaultCandidateProviders();
 
-            if (options && options.useGeometryIdsMap === true) {
+            if (options && options.useGeometryUniqueIdsMap === true) {
                 this.geometriesByUniqueId = {};
             }
 
-            this.useMaterialMeshMap = options && options.useGeometryIdsMap || false;
+            this.useMaterialMeshMap = options && options.useGeometryUniqueIdsMap || false;
             this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
 
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
