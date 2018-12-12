@@ -13,12 +13,7 @@ var config = require("../config.json");
  */
 gulp.task("typedoc-generate", function() {
     return gulp
-        .src([
-            "../../dist/preview release/babylon.d.ts",
-            "../../dist/preview release/gui/babylon.gui.d.ts",
-            "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts",
-            "../../dist/preview release/loaders/babylonjs.loaders.d.ts",
-            "../../dist/preview release/serializers/babylonjs.serializers.d.ts"])
+        .src(config.build.typedocGenerationFiles)
         .pipe(typedoc({
             // TypeScript options (see typescript docs)
             mode: "modules",
@@ -38,7 +33,7 @@ gulp.task("typedoc-generate", function() {
             excludePrivate: true,
             excludeProtected: true,
 
-            entryPoint: ["\"babylon.d\"", "BABYLON"]
+            entryPoint: config.build.typedocEntryPoint
         }));
 });
 
