@@ -19,7 +19,6 @@
         "package.json",
         "dist/preview release/babylon.d.ts",
         "dist/preview release/babylon.js",
-        "dist/preview release/babylon.js.map",
         "dist/preview release/babylon.max.js",
         "dist/preview release/babylon.max.js.map",
         "dist/preview release/Oimo.js",
