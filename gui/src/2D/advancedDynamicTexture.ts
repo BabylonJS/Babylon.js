@@ -355,6 +355,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
     }
 
+    private _invalidatedRectangle: Nullable<Measure> = null;
+    public invalidateRect(minX: number, minY: number, maxX: number, maxY: number) {
+        if (!this._invalidatedRectangle) {
+            this._invalidatedRectangle = new Measure(minX, minY, maxX - minX, maxY - minY);
+        }else {
+            this._invalidatedRectangle.left = Math.min(this._invalidatedRectangle.left, minX);
+            this._invalidatedRectangle.top = Math.min(this._invalidatedRectangle.top, minY);
+            this._invalidatedRectangle.width = Math.max(this._invalidatedRectangle.width, maxX - this._invalidatedRectangle.left);
+            this._invalidatedRectangle.height = Math.max(this._invalidatedRectangle.height, maxY - this._invalidatedRectangle.top);
+        }
+    }
+
     /**
      * Marks the texture as dirty forcing a complete update
      */
@@ -554,18 +566,25 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.update(true, this.premulAlpha);
     }
 
+    private _clearMeasure = new Measure(0, 0, 0, 0);
     private _render(): void {
         var textureSize = this.getSize();
         var renderWidth = textureSize.width;
         var renderHeight = textureSize.height;
 
+        if (this._invalidatedRectangle) {
+            this._clearMeasure.copyFrom(this._invalidatedRectangle);
+        }else {
+            this._clearMeasure.copyFromFloats(0, 0, renderWidth, renderHeight);
+        }
+
         // Clear
         var context = this.getContext();
-        context.clearRect(0, 0, renderWidth, renderHeight);
+        context.clearRect(this._clearMeasure.left, this._clearMeasure.top, this._clearMeasure.width, this._clearMeasure.height);
         if (this._background) {
             context.save();
             context.fillStyle = this._background;
-            context.fillRect(0, 0, renderWidth, renderHeight);
+            context.fillRect(this._clearMeasure.left, this._clearMeasure.top, this._clearMeasure.width, this._clearMeasure.height);
             context.restore();
         }
 
@@ -573,10 +592,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         context.font = "18px Arial";
         context.strokeStyle = "white";
         var measure = new Measure(0, 0, renderWidth, renderHeight);
-        this._rootContainer._layout(measure, context);
+        this._rootContainer._layout(measure, context, this._invalidatedRectangle);
         this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
 
-        this._rootContainer._render(context);
+        this._rootContainer._render(context, this._invalidatedRectangle);
+        this._invalidatedRectangle = null;
     }
 
     /** @hidden */
