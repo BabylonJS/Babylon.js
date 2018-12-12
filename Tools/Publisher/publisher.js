@@ -16,6 +16,8 @@ const config = require("../gulp/config.json");
 const modules = config.modules.concat(config.viewerModules);
 const basePath = config.build.outputDirectory;
 const tempPath = config.build.tempDirectory + "es6/";
+const coreSrc = config.core.build.srcDirectory;
+const enginePath = coreSrc + "Engines/engine.ts";
 
 /**
  * Remove a directory.
@@ -56,9 +58,9 @@ const getFiles = function(dir, files_) {
  */
 function updateEngineVersion(newVersion) {
     console.log("Updating version in engine.ts to: " + newVersion);
-    let engineContent = fs.readFileSync("../../src/Engines/engine.ts").toString();
+    let engineContent = fs.readFileSync(enginePath).toString();
     let replaced = engineContent.replace(/(public static get Version\(\): string {\s*return ")(.*)(";\s*})/g, "$1" + newVersion + "$3");
-    fs.writeFileSync("../../src/Engines/engine.ts", replaced);
+    fs.writeFileSync(enginePath, replaced);
 }
 
 /**
@@ -66,7 +68,7 @@ function updateEngineVersion(newVersion) {
  */
 function getEngineVersion() {
     console.log("Get version from engine.ts");
-    const engineContent = fs.readFileSync("../../src/Engines/engine.ts").toString();
+    const engineContent = fs.readFileSync(enginePath).toString();
 
     const versionRegex = new RegExp(`public static get Version\\(\\): string {[\\s\\S]*return "([\\s\\S]*?)";[\\s\\S]*}`, "gm");
     const match = versionRegex.exec(engineContent);

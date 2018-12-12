@@ -45,12 +45,9 @@ To integrate your new material to the build process, you have to edit the config
   "libraries": [
     ...
       {
-        "files": ["../../materialsLibrary/src/gradient/babylon.gradientMaterial.ts"],
-        "shaderFiles": [
-          "../../materialsLibrary/src/gradient/gradient.vertex.fx",
-          "../../materialsLibrary/src/gradient/gradient.fragment.fx"
-        ],
-        "output": "babylon.gradientMaterial.js"
+        "output": "babylon.triPlanarMaterial.min.js",
+        "entry": "./legacy/legacy-triPlanar.ts",
+        "preventLoadLibrary": true
       }
       ...
   ]
