@@ -28,6 +28,7 @@ var BABYLONDEVTOOLS;
 
     var Loader = (function() {
         var queue;
+        var esmQueue;
         var callback;
         var dependencies;
         var useDist;
@@ -37,6 +38,7 @@ var BABYLONDEVTOOLS;
 
         function Loader() {
             queue = [];
+            esmQueue = [];
             dependencies = [];
             callback = null;
             min = (document.location.href.toLowerCase().indexOf('dist=min') > 0);
@@ -103,7 +105,7 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.dequeue = function() {
-            if (queue.length == 0) {
+            if (queue.length + esmQueue.length == 0) {
                 console.log('Scripts loaded');
                 BABYLON.Engine.ShadersRepository = "/src/Shaders/";
                 if (callback) {
@@ -112,12 +114,17 @@ var BABYLONDEVTOOLS;
                 return;
             }
 
-            var url = queue.shift();
-
             var head = document.getElementsByTagName('head')[0];
             var script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = url;
+
+            if (esmQueue.length) {
+                script.type = 'module';
+                script.src = esmQueue.shift();
+            }
+            else {
+                script.type = 'text/javascript';
+                script.src = queue.shift();
+            }
 
             var self = this;
             script.onload = function() {
@@ -128,6 +135,10 @@ var BABYLONDEVTOOLS;
 
         Loader.prototype.loadScript = function(url) {
             queue.push(url);
+        }
+
+        Loader.prototype.loadESMScript = function(url) {
+            esmQueue.push(url);
         }
 
         Loader.prototype.loadCss = function(url) {
@@ -163,15 +174,15 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadCoreDev = async function() {
+        Loader.prototype.loadCoreDev = function() {
             // Es6 core import
-            await import("/.temp/es6LocalDev/core/legacy/legacy.js")
+            this.loadESMScript("/.temp/es6LocalDev/core/legacy/legacy.js");
         }
 
-        Loader.prototype.loadModule = async function(module) {
+        Loader.prototype.loadModule = function(module) {
             for (var i = 0; i < module.libraries.length; i++) {
                 if (!useDist && module.isCore) {
-                    await this.loadCoreDev();
+                    this.loadCoreDev();
                 }
                 else {
                     this.loadLibrary(module.libraries[i], module);
@@ -197,10 +208,10 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadBJSScripts = async function(settings) {
+        Loader.prototype.loadBJSScripts = function(settings) {
             // Load all the modules from the config.json.
             for (var i = 0; i < settings.modules.length; i++) {
-                await this.loadModule(settings[settings.modules[i]]);
+                this.loadModule(settings[settings.modules[i]]);
             }
         }
 
@@ -211,13 +222,12 @@ var BABYLONDEVTOOLS;
             }
             getJson('/Tools/Gulp/config.json',
                 function(data) {
-                    self.loadBJSScripts(data).then(() => {
-                        if (dependencies) {
-                            self.loadScripts(dependencies);
-                        }
+                    self.loadBJSScripts(data);
+                    if (dependencies) {
+                        self.loadScripts(dependencies);
+                    }
 
-                        self.dequeue();
-                    });
+                    self.dequeue();
                 },
                 function(reason) {
                     console.error(reason);
