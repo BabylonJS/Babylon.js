@@ -1704,10 +1704,10 @@ import { Constants } from "../Engines/constants";
 
         /**
          * Creates a standard material from parsed material data
-         * @param source defines the JSON represnetation of the material
+         * @param source defines the JSON representation of the material
          * @param scene defines the hosting scene
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
-         * @returns a new material
+         * @returns a new standard material
          */
         public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
             return SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);

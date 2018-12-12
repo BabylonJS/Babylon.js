@@ -10,7 +10,7 @@ export interface IPaneComponentProps {
     selectedEntity?: any,
     onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
-    globalState?: GlobalState
+    globalState: GlobalState
 }
 
 export class PaneComponent extends React.Component<IPaneComponentProps, { tag: any }> {

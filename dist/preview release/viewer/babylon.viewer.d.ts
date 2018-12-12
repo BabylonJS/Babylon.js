@@ -924,7 +924,7 @@ declare module BabylonViewer {
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 declare module BabylonViewer {
@@ -1558,20 +1558,6 @@ declare module BabylonViewer {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 declare module BabylonViewer {
-    /**
-        * A custom upgrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedUpgrade(sceneManager: SceneManager): boolean;
-    /**
-        * A custom degrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedDegrade(sceneManager: SceneManager): boolean;
-}
-declare module BabylonViewer {
 }
 declare module BabylonViewer {
     export interface IEnvironmentMapConfiguration {
@@ -1733,13 +1719,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    /**
-      * A (PBR) material will be extended using this function.
-      * This function will hold extra default configuration for the viewer, if not implemented in Babylon itself.
-      */
-    export class ExtendedMaterialLoaderPlugin implements ILoaderPlugin {
-        onMaterialLoaded(baseMaterial: BABYLON.Material): void;
-    }
 }
 declare module BabylonViewer {
     export interface ICameraConfiguration {

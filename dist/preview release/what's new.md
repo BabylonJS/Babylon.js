@@ -99,6 +99,7 @@
 ### Viewer
 
 ### Materials Library
+- Added the `cameraOffset` vector property in the `SkyMaterial` to get an offset according to the horizon ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
 - Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
@@ -141,6 +142,7 @@
 - Fixed bug in SolidParticle BoundingSphere update within the SolidParticleSystem ([barroij](https://github.com/barroij))
 - Update Picking so that when the picked Mesh is a LinesMesh, the index of the picked line is returned in the `faceId` property of the `PickingInfo`, as we do with face index the picked Mesh is made of triangle faces ([barroij](https://github.com/barroij))
 - Do not clone mesh observables ([Sebavan](https://github.com/Sebavan))
+- Fixed Inspector resolution with AMD loader ([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 

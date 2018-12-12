@@ -117,7 +117,7 @@ declare module "scene" {
 
         private _scene: Scene;
 
-        private BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
+        private BJSINSPECTOR = this._getGlobalInspector();
 
         /**
          * Observable triggered when a property is changed through the inspector.
@@ -157,9 +157,24 @@ declare module "scene" {
                 ...config
             };
 
-            this.BJSINSPECTOR = this.BJSINSPECTOR || typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
+            this.BJSINSPECTOR = this.BJSINSPECTOR || this._getGlobalInspector();
 
             this.BJSINSPECTOR.Inspector.Show(this._scene, userOptions);
+        }
+
+        /** Get the inspector from bundle or global */
+        private _getGlobalInspector(): any {
+            // UMD Global name detection from Webpack Bundle UMD Name.
+            if (typeof INSPECTOR !== 'undefined') {
+                return INSPECTOR;
+            }
+
+            // In case of module let s check the global emitted from the Inspector entry point.
+            if (BABYLON && (BABYLON as any).Inspector) {
+                return BABYLON;
+            }
+
+            return undefined;
         }
 
         /**

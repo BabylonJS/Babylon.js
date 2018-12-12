@@ -11,12 +11,13 @@ import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
 import { LockObject } from "../lockObject";
 import { ValueLineComponent } from "../../../lines/valueLineComponent";
-import { AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation } from "babylonjs-gui";
+import { GlobalState } from "components/globalState";
 
 interface ITexturePropertyGridComponentProps {
-    texture: BaseTexture;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    texture: BaseTexture,
+    lockObject: LockObject,
+    globalState: GlobalState,
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
@@ -82,7 +83,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         return (
             <div className="pane">
                 <LineContainerComponent title="PREVIEW">
-                    <TextureLineComponent texture={texture} width={256} height={256} />
+                    <TextureLineComponent texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
                 <LineContainerComponent title="GENERAL">

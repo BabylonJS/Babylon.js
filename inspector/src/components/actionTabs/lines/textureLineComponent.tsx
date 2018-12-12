@@ -1,10 +1,12 @@
 import * as React from "react";
-import { BaseTexture, PostProcess, Texture, PassPostProcess, Engine, PassCubePostProcess, RenderTargetTexture } from "babylonjs";
+import { BaseTexture, PostProcess, Texture } from "babylonjs";
+import { GlobalState } from "components/globalState";
 
 interface ITextureLineComponentProps {
-    texture: BaseTexture;
-    width: number;
-    height: number;
+    texture: BaseTexture,
+    width: number,
+    height: number,
+    globalState: GlobalState
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }> {
@@ -20,8 +22,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         };
     }
 
-    shouldComponentUpdate(nextProps: ITextureLineComponentProps): boolean {
-        return (nextProps.texture !== this.props.texture);
+    shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }): boolean {
+        return (nextProps.texture !== this.props.texture || nextState.displayRed !== this.state.displayRed || nextState.displayGreen !== this.state.displayGreen || nextState.displayBlue !== this.state.displayBlue || nextState.displayAlpha !== this.state.displayAlpha || nextState.face !== this.state.face);
     }
 
     componentDidMount() {
@@ -63,7 +65,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
         const previewCanvas = this.refs.canvas as HTMLCanvasElement;
 
-        let rtt = new RenderTargetTexture(
+        this.props.globalState.blockMutationUpdates = true;
+        let rtt = new BABYLON.RenderTargetTexture(
             "temp",
             { width: width, height: height },
             scene, false);
@@ -146,6 +149,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         passPostProcess.dispose();
 
         previewCanvas.style.height = height + "px";
+        this.props.globalState.blockMutationUpdates = false;
     }
 
     render() {
