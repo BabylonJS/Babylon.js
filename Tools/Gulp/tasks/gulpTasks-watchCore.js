@@ -35,7 +35,7 @@ gulp.task("watchCore", async function startWatch() {
         .pipe(processShaders(true))
 
     // Clean Folder.
-    rmDir('../../.temp/es6LocalDev/core');
+    rmDir('../../.temp/LocalDevES6/core');
 
     // Launch TSC.
     const options = {
