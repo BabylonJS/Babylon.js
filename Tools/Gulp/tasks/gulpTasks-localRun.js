@@ -5,13 +5,16 @@ var minimist = require("minimist");
 var fs = require('fs');
 var path = require('path');
 
+// Read the full config.
+var config = require("../config.json");
+
 // Comand line parsing.
 var commandLineOptions = minimist(process.argv.slice(2), {
     boolean: ["public"]
 });
 
 // Skip known extensions.
-var skipExtensions = [".js", ".glb", ".gltf", ".bin", ".html", ".gif", ".jpg", ".jpeg", ".png", ".dds", ".babylon", "ktx"];
+var skipExtensions = [".js", ".glb", ".gltf", ".bin", ".html", ".gif", ".jpg", ".jpeg", ".png", ".dds", ".babylon", "ktx", ".map"];
 
 /**
  * Embedded webserver for test convenience.
@@ -24,7 +27,7 @@ gulp.task("webserver", function() {
         middleware: function(connect, opt) {
             return [function (req, res, next) {
                 var extension = path.extname(decodeURIComponent(req.originalUrl));
-                if (req.originalUrl.startsWith("/.temp/es6LocalDev/core/") && skipExtensions.indexOf(extension) === -1) {
+                if (req.originalUrl.indexOf(config.build.localDevES6FolderName) > -1 && skipExtensions.indexOf(extension) === -1) {
                     // Append .js for es6 modules.
                     if (!fs.existsSync("../../" + req.originalUrl)) {
                         req.url += ".js";
