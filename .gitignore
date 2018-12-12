@@ -18,6 +18,7 @@ TestResults
 src/**/*.js
 !src/webpack.config.js
 src/**/*.d.ts
+!src/LibDeclarations/*.d.ts
 loaders/src/**/*.js
 materialsLibrary/src/**/*.js
 proceduralTexturesLibrary/src/**/*.js
@@ -163,6 +164,7 @@ node_modules
 !dist/**/*.d.ts
 !dist/**/*.js.map
 !lib.d.ts
+!src/LibDeclarations/*.d.ts
 *.fragment.ts
 *.vertex.ts
 **/ShadersInclude/**/*.ts
