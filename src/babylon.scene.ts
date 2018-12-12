@@ -66,7 +66,7 @@ module BABYLON {
     /** Interface defining initialization parameters for Scene class */
     export interface SceneOptions {
         /**
-         * Defines that scene should keep up-to-date a map of geometry to enable fast look-up by Id
+         * Defines that scene should keep up-to-date a map of geometry to enable fast look-up by uniqueId
          * It will improve performance when the number of geometries becomes important.
          */
         useGeometryIdsMap?: boolean;
@@ -1235,7 +1235,7 @@ module BABYLON {
         /**
          * an optional map from Geometry Id to Geometry index in the 'geometries' array
          */
-        private geometriesById: Nullable<{ [id: string]: number | undefined }> = null;
+        private geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
 
         /**
          * Creates a new Scene
@@ -1272,7 +1272,7 @@ module BABYLON {
             this.setDefaultCandidateProviders();
 
             if (options && options.useGeometryIdsMap === true) {
-                this.geometriesById = {};
+                this.geometriesByUniqueId = {};
             }
 
             this.useMaterialMeshMap = options && options.useGeometryIdsMap || false;
@@ -3354,8 +3354,8 @@ module BABYLON {
          * @param newGeometry The geometry to add
          */
         public addGeometry(newGeometry: Geometry): void {
-            if (this.geometriesById) {
-                this.geometriesById[newGeometry.id] = this.geometries.length;
+            if (this.geometriesByUniqueId) {
+                this.geometriesByUniqueId[newGeometry.uniqueId] = this.geometries.length;
             }
 
             this.geometries.push(newGeometry);
@@ -3623,27 +3623,27 @@ module BABYLON {
          * @return the geometry or null if none found.
          */
         public getGeometryByID(id: string): Nullable<Geometry> {
-            if (this.geometriesById) {
-                const index = this.geometriesById[id];
-                if (index !== undefined) {
+            for (var index = 0; index < this.geometries.length; index++) {
+                if (this.geometries[index].id === id) {
                     return this.geometries[index];
-                }
-            }
-            else {
-                for (var index = 0; index < this.geometries.length; index++) {
-                    if (this.geometries[index].id === id) {
-                        return this.geometries[index];
-                    }
                 }
             }
 
             return null;
         }
 
-        private _getGeometryByUniqueID(id: number): Nullable<Geometry> {
-            for (var index = 0; index < this.geometries.length; index++) {
-                if (this.geometries[index].uniqueId === id) {
+        private _getGeometryByUniqueID(uniqueId: number): Nullable<Geometry> {
+            if (this.geometriesByUniqueId) {
+                const index = this.geometriesByUniqueId[uniqueId];
+                if (index !== undefined) {
                     return this.geometries[index];
+                }
+            }
+            else {
+                for (var index = 0; index < this.geometries.length; index++) {
+                    if (this.geometries[index].uniqueId === uniqueId) {
+                        return this.geometries[index];
+                    }
                 }
             }
 
@@ -3680,8 +3680,8 @@ module BABYLON {
          */
         public removeGeometry(geometry: Geometry): boolean {
             let index;
-            if (this.geometriesById) {
-                index = this.geometriesById[geometry.id];
+            if (this.geometriesByUniqueId) {
+                index = this.geometriesByUniqueId[geometry.uniqueId];
                 if (index === undefined) {
                     return false;
                 }
@@ -3696,9 +3696,9 @@ module BABYLON {
             if (index !== this.geometries.length - 1) {
                 const lastGeometry = this.geometries[this.geometries.length - 1];
                 this.geometries[index] = lastGeometry;
-                if (this.geometriesById) {
-                    this.geometriesById[lastGeometry.id] = index;
-                    this.geometriesById[geometry.id] = undefined;
+                if (this.geometriesByUniqueId) {
+                    this.geometriesByUniqueId[lastGeometry.uniqueId] = index;
+                    this.geometriesByUniqueId[geometry.uniqueId] = undefined;
                 }
             }
 
