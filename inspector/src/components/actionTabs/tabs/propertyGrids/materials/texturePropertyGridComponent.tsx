@@ -13,6 +13,8 @@ import { LockObject } from "../lockObject";
 import { ValueLineComponent } from "../../../lines/valueLineComponent";
 import { GlobalState } from "components/globalState";
 
+import { AdvancedDynamicTextureInstrumentation, AdvancedDynamicTexture } from "babylonjs-gui";
+
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
     lockObject: LockObject,

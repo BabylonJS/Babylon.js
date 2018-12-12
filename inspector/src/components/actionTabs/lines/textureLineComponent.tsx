@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BaseTexture, PostProcess, Texture } from "babylonjs";
+import { BaseTexture, PostProcess, Texture, PassPostProcess, PassCubePostProcess } from "babylonjs";
 import { GlobalState } from "components/globalState";
 
 interface ITextureLineComponentProps {
