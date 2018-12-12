@@ -14,6 +14,14 @@
             "../../dist/preview release/postProcessesLibrary/babylonjs.postProcess.d.ts",
             "../../dist/preview release/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts"
         ],
+        "typedocGenerationFiles": [
+            "../../dist/preview release/babylon.d.ts",
+            "../../dist/preview release/gui/babylon.gui.d.ts",
+            "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts",
+            "../../dist/preview release/loaders/babylonjs.loaders.d.ts",
+            "../../dist/preview release/serializers/babylonjs.serializers.d.ts"
+        ],
+        "typedocEntryPoint": ["\"babylon.d\"", "BABYLON"],
         "typedocJSON": "../../.temp/babylon.typedoc.json",
         "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json",
         "dependencies": [
