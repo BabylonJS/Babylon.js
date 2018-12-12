@@ -15,7 +15,7 @@ process.env.PATH += (path.delimiter + path.join(__dirname, 'node_modules', '.bin
 const config = require("../gulp/config.json");
 const modules = config.modules.concat(config.viewerModules);
 const basePath = config.build.outputDirectory;
-const tempPath = config.build.tempDirectory + "es6/";
+const tempPath = config.build.tempDirectory + "packageES6/";
 const coreSrc = config.core.build.srcDirectory;
 const enginePath = coreSrc + "Engines/engine.ts";
 
