@@ -40,7 +40,7 @@ gulp.task("watchLibraries", function startWatch() {
                         info.resourcePath = path.join(absoluteSrc, info.resourcePath);
                     }
 
-                    return `"../../../${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
+                    return `../../../${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
                 };
 
                 tasks.push(
