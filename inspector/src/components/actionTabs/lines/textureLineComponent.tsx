@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BaseTexture, PostProcess, Texture, PassPostProcess, PassCubePostProcess } from "babylonjs";
+import { BaseTexture, PostProcess, Texture, PassPostProcess, PassCubePostProcess, RenderTargetTexture, Constants } from "babylonjs";
 import { GlobalState } from "components/globalState";
 
 interface ITextureLineComponentProps {
@@ -46,9 +46,9 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         let passPostProcess: PostProcess;
 
         if (!texture.isCube) {
-            passPostProcess = new PassPostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            passPostProcess = new PassPostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
         } else {
-            var passCubePostProcess = new PassCubePostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            var passCubePostProcess = new PassCubePostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
             passCubePostProcess.face = this.state.face;
 
             passPostProcess = passCubePostProcess;
@@ -66,7 +66,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         const previewCanvas = this.refs.canvas as HTMLCanvasElement;
 
         this.props.globalState.blockMutationUpdates = true;
-        let rtt = new BABYLON.RenderTargetTexture(
+        let rtt = new RenderTargetTexture(
             "temp",
             { width: width, height: height },
             scene, false);
