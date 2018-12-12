@@ -11,8 +11,9 @@
     },
     "main": "babylon.inspector.bundle.js",
     "files": [
+        "babylon.inspector.bundle.max.js",
+        "babylon.inspector.bundle.max.js.map",
         "babylon.inspector.bundle.js",
-        "babylon.inspector.bundle.js.map",
         "babylon.inspector.module.d.ts",
         "readme.md",
         "package.json"

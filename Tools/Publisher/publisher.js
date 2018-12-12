@@ -108,9 +108,8 @@ function publish(version, packageName, basePath) {
  * Build the folder with Gulp.
  */
 function buildBabylonJSAndDependencies() {
-    // run gulp typescript-all
     console.log("Running gulp compilation");
-    let exec = shelljs.exec("gulp typescript-all --gulpfile ../Gulp/gulpfile.js");
+    let exec = shelljs.exec("gulp typescript-libraries --gulpfile ../Gulp/gulpfile.js");
     if (exec.code) {
         console.log("Error during compilation, aborting");
         process.exit(1);
@@ -288,10 +287,6 @@ function processLegacyCore(version) {
         {
             path: basePath + "/babylon.js",
             objectName: "babylon.js"
-        },
-        {
-            path: basePath + "/babylon.js.map",
-            objectName: "babylon.js.map"
         },
         {
             path: basePath + "/babylon.max.js",

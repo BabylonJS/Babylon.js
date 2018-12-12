@@ -11,6 +11,7 @@
     },
     "main": "babylonjs.loaders.min.js",
     "files": [
+        "babylonjs.loaders.js.map",
         "babylonjs.loaders.js",
         "babylonjs.loaders.min.js",
         "babylonjs.loaders.module.d.ts",

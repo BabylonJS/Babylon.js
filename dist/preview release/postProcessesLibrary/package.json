@@ -12,6 +12,7 @@
     "main": "babylonjs.postProcess.min.js",
     "files": [
         "babylonjs.postProcess.js",
+        "babylonjs.postProcess.js.map",
         "babylonjs.postProcess.min.js",
         "babylonjs.postProcess.module.d.ts",
         "readme.md",
