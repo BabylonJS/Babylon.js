@@ -161,7 +161,7 @@ var BABYLONDEVTOOLS;
             }
 
             if (!useDist) {
-                var tempDirectory = '/.temp' + module.build.distOutputDirectory;
+                var tempDirectory = '/.temp/localDevUMD' + module.build.distOutputDirectory;
                 this.loadScript(babylonJSPath + tempDirectory + library.output);
             }
             else if (module.build.distOutputDirectory && (!testMode || !module.build.ignoreInTestMode)) {
@@ -176,7 +176,7 @@ var BABYLONDEVTOOLS;
 
         Loader.prototype.loadCoreDev = function() {
             // Es6 core import
-            this.loadESMScript("/.temp/es6LocalDev/core/legacy/legacy.js");
+            this.loadESMScript("/.temp/LocalDevES6/core/legacy/legacy.js");
         }
 
         Loader.prototype.loadModule = function(module) {
