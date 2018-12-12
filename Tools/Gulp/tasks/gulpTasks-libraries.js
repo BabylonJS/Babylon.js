@@ -82,6 +82,9 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     return wpBuild.pipe(gulp.dest(outputDirectory));
 }
 
+const tempAmdFile = "amd.js";
+const tempDTSPath = "../../.temp/amd.d.ts";
+
 /**
  * Build AMD DTS Files
  */
@@ -99,7 +102,7 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
         tempDirectory += ".temp/";
 
         // Generate DTS the old way...
-        cp.execSync('tsc --module amd --outFile "' + tempDirectory + 'amd.js" --emitDeclarationOnly true', {
+        cp.execSync('tsc --module amd --outFile "' + tempDirectory + tempAmdFile + '" --emitDeclarationOnly true', {
             cwd: settings.build.srcDirectory
         });
     }
@@ -111,9 +114,9 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        return gulp.src(["../../.temp/amd.d.ts", settings.build.loseDTSFiles], { base: "./"})
-            .pipe(concat("../../.temp/amd.d.ts"))
-            .pipe(gulp.dest("../../.temp/amd.d.ts"));
+        return gulp.src([tempDTSPath, settings.build.loseDTSFiles], { base: "./"})
+            .pipe(concat(tempDTSPath))
+            .pipe(gulp.dest(tempDTSPath));
     }
     return Promise.resolve();
 }
@@ -132,7 +135,7 @@ var processDTSFiles = function(libraries, settings, cb) {
         let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
 
         // Convert the tsc AMD BUNDLED declaration to our expected one
-        processAmdDeclarationToModule("../../.temp/amd.d.ts", {
+        processAmdDeclarationToModule(tempDTSPath, {
             output: fileLocation,
             moduleName: settings.build.processDeclaration.packageName,
             entryPoint: library.entry,
