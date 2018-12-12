@@ -105,12 +105,29 @@ module BABYLON {
          * @returns true if there is an intersection
          */
         public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
-            for (var i = 0; i < 6; i++) {
-                if (frustumPlanes[i].dotCoordinate(this.centerWorld) <= -this.radiusWorld) {
+            let center = this.centerWorld;
+            let radius = this.radiusWorld;
+            for (let i = 0; i < 6; i++) {
+                if (frustumPlanes[i].dotCoordinate(center) <= -radius) {
                     return false;
                 }
             }
+            return true;
+        }
 
+        /**
+         * Tests if the bounding sphere center is in between the frustum planes.
+         * Used for optimistic fast inclusion.
+         * @param frustumPlanes defines the frustum planes to test
+         * @returns true if the sphere center is in between the frustum planes
+         */
+        public isCenterInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
+            let center = this.centerWorld;
+            for (let i = 0; i < 6; i++) {
+                if (frustumPlanes[i].dotCoordinate(center) < 0) {
+                    return false;
+                }
+            }
             return true;
         }
 
