@@ -4,6 +4,7 @@ import { Scene } from "../scene";
 
     // declare INSPECTOR namespace for compilation issue
     declare var INSPECTOR: any;
+    declare var BABYLON: any;
     // load the inspector using require, if not present in the global namespace.
 
     /**
@@ -170,7 +171,7 @@ declare module "scene" {
             }
 
             // In case of module let s check the global emitted from the Inspector entry point.
-            if (BABYLON && (BABYLON as any).Inspector) {
+            if (BABYLON && BABYLON.Inspector) {
                 return BABYLON;
             }
 
