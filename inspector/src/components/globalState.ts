@@ -16,6 +16,8 @@ export class GlobalState {
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {};
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
 
+    public blockMutationUpdates = false;
+
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
         var loaderState = this.glTFLoaderDefaults;
         if (loaderState !== undefined) {

@@ -58,6 +58,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     }
 
     processMutation() {
+        if (this.props.globalState.blockMutationUpdates) {
+            return;
+        }
+
         this.forceUpdate();
     }
 
