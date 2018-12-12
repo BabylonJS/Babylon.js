@@ -19,7 +19,13 @@
         "proceduralTexturesLibrary/**/*.d.ts": true,
         "serielazers/**/*.d.ts": true,
         "Viewer/**/*.d.ts": true,
-        "**/*.js.map": true,
+        "gui/**/*.js.map": true,
+        "inspector/**/*.js.map": true,
+        "loaders/**/*.js.map": true,
+        "materialsLibrary/**/*.js.map": true,
+        "postProcessesLibrary/**/*.js.map": true,
+        "proceduralTexturesLibrary/**/*.js.map": true,
+        "serielazers/**/*.js.map": true,
         "**/*.js.fx": true,
         "**/*.js": {
             "when": "$(basename).ts"
