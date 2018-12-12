@@ -35,7 +35,7 @@ gulp.task("watchCore", async function startWatch() {
         .pipe(processShaders(true))
 
     // Generat output path.
-    var outputDirectory = config.build.tempDirectory + config.build.localDevUMDFolderName + "/" + module;
+    var outputDirectory = "../.temp/" + config.build.localDevUMDFolderName + "/" + module;
 
     // Clean Folder.
     rmDir(outputDirectory);
