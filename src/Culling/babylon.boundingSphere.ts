@@ -116,7 +116,7 @@ module BABYLON {
         }
 
         /**
-         * Tests if the bounding sphere center is inbetween the frustum planes.
+         * Tests if the bounding sphere center is in between the frustum planes.
          * Used for optimistic fast inclusion.
          * @param frustumPlanes defines the frustum planes to test
          * @returns true if the sphere center is inbetween the frustum planes
