@@ -4,6 +4,7 @@ var webpack = require('webpack');
 var webpackStream = require("webpack-stream");
 var cp = require('child_process');
 var path = require("path");
+var concat = require("gulp-concat");
 
 // Gulp Helpers
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
@@ -82,18 +83,12 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
 }
 
 /**
- * Build DTS Files
+ * Build AMD DTS Files
  */
-var buildDTSFiles = function(libraries, settings, cb) {
-    // Convert Module to Namespace for globals
-    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
-
+var buildAMDDTSFiles = function(libraries, settings, cb) {
     // TODO. Generate all d.ts
     let library = libraries[0];
     if (!library.preventLoadLibrary) {
-        // Find declaration path.
-        let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
-
         // Create temp directory.
         let srcDirectory = settings.build.srcDirectory;
         let depthCount = srcDirectory.match(/\//g).length - srcDirectory.match(/\.\.\//g).length;
@@ -107,6 +102,34 @@ var buildDTSFiles = function(libraries, settings, cb) {
         cp.execSync('tsc --module amd --outFile "' + tempDirectory + 'amd.js" --emitDeclarationOnly true', {
             cwd: settings.build.srcDirectory
         });
+    }
+    cb();
+}
+
+/**
+ * Append Lose DTS Files allowing isolated Modules build
+ */
+var appendLoseDTSFiles = function(settings) {
+    if (settings.build.loseDTSFiles) {
+        return gulp.src(["../../.temp/amd.d.ts", settings.build.loseDTSFiles], { base: "./"})
+            .pipe(concat("../../.temp/amd.d.ts"))
+            .pipe(gulp.dest("../../.temp/amd.d.ts"));
+    }
+    return Promise.resolve();
+}
+
+/**
+ * Process DTS Files
+ */
+var processDTSFiles = function(libraries, settings, cb) {
+    // Convert Module to Namespace for globals
+    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
+
+    // TODO. Generate all d.ts
+    let library = libraries[0];
+    if (!library.preventLoadLibrary) {
+        // Find declaration path.
+        let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
 
         // Convert the tsc AMD BUNDLED declaration to our expected one
         processAmdDeclarationToModule("../../.temp/amd.d.ts", {
@@ -133,9 +156,12 @@ function buildExternalLibraries(settings) {
     var shaders = function() { return buildShaders(settings); };
     var buildMin = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, true) };
     var buildMax = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, false) };
-    var buildDTS = function(cb) { return buildDTSFiles(settings.libraries, settings, cb) };
 
-    tasks.push(cleanup, shaders, buildMin, buildMax, buildDTS);
+    var buildAMDDTS = function(cb) { return buildAMDDTSFiles(settings.libraries, settings, cb) };
+    var appendLoseDTS = function() { return appendLoseDTSFiles(settings) };
+    var processDTS = function(cb) { return processDTSFiles(settings.libraries, settings, cb) };
+
+    tasks.push(cleanup, shaders, buildMin, buildMax, buildAMDDTS, appendLoseDTS, processDTS);
 
     return gulp.series.apply(this, tasks);
 }

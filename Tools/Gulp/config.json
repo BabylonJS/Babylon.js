@@ -60,6 +60,7 @@
         "build": {
             "webpack": "../../../src/webpack.config.js",
             "srcDirectory": "../../src/",
+            "loseDTSFiles": "../../src/LibDeclarations/*.d.ts",
             "distOutputDirectory": "/",
             "packageJSON": "../../package.json",
             "processDeclaration": {

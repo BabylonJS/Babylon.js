@@ -43,7 +43,7 @@ gulp.task("watchCore", async function startWatch() {
         async: true,
         verbose: true
     };
-    shelljs.exec("tsc --declaration false --target es5 --module es2015 --outDir ../.temp/es6LocalDev/core -w", options, function(code, stdout, stderr) {
+    shelljs.exec("tsc --isolatedModules true --declaration false --target es5 --module es2015 --outDir ../.temp/es6LocalDev/core -w", options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);
         }
