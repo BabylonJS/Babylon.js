@@ -22,7 +22,7 @@ module.exports = {
     resolve: {
         extensions: [".js", '.ts', ".tsx"],
         alias: {
-            "re-resizable$": path.resolve(__dirname, '../node_modules/re-resizable/lib/index.js')
+            "re-resizable$": path.resolve(__dirname, '../node_modules/re-resizable/lib/index.es5.js')
         }
     },
     externals: [
