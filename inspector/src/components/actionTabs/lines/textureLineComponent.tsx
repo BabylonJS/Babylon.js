@@ -1,10 +1,12 @@
 import * as React from "react";
 import { BaseTexture, PostProcess, Texture } from "babylonjs";
+import { GlobalState } from "components/globalState";
 
 interface ITextureLineComponentProps {
     texture: BaseTexture,
     width: number,
-    height: number
+    height: number,
+    globalState: GlobalState
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }> {
@@ -63,6 +65,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
         const previewCanvas = this.refs.canvas as HTMLCanvasElement;
 
+        this.props.globalState.blockMutationUpdates = true;
         let rtt = new BABYLON.RenderTargetTexture(
             "temp",
             { width: width, height: height },
@@ -146,6 +149,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         passPostProcess.dispose();
 
         previewCanvas.style.height = height + "px";
+        this.props.globalState.blockMutationUpdates = false;
     }
 
     render() {
