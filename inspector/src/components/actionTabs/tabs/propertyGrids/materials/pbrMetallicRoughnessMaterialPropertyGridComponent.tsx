@@ -27,7 +27,7 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
             return null;
         }
 
-        const onDebugSelectionChangeObservable = new BABYLON.Observable<BaseTexture>();
+        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
             <LineContainerComponent title="TEXTURES">

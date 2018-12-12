@@ -27,7 +27,7 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
             return null;
         }
 
-        const onDebugSelectionChangeObservable = new BABYLON.Observable<BaseTexture>();
+        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
             <LineContainerComponent title="TEXTURES">
