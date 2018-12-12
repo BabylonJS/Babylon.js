@@ -36,6 +36,12 @@ gulp typescript-libraries
 ```
 Will generate all the files of the dist/preview release folder.
 
+## Run all the tests (release build):
+
+```
+gulp tests-all
+```
+
 ## Run Integrated Web Server and watch for changes (dev build):
 ```
 gulp run
