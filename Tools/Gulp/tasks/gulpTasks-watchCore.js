@@ -34,16 +34,19 @@ gulp.task("watchCore", async function startWatch() {
         .pipe(uncommentShaders())
         .pipe(processShaders(true))
 
+    // Generat output path.
+    var outputDirectory = config.build.tempDirectory + config.build.localDevUMDFolderName + "/" + module;
+
     // Clean Folder.
-    rmDir('../../.temp/LocalDevES6/core');
+    rmDir(outputDirectory);
 
     // Launch TSC.
     const options = {
-        cwd: "../../src/",
+        cwd: settings.srcDirectory,
         async: true,
         verbose: true
     };
-    shelljs.exec("tsc --isolatedModules true --declaration false --target es5 --module es2015 --outDir ../.temp/es6LocalDev/core -w", options, function(code, stdout, stderr) {
+    shelljs.exec(`tsc --isolatedModules true --declaration false --target es5 --module es2015 --outDir ${outputDirectory} -w`, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);
         }
