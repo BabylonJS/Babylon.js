@@ -119,7 +119,7 @@ module BABYLON {
          * Tests if the bounding sphere center is in between the frustum planes.
          * Used for optimistic fast inclusion.
          * @param frustumPlanes defines the frustum planes to test
-         * @returns true if the sphere center is inbetween the frustum planes
+         * @returns true if the sphere center is in between the frustum planes
          */
         public isCenterInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
             let center = this.centerWorld;
