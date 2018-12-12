@@ -40,7 +40,7 @@ gulp.task("watchLibraries", function startWatch() {
                         info.resourcePath = path.join(absoluteSrc, info.resourcePath);
                     }
 
-                    return `"../../${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
+                    return `"../../../${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
                 };
 
                 tasks.push(
@@ -49,7 +49,7 @@ gulp.task("watchLibraries", function startWatch() {
                         .pipe(processShaders(false))
                 );
 
-                var outputDirectory = config.build.tempDirectory + settings.distOutputDirectory;
+                var outputDirectory = config.build.tempDirectory + "localDevUMD" + settings.distOutputDirectory;
                 tasks.push(
                     webpackStream(wpConfig, webpack).pipe(gulp.dest(outputDirectory))
                 );
