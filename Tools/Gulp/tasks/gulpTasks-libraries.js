@@ -16,6 +16,11 @@ var del = require("del");
 // Import Build Config
 var config = require("../config.json");
 
+// Constants
+const tempTypingsFile = "tempTypings.js";
+const tempTypingsFolder = "../../.temp/";
+const tempTypingsPath = tempTypingsFolder + tempTypingsFile.replace(".js", ".d.ts");
+
 /**
  * Clean shader ts files.
  */
@@ -82,9 +87,6 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     return wpBuild.pipe(gulp.dest(outputDirectory));
 }
 
-const tempAmdFile = "amd.js";
-const tempDTSPath = "../../.temp/amd.d.ts";
-
 /**
  * Build AMD DTS Files
  */
@@ -102,7 +104,7 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
         tempDirectory += ".temp/";
 
         // Generate DTS the old way...
-        cp.execSync('tsc --module amd --outFile "' + tempDirectory + tempAmdFile + '" --emitDeclarationOnly true', {
+        cp.execSync('tsc --module amd --outFile "' + tempDirectory + tempTypingsFile + '" --emitDeclarationOnly true', {
             cwd: settings.build.srcDirectory
         });
     }
@@ -114,9 +116,9 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        return gulp.src([tempDTSPath, settings.build.loseDTSFiles], { base: "./"})
-            .pipe(concat(tempDTSPath))
-            .pipe(gulp.dest(tempDTSPath));
+        return gulp.src([tempTypingsPath, settings.build.loseDTSFiles], { base: "./"})
+            .pipe(concat(tempTypingsPath))
+            .pipe(gulp.dest(tempTypingsPath));
     }
     return Promise.resolve();
 }
@@ -135,7 +137,7 @@ var processDTSFiles = function(libraries, settings, cb) {
         let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
 
         // Convert the tsc AMD BUNDLED declaration to our expected one
-        processAmdDeclarationToModule(tempDTSPath, {
+        processAmdDeclarationToModule(tempTypingsPath, {
             output: fileLocation,
             moduleName: settings.build.processDeclaration.packageName,
             entryPoint: library.entry,
