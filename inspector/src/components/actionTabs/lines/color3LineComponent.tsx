@@ -3,7 +3,7 @@ import { Observable, Color3 } from "babylonjs";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faMinus, faPlus, faCopy } from "@fortawesome/free-solid-svg-icons";
 
 export interface IColor3LineComponentProps {
     label: string;
@@ -103,6 +103,22 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.raiseOnPropertyChanged(store);
     }
 
+    copyToClipboard() {
+        var element = document.createElement('div');
+        element.textContent = this.state.color.toHexString();
+        document.body.appendChild(element);
+
+        if (window.getSelection) {
+            var range = document.createRange();
+            range.selectNode(element);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+        }
+
+        document.execCommand('copy');
+        element.remove();
+    }
+
     render() {
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
@@ -117,7 +133,10 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                     <div className="color3">
                         <input type="color" value={colorAsColor3.toHexString()} onChange={(evt) => this.onChange(evt.target.value)} />
                     </div>
-                    <div className="expand" onClick={() => this.switchExpandState()}>
+                    <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
+                        <FontAwesomeIcon icon={faCopy} />
+                    </div>
+                    <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
                 </div>
