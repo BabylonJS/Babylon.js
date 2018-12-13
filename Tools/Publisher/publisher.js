@@ -125,7 +125,7 @@ function processEs6Packages(version) {
         colorConsole.log("    Cleanup " + buildPath.cyan);
         rmDir(buildPath);
 
-        let command = 'tsc -t es5 -m esNext -p ' + projectPath + ' --outDir ' + buildPath;
+        let command = 'tsc --inlineSources -t es5 -m esNext -p ' + projectPath + ' --outDir ' + buildPath;
         colorConsole.log("    Executing " + command.yellow);
 
         let tscCompile = shelljs.exec(command);
