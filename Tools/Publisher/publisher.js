@@ -72,22 +72,27 @@ function getEngineVersion() {
 /**
  * Publish a package to npm.
  */
-function publish(version, packageName, basePath) {
+function publish(version, packageName, basePath, public) {
     colorConsole.log('    Publishing ' + packageName.blue.bold + " from " + basePath.cyan);
 
     let tag = "";
     // check for alpha or beta
     if (version.indexOf('alpha') !== -1 || version.indexOf('beta') !== -1) {
-        tag = '--tag preview';
+        tag = ' --tag preview';
     }
 
     //publish the respected package
+    var cmd = 'npm publish \"' + basePath + "\"" + tag;
+    if (public) {
+       cmd += " --access public";
+    }
+
     if (doNotPublish) {
-        colorConsole.log("    If publishing enabled: " + ('npm publish \"' + basePath + "\"" + ' ' + tag).yellow);
+        colorConsole.log("    If publishing enabled: " + cmd.yellow);
     }
     else {
-        colorConsole.log("    Executing: " + ('npm publish \"' + basePath + "\"" + ' ' + tag).bold);
-        shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tag);
+        colorConsole.log("    Executing: " + cmd.yellow);
+        shelljs.exec(cmd);
     }
 
     colorConsole.success('    Publishing ' + "OK".green);
@@ -184,7 +189,7 @@ function processEs6Packages(version) {
         fs.writeFileSync(buildPath + '/package.json', JSON.stringify(legacyPackageJson, null, 4));
 
         // Do not publish yet.
-        // publish(version, es6Config.packageName, buildPath);
+        // publish(version, es6Config.packageName, buildPath, true);
         colorConsole.emptyLine();
     });
 }
