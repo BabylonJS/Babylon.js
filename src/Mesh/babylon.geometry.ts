@@ -516,7 +516,15 @@ module BABYLON {
             if (!this._indexBufferIsUpdatable) {
                 this.setIndices(indices, null, true);
             } else {
+                const needToUpdateSubMeshes = indices.length !== this._indices.length;
+
+                this._indices = indices;
                 this._engine.updateDynamicIndexBuffer(this._indexBuffer, indices, offset);
+                if (needToUpdateSubMeshes) {
+                    for (const mesh of this._meshes) {
+                        mesh._createGlobalSubMesh(true);
+                    }
+                }
             }
         }
 
@@ -543,12 +551,10 @@ module BABYLON {
                 this._totalVertices = totalVertices;
             }
 
-            var meshes = this._meshes;
-            var numOfMeshes = meshes.length;
-
-            for (var index = 0; index < numOfMeshes; index++) {
-                meshes[index]._createGlobalSubMesh(true);
+            for (const mesh of this._meshes) {
+                mesh._createGlobalSubMesh(true);
             }
+
             this.notifyUpdate();
         }
 
