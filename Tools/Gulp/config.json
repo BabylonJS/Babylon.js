@@ -25,24 +25,7 @@
         ],
         "typedocEntryPoint": ["\"babylon.d\"", "BABYLON"],
         "typedocJSON": "../../.temp/babylon.typedoc.json",
-        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json",
-        "dependencies": [
-            {
-                "name": "CANNON",
-                "module": "cannon",
-                "optional": true
-            },
-            {
-                "name": "OIMO",
-                "module": "oimo",
-                "optional": true
-            },
-            {
-                "name": "earcut",
-                "module": "earcut",
-                "optional": true
-            }
-        ]
+        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json"
     },
     "modules": [
         "core",
@@ -498,8 +481,7 @@
             {
                 "output": "babylon.inspector.bundle.js",
                 "maxOutput": "babylon.inspector.bundle.max.js",
-                "entry": "./legacy/legacy.ts",
-                "extendsRoot": true
+                "entry": "./legacy/legacy.ts"
             }
         ],
         "build": {
