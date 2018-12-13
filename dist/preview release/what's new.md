@@ -145,7 +145,7 @@
 - Update Picking so that when the picked Mesh is a LinesMesh, the index of the picked line is returned in the `faceId` property of the `PickingInfo`, as we do with face index the picked Mesh is made of triangle faces ([barroij](https://github.com/barroij))
 - Do not clone mesh observables ([Sebavan](https://github.com/Sebavan))
 - Fixed Inspector resolution with AMD loader ([Sebavan](https://github.com/Sebavan))
-- Fix a bug when the index buffer changes size when it is updated by recreating the subMeshes when needed ([barroij](https://github.com/barroij))
+- Fix a bug when a call to `updateIndices` leads to changing the size of the index buffer by recreating the subMeshes in that case ([barroij](https://github.com/barroij))
 
 ### Viewer
 
