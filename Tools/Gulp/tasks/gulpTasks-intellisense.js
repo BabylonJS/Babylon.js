@@ -12,10 +12,10 @@ var config = require("../config.json");
 gulp.task("intellisense", function() {
     return gulp.src(config.build.intellisenseSources)
         .pipe(concat(config.build.intellisenseFile))
-        .pipe(replace(/^\s+_.*?;/gm, ""))
-        .pipe(replace(/^\s+_[\S\s]*?}/gm, ""))
         .pipe(replace(/^\s*readonly _/gm, "protected readonly _"))
         .pipe(replace(/^\s*static _/gm, "private static _"))
-        .pipe(replace(/^\s*abstract _/gm, ""))
+        .pipe(replace(/^\s*class _/gm, "private class _"))
+        .pipe(replace(/^\s* _/gm, ""))
+        .pipe(replace(/^\s*_/gm, "private _"))
         .pipe(gulp.dest(config.build.playgroundDirectory));
 });
