@@ -912,18 +912,20 @@ module BABYLON {
             for (kind in this._vertexBuffers) {
                 // using slice() to make a copy of the array and not just reference it
                 var data = this.getVerticesData(kind);
+                
+                if (data) {
+                    if (data instanceof Float32Array) {
+                        vertexData.set(new Float32Array(<Float32Array>data), kind);
+                    } else {
+                        vertexData.set((<number[]>data).slice(0), kind);
+                    }
+                    if (!stopChecking) {
+                        let vb = this.getVertexBuffer(kind);
 
-                if (data instanceof Float32Array) {
-                    vertexData.set(new Float32Array(<Float32Array>data), kind);
-                } else {
-                    vertexData.set((<number[]>data).slice(0), kind);
-                }
-                if (!stopChecking) {
-                    let vb = this.getVertexBuffer(kind);
-
-                    if (vb) {
-                        updatable = vb.isUpdatable();
-                        stopChecking = !updatable;
+                        if (vb) {
+                            updatable = vb.isUpdatable();
+                            stopChecking = !updatable;
+                        }
                     }
                 }
             }
