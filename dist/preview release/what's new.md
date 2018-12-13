@@ -84,7 +84,7 @@
 - Add support for setting renderingGroupId and creating instances to `AxesViewer` ([bghgary](https://github.com/bghgary))
 - Invert vScale of compressed ktx textures as they are inverted in the file and UNPACK_FLIP_Y_WEBGL is not supported by ktx ([TrevorDev](https://github.com/TrevorDev))
 - Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
-- Added per mesh culling strategy ([jerome](https://github.com/jbousquie))  
+- Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 
 ### glTF Loader
 
@@ -145,6 +145,7 @@
 - Update Picking so that when the picked Mesh is a LinesMesh, the index of the picked line is returned in the `faceId` property of the `PickingInfo`, as we do with face index the picked Mesh is made of triangle faces ([barroij](https://github.com/barroij))
 - Do not clone mesh observables ([Sebavan](https://github.com/Sebavan))
 - Fixed Inspector resolution with AMD loader ([Sebavan](https://github.com/Sebavan))
+- Fix a bug when the index buffer changes size when it is updated by recreating the subMeshes when needed ([barroij](https://github.com/barroij))
 
 ### Viewer
 
