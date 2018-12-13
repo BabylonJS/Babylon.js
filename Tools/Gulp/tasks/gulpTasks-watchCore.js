@@ -6,7 +6,7 @@ var del = require("del");
 // Import Helpers.
 var processShaders = require("../helpers/gulp-processShaders");
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
-var rmDir = require('../helpers/gulp-rmDir');
+var rmDir = require("../../NodeHelpers/rmDir");
 
 // Read the full config.
 var config = require("../config.json");
