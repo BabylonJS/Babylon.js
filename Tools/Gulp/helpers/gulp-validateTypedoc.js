@@ -4,74 +4,12 @@ var fs = require('fs');
 var Vinyl = require('vinyl');
 var through = require('through2');
 var PluginError = require('plugin-error');
-var supportsColor = require('color-support');
+var nodeColorConsole = require('../../NodeHelpers/colorConsole');
 
-// ______________________________________________ LOGS ______________________________________________
-
-var hasColors = supportsColor();
-
-var red = hasColors ? '\x1b[31m' : '';
-var yellow = hasColors ? '\x1b[33m' : '';
-var green = hasColors ? '\x1b[32m' : '';
-var gray = hasColors ? '\x1b[90m' : '';
-var white = hasColors ? '\x1b[97m' : '';
-var clear = hasColors ? '\x1b[0m' : '';
-
-var currentColor = undefined;
-
-function getTimestamp() {
-    var time = new Date();
-    var timeInString = ("0" + time.getHours()).slice(-2) + ":" +
-        ("0" + time.getMinutes()).slice(-2) + ":" +
-        ("0" + time.getSeconds()).slice(-2);
-
-    if (currentColor) {
-        return white + '[' + currentColor + timeInString + clear + white + ']';
-    }
-    else {
-        return white + '[' + gray + timeInString + white + ']';
-    }
-}
-
-function log() {
-    currentColor = gray;
-    var time = getTimestamp();
-    process.stdout.write(time + ' ');
-    currentColor = undefined;
-
-    console.log.apply(console, arguments);
-    return this;
-}
-
-function warn() {
-    currentColor = yellow;
-    var time = getTimestamp();
-    process.stdout.write(time + ' ');
-    currentColor = undefined;
-
-    console.warn.apply(console, arguments);
-    return this;
-}
-
-function err() {
-    currentColor = red;
-    var time = getTimestamp();
-    process.stderr.write(time + ' ');
-    currentColor = undefined;
-
-    console.error.apply(console, arguments);
-    return this;
-}
-
-function success() {
-    currentColor = green;
-    var time = getTimestamp();
-    process.stdout.write(time + ' ');
-    currentColor = undefined;
-
-    console.log.apply(console, arguments);
-    return this;
-}
+const log = nodeColorConsole.log;
+const warn = nodeColorConsole.warn;
+const err = nodeColorConsole.error;
+const success = nodeColorConsole.success;
 
 // ______________________________________________ VALIDATION ____________________________________________
 

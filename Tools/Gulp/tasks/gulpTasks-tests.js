@@ -8,7 +8,7 @@ var webpackStream = require("webpack-stream");
 var rename = require("gulp-rename");
 
 // Import Helpers.
-var rmDir = require("../helpers/gulp-rmDir");
+var rmDir = require("../../NodeHelpers/rmDir");
 
 // Read the full config.
 var config = require("../config.json");

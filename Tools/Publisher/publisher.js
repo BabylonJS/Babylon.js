@@ -3,6 +3,8 @@ const prompt = require('prompt');
 const shelljs = require('shelljs');
 const fs = require('fs-extra');
 const path = require('path');
+const rmDir = require("../NodeHelpers/rmDir");
+const colorConsole = require("../NodeHelpers/colorConsole");
 
 // CMD Arguments Management.
 let doNotBuild = false;
@@ -18,23 +20,6 @@ const basePath = config.build.outputDirectory;
 const tempPath = config.build.tempDirectory + "packageES6/";
 const coreSrc = config.core.build.srcDirectory;
 const enginePath = coreSrc + "Engines/engine.ts";
-
-/**
- * Remove a directory.
- */
-const rmDir = function (dirPath) {
-    try { var files = fs.readdirSync(dirPath); }
-    catch (e) { return; }
-    if (files.length > 0)
-        for (var i = 0; i < files.length; i++) {
-            var filePath = dirPath + '/' + files[i];
-            if (fs.statSync(filePath).isFile())
-                fs.unlinkSync(filePath);
-            else
-                rmDir(filePath);
-        }
-    fs.rmdirSync(dirPath);
-};
 
 /**
  * Get Files from folder.
@@ -57,28 +42,30 @@ const getFiles = function(dir, files_) {
  * Update the version in the engine class for Babylon
  */
 function updateEngineVersion(newVersion) {
-    console.log("Updating version in engine.ts to: " + newVersion);
+    colorConsole.log("Updating version in engine.ts to: " + newVersion.green);
     let engineContent = fs.readFileSync(enginePath).toString();
     let replaced = engineContent.replace(/(public static get Version\(\): string {\s*return ")(.*)(";\s*})/g, "$1" + newVersion + "$3");
-    fs.writeFileSync(enginePath, replaced);
+    fs.writeFileSync(enginePath, replaced);    
+    colorConsole.emptyLine();
 }
 
 /**
  * Get the version from the engine class for Babylon
  */
 function getEngineVersion() {
-    console.log("Get version from engine.ts");
+    colorConsole.log("Get version from engine.ts");
     const engineContent = fs.readFileSync(enginePath).toString();
 
     const versionRegex = new RegExp(`public static get Version\\(\\): string {[\\s\\S]*return "([\\s\\S]*?)";[\\s\\S]*}`, "gm");
     const match = versionRegex.exec(engineContent);
     if (match && match.length) {
         const version = match[1];
-        console.log("Version found: " + version);
+        colorConsole.log("Version found: " + version.green);
+        colorConsole.emptyLine();
         return version;
     }
 
-    console.log("Version not found in engine.ts");
+    colorConsole.error("Version not found in engine.ts");
     process.exit(1);
 }
 
@@ -86,7 +73,7 @@ function getEngineVersion() {
  * Publish a package to npm.
  */
 function publish(version, packageName, basePath) {
-    console.log('    Publishing ' + packageName + " from " + basePath);
+    colorConsole.log('    Publishing ' + packageName.blue.bold + " from " + basePath.cyan);
 
     let tag = "";
     // check for alpha or beta
@@ -96,22 +83,24 @@ function publish(version, packageName, basePath) {
 
     //publish the respected package
     if (doNotPublish) {
-        console.log("    If publishing enabled: " + 'npm publish \"' + basePath + "\"" + ' ' + tag);
+        colorConsole.log("    If publishing enabled: " + ('npm publish \"' + basePath + "\"" + ' ' + tag).yellow);
     }
     else {
-        console.log("    Executing: " + 'npm publish \"' + basePath + "\"" + ' ' + tag);
+        colorConsole.log("    Executing: " + ('npm publish \"' + basePath + "\"" + ' ' + tag).bold);
         shelljs.exec('npm publish \"' + basePath + "\"" + ' ' + tag);
     }
+
+    colorConsole.success('    Publishing ' + "OK".green);
 }
 
 /**
  * Build the folder with Gulp.
  */
 function buildBabylonJSAndDependencies() {
-    console.log("Running gulp compilation");
+    colorConsole.log("Running gulp compilation");
     let exec = shelljs.exec("gulp typescript-libraries --gulpfile ../Gulp/gulpfile.js");
     if (exec.code) {
-        console.log("Error during compilation, aborting");
+        colorConsole.error("Error during compilation, aborting");
         process.exit(1);
     }
 }
@@ -120,7 +109,6 @@ function buildBabylonJSAndDependencies() {
  * Process ES6 Packages.
  */
 function processEs6Packages(version) {
-    console.log("Process ES6 Packages...");
     modules.forEach(moduleName => {
         let module = config[moduleName];
         let es6Config = module.build.es6;
@@ -128,17 +116,17 @@ function processEs6Packages(version) {
             return;
         }
 
-        console.log("Process ES6 Package: " + moduleName);
+        colorConsole.log("Process " + "UMD".magenta + " Package: " + moduleName.blue.bold);
 
         let projectPath = es6Config.tsFolder;
         let buildPath = path.normalize(tempPath + moduleName);
         let legacyPackageJson = require(module.build.packageJSON || basePath + module.build.distOutputDirectory + 'package.json');
 
-        console.log("    Cleanup " + buildPath);
+        colorConsole.log("    Cleanup " + buildPath.cyan);
         rmDir(buildPath);
 
         let command = 'tsc -t es5 -m esNext -p ' + projectPath + ' --outDir ' + buildPath;
-        console.log("    Executing " + command);
+        colorConsole.log("    Executing " + command.yellow);
 
         let tscCompile = shelljs.exec(command);
         if (tscCompile.code !== 0) {
@@ -179,18 +167,17 @@ function processEs6Packages(version) {
 
         // Do not publish yet.
         // publish(version, es6Config.packageName, buildPath);
+        colorConsole.emptyLine();
     });
-    console.log();
 }
 
 /**
  * Process Legacy Packages.
  */
 function processLegacyPackages(version) {
-    console.log("Process Legacy Packages...");
     modules.forEach(moduleName => {
         let module = config[moduleName];
-        console.log("Process Package: " + moduleName);
+        colorConsole.log("Process " + "UMD".magenta + " Package: " + moduleName.blue.bold);
 
         if (moduleName === "core") {
             processLegacyCore(version);
@@ -203,14 +190,14 @@ function processLegacyPackages(version) {
 
             if (module.build.requiredFiles) {
                 module.build.requiredFiles.forEach(file => {
-                    console.log("    Copy required file: ", file, outputDirectory + '/' + path.basename(file));
+                    colorConsole.log("    Copy required file: ", file.cyan, (outputDirectory + '/' + path.basename(file)).cyan);
                     fs.copySync(file, outputDirectory + '/' + path.basename(file));
                 });
             }
 
             let packageJson = require(outputDirectory + 'package.json');
             packageJson.version = version;
-            console.log("    Update package version to: " + version);
+            colorConsole.log("    Update package version to: " + version.green);
 
             if (packageJson.dependencies) {
                 Object.keys(packageJson.dependencies).forEach(key => {
@@ -222,9 +209,10 @@ function processLegacyPackages(version) {
             fs.writeFileSync(outputDirectory + 'package.json', JSON.stringify(packageJson, null, 4));
 
             publish(version, moduleName, outputDirectory);
+
+            colorConsole.emptyLine();
         }
     });
-    console.log();
 }
 
 /**
@@ -237,14 +225,14 @@ function processLegacyViewer(module, version) {
 
     if (module.build.requiredFiles) {
         module.build.requiredFiles.forEach(file => {
-            console.log("    Copy required file: ", file, buildPath + path.basename(file));
+            colorConsole.log("    Copy required file: ", file.cyan, (buildPath + path.basename(file)).cyan);
             fs.copySync(file, buildPath + path.basename(file));
         });
     }
 
     // The viewer needs to be built using tsc on the viewer's main repository
     // build the viewer.
-    console.log("    Executing " + 'tsc -p ' + projectPath);
+    colorConsole.log("    Executing " + ('tsc -p ' + projectPath).yellow);
 
     let tscCompile = shelljs.exec('tsc -p ' + projectPath);
     if (tscCompile.code !== 0) {
@@ -264,6 +252,7 @@ function processLegacyViewer(module, version) {
     fs.writeFileSync(buildPath + '/package.json', JSON.stringify(packageJson, null, 4));
 
     publish(version, "viewer", buildPath);
+    colorConsole.emptyLine();
 }
 
 /**
@@ -313,7 +302,7 @@ function processLegacyCore(version) {
 
     // update package.json
     packageJson.version = version;
-    console.log("    Generating file list");
+    colorConsole.log("    Generating file list");
     let packageFiles = ["package.json"];
     files.forEach(file => {
         if (!file.isDir) {
@@ -323,7 +312,7 @@ function processLegacyCore(version) {
             packageFiles.push(file.objectName + "/index.js", file.objectName + "/index.d.ts", file.objectName + "/es6.js")
         }
     });
-    console.log("    Updating package.json");
+    colorConsole.log("    Updating package.json");
     packageJson.files = packageFiles;
     packageJson.main = "babylon.js";
     packageJson.typings = "babylon.d.ts";
@@ -347,6 +336,7 @@ function processLegacyCore(version) {
     packageJson.typings = "dist/preview release/babylon.d.ts";
 
     fs.writeFileSync('../../package.json', JSON.stringify(packageJson, null, 4));
+    colorConsole.emptyLine();
 }
 
 const createVersion = function(version) {
@@ -378,7 +368,7 @@ module.exports = function(noBuild, noPublish, askVersion) {
             
             // Update the engine version if needed.
             if (!version || !version.length) {
-                console.log("New version required.");
+                colorConsole.error("New version required.");
                 Process.exit(1);
                 return;
             }
@@ -388,7 +378,7 @@ module.exports = function(noBuild, noPublish, askVersion) {
 
             // Invite user to tag with the new version.
             if (newVersion) {
-                console.log("Done, please tag git with " + version);
+                colorConsole.log("Done, please tag git with " + version);
             }
         });
     }
