@@ -139,6 +139,12 @@ function processEs6Packages(version) {
                 fs.copySync(file, buildPath + '/' + path.basename(file));
             });
         }
+        if (es6Config.requiredFiles) {
+            es6Config.requiredFiles.forEach(file => {
+                colorConsole.log("    Copy es6 required file: ", file.cyan, (buildPath + '/' + path.basename(file)).cyan);
+                fs.copySync(file, buildPath + '/' + path.basename(file));
+            });
+        }
 
         let files = getFiles(buildPath).map(f => f.replace(buildPath + "/", "")).filter(f => f.indexOf("assets/") === -1);
 
@@ -155,9 +161,20 @@ function processEs6Packages(version) {
                 let dependencies = legacyPackageJson[key];
                 legacyPackageJson[key] = {};
                 Object.keys(dependencies).forEach(packageName => {
-                    if (dependencies[packageName].indexOf("babylonjs") !== -1) {
-                        legacyPackageJson[key][packageName + "-es6"] = version;
-                    } else {
+                    if (packageName.indexOf("babylonjs") !== -1) {
+                        colorConsole.log("    Checking Internal Dependency: " + packageName.cyan);
+                        let dependencyName = packageName;
+                        for (var moduleName of modules) {
+                            if (config[moduleName] && config[moduleName].build.processDeclaration && config[moduleName].build.processDeclaration.packageName === packageName) {
+                                if (config[moduleName].build.es6) {
+                                    dependencyName = config[moduleName].build.es6.packageName;
+                                    colorConsole.log("    Replace Dependency: " + packageName.cyan + " by " + dependencyName.cyan);
+                                    break;
+                                }
+                            }
+                        }
+                        legacyPackageJson[key][dependencyName] = version;
+                    } else if (!module.isCore) {
                         legacyPackageJson[key][packageName] = dependencies[packageName];
                     }
                 });

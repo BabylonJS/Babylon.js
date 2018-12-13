@@ -99,8 +99,11 @@
                 "prependToNamespaceText": "declare module 'babylonjs' { export = BABYLON; }"
             },
             "es6": {
-                "packageName": "babylonjs-es6",
-                "tsFolder": "../../src/"
+                "packageName": "@babylonjs/core",
+                "tsFolder": "../../src/",
+                "requiredFiles": [
+                    "../../readme.md"
+                ]
             }
         }
     },
@@ -200,8 +203,11 @@
                 }
             },
             "es6": {
-                "packageName": "babylonjs-materials-es6",
-                "tsFolder": "../../materialsLibrary/"
+                "packageName": "@babylonjs/materials",
+                "tsFolder": "../../materialsLibrary/",
+                "requiredFiles": [
+                    "../../dist/preview release/materialsLibrary/readme.md"
+                ]
             }
         }
     },
@@ -236,8 +242,11 @@
                 }
             },
             "es6": {
-                "packageName": "babylonjs-post-process-es6",
-                "tsFolder": "../../postProcessLibrary/"
+                "packageName": "@babylonjs/post-processes",
+                "tsFolder": "../../postProcessLibrary/",
+                "requiredFiles": [
+                    "../../dist/preview release/postProcessesLibrary/readme.md"
+                ]
             }
         }
     },
@@ -312,8 +321,11 @@
                 }
             },
             "es6": {
-                "packageName": "babylonjs-procedural-textures-es6",
-                "tsFolder": "../../proceduralTexturesLibrary/"
+                "packageName": "@babylonjs/procedural-textures",
+                "tsFolder": "../../proceduralTexturesLibrary/",
+                "requiredFiles": [
+                    "../../dist/preview release/proceduralTexturesLibrary/readme.md"
+                ]
             }
         }
     },
@@ -382,8 +394,11 @@
                 }
             },
             "es6": {
-                "packageName": "babylonjs-loaders-es6",
-                "tsFolder": "../../loaders/"
+                "packageName": "@babylonjs/loaders",
+                "tsFolder": "../../loaders/",
+                "requiredFiles": [
+                    "../../dist/preview release/loaders/readme.md"
+                ]
             }
         }
     },
@@ -439,8 +454,11 @@
                 ]
             },
             "es6": {
-                "packageName": "babylonjs-serializers-es6",
-                "tsFolder": "../../serializers/"
+                "packageName": "@babylonjs/serializers",
+                "tsFolder": "../../serializers/",
+                "requiredFiles": [
+                    "../../dist/preview release/serializers/readme.md"
+                ]
             }
         }
     },
@@ -467,8 +485,11 @@
                 }
             },
             "es6": {
-                "packageName": "babylonjs-gui-es6",
-                "tsFolder": "../../gui/"
+                "packageName": "@babylonjs/gui",
+                "tsFolder": "../../gui/",
+                "requiredFiles": [
+                    "../../dist/preview release/gui/readme.md"
+                ]
             }
         }
     },
@@ -497,10 +518,6 @@
                     "babylonjs-serializers": "BABYLON",
                     "babylonjs-gui": "BABYLON.GUI"
                 }
-            },
-            "es6": {
-                "packageName": "babylonjs-inspector-es6",
-                "tsFolder": "../../inspector/"
             }
         }
     },
