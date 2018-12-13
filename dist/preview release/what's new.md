@@ -2,6 +2,7 @@
 
 ## Major updates
 
+- New [fancy forum](https://forum.babylonjs.com)!! ([Deltakosh](https://github.com/deltakosh))
 - [Inspector v2.0](https://doc.babylonjs.com/features/playground_debuglayer). [Dev log](https://medium.com/@babylonjs/dev-log-creating-the-new-inspector-b15c50900205) ([Deltakosh](https://github.com/deltakosh))
 - Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
 - Added [Object Based Motion Blur](http://doc.babylonjs.com/how_to/using_motionblurpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
