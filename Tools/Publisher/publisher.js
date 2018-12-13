@@ -116,7 +116,7 @@ function processEs6Packages(version) {
             return;
         }
 
-        colorConsole.log("Process " + "UMD".magenta + " Package: " + moduleName.blue.bold);
+        colorConsole.log("Process " + "ES6".magenta + " Package: " + moduleName.blue.bold);
 
         let projectPath = es6Config.tsFolder;
         let buildPath = path.normalize(tempPath + moduleName);
@@ -135,6 +135,7 @@ function processEs6Packages(version) {
 
         if (module.build.requiredFiles) {
             module.build.requiredFiles.forEach(file => {
+                colorConsole.log("    Copy required file: ", file.cyan, (buildPath + '/' + path.basename(file)).cyan);
                 fs.copySync(file, buildPath + '/' + path.basename(file));
             });
         }
