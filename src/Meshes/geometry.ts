@@ -530,7 +530,15 @@
             if (!this._indexBufferIsUpdatable) {
                 this.setIndices(indices, null, true);
             } else {
+                const needToUpdateSubMeshes = indices.length !== this._indices.length;
+
+                this._indices = indices;
                 this._engine.updateDynamicIndexBuffer(this._indexBuffer, indices, offset);
+                if (needToUpdateSubMeshes) {
+                    for (const mesh of this._meshes) {
+                        mesh._createGlobalSubMesh(true);
+                    }
+                }
             }
         }
 
@@ -557,12 +565,10 @@
                 this._totalVertices = totalVertices;
             }
 
-            var meshes = this._meshes;
-            var numOfMeshes = meshes.length;
-
-            for (var index = 0; index < numOfMeshes; index++) {
-                meshes[index]._createGlobalSubMesh(true);
+            for (const mesh of this._meshes) {
+                mesh._createGlobalSubMesh(true);
             }
+
             this.notifyUpdate();
         }
 
@@ -927,17 +933,19 @@
                 // using slice() to make a copy of the array and not just reference it
                 var data = this.getVerticesData(kind);
 
-                if (data instanceof Float32Array) {
-                    vertexData.set(new Float32Array(<Float32Array>data), kind);
-                } else {
-                    vertexData.set((<number[]>data).slice(0), kind);
-                }
-                if (!stopChecking) {
-                    let vb = this.getVertexBuffer(kind);
+                if (data) {
+                    if (data instanceof Float32Array) {
+                        vertexData.set(new Float32Array(<Float32Array>data), kind);
+                    } else {
+                        vertexData.set((<number[]>data).slice(0), kind);
+                    }
+                    if (!stopChecking) {
+                        let vb = this.getVertexBuffer(kind);
 
-                    if (vb) {
-                        updatable = vb.isUpdatable();
-                        stopChecking = !updatable;
+                        if (vb) {
+                            updatable = vb.isUpdatable();
+                            stopChecking = !updatable;
+                        }
                     }
                 }
             }
