@@ -1220,7 +1220,8 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
-                        this._forEachPrimitive(targetNode, (babylonMesh: Mesh) => {
+                        this._forEachPrimitive(targetNode, (babylonAbstractMesh: AbstractMesh) => {
+                            const babylonMesh = babylonAbstractMesh as Mesh;
                             const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
                             const babylonAnimationClone = babylonAnimation.clone();
                             morphTarget.animations.push(babylonAnimationClone);
@@ -1359,7 +1360,8 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
 
             if (accessor.sparse) {
                 const sparse = accessor.sparse;
-                accessor._data = accessor._data.then((data: Float32Array) => {
+                accessor._data = accessor._data.then((view: ArrayBufferView) => {
+                    const data = view as Float32Array;
                     const indicesBufferView = ArrayItem.Get(`${context}/sparse/indices/bufferView`, this.gltf.bufferViews, sparse.indices.bufferView);
                     const valuesBufferView = ArrayItem.Get(`${context}/sparse/values/bufferView`, this.gltf.bufferViews, sparse.values.bufferView);
                     return Promise.all([
