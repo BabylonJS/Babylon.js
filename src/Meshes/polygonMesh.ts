@@ -165,12 +165,18 @@ import { Mesh } from "../Meshes/mesh";
         }
 
         /**
+         * Babylon reference to the earcut plugin.
+         */
+        public bjsEarcut: any;
+
+        /**
          * Creates a PolygonMeshBuilder
          * @param name name of the builder
          * @param contours Path of the polygon
          * @param scene scene to add to
          */
-        constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene) {
+        constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene, earcutInjection = earcut) {
+            this.bjsEarcut = earcutInjection;
             this._name = name;
             this._scene = scene;
 
@@ -186,7 +192,7 @@ import { Mesh } from "../Meshes/mesh";
             this._points.add(points);
             this._outlinepoints.add(points);
 
-            if (typeof earcut === 'undefined') {
+            if (typeof this.bjsEarcut === 'undefined') {
                 Logger.Warn("Earcut was not found, the polygon will not be built.");
             }
         }
@@ -230,7 +236,7 @@ import { Mesh } from "../Meshes/mesh";
 
             var indices = new Array<number>();
 
-            let res = earcut(this._epoints, this._eholes, 2);
+            let res = this.bjsEarcut(this._epoints, this._eholes, 2);
 
             for (let i = 0; i < res.length; i++) {
                 indices.push(res[i]);
