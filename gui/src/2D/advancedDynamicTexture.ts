@@ -724,19 +724,22 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /** @hidden */
-    private onClipboardCopy = (evt: ClipboardEvent) => {
+    private onClipboardCopy = (rawEvent: Event) => {
+        const evt = rawEvent as ClipboardEvent;
         let ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     }
     /** @hidden */
-    private onClipboardCut = (evt: ClipboardEvent) => {
+    private onClipboardCut = (rawEvent: Event) => {
+        const evt = rawEvent as ClipboardEvent;
         let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     }
     /** @hidden */
-    private onClipboardPaste = (evt: ClipboardEvent) => {
+    private onClipboardPaste = (rawEvent: Event) => {
+        const evt = rawEvent as ClipboardEvent;
         let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();

@@ -288,7 +288,8 @@ export class Inspector {
 
     public static EarlyAttachToLoader() {
         if (!this._GlobalState.onPluginActivatedObserver) {
-            this._GlobalState.onPluginActivatedObserver = SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
+            this._GlobalState.onPluginActivatedObserver = SceneLoader.OnPluginActivatedObservable.add((rawLoader) => {
+                const loader = rawLoader as GLTFFileLoader;
                 if (loader.name === "gltf") {
                     this._GlobalState.prepareGLTFPlugin(loader);
                 }

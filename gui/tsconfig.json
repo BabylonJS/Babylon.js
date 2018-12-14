@@ -1,25 +1,6 @@
 {
+    "extends": "../tsconfigRules",
     "compilerOptions": {
-        "experimentalDecorators": true,
-        "module": "commonjs",
-        "target": "es5",
-        "moduleResolution": "node",
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "noUnusedLocals": true,
-        "strictNullChecks": true,
-        "declaration": true,
-        "sourceMap": true,
-        "lib": [
-            "es5",
-            "dom",
-            "es2015.promise",
-            "es2015.collection",
-            "es2015.iterable"
-        ],
-        "skipDefaultLibCheck": true,
-        "skipLibCheck": true,
         "baseUrl": "./src/",
         "rootDir": "./src/",
         "paths": {
