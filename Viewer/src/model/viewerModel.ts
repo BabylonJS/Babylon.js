@@ -196,7 +196,11 @@ export class ViewerModel implements IDisposable {
         if (!mesh.parent) {
             mesh.parent = this._pivotMesh;
         }
-        mesh.receiveShadows = !!this.configuration.receiveShadows;
+
+        if (mesh.getClassName() !== "InstancedMesh") {
+            mesh.receiveShadows = !!this.configuration.receiveShadows;
+        }
+
         this._meshes.push(mesh);
         if (triggerLoaded) {
             return this.onLoadedObservable.notifyObserversWithPromise(this);
@@ -557,7 +561,7 @@ export class ViewerModel implements IDisposable {
                 material.disableLighting = !this._modelConfiguration.material.directEnabled;
             }
             if (this._configurationContainer && this._configurationContainer.reflectionColor) {
-                material.reflectionColor = this._configurationContainer.reflectionColor;
+                material.reflectionColor = this._configurationContainer.reflectionColor.clone();
             }
         }
         else if (material instanceof MultiMaterial) {
