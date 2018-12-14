@@ -355,8 +355,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
     }
 
+    private _disableInvalidateRect = false;
     private _invalidatedRectangle: Nullable<Measure> = null;
     public invalidateRect(minX: number, minY: number, maxX: number, maxY: number) {
+        if (this._disableInvalidateRect) {
+            return;
+        }
         if (!this._invalidatedRectangle) {
             this._invalidatedRectangle = new Measure(minX, minY, maxX - minX, maxY - minY);
         }else {
