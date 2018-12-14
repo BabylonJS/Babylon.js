@@ -2,6 +2,7 @@
 
 ## Major updates
 
+- New [fancy forum](https://forum.babylonjs.com)!! ([Deltakosh](https://github.com/deltakosh))
 - [Inspector v2.0](https://doc.babylonjs.com/features/playground_debuglayer). [Dev log](https://medium.com/@babylonjs/dev-log-creating-the-new-inspector-b15c50900205) ([Deltakosh](https://github.com/deltakosh))
 - Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
 - Added [Object Based Motion Blur](http://doc.babylonjs.com/how_to/using_motionblurpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
@@ -58,6 +59,7 @@
   - Enabled a removal in O(1) from the `transformNodes` array and `materials` array of the `Scene`. As a consequence, the order of the element within these arrays might change during a removal
   - Enabled a removal in O(1) from the `instances` array of a `Mesh`. As a consequence, the order of the element within this array might change during a removal
   - Stopped calling `Array.splice` on the `scene.meshes` array and on the `engine._uniformBuffer` when removing an element. As a consequence, the order of the element within these arrays might change during a removal
+  - Added an option `useGeometryUniqueIdsMap` in the `Scene` constructor options. When set to true, each `Scene` isntance will have and will keep up-to-date a map of geometry per `uniqueId`. This is to avoid browsing all the geometries of the scene when a new one is being pushed. It also enables a removal of geometry in O(1). Disabled by default
   - Added an option `useMaterialMeshMap` in the `Scene` constructor options. When set to true, each `Material` isntance will have and will keep up-to-date a map of its bound meshes. This is to avoid browsing all the meshes of the scene to retrieve the ones bound to the current material when disposing the Material. Disabled by default
   - Added an option `useClonedMeshhMap` in the `Scene` constructor options. When set to true, each `Mesh` will have and will keep up-to-date a map of cloned meshes. This is to avoid browsing all the meshes of the scene to retrieve the ones that have the current mesh as source mesh. Disabled by default
   - Added `blockfreeActiveMeshesAndRenderingGroups` property in the `Scene`, following the same model as `blockMaterialDirtyMechanism`. This is to avoid calling `Scene.freeActiveMeshes` and `Scene.freeRenderingGroups` for each disposed mesh when we dispose several meshes in a row. One have to set `blockfreeActiveMeshesAndRenderingGroups` to `true` just before disposing the meshes, and set it back to `false` just after
@@ -84,6 +86,7 @@
 - Invert vScale of compressed ktx textures as they are inverted in the file and UNPACK_FLIP_Y_WEBGL is not supported by ktx ([TrevorDev](https://github.com/TrevorDev))
 - Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
 - InvalidateRect added to AdvancedDynamicTexture to improve perf for highly populated GUIs ([TrevorDev](https://github.com/TrevorDev))
+- Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 
 ### glTF Loader
 
@@ -100,6 +103,7 @@
 ### Viewer
 
 ### Materials Library
+- Added the `cameraOffset` vector property in the `SkyMaterial` to get an offset according to the horizon ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
 - Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
@@ -124,6 +128,8 @@
 - SixDofDragBehavior will support when the camera is parented ([TrevorDev](https://github.com/TrevorDev))
 - Deactivate webvr lasers when not in vr ([TrevorDev](https://github.com/TrevorDev))
 - Update physics position using absolutePosition instead of pivotPosition ([TrevorDev](https://github.com/TrevorDev))
+- Disable camera arrow key controls when the Command key is selected on Mac OS ([kcoley](https://github.com/kcoley))
+- Viewer should not set receiveShadows on an instanced mesh ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -141,6 +147,9 @@
 - Fixed infiniteDistance not working anymore ([Sebavan](https://github.com/Sebavan))
 - Fixed bug in SolidParticle BoundingSphere update within the SolidParticleSystem ([barroij](https://github.com/barroij))
 - Update Picking so that when the picked Mesh is a LinesMesh, the index of the picked line is returned in the `faceId` property of the `PickingInfo`, as we do with face index the picked Mesh is made of triangle faces ([barroij](https://github.com/barroij))
+- Do not clone mesh observables ([Sebavan](https://github.com/Sebavan))
+- Fixed Inspector resolution with AMD loader ([Sebavan](https://github.com/Sebavan))
+- Fix a bug when a call to `updateIndices` leads to changing the size of the index buffer by recreating the subMeshes in that case ([barroij](https://github.com/barroij))
 
 ### Viewer
 

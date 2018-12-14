@@ -172,6 +172,9 @@ module BABYLON {
         private _cachedCoordinatesMode: number;
 
         /** @hidden */
+        protected _initialSamplingMode = Texture.BILINEAR_SAMPLINGMODE;
+
+        /** @hidden */
         public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
         private _deleteBuffer: boolean;
         protected _format: Nullable<number>;
@@ -200,7 +203,11 @@ module BABYLON {
          * Get the current sampling mode associated with the texture.
          */
         public get samplingMode(): number {
-            return this._samplingMode;
+            if (!this._texture) {
+                return this._initialSamplingMode;
+            }
+
+            return this._texture.samplingMode;
         }
 
         /**
@@ -232,7 +239,7 @@ module BABYLON {
             this.url = url;
             this._noMipmap = noMipmap;
             this._invertY = invertY;
-            this._samplingMode = samplingMode;
+            this._initialSamplingMode = samplingMode;
             this._buffer = buffer;
             this._deleteBuffer = deleteBuffer;
             if (format) {
@@ -272,7 +279,7 @@ module BABYLON {
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createTexture(this.url, noMipmap, invertY, scene, this._samplingMode, load, onError, this._buffer, undefined, this._format);
+                    this._texture = scene.getEngine().createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format);
                     if (deleteBuffer) {
                         delete this._buffer;
                     }
@@ -329,10 +336,10 @@ module BABYLON {
             }
 
             this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
-            this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
+            this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode);
 
             if (!this._texture) {
-                this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
+                this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
@@ -506,7 +513,7 @@ module BABYLON {
          */
         public clone(): Texture {
             return SerializationHelper.Clone(() => {
-                return new Texture(this._texture ? this._texture.url : null, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
+                return new Texture(this._texture ? this._texture.url : null, this.getScene(), this._noMipmap, this._invertY, this.samplingMode);
             }, this);
         }
 
@@ -625,7 +632,7 @@ module BABYLON {
             // Update Sampling Mode
             if (parsedTexture.samplingMode) {
                 var sampling: number = parsedTexture.samplingMode;
-                if (texture && texture._samplingMode !== sampling) {
+                if (texture && texture.samplingMode !== sampling) {
                     texture.updateSamplingMode(sampling);
                 }
             }

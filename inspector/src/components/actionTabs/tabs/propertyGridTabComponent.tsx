@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { Mesh, TransformNode, Material, StandardMaterial, Texture, PBRMaterial, Scene, FreeCamera, ArcRotateCamera, HemisphericLight, PointLight, BackgroundMaterial, AnimationGroup } from "babylonjs";
+import { Mesh, TransformNode, Material, StandardMaterial, Texture, PBRMaterial, Scene, FreeCamera, ArcRotateCamera, HemisphericLight, PointLight, BackgroundMaterial, AnimationGroup, PBRMetallicRoughnessMaterial, PBRSpecularGlossinessMaterial } from "babylonjs";
 import { MaterialPropertyGridComponent } from "./propertyGrids/materials/materialPropertyGridComponent";
 import { StandardMaterialPropertyGridComponent } from "./propertyGrids/materials/standardMaterialPropertyGridComponent";
 import { TexturePropertyGridComponent } from "./propertyGrids/materials/texturePropertyGridComponent";
@@ -33,6 +33,8 @@ import { RadioButtonPropertyGridComponent } from "./propertyGrids/gui/radioButto
 import { LinePropertyGridComponent } from "./propertyGrids/gui/linePropertyGridComponent";
 import { ScrollViewerPropertyGridComponent } from "./propertyGrids/gui/scrollViewerPropertyGridComponent";
 import { GridPropertyGridComponent } from "./propertyGrids/gui/gridPropertyGridComponent";
+import { PBRMetallicRoughnessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent";
+import { PBRSpecularGlossinessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -135,6 +137,24 @@ export class PropertyGridTabComponent extends PaneComponent {
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
+            if (className === "PBRMetallicRoughnessMaterial") {
+                const material = entity as PBRMetallicRoughnessMaterial;
+                return (<PBRMetallicRoughnessMaterialPropertyGridComponent
+                    material={material}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "PBRSpecularGlossinessMaterial") {
+                const material = entity as PBRSpecularGlossinessMaterial;
+                return (<PBRSpecularGlossinessMaterialPropertyGridComponent
+                    material={material}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
             if (className === "BackgroundMaterial") {
                 const material = entity as BackgroundMaterial;
                 return (<BackgroundMaterialPropertyGridComponent
@@ -163,6 +183,7 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("Texture") !== -1) {
                 const texture = entity as Texture;
                 return (<TexturePropertyGridComponent texture={texture}
+                    globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
