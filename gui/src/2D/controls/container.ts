@@ -414,8 +414,8 @@ export class Container extends Control {
     public dispose() {
         super.dispose();
 
-        while (this._children.length) {
-            this._children[0].dispose();
+        for (var index = this.children.length - 1; index >= 0; index--) {
+            this.children[index].dispose();
         }
     }
 }
