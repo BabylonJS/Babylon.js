@@ -360,11 +360,20 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!this._invalidatedRectangle) {
             this._invalidatedRectangle = new Measure(minX, minY, maxX - minX, maxY - minY);
         }else {
-            this._invalidatedRectangle.left = Math.min(this._invalidatedRectangle.left, minX);
-            this._invalidatedRectangle.top = Math.min(this._invalidatedRectangle.top, minY);
-            this._invalidatedRectangle.width = Math.max(this._invalidatedRectangle.width, maxX - this._invalidatedRectangle.left);
-            this._invalidatedRectangle.height = Math.max(this._invalidatedRectangle.height, maxY - this._invalidatedRectangle.top);
+            // Compute intersection
+            var maxLeft = Math.max(this._invalidatedRectangle.left + this._invalidatedRectangle.width, maxX);
+            var maxTop = Math.max(this._invalidatedRectangle.top + this._invalidatedRectangle.height, maxY);
+            this._invalidatedRectangle.left =  Math.min(this._invalidatedRectangle.left, minX)
+            this._invalidatedRectangle.top = Math.min(this._invalidatedRectangle.top, minY)
+            this._invalidatedRectangle.width = maxLeft - this._invalidatedRectangle.left
+            this._invalidatedRectangle.height =  maxTop - this._invalidatedRectangle.top
         }
+
+        // Ensure there are no pixel fractions
+        this._invalidatedRectangle.left = Math.floor(this._invalidatedRectangle.left)
+        this._invalidatedRectangle.top = Math.floor(this._invalidatedRectangle.top)
+        this._invalidatedRectangle.width  = Math.ceil(this._invalidatedRectangle.width )
+        this._invalidatedRectangle.height = Math.ceil(this._invalidatedRectangle.height)
     }
 
     /**
@@ -483,6 +492,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 this._rootContainer._markAllAsDirty();
             }
         }
+
+        this.invalidateRect(0,0,textureSize.width,textureSize.height);
     }
 
     /** @hidden */
@@ -596,6 +607,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
 
         this._rootContainer._render(context, this._invalidatedRectangle);
+        // if(this._invalidatedRectangle){
+        //     context.fillStyle = '#'+Math.floor(Math.random()*16777215).toString(16);
+        // context.fillRect(this._invalidatedRectangle.left, this._invalidatedRectangle.top, this._invalidatedRectangle.width, this._invalidatedRectangle.height);
+        // }
+        
+
         this._invalidatedRectangle = null;
     }
 
