@@ -307,6 +307,7 @@ export class Control {
         }
 
         this._scaleX = value;
+        this._transform()
         this._markAsDirty();
         this._markMatrixAsDirty();
     }
@@ -324,6 +325,7 @@ export class Control {
         }
 
         this._scaleY = value;
+        this._transform()
         this._markAsDirty();
         this._markMatrixAsDirty();
     }
@@ -1083,11 +1085,26 @@ export class Control {
     /** @hidden */
     protected invalidateRect() {
         if (this.host) {
+            // factor in rotation
+            var rect = BABYLON.Polygon.Rectangle(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.left + this._currentMeasure.width, this._currentMeasure.top + this._currentMeasure.height);
+            var min = new Vector2(Number.MAX_VALUE,Number.MAX_VALUE);
+            var max = new Vector2(0,0);
+            for(var i=0;i<4;i++){
+                this._invertTransformMatrix.invertToRef(this._invertTransformMatrix);
+                this._invertTransformMatrix.transformCoordinates(rect[i].x, rect[i].y, rect[i]);
+                min.x = Math.min(min.x, rect[i].x)
+                min.y = Math.min(min.y, rect[i].y)
+                max.x = Math.max(max.x, rect[i].x)
+                max.y = Math.max(max.y, rect[i].y)
+                this._invertTransformMatrix.invertToRef(this._invertTransformMatrix);
+            }
+            console.log("dirty "+this.name)
+       
             this.host.invalidateRect(
-                this._currentMeasure.left,
-                this._currentMeasure.top,
-                this._currentMeasure.left + this._currentMeasure.width,
-                this._currentMeasure.top + this._currentMeasure.height
+                min.x,
+                min.y,
+                max.x,
+                max.y
             );
         }
     }
@@ -1125,7 +1142,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _transform(context: CanvasRenderingContext2D): void {
+    protected _transform(context?: CanvasRenderingContext2D): void {
         if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
             return;
         }
@@ -1133,17 +1150,19 @@ export class Control {
         // postTranslate
         var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
         var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
-        context.translate(offsetX, offsetY);
+        if(context){
+            context.translate(offsetX, offsetY);
 
-        // rotate
-        context.rotate(this._rotation);
+            // rotate
+            context.rotate(this._rotation);
 
-        // scale
-        context.scale(this._scaleX, this._scaleY);
+            // scale
+            context.scale(this._scaleX, this._scaleY);
 
-        // preTranslate
-        context.translate(-offsetX, -offsetY);
+            // preTranslate
+            context.translate(-offsetX, -offsetY);
 
+        }
         // Need to update matrices?
         if (this._isMatrixDirty || this._cachedOffsetX !== offsetX || this._cachedOffsetY !== offsetY) {
             this._cachedOffsetX = offsetX;
@@ -1395,8 +1414,19 @@ export class Control {
         // DO nothing
     }
 
-    private _clip(context: CanvasRenderingContext2D) {
+    private _clip(context: CanvasRenderingContext2D, invalidatedRectangle?:Nullable<Measure>) {
         context.beginPath();
+
+        var iMeasure = new Measure(0,0,0,0);
+        iMeasure.copyFrom(this._currentMeasure)
+        if(invalidatedRectangle){
+            var right = Math.min(invalidatedRectangle.left + invalidatedRectangle.width, this._currentMeasure.left + this._currentMeasure.width)
+            var bottom = Math.min(invalidatedRectangle.top + invalidatedRectangle.height, this._currentMeasure.top + this._currentMeasure.height)
+            iMeasure.left = Math.max(invalidatedRectangle.left, this._currentMeasure.left)
+            iMeasure.top = Math.max(invalidatedRectangle.top, this._currentMeasure.top)
+            iMeasure.width = right - iMeasure.left;
+            iMeasure.height = bottom - iMeasure.top;
+        }
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             var shadowOffsetX = this.shadowOffsetX;
@@ -1408,12 +1438,12 @@ export class Control {
             var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
-            context.rect(this._currentMeasure.left + leftShadowOffset,
-                this._currentMeasure.top + topShadowOffset,
-                this._currentMeasure.width + rightShadowOffset - leftShadowOffset,
-                this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
+            context.rect(iMeasure.left + leftShadowOffset,
+                iMeasure.top + topShadowOffset,
+                iMeasure.width + rightShadowOffset - leftShadowOffset,
+                iMeasure.height + bottomShadowOffset - topShadowOffset);
         } else {
-            context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            context.rect(iMeasure.left, iMeasure.top, iMeasure.width, iMeasure.height);
         }
 
         context.clip();
@@ -1434,7 +1464,7 @@ export class Control {
 
         // Clip
         if (this.clipChildren) {
-            this._clip(context);
+            this._clip(context, invalidatedRectangle);
         }
 
         if (this.onBeforeDrawObservable.hasObservers()) {

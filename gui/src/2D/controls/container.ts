@@ -254,11 +254,9 @@ export class Container extends Control {
             }
 
             context.fillStyle = this._background;
-            if (invalidatedRectangle) {
-                context.fillRect(invalidatedRectangle.left, invalidatedRectangle.top, invalidatedRectangle.width, invalidatedRectangle.height);
-            }else {
-                context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-            }
+
+            context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+
             context.restore();
         }
     }
