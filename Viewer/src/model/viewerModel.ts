@@ -557,7 +557,7 @@ export class ViewerModel implements IDisposable {
                 material.disableLighting = !this._modelConfiguration.material.directEnabled;
             }
             if (this._configurationContainer && this._configurationContainer.reflectionColor) {
-                material.reflectionColor = this._configurationContainer.reflectionColor;
+                material.reflectionColor = this._configurationContainer.reflectionColor.clone();
             }
         }
         else if (material instanceof MultiMaterial) {
