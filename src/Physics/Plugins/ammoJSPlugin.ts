@@ -51,12 +51,13 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
         /**
          * Initializes the ammoJS plugin
          * @param _useDeltaForWorldStep if the time between frames should be used when calculating physics steps (Default: true)
+         * @param ammoInjection can be used to inject your own ammo reference
          */
-        public constructor(private _useDeltaForWorldStep: boolean = true) {
-            if (typeof Ammo === "function") {
-                Ammo();
+        public constructor(private _useDeltaForWorldStep: boolean = true, ammoInjection: any = Ammo) {
+            if (typeof ammoInjection === "function") {
+                ammoInjection();
             }
-            this.bjsAMMO = Ammo;
+            this.bjsAMMO = ammoInjection;
             if (!this.isSupported()) {
                 Logger.Error("AmmoJS is not available. Please make sure you included the js file.");
                 return;

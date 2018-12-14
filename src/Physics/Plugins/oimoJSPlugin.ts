@@ -16,8 +16,8 @@ import { Logger } from "../../Misc/logger";
         public name: string = "OimoJSPlugin";
         public BJSOIMO: any;
 
-        constructor(iterations?: number) {
-            this.BJSOIMO = OIMO;
+        constructor(iterations?: number, oimoInjection = OIMO) {
+            this.BJSOIMO = oimoInjection;
             this.world = new this.BJSOIMO.World({
                 iterations: iterations
             });

@@ -19,9 +19,10 @@ import { PhysicsEngine } from "../../Physics/physicsEngine";
         private _physicsMaterials = new Array();
         private _fixedTimeStep: number = 1 / 60;
         //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
-        public BJSCANNON = CANNON;
+        public BJSCANNON: any;
 
-        public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10) {
+        public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10, cannonInjection = CANNON) {
+            this.BJSCANNON = cannonInjection;
             if (!this.isSupported()) {
                 Logger.Error("CannonJS is not available. Please make sure you included the js file.");
                 return;
