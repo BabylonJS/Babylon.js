@@ -307,7 +307,7 @@ export class Control {
         }
 
         this._scaleX = value;
-        this._transform()
+        this._transform();
         this._markAsDirty();
         this._markMatrixAsDirty();
     }
@@ -325,7 +325,7 @@ export class Control {
         }
 
         this._scaleY = value;
-        this._transform()
+        this._transform();
         this._markAsDirty();
         this._markMatrixAsDirty();
     }
@@ -1073,7 +1073,7 @@ export class Control {
     }
 
     /** @hidden */
-    public intersectsRect(rect: Measure) {
+    public _intersectsRect(rect: Measure) {
         var hit = ! (this._currentMeasure.left > rect.left + rect.width ||
              this._currentMeasure.left + this._currentMeasure.width < rect.left ||
              this._currentMeasure.top > rect.top + rect.height ||
@@ -1085,21 +1085,20 @@ export class Control {
     /** @hidden */
     protected invalidateRect() {
         if (this.host) {
-            // factor in rotation
-            var rect = BABYLON.Polygon.Rectangle(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.left + this._currentMeasure.width, this._currentMeasure.top + this._currentMeasure.height);
-            var min = new Vector2(Number.MAX_VALUE,Number.MAX_VALUE);
-            var max = new Vector2(0,0);
-            for(var i=0;i<4;i++){
-                this._invertTransformMatrix.invertToRef(this._invertTransformMatrix);
-                this._invertTransformMatrix.transformCoordinates(rect[i].x, rect[i].y, rect[i]);
-                min.x = Math.min(min.x, rect[i].x)
-                min.y = Math.min(min.y, rect[i].y)
-                max.x = Math.max(max.x, rect[i].x)
-                max.y = Math.max(max.y, rect[i].y)
-                this._invertTransformMatrix.invertToRef(this._invertTransformMatrix);
+            // Compute aabb of rotated container box (eg. to handle rotation)
+            var rectanglePoints = BABYLON.Polygon.Rectangle(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.left + this._currentMeasure.width, this._currentMeasure.top + this._currentMeasure.height);
+            var min = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            var max = new Vector2(0, 0);
+            this._invertTransformMatrix.invertToRef(this._invertTransformMatrix);
+            for (var i = 0; i < 4; i++) {
+                this._invertTransformMatrix.transformCoordinates(rectanglePoints[i].x, rectanglePoints[i].y, rectanglePoints[i]);
+                min.x = Math.min(min.x, rectanglePoints[i].x);
+                min.y = Math.min(min.y, rectanglePoints[i].y);
+                max.x = Math.max(max.x, rectanglePoints[i].x);
+                max.y = Math.max(max.y, rectanglePoints[i].y);
             }
-            console.log("dirty "+this.name)
-       
+            this._invertTransformMatrix.invertToRef(this._invertTransformMatrix);
+
             this.host.invalidateRect(
                 min.x,
                 min.y,
@@ -1117,7 +1116,7 @@ export class Control {
 
         this._isDirty = true;
 
-        // Redraw only the this rectangle
+        // Redraw only this rectangle
         if (this._host) {
             this._host.markAsDirty();
             this.invalidateRect();
@@ -1150,7 +1149,7 @@ export class Control {
         // postTranslate
         var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
         var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
-        if(context){
+        if (context) {
             context.translate(offsetX, offsetY);
 
             // rotate
@@ -1161,7 +1160,6 @@ export class Control {
 
             // preTranslate
             context.translate(-offsetX, -offsetY);
-
         }
         // Need to update matrices?
         if (this._isMatrixDirty || this._cachedOffsetX !== offsetX || this._cachedOffsetY !== offsetY) {
@@ -1414,18 +1412,17 @@ export class Control {
         // DO nothing
     }
 
-    private _clip(context: CanvasRenderingContext2D, invalidatedRectangle?:Nullable<Measure>) {
+    private static _ClipMeasure = new Measure(0, 0, 0, 0);
+    private _clip(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>) {
         context.beginPath();
-
-        var iMeasure = new Measure(0,0,0,0);
-        iMeasure.copyFrom(this._currentMeasure)
-        if(invalidatedRectangle){
-            var right = Math.min(invalidatedRectangle.left + invalidatedRectangle.width, this._currentMeasure.left + this._currentMeasure.width)
-            var bottom = Math.min(invalidatedRectangle.top + invalidatedRectangle.height, this._currentMeasure.top + this._currentMeasure.height)
-            iMeasure.left = Math.max(invalidatedRectangle.left, this._currentMeasure.left)
-            iMeasure.top = Math.max(invalidatedRectangle.top, this._currentMeasure.top)
-            iMeasure.width = right - iMeasure.left;
-            iMeasure.height = bottom - iMeasure.top;
+        Control._ClipMeasure.copyFrom(this._currentMeasure);
+        if (invalidatedRectangle) {
+            var right = Math.min(invalidatedRectangle.left + invalidatedRectangle.width, this._currentMeasure.left + this._currentMeasure.width);
+            var bottom = Math.min(invalidatedRectangle.top + invalidatedRectangle.height, this._currentMeasure.top + this._currentMeasure.height);
+            Control._ClipMeasure.left = Math.max(invalidatedRectangle.left, this._currentMeasure.left);
+            Control._ClipMeasure.top = Math.max(invalidatedRectangle.top, this._currentMeasure.top);
+            Control._ClipMeasure.width = right - Control._ClipMeasure.left;
+            Control._ClipMeasure.height = bottom - Control._ClipMeasure.top;
         }
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -1438,12 +1435,14 @@ export class Control {
             var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
-            context.rect(iMeasure.left + leftShadowOffset,
-                iMeasure.top + topShadowOffset,
-                iMeasure.width + rightShadowOffset - leftShadowOffset,
-                iMeasure.height + bottomShadowOffset - topShadowOffset);
+            context.rect(
+                Control._ClipMeasure.left + leftShadowOffset,
+                Control._ClipMeasure.top + topShadowOffset,
+                Control._ClipMeasure.width + rightShadowOffset - leftShadowOffset,
+                Control._ClipMeasure.height + bottomShadowOffset - topShadowOffset
+            );
         } else {
-            context.rect(iMeasure.left, iMeasure.top, iMeasure.width, iMeasure.height);
+            context.rect(Control._ClipMeasure.left, Control._ClipMeasure.top, Control._ClipMeasure.width, Control._ClipMeasure.height);
         }
 
         context.clip();
