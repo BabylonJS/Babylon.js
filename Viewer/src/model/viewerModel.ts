@@ -196,7 +196,11 @@ export class ViewerModel implements IDisposable {
         if (!mesh.parent) {
             mesh.parent = this._pivotMesh;
         }
-        mesh.receiveShadows = !!this.configuration.receiveShadows;
+
+        if (mesh.getClassName() !== "InstancedMesh") {
+            mesh.receiveShadows = !!this.configuration.receiveShadows;
+        }
+
         this._meshes.push(mesh);
         if (triggerLoaded) {
             return this.onLoadedObservable.notifyObserversWithPromise(this);
