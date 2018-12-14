@@ -467,5 +467,7 @@ export class Grid extends Container {
         for (var control of this._childControls) {
             control.dispose();
         }
+
+        this._childControls = [];
     }
 }
