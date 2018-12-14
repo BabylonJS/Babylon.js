@@ -426,8 +426,8 @@ export class Container extends Control {
     public dispose() {
         super.dispose();
 
-        for (var control of this._children) {
-            control.dispose();
+        for (var index = this.children.length - 1; index >= 0; index--) {
+            this.children[index].dispose();
         }
     }
 }

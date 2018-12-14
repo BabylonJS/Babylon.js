@@ -73,10 +73,11 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
             <TabsComponent selectedIndex={this.state.selectedIndex} onSelectedIndexChange={(value) => this.changeSelectedTab(value)}>
                 <PropertyGridTabComponent
                     title="Properties" icon={faFileAlt} scene={this.props.scene} selectedEntity={this.state.selectedEntity}
+                    globalState={this.props.globalState}
                     onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
-                <DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} />
-                <StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} />
+                <DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} globalState={this.props.globalState} />
+                <StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} globalState={this.props.globalState} />
                 <ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} globalState={this.props.globalState} />
             </TabsComponent>
         )

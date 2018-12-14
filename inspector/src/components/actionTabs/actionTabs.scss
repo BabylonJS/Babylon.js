@@ -19,6 +19,10 @@
     font: 14px "Arial";    
     overflow: hidden;
 
+    .hoverIcon:hover {
+        opacity: 0.8;
+    }
+
     #header {
         height: 30px;
         font-size: 16px;
@@ -220,7 +224,7 @@
                         opacity: 0.8;
                         margin:5px;
                         margin-top: 6px;
-                        max-width: 200px;
+                        max-width: 140px;
                         text-decoration: underline;
                         cursor: pointer;
                     }
@@ -690,7 +694,7 @@
                     .firstLine {
                         height: 30px;
                         display: grid;
-                        grid-template-columns: 1fr auto 20px;
+                        grid-template-columns: 1fr auto 20px 20px;
 
                         .label {
                             grid-column: 1;
@@ -706,7 +710,7 @@
 
                             input[type="color"] {
                                 -webkit-appearance: none;
-                                border: none;
+                                border: 1px solid rgba(255, 255, 255, 0.5);
                                 padding: 0;
                                 width: 30px;
                                 height: 20px;
@@ -723,8 +727,16 @@
                             }
                         }
 
-                        .expand {
+                        .copy {
                             grid-column: 3;
+                            display: grid;
+                            align-items: center;
+                            justify-items: center;
+                            cursor: pointer;
+                        }
+
+                        .expand {
+                            grid-column: 4;
                             display: grid;
                             align-items: center;
                             justify-items: center;

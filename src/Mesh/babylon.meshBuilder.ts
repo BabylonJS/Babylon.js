@@ -4,7 +4,7 @@ module BABYLON {
      * Class containing static functions to help procedurally build meshes
      */
     export class MeshBuilder {
-        private static updateSideOrientation(orientation?: number): number {
+        private static _UpdateSideOrientation(orientation?: number): number {
             if (orientation == Mesh.DOUBLESIDE) {
                 return Mesh.DOUBLESIDE;
             }
@@ -34,7 +34,7 @@ module BABYLON {
         public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
             var box = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             box._originalBuilderSideOrientation = options.sideOrientation;
 
             var vertexData = VertexData.CreateBox(options);
@@ -63,7 +63,7 @@ module BABYLON {
         public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: any): Mesh {
             var sphere = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             sphere._originalBuilderSideOrientation = options.sideOrientation;
 
             var vertexData = VertexData.CreateSphere(options);
@@ -90,7 +90,7 @@ module BABYLON {
         public static CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
             var disc = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             disc._originalBuilderSideOrientation = options.sideOrientation;
 
             var vertexData = VertexData.CreateDisc(options);
@@ -118,7 +118,7 @@ module BABYLON {
         public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Scene): Mesh {
             var sphere = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             sphere._originalBuilderSideOrientation = options.sideOrientation;
 
             var vertexData = VertexData.CreateIcoSphere(options);
@@ -155,7 +155,7 @@ module BABYLON {
             var pathArray = options.pathArray;
             var closeArray = options.closeArray;
             var closePath = options.closePath;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            var sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             var instance = options.instance;
             var updatable = options.updatable;
 
@@ -302,7 +302,7 @@ module BABYLON {
         public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
             var cylinder = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             cylinder._originalBuilderSideOrientation = options.sideOrientation;
 
             var vertexData = VertexData.CreateCylinder(options);
@@ -329,7 +329,7 @@ module BABYLON {
         public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
             var torus = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             torus._originalBuilderSideOrientation = options.sideOrientation;
 
             var vertexData = VertexData.CreateTorus(options);
@@ -357,7 +357,7 @@ module BABYLON {
         public static CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
             var torusKnot = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             torusKnot._originalBuilderSideOrientation = options.sideOrientation;
 
             var vertexData = VertexData.CreateTorusKnot(options);
@@ -560,7 +560,7 @@ module BABYLON {
             var rotation = options.rotation || 0;
             var cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            var sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             var instance = options.instance || null;
             var invertUV = options.invertUV || false;
 
@@ -602,7 +602,7 @@ module BABYLON {
             var ribbonClosePath = options.ribbonClosePath || false;
             var cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
             var updatable = options.updatable;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            var sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             var instance = options.instance;
             var invertUV = options.invertUV || false;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable ? true : false, sideOrientation, instance || null, invertUV, options.frontUVs || null, options.backUVs || null);
@@ -636,7 +636,7 @@ module BABYLON {
             var tessellation = options.tessellation || 64;
             var clip = options.clip || 0;
             var updatable = options.updatable;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            var sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             var cap = options.cap || Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
             var paths = new Array();
@@ -686,7 +686,7 @@ module BABYLON {
         public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean, sourcePlane?: Plane }, scene: Scene): Mesh {
             var plane = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             plane._originalBuilderSideOrientation = options.sideOrientation;
 
             var vertexData = VertexData.CreatePlane(options);
@@ -858,7 +858,7 @@ module BABYLON {
          * @returns the polygon mesh
          */
         public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             var shape = options.shape;
             var holes = options.holes || [];
             var depth = options.depth || 0;
@@ -940,7 +940,7 @@ module BABYLON {
             var cap = options.cap || Mesh.NO_CAP;
             var invertUV = options.invertUV || false;
             var updatable = options.updatable;
-            var sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            var sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             options.arc = options.arc && (options.arc <= 0.0 || options.arc > 1.0) ? 1.0 : options.arc || 1.0;
 
             // tube geometry
@@ -1060,7 +1060,7 @@ module BABYLON {
         public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
             var polyhedron = new Mesh(name, scene);
 
-            options.sideOrientation = MeshBuilder.updateSideOrientation(options.sideOrientation);
+            options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
             polyhedron._originalBuilderSideOrientation = options.sideOrientation;
 
             var vertexData = VertexData.CreatePolyhedron(options);
