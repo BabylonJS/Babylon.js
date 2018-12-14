@@ -290,8 +290,6 @@ export class TextBlock extends Control {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
         context.fillText(text, this._currentMeasure.left + x, y);
-        // context.fillStyle = '#'+Math.floor(Math.random()*16777215).toString(16);
-        // context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
     /** @hidden */

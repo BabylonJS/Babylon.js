@@ -62,7 +62,7 @@ export class Rectangle extends Container {
 
         if (this._background) {
             context.fillStyle = this._background;
-            
+
             if (this._cornerRadius) {
                 this._drawRoundedRect(context, this._thickness / 2);
                 context.fill();
@@ -105,7 +105,7 @@ export class Rectangle extends Container {
         this._measureForChildren.top += this._thickness;
     }
 
-    private _drawRoundedRect(context: CanvasRenderingContext2D, offset: number = 0, invalidatedRectangle?: Measure): void {
+    private _drawRoundedRect(context: CanvasRenderingContext2D, offset: number = 0): void {
         var x = this._currentMeasure.left + offset;
         var y = this._currentMeasure.top + offset;
         var width = this._currentMeasure.width - offset * 2;

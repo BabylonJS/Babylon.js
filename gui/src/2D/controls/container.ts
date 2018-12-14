@@ -254,9 +254,7 @@ export class Container extends Control {
             }
 
             context.fillStyle = this._background;
-
             context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-
             context.restore();
         }
     }
@@ -299,7 +297,7 @@ export class Container extends Control {
                 for (var child of this._children) {
                     // Only redraw parts of the screen that are invalidated
                     if (invalidatedRectangle) {
-                        if (!child.intersectsRect(invalidatedRectangle)) {
+                        if (!child._intersectsRect(invalidatedRectangle)) {
                             continue;
                         }
                     }
@@ -362,7 +360,7 @@ export class Container extends Control {
         for (var child of this._children) {
             // Only redraw parts of the screen that are invalidated
             if (invalidatedRectangle) {
-                if (!child.intersectsRect(invalidatedRectangle)) {
+                if (!child._intersectsRect(invalidatedRectangle)) {
                     continue;
                 }
             }
