@@ -104,7 +104,9 @@ export class StackPanel extends Container {
 
         if (!this.isVertical || this._manualWidth) {
             this._measureForChildren.width = this._currentMeasure.width;
-        } else if (this.isVertical || this._manualHeight) {
+        }
+
+        if (this.isVertical || this._manualHeight) {
             this._measureForChildren.height = this._currentMeasure.height;
         }
     }
