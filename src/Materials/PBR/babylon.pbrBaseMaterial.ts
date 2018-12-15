@@ -1584,7 +1584,7 @@ module BABYLON {
                         this._uniformBuffer.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);
                     }
 
-                    this._uniformBuffer.updateColor3("vEmissiveColor", this._emissiveColor);
+                    this._uniformBuffer.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                     this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
                     this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha * mesh.visibility);
 

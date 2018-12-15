@@ -1362,7 +1362,7 @@ module BABYLON {
                     if (defines.SPECULARTERM) {
                         this._uniformBuffer.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                     }
-                    this._uniformBuffer.updateColor3("vEmissiveColor", this.emissiveColor);
+                    this._uniformBuffer.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
 
                     // Diffuse
                     this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
