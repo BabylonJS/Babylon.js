@@ -1047,6 +1047,7 @@ export class Control {
 
         this._left.ignoreAdaptiveScaling = true;
         this._top.ignoreAdaptiveScaling = true;
+        this._markAsDirty();
     }
 
     /** @hidden */
