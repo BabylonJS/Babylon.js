@@ -291,6 +291,7 @@ export class Grid extends Container {
         goodContainer.addControl(control);
         this._childControls.push(control);
         control._tag = key;
+        control.parent = this;
 
         this._markAsDirty();
 
@@ -467,5 +468,7 @@ export class Grid extends Container {
         for (var control of this._childControls) {
             control.dispose();
         }
+
+        this._childControls = [];
     }
 }

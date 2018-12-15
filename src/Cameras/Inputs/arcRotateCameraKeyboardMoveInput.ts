@@ -102,44 +102,45 @@ import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 
             this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
                 let evt = info.event;
+                if (!evt.metaKey) {
+                    if (info.type === KeyboardEventTypes.KEYDOWN) {
+                        this._ctrlPressed = evt.ctrlKey;
+                        this._altPressed = evt.altKey;
 
-                if (info.type === KeyboardEventTypes.KEYDOWN) {
-                    this._ctrlPressed = evt.ctrlKey;
-                    this._altPressed = evt.altKey;
+                        if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                            this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                            this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                            this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                            this.keysReset.indexOf(evt.keyCode) !== -1) {
+                            var index = this._keys.indexOf(evt.keyCode);
 
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysReset.indexOf(evt.keyCode) !== -1) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                            if (index === -1) {
+                                this._keys.push(evt.keyCode);
+                            }
 
-                        if (index === -1) {
-                            this._keys.push(evt.keyCode);
-                        }
-
-                        if (evt.preventDefault) {
-                            if (!noPreventDefault) {
-                                evt.preventDefault();
+                            if (evt.preventDefault) {
+                                if (!noPreventDefault) {
+                                    evt.preventDefault();
+                                }
                             }
                         }
                     }
-                }
-                else {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysReset.indexOf(evt.keyCode) !== -1) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                    else {
+                        if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                            this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                            this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                            this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                            this.keysReset.indexOf(evt.keyCode) !== -1) {
+                            var index = this._keys.indexOf(evt.keyCode);
 
-                        if (index >= 0) {
-                            this._keys.splice(index, 1);
-                        }
+                            if (index >= 0) {
+                                this._keys.splice(index, 1);
+                            }
 
-                        if (evt.preventDefault) {
-                            if (!noPreventDefault) {
-                                evt.preventDefault();
+                            if (evt.preventDefault) {
+                                if (!noPreventDefault) {
+                                    evt.preventDefault();
+                                }
                             }
                         }
                     }
