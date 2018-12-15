@@ -1602,6 +1602,8 @@ import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoad
                 if (material.normalTexture.scale != undefined) {
                     babylonMaterial.bumpTexture.level = material.normalTexture.scale;
                 }
+
+                babylonMaterial.forceIrradianceInFragment = true;
             }
 
             if (material.occlusionTexture) {
