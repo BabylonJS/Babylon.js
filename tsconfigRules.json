@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-        "importHelpers": false,
+        "importHelpers": true,
         "moduleResolution": "node",
-        "module": "commonjs",
+        "module": "esNext",
         "target": "es5",
         "declaration": true,
         "sourceMap": true,
