@@ -10,9 +10,7 @@ var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !=
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
     for (var mat in ProceduralTexturesLib) {
-        if (ProceduralTexturesLib.hasOwnProperty(mat)) {
-            (<any>globalObject).BABYLON[mat] = (<any>ProceduralTexturesLib)[mat];
-        }
+        (<any>globalObject).BABYLON[mat] = (<any>ProceduralTexturesLib)[mat];
     }
 }
 
