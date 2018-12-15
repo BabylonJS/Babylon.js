@@ -33,6 +33,7 @@ jobs:
     - set -e
     - gulp typescript-all
     - gulp tests-unit
+    - travis_retry gulp tests-validation-virtualscreen
     - gulp tests-modules
     - travis_retry gulp tests-viewer-validation-virtualscreen
     - travis_retry gulp tests-viewer-validation-browserstack
