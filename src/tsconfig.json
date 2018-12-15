@@ -3,7 +3,6 @@
   "compilerOptions": {
       "types" : [],
       "baseUrl": "./",
-      "rootDir": "./",
-      "outDir": "./build"
+      "rootDir": "./"
   }
 }

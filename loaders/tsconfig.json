@@ -10,7 +10,6 @@
           "babylonjs-gltf2interface": [
             "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
           ],
-      },
-      "outDir": "./build"
+      }
   }
 }
