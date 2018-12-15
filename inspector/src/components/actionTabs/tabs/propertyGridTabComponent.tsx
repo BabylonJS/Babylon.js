@@ -19,7 +19,7 @@ import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPro
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
-import { ColorPicker, Image, Slider, ImageBasedSlider, Rectangle, Ellipse, Checkbox, RadioButton, Line, ScrollViewer, Grid } from "babylonjs-gui";
+import { ColorPicker, Image, Slider, ImageBasedSlider, Rectangle, Ellipse, Checkbox, RadioButton, Line, ScrollViewer, Grid, StackPanel } from "babylonjs-gui";
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
 import { AnimationGroupGridComponent } from "./propertyGrids/animationGroupPropertyGridComponent";
 import { LockObject } from "./propertyGrids/lockObject";
@@ -35,6 +35,7 @@ import { ScrollViewerPropertyGridComponent } from "./propertyGrids/gui/scrollVie
 import { GridPropertyGridComponent } from "./propertyGrids/gui/gridPropertyGridComponent";
 import { PBRMetallicRoughnessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent";
 import { PBRSpecularGlossinessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent";
+import { StackPanelPropertyGridComponent } from "./propertyGrids/gui/stackPanelPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -236,6 +237,13 @@ export class PropertyGridTabComponent extends PaneComponent {
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
+
+            if (className === "StackPanel") {
+                const stackPanel = entity as StackPanel;
+                return (<StackPanelPropertyGridComponent stackPanel={stackPanel}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }            
 
             if (className === "Grid") {
                 const grid = entity as Grid;
