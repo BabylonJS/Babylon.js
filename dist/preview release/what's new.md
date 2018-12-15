@@ -127,6 +127,8 @@
 - SixDofDragBehavior will support when the camera is parented ([TrevorDev](https://github.com/TrevorDev))
 - Deactivate webvr lasers when not in vr ([TrevorDev](https://github.com/TrevorDev))
 - Update physics position using absolutePosition instead of pivotPosition ([TrevorDev](https://github.com/TrevorDev))
+- Disable camera arrow key controls when the Command key is selected on Mac OS ([kcoley](https://github.com/kcoley))
+- Viewer should not set receiveShadows on an instanced mesh ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))

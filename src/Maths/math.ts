@@ -350,6 +350,8 @@ import { Scalar } from "./math.scalar";
 
         // Statics
 
+        private static _BlackReadOnly = Color3.Black() as DeepImmutable<Color3>;
+
         /**
          * Creates a new Color3 from the string containing valid hexadecimal values
          * @param hex defines a string containing valid hexadecimal values
@@ -434,6 +436,14 @@ import { Scalar } from "./math.scalar";
          * @returns a new Color3 object
          */
         public static Black(): Color3 { return new Color3(0, 0, 0); }
+
+        /**
+          * Gets a Color3 value containing a black color that must not be updated
+          */
+        public static get BlackReadOnly(): DeepImmutable<Color3> {
+            return Color3._BlackReadOnly;
+        }
+
         /**
          * Returns a Color3 value containing a white color
          * @returns a new Color3 object
