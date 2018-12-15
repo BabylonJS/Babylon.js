@@ -20,7 +20,6 @@
             "babylonjs-serializers": [
                 "../../dist/preview release/serializers/babylonjs.serializers.module.d.ts"
             ]
-        },
-        "outDir": "./build"
+        }
     }
 }

@@ -1,13 +1,6 @@
 {
   "extends": "../tsconfigRules",
   "compilerOptions": {
-      "lib": [
-          "es5",
-          "dom",
-          "es2015.promise",
-          "es2015.collection",
-          "es2015.iterable"
-      ],
       "baseUrl": "./src/",
       "rootDir": "./src/",
       "paths": {
@@ -17,7 +10,6 @@
           "babylonjs-gltf2interface": [
             "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
           ],
-      },
-      "outDir": "./build"
+      }
   }
 }
