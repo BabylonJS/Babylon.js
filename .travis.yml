@@ -32,6 +32,7 @@ jobs:
     - sleep 3
     - set -e
     - gulp typescript-all
+    - gulp tests-unit
     - gulp tests-modules
     - travis_retry gulp tests-viewer-validation-virtualscreen
     - travis_retry gulp tests-viewer-validation-browserstack
