@@ -31,6 +31,7 @@ jobs:
     - sh -e /etc/init.d/xvfb start
     - sleep 3
     - set -e
+    - gulp typescript-all
     - gulp tests-modules
     - travis_retry gulp tests-viewer-validation-virtualscreen
     - travis_retry gulp tests-viewer-validation-browserstack
