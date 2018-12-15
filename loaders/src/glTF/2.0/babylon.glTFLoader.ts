@@ -1600,6 +1600,8 @@ module BABYLON.GLTF2 {
                 if (material.normalTexture.scale != undefined) {
                     babylonMaterial.bumpTexture.level = material.normalTexture.scale;
                 }
+
+                babylonMaterial.forceIrradianceInFragment = true;
             }
 
             if (material.occlusionTexture) {

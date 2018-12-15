@@ -4324,6 +4324,7 @@ var BABYLON;
                     if (material.normalTexture.scale != undefined) {
                         babylonMaterial.bumpTexture.level = material.normalTexture.scale;
                     }
+                    babylonMaterial.forceIrradianceInFragment = true;
                 }
                 if (material.occlusionTexture) {
                     promises.push(this.loadTextureInfoAsync(context + "/occlusionTexture", material.occlusionTexture, function (texture) {
