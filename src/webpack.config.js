@@ -19,9 +19,7 @@ module.exports = {
         umdNamedDefine: true
     },
     resolve: {
-        modules: ['./'],
-        extensions: ['.ts'],
-        mainFields: []
+        extensions: ['.ts']
     },
     devtool: "source-map",
     module: {
@@ -29,7 +27,7 @@ module.exports = {
             test: /\.tsx?$/,
             loader: 'awesome-typescript-loader',
             options: {
-                configFileName: '../../src/tsconfig.json',
+                configFileName: path.resolve(__dirname, './tsconfig.json'),
                 declaration: false
             }
         }]
