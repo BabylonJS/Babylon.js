@@ -317,8 +317,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             func(child);
         }
     }
-     private _disableInvalidateRect = false;
+    private _disableInvalidateRect = false;
     private _invalidatedRectangle: Nullable<Measure> = null;
+    /**
+     * Invalidates a rectangle area on the gui texture
+     * @param minX left most position of the rectangle to invalidate in pixels
+     * @param minY top most position of the rectangle to invalidate in pixels
+     * @param maxX right most position of the rectangle to invalidate in pixels
+     * @param maxY bottom most position of the rectangle to invalidate in pixels
+     */
     public invalidateRect(minX: number, minY: number, maxX: number, maxY: number) {
         if (this._disableInvalidateRect) {
             return;
