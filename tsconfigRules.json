@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "importHelpers": false,
         "moduleResolution": "node",
         "module": "commonjs",
         "target": "es5",

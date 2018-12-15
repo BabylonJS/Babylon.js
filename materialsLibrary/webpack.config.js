@@ -41,7 +41,7 @@ module.exports = {
             {
                 loader: 'awesome-typescript-loader',
                 options: {
-                    configFileName: '../../materialsLibrary/tsconfig.json',
+                    configFileName: path.resolve(__dirname, './tsconfig.json'),
                     declaration: false
                 }
             }]

@@ -60,7 +60,7 @@ module.exports = {
             test: /\.tsx?$/,
             loader: 'awesome-typescript-loader',
             options: {
-                configFileName: '../../inspector/tsconfig.json',
+                configFileName: path.resolve(__dirname, './tsconfig.json'),
                 declaration: false
             }
         },
