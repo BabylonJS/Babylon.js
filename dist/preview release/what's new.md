@@ -85,6 +85,7 @@
 - Add support for setting renderingGroupId and creating instances to `AxesViewer` ([bghgary](https://github.com/bghgary))
 - Invert vScale of compressed ktx textures as they are inverted in the file and UNPACK_FLIP_Y_WEBGL is not supported by ktx ([TrevorDev](https://github.com/TrevorDev))
 - Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
+- InvalidateRect added to AdvancedDynamicTexture to improve perf for highly populated GUIs ([TrevorDev](https://github.com/TrevorDev))
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 
 ### glTF Loader
