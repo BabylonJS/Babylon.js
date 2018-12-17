@@ -454,19 +454,21 @@ module BABYLON {
                 name = Tools.GetFilename(rootUrl);
                 rootUrl = Tools.GetFolderPath(rootUrl);
             }
-            else if (sceneFilename instanceof File) {
-                url = rootUrl + sceneFilename.name;
-                name = sceneFilename.name;
-                file = sceneFilename;
+            else if ((sceneFilename as File).lastModified) {
+                const sceneFile = sceneFilename as File;
+                url = rootUrl + sceneFile.name;
+                name = sceneFile.name;
+                file = sceneFile;
             }
             else {
-                if (sceneFilename.substr(0, 1) === "/") {
+                const filename = sceneFilename as string;
+                if (filename.substr(0, 1) === "/") {
                     Tools.Error("Wrong sceneFilename parameter");
                     return null;
                 }
 
-                url = rootUrl + sceneFilename;
-                name = sceneFilename;
+                url = rootUrl + filename;
+                name = filename;
             }
 
             return {
