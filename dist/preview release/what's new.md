@@ -150,6 +150,7 @@
 - Do not clone mesh observables ([Sebavan](https://github.com/Sebavan))
 - Fixed Inspector resolution with AMD loader ([Sebavan](https://github.com/Sebavan))
 - Fix a bug when a call to `updateIndices` leads to changing the size of the index buffer by recreating the subMeshes in that case ([barroij](https://github.com/barroij))
+- Add option to disable gazeTracker color changes in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBehavior validateDrag predicate to stop dragging to specific points ([TrevorDev](https://github.com/TrevorDev))
 
 ### Viewer
