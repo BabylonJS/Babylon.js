@@ -307,6 +307,7 @@ export class Control {
         }
 
         this._scaleX = value;
+        this._transform();
         this._markAsDirty();
         this._markMatrixAsDirty();
     }
@@ -324,6 +325,7 @@ export class Control {
         }
 
         this._scaleY = value;
+        this._transform();
         this._markAsDirty();
         this._markMatrixAsDirty();
     }
@@ -1045,6 +1047,7 @@ export class Control {
 
         this._left.ignoreAdaptiveScaling = true;
         this._top.ignoreAdaptiveScaling = true;
+        this._markAsDirty();
     }
 
     /** @hidden */
@@ -1071,6 +1074,42 @@ export class Control {
     }
 
     /** @hidden */
+    public _intersectsRect(rect: Measure) {
+        var hit = ! (this._currentMeasure.left > rect.left + rect.width ||
+             this._currentMeasure.left + this._currentMeasure.width < rect.left ||
+             this._currentMeasure.top > rect.top + rect.height ||
+             this._currentMeasure.top + this._currentMeasure.height < rect.top
+        );
+        return hit;
+    }
+
+    /** @hidden */
+    protected invalidateRect() {
+        if (this.host) {
+            // Compute aabb of rotated container box (eg. to handle rotation)
+            var rectanglePoints = BABYLON.Polygon.Rectangle(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.left + this._currentMeasure.width, this._currentMeasure.top + this._currentMeasure.height);
+            var min = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+            var max = new Vector2(0, 0);
+            this._invertTransformMatrix.invertToRef(this._invertTransformMatrix);
+            for (var i = 0; i < 4; i++) {
+                this._invertTransformMatrix.transformCoordinates(rectanglePoints[i].x, rectanglePoints[i].y, rectanglePoints[i]);
+                min.x = Math.min(min.x, rectanglePoints[i].x);
+                min.y = Math.min(min.y, rectanglePoints[i].y);
+                max.x = Math.max(max.x, rectanglePoints[i].x);
+                max.y = Math.max(max.y, rectanglePoints[i].y);
+            }
+            this._invertTransformMatrix.invertToRef(this._invertTransformMatrix);
+
+            this.host.invalidateRect(
+                min.x,
+                min.y,
+                max.x,
+                max.y
+            );
+        }
+    }
+
+    /** @hidden */
     public _markAsDirty(force = false): void {
         if (!this._isVisible && !force) {
             return;
@@ -1078,10 +1117,11 @@ export class Control {
 
         this._isDirty = true;
 
-        if (!this._host) {
-            return; // Not yet connected
+        // Redraw only this rectangle
+        if (this._host) {
+            this._host.markAsDirty();
+            this.invalidateRect();
         }
-        this._host.markAsDirty();
     }
 
     /** @hidden */
@@ -1102,7 +1142,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _transform(context: CanvasRenderingContext2D): void {
+    protected _transform(context?: CanvasRenderingContext2D): void {
         if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
             return;
         }
@@ -1110,17 +1150,18 @@ export class Control {
         // postTranslate
         var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
         var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
-        context.translate(offsetX, offsetY);
+        if (context) {
+            context.translate(offsetX, offsetY);
 
-        // rotate
-        context.rotate(this._rotation);
+            // rotate
+            context.rotate(this._rotation);
 
-        // scale
-        context.scale(this._scaleX, this._scaleY);
+            // scale
+            context.scale(this._scaleX, this._scaleY);
 
-        // preTranslate
-        context.translate(-offsetX, -offsetY);
-
+            // preTranslate
+            context.translate(-offsetX, -offsetY);
+        }
         // Need to update matrices?
         if (this._isMatrixDirty || this._cachedOffsetX !== offsetX || this._cachedOffsetY !== offsetY) {
             this._cachedOffsetX = offsetX;
@@ -1180,7 +1221,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable) {
             return false;
         }
@@ -1372,8 +1413,18 @@ export class Control {
         // DO nothing
     }
 
-    private _clip(context: CanvasRenderingContext2D) {
+    private static _ClipMeasure = new Measure(0, 0, 0, 0);
+    private _clip(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>) {
         context.beginPath();
+        Control._ClipMeasure.copyFrom(this._currentMeasure);
+        if (invalidatedRectangle) {
+            var right = Math.min(invalidatedRectangle.left + invalidatedRectangle.width, this._currentMeasure.left + this._currentMeasure.width);
+            var bottom = Math.min(invalidatedRectangle.top + invalidatedRectangle.height, this._currentMeasure.top + this._currentMeasure.height);
+            Control._ClipMeasure.left = Math.max(invalidatedRectangle.left, this._currentMeasure.left);
+            Control._ClipMeasure.top = Math.max(invalidatedRectangle.top, this._currentMeasure.top);
+            Control._ClipMeasure.width = right - Control._ClipMeasure.left;
+            Control._ClipMeasure.height = bottom - Control._ClipMeasure.top;
+        }
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             var shadowOffsetX = this.shadowOffsetX;
@@ -1385,19 +1436,21 @@ export class Control {
             var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
-            context.rect(this._currentMeasure.left + leftShadowOffset,
-                this._currentMeasure.top + topShadowOffset,
-                this._currentMeasure.width + rightShadowOffset - leftShadowOffset,
-                this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
+            context.rect(
+                Control._ClipMeasure.left + leftShadowOffset,
+                Control._ClipMeasure.top + topShadowOffset,
+                Control._ClipMeasure.width + rightShadowOffset - leftShadowOffset,
+                Control._ClipMeasure.height + bottomShadowOffset - topShadowOffset
+            );
         } else {
-            context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            context.rect(Control._ClipMeasure.left, Control._ClipMeasure.top, Control._ClipMeasure.width, Control._ClipMeasure.height);
         }
 
         context.clip();
     }
 
     /** @hidden */
-    public _render(context: CanvasRenderingContext2D): boolean {
+    public _render(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
             this._isDirty = false;
             return false;
@@ -1411,7 +1464,7 @@ export class Control {
 
         // Clip
         if (this.clipChildren) {
-            this._clip(context);
+            this._clip(context, invalidatedRectangle);
         }
 
         if (this.onBeforeDrawObservable.hasObservers()) {
@@ -1421,7 +1474,7 @@ export class Control {
         if (this.useBitmapCache && !this._wasDirty && this._cacheData) {
             context.putImageData(this._cacheData, this._currentMeasure.left, this._currentMeasure.top);
         } else {
-            this._draw(context);
+            this._draw(context, invalidatedRectangle);
         }
 
         if (this.useBitmapCache && this._wasDirty) {
@@ -1440,7 +1493,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
     }
 
