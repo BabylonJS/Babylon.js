@@ -1,7 +1,6 @@
 /*Babylon.js GUI*/
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
-//   ../../../../Tools/Gulp/2D
 
 declare module 'babylonjs-gui' {
     export * from "babylonjs-gui/2D";
@@ -1668,7 +1667,7 @@ declare module 'babylonjs-gui/2D/controls/grid' {
 declare module 'babylonjs-gui/2D/controls/image' {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Nullable, Observable } from "babylonjs";
-    import { Measure } from "2D";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
         * Class used to create 2D images
         */
@@ -2262,7 +2261,8 @@ declare module 'babylonjs-gui/2D/controls/scrollViewers/scrollViewer' {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Nullable } from "babylonjs";
-    import { AdvancedDynamicTexture, Measure } from "2D";
+    import { Measure } from "babylonjs-gui/2D/measure";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { ScrollBar } from "babylonjs-gui/2D/controls/sliders/scrollBar";
     /**
         * Class used to hold a viewer window and sliders in a grid
@@ -3300,7 +3300,6 @@ declare module 'babylonjs-gui/2D/controls/sliders/scrollBar' {
 /*Babylon.js GUI*/
 // Dependencies for this module:
 //   ../../../../Tools/Gulp/babylonjs
-//   ../../../../Tools/Gulp/2D
 declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
