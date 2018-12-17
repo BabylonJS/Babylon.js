@@ -69,6 +69,17 @@ module BABYLON {
         }
 
         /**
+         * Remove an element from the octree
+         * @param entry defines the element to remove
+         */
+        public removeMesh(entry: T): void {
+            for (var index = 0; index < this.blocks.length; index++) {
+                var block = this.blocks[index];
+                block.removeEntry(entry);
+            }
+        }
+
+        /**
          * Selects an array of meshes within the frustum
          * @param frustumPlanes The frustum planes to use which will select all meshes within it
          * @param allowDuplicate If duplicate objects are allowed in the resulting object array
