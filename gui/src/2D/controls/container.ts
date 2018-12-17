@@ -243,7 +243,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _localDraw(context: CanvasRenderingContext2D): void {
+    protected _localDraw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
         if (this._background) {
             context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -274,7 +274,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable) {
             return false;
         }
@@ -295,9 +295,15 @@ export class Container extends Control {
 
             if (!this._isClipped) {
                 for (var child of this._children) {
+                    // Only redraw parts of the screen that are invalidated
+                    if (invalidatedRectangle) {
+                        if (!child._intersectsRect(invalidatedRectangle)) {
+                            continue;
+                        }
+                    }
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
-                    if (child._layout(this._measureForChildren, context)) {
+                    if (child._layout(this._measureForChildren, context, invalidatedRectangle)) {
 
                         if (this.adaptWidthToChildren && child._width.isPixel) {
                             computedWidth = Math.max(computedWidth, child._currentMeasure.width);
@@ -343,16 +349,22 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
 
-        this._localDraw(context);
+        this._localDraw(context, invalidatedRectangle);
 
         if (this.clipChildren) {
             this._clipForChildren(context);
         }
 
         for (var child of this._children) {
-            child._render(context);
+            // Only redraw parts of the screen that are invalidated
+            if (invalidatedRectangle) {
+                if (!child._intersectsRect(invalidatedRectangle)) {
+                    continue;
+                }
+            }
+            child._render(context, invalidatedRectangle);
         }
     }
 
