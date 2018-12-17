@@ -97,6 +97,11 @@ module BABYLON {
         }
 
         /**
+         * Predicate to determine if it is valid to move the object to a new position when it is moved
+         */
+        public validateDrag = (targetPosition: Vector3) => {return true; };
+
+        /**
          *  The name of the behavior
          */
         public get name(): string {
@@ -192,7 +197,9 @@ module BABYLON {
                     this._targetPosition.subtractToRef((this._attachedNode).absolutePosition, this._tmpVector);
                     this._tmpVector.scaleInPlace(this.dragDeltaRatio);
                     (this._attachedNode).getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
-                    (this._attachedNode).setAbsolutePosition(this._tmpVector);
+                    if (this.validateDrag(this._tmpVector)) {
+                        (this._attachedNode).setAbsolutePosition(this._tmpVector);
+                    }
                     BoundingBoxGizmo._RestorePivotPoint(this._attachedNode);
                 }
             });
