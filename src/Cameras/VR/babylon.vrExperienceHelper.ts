@@ -444,6 +444,10 @@ module BABYLON {
          * If the gaze trackers scale should be updated to be constant size when pointing at near/far meshes
          */
         public updateGazeTrackerScale = true;
+        /**
+         * If the gaze trackers color should be updated when selecting meshes
+         */
+        public updateGazeTrackerColor = true;
 
         /**
          * The gaze tracking mesh corresponding to the left controller
@@ -1897,6 +1901,9 @@ module BABYLON {
          * @param color new color for the ray.
          */
         public changeGazeColor(color: Color3) {
+            if (!this.updateGazeTrackerColor) {
+                return;
+            }
             if (!(<StandardMaterial>this._cameraGazer._gazeTracker.material)) {
                 return;
             }
