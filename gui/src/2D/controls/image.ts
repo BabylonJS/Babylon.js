@@ -1,6 +1,6 @@
 import { Control } from "./control";
 import { Nullable, Tools, Observable } from "babylonjs";
-import { Measure } from "2D";
+import { Measure } from "../measure";
 
 /**
  * Class used to create 2D images
