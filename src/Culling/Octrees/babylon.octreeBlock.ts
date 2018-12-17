@@ -108,6 +108,26 @@ module BABYLON {
         }
 
         /**
+         * Remove an element from this block
+         * @param entry defines the element to remove
+         */
+        public removeEntry(entry: T): void {
+            if (this.blocks) {
+                for (var index = 0; index < this.blocks.length; index++) {
+                    var block = this.blocks[index];
+                    block.removeEntry(entry);
+                }
+                return;
+            }
+
+            const entryIndex = this.entries.indexOf(entry);
+
+            if (entryIndex > -1) {
+                this.entries.splice(entryIndex, 1);
+            }
+        }
+
+        /**
          * Add an array of elements to this block
          * @param entries defines the array of elements to add
          */

@@ -1075,10 +1075,10 @@ export class Control {
 
     /** @hidden */
     public _intersectsRect(rect: Measure) {
-        var hit = ! (this._currentMeasure.left > rect.left + rect.width ||
-             this._currentMeasure.left + this._currentMeasure.width < rect.left ||
-             this._currentMeasure.top > rect.top + rect.height ||
-             this._currentMeasure.top + this._currentMeasure.height < rect.top
+        var hit = !(this._currentMeasure.left > rect.left + rect.width ||
+            this._currentMeasure.left + this._currentMeasure.width < rect.left ||
+            this._currentMeasure.top > rect.top + rect.height ||
+            this._currentMeasure.top + this._currentMeasure.height < rect.top
         );
         return hit;
     }
