@@ -1444,11 +1444,13 @@ export class Control {
         context.beginPath();
 
         Control._ClipMeasure.copyFrom(this._currentMeasure);
-        if (invalidatedRectangle && this._wasDirty) {
-            context.rect(invalidatedRectangle.left, invalidatedRectangle.top, invalidatedRectangle.width, invalidatedRectangle.height);
-            context.clip();
-
-            return;
+        if (invalidatedRectangle) {
+            var right = Math.min(invalidatedRectangle.left + invalidatedRectangle.width, this._currentMeasure.left + this._currentMeasure.width);
+            var bottom = Math.min(invalidatedRectangle.top + invalidatedRectangle.height, this._currentMeasure.top + this._currentMeasure.height);
+            Control._ClipMeasure.left = Math.max(invalidatedRectangle.left, this._currentMeasure.left);
+            Control._ClipMeasure.top = Math.max(invalidatedRectangle.top, this._currentMeasure.top);
+            Control._ClipMeasure.width = right - Control._ClipMeasure.left;
+            Control._ClipMeasure.height = bottom - Control._ClipMeasure.top;
         }
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
