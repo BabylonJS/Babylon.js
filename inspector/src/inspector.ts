@@ -446,6 +446,8 @@ export class Inspector {
 
             this._Scene.getEngine().resize();
         }
+
+        this._GlobalState.onInspectorClosedObservable.notifyObservers(this._Scene);
     }
 
     private static _RemoveElementFromDOM(element: Nullable<HTMLElement>) {

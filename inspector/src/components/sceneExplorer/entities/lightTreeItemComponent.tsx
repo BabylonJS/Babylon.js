@@ -5,11 +5,13 @@ import { faLightbulb as faLightbubRegular } from '@fortawesome/free-regular-svg-
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
+import { GlobalState } from "../../globalState";
 
 interface ILightTreeItemComponentProps {
     light: Light,
     extensibilityGroups?: IExplorerExtensibilityGroup[]
-    onClick: () => void
+    onClick: () => void,
+    globalState: GlobalState
 }
 
 export class LightTreeItemComponent extends React.Component<ILightTreeItemComponentProps, { isEnabled: boolean }> {

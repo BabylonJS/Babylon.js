@@ -317,35 +317,57 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             func(child);
         }
     }
-    private _disableInvalidateRect = false;
+
+    private _useInvalidateRectOptimization = true;
+
+    /**
+     * Gets or sets a boolean indicating if the InvalidateRect optimization should be turned on
+     */
+    public get useInvalidateRectOptimization(): boolean {
+        return this._useInvalidateRectOptimization;
+    }
+
+    public set useInvalidateRectOptimization(value: boolean) {
+        this._useInvalidateRectOptimization = value;
+    }
+
+    private _clearRectangle: Nullable<Measure> = null;
     private _invalidatedRectangle: Nullable<Measure> = null;
     /**
      * Invalidates a rectangle area on the gui texture
-     * @param minX left most position of the rectangle to invalidate in pixels
-     * @param minY top most position of the rectangle to invalidate in pixels
-     * @param maxX right most position of the rectangle to invalidate in pixels
-     * @param maxY bottom most position of the rectangle to invalidate in pixels
+     * @param clearMinX left most position of the rectangle to clear in the texture
+     * @param clearMinY top most position of the rectangle to clear in the texture
+     * @param clearMaxX right most position of the rectangle to clear in the texture
+     * @param clearMaxY bottom most position of the rectangle to clear in the texture
+     * @param minX left most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+     * @param minY top most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+     * @param maxX right most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+     * @param maxY bottom most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
      */
-    public invalidateRect(minX: number, minY: number, maxX: number, maxY: number) {
-        if (this._disableInvalidateRect) {
+    public invalidateRect(clearMinX: number, clearMinY: number, clearMaxX: number, clearMaxY: number, minX: number, minY: number, maxX: number, maxY: number) {
+        if (!this._useInvalidateRectOptimization) {
             return;
         }
-        if (!this._invalidatedRectangle) {
-            this._invalidatedRectangle = new Measure(minX, minY, maxX - minX, maxY - minY);
+        if (!this._clearRectangle || !this._invalidatedRectangle) {
+            this._clearRectangle = new Measure(clearMinX, clearMinY, clearMaxX - clearMinX + 1, clearMaxY - clearMinY + 1);
+            this._invalidatedRectangle = new Measure(minX, minY, maxX - minX + 1, maxY - minY + 1);
         } else {
             // Compute intersection
-            var maxLeft = Math.max(this._invalidatedRectangle.left + this._invalidatedRectangle.width, maxX);
-            var maxTop = Math.max(this._invalidatedRectangle.top + this._invalidatedRectangle.height, maxY);
+            var maxX = Math.max(this._clearRectangle.left + this._clearRectangle.width - 1, clearMaxX);
+            var maxY = Math.max(this._clearRectangle.top + this._clearRectangle.height - 1, clearMaxY);
+            this._clearRectangle.left = Math.min(this._clearRectangle.left, clearMinX);
+            this._clearRectangle.top = Math.min(this._clearRectangle.top, clearMinY);
+            this._clearRectangle.width = maxX - this._clearRectangle.left + 1;
+            this._clearRectangle.height = maxY - this._clearRectangle.top + 1;
+
+            maxX = Math.max(this._invalidatedRectangle.left + this._invalidatedRectangle.width - 1, maxX);
+            maxY = Math.max(this._invalidatedRectangle.top + this._invalidatedRectangle.height - 1, maxY);
             this._invalidatedRectangle.left = Math.min(this._invalidatedRectangle.left, minX);
             this._invalidatedRectangle.top = Math.min(this._invalidatedRectangle.top, minY);
-            this._invalidatedRectangle.width = maxLeft - this._invalidatedRectangle.left;
-            this._invalidatedRectangle.height = maxTop - this._invalidatedRectangle.top;
+            this._invalidatedRectangle.width = maxX - this._invalidatedRectangle.left + 1;
+            this._invalidatedRectangle.height = maxY - this._invalidatedRectangle.top + 1;
+
         }
-        // Ensure there are no pixel fractions
-        this._invalidatedRectangle.left = Math.floor(this._invalidatedRectangle.left);
-        this._invalidatedRectangle.top = Math.floor(this._invalidatedRectangle.top);
-        this._invalidatedRectangle.width = Math.ceil(this._invalidatedRectangle.width);
-        this._invalidatedRectangle.height = Math.ceil(this._invalidatedRectangle.height);
     }
     /**
     * Marks the texture as dirty forcing a complete update
@@ -444,7 +466,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 this._rootContainer._markAllAsDirty();
             }
         }
-        this.invalidateRect(0, 0, textureSize.width, textureSize.height);
+        this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1, 0, 0, textureSize.width - 1, textureSize.height - 1);
     }
     /** @hidden */
     public _getGlobalViewport(scene: Scene): Viewport {
@@ -514,13 +536,24 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         var textureSize = this.getSize();
         var renderWidth = textureSize.width;
         var renderHeight = textureSize.height;
-        if (this._invalidatedRectangle) {
-            this._clearMeasure.copyFrom(this._invalidatedRectangle);
+
+        var context = this.getContext();
+        context.font = "18px Arial";
+        context.strokeStyle = "white";
+
+        // Layout
+        this.onBeginLayoutObservable.notifyObservers(this);
+        var measure = new Measure(0, 0, renderWidth, renderHeight);
+        this._rootContainer._layout(measure, context);
+        this.onEndLayoutObservable.notifyObservers(this);
+        this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
+
+        // Clear
+        if (this._clearRectangle) {
+            this._clearMeasure.copyFrom(this._clearRectangle);
         } else {
             this._clearMeasure.copyFromFloats(0, 0, renderWidth, renderHeight);
         }
-        // Clear
-        var context = this.getContext();
         context.clearRect(this._clearMeasure.left, this._clearMeasure.top, this._clearMeasure.width, this._clearMeasure.height);
         if (this._background) {
             context.save();
@@ -528,19 +561,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             context.fillRect(this._clearMeasure.left, this._clearMeasure.top, this._clearMeasure.width, this._clearMeasure.height);
             context.restore();
         }
+
         // Render
-        context.font = "18px Arial";
-        context.strokeStyle = "white";
-        this.onBeginLayoutObservable.notifyObservers(this);
-        var measure = new Measure(0, 0, renderWidth, renderHeight);
-        this._rootContainer._layout(measure, context, this._invalidatedRectangle);
-        this.onEndLayoutObservable.notifyObservers(this);
-
-        this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
-
         this.onBeginRenderObservable.notifyObservers(this);
         this._rootContainer._render(context, this._invalidatedRectangle);
         this.onEndRenderObservable.notifyObservers(this);
+        this._clearRectangle = null;
         this._invalidatedRectangle = null;
     }
     /** @hidden */
