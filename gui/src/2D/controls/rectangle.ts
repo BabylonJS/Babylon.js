@@ -50,7 +50,7 @@ export class Rectangle extends Container {
         return "Rectangle";
     }
 
-    protected _localDraw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
+    protected _localDraw(context: CanvasRenderingContext2D): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
