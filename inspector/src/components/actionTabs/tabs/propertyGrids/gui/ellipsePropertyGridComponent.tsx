@@ -6,6 +6,7 @@ import { LockObject } from "../lockObject";
 import { Ellipse } from "babylonjs-gui";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 
 interface IEllipsePropertyGridComponentProps {
     ellipse: Ellipse,
@@ -25,6 +26,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={ellipse} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="ELLIPSE">
+                    <CheckBoxLineComponent label="Clip children" target={ellipse} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Thickness" target={ellipse} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>
