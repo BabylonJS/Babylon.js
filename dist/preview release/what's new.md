@@ -23,6 +23,7 @@
   - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/) / [Deltakosh](https://github.com/deltakosh))
   - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
   - Added support for [nine patch stretch](https://www.babylonjs-playground.com/#G5H9IN#2) mode for images. ([Deltakosh](https://github.com/deltakosh))
+  - InvalidateRect added to AdvancedDynamicTexture to improve perf for highly populated GUIs ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
 
@@ -149,6 +150,8 @@
 - Do not clone mesh observables ([Sebavan](https://github.com/Sebavan))
 - Fixed Inspector resolution with AMD loader ([Sebavan](https://github.com/Sebavan))
 - Fix a bug when a call to `updateIndices` leads to changing the size of the index buffer by recreating the subMeshes in that case ([barroij](https://github.com/barroij))
+- Add option to disable gazeTracker color changes in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
+- PointerDragBehavior validateDrag predicate to stop dragging to specific points ([TrevorDev](https://github.com/TrevorDev))
 
 ### Viewer
 

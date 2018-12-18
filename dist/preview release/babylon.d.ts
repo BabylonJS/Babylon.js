@@ -6834,1244 +6834,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    /** @hidden */
-    class Collider {
-        /** Define if a collision was found */
-        collisionFound: boolean;
-        /**
-         * Define last intersection point in local space
-         */
-        intersectionPoint: Vector3;
-        /**
-         * Define last collided mesh
-         */
-        collidedMesh: Nullable<AbstractMesh>;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        /** @hidden */
-        _radius: Vector3;
-        /** @hidden */
-        _retry: number;
-        private _velocity;
-        private _basePoint;
-        private _epsilon;
-        /** @hidden */
-        _velocityWorldLength: number;
-        /** @hidden */
-        _basePointWorld: Vector3;
-        private _velocityWorld;
-        private _normalizedVelocity;
-        /** @hidden */
-        _initialVelocity: Vector3;
-        /** @hidden */
-        _initialPosition: Vector3;
-        private _nearestDistance;
-        private _collisionMask;
-        collisionMask: number;
-        /**
-         * Gets the plane normal used to compute the sliding response (in local space)
-         */
-        readonly slidePlaneNormal: Vector3;
-        /** @hidden */
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        /** @hidden */
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        /** @hidden */
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        /** @hidden */
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        /** @hidden */
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        /** @hidden */
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    /** @hidden */
-    var CollisionWorker: string;
-    /** @hidden */
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    /** @hidden */
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    /** @hidden */
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    /**
-     * Interface describing the value associated with a geometry.
-     * @hidden
-     */
-    interface SerializedGeometry {
-        /**
-         * Defines the unique ID of the geometry
-         */
-        id: string;
-        /**
-         * Defines the array containing the positions
-         */
-        positions: Float32Array;
-        /**
-         * Defines the array containing the indices
-         */
-        indices: Uint32Array;
-        /**
-         * Defines the array containing the normals
-         */
-        normals: Float32Array;
-    }
-    /** @hidden */
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    /** @hidden */
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    /** Defines supported task for worker process */
-    enum WorkerTaskType {
-        /** Initialization */
-        INIT = 0,
-        /** Update of geometry */
-        UPDATE = 1,
-        /** Evaluate collision */
-        COLLIDE = 2
-    }
-    /** @hidden */
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    /** @hidden */
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    /** @hidden */
-    interface InitPayload {
-    }
-    /** @hidden */
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    /** @hidden */
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    /** Defines kind of replies returned by worker */
-    enum WorkerReplyType {
-        /** Success */
-        SUCCESS = 0,
-        /** Unkown error */
-        UNKNOWN_ERROR = 1
-    }
-    /** @hidden */
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (transformNode: TransformNode) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    /** @hidden */
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld;
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare const safePostMessage: any;
-declare module BABYLON {
-    /** @hidden */
-    var WorkerIncluded: boolean;
-    /** @hidden */
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    /** @hidden */
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-        private checkCollision;
-        private processCollisionsForSubMeshes;
-        private collideForSubMesh;
-        private checkSubmeshCollision;
-    }
-    /** @hidden */
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    /** @hidden */
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * @hidden
-     */
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    /**
-     * Information about the result of picking within a scene
-     * @see https://doc.babylonjs.com/babylon101/picking_collisions
-     */
-    class PickingInfo {
-        /**
-         * If the pick collided with an object
-         */
-        hit: boolean;
-        /**
-         * Distance away where the pick collided
-         */
-        distance: number;
-        /**
-         * The location of pick collision
-         */
-        pickedPoint: Nullable<Vector3>;
-        /**
-         * The mesh corresponding the the pick collision
-         */
-        pickedMesh: Nullable<AbstractMesh>;
-        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
-        bu: number;
-        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
-        bv: number;
-        /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
-        faceId: number;
-        /** Id of the the submesh that was picked */
-        subMeshId: number;
-        /** If a sprite was picked, this will be the sprite the pick collided with */
-        pickedSprite: Nullable<Sprite>;
-        /**
-         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
-         */
-        originMesh: Nullable<AbstractMesh>;
-        /**
-         * The ray that was used to perform the picking.
-         */
-        ray: Nullable<Ray>;
-        /**
-         * Gets the normal correspodning to the face the pick collided with
-         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
-         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
-         * @returns The normal correspodning to the face the pick collided with
-         */
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        /**
-         * Gets the texture coordinates of where the pick occured
-         * @returns the vector containing the coordnates of the texture
-         */
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to store bounding box information
-     */
-    class BoundingBox implements ICullable {
-        /**
-         * Gets the 8 vectors representing the bounding box in local space
-         */
-        readonly vectors: Vector3[];
-        /**
-         * Gets the center of the bounding box in local space
-         */
-        readonly center: Vector3;
-        /**
-         * Gets the center of the bounding box in world space
-         */
-        readonly centerWorld: Vector3;
-        /**
-         * Gets the extend size in local space
-         */
-        readonly extendSize: Vector3;
-        /**
-         * Gets the extend size in world space
-         */
-        readonly extendSizeWorld: Vector3;
-        /**
-         * Gets the OBB (object bounding box) directions
-         */
-        readonly directions: Vector3[];
-        /**
-         * Gets the 8 vectors representing the bounding box in world space
-         */
-        readonly vectorsWorld: Vector3[];
-        /**
-         * Gets the minimum vector in world space
-         */
-        readonly minimumWorld: Vector3;
-        /**
-         * Gets the maximum vector in world space
-         */
-        readonly maximumWorld: Vector3;
-        /**
-         * Gets the minimum vector in local space
-         */
-        readonly minimum: Vector3;
-        /**
-         * Gets the maximum vector in local space
-         */
-        readonly maximum: Vector3;
-        private _worldMatrix;
-        private static readonly TmpVector3;
-        /**
-         * @hidden
-         */
-        _tag: number;
-        /**
-         * Creates a new bounding box
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         * @param worldMatrix defines the new world matrix
-         */
-        constructor(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>);
-        /**
-         * Recreates the entire bounding box from scratch as if we call the constructor in place
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         * @param worldMatrix defines the new world matrix
-         */
-        reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>): void;
-        /**
-         * Scale the current bounding box by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding box
-         */
-        scale(factor: number): BoundingBox;
-        /**
-         * Gets the world matrix of the bounding box
-         * @returns a matrix
-         */
-        getWorldMatrix(): DeepImmutable<Matrix>;
-        /** @hidden */
-        _update(world: DeepImmutable<Matrix>): void;
-        /**
-         * Tests if the bounding box is intersecting the frustum planes
-         * @param frustumPlanes defines the frustum planes to test
-         * @returns true if there is an intersection
-         */
-        isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
-        /**
-         * Tests if the bounding box is entirely inside the frustum planes
-         * @param frustumPlanes defines the frustum planes to test
-         * @returns true if there is an inclusion
-         */
-        isCompletelyInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
-        /**
-         * Tests if a point is inside the bounding box
-         * @param point defines the point to test
-         * @returns true if the point is inside the bounding box
-         */
-        intersectsPoint(point: DeepImmutable<Vector3>): boolean;
-        /**
-         * Tests if the bounding box intersects with a bounding sphere
-         * @param sphere defines the sphere to test
-         * @returns true if there is an intersection
-         */
-        intersectsSphere(sphere: DeepImmutable<BoundingSphere>): boolean;
-        /**
-         * Tests if the bounding box intersects with a box defined by a min and max vectors
-         * @param min defines the min vector to use
-         * @param max defines the max vector to use
-         * @returns true if there is an intersection
-         */
-        intersectsMinMax(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): boolean;
-        /**
-         * Tests if two bounding boxes are intersections
-         * @param box0 defines the first box to test
-         * @param box1 defines the second box to test
-         * @returns true if there is an intersection
-         */
-        static Intersects(box0: DeepImmutable<BoundingBox>, box1: DeepImmutable<BoundingBox>): boolean;
-        /**
-         * Tests if a bounding box defines by a min/max vectors intersects a sphere
-         * @param minPoint defines the minimum vector of the bounding box
-         * @param maxPoint defines the maximum vector of the bounding box
-         * @param sphereCenter defines the sphere center
-         * @param sphereRadius defines the sphere radius
-         * @returns true if there is an intersection
-         */
-        static IntersectsSphere(minPoint: DeepImmutable<Vector3>, maxPoint: DeepImmutable<Vector3>, sphereCenter: DeepImmutable<Vector3>, sphereRadius: number): boolean;
-        /**
-         * Tests if a bounding box defined with 8 vectors is entirely inside frustum planes
-         * @param boundingVectors defines an array of 8 vectors representing a bounding box
-         * @param frustumPlanes defines the frustum planes to test
-         * @return true if there is an inclusion
-         */
-        static IsCompletelyInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
-        /**
-         * Tests if a bounding box defined with 8 vectors intersects frustum planes
-         * @param boundingVectors defines an array of 8 vectors representing a bounding box
-         * @param frustumPlanes defines the frustum planes to test
-         * @return true if there is an intersection
-         */
-        static IsInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface for cullable objects
-     * @see https://doc.babylonjs.com/babylon101/materials#back-face-culling
-     */
-    interface ICullable {
-        /**
-         * Checks if the object or part of the object is in the frustum
-         * @param frustumPlanes Camera near/planes
-         * @returns true if the object is in frustum otherwise false
-         */
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Checks if a cullable object (mesh...) is in the camera frustum
-         * Unlike isInFrustum this cheks the full bounding box
-         * @param frustumPlanes Camera near/planes
-         * @returns true if the object is in frustum otherwise false
-         */
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    /**
-     * Info for a bounding data of a mesh
-     */
-    class BoundingInfo implements ICullable {
-        /**
-         * Bounding box for the mesh
-         */
-        readonly boundingBox: BoundingBox;
-        /**
-         * Bounding sphere for the mesh
-         */
-        readonly boundingSphere: BoundingSphere;
-        private _isLocked;
-        private static readonly TmpVector3;
-        /**
-         * Constructs bounding info
-         * @param minimum min vector of the bounding box/sphere
-         * @param maximum max vector of the bounding box/sphere
-         * @param worldMatrix defines the new world matrix
-         */
-        constructor(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>);
-        /**
-         * Recreates the entire bounding info from scratch as if we call the constructor in place
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         * @param worldMatrix defines the new world matrix
-         */
-        reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>): void;
-        /**
-         * min vector of the bounding box/sphere
-         */
-        readonly minimum: Vector3;
-        /**
-         * max vector of the bounding box/sphere
-         */
-        readonly maximum: Vector3;
-        /**
-         * If the info is locked and won't be updated to avoid perf overhead
-         */
-        isLocked: boolean;
-        /**
-         * Updates the bounding sphere and box
-         * @param world world matrix to be used to update
-         */
-        update(world: DeepImmutable<Matrix>): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         * @returns the current bounding info
-         */
-        centerOn(center: DeepImmutable<Vector3>, extend: DeepImmutable<Vector3>): BoundingInfo;
-        /**
-         * Scale the current bounding info by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding info
-         */
-        scale(factor: number): BoundingInfo;
-        /**
-         * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
-         * @param frustumPlanes defines the frustum to test
-         * @param strategy defines the strategy to use for the culling (default is BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD)
-         * @returns true if the bounding info is in the frustum planes
-         */
-        isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy?: number): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        /**
-         * Checks if a cullable object (mesh...) is in the camera frustum
-         * Unlike isInFrustum this cheks the full bounding box
-         * @param frustumPlanes Camera near/planes
-         * @returns true if the object is in frustum otherwise false
-         */
-        isCompletelyInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
-        /** @hidden */
-        _checkCollision(collider: Collider): boolean;
-        /**
-         * Checks if a point is inside the bounding box and bounding sphere or the mesh
-         * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
-         * @param point the point to check intersection with
-         * @returns if the point intersects
-         */
-        intersectsPoint(point: DeepImmutable<Vector3>): boolean;
-        /**
-         * Checks if another bounding info intersects the bounding box and bounding sphere or the mesh
-         * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
-         * @param boundingInfo the bounding info to check intersection with
-         * @param precise if the intersection should be done using OBB
-         * @returns if the bounding info intersects
-         */
-        intersects(boundingInfo: DeepImmutable<BoundingInfo>, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to store bounding sphere information
-     */
-    class BoundingSphere {
-        /**
-         * Gets the center of the bounding sphere in local space
-         */
-        readonly center: Vector3;
-        /**
-         * Radius of the bounding sphere in local space
-         */
-        radius: number;
-        /**
-         * Gets the center of the bounding sphere in world space
-         */
-        readonly centerWorld: Vector3;
-        /**
-         * Radius of the bounding sphere in world space
-         */
-        radiusWorld: number;
-        /**
-         * Gets the minimum vector in local space
-         */
-        readonly minimum: Vector3;
-        /**
-         * Gets the maximum vector in local space
-         */
-        readonly maximum: Vector3;
-        private _worldMatrix;
-        private static readonly TmpVector3;
-        /**
-         * Creates a new bounding sphere
-         * @param min defines the minimum vector (in local space)
-         * @param max defines the maximum vector (in local space)
-         * @param worldMatrix defines the new world matrix
-         */
-        constructor(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>);
-        /**
-         * Recreates the entire bounding sphere from scratch as if we call the constructor in place
-         * @param min defines the new minimum vector (in local space)
-         * @param max defines the new maximum vector (in local space)
-         * @param worldMatrix defines the new world matrix
-         */
-        reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>): void;
-        /**
-         * Scale the current bounding sphere by applying a scale factor
-         * @param factor defines the scale factor to apply
-         * @returns the current bounding box
-         */
-        scale(factor: number): BoundingSphere;
-        /**
-         * Gets the world matrix of the bounding box
-         * @returns a matrix
-         */
-        getWorldMatrix(): DeepImmutable<Matrix>;
-        /** @hidden */
-        _update(worldMatrix: DeepImmutable<Matrix>): void;
-        /**
-         * Tests if the bounding sphere is intersecting the frustum planes
-         * @param frustumPlanes defines the frustum planes to test
-         * @returns true if there is an intersection
-         */
-        isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
-        /**
-         * Tests if the bounding sphere center is in between the frustum planes.
-         * Used for optimistic fast inclusion.
-         * @param frustumPlanes defines the frustum planes to test
-         * @returns true if the sphere center is in between the frustum planes
-         */
-        isCenterInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
-        /**
-         * Tests if a point is inside the bounding sphere
-         * @param point defines the point to test
-         * @returns true if the point is inside the bounding sphere
-         */
-        intersectsPoint(point: DeepImmutable<Vector3>): boolean;
-        /**
-         * Checks if two sphere intersct
-         * @param sphere0 sphere 0
-         * @param sphere1 sphere 1
-         * @returns true if the speres intersect
-         */
-        static Intersects(sphere0: DeepImmutable<BoundingSphere>, sphere1: DeepImmutable<BoundingSphere>): boolean;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class representing a ray with position and direction
-     */
-    class Ray {
-        /** origin point */
-        origin: Vector3;
-        /** direction */
-        direction: Vector3;
-        /** length of the ray */
-        length: number;
-        private static readonly TmpVector3;
-        private _tmpRay;
-        /**
-         * Creates a new ray
-         * @param origin origin point
-         * @param direction direction
-         * @param length length of the ray
-         */
-        constructor(
-        /** origin point */
-        origin: Vector3, 
-        /** direction */
-        direction: Vector3, 
-        /** length of the ray */
-        length?: number);
-        /**
-         * Checks if the ray intersects a box
-         * @param minimum bound of the box
-         * @param maximum bound of the box
-         * @param intersectionTreshold extra extend to be added to the box in all direction
-         * @returns if the box was hit
-         */
-        intersectsBoxMinMax(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, intersectionTreshold?: number): boolean;
-        /**
-         * Checks if the ray intersects a box
-         * @param box the bounding box to check
-         * @param intersectionTreshold extra extend to be added to the BoundingBox in all direction
-         * @returns if the box was hit
-         */
-        intersectsBox(box: DeepImmutable<BoundingBox>, intersectionTreshold?: number): boolean;
-        /**
-         * If the ray hits a sphere
-         * @param sphere the bounding sphere to check
-         * @param intersectionTreshold extra extend to be added to the BoundingSphere in all direction
-         * @returns true if it hits the sphere
-         */
-        intersectsSphere(sphere: DeepImmutable<BoundingSphere>, intersectionTreshold?: number): boolean;
-        /**
-         * If the ray hits a triange
-         * @param vertex0 triangle vertex
-         * @param vertex1 triangle vertex
-         * @param vertex2 triangle vertex
-         * @returns intersection information if hit
-         */
-        intersectsTriangle(vertex0: DeepImmutable<Vector3>, vertex1: DeepImmutable<Vector3>, vertex2: DeepImmutable<Vector3>): Nullable<IntersectionInfo>;
-        /**
-         * Checks if ray intersects a plane
-         * @param plane the plane to check
-         * @returns the distance away it was hit
-         */
-        intersectsPlane(plane: DeepImmutable<Plane>): Nullable<number>;
-        /**
-         * Checks if ray intersects a mesh
-         * @param mesh the mesh to check
-         * @param fastCheck if only the bounding box should checked
-         * @returns picking info of the intersecton
-         */
-        intersectsMesh(mesh: DeepImmutable<AbstractMesh>, fastCheck?: boolean): PickingInfo;
-        /**
-         * Checks if ray intersects a mesh
-         * @param meshes the meshes to check
-         * @param fastCheck if only the bounding box should checked
-         * @param results array to store result in
-         * @returns Array of picking infos
-         */
-        intersectsMeshes(meshes: Array<DeepImmutable<AbstractMesh>>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo;
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: DeepImmutable<Vector3>, segb: DeepImmutable<Vector3>, threshold: number): number;
-        /**
-         * Update the ray from viewport position
-         * @param x position
-         * @param y y position
-         * @param viewportWidth viewport width
-         * @param viewportHeight viewport height
-         * @param world world matrix
-         * @param view view matrix
-         * @param projection projection matrix
-         * @returns this ray updated
-         */
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray;
-        /**
-         * Creates a ray with origin and direction of 0,0,0
-         * @returns the new ray
-         */
-        static Zero(): Ray;
-        /**
-         * Creates a new ray from screen space and viewport
-         * @param x position
-         * @param y y position
-         * @param viewportWidth viewport width
-         * @param viewportHeight viewport height
-         * @param world world matrix
-         * @param view view matrix
-         * @param projection projection matrix
-         * @returns new ray
-         */
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        * @returns the new ray
-        */
-        static CreateNewFromTo(origin: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, world?: DeepImmutable<Matrix>): Ray;
-        /**
-         * Transforms a ray by a matrix
-         * @param ray ray to transform
-         * @param matrix matrix to apply
-         * @returns the resulting new ray
-         */
-        static Transform(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>): Ray;
-        /**
-         * Transforms a ray by a matrix
-         * @param ray ray to transform
-         * @param matrix matrix to apply
-         * @param result ray to store result in
-         */
-        static TransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): void;
-    }
-}
-
-/**
- * Module Debug contains the (visual) components to debug a scene correctly
- */
-declare module BABYLON.Debug {
-    /**
-     * The Axes viewer will show 3 axes in a specific point in space
-     */
-    class AxesViewer {
-        private _xAxis;
-        private _yAxis;
-        private _zAxis;
-        private _scaleLinesFactor;
-        private _instanced;
-        /**
-         * Gets the hosting scene
-         */
-        scene: Scene;
-        /**
-         * Gets or sets a number used to scale line length
-         */
-        scaleLines: number;
-        /** Gets the node hierarchy used to render x-axis */
-        readonly xAxis: TransformNode;
-        /** Gets the node hierarchy used to render y-axis */
-        readonly yAxis: TransformNode;
-        /** Gets the node hierarchy used to render z-axis */
-        readonly zAxis: TransformNode;
-        /**
-         * Creates a new AxesViewer
-         * @param scene defines the hosting scene
-         * @param scaleLines defines a number used to scale line length (1 by default)
-         * @param renderingGroupId defines a number used to set the renderingGroupId of the meshes (2 by default)
-         * @param xAxis defines the node hierarchy used to render the x-axis
-         * @param yAxis defines the node hierarchy used to render the y-axis
-         * @param zAxis defines the node hierarchy used to render the z-axis
-         */
-        constructor(scene: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
-        /**
-         * Force the viewer to update
-         * @param position defines the position of the viewer
-         * @param xaxis defines the x axis of the viewer
-         * @param yaxis defines the y axis of the viewer
-         * @param zaxis defines the z axis of the viewer
-         */
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        /**
-         * Creates an instance of this axes viewer.
-         * @returns a new axes viewer with instanced meshes
-         */
-        createInstance(): AxesViewer;
-        /** Releases resources */
-        dispose(): void;
-        private static _SetRenderingGroupId;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
-     */
-    class BoneAxesViewer extends AxesViewer {
-        /**
-         * Gets or sets the target mesh where to display the axes viewer
-         */
-        mesh: Nullable<Mesh>;
-        /**
-         * Gets or sets the target bone where to display the axes viewer
-         */
-        bone: Nullable<Bone>;
-        /** Gets current position */
-        pos: Vector3;
-        /** Gets direction of X axis */
-        xaxis: Vector3;
-        /** Gets direction of Y axis */
-        yaxis: Vector3;
-        /** Gets direction of Z axis */
-        zaxis: Vector3;
-        /**
-         * Creates a new BoneAxesViewer
-         * @param scene defines the hosting scene
-         * @param bone defines the target bone
-         * @param mesh defines the target mesh
-         * @param scaleLines defines a scaling factor for line length (1 by default)
-         */
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        /**
-         * Force the viewer to update
-         */
-        update(): void;
-        /** Releases resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface used to define scene explorer extensibility option
-     */
-    interface IExplorerExtensibilityOption {
-        /**
-         * Define the option label
-         */
-        label: string;
-        /**
-         * Defines the action to execute on click
-         */
-        action: (entity: any) => void;
-    }
-    /**
-     * Defines a group of actions associated with a predicate to use when extending the Inspector scene explorer
-     */
-    interface IExplorerExtensibilityGroup {
-        /**
-         * Defines a predicate to test if a given type mut be extended
-         */
-        predicate: (entity: any) => boolean;
-        /**
-         * Gets the list of options added to a type
-         */
-        entries: IExplorerExtensibilityOption[];
-    }
-    /**
-     * Interface used to define the options to use to create the Inspector
-     */
-    interface IInspectorOptions {
-        /**
-         * Display in overlay mode (default: false)
-         */
-        overlay?: boolean;
-        /**
-         * HTML element to use as root (the parent of the rendering canvas will be used as default value)
-         */
-        globalRoot?: HTMLElement;
-        /**
-         * Display the Scene explorer
-         */
-        showExplorer?: boolean;
-        /**
-         * Display the property inspector
-         */
-        showInspector?: boolean;
-        /**
-         * Display in embed mode (both panes on the right)
-         */
-        embedMode?: boolean;
-        /**
-         * let the Inspector handles resize of the canvas when panes are resized (default to true)
-         */
-        handleResize?: boolean;
-        /**
-         * Allow the panes to popup (default: true)
-         */
-        enablePopup?: boolean;
-        /**
-         * Allow the panes to be closed by users (default: true)
-         */
-        enableClose?: boolean;
-        /**
-         * Optional list of extensibility entries
-         */
-        explorerExtensibility?: IExplorerExtensibilityGroup[];
-    }
-    interface Scene {
-        /**
-         * @hidden
-         * Backing field
-         */
-        _debugLayer: DebugLayer;
-        /**
-         * Gets the debug layer (aka Inspector) associated with the scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
-         */
-        debugLayer: DebugLayer;
-    }
-    /**
-     * The debug layer (aka Inspector) is the go to tool in order to better understand
-     * what is happening in your scene
-     * @see http://doc.babylonjs.com/features/playground_debuglayer
-     */
-    class DebugLayer {
-        /**
-         * Define the url to get the inspector script from.
-         * By default it uses the babylonjs CDN.
-         * @ignoreNaming
-         */
-        static InspectorURL: string;
-        private _scene;
-        private BJSINSPECTOR;
-        /**
-         * Observable triggered when a property is changed through the inspector.
-         */
-        onPropertyChangedObservable: Observable<{
-            object: any;
-            property: string;
-            value: any;
-            initialValue: any;
-        }>;
-        /**
-         * Instantiates a new debug layer.
-         * The debug layer (aka Inspector) is the go to tool in order to better understand
-         * what is happening in your scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
-         * @param scene Defines the scene to inspect
-         */
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector;
-        /** Get the inspector from bundle or global */
-        private _getGlobalInspector;
-        /**
-         * Get if the inspector is visible or not.
-         * @returns true if visible otherwise, false
-         */
-        isVisible(): boolean;
-        /**
-         * Hide the inspector and close its window.
-         */
-        hide(): void;
-        /**
-          * Launch the debugLayer.
-          * @param config Define the configuration of the inspector
-          */
-        show(config?: IInspectorOptions): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Used to show the physics impostor around the specific mesh
-     */
-    class PhysicsViewer {
-        /** @hidden */
-        protected _impostors: Array<Nullable<PhysicsImpostor>>;
-        /** @hidden */
-        protected _meshes: Array<Nullable<AbstractMesh>>;
-        /** @hidden */
-        protected _scene: Nullable<Scene>;
-        /** @hidden */
-        protected _numMeshes: number;
-        /** @hidden */
-        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-        private _renderFunction;
-        private _utilityLayer;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugMaterial;
-        /**
-         * Creates a new PhysicsViewer
-         * @param scene defines the hosting scene
-         */
-        constructor(scene: Scene);
-        /** @hidden */
-        protected _updateDebugMeshes(): void;
-        /**
-         * Renders a specified physic impostor
-         * @param impostor defines the impostor to render
-         * @returns the new debug mesh used to render the impostor
-         */
-        showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh>;
-        /**
-         * Hides a specified physic impostor
-         * @param impostor defines the impostor to hide
-         */
-        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-        private _getDebugMaterial;
-        private _getDebugBoxMesh;
-        private _getDebugSphereMesh;
-        private _getDebugMesh;
-        /** Releases all resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * As raycast might be hard to debug, the RayHelper can help rendering the different rays
-     * in order to better appreciate the issue one might have.
-     * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
-     */
-    class RayHelper {
-        /**
-         * Defines the ray we are currently tryin to visualize.
-         */
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        /**
-         * Helper function to create a colored helper in a scene in one line.
-         * @param ray Defines the ray we are currently tryin to visualize
-         * @param scene Defines the scene the ray is used in
-         * @param color Defines the color we want to see the ray in
-         * @returns The newly created ray helper.
-         */
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        /**
-         * Instantiate a new ray helper.
-         * As raycast might be hard to debug, the RayHelper can help rendering the different rays
-         * in order to better appreciate the issue one might have.
-         * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
-         * @param ray Defines the ray we are currently tryin to visualize
-         */
-        constructor(ray: Ray);
-        /**
-         * Shows the ray we are willing to debug.
-         * @param scene Defines the scene the ray needs to be rendered in
-         * @param color Defines the color the ray needs to be rendered in
-         */
-        show(scene: Scene, color?: Color3): void;
-        /**
-         * Hides the ray we are debugging.
-         */
-        hide(): void;
-        private _render;
-        /**
-         * Attach a ray helper to a mesh so that we can easily see its orientation for instance or information like its normals.
-         * @param mesh Defines the mesh we want the helper attached to
-         * @param meshSpaceDirection Defines the direction of the Ray in mesh space (local space of the mesh node)
-         * @param meshSpaceOrigin Defines the origin of the Ray in mesh space (local space of the mesh node)
-         * @param length Defines the length of the ray
-         */
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        /**
-         * Detach the ray helper from the mesh it has previously been attached to.
-         */
-        detachFromMesh(): void;
-        private _updateToMesh;
-        /**
-         * Dispose the helper and release its associated resources.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON.Debug {
-    /**
-     * Class used to render a debug view of a given skeleton
-     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
-     */
-    class SkeletonViewer {
-        /** defines the skeleton to render */
-        skeleton: Skeleton;
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh;
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices: boolean;
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId: number;
-        /** Gets or sets the color used to render the skeleton */
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        private _utilityLayer;
-        /**
-         * Returns the mesh used to render the bones
-         */
-        readonly debugMesh: Nullable<LinesMesh>;
-        /**
-         * Creates a new SkeletonViewer
-         * @param skeleton defines the skeleton to render
-         * @param mesh defines the mesh attached to the skeleton
-         * @param scene defines the hosting scene
-         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
-         * @param renderingGroupId defines the rendering group id to use with the viewer
-         */
-        constructor(
-        /** defines the skeleton to render */
-        skeleton: Skeleton, 
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh, scene: Scene, 
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices?: boolean, 
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId?: number);
-        /** Gets or sets a boolean indicating if the viewer is enabled */
-        isEnabled: boolean;
-        private _getBonePosition;
-        private _getLinesForBonesWithLength;
-        private _getLinesForBonesNoLength;
-        /** Update the viewer to sync with current skeleton state */
-        update(): void;
-        /** Release associated resources */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     /**
      * This represents an orbital type of camera.
      *
@@ -10035,6 +8797,1244 @@ interface Window {
 }
 interface Gamepad {
     readonly displayId: number;
+}
+
+declare module BABYLON {
+    /** @hidden */
+    class Collider {
+        /** Define if a collision was found */
+        collisionFound: boolean;
+        /**
+         * Define last intersection point in local space
+         */
+        intersectionPoint: Vector3;
+        /**
+         * Define last collided mesh
+         */
+        collidedMesh: Nullable<AbstractMesh>;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        /** @hidden */
+        _radius: Vector3;
+        /** @hidden */
+        _retry: number;
+        private _velocity;
+        private _basePoint;
+        private _epsilon;
+        /** @hidden */
+        _velocityWorldLength: number;
+        /** @hidden */
+        _basePointWorld: Vector3;
+        private _velocityWorld;
+        private _normalizedVelocity;
+        /** @hidden */
+        _initialVelocity: Vector3;
+        /** @hidden */
+        _initialPosition: Vector3;
+        private _nearestDistance;
+        private _collisionMask;
+        collisionMask: number;
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        readonly slidePlaneNormal: Vector3;
+        /** @hidden */
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        /** @hidden */
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        /** @hidden */
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        /** @hidden */
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        /** @hidden */
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        /** @hidden */
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    /** @hidden */
+    var CollisionWorker: string;
+    /** @hidden */
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+    }
+    /** @hidden */
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    /** @hidden */
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    /**
+     * Interface describing the value associated with a geometry.
+     * @hidden
+     */
+    interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
+        id: string;
+        /**
+         * Defines the array containing the positions
+         */
+        positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */
+        indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */
+        normals: Float32Array;
+    }
+    /** @hidden */
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    /** @hidden */
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    /** Defines supported task for worker process */
+    enum WorkerTaskType {
+        /** Initialization */
+        INIT = 0,
+        /** Update of geometry */
+        UPDATE = 1,
+        /** Evaluate collision */
+        COLLIDE = 2
+    }
+    /** @hidden */
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    /** @hidden */
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    /** @hidden */
+    interface InitPayload {
+    }
+    /** @hidden */
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    /** @hidden */
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    /** Defines kind of replies returned by worker */
+    enum WorkerReplyType {
+        /** Success */
+        SUCCESS = 0,
+        /** Unkown error */
+        UNKNOWN_ERROR = 1
+    }
+    /** @hidden */
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    /** @hidden */
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld;
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare const safePostMessage: any;
+declare module BABYLON {
+    /** @hidden */
+    var WorkerIncluded: boolean;
+    /** @hidden */
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    /** @hidden */
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+        private checkCollision;
+        private processCollisionsForSubMeshes;
+        private collideForSubMesh;
+        private checkSubmeshCollision;
+    }
+    /** @hidden */
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    /** @hidden */
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    /**
+     * Information about the result of picking within a scene
+     * @see https://doc.babylonjs.com/babylon101/picking_collisions
+     */
+    class PickingInfo {
+        /**
+         * If the pick collided with an object
+         */
+        hit: boolean;
+        /**
+         * Distance away where the pick collided
+         */
+        distance: number;
+        /**
+         * The location of pick collision
+         */
+        pickedPoint: Nullable<Vector3>;
+        /**
+         * The mesh corresponding the the pick collision
+         */
+        pickedMesh: Nullable<AbstractMesh>;
+        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
+        bu: number;
+        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
+        bv: number;
+        /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
+        faceId: number;
+        /** Id of the the submesh that was picked */
+        subMeshId: number;
+        /** If a sprite was picked, this will be the sprite the pick collided with */
+        pickedSprite: Nullable<Sprite>;
+        /**
+         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
+         */
+        originMesh: Nullable<AbstractMesh>;
+        /**
+         * The ray that was used to perform the picking.
+         */
+        ray: Nullable<Ray>;
+        /**
+         * Gets the normal correspodning to the face the pick collided with
+         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
+         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
+         * @returns The normal correspodning to the face the pick collided with
+         */
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        /**
+         * Gets the texture coordinates of where the pick occured
+         * @returns the vector containing the coordnates of the texture
+         */
+        getTextureCoordinates(): Nullable<Vector2>;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to store bounding box information
+     */
+    class BoundingBox implements ICullable {
+        /**
+         * Gets the 8 vectors representing the bounding box in local space
+         */
+        readonly vectors: Vector3[];
+        /**
+         * Gets the center of the bounding box in local space
+         */
+        readonly center: Vector3;
+        /**
+         * Gets the center of the bounding box in world space
+         */
+        readonly centerWorld: Vector3;
+        /**
+         * Gets the extend size in local space
+         */
+        readonly extendSize: Vector3;
+        /**
+         * Gets the extend size in world space
+         */
+        readonly extendSizeWorld: Vector3;
+        /**
+         * Gets the OBB (object bounding box) directions
+         */
+        readonly directions: Vector3[];
+        /**
+         * Gets the 8 vectors representing the bounding box in world space
+         */
+        readonly vectorsWorld: Vector3[];
+        /**
+         * Gets the minimum vector in world space
+         */
+        readonly minimumWorld: Vector3;
+        /**
+         * Gets the maximum vector in world space
+         */
+        readonly maximumWorld: Vector3;
+        /**
+         * Gets the minimum vector in local space
+         */
+        readonly minimum: Vector3;
+        /**
+         * Gets the maximum vector in local space
+         */
+        readonly maximum: Vector3;
+        private _worldMatrix;
+        private static readonly TmpVector3;
+        /**
+         * @hidden
+         */
+        _tag: number;
+        /**
+         * Creates a new bounding box
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         * @param worldMatrix defines the new world matrix
+         */
+        constructor(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>);
+        /**
+         * Recreates the entire bounding box from scratch as if we call the constructor in place
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         * @param worldMatrix defines the new world matrix
+         */
+        reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>): void;
+        /**
+         * Scale the current bounding box by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        scale(factor: number): BoundingBox;
+        /**
+         * Gets the world matrix of the bounding box
+         * @returns a matrix
+         */
+        getWorldMatrix(): DeepImmutable<Matrix>;
+        /** @hidden */
+        _update(world: DeepImmutable<Matrix>): void;
+        /**
+         * Tests if the bounding box is intersecting the frustum planes
+         * @param frustumPlanes defines the frustum planes to test
+         * @returns true if there is an intersection
+         */
+        isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
+        /**
+         * Tests if the bounding box is entirely inside the frustum planes
+         * @param frustumPlanes defines the frustum planes to test
+         * @returns true if there is an inclusion
+         */
+        isCompletelyInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
+        /**
+         * Tests if a point is inside the bounding box
+         * @param point defines the point to test
+         * @returns true if the point is inside the bounding box
+         */
+        intersectsPoint(point: DeepImmutable<Vector3>): boolean;
+        /**
+         * Tests if the bounding box intersects with a bounding sphere
+         * @param sphere defines the sphere to test
+         * @returns true if there is an intersection
+         */
+        intersectsSphere(sphere: DeepImmutable<BoundingSphere>): boolean;
+        /**
+         * Tests if the bounding box intersects with a box defined by a min and max vectors
+         * @param min defines the min vector to use
+         * @param max defines the max vector to use
+         * @returns true if there is an intersection
+         */
+        intersectsMinMax(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): boolean;
+        /**
+         * Tests if two bounding boxes are intersections
+         * @param box0 defines the first box to test
+         * @param box1 defines the second box to test
+         * @returns true if there is an intersection
+         */
+        static Intersects(box0: DeepImmutable<BoundingBox>, box1: DeepImmutable<BoundingBox>): boolean;
+        /**
+         * Tests if a bounding box defines by a min/max vectors intersects a sphere
+         * @param minPoint defines the minimum vector of the bounding box
+         * @param maxPoint defines the maximum vector of the bounding box
+         * @param sphereCenter defines the sphere center
+         * @param sphereRadius defines the sphere radius
+         * @returns true if there is an intersection
+         */
+        static IntersectsSphere(minPoint: DeepImmutable<Vector3>, maxPoint: DeepImmutable<Vector3>, sphereCenter: DeepImmutable<Vector3>, sphereRadius: number): boolean;
+        /**
+         * Tests if a bounding box defined with 8 vectors is entirely inside frustum planes
+         * @param boundingVectors defines an array of 8 vectors representing a bounding box
+         * @param frustumPlanes defines the frustum planes to test
+         * @return true if there is an inclusion
+         */
+        static IsCompletelyInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
+        /**
+         * Tests if a bounding box defined with 8 vectors intersects frustum planes
+         * @param boundingVectors defines an array of 8 vectors representing a bounding box
+         * @param frustumPlanes defines the frustum planes to test
+         * @return true if there is an intersection
+         */
+        static IsInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface for cullable objects
+     * @see https://doc.babylonjs.com/babylon101/materials#back-face-culling
+     */
+    interface ICullable {
+        /**
+         * Checks if the object or part of the object is in the frustum
+         * @param frustumPlanes Camera near/planes
+         * @returns true if the object is in frustum otherwise false
+         */
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Checks if a cullable object (mesh...) is in the camera frustum
+         * Unlike isInFrustum this cheks the full bounding box
+         * @param frustumPlanes Camera near/planes
+         * @returns true if the object is in frustum otherwise false
+         */
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    /**
+     * Info for a bounding data of a mesh
+     */
+    class BoundingInfo implements ICullable {
+        /**
+         * Bounding box for the mesh
+         */
+        readonly boundingBox: BoundingBox;
+        /**
+         * Bounding sphere for the mesh
+         */
+        readonly boundingSphere: BoundingSphere;
+        private _isLocked;
+        private static readonly TmpVector3;
+        /**
+         * Constructs bounding info
+         * @param minimum min vector of the bounding box/sphere
+         * @param maximum max vector of the bounding box/sphere
+         * @param worldMatrix defines the new world matrix
+         */
+        constructor(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>);
+        /**
+         * Recreates the entire bounding info from scratch as if we call the constructor in place
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         * @param worldMatrix defines the new world matrix
+         */
+        reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>): void;
+        /**
+         * min vector of the bounding box/sphere
+         */
+        readonly minimum: Vector3;
+        /**
+         * max vector of the bounding box/sphere
+         */
+        readonly maximum: Vector3;
+        /**
+         * If the info is locked and won't be updated to avoid perf overhead
+         */
+        isLocked: boolean;
+        /**
+         * Updates the bounding sphere and box
+         * @param world world matrix to be used to update
+         */
+        update(world: DeepImmutable<Matrix>): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         * @returns the current bounding info
+         */
+        centerOn(center: DeepImmutable<Vector3>, extend: DeepImmutable<Vector3>): BoundingInfo;
+        /**
+         * Scale the current bounding info by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding info
+         */
+        scale(factor: number): BoundingInfo;
+        /**
+         * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
+         * @param frustumPlanes defines the frustum to test
+         * @param strategy defines the strategy to use for the culling (default is BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD)
+         * @returns true if the bounding info is in the frustum planes
+         */
+        isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy?: number): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        /**
+         * Checks if a cullable object (mesh...) is in the camera frustum
+         * Unlike isInFrustum this cheks the full bounding box
+         * @param frustumPlanes Camera near/planes
+         * @returns true if the object is in frustum otherwise false
+         */
+        isCompletelyInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
+        /** @hidden */
+        _checkCollision(collider: Collider): boolean;
+        /**
+         * Checks if a point is inside the bounding box and bounding sphere or the mesh
+         * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+         * @param point the point to check intersection with
+         * @returns if the point intersects
+         */
+        intersectsPoint(point: DeepImmutable<Vector3>): boolean;
+        /**
+         * Checks if another bounding info intersects the bounding box and bounding sphere or the mesh
+         * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+         * @param boundingInfo the bounding info to check intersection with
+         * @param precise if the intersection should be done using OBB
+         * @returns if the bounding info intersects
+         */
+        intersects(boundingInfo: DeepImmutable<BoundingInfo>, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to store bounding sphere information
+     */
+    class BoundingSphere {
+        /**
+         * Gets the center of the bounding sphere in local space
+         */
+        readonly center: Vector3;
+        /**
+         * Radius of the bounding sphere in local space
+         */
+        radius: number;
+        /**
+         * Gets the center of the bounding sphere in world space
+         */
+        readonly centerWorld: Vector3;
+        /**
+         * Radius of the bounding sphere in world space
+         */
+        radiusWorld: number;
+        /**
+         * Gets the minimum vector in local space
+         */
+        readonly minimum: Vector3;
+        /**
+         * Gets the maximum vector in local space
+         */
+        readonly maximum: Vector3;
+        private _worldMatrix;
+        private static readonly TmpVector3;
+        /**
+         * Creates a new bounding sphere
+         * @param min defines the minimum vector (in local space)
+         * @param max defines the maximum vector (in local space)
+         * @param worldMatrix defines the new world matrix
+         */
+        constructor(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>);
+        /**
+         * Recreates the entire bounding sphere from scratch as if we call the constructor in place
+         * @param min defines the new minimum vector (in local space)
+         * @param max defines the new maximum vector (in local space)
+         * @param worldMatrix defines the new world matrix
+         */
+        reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>): void;
+        /**
+         * Scale the current bounding sphere by applying a scale factor
+         * @param factor defines the scale factor to apply
+         * @returns the current bounding box
+         */
+        scale(factor: number): BoundingSphere;
+        /**
+         * Gets the world matrix of the bounding box
+         * @returns a matrix
+         */
+        getWorldMatrix(): DeepImmutable<Matrix>;
+        /** @hidden */
+        _update(worldMatrix: DeepImmutable<Matrix>): void;
+        /**
+         * Tests if the bounding sphere is intersecting the frustum planes
+         * @param frustumPlanes defines the frustum planes to test
+         * @returns true if there is an intersection
+         */
+        isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
+        /**
+         * Tests if the bounding sphere center is in between the frustum planes.
+         * Used for optimistic fast inclusion.
+         * @param frustumPlanes defines the frustum planes to test
+         * @returns true if the sphere center is in between the frustum planes
+         */
+        isCenterInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean;
+        /**
+         * Tests if a point is inside the bounding sphere
+         * @param point defines the point to test
+         * @returns true if the point is inside the bounding sphere
+         */
+        intersectsPoint(point: DeepImmutable<Vector3>): boolean;
+        /**
+         * Checks if two sphere intersct
+         * @param sphere0 sphere 0
+         * @param sphere1 sphere 1
+         * @returns true if the speres intersect
+         */
+        static Intersects(sphere0: DeepImmutable<BoundingSphere>, sphere1: DeepImmutable<BoundingSphere>): boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class representing a ray with position and direction
+     */
+    class Ray {
+        /** origin point */
+        origin: Vector3;
+        /** direction */
+        direction: Vector3;
+        /** length of the ray */
+        length: number;
+        private static readonly TmpVector3;
+        private _tmpRay;
+        /**
+         * Creates a new ray
+         * @param origin origin point
+         * @param direction direction
+         * @param length length of the ray
+         */
+        constructor(
+        /** origin point */
+        origin: Vector3, 
+        /** direction */
+        direction: Vector3, 
+        /** length of the ray */
+        length?: number);
+        /**
+         * Checks if the ray intersects a box
+         * @param minimum bound of the box
+         * @param maximum bound of the box
+         * @param intersectionTreshold extra extend to be added to the box in all direction
+         * @returns if the box was hit
+         */
+        intersectsBoxMinMax(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, intersectionTreshold?: number): boolean;
+        /**
+         * Checks if the ray intersects a box
+         * @param box the bounding box to check
+         * @param intersectionTreshold extra extend to be added to the BoundingBox in all direction
+         * @returns if the box was hit
+         */
+        intersectsBox(box: DeepImmutable<BoundingBox>, intersectionTreshold?: number): boolean;
+        /**
+         * If the ray hits a sphere
+         * @param sphere the bounding sphere to check
+         * @param intersectionTreshold extra extend to be added to the BoundingSphere in all direction
+         * @returns true if it hits the sphere
+         */
+        intersectsSphere(sphere: DeepImmutable<BoundingSphere>, intersectionTreshold?: number): boolean;
+        /**
+         * If the ray hits a triange
+         * @param vertex0 triangle vertex
+         * @param vertex1 triangle vertex
+         * @param vertex2 triangle vertex
+         * @returns intersection information if hit
+         */
+        intersectsTriangle(vertex0: DeepImmutable<Vector3>, vertex1: DeepImmutable<Vector3>, vertex2: DeepImmutable<Vector3>): Nullable<IntersectionInfo>;
+        /**
+         * Checks if ray intersects a plane
+         * @param plane the plane to check
+         * @returns the distance away it was hit
+         */
+        intersectsPlane(plane: DeepImmutable<Plane>): Nullable<number>;
+        /**
+         * Checks if ray intersects a mesh
+         * @param mesh the mesh to check
+         * @param fastCheck if only the bounding box should checked
+         * @returns picking info of the intersecton
+         */
+        intersectsMesh(mesh: DeepImmutable<AbstractMesh>, fastCheck?: boolean): PickingInfo;
+        /**
+         * Checks if ray intersects a mesh
+         * @param meshes the meshes to check
+         * @param fastCheck if only the bounding box should checked
+         * @param results array to store result in
+         * @returns Array of picking infos
+         */
+        intersectsMeshes(meshes: Array<DeepImmutable<AbstractMesh>>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo;
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: DeepImmutable<Vector3>, segb: DeepImmutable<Vector3>, threshold: number): number;
+        /**
+         * Update the ray from viewport position
+         * @param x position
+         * @param y y position
+         * @param viewportWidth viewport width
+         * @param viewportHeight viewport height
+         * @param world world matrix
+         * @param view view matrix
+         * @param projection projection matrix
+         * @returns this ray updated
+         */
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray;
+        /**
+         * Creates a ray with origin and direction of 0,0,0
+         * @returns the new ray
+         */
+        static Zero(): Ray;
+        /**
+         * Creates a new ray from screen space and viewport
+         * @param x position
+         * @param y y position
+         * @param viewportWidth viewport width
+         * @param viewportHeight viewport height
+         * @param world world matrix
+         * @param view view matrix
+         * @param projection projection matrix
+         * @returns new ray
+         */
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        * @returns the new ray
+        */
+        static CreateNewFromTo(origin: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, world?: DeepImmutable<Matrix>): Ray;
+        /**
+         * Transforms a ray by a matrix
+         * @param ray ray to transform
+         * @param matrix matrix to apply
+         * @returns the resulting new ray
+         */
+        static Transform(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>): Ray;
+        /**
+         * Transforms a ray by a matrix
+         * @param ray ray to transform
+         * @param matrix matrix to apply
+         * @param result ray to store result in
+         */
+        static TransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): void;
+    }
+}
+
+/**
+ * Module Debug contains the (visual) components to debug a scene correctly
+ */
+declare module BABYLON.Debug {
+    /**
+     * The Axes viewer will show 3 axes in a specific point in space
+     */
+    class AxesViewer {
+        private _xAxis;
+        private _yAxis;
+        private _zAxis;
+        private _scaleLinesFactor;
+        private _instanced;
+        /**
+         * Gets the hosting scene
+         */
+        scene: Scene;
+        /**
+         * Gets or sets a number used to scale line length
+         */
+        scaleLines: number;
+        /** Gets the node hierarchy used to render x-axis */
+        readonly xAxis: TransformNode;
+        /** Gets the node hierarchy used to render y-axis */
+        readonly yAxis: TransformNode;
+        /** Gets the node hierarchy used to render z-axis */
+        readonly zAxis: TransformNode;
+        /**
+         * Creates a new AxesViewer
+         * @param scene defines the hosting scene
+         * @param scaleLines defines a number used to scale line length (1 by default)
+         * @param renderingGroupId defines a number used to set the renderingGroupId of the meshes (2 by default)
+         * @param xAxis defines the node hierarchy used to render the x-axis
+         * @param yAxis defines the node hierarchy used to render the y-axis
+         * @param zAxis defines the node hierarchy used to render the z-axis
+         */
+        constructor(scene: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
+        /**
+         * Force the viewer to update
+         * @param position defines the position of the viewer
+         * @param xaxis defines the x axis of the viewer
+         * @param yaxis defines the y axis of the viewer
+         * @param zaxis defines the z axis of the viewer
+         */
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        /**
+         * Creates an instance of this axes viewer.
+         * @returns a new axes viewer with instanced meshes
+         */
+        createInstance(): AxesViewer;
+        /** Releases resources */
+        dispose(): void;
+        private static _SetRenderingGroupId;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
+     */
+    class BoneAxesViewer extends AxesViewer {
+        /**
+         * Gets or sets the target mesh where to display the axes viewer
+         */
+        mesh: Nullable<Mesh>;
+        /**
+         * Gets or sets the target bone where to display the axes viewer
+         */
+        bone: Nullable<Bone>;
+        /** Gets current position */
+        pos: Vector3;
+        /** Gets direction of X axis */
+        xaxis: Vector3;
+        /** Gets direction of Y axis */
+        yaxis: Vector3;
+        /** Gets direction of Z axis */
+        zaxis: Vector3;
+        /**
+         * Creates a new BoneAxesViewer
+         * @param scene defines the hosting scene
+         * @param bone defines the target bone
+         * @param mesh defines the target mesh
+         * @param scaleLines defines a scaling factor for line length (1 by default)
+         */
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        /**
+         * Force the viewer to update
+         */
+        update(): void;
+        /** Releases resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface used to define scene explorer extensibility option
+     */
+    interface IExplorerExtensibilityOption {
+        /**
+         * Define the option label
+         */
+        label: string;
+        /**
+         * Defines the action to execute on click
+         */
+        action: (entity: any) => void;
+    }
+    /**
+     * Defines a group of actions associated with a predicate to use when extending the Inspector scene explorer
+     */
+    interface IExplorerExtensibilityGroup {
+        /**
+         * Defines a predicate to test if a given type mut be extended
+         */
+        predicate: (entity: any) => boolean;
+        /**
+         * Gets the list of options added to a type
+         */
+        entries: IExplorerExtensibilityOption[];
+    }
+    /**
+     * Interface used to define the options to use to create the Inspector
+     */
+    interface IInspectorOptions {
+        /**
+         * Display in overlay mode (default: false)
+         */
+        overlay?: boolean;
+        /**
+         * HTML element to use as root (the parent of the rendering canvas will be used as default value)
+         */
+        globalRoot?: HTMLElement;
+        /**
+         * Display the Scene explorer
+         */
+        showExplorer?: boolean;
+        /**
+         * Display the property inspector
+         */
+        showInspector?: boolean;
+        /**
+         * Display in embed mode (both panes on the right)
+         */
+        embedMode?: boolean;
+        /**
+         * let the Inspector handles resize of the canvas when panes are resized (default to true)
+         */
+        handleResize?: boolean;
+        /**
+         * Allow the panes to popup (default: true)
+         */
+        enablePopup?: boolean;
+        /**
+         * Allow the panes to be closed by users (default: true)
+         */
+        enableClose?: boolean;
+        /**
+         * Optional list of extensibility entries
+         */
+        explorerExtensibility?: IExplorerExtensibilityGroup[];
+    }
+    interface Scene {
+        /**
+         * @hidden
+         * Backing field
+         */
+        _debugLayer: DebugLayer;
+        /**
+         * Gets the debug layer (aka Inspector) associated with the scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         */
+        debugLayer: DebugLayer;
+    }
+    /**
+     * The debug layer (aka Inspector) is the go to tool in order to better understand
+     * what is happening in your scene
+     * @see http://doc.babylonjs.com/features/playground_debuglayer
+     */
+    class DebugLayer {
+        /**
+         * Define the url to get the inspector script from.
+         * By default it uses the babylonjs CDN.
+         * @ignoreNaming
+         */
+        static InspectorURL: string;
+        private _scene;
+        private BJSINSPECTOR;
+        /**
+         * Observable triggered when a property is changed through the inspector.
+         */
+        onPropertyChangedObservable: Observable<{
+            object: any;
+            property: string;
+            value: any;
+            initialValue: any;
+        }>;
+        /**
+         * Instantiates a new debug layer.
+         * The debug layer (aka Inspector) is the go to tool in order to better understand
+         * what is happening in your scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         * @param scene Defines the scene to inspect
+         */
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector;
+        /** Get the inspector from bundle or global */
+        private _getGlobalInspector;
+        /**
+         * Get if the inspector is visible or not.
+         * @returns true if visible otherwise, false
+         */
+        isVisible(): boolean;
+        /**
+         * Hide the inspector and close its window.
+         */
+        hide(): void;
+        /**
+          * Launch the debugLayer.
+          * @param config Define the configuration of the inspector
+          */
+        show(config?: IInspectorOptions): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Used to show the physics impostor around the specific mesh
+     */
+    class PhysicsViewer {
+        /** @hidden */
+        protected _impostors: Array<Nullable<PhysicsImpostor>>;
+        /** @hidden */
+        protected _meshes: Array<Nullable<AbstractMesh>>;
+        /** @hidden */
+        protected _scene: Nullable<Scene>;
+        /** @hidden */
+        protected _numMeshes: number;
+        /** @hidden */
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+        private _renderFunction;
+        private _utilityLayer;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugMaterial;
+        /**
+         * Creates a new PhysicsViewer
+         * @param scene defines the hosting scene
+         */
+        constructor(scene: Scene);
+        /** @hidden */
+        protected _updateDebugMeshes(): void;
+        /**
+         * Renders a specified physic impostor
+         * @param impostor defines the impostor to render
+         * @returns the new debug mesh used to render the impostor
+         */
+        showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh>;
+        /**
+         * Hides a specified physic impostor
+         * @param impostor defines the impostor to hide
+         */
+        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+        private _getDebugMaterial;
+        private _getDebugBoxMesh;
+        private _getDebugSphereMesh;
+        private _getDebugMesh;
+        /** Releases all resources */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+     * in order to better appreciate the issue one might have.
+     * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+     */
+    class RayHelper {
+        /**
+         * Defines the ray we are currently tryin to visualize.
+         */
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        /**
+         * Helper function to create a colored helper in a scene in one line.
+         * @param ray Defines the ray we are currently tryin to visualize
+         * @param scene Defines the scene the ray is used in
+         * @param color Defines the color we want to see the ray in
+         * @returns The newly created ray helper.
+         */
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        /**
+         * Instantiate a new ray helper.
+         * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+         * in order to better appreciate the issue one might have.
+         * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+         * @param ray Defines the ray we are currently tryin to visualize
+         */
+        constructor(ray: Ray);
+        /**
+         * Shows the ray we are willing to debug.
+         * @param scene Defines the scene the ray needs to be rendered in
+         * @param color Defines the color the ray needs to be rendered in
+         */
+        show(scene: Scene, color?: Color3): void;
+        /**
+         * Hides the ray we are debugging.
+         */
+        hide(): void;
+        private _render;
+        /**
+         * Attach a ray helper to a mesh so that we can easily see its orientation for instance or information like its normals.
+         * @param mesh Defines the mesh we want the helper attached to
+         * @param meshSpaceDirection Defines the direction of the Ray in mesh space (local space of the mesh node)
+         * @param meshSpaceOrigin Defines the origin of the Ray in mesh space (local space of the mesh node)
+         * @param length Defines the length of the ray
+         */
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        /**
+         * Detach the ray helper from the mesh it has previously been attached to.
+         */
+        detachFromMesh(): void;
+        private _updateToMesh;
+        /**
+         * Dispose the helper and release its associated resources.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Debug {
+    /**
+     * Class used to render a debug view of a given skeleton
+     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
+     */
+    class SkeletonViewer {
+        /** defines the skeleton to render */
+        skeleton: Skeleton;
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh;
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices: boolean;
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId: number;
+        /** Gets or sets the color used to render the skeleton */
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        private _utilityLayer;
+        /**
+         * Returns the mesh used to render the bones
+         */
+        readonly debugMesh: Nullable<LinesMesh>;
+        /**
+         * Creates a new SkeletonViewer
+         * @param skeleton defines the skeleton to render
+         * @param mesh defines the mesh attached to the skeleton
+         * @param scene defines the hosting scene
+         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
+         * @param renderingGroupId defines the rendering group id to use with the viewer
+         */
+        constructor(
+        /** defines the skeleton to render */
+        skeleton: Skeleton, 
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh, scene: Scene, 
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices?: boolean, 
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId?: number);
+        /** Gets or sets a boolean indicating if the viewer is enabled */
+        isEnabled: boolean;
+        private _getBonePosition;
+        private _getLinesForBonesWithLength;
+        private _getLinesForBonesNoLength;
+        /** Update the viewer to sync with current skeleton state */
+        update(): void;
+        /** Release associated resources */
+        dispose(): void;
+    }
 }
 
 declare module BABYLON {
@@ -12422,6 +12422,246 @@ declare var WebGLVertexArrayObject: {
 
 declare module BABYLON {
     /**
+     * Gather the list of clipboard event types as constants.
+     */
+    class ClipboardEventTypes {
+        /**
+         * The clipboard event is fired when a copy command is active (pressed).
+         */
+        static readonly COPY: number;
+        /**
+         *  The clipboard event is fired when a cut command is active (pressed).
+         */
+        static readonly CUT: number;
+        /**
+         * The clipboard event is fired when a paste command is active (pressed).
+         */
+        static readonly PASTE: number;
+    }
+    /**
+     * This class is used to store clipboard related info for the onClipboardObservable event.
+     */
+    class ClipboardInfo {
+        /**
+         * Defines the type of event (BABYLON.ClipboardEventTypes)
+         */
+        type: number;
+        /**
+         * Defines the related dom event
+         */
+        event: ClipboardEvent;
+        /**
+         *Creates an instance of ClipboardInfo.
+         * @param {number} type
+         * @param {ClipboardEvent} event
+         */
+        constructor(
+        /**
+         * Defines the type of event (BABYLON.ClipboardEventTypes)
+         */
+        type: number, 
+        /**
+         * Defines the related dom event
+         */
+        event: ClipboardEvent);
+        /**
+         *  Get the clipboard event's type from the keycode.
+         * @param keyCode Defines the keyCode for the current keyboard event.
+         * @return {number}
+         */
+        static GetTypeFromCharacter(keyCode: number): number;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gather the list of keyboard event types as constants.
+     */
+    class KeyboardEventTypes {
+        /**
+         * The keydown event is fired when a key becomes active (pressed).
+         */
+        static readonly KEYDOWN: number;
+        /**
+         * The keyup event is fired when a key has been released.
+         */
+        static readonly KEYUP: number;
+    }
+    /**
+     * This class is used to store keyboard related info for the onKeyboardObservable event.
+     */
+    class KeyboardInfo {
+        /**
+         * Defines the type of event (BABYLON.KeyboardEventTypes)
+         */
+        type: number;
+        /**
+         * Defines the related dom event
+         */
+        event: KeyboardEvent;
+        /**
+         * Instantiates a new keyboard info.
+         * This class is used to store keyboard related info for the onKeyboardObservable event.
+         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
+         * @param event Defines the related dom event
+         */
+        constructor(
+        /**
+         * Defines the type of event (BABYLON.KeyboardEventTypes)
+         */
+        type: number, 
+        /**
+         * Defines the related dom event
+         */
+        event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        /**
+         * Defines the type of event (BABYLON.KeyboardEventTypes)
+         */
+        type: number;
+        /**
+         * Defines the related dom event
+         */
+        event: KeyboardEvent;
+        /**
+         * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
+         */
+        skipOnPointerObservable: boolean;
+        /**
+         * Instantiates a new keyboard pre info.
+         * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
+         * @param event Defines the related dom event
+         */
+        constructor(
+        /**
+         * Defines the type of event (BABYLON.KeyboardEventTypes)
+         */
+        type: number, 
+        /**
+         * Defines the related dom event
+         */
+        event: KeyboardEvent);
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Gather the list of pointer event types as constants.
+     */
+    class PointerEventTypes {
+        /**
+         * The pointerdown event is fired when a pointer becomes active. For mouse, it is fired when the device transitions from no buttons depressed to at least one button depressed. For touch, it is fired when physical contact is made with the digitizer. For pen, it is fired when the stylus makes physical contact with the digitizer.
+         */
+        static readonly POINTERDOWN: number;
+        /**
+         * The pointerup event is fired when a pointer is no longer active.
+         */
+        static readonly POINTERUP: number;
+        /**
+         * The pointermove event is fired when a pointer changes coordinates.
+         */
+        static readonly POINTERMOVE: number;
+        /**
+         * The pointerwheel event is fired when a mouse wheel has been rotated.
+         */
+        static readonly POINTERWHEEL: number;
+        /**
+         * The pointerpick event is fired when a mesh or sprite has been picked by the pointer.
+         */
+        static readonly POINTERPICK: number;
+        /**
+         * The pointertap event is fired when a the object has been touched and released without drag.
+         */
+        static readonly POINTERTAP: number;
+        /**
+         * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
+         */
+        static readonly POINTERDOUBLETAP: number;
+    }
+    /**
+     * Base class of pointer info types.
+     */
+    class PointerInfoBase {
+        /**
+         * Defines the type of event (BABYLON.PointerEventTypes)
+         */
+        type: number;
+        /**
+         * Defines the related dom event
+         */
+        event: PointerEvent | MouseWheelEvent;
+        /**
+         * Instantiates the base class of pointers info.
+         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param event Defines the related dom event
+         */
+        constructor(
+        /**
+         * Defines the type of event (BABYLON.PointerEventTypes)
+         */
+        type: number, 
+        /**
+         * Defines the related dom event
+         */
+        event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        /**
+         * Ray from a pointer if availible (eg. 6dof controller)
+         */
+        ray: Nullable<Ray>;
+        /**
+         * Defines the local position of the pointer on the canvas.
+         */
+        localPosition: Vector2;
+        /**
+         * Defines whether the engine should skip the next OnPointerObservable associated to this pre.
+         */
+        skipOnPointerObservable: boolean;
+        /**
+         * Instantiates a PointerInfoPre to store pointer related info to the onPrePointerObservable event.
+         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param event Defines the related dom event
+         * @param localX Defines the local x coordinates of the pointer when the event occured
+         * @param localY Defines the local y coordinates of the pointer when the event occured
+         */
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        /**
+         * Defines the picking info associated to the info (if any)\
+         */
+        pickInfo: Nullable<PickingInfo>;
+        /**
+         * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
+         * @param type Defines the type of event (BABYLON.PointerEventTypes)
+         * @param event Defines the related dom event
+         * @param pickInfo Defines the picking info associated to the info (if any)\
+         */
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, 
+        /**
+         * Defines the picking info associated to the info (if any)\
+         */
+        pickInfo: Nullable<PickingInfo>);
+    }
+}
+
+declare module BABYLON {
+    /**
      * Represents a gamepad control stick position
      */
     class StickValues {
@@ -12975,246 +13215,6 @@ declare module BABYLON {
          * Disposes the gamepad
          */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gather the list of clipboard event types as constants.
-     */
-    class ClipboardEventTypes {
-        /**
-         * The clipboard event is fired when a copy command is active (pressed).
-         */
-        static readonly COPY: number;
-        /**
-         *  The clipboard event is fired when a cut command is active (pressed).
-         */
-        static readonly CUT: number;
-        /**
-         * The clipboard event is fired when a paste command is active (pressed).
-         */
-        static readonly PASTE: number;
-    }
-    /**
-     * This class is used to store clipboard related info for the onClipboardObservable event.
-     */
-    class ClipboardInfo {
-        /**
-         * Defines the type of event (BABYLON.ClipboardEventTypes)
-         */
-        type: number;
-        /**
-         * Defines the related dom event
-         */
-        event: ClipboardEvent;
-        /**
-         *Creates an instance of ClipboardInfo.
-         * @param {number} type
-         * @param {ClipboardEvent} event
-         */
-        constructor(
-        /**
-         * Defines the type of event (BABYLON.ClipboardEventTypes)
-         */
-        type: number, 
-        /**
-         * Defines the related dom event
-         */
-        event: ClipboardEvent);
-        /**
-         *  Get the clipboard event's type from the keycode.
-         * @param keyCode Defines the keyCode for the current keyboard event.
-         * @return {number}
-         */
-        static GetTypeFromCharacter(keyCode: number): number;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gather the list of keyboard event types as constants.
-     */
-    class KeyboardEventTypes {
-        /**
-         * The keydown event is fired when a key becomes active (pressed).
-         */
-        static readonly KEYDOWN: number;
-        /**
-         * The keyup event is fired when a key has been released.
-         */
-        static readonly KEYUP: number;
-    }
-    /**
-     * This class is used to store keyboard related info for the onKeyboardObservable event.
-     */
-    class KeyboardInfo {
-        /**
-         * Defines the type of event (BABYLON.KeyboardEventTypes)
-         */
-        type: number;
-        /**
-         * Defines the related dom event
-         */
-        event: KeyboardEvent;
-        /**
-         * Instantiates a new keyboard info.
-         * This class is used to store keyboard related info for the onKeyboardObservable event.
-         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
-         * @param event Defines the related dom event
-         */
-        constructor(
-        /**
-         * Defines the type of event (BABYLON.KeyboardEventTypes)
-         */
-        type: number, 
-        /**
-         * Defines the related dom event
-         */
-        event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        /**
-         * Defines the type of event (BABYLON.KeyboardEventTypes)
-         */
-        type: number;
-        /**
-         * Defines the related dom event
-         */
-        event: KeyboardEvent;
-        /**
-         * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
-         */
-        skipOnPointerObservable: boolean;
-        /**
-         * Instantiates a new keyboard pre info.
-         * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-         * @param type Defines the type of event (BABYLON.KeyboardEventTypes)
-         * @param event Defines the related dom event
-         */
-        constructor(
-        /**
-         * Defines the type of event (BABYLON.KeyboardEventTypes)
-         */
-        type: number, 
-        /**
-         * Defines the related dom event
-         */
-        event: KeyboardEvent);
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Gather the list of pointer event types as constants.
-     */
-    class PointerEventTypes {
-        /**
-         * The pointerdown event is fired when a pointer becomes active. For mouse, it is fired when the device transitions from no buttons depressed to at least one button depressed. For touch, it is fired when physical contact is made with the digitizer. For pen, it is fired when the stylus makes physical contact with the digitizer.
-         */
-        static readonly POINTERDOWN: number;
-        /**
-         * The pointerup event is fired when a pointer is no longer active.
-         */
-        static readonly POINTERUP: number;
-        /**
-         * The pointermove event is fired when a pointer changes coordinates.
-         */
-        static readonly POINTERMOVE: number;
-        /**
-         * The pointerwheel event is fired when a mouse wheel has been rotated.
-         */
-        static readonly POINTERWHEEL: number;
-        /**
-         * The pointerpick event is fired when a mesh or sprite has been picked by the pointer.
-         */
-        static readonly POINTERPICK: number;
-        /**
-         * The pointertap event is fired when a the object has been touched and released without drag.
-         */
-        static readonly POINTERTAP: number;
-        /**
-         * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
-         */
-        static readonly POINTERDOUBLETAP: number;
-    }
-    /**
-     * Base class of pointer info types.
-     */
-    class PointerInfoBase {
-        /**
-         * Defines the type of event (BABYLON.PointerEventTypes)
-         */
-        type: number;
-        /**
-         * Defines the related dom event
-         */
-        event: PointerEvent | MouseWheelEvent;
-        /**
-         * Instantiates the base class of pointers info.
-         * @param type Defines the type of event (BABYLON.PointerEventTypes)
-         * @param event Defines the related dom event
-         */
-        constructor(
-        /**
-         * Defines the type of event (BABYLON.PointerEventTypes)
-         */
-        type: number, 
-        /**
-         * Defines the related dom event
-         */
-        event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        /**
-         * Ray from a pointer if availible (eg. 6dof controller)
-         */
-        ray: Nullable<Ray>;
-        /**
-         * Defines the local position of the pointer on the canvas.
-         */
-        localPosition: Vector2;
-        /**
-         * Defines whether the engine should skip the next OnPointerObservable associated to this pre.
-         */
-        skipOnPointerObservable: boolean;
-        /**
-         * Instantiates a PointerInfoPre to store pointer related info to the onPrePointerObservable event.
-         * @param type Defines the type of event (BABYLON.PointerEventTypes)
-         * @param event Defines the related dom event
-         * @param localX Defines the local x coordinates of the pointer when the event occured
-         * @param localY Defines the local y coordinates of the pointer when the event occured
-         */
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        /**
-         * Defines the picking info associated to the info (if any)\
-         */
-        pickInfo: Nullable<PickingInfo>;
-        /**
-         * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
-         * @param type Defines the type of event (BABYLON.PointerEventTypes)
-         * @param event Defines the related dom event
-         * @param pickInfo Defines the picking info associated to the info (if any)\
-         */
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, 
-        /**
-         * Defines the picking info associated to the info (if any)\
-         */
-        pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -16648,6 +16648,404 @@ declare module BABYLON {
          * @param lightIndex defines the index of the light for the effect
          */
         prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface used to present a loading screen while loading a scene
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
+    interface ILoadingScreen {
+        /**
+         * Function called to display the loading screen
+         */
+        displayLoadingUI: () => void;
+        /**
+         * Function called to hide the loading screen
+         */
+        hideLoadingUI: () => void;
+        /**
+         * Gets or sets the color to use for the background
+         */
+        loadingUIBackgroundColor: string;
+        /**
+         * Gets or sets the text to display while loading
+         */
+        loadingUIText: string;
+    }
+    /**
+     * Class used for the default loading screen
+     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     */
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        /**
+         * Creates a new default loading screen
+         * @param _renderingCanvas defines the canvas used to render the scene
+         * @param _loadingText defines the default text to display
+         * @param _loadingDivBackgroundColor defines the default background color
+         */
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        /**
+         * Function called to display the loading screen
+         */
+        displayLoadingUI(): void;
+        /**
+         * Function called to hide the loading screen
+         */
+        hideLoadingUI(): void;
+        /**
+         * Gets or sets the text to display while loading
+         */
+        loadingUIText: string;
+        /**
+         * Gets or sets the color to use for the background
+         */
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to represent data loading progression
+     */
+    class SceneLoaderProgressEvent {
+        /** defines if data length to load can be evaluated */
+        readonly lengthComputable: boolean;
+        /** defines the loaded data length */
+        readonly loaded: number;
+        /** defines the data length to load */
+        readonly total: number;
+        /**
+         * Create a new progress event
+         * @param lengthComputable defines if data length to load can be evaluated
+         * @param loaded defines the loaded data length
+         * @param total defines the data length to load
+         */
+        constructor(
+        /** defines if data length to load can be evaluated */
+        lengthComputable: boolean, 
+        /** defines the loaded data length */
+        loaded: number, 
+        /** defines the data length to load */
+        total: number);
+        /**
+         * Creates a new SceneLoaderProgressEvent from a ProgressEvent
+         * @param event defines the source event
+         * @returns a new SceneLoaderProgressEvent
+         */
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    }
+    /**
+     * Interface used by SceneLoader plugins to define supported file extensions
+     */
+    interface ISceneLoaderPluginExtensions {
+        /**
+         * Defines the list of supported extensions
+         */
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    /**
+     * Interface used by SceneLoader plugin factory
+     */
+    interface ISceneLoaderPluginFactory {
+        /**
+         * Defines the name of the factory
+         */
+        name: string;
+        /**
+         * Function called to create a new plugin
+         * @return the new plugin
+         */
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        /**
+         * Boolean indicating if the plugin can direct load specific data
+         */
+        canDirectLoad?: (data: string) => boolean;
+    }
+    /**
+     * Interface used to define a SceneLoader plugin
+     */
+    interface ISceneLoaderPlugin {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param meshes The meshes array to import into
+         * @param particleSystems The particle systems array to import into
+         * @param skeletons The skeletons array to import into
+         * @param onError The callback when import fails
+         * @returns True if successful or false otherwise
+         */
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns true if successful or false otherwise
+         */
+        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns The loaded asset container
+         */
+        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    }
+    /**
+     * Interface used to define an async SceneLoader plugin
+     */
+    interface ISceneLoaderPluginAsync {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns The loaded meshes, particle systems, skeletons, and animation groups
+         */
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: IParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns Nothing
+         */
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns The loaded asset container
+         */
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+    }
+    /**
+     * Class used to load scene from various file formats using registered plugins
+     * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
+     */
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        /**
+         * No logging while loading
+         */
+        static readonly NO_LOGGING: number;
+        /**
+         * Minimal logging while loading
+         */
+        static readonly MINIMAL_LOGGING: number;
+        /**
+         * Summary logging while loading
+         */
+        static readonly SUMMARY_LOGGING: number;
+        /**
+         * Detailled logging while loading
+         */
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        /**
+         * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
+         */
+        static ForceFullSceneLoadingForIncremental: boolean;
+        /**
+         * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
+         */
+        static ShowLoadingScreen: boolean;
+        /**
+         * Defines the current logging level (while loading the scene)
+         * @ignorenaming
+         */
+        static loggingLevel: number;
+        /**
+         * Gets or set a boolean indicating if matrix weights must be cleaned upon loading
+         */
+        static CleanBoneMatrixWeights: boolean;
+        /**
+         * Event raised when a plugin is used to load a scene
+         */
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin;
+        private static _getPluginForExtension;
+        private static _getPluginForDirectLoad;
+        private static _getPluginForFilename;
+        private static _getDirectLoad;
+        private static _loadData;
+        private static _getFileInfo;
+        /**
+         * Gets a plugin that can load the given extension
+         * @param extension defines the extension to load
+         * @returns a plugin or null if none works
+         */
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        /**
+         * Gets a boolean indicating that the given extension can be loaded
+         * @param extension defines the extension to load
+         * @returns true if the extension is supported
+         */
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        /**
+         * Adds a new plugin to the list of registered plugins
+         * @param plugin defines the plugin to add
+         */
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+         */
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: IParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static Load(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Load a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded scene
+         */
+        static LoadAsync(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+         * Append a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static Append(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Append a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The given scene
+         */
+        static AppendAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+         * Load a scene into an asset container
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static LoadAssetContainer(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Load a scene into an asset container
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded asset container
+         */
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
     }
 }
 
@@ -30025,404 +30423,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * Interface used to present a loading screen while loading a scene
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-     */
-    interface ILoadingScreen {
-        /**
-         * Function called to display the loading screen
-         */
-        displayLoadingUI: () => void;
-        /**
-         * Function called to hide the loading screen
-         */
-        hideLoadingUI: () => void;
-        /**
-         * Gets or sets the color to use for the background
-         */
-        loadingUIBackgroundColor: string;
-        /**
-         * Gets or sets the text to display while loading
-         */
-        loadingUIText: string;
-    }
-    /**
-     * Class used for the default loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
-     */
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        /**
-         * Creates a new default loading screen
-         * @param _renderingCanvas defines the canvas used to render the scene
-         * @param _loadingText defines the default text to display
-         * @param _loadingDivBackgroundColor defines the default background color
-         */
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        /**
-         * Function called to display the loading screen
-         */
-        displayLoadingUI(): void;
-        /**
-         * Function called to hide the loading screen
-         */
-        hideLoadingUI(): void;
-        /**
-         * Gets or sets the text to display while loading
-         */
-        loadingUIText: string;
-        /**
-         * Gets or sets the color to use for the background
-         */
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to represent data loading progression
-     */
-    class SceneLoaderProgressEvent {
-        /** defines if data length to load can be evaluated */
-        readonly lengthComputable: boolean;
-        /** defines the loaded data length */
-        readonly loaded: number;
-        /** defines the data length to load */
-        readonly total: number;
-        /**
-         * Create a new progress event
-         * @param lengthComputable defines if data length to load can be evaluated
-         * @param loaded defines the loaded data length
-         * @param total defines the data length to load
-         */
-        constructor(
-        /** defines if data length to load can be evaluated */
-        lengthComputable: boolean, 
-        /** defines the loaded data length */
-        loaded: number, 
-        /** defines the data length to load */
-        total: number);
-        /**
-         * Creates a new SceneLoaderProgressEvent from a ProgressEvent
-         * @param event defines the source event
-         * @returns a new SceneLoaderProgressEvent
-         */
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
-    }
-    /**
-     * Interface used by SceneLoader plugins to define supported file extensions
-     */
-    interface ISceneLoaderPluginExtensions {
-        /**
-         * Defines the list of supported extensions
-         */
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    /**
-     * Interface used by SceneLoader plugin factory
-     */
-    interface ISceneLoaderPluginFactory {
-        /**
-         * Defines the name of the factory
-         */
-        name: string;
-        /**
-         * Function called to create a new plugin
-         * @return the new plugin
-         */
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        /**
-         * Boolean indicating if the plugin can direct load specific data
-         */
-        canDirectLoad?: (data: string) => boolean;
-    }
-    /**
-     * Interface used to define a SceneLoader plugin
-     */
-    interface ISceneLoaderPlugin {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param meshes The meshes array to import into
-         * @param particleSystems The particle systems array to import into
-         * @param skeletons The skeletons array to import into
-         * @param onError The callback when import fails
-         * @returns True if successful or false otherwise
-         */
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
-         */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns The loaded asset container
-         */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
-    }
-    /**
-     * Interface used to define an async SceneLoader plugin
-     */
-    interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns The loaded meshes, particle systems, skeletons, and animation groups
-         */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns Nothing
-         */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns The loaded asset container
-         */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
-    }
-    /**
-     * Class used to load scene from various file formats using registered plugins
-     * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
-     */
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        /**
-         * No logging while loading
-         */
-        static readonly NO_LOGGING: number;
-        /**
-         * Minimal logging while loading
-         */
-        static readonly MINIMAL_LOGGING: number;
-        /**
-         * Summary logging while loading
-         */
-        static readonly SUMMARY_LOGGING: number;
-        /**
-         * Detailled logging while loading
-         */
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        /**
-         * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
-         */
-        static ForceFullSceneLoadingForIncremental: boolean;
-        /**
-         * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
-         */
-        static ShowLoadingScreen: boolean;
-        /**
-         * Defines the current logging level (while loading the scene)
-         * @ignorenaming
-         */
-        static loggingLevel: number;
-        /**
-         * Gets or set a boolean indicating if matrix weights must be cleaned upon loading
-         */
-        static CleanBoneMatrixWeights: boolean;
-        /**
-         * Event raised when a plugin is used to load a scene
-         */
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin;
-        private static _getPluginForExtension;
-        private static _getPluginForDirectLoad;
-        private static _getPluginForFilename;
-        private static _getDirectLoad;
-        private static _loadData;
-        private static _getFileInfo;
-        /**
-         * Gets a plugin that can load the given extension
-         * @param extension defines the extension to load
-         * @returns a plugin or null if none works
-         */
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        /**
-         * Gets a boolean indicating that the given extension can be loaded
-         * @param extension defines the extension to load
-         * @returns true if the extension is supported
-         */
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        /**
-         * Adds a new plugin to the list of registered plugins
-         * @param plugin defines the plugin to add
-         */
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
-         */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static Load(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Load a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded scene
-         */
-        static LoadAsync(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-         * Append a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static Append(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Append a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The given scene
-         */
-        static AppendAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-         * Load a scene into an asset container
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static LoadAssetContainer(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Load a scene into an asset container
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded asset container
-         */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Class used to enable access to IndexedDB
      * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
@@ -34727,915 +34727,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface Scene {
-        /** @hidden (Backing field) */
-        _boundingBoxRenderer: BoundingBoxRenderer;
-        /** @hidden (Backing field) */
-        _forceShowBoundingBoxes: boolean;
-        /**
-         * Gets or sets a boolean indicating if all bounding boxes must be rendered
-         */
-        forceShowBoundingBoxes: boolean;
-        /**
-         * Gets the bounding box renderer associated with the scene
-         * @returns a BoundingBoxRenderer
-         */
-        getBoundingBoxRenderer(): BoundingBoxRenderer;
-    }
-    interface AbstractMesh {
-        /** @hidden (Backing field) */
-        _showBoundingBox: boolean;
-        /**
-         * Gets or sets a boolean indicating if the bounding box must be rendered as well (false by default)
-         */
-        showBoundingBox: boolean;
-    }
-    /**
-     * Component responsible of rendering the bounding box of the meshes in a scene.
-     * This is usually used through the mesh.showBoundingBox or the scene.forceShowBoundingBoxes properties
-     */
-    class BoundingBoxRenderer implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Color of the bounding box lines placed in front of an object
-         */
-        frontColor: Color3;
-        /**
-         * Color of the bounding box lines placed behind an object
-         */
-        backColor: Color3;
-        /**
-         * Defines if the renderer should show the back lines or not
-         */
-        showBackLines: boolean;
-        /**
-         * @hidden
-         */
-        renderList: SmartArray<BoundingBox>;
-        private _colorShader;
-        private _vertexBuffers;
-        private _indexBuffer;
-        /**
-         * Instantiates a new bounding box renderer in a scene.
-         * @param scene the scene the  renderer renders in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        private _evaluateSubMesh;
-        private _activeMesh;
-        private _prepareRessources;
-        private _createIndexBuffer;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * @hidden
-         */
-        reset(): void;
-        /**
-         * Render the bounding boxes of a specific rendering group
-         * @param renderingGroupId defines the rendering group to render
-         */
-        render(renderingGroupId: number): void;
-        /**
-         * In case of occlusion queries, we can render the occlusion bounding box through this method
-         * @param mesh Define the mesh to render the occlusion bounding box for
-         */
-        renderOcclusionBoundingBox(mesh: AbstractMesh): void;
-        /**
-         * Dispose and release the resources attached to this renderer.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents a depth renderer in Babylon.
-     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
-     */
-    class DepthRenderer {
-        private _scene;
-        private _depthMap;
-        private _effect;
-        private _cachedDefines;
-        private _camera;
-        /**
-         * Specifiess that the depth renderer will only be used within
-         * the camera it is created for.
-         * This can help forcing its rendering during the camera processing.
-         */
-        useOnlyInActiveCamera: boolean;
-        /**
-         * Instantiates a depth renderer
-         * @param scene The scene the renderer belongs to
-         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
-         * @param camera The camera to be used to render the depth map (default: scene's active camera)
-         */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
-        /**
-         * Creates the depth rendering effect and checks if the effect is ready.
-         * @param subMesh The submesh to be used to render the depth map of
-         * @param useInstances If multiple world instances should be used
-         * @returns if the depth renderer is ready to render the depth map
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Gets the texture which the depth map will be written to.
-         * @returns The depth map texture
-         */
-        getDepthMap(): RenderTargetTexture;
-        /**
-         * Disposes of the depth renderer.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /** @hidden (Backing field) */
-        _depthRenderer: {
-            [id: string]: DepthRenderer;
-        };
-        /**
-         * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
-         * @param camera The camera to create the depth renderer on (default: scene's active camera)
-         * @returns the created depth renderer
-         */
-        enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer;
-        /**
-         * Disables a depth renderer for a given camera
-         * @param camera The camera to disable the depth renderer on (default: scene's active camera)
-         */
-        disableDepthRenderer(camera?: Nullable<Camera>): void;
-    }
-    /**
-     * Defines the Depth Renderer scene component responsible to manage a depth buffer useful
-     * in several rendering techniques.
-     */
-    class DepthRendererSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources
-         */
-        dispose(): void;
-        private _gatherRenderTargets;
-        private _gatherActiveCameraRenderTargets;
-    }
-}
-
-declare module BABYLON {
-    interface AbstractMesh {
-        /**
-         * Disables the mesh edge rendering mode
-         * @returns the currentAbstractMesh
-         */
-        disableEdgesRendering(): AbstractMesh;
-        /**
-         * Enables the edge rendering mode on the mesh.
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentAbstractMesh
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
-        /**
-         * Gets the edgesRenderer associated with the mesh
-         */
-        edgesRenderer: Nullable<EdgesRenderer>;
-    }
-    interface LinesMesh {
-        /**
-         * Enables the edge rendering mode on the mesh.
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentAbstractMesh
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
-    }
-    interface InstancedLinesMesh {
-        /**
-         * Enables the edge rendering mode on the mesh.
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the current InstancedLinesMesh
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): InstancedLinesMesh;
-    }
-    /**
-     * Defines the minimum contract an Edges renderer should follow.
-     */
-    interface IEdgesRenderer extends IDisposable {
-        /**
-         * Gets or sets a boolean indicating if the edgesRenderer is active
-         */
-        isEnabled: boolean;
-        /**
-         * Renders the edges of the attached mesh,
-         */
-        render(): void;
-        /**
-         * Checks wether or not the edges renderer is ready to render.
-         * @return true if ready, otherwise false.
-         */
-        isReady(): boolean;
-    }
-    /**
-     * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
-     */
-    class EdgesRenderer implements IEdgesRenderer {
-        /**
-         * Define the size of the edges with an orthographic camera
-         */
-        edgesWidthScalerForOrthographic: number;
-        /**
-         * Define the size of the edges with a perspective camera
-         */
-        edgesWidthScalerForPerspective: number;
-        protected _source: AbstractMesh;
-        protected _linesPositions: number[];
-        protected _linesNormals: number[];
-        protected _linesIndices: number[];
-        protected _epsilon: number;
-        protected _indicesCount: number;
-        protected _lineShader: ShaderMaterial;
-        protected _ib: WebGLBuffer;
-        protected _buffers: {
-            [key: string]: Nullable<VertexBuffer>;
-        };
-        protected _checkVerticesInsteadOfIndices: boolean;
-        private _meshRebuildObserver;
-        private _meshDisposeObserver;
-        /** Gets or sets a boolean indicating if the edgesRenderer is active */
-        isEnabled: boolean;
-        /**
-         * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
-         * Beware when you use this class with complex objects as the adjacencies computation can be really long
-         * @param  source Mesh used to create edges
-         * @param  epsilon sum of angles in adjacency to check for edge
-         * @param  checkVerticesInsteadOfIndices
-         * @param  generateEdgesLines - should generate Lines or only prepare resources.
-         */
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean, generateEdgesLines?: boolean);
-        protected _prepareRessources(): void;
-        /** @hidden */
-        _rebuild(): void;
-        /**
-         * Releases the required resources for the edges renderer
-         */
-        dispose(): void;
-        protected _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number;
-        protected _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number;
-        /**
-         * Checks if the pair of p0 and p1 is en edge
-         * @param faceIndex
-         * @param edge
-         * @param faceNormals
-         * @param  p0
-         * @param  p1
-         * @private
-         */
-        protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void;
-        /**
-         * push line into the position, normal and index buffer
-         * @protected
-         */
-        protected createLine(p0: Vector3, p1: Vector3, offset: number): void;
-        /**
-         * Generates lines edges from adjacencjes
-         * @private
-         */
-        _generateEdgesLines(): void;
-        /**
-         * Checks wether or not the edges renderer is ready to render.
-         * @return true if ready, otherwise false.
-         */
-        isReady(): boolean;
-        /**
-         * Renders the edges of the attached mesh,
-         */
-        render(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This renderer is helpfull to fill one of the render target with a geometry buffer.
-     */
-    class GeometryBufferRenderer {
-        /**
-         * Constant used to retrieve the position texture index in the G-Buffer textures array
-         * using getIndex(GeometryBufferRenderer.POSITION_TEXTURE_INDEX)
-         */
-        static readonly POSITION_TEXTURE_TYPE: number;
-        /**
-         * Constant used to retrieve the velocity texture index in the G-Buffer textures array
-         * using getIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_INDEX)
-         */
-        static readonly VELOCITY_TEXTURE_TYPE: number;
-        /**
-         * Dictionary used to store the previous transformation matrices of each rendered mesh
-         * in order to compute objects velocities when enableVelocity is set to "true"
-         * @hidden
-         */
-        _previousTransformationMatrices: {
-            [index: number]: Matrix;
-        };
-        private _scene;
-        private _multiRenderTarget;
-        private _ratio;
-        private _enablePosition;
-        private _enableVelocity;
-        private _positionIndex;
-        private _velocityIndex;
-        protected _effect: Effect;
-        protected _cachedDefines: string;
-        /**
-         * Set the render list (meshes to be rendered) used in the G buffer.
-         */
-        renderList: Mesh[];
-        /**
-         * Gets wether or not G buffer are supported by the running hardware.
-         * This requires draw buffer supports
-         */
-        readonly isSupported: boolean;
-        /**
-         * Returns the index of the given texture type in the G-Buffer textures array
-         * @param textureType The texture type constant. For example GeometryBufferRenderer.POSITION_TEXTURE_INDEX
-         * @returns the index of the given texture type in the G-Buffer textures array
-         */
-        getTextureIndex(textureType: number): number;
-        /**
-         * Gets a boolean indicating if objects positions are enabled for the G buffer.
-         */
-        /**
-        * Sets whether or not objects positions are enabled for the G buffer.
-        */
-        enablePosition: boolean;
-        /**
-         * Gets a boolean indicating if objects velocities are enabled for the G buffer.
-         */
-        /**
-        * Sets wether or not objects velocities are enabled for the G buffer.
-        */
-        enableVelocity: boolean;
-        /**
-         * Gets the scene associated with the buffer.
-         */
-        readonly scene: Scene;
-        /**
-         * Gets the ratio used by the buffer during its creation.
-         * How big is the buffer related to the main canvas.
-         */
-        readonly ratio: number;
-        /**
-         * Creates a new G Buffer for the scene
-         * @param scene The scene the buffer belongs to
-         * @param ratio How big is the buffer related to the main canvas.
-         */
-        constructor(scene: Scene, ratio?: number);
-        /**
-         * Checks wether everything is ready to render a submesh to the G buffer.
-         * @param subMesh the submesh to check readiness for
-         * @param useInstances is the mesh drawn using instance or not
-         * @returns true if ready otherwise false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Gets the current underlying G Buffer.
-         * @returns the buffer
-         */
-        getGBuffer(): MultiRenderTarget;
-        /**
-         * Gets the number of samples used to render the buffer (anti aliasing).
-         */
-        /**
-        * Sets the number of samples used to render the buffer (anti aliasing).
-        */
-        samples: number;
-        /**
-         * Disposes the renderer and frees up associated resources.
-         */
-        dispose(): void;
-        protected _createRenderTargets(): void;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /** @hidden (Backing field) */
-        _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
-        /**
-         * Gets or Sets the current geometry buffer associated to the scene.
-         */
-        geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
-        /**
-         * Enables a GeometryBufferRender and associates it with the scene
-         * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
-         * @returns the GeometryBufferRenderer
-         */
-        enableGeometryBufferRenderer(ratio?: number): Nullable<GeometryBufferRenderer>;
-        /**
-         * Disables the GeometryBufferRender associated with the scene
-         */
-        disableGeometryBufferRenderer(): void;
-    }
-    /**
-     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
-     * in several rendering techniques.
-     */
-    class GeometryBufferRendererSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpful to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources
-         */
-        dispose(): void;
-        private _gatherRenderTargets;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
-     */
-    class LineEdgesRenderer extends EdgesRenderer {
-        /**
-         * This constructor turns off auto generating edges line in Edges Renderer to make it here.
-         * @param  source LineMesh used to generate edges
-         * @param  epsilon not important (specified angle for edge detection)
-         * @param  checkVerticesInsteadOfIndices not important for LineMesh
-         */
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
-        /**
-         * Generate edges for each line in LinesMesh. Every Line should be rendered as edge.
-         */
-        _generateEdgesLines(): void;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /** @hidden */
-        _outlineRenderer: OutlineRenderer;
-        /**
-         * Gets the outline renderer associated with the scene
-         * @returns a OutlineRenderer
-         */
-        getOutlineRenderer(): OutlineRenderer;
-    }
-    interface AbstractMesh {
-        /** @hidden (Backing field) */
-        _renderOutline: boolean;
-        /**
-         * Gets or sets a boolean indicating if the outline must be rendered as well
-         * @see https://www.babylonjs-playground.com/#10WJ5S#3
-         */
-        renderOutline: boolean;
-        /** @hidden (Backing field) */
-        _renderOverlay: boolean;
-        /**
-         * Gets or sets a boolean indicating if the overlay must be rendered as well
-         * @see https://www.babylonjs-playground.com/#10WJ5S#2
-         */
-        renderOverlay: boolean;
-    }
-    /**
-     * This class is responsible to draw bothe outline/overlay of meshes.
-     * It should not be used directly but through the available method on mesh.
-     */
-    class OutlineRenderer implements ISceneComponent {
-        /**
-         * The name of the component. Each component must have a unique name.
-         */
-        name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Defines a zOffset to prevent zFighting between the overlay and the mesh.
-         */
-        zOffset: number;
-        private _engine;
-        private _effect;
-        private _cachedDefines;
-        private _savedDepthWrite;
-        /**
-         * Instantiates a new outline renderer. (There could be only one per scene).
-         * @param scene Defines the scene it belongs to
-         */
-        constructor(scene: Scene);
-        /**
-         * Register the component to one instance of a scene.
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources.
-         */
-        dispose(): void;
-        /**
-         * Renders the outline in the canvas.
-         * @param subMesh Defines the sumesh to render
-         * @param batch Defines the batch of meshes in case of instances
-         * @param useOverlay Defines if the rendering is for the overlay or the outline
-         */
-        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
-        /**
-         * Returns whether or not the outline renderer is ready for a given submesh.
-         * All the dependencies e.g. submeshes, texture, effect... mus be ready
-         * @param subMesh Defines the submesh to check readyness for
-         * @param useInstances Defines wheter wee are trying to render instances or not
-         * @returns true if ready otherwise false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        private _beforeRenderingMesh;
-        private _afterRenderingMesh;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents the object necessary to create a rendering group.
-     * This is exclusively used and created by the rendering manager.
-     * To modify the behavior, you use the available helpers in your scene or meshes.
-     * @hidden
-     */
-    class RenderingGroup {
-        index: number;
-        private _scene;
-        private _opaqueSubMeshes;
-        private _transparentSubMeshes;
-        private _alphaTestSubMeshes;
-        private _depthOnlySubMeshes;
-        private _particleSystems;
-        private _spriteManagers;
-        private _opaqueSortCompareFn;
-        private _alphaTestSortCompareFn;
-        private _transparentSortCompareFn;
-        private _renderOpaque;
-        private _renderAlphaTest;
-        private _renderTransparent;
-        private _edgesRenderers;
-        onBeforeTransparentRendering: () => void;
-        /**
-         * Set the opaque sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
-        /**
-         * Set the alpha test sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
-        /**
-         * Set the transparent sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
-        /**
-         * Creates a new rendering group.
-         * @param index The rendering group index
-         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
-         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
-         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
-         */
-        constructor(index: number, scene: Scene, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>);
-        /**
-         * Render all the sub meshes contained in the group.
-         * @param customRenderFunction Used to override the default render behaviour of the group.
-         * @returns true if rendered some submeshes.
-         */
-        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, renderSprites: boolean, renderParticles: boolean, activeMeshes: Nullable<AbstractMesh[]>): void;
-        /**
-         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderOpaqueSorted;
-        /**
-         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderAlphaTestSorted;
-        /**
-         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderTransparentSorted;
-        /**
-         * Renders the submeshes in a specified order.
-         * @param subMeshes The submeshes to sort before render
-         * @param sortCompareFn The comparison function use to sort
-         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
-         * @param transparent Specifies to activate blending if true
-         */
-        private static renderSorted;
-        /**
-         * Renders the submeshes in the order they were dispatched (no sort applied).
-         * @param subMeshes The submeshes to render
-         */
-        private static renderUnsorted;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front if in the same alpha index.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered front to back (prevent overdraw).
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Resets the different lists of submeshes to prepare a new frame.
-         */
-        prepare(): void;
-        dispose(): void;
-        /**
-         * Inserts the submesh in its correct queue depending on its material.
-         * @param subMesh The submesh to dispatch
-         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
-         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
-         */
-        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
-        dispatchSprites(spriteManager: ISpriteManager): void;
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        private _renderParticles;
-        private _renderSprites;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface describing the different options available in the rendering manager
-     * regarding Auto Clear between groups.
-     */
-    interface IRenderingManagerAutoClearSetup {
-        /**
-         * Defines whether or not autoclear is enable.
-         */
-        autoClear: boolean;
-        /**
-         * Defines whether or not to autoclear the depth buffer.
-         */
-        depth: boolean;
-        /**
-         * Defines whether or not to autoclear the stencil buffer.
-         */
-        stencil: boolean;
-    }
-    /**
-     * This is the manager responsible of all the rendering for meshes sprites and particles.
-     * It is enable to manage the different groups as well as the different necessary sort functions.
-     * This should not be used directly aside of the few static configurations
-     */
-    class RenderingManager {
-        /**
-         * The max id used for rendering groups (not included)
-         */
-        static MAX_RENDERINGGROUPS: number;
-        /**
-         * The min id used for rendering groups (included)
-         */
-        static MIN_RENDERINGGROUPS: number;
-        /**
-         * Used to globally prevent autoclearing scenes.
-         */
-        static AUTOCLEAR: boolean;
-        /**
-         * @hidden
-         */
-        _useSceneAutoClearSetup: boolean;
-        private _scene;
-        private _renderingGroups;
-        private _depthStencilBufferAlreadyCleaned;
-        private _autoClearDepthStencil;
-        private _customOpaqueSortCompareFn;
-        private _customAlphaTestSortCompareFn;
-        private _customTransparentSortCompareFn;
-        private _renderingGroupInfo;
-        /**
-         * Instantiates a new rendering group for a particular scene
-         * @param scene Defines the scene the groups belongs to
-         */
-        constructor(scene: Scene);
-        private _clearDepthStencilBuffer;
-        /**
-         * Renders the entire managed groups. This is used by the scene or the different rennder targets.
-         * @hidden
-         */
-        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void;
-        /**
-         * Resets the different information of the group to prepare a new frame
-         * @hidden
-         */
-        reset(): void;
-        /**
-         * Dispose and release the group and its associated resources.
-         * @hidden
-         */
-        dispose(): void;
-        /**
-         * Clear the info related to rendering groups preventing retention points during dispose.
-         */
-        freeRenderingGroups(): void;
-        private _prepareRenderingGroup;
-        /**
-         * Add a sprite manager to the rendering manager in order to render it this frame.
-         * @param spriteManager Define the sprite manager to render
-         */
-        dispatchSprites(spriteManager: ISpriteManager): void;
-        /**
-         * Add a particle system to the rendering manager in order to render it this frame.
-         * @param particleSystem Define the particle system to render
-         */
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        /**
-         * Add a submesh to the manager in order to render it this frame
-         * @param subMesh The submesh to dispatch
-         * @param mesh Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
-         * @param material Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
-         */
-        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
-        /**
-         * Overrides the default sort function applied in the renderging group to prepare the meshes.
-         * This allowed control for front to back rendering or reversly depending of the special needs.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
-         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
-         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
-         */
-        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         * @param depth Automatically clears depth between groups if true and autoClear is true.
-         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
-        /**
-         * Gets the current auto clear configuration for one rendering group of the rendering
-         * manager.
-         * @param index the rendering group index to get the information for
-         * @returns The auto clear setup for the requested rendering group
-         */
-        getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Renders a layer on top of an existing scene
-     */
-    class UtilityLayerRenderer implements IDisposable {
-        /** the original scene that will be rendered on top of */
-        originalScene: Scene;
-        private _pointerCaptures;
-        private _lastPointerEvents;
-        private static _DefaultUtilityLayer;
-        private static _DefaultKeepDepthUtilityLayer;
-        /**
-         * If the picking should be done on the utility layer prior to the actual scene (Default: true)
-         */
-        pickUtilitySceneFirst: boolean;
-        /**
-         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
-         */
-        static readonly DefaultUtilityLayer: UtilityLayerRenderer;
-        /**
-         * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
-         */
-        static readonly DefaultKeepDepthUtilityLayer: UtilityLayerRenderer;
-        /**
-         * The scene that is rendered on top of the original scene
-         */
-        utilityLayerScene: Scene;
-        /**
-         *  If the utility layer should automatically be rendered on top of existing scene
-        */
-        shouldRender: boolean;
-        /**
-         * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
-         */
-        onlyCheckPointerDownEvents: boolean;
-        /**
-         * If set to false, only pointerUp, pointerDown and pointerMove will be sent to the utilityLayerScene (false by default)
-         */
-        processAllEvents: boolean;
-        /**
-         * Observable raised when the pointer move from the utility layer scene to the main scene
-         */
-        onPointerOutObservable: Observable<number>;
-        /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
-        mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
-        private _afterRenderObserver;
-        private _sceneDisposeObserver;
-        private _originalPointerObserver;
-        /**
-         * Instantiates a UtilityLayerRenderer
-         * @param originalScene the original scene that will be rendered on top of
-         * @param handleEvents boolean indicating if the utility layer should handle events
-         */
-        constructor(
-        /** the original scene that will be rendered on top of */
-        originalScene: Scene, handleEvents?: boolean);
-        private _notifyObservers;
-        /**
-         * Renders the utility layers scene on top of the original scene
-         */
-        render(): void;
-        /**
-         * Disposes of the renderer
-         */
-        dispose(): void;
-        private _updateCamera;
-    }
-}
-
-declare module BABYLON {
     /**
      * Postprocess used to generate anaglyphic rendering
      */
@@ -37119,6 +36210,915 @@ declare module BABYLON {
          * @param vrMetrics All the required metrics for the VR camera
          */
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /** @hidden (Backing field) */
+        _boundingBoxRenderer: BoundingBoxRenderer;
+        /** @hidden (Backing field) */
+        _forceShowBoundingBoxes: boolean;
+        /**
+         * Gets or sets a boolean indicating if all bounding boxes must be rendered
+         */
+        forceShowBoundingBoxes: boolean;
+        /**
+         * Gets the bounding box renderer associated with the scene
+         * @returns a BoundingBoxRenderer
+         */
+        getBoundingBoxRenderer(): BoundingBoxRenderer;
+    }
+    interface AbstractMesh {
+        /** @hidden (Backing field) */
+        _showBoundingBox: boolean;
+        /**
+         * Gets or sets a boolean indicating if the bounding box must be rendered as well (false by default)
+         */
+        showBoundingBox: boolean;
+    }
+    /**
+     * Component responsible of rendering the bounding box of the meshes in a scene.
+     * This is usually used through the mesh.showBoundingBox or the scene.forceShowBoundingBoxes properties
+     */
+    class BoundingBoxRenderer implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Color of the bounding box lines placed in front of an object
+         */
+        frontColor: Color3;
+        /**
+         * Color of the bounding box lines placed behind an object
+         */
+        backColor: Color3;
+        /**
+         * Defines if the renderer should show the back lines or not
+         */
+        showBackLines: boolean;
+        /**
+         * @hidden
+         */
+        renderList: SmartArray<BoundingBox>;
+        private _colorShader;
+        private _vertexBuffers;
+        private _indexBuffer;
+        /**
+         * Instantiates a new bounding box renderer in a scene.
+         * @param scene the scene the  renderer renders in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        private _evaluateSubMesh;
+        private _activeMesh;
+        private _prepareRessources;
+        private _createIndexBuffer;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * @hidden
+         */
+        reset(): void;
+        /**
+         * Render the bounding boxes of a specific rendering group
+         * @param renderingGroupId defines the rendering group to render
+         */
+        render(renderingGroupId: number): void;
+        /**
+         * In case of occlusion queries, we can render the occlusion bounding box through this method
+         * @param mesh Define the mesh to render the occlusion bounding box for
+         */
+        renderOcclusionBoundingBox(mesh: AbstractMesh): void;
+        /**
+         * Dispose and release the resources attached to this renderer.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents a depth renderer in Babylon.
+     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
+     */
+    class DepthRenderer {
+        private _scene;
+        private _depthMap;
+        private _effect;
+        private _cachedDefines;
+        private _camera;
+        /**
+         * Specifiess that the depth renderer will only be used within
+         * the camera it is created for.
+         * This can help forcing its rendering during the camera processing.
+         */
+        useOnlyInActiveCamera: boolean;
+        /**
+         * Instantiates a depth renderer
+         * @param scene The scene the renderer belongs to
+         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
+         * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         */
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
+        /**
+         * Creates the depth rendering effect and checks if the effect is ready.
+         * @param subMesh The submesh to be used to render the depth map of
+         * @param useInstances If multiple world instances should be used
+         * @returns if the depth renderer is ready to render the depth map
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Gets the texture which the depth map will be written to.
+         * @returns The depth map texture
+         */
+        getDepthMap(): RenderTargetTexture;
+        /**
+         * Disposes of the depth renderer.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /** @hidden (Backing field) */
+        _depthRenderer: {
+            [id: string]: DepthRenderer;
+        };
+        /**
+         * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
+         * @param camera The camera to create the depth renderer on (default: scene's active camera)
+         * @returns the created depth renderer
+         */
+        enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer;
+        /**
+         * Disables a depth renderer for a given camera
+         * @param camera The camera to disable the depth renderer on (default: scene's active camera)
+         */
+        disableDepthRenderer(camera?: Nullable<Camera>): void;
+    }
+    /**
+     * Defines the Depth Renderer scene component responsible to manage a depth buffer useful
+     * in several rendering techniques.
+     */
+    class DepthRendererSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+        private _gatherRenderTargets;
+        private _gatherActiveCameraRenderTargets;
+    }
+}
+
+declare module BABYLON {
+    interface AbstractMesh {
+        /**
+         * Disables the mesh edge rendering mode
+         * @returns the currentAbstractMesh
+         */
+        disableEdgesRendering(): AbstractMesh;
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentAbstractMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
+        /**
+         * Gets the edgesRenderer associated with the mesh
+         */
+        edgesRenderer: Nullable<EdgesRenderer>;
+    }
+    interface LinesMesh {
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentAbstractMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
+    }
+    interface InstancedLinesMesh {
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the current InstancedLinesMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): InstancedLinesMesh;
+    }
+    /**
+     * Defines the minimum contract an Edges renderer should follow.
+     */
+    interface IEdgesRenderer extends IDisposable {
+        /**
+         * Gets or sets a boolean indicating if the edgesRenderer is active
+         */
+        isEnabled: boolean;
+        /**
+         * Renders the edges of the attached mesh,
+         */
+        render(): void;
+        /**
+         * Checks wether or not the edges renderer is ready to render.
+         * @return true if ready, otherwise false.
+         */
+        isReady(): boolean;
+    }
+    /**
+     * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
+     */
+    class EdgesRenderer implements IEdgesRenderer {
+        /**
+         * Define the size of the edges with an orthographic camera
+         */
+        edgesWidthScalerForOrthographic: number;
+        /**
+         * Define the size of the edges with a perspective camera
+         */
+        edgesWidthScalerForPerspective: number;
+        protected _source: AbstractMesh;
+        protected _linesPositions: number[];
+        protected _linesNormals: number[];
+        protected _linesIndices: number[];
+        protected _epsilon: number;
+        protected _indicesCount: number;
+        protected _lineShader: ShaderMaterial;
+        protected _ib: WebGLBuffer;
+        protected _buffers: {
+            [key: string]: Nullable<VertexBuffer>;
+        };
+        protected _checkVerticesInsteadOfIndices: boolean;
+        private _meshRebuildObserver;
+        private _meshDisposeObserver;
+        /** Gets or sets a boolean indicating if the edgesRenderer is active */
+        isEnabled: boolean;
+        /**
+         * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
+         * Beware when you use this class with complex objects as the adjacencies computation can be really long
+         * @param  source Mesh used to create edges
+         * @param  epsilon sum of angles in adjacency to check for edge
+         * @param  checkVerticesInsteadOfIndices
+         * @param  generateEdgesLines - should generate Lines or only prepare resources.
+         */
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean, generateEdgesLines?: boolean);
+        protected _prepareRessources(): void;
+        /** @hidden */
+        _rebuild(): void;
+        /**
+         * Releases the required resources for the edges renderer
+         */
+        dispose(): void;
+        protected _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number;
+        protected _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number;
+        /**
+         * Checks if the pair of p0 and p1 is en edge
+         * @param faceIndex
+         * @param edge
+         * @param faceNormals
+         * @param  p0
+         * @param  p1
+         * @private
+         */
+        protected _checkEdge(faceIndex: number, edge: number, faceNormals: Array<Vector3>, p0: Vector3, p1: Vector3): void;
+        /**
+         * push line into the position, normal and index buffer
+         * @protected
+         */
+        protected createLine(p0: Vector3, p1: Vector3, offset: number): void;
+        /**
+         * Generates lines edges from adjacencjes
+         * @private
+         */
+        _generateEdgesLines(): void;
+        /**
+         * Checks wether or not the edges renderer is ready to render.
+         * @return true if ready, otherwise false.
+         */
+        isReady(): boolean;
+        /**
+         * Renders the edges of the attached mesh,
+         */
+        render(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This renderer is helpfull to fill one of the render target with a geometry buffer.
+     */
+    class GeometryBufferRenderer {
+        /**
+         * Constant used to retrieve the position texture index in the G-Buffer textures array
+         * using getIndex(GeometryBufferRenderer.POSITION_TEXTURE_INDEX)
+         */
+        static readonly POSITION_TEXTURE_TYPE: number;
+        /**
+         * Constant used to retrieve the velocity texture index in the G-Buffer textures array
+         * using getIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_INDEX)
+         */
+        static readonly VELOCITY_TEXTURE_TYPE: number;
+        /**
+         * Dictionary used to store the previous transformation matrices of each rendered mesh
+         * in order to compute objects velocities when enableVelocity is set to "true"
+         * @hidden
+         */
+        _previousTransformationMatrices: {
+            [index: number]: Matrix;
+        };
+        private _scene;
+        private _multiRenderTarget;
+        private _ratio;
+        private _enablePosition;
+        private _enableVelocity;
+        private _positionIndex;
+        private _velocityIndex;
+        protected _effect: Effect;
+        protected _cachedDefines: string;
+        /**
+         * Set the render list (meshes to be rendered) used in the G buffer.
+         */
+        renderList: Mesh[];
+        /**
+         * Gets wether or not G buffer are supported by the running hardware.
+         * This requires draw buffer supports
+         */
+        readonly isSupported: boolean;
+        /**
+         * Returns the index of the given texture type in the G-Buffer textures array
+         * @param textureType The texture type constant. For example GeometryBufferRenderer.POSITION_TEXTURE_INDEX
+         * @returns the index of the given texture type in the G-Buffer textures array
+         */
+        getTextureIndex(textureType: number): number;
+        /**
+         * Gets a boolean indicating if objects positions are enabled for the G buffer.
+         */
+        /**
+        * Sets whether or not objects positions are enabled for the G buffer.
+        */
+        enablePosition: boolean;
+        /**
+         * Gets a boolean indicating if objects velocities are enabled for the G buffer.
+         */
+        /**
+        * Sets wether or not objects velocities are enabled for the G buffer.
+        */
+        enableVelocity: boolean;
+        /**
+         * Gets the scene associated with the buffer.
+         */
+        readonly scene: Scene;
+        /**
+         * Gets the ratio used by the buffer during its creation.
+         * How big is the buffer related to the main canvas.
+         */
+        readonly ratio: number;
+        /**
+         * Creates a new G Buffer for the scene
+         * @param scene The scene the buffer belongs to
+         * @param ratio How big is the buffer related to the main canvas.
+         */
+        constructor(scene: Scene, ratio?: number);
+        /**
+         * Checks wether everything is ready to render a submesh to the G buffer.
+         * @param subMesh the submesh to check readiness for
+         * @param useInstances is the mesh drawn using instance or not
+         * @returns true if ready otherwise false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Gets the current underlying G Buffer.
+         * @returns the buffer
+         */
+        getGBuffer(): MultiRenderTarget;
+        /**
+         * Gets the number of samples used to render the buffer (anti aliasing).
+         */
+        /**
+        * Sets the number of samples used to render the buffer (anti aliasing).
+        */
+        samples: number;
+        /**
+         * Disposes the renderer and frees up associated resources.
+         */
+        dispose(): void;
+        protected _createRenderTargets(): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /** @hidden (Backing field) */
+        _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+        /**
+         * Gets or Sets the current geometry buffer associated to the scene.
+         */
+        geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+        /**
+         * Enables a GeometryBufferRender and associates it with the scene
+         * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
+         * @returns the GeometryBufferRenderer
+         */
+        enableGeometryBufferRenderer(ratio?: number): Nullable<GeometryBufferRenderer>;
+        /**
+         * Disables the GeometryBufferRender associated with the scene
+         */
+        disableGeometryBufferRenderer(): void;
+    }
+    /**
+     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
+     * in several rendering techniques.
+     */
+    class GeometryBufferRendererSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpful to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+        private _gatherRenderTargets;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * LineEdgesRenderer for LineMeshes to remove unnecessary triangulation
+     */
+    class LineEdgesRenderer extends EdgesRenderer {
+        /**
+         * This constructor turns off auto generating edges line in Edges Renderer to make it here.
+         * @param  source LineMesh used to generate edges
+         * @param  epsilon not important (specified angle for edge detection)
+         * @param  checkVerticesInsteadOfIndices not important for LineMesh
+         */
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
+        /**
+         * Generate edges for each line in LinesMesh. Every Line should be rendered as edge.
+         */
+        _generateEdgesLines(): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /** @hidden */
+        _outlineRenderer: OutlineRenderer;
+        /**
+         * Gets the outline renderer associated with the scene
+         * @returns a OutlineRenderer
+         */
+        getOutlineRenderer(): OutlineRenderer;
+    }
+    interface AbstractMesh {
+        /** @hidden (Backing field) */
+        _renderOutline: boolean;
+        /**
+         * Gets or sets a boolean indicating if the outline must be rendered as well
+         * @see https://www.babylonjs-playground.com/#10WJ5S#3
+         */
+        renderOutline: boolean;
+        /** @hidden (Backing field) */
+        _renderOverlay: boolean;
+        /**
+         * Gets or sets a boolean indicating if the overlay must be rendered as well
+         * @see https://www.babylonjs-playground.com/#10WJ5S#2
+         */
+        renderOverlay: boolean;
+    }
+    /**
+     * This class is responsible to draw bothe outline/overlay of meshes.
+     * It should not be used directly but through the available method on mesh.
+     */
+    class OutlineRenderer implements ISceneComponent {
+        /**
+         * The name of the component. Each component must have a unique name.
+         */
+        name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Defines a zOffset to prevent zFighting between the overlay and the mesh.
+         */
+        zOffset: number;
+        private _engine;
+        private _effect;
+        private _cachedDefines;
+        private _savedDepthWrite;
+        /**
+         * Instantiates a new outline renderer. (There could be only one per scene).
+         * @param scene Defines the scene it belongs to
+         */
+        constructor(scene: Scene);
+        /**
+         * Register the component to one instance of a scene.
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources.
+         */
+        dispose(): void;
+        /**
+         * Renders the outline in the canvas.
+         * @param subMesh Defines the sumesh to render
+         * @param batch Defines the batch of meshes in case of instances
+         * @param useOverlay Defines if the rendering is for the overlay or the outline
+         */
+        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
+        /**
+         * Returns whether or not the outline renderer is ready for a given submesh.
+         * All the dependencies e.g. submeshes, texture, effect... mus be ready
+         * @param subMesh Defines the submesh to check readyness for
+         * @param useInstances Defines wheter wee are trying to render instances or not
+         * @returns true if ready otherwise false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        private _beforeRenderingMesh;
+        private _afterRenderingMesh;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents the object necessary to create a rendering group.
+     * This is exclusively used and created by the rendering manager.
+     * To modify the behavior, you use the available helpers in your scene or meshes.
+     * @hidden
+     */
+    class RenderingGroup {
+        index: number;
+        private _scene;
+        private _opaqueSubMeshes;
+        private _transparentSubMeshes;
+        private _alphaTestSubMeshes;
+        private _depthOnlySubMeshes;
+        private _particleSystems;
+        private _spriteManagers;
+        private _opaqueSortCompareFn;
+        private _alphaTestSortCompareFn;
+        private _transparentSortCompareFn;
+        private _renderOpaque;
+        private _renderAlphaTest;
+        private _renderTransparent;
+        private _edgesRenderers;
+        onBeforeTransparentRendering: () => void;
+        /**
+         * Set the opaque sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        /**
+         * Set the alpha test sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        /**
+         * Set the transparent sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        /**
+         * Creates a new rendering group.
+         * @param index The rendering group index
+         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
+         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
+         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
+         */
+        constructor(index: number, scene: Scene, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>);
+        /**
+         * Render all the sub meshes contained in the group.
+         * @param customRenderFunction Used to override the default render behaviour of the group.
+         * @returns true if rendered some submeshes.
+         */
+        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, renderSprites: boolean, renderParticles: boolean, activeMeshes: Nullable<AbstractMesh[]>): void;
+        /**
+         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderOpaqueSorted;
+        /**
+         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderAlphaTestSorted;
+        /**
+         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderTransparentSorted;
+        /**
+         * Renders the submeshes in a specified order.
+         * @param subMeshes The submeshes to sort before render
+         * @param sortCompareFn The comparison function use to sort
+         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
+         * @param transparent Specifies to activate blending if true
+         */
+        private static renderSorted;
+        /**
+         * Renders the submeshes in the order they were dispatched (no sort applied).
+         * @param subMeshes The submeshes to render
+         */
+        private static renderUnsorted;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front if in the same alpha index.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered front to back (prevent overdraw).
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Resets the different lists of submeshes to prepare a new frame.
+         */
+        prepare(): void;
+        dispose(): void;
+        /**
+         * Inserts the submesh in its correct queue depending on its material.
+         * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
+         */
+        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
+        dispatchSprites(spriteManager: ISpriteManager): void;
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        private _renderParticles;
+        private _renderSprites;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface describing the different options available in the rendering manager
+     * regarding Auto Clear between groups.
+     */
+    interface IRenderingManagerAutoClearSetup {
+        /**
+         * Defines whether or not autoclear is enable.
+         */
+        autoClear: boolean;
+        /**
+         * Defines whether or not to autoclear the depth buffer.
+         */
+        depth: boolean;
+        /**
+         * Defines whether or not to autoclear the stencil buffer.
+         */
+        stencil: boolean;
+    }
+    /**
+     * This is the manager responsible of all the rendering for meshes sprites and particles.
+     * It is enable to manage the different groups as well as the different necessary sort functions.
+     * This should not be used directly aside of the few static configurations
+     */
+    class RenderingManager {
+        /**
+         * The max id used for rendering groups (not included)
+         */
+        static MAX_RENDERINGGROUPS: number;
+        /**
+         * The min id used for rendering groups (included)
+         */
+        static MIN_RENDERINGGROUPS: number;
+        /**
+         * Used to globally prevent autoclearing scenes.
+         */
+        static AUTOCLEAR: boolean;
+        /**
+         * @hidden
+         */
+        _useSceneAutoClearSetup: boolean;
+        private _scene;
+        private _renderingGroups;
+        private _depthStencilBufferAlreadyCleaned;
+        private _autoClearDepthStencil;
+        private _customOpaqueSortCompareFn;
+        private _customAlphaTestSortCompareFn;
+        private _customTransparentSortCompareFn;
+        private _renderingGroupInfo;
+        /**
+         * Instantiates a new rendering group for a particular scene
+         * @param scene Defines the scene the groups belongs to
+         */
+        constructor(scene: Scene);
+        private _clearDepthStencilBuffer;
+        /**
+         * Renders the entire managed groups. This is used by the scene or the different rennder targets.
+         * @hidden
+         */
+        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void;
+        /**
+         * Resets the different information of the group to prepare a new frame
+         * @hidden
+         */
+        reset(): void;
+        /**
+         * Dispose and release the group and its associated resources.
+         * @hidden
+         */
+        dispose(): void;
+        /**
+         * Clear the info related to rendering groups preventing retention points during dispose.
+         */
+        freeRenderingGroups(): void;
+        private _prepareRenderingGroup;
+        /**
+         * Add a sprite manager to the rendering manager in order to render it this frame.
+         * @param spriteManager Define the sprite manager to render
+         */
+        dispatchSprites(spriteManager: ISpriteManager): void;
+        /**
+         * Add a particle system to the rendering manager in order to render it this frame.
+         * @param particleSystem Define the particle system to render
+         */
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        /**
+         * Add a submesh to the manager in order to render it this frame
+         * @param subMesh The submesh to dispatch
+         * @param mesh Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param material Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
+         */
+        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         * @param depth Automatically clears depth between groups if true and autoClear is true.
+         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
+        /**
+         * Gets the current auto clear configuration for one rendering group of the rendering
+         * manager.
+         * @param index the rendering group index to get the information for
+         * @returns The auto clear setup for the requested rendering group
+         */
+        getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Renders a layer on top of an existing scene
+     */
+    class UtilityLayerRenderer implements IDisposable {
+        /** the original scene that will be rendered on top of */
+        originalScene: Scene;
+        private _pointerCaptures;
+        private _lastPointerEvents;
+        private static _DefaultUtilityLayer;
+        private static _DefaultKeepDepthUtilityLayer;
+        /**
+         * If the picking should be done on the utility layer prior to the actual scene (Default: true)
+         */
+        pickUtilitySceneFirst: boolean;
+        /**
+         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
+         */
+        static readonly DefaultUtilityLayer: UtilityLayerRenderer;
+        /**
+         * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
+         */
+        static readonly DefaultKeepDepthUtilityLayer: UtilityLayerRenderer;
+        /**
+         * The scene that is rendered on top of the original scene
+         */
+        utilityLayerScene: Scene;
+        /**
+         *  If the utility layer should automatically be rendered on top of existing scene
+        */
+        shouldRender: boolean;
+        /**
+         * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
+         */
+        onlyCheckPointerDownEvents: boolean;
+        /**
+         * If set to false, only pointerUp, pointerDown and pointerMove will be sent to the utilityLayerScene (false by default)
+         */
+        processAllEvents: boolean;
+        /**
+         * Observable raised when the pointer move from the utility layer scene to the main scene
+         */
+        onPointerOutObservable: Observable<number>;
+        /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
+        mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
+        private _afterRenderObserver;
+        private _sceneDisposeObserver;
+        private _originalPointerObserver;
+        /**
+         * Instantiates a UtilityLayerRenderer
+         * @param originalScene the original scene that will be rendered on top of
+         * @param handleEvents boolean indicating if the utility layer should handle events
+         */
+        constructor(
+        /** the original scene that will be rendered on top of */
+        originalScene: Scene, handleEvents?: boolean);
+        private _notifyObservers;
+        /**
+         * Renders the utility layers scene on top of the original scene
+         */
+        render(): void;
+        /**
+         * Disposes of the renderer
+         */
+        dispose(): void;
+        private _updateCamera;
     }
 }
 
@@ -41448,6 +41448,10 @@ declare module BABYLON {
             dragPlaneNormal?: Vector3;
         });
         /**
+         * Predicate to determine if it is valid to move the object to a new position when it is moved
+         */
+        validateDrag: (targetPosition: Vector3) => boolean;
+        /**
          *  The name of the behavior
          */
         readonly name: string;
@@ -41565,275 +41569,6 @@ declare module BABYLON {
          *  Detaches the behavior from the mesh
          */
         detach(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Contains an array of blocks representing the octree
-     */
-    interface IOctreeContainer<T> {
-        /**
-         * Blocks within the octree
-         */
-        blocks: Array<OctreeBlock<T>>;
-    }
-    /**
-     * Octrees are a really powerful data structure that can quickly select entities based on space coordinates.
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-     */
-    class Octree<T> {
-        /** Defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.) */
-        maxDepth: number;
-        /**
-         * Blocks within the octree containing objects
-         */
-        blocks: Array<OctreeBlock<T>>;
-        /**
-         * Content stored in the octree
-         */
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        /**
-         * Creates a octree
-         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         * @param creationFunc function to be used to instatiate the octree
-         * @param maxBlockCapacity defines the maximum number of meshes you want on your octree's leaves (default: 64)
-         * @param maxDepth defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.)
-         */
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, 
-        /** Defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.) */
-        maxDepth?: number);
-        /**
-         * Updates the octree by adding blocks for the passed in meshes within the min and max world parameters
-         * @param worldMin worldMin for the octree blocks var blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
-         * @param worldMax worldMax for the octree blocks var blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
-         * @param entries meshes to be added to the octree blocks
-         */
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        /**
-         * Adds a mesh to the octree
-         * @param entry Mesh to add to the octree
-         */
-        addMesh(entry: T): void;
-        /**
-         * Selects an array of meshes within the frustum
-         * @param frustumPlanes The frustum planes to use which will select all meshes within it
-         * @param allowDuplicate If duplicate objects are allowed in the resulting object array
-         * @returns array of meshes within the frustum
-         */
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        /**
-         * Test if the octree intersect with the given bounding sphere and if yes, then add its content to the selection array
-         * @param sphereCenter defines the bounding sphere center
-         * @param sphereRadius defines the bounding sphere radius
-         * @param allowDuplicate defines if the selection array can contains duplicated entries
-         * @returns an array of objects that intersect the sphere
-         */
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        /**
-        * Test if the octree intersect with the given ray and if yes, then add its content to resulting array
-         * @param ray defines the ray to test with
-         * @returns array of intersected objects
-         */
-        intersectsRay(ray: Ray): SmartArray<T>;
-        /**
-         * @hidden
-         */
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        /**
-         * Adds a mesh into the octree block if it intersects the block
-         */
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        /**
-         * Adds a submesh into the octree block if it intersects the block
-         */
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Class used to store a cell in an octree
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-     */
-    class OctreeBlock<T> {
-        /**
-         * Gets the content of the current block
-         */
-        entries: T[];
-        /**
-         * Gets the list of block children
-         */
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        /**
-         * Creates a new block
-         * @param minPoint defines the minimum vector (in world space) of the block's bounding box
-         * @param maxPoint defines the maximum vector (in world space) of the block's bounding box
-         * @param capacity defines the maximum capacity of this block (if capacity is reached the block will be split into sub blocks)
-         * @param depth defines the current depth of this block in the octree
-         * @param maxDepth defines the maximal depth allowed (beyond this value, the capacity is ignored)
-         * @param creationFunc defines a callback to call when an element is added to the block
-         */
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        /**
-         * Gets the maximum capacity of this block (if capacity is reached the block will be split into sub blocks)
-         */
-        readonly capacity: number;
-        /**
-         * Gets the minimum vector (in world space) of the block's bounding box
-         */
-        readonly minPoint: Vector3;
-        /**
-         * Gets the maximum vector (in world space) of the block's bounding box
-         */
-        readonly maxPoint: Vector3;
-        /**
-         * Add a new element to this block
-         * @param entry defines the element to add
-         */
-        addEntry(entry: T): void;
-        /**
-         * Add an array of elements to this block
-         * @param entries defines the array of elements to add
-         */
-        addEntries(entries: T[]): void;
-        /**
-         * Test if the current block intersects the furstum planes and if yes, then add its content to the selection array
-         * @param frustumPlanes defines the frustum planes to test
-         * @param selection defines the array to store current content if selection is positive
-         * @param allowDuplicate defines if the selection array can contains duplicated entries
-         */
-        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        /**
-         * Test if the current block intersect with the given bounding sphere and if yes, then add its content to the selection array
-         * @param sphereCenter defines the bounding sphere center
-         * @param sphereRadius defines the bounding sphere radius
-         * @param selection defines the array to store current content if selection is positive
-         * @param allowDuplicate defines if the selection array can contains duplicated entries
-         */
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        /**
-         * Test if the current block intersect with the given ray and if yes, then add its content to the selection array
-         * @param ray defines the ray to test with
-         * @param selection defines the array to store current content if selection is positive
-         */
-        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
-        /**
-         * Subdivide the content into child blocks (this block will then be empty)
-         */
-        createInnerBlocks(): void;
-    }
-}
-
-declare module BABYLON {
-    interface Scene {
-        /**
-         * @hidden
-         * Backing Filed
-         */
-        _selectionOctree: Octree<AbstractMesh>;
-        /**
-         * Gets the octree used to boost mesh selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         */
-        selectionOctree: Octree<AbstractMesh>;
-        /**
-         * Creates or updates the octree used to boost selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         * @param maxCapacity defines the maximum capacity per leaf
-         * @param maxDepth defines the maximum depth of the octree
-         * @returns an octree of AbstractMesh
-         */
-        createOrUpdateSelectionOctree(maxCapacity?: number, maxDepth?: number): Octree<AbstractMesh>;
-    }
-    interface AbstractMesh {
-        /**
-         * @hidden
-         * Backing Field
-         */
-        _submeshesOctree: Octree<SubMesh>;
-        /**
-         * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.
-         * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
-         * @param maxCapacity defines the maximum size of each block (64 by default)
-         * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
-         * @returns the new octree
-         * @see https://www.babylonjs-playground.com/#NA4OQ#12
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
-         */
-        createOrUpdateSubmeshesOctree(maxCapacity?: number, maxDepth?: number): Octree<SubMesh>;
-    }
-    /**
-     * Defines the octree scene component responsible to manage any octrees
-     * in a given scene.
-     */
-    class OctreeSceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Indicates if the meshes have been checked to make sure they are isEnabled()
-         */
-        readonly checksIsEnabled: boolean;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Return the list of active meshes
-         * @returns the list of active meshes
-         */
-        getActiveMeshCandidates(): ISmartArrayLike<AbstractMesh>;
-        /**
-         * Return the list of active sub meshes
-         * @param mesh The mesh to get the candidates sub meshes from
-         * @returns the list of active sub meshes
-         */
-        getActiveSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh>;
-        private _tempRay;
-        /**
-         * Return the list of sub meshes intersecting with a given local ray
-         * @param mesh defines the mesh to find the submesh for
-         * @param localRay defines the ray in local space
-         * @returns the list of intersecting sub meshes
-         */
-        getIntersectingSubMeshCandidates(mesh: AbstractMesh, localRay: Ray): ISmartArrayLike<SubMesh>;
-        /**
-         * Return the list of sub meshes colliding with a collider
-         * @param mesh defines the mesh to find the submesh for
-         * @param collider defines the collider to evaluate the collision against
-         * @returns the list of colliding sub meshes
-         */
-        getCollidingSubMeshCandidates(mesh: AbstractMesh, collider: Collider): ISmartArrayLike<SubMesh>;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources.
-         */
-        dispose(): void;
     }
 }
 
@@ -42844,355 +42579,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * WebXR Camera which holds the views for the xrSession
-     * @see https://doc.babylonjs.com/how_to/webxr
-     */
-    class WebXRCamera extends FreeCamera {
-        private static _TmpMatrix;
-        /**
-         * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
-         * @param name the name of the camera
-         * @param scene the scene to add the camera to
-         */
-        constructor(name: string, scene: BABYLON.Scene);
-        private _updateNumberOfRigCameras;
-        /** @hidden */
-        _updateForDualEyeDebugging(pupilDistance?: number): void;
-        /**
-         * Updates the cameras position from the current pose information of the  XR session
-         * @param xrSessionManager the session containing pose information
-         * @returns true if the camera has been updated, false if the session did not contain pose or frame data
-         */
-        updateFromXRSessionManager(xrSessionManager: WebXRSessionManager): boolean;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Button which can be used to enter a different mode of XR
-     */
-    class WebXREnterExitUIButton {
-        /** button element */
-        element: HTMLElement;
-        /** XR initialization options for the button */
-        initializationOptions: XRSessionCreationOptions;
-        /**
-         * Creates a WebXREnterExitUIButton
-         * @param element button element
-         * @param initializationOptions XR initialization options for the button
-         */
-        constructor(
-        /** button element */
-        element: HTMLElement, 
-        /** XR initialization options for the button */
-        initializationOptions: XRSessionCreationOptions);
-        /**
-         * Overwritable function which can be used to update the button's visuals when the state changes
-         * @param activeButton the current active button in the UI
-         */
-        update(activeButton: Nullable<WebXREnterExitUIButton>): void;
-    }
-    /**
-     * Options to create the webXR UI
-     */
-    class WebXREnterExitUIOptions {
-        /**
-         * Context to enter xr with
-         */
-        outputCanvasContext?: Nullable<WebGLRenderingContext>;
-        /**
-         * User provided buttons to enable/disable WebXR. The system will provide default if not set
-         */
-        customButtons?: Array<WebXREnterExitUIButton>;
-    }
-    /**
-     * UI to allow the user to enter/exit XR mode
-     */
-    class WebXREnterExitUI implements IDisposable {
-        private scene;
-        private _overlay;
-        private _buttons;
-        private _activeButton;
-        /**
-         * Fired every time the active button is changed.
-         *
-         * When xr is entered via a button that launches xr that button will be the callback parameter
-         *
-         * When exiting xr the callback parameter will be null)
-         */
-        activeButtonChangedObservable: Observable<Nullable<WebXREnterExitUIButton>>;
-        /**
-         * Creates UI to allow the user to enter/exit XR mode
-         * @param scene the scene to add the ui to
-         * @param helper the xr experience helper to enter/exit xr with
-         * @param options options to configure the UI
-         * @returns the created ui
-         */
-        static CreateAsync(scene: BABYLON.Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI>;
-        private constructor();
-        private _updateButtons;
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * States of the webXR experience
-     */
-    enum WebXRState {
-        /**
-         * Transitioning to being in XR mode
-         */
-        ENTERING_XR = 0,
-        /**
-         * Transitioning to non XR mode
-         */
-        EXITING_XR = 1,
-        /**
-         * In XR mode and presenting
-         */
-        IN_XR = 2,
-        /**
-         * Not entered XR mode
-         */
-        NOT_IN_XR = 3
-    }
-    /**
-     * Helper class used to enable XR
-     * @see https://doc.babylonjs.com/how_to/webxr
-     */
-    class WebXRExperienceHelper implements IDisposable {
-        private scene;
-        /**
-         * Container which stores the xr camera and controllers as children. This can be used to move the camera/user as the camera's position is updated by the xr device
-         */
-        container: AbstractMesh;
-        /**
-         * Camera used to render xr content
-         */
-        camera: WebXRCamera;
-        /**
-         * The current state of the XR experience (eg. transitioning, in XR or not in XR)
-         */
-        state: WebXRState;
-        private _setState;
-        private static _TmpVector;
-        /**
-         * Fires when the state of the experience helper has changed
-         */
-        onStateChangedObservable: Observable<WebXRState>;
-        /** @hidden */
-        _sessionManager: WebXRSessionManager;
-        private _nonVRCamera;
-        private _originalSceneAutoClear;
-        private _supported;
-        /**
-         * Creates the experience helper
-         * @param scene the scene to attach the experience helper to
-         * @returns a promise for the experience helper
-         */
-        static CreateAsync(scene: BABYLON.Scene): Promise<WebXRExperienceHelper>;
-        /**
-         * Creates a WebXRExperienceHelper
-         * @param scene The scene the helper should be created in
-         */
-        private constructor();
-        /**
-         * Exits XR mode and returns the scene to its original state
-         * @returns promise that resolves after xr mode has exited
-         */
-        exitXRAsync(): Promise<void>;
-        /**
-         * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
-         * @param sessionCreationOptions options for the XR session
-         * @param frameOfReference frame of reference of the XR session
-         * @returns promise that resolves after xr mode has entered
-         */
-        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string): Promise<void>;
-        /**
-         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-         * @param ray ray to cast into the environment
-         * @returns Promise which resolves with a collision point in the environment if it exists
-         */
-        environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>>;
-        /**
-         * Updates the global position of the camera by moving the camera's container
-         * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
-         * @param position The desired global position of the camera
-         */
-        setPositionOfCameraUsingContainer(position: Vector3): void;
-        /**
-         * Rotates the xr camera by rotating the camera's container around the camera's position
-         * This should be used instead of modifying the camera's rotation as it will be overwritten by an xrSessions's update frame
-         * @param rotation the desired quaternion rotation to apply to the camera
-         */
-        rotateCameraByQuaternionUsingContainer(rotation: Quaternion): void;
-        /**
-         * Checks if the creation options are supported by the xr session
-         * @param options creation options
-         * @returns true if supported
-         */
-        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
-        /**
-         * Disposes of the experience helper
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Represents an XR input
-     */
-    class WebXRController {
-        /**
-         * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
-         */
-        grip?: BABYLON.AbstractMesh;
-        /**
-         * Pointer which can be used to select objects or attach a visible laser to
-         */
-        pointer: BABYLON.AbstractMesh;
-        /**
-         * Creates the controller
-         * @see https://doc.babylonjs.com/how_to/webxr
-         * @param scene the scene which the controller should be associated to
-         */
-        constructor(scene: BABYLON.Scene);
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
-    }
-    /**
-     * XR input used to track XR inputs such as controllers/rays
-     */
-    class WebXRInput implements IDisposable {
-        private helper;
-        /**
-         * XR controllers being tracked
-         */
-        controllers: Array<WebXRController>;
-        private _tmpMatrix;
-        private _frameObserver;
-        /**
-         * Initializes the WebXRInput
-         * @param helper experience helper which the input should be created for
-         */
-        constructor(helper: WebXRExperienceHelper);
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Creates a canvas that is added/removed from the webpage when entering/exiting XR
-     */
-    class WebXRManagedOutputCanvas implements IDisposable {
-        private _canvas;
-        /**
-         * xrpresent context of the canvas which can be used to display/mirror xr content
-         */
-        canvasContext: Nullable<WebGLRenderingContext>;
-        /**
-         * Initializes the canvas to be added/removed upon entering/exiting xr
-         * @param helper the xr experience helper used to trigger adding/removing of the canvas
-         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
-         */
-        constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement);
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
-        private _setManagedOutputCanvas;
-        private _addCanvas;
-        private _removeCanvas;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Manages an XRSession
-     * @see https://doc.babylonjs.com/how_to/webxr
-     */
-    class WebXRSessionManager implements IDisposable {
-        private scene;
-        /**
-         * Fires every time a new xrFrame arrives which can be used to update the camera
-         */
-        onXRFrameObservable: Observable<any>;
-        /**
-         * Fires when the xr session is ended either by the device or manually done
-         */
-        onXRSessionEnded: Observable<any>;
-        /** @hidden */
-        _xrSession: XRSession;
-        /** @hidden */
-        _frameOfReference: XRFrameOfReference;
-        /** @hidden */
-        _sessionRenderTargetTexture: Nullable<RenderTargetTexture>;
-        /** @hidden */
-        _currentXRFrame: Nullable<XRFrame>;
-        private _xrNavigator;
-        private _xrDevice;
-        private _tmpMatrix;
-        /**
-         * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
-         * @param scene The scene which the session should be created for
-         */
-        constructor(scene: BABYLON.Scene);
-        /**
-         * Initializes the manager
-         * After initialization enterXR can be called to start an XR session
-         * @returns Promise which resolves after it is initialized
-         */
-        initializeAsync(): Promise<void>;
-        /**
-         * Enters XR with the desired XR session options, this must be done with a user action (eg. button click event)
-         * @param sessionCreationOptions xr options to create the session with
-         * @param frameOfReferenceType option to configure how the xr pose is expressed
-         * @returns Promise which resolves after it enters XR
-         */
-        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: string): Promise<void>;
-        /**
-         * Stops the xrSession and restores the renderloop
-         * @returns Promise which resolves after it exits XR
-         */
-        exitXRAsync(): Promise<void>;
-        /**
-         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-         * @param ray ray to cast into the environment
-         * @returns Promise which resolves with a collision point in the environment if it exists
-         */
-        environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>>;
-        /**
-         * Checks if a session would be supported for the creation options specified
-         * @param options creation options to check if they are supported
-         * @returns true if supported
-         */
-        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
-        /**
-         * @hidden
-         * Converts the render layer of xrSession to a render target
-         * @param session session to create render target for
-         * @param scene scene the new render target should be created for
-         */
-        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: BABYLON.Scene): RenderTargetTexture;
-        /**
-         * Disposes of the session manager
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
      * This represents all the required metrics to create a VR camera.
      * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
      */
@@ -43518,6 +42904,10 @@ declare module BABYLON {
          * If the gaze trackers scale should be updated to be constant size when pointing at near/far meshes
          */
         updateGazeTrackerScale: boolean;
+        /**
+         * If the gaze trackers color should be updated when selecting meshes
+         */
+        updateGazeTrackerColor: boolean;
         /**
          * The gaze tracking mesh corresponding to the left controller
          */
@@ -43966,6 +43356,634 @@ declare module BABYLON {
          * Initializes the controllers and their meshes
          */
         initControllers(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * WebXR Camera which holds the views for the xrSession
+     * @see https://doc.babylonjs.com/how_to/webxr
+     */
+    class WebXRCamera extends FreeCamera {
+        private static _TmpMatrix;
+        /**
+         * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
+         * @param name the name of the camera
+         * @param scene the scene to add the camera to
+         */
+        constructor(name: string, scene: BABYLON.Scene);
+        private _updateNumberOfRigCameras;
+        /** @hidden */
+        _updateForDualEyeDebugging(pupilDistance?: number): void;
+        /**
+         * Updates the cameras position from the current pose information of the  XR session
+         * @param xrSessionManager the session containing pose information
+         * @returns true if the camera has been updated, false if the session did not contain pose or frame data
+         */
+        updateFromXRSessionManager(xrSessionManager: WebXRSessionManager): boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Button which can be used to enter a different mode of XR
+     */
+    class WebXREnterExitUIButton {
+        /** button element */
+        element: HTMLElement;
+        /** XR initialization options for the button */
+        initializationOptions: XRSessionCreationOptions;
+        /**
+         * Creates a WebXREnterExitUIButton
+         * @param element button element
+         * @param initializationOptions XR initialization options for the button
+         */
+        constructor(
+        /** button element */
+        element: HTMLElement, 
+        /** XR initialization options for the button */
+        initializationOptions: XRSessionCreationOptions);
+        /**
+         * Overwritable function which can be used to update the button's visuals when the state changes
+         * @param activeButton the current active button in the UI
+         */
+        update(activeButton: Nullable<WebXREnterExitUIButton>): void;
+    }
+    /**
+     * Options to create the webXR UI
+     */
+    class WebXREnterExitUIOptions {
+        /**
+         * Context to enter xr with
+         */
+        outputCanvasContext?: Nullable<WebGLRenderingContext>;
+        /**
+         * User provided buttons to enable/disable WebXR. The system will provide default if not set
+         */
+        customButtons?: Array<WebXREnterExitUIButton>;
+    }
+    /**
+     * UI to allow the user to enter/exit XR mode
+     */
+    class WebXREnterExitUI implements IDisposable {
+        private scene;
+        private _overlay;
+        private _buttons;
+        private _activeButton;
+        /**
+         * Fired every time the active button is changed.
+         *
+         * When xr is entered via a button that launches xr that button will be the callback parameter
+         *
+         * When exiting xr the callback parameter will be null)
+         */
+        activeButtonChangedObservable: Observable<Nullable<WebXREnterExitUIButton>>;
+        /**
+         * Creates UI to allow the user to enter/exit XR mode
+         * @param scene the scene to add the ui to
+         * @param helper the xr experience helper to enter/exit xr with
+         * @param options options to configure the UI
+         * @returns the created ui
+         */
+        static CreateAsync(scene: BABYLON.Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI>;
+        private constructor();
+        private _updateButtons;
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * States of the webXR experience
+     */
+    enum WebXRState {
+        /**
+         * Transitioning to being in XR mode
+         */
+        ENTERING_XR = 0,
+        /**
+         * Transitioning to non XR mode
+         */
+        EXITING_XR = 1,
+        /**
+         * In XR mode and presenting
+         */
+        IN_XR = 2,
+        /**
+         * Not entered XR mode
+         */
+        NOT_IN_XR = 3
+    }
+    /**
+     * Helper class used to enable XR
+     * @see https://doc.babylonjs.com/how_to/webxr
+     */
+    class WebXRExperienceHelper implements IDisposable {
+        private scene;
+        /**
+         * Container which stores the xr camera and controllers as children. This can be used to move the camera/user as the camera's position is updated by the xr device
+         */
+        container: AbstractMesh;
+        /**
+         * Camera used to render xr content
+         */
+        camera: WebXRCamera;
+        /**
+         * The current state of the XR experience (eg. transitioning, in XR or not in XR)
+         */
+        state: WebXRState;
+        private _setState;
+        private static _TmpVector;
+        /**
+         * Fires when the state of the experience helper has changed
+         */
+        onStateChangedObservable: Observable<WebXRState>;
+        /** @hidden */
+        _sessionManager: WebXRSessionManager;
+        private _nonVRCamera;
+        private _originalSceneAutoClear;
+        private _supported;
+        /**
+         * Creates the experience helper
+         * @param scene the scene to attach the experience helper to
+         * @returns a promise for the experience helper
+         */
+        static CreateAsync(scene: BABYLON.Scene): Promise<WebXRExperienceHelper>;
+        /**
+         * Creates a WebXRExperienceHelper
+         * @param scene The scene the helper should be created in
+         */
+        private constructor();
+        /**
+         * Exits XR mode and returns the scene to its original state
+         * @returns promise that resolves after xr mode has exited
+         */
+        exitXRAsync(): Promise<void>;
+        /**
+         * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
+         * @param sessionCreationOptions options for the XR session
+         * @param frameOfReference frame of reference of the XR session
+         * @returns promise that resolves after xr mode has entered
+         */
+        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string): Promise<void>;
+        /**
+         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
+         * @param ray ray to cast into the environment
+         * @returns Promise which resolves with a collision point in the environment if it exists
+         */
+        environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>>;
+        /**
+         * Updates the global position of the camera by moving the camera's container
+         * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
+         * @param position The desired global position of the camera
+         */
+        setPositionOfCameraUsingContainer(position: Vector3): void;
+        /**
+         * Rotates the xr camera by rotating the camera's container around the camera's position
+         * This should be used instead of modifying the camera's rotation as it will be overwritten by an xrSessions's update frame
+         * @param rotation the desired quaternion rotation to apply to the camera
+         */
+        rotateCameraByQuaternionUsingContainer(rotation: Quaternion): void;
+        /**
+         * Checks if the creation options are supported by the xr session
+         * @param options creation options
+         * @returns true if supported
+         */
+        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
+        /**
+         * Disposes of the experience helper
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Represents an XR input
+     */
+    class WebXRController {
+        /**
+         * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
+         */
+        grip?: BABYLON.AbstractMesh;
+        /**
+         * Pointer which can be used to select objects or attach a visible laser to
+         */
+        pointer: BABYLON.AbstractMesh;
+        /**
+         * Creates the controller
+         * @see https://doc.babylonjs.com/how_to/webxr
+         * @param scene the scene which the controller should be associated to
+         */
+        constructor(scene: BABYLON.Scene);
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
+    }
+    /**
+     * XR input used to track XR inputs such as controllers/rays
+     */
+    class WebXRInput implements IDisposable {
+        private helper;
+        /**
+         * XR controllers being tracked
+         */
+        controllers: Array<WebXRController>;
+        private _tmpMatrix;
+        private _frameObserver;
+        /**
+         * Initializes the WebXRInput
+         * @param helper experience helper which the input should be created for
+         */
+        constructor(helper: WebXRExperienceHelper);
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Creates a canvas that is added/removed from the webpage when entering/exiting XR
+     */
+    class WebXRManagedOutputCanvas implements IDisposable {
+        private _canvas;
+        /**
+         * xrpresent context of the canvas which can be used to display/mirror xr content
+         */
+        canvasContext: Nullable<WebGLRenderingContext>;
+        /**
+         * Initializes the canvas to be added/removed upon entering/exiting xr
+         * @param helper the xr experience helper used to trigger adding/removing of the canvas
+         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
+         */
+        constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement);
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
+        private _setManagedOutputCanvas;
+        private _addCanvas;
+        private _removeCanvas;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Manages an XRSession
+     * @see https://doc.babylonjs.com/how_to/webxr
+     */
+    class WebXRSessionManager implements IDisposable {
+        private scene;
+        /**
+         * Fires every time a new xrFrame arrives which can be used to update the camera
+         */
+        onXRFrameObservable: Observable<any>;
+        /**
+         * Fires when the xr session is ended either by the device or manually done
+         */
+        onXRSessionEnded: Observable<any>;
+        /** @hidden */
+        _xrSession: XRSession;
+        /** @hidden */
+        _frameOfReference: XRFrameOfReference;
+        /** @hidden */
+        _sessionRenderTargetTexture: Nullable<RenderTargetTexture>;
+        /** @hidden */
+        _currentXRFrame: Nullable<XRFrame>;
+        private _xrNavigator;
+        private _xrDevice;
+        private _tmpMatrix;
+        /**
+         * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
+         * @param scene The scene which the session should be created for
+         */
+        constructor(scene: BABYLON.Scene);
+        /**
+         * Initializes the manager
+         * After initialization enterXR can be called to start an XR session
+         * @returns Promise which resolves after it is initialized
+         */
+        initializeAsync(): Promise<void>;
+        /**
+         * Enters XR with the desired XR session options, this must be done with a user action (eg. button click event)
+         * @param sessionCreationOptions xr options to create the session with
+         * @param frameOfReferenceType option to configure how the xr pose is expressed
+         * @returns Promise which resolves after it enters XR
+         */
+        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: string): Promise<void>;
+        /**
+         * Stops the xrSession and restores the renderloop
+         * @returns Promise which resolves after it exits XR
+         */
+        exitXRAsync(): Promise<void>;
+        /**
+         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
+         * @param ray ray to cast into the environment
+         * @returns Promise which resolves with a collision point in the environment if it exists
+         */
+        environmentPointHitTestAsync(ray: BABYLON.Ray): Promise<Nullable<Vector3>>;
+        /**
+         * Checks if a session would be supported for the creation options specified
+         * @param options creation options to check if they are supported
+         * @returns true if supported
+         */
+        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
+        /**
+         * @hidden
+         * Converts the render layer of xrSession to a render target
+         * @param session session to create render target for
+         * @param scene scene the new render target should be created for
+         */
+        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: BABYLON.Scene): RenderTargetTexture;
+        /**
+         * Disposes of the session manager
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Contains an array of blocks representing the octree
+     */
+    interface IOctreeContainer<T> {
+        /**
+         * Blocks within the octree
+         */
+        blocks: Array<OctreeBlock<T>>;
+    }
+    /**
+     * Octrees are a really powerful data structure that can quickly select entities based on space coordinates.
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+     */
+    class Octree<T> {
+        /** Defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.) */
+        maxDepth: number;
+        /**
+         * Blocks within the octree containing objects
+         */
+        blocks: Array<OctreeBlock<T>>;
+        /**
+         * Content stored in the octree
+         */
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        /**
+         * Creates a octree
+         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         * @param creationFunc function to be used to instatiate the octree
+         * @param maxBlockCapacity defines the maximum number of meshes you want on your octree's leaves (default: 64)
+         * @param maxDepth defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.)
+         */
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, 
+        /** Defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.) */
+        maxDepth?: number);
+        /**
+         * Updates the octree by adding blocks for the passed in meshes within the min and max world parameters
+         * @param worldMin worldMin for the octree blocks var blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
+         * @param worldMax worldMax for the octree blocks var blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
+         * @param entries meshes to be added to the octree blocks
+         */
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        /**
+         * Adds a mesh to the octree
+         * @param entry Mesh to add to the octree
+         */
+        addMesh(entry: T): void;
+        /**
+         * Remove an element from the octree
+         * @param entry defines the element to remove
+         */
+        removeMesh(entry: T): void;
+        /**
+         * Selects an array of meshes within the frustum
+         * @param frustumPlanes The frustum planes to use which will select all meshes within it
+         * @param allowDuplicate If duplicate objects are allowed in the resulting object array
+         * @returns array of meshes within the frustum
+         */
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        /**
+         * Test if the octree intersect with the given bounding sphere and if yes, then add its content to the selection array
+         * @param sphereCenter defines the bounding sphere center
+         * @param sphereRadius defines the bounding sphere radius
+         * @param allowDuplicate defines if the selection array can contains duplicated entries
+         * @returns an array of objects that intersect the sphere
+         */
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        /**
+        * Test if the octree intersect with the given ray and if yes, then add its content to resulting array
+         * @param ray defines the ray to test with
+         * @returns array of intersected objects
+         */
+        intersectsRay(ray: Ray): SmartArray<T>;
+        /**
+         * @hidden
+         */
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        /**
+         * Adds a mesh into the octree block if it intersects the block
+         */
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        /**
+         * Adds a submesh into the octree block if it intersects the block
+         */
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class used to store a cell in an octree
+     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+     */
+    class OctreeBlock<T> {
+        /**
+         * Gets the content of the current block
+         */
+        entries: T[];
+        /**
+         * Gets the list of block children
+         */
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        /**
+         * Creates a new block
+         * @param minPoint defines the minimum vector (in world space) of the block's bounding box
+         * @param maxPoint defines the maximum vector (in world space) of the block's bounding box
+         * @param capacity defines the maximum capacity of this block (if capacity is reached the block will be split into sub blocks)
+         * @param depth defines the current depth of this block in the octree
+         * @param maxDepth defines the maximal depth allowed (beyond this value, the capacity is ignored)
+         * @param creationFunc defines a callback to call when an element is added to the block
+         */
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        /**
+         * Gets the maximum capacity of this block (if capacity is reached the block will be split into sub blocks)
+         */
+        readonly capacity: number;
+        /**
+         * Gets the minimum vector (in world space) of the block's bounding box
+         */
+        readonly minPoint: Vector3;
+        /**
+         * Gets the maximum vector (in world space) of the block's bounding box
+         */
+        readonly maxPoint: Vector3;
+        /**
+         * Add a new element to this block
+         * @param entry defines the element to add
+         */
+        addEntry(entry: T): void;
+        /**
+         * Remove an element from this block
+         * @param entry defines the element to remove
+         */
+        removeEntry(entry: T): void;
+        /**
+         * Add an array of elements to this block
+         * @param entries defines the array of elements to add
+         */
+        addEntries(entries: T[]): void;
+        /**
+         * Test if the current block intersects the furstum planes and if yes, then add its content to the selection array
+         * @param frustumPlanes defines the frustum planes to test
+         * @param selection defines the array to store current content if selection is positive
+         * @param allowDuplicate defines if the selection array can contains duplicated entries
+         */
+        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        /**
+         * Test if the current block intersect with the given bounding sphere and if yes, then add its content to the selection array
+         * @param sphereCenter defines the bounding sphere center
+         * @param sphereRadius defines the bounding sphere radius
+         * @param selection defines the array to store current content if selection is positive
+         * @param allowDuplicate defines if the selection array can contains duplicated entries
+         */
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        /**
+         * Test if the current block intersect with the given ray and if yes, then add its content to the selection array
+         * @param ray defines the ray to test with
+         * @param selection defines the array to store current content if selection is positive
+         */
+        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
+        /**
+         * Subdivide the content into child blocks (this block will then be empty)
+         */
+        createInnerBlocks(): void;
+    }
+}
+
+declare module BABYLON {
+    interface Scene {
+        /**
+         * @hidden
+         * Backing Filed
+         */
+        _selectionOctree: Octree<AbstractMesh>;
+        /**
+         * Gets the octree used to boost mesh selection (picking)
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         */
+        selectionOctree: Octree<AbstractMesh>;
+        /**
+         * Creates or updates the octree used to boost selection (picking)
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         * @param maxCapacity defines the maximum capacity per leaf
+         * @param maxDepth defines the maximum depth of the octree
+         * @returns an octree of AbstractMesh
+         */
+        createOrUpdateSelectionOctree(maxCapacity?: number, maxDepth?: number): Octree<AbstractMesh>;
+    }
+    interface AbstractMesh {
+        /**
+         * @hidden
+         * Backing Field
+         */
+        _submeshesOctree: Octree<SubMesh>;
+        /**
+         * This function will create an octree to help to select the right submeshes for rendering, picking and collision computations.
+         * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
+         * @param maxCapacity defines the maximum size of each block (64 by default)
+         * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
+         * @returns the new octree
+         * @see https://www.babylonjs-playground.com/#NA4OQ#12
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         */
+        createOrUpdateSubmeshesOctree(maxCapacity?: number, maxDepth?: number): Octree<SubMesh>;
+    }
+    /**
+     * Defines the octree scene component responsible to manage any octrees
+     * in a given scene.
+     */
+    class OctreeSceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Indicates if the meshes have been checked to make sure they are isEnabled()
+         */
+        readonly checksIsEnabled: boolean;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Return the list of active meshes
+         * @returns the list of active meshes
+         */
+        getActiveMeshCandidates(): ISmartArrayLike<AbstractMesh>;
+        /**
+         * Return the list of active sub meshes
+         * @param mesh The mesh to get the candidates sub meshes from
+         * @returns the list of active sub meshes
+         */
+        getActiveSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh>;
+        private _tempRay;
+        /**
+         * Return the list of sub meshes intersecting with a given local ray
+         * @param mesh defines the mesh to find the submesh for
+         * @param localRay defines the ray in local space
+         * @returns the list of intersecting sub meshes
+         */
+        getIntersectingSubMeshCandidates(mesh: AbstractMesh, localRay: Ray): ISmartArrayLike<SubMesh>;
+        /**
+         * Return the list of sub meshes colliding with a collider
+         * @param mesh defines the mesh to find the submesh for
+         * @param collider defines the collider to evaluate the collision against
+         * @returns the list of colliding sub meshes
+         */
+        getCollidingSubMeshCandidates(mesh: AbstractMesh, collider: Collider): ISmartArrayLike<SubMesh>;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources.
+         */
+        dispose(): void;
     }
 }
 
@@ -45281,6 +45299,9 @@ declare module BABYLON {
         dispose(): void;
         private _gatherRenderTargets;
     }
+}
+
+declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -48950,9 +48971,6 @@ declare module BABYLON {
         private static _LoadScriptAsync;
         private static _LoadFileAsync;
     }
-}
-
-declare module BABYLON {
 }
 
 declare module BABYLON {

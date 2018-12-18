@@ -69,7 +69,7 @@ export class Inspector {
                 embedMode: options.embedMode,
                 handleResize: options.handleResize,
                 enablePopup: options.enablePopup,
-                enableClose: options.enablePopup,
+                enableClose: options.enableClose,
                 explorerExtensibility: options.explorerExtensibility
             };
         }
@@ -433,16 +433,22 @@ export class Inspector {
     }
 
     private static _Cleanup() {
+        if (Inspector._OpenedPane !== 0) {
+            return;
+        }
+
         if (this._NewCanvasContainer) {
             this._DestroyCanvasContainer();
         }
 
-        if (Inspector._OpenedPane === 0 && this._OnBeforeRenderObserver && this._Scene) {
+        if (this._OnBeforeRenderObserver && this._Scene) {
             this._Scene.onBeforeRenderObservable.remove(this._OnBeforeRenderObserver);
             this._OnBeforeRenderObserver = null;
 
             this._Scene.getEngine().resize();
         }
+
+        this._GlobalState.onInspectorClosedObservable.notifyObservers(this._Scene);
     }
 
     private static _RemoveElementFromDOM(element: Nullable<HTMLElement>) {
