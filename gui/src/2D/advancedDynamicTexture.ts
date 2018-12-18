@@ -353,10 +353,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._invalidatedRectangle = new Measure(minX, minY, maxX - minX + 1, maxY - minY + 1);
         } else {
             // Compute intersection
-            var maxX = Math.max(this._clearRectangle.left + this._clearRectangle.width - 1, clearMaxX);
-            var maxY = Math.max(this._clearRectangle.top + this._clearRectangle.height - 1, clearMaxY);
-            this._clearRectangle.left = Math.min(this._clearRectangle.left, clearMinX);
-            this._clearRectangle.top = Math.min(this._clearRectangle.top, clearMinY);
+            var maxX = Math.ceil(Math.max(this._clearRectangle.left + this._clearRectangle.width - 1, clearMaxX));
+            var maxY = Math.ceil(Math.max(this._clearRectangle.top + this._clearRectangle.height - 1, clearMaxY));
+            this._clearRectangle.left = Math.floor(Math.min(this._clearRectangle.left, clearMinX));
+            this._clearRectangle.top = Math.floor(Math.min(this._clearRectangle.top, clearMinY));
             this._clearRectangle.width = maxX - this._clearRectangle.left + 1;
             this._clearRectangle.height = maxY - this._clearRectangle.top + 1;
 
@@ -366,7 +366,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._invalidatedRectangle.top = Math.min(this._invalidatedRectangle.top, minY);
             this._invalidatedRectangle.width = maxX - this._invalidatedRectangle.left + 1;
             this._invalidatedRectangle.height = maxY - this._invalidatedRectangle.top + 1;
-
         }
     }
     /**
