@@ -1,7 +1,7 @@
 import { Container } from "./container";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes, Logger } from "babylonjs";
+import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes, Logger, Polygon } from "babylonjs";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
@@ -1087,7 +1087,7 @@ export class Control {
     protected invalidateRect() {
         if (this.host) {
             // Compute aabb of rotated container box (eg. to handle rotation)
-            var rectanglePoints = BABYLON.Polygon.Rectangle(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.left + this._currentMeasure.width, this._currentMeasure.top + this._currentMeasure.height);
+            var rectanglePoints = Polygon.Rectangle(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.left + this._currentMeasure.width, this._currentMeasure.top + this._currentMeasure.height);
             var min = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new Vector2(0, 0);
             this._invertTransformMatrix.invertToRef(this._invertTransformMatrix);
