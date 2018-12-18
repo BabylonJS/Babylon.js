@@ -1335,9 +1335,8 @@ module BABYLON {
         // Collisions
         /** @hidden */
         public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh {
-            this._generatePointsArray();
-
-            if (!this._positions) {
+            const positionBuffer = this.getVerticesData(VertexBuffer.PositionKind);
+            if (!positionBuffer || !positionBuffer.length) {
                 return this;
             }
 
@@ -1348,8 +1347,11 @@ module BABYLON {
                 subMesh._trianglePlanes = [];
                 var start = subMesh.verticesStart;
                 var end = (subMesh.verticesStart + subMesh.verticesCount);
+
                 for (var i = start; i < end; i++) {
-                    subMesh._lastColliderWorldVertices.push(Vector3.TransformCoordinates(this._positions[i], transformMatrix));
+                    const v = Vector3.FromFloatArray(positionBuffer, 3*i)
+                    Vector3.TransformCoordinatesToRef(v, transformMatrix, v)
+                    subMesh._lastColliderWorldVertices.push(v);
                 }
             }
             // Collide
@@ -1415,7 +1417,8 @@ module BABYLON {
                 return pickingInfo;
             }
 
-            if (!this._generatePointsArray()) {
+            const positionBuffer = this.getVerticesData(VertexBuffer.PositionKind);
+            if (!positionBuffer || !positionBuffer.length) {
                 return pickingInfo;
             }
 
@@ -1431,7 +1434,7 @@ module BABYLON {
                     continue;
                 }
 
-                var currentIntersectInfo = subMesh.intersects(ray, (<Vector3[]>this._positions), (<IndicesArray>this.getIndices()), fastCheck);
+                var currentIntersectInfo = subMesh.intersects(ray, positionBuffer, (<IndicesArray>this.getIndices()), fastCheck);
 
                 if (currentIntersectInfo) {
                     if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {

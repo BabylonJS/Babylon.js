@@ -2177,7 +2177,7 @@ module BABYLON {
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
-        public static FromFloatArray(array: DeepImmutable<Float32Array>, offset?: number): Vector3 {
+        public static FromFloatArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Vector3 {
             return Vector3.FromArray(array, offset);
         }
 

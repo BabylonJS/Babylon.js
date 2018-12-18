@@ -60,6 +60,8 @@ module BABYLON {
 
         private _currentMaterial: Nullable<Material>;
 
+        private static readonly TmpVector3 = Tools.BuildArray(3, Vector3.Zero);
+
         /**
          * Add a new submesh to a mesh
          * @param materialIndex defines the material index to use
@@ -326,7 +328,7 @@ module BABYLON {
          * @param fastCheck defines if only bounding info should be used
          * @returns intersection info or null if no intersection
          */
-        public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+        public intersects(ray: Ray, positions: FloatArray, indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
             const material = this.getMaterial();
             if (!material) {
                 return null;
@@ -353,13 +355,15 @@ module BABYLON {
         }
 
         /** @hidden */
-        private _intersectLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold: number, fastCheck?: boolean): Nullable<IntersectionInfo> {
+        private _intersectLines(ray: Ray, positions: FloatArray, indices: IndicesArray, intersectionThreshold: number, fastCheck?: boolean): Nullable<IntersectionInfo> {
             var intersectInfo: Nullable<IntersectionInfo> = null;
+            const p0 = SubMesh.TmpVector3[0]
+            const p1 = SubMesh.TmpVector3[1]
 
             // Line test
             for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 2) {
-                var p0 = positions[indices[index]];
-                var p1 = positions[indices[index + 1]];
+                Vector3.FromArrayToRef(positions, 3*indices[index], p0)
+                Vector3.FromArrayToRef(positions, 3*indices[index+1], p1)
 
                 var length = ray.intersectionSegment(p0, p1, intersectionThreshold);
                 if (length < 0) {
@@ -378,13 +382,17 @@ module BABYLON {
         }
 
         /** @hidden */
-        private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+        private _intersectTriangles(ray: Ray, positions: FloatArray, indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
             var intersectInfo: Nullable<IntersectionInfo> = null;
+            const p0 = SubMesh.TmpVector3[0]
+            const p1 = SubMesh.TmpVector3[1]
+            const p2 = SubMesh.TmpVector3[2]
+
             // Triangles test
             for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
-                var p0 = positions[indices[index]];
-                var p1 = positions[indices[index + 1]];
-                var p2 = positions[indices[index + 2]];
+                Vector3.FromArrayToRef(positions, 3*indices[index], p0)
+                Vector3.FromArrayToRef(positions, 3*indices[index+1], p1)
+                Vector3.FromArrayToRef(positions, 3*indices[index+2], p2)
 
                 var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
 
