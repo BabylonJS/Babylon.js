@@ -1,4 +1,17 @@
-import { MaterialDefines, PushMaterial, serialize, expandToProperty, serializeAsColor3, Color3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Color3, Matrix } from "babylonjs/Maths/math";
+import { IAnimatable } from "babylonjs/Misc/tools";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
+import { MaterialHelper } from "babylonjs/Materials/materialHelper";
+import { EffectCreationOptions, EffectFallbacks } from "babylonjs/Materials/effect";
+import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { SubMesh } from "babylonjs/Meshes/subMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Scene } from "babylonjs/scene";
 
 import "./gradient.fragment";
 import "./gradient.vertex";

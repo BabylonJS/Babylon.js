@@ -1,4 +1,20 @@
-import { MaterialDefines, PushMaterial, serializeAsTexture, Nullable, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, Scene, AbstractMesh, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, Matrix, Mesh, IAnimatable, SerializationHelper, Tags, Texture, } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Color3, Matrix } from "babylonjs/Maths/math";
+import { IAnimatable } from "babylonjs/Misc/tools";
+import { Tags } from "babylonjs/Misc/tags";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { EffectFallbacks } from "babylonjs/Materials/effect";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
+import { MaterialHelper } from "babylonjs/Materials/materialHelper";
+import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { SubMesh } from "babylonjs/Meshes/subMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Scene } from "babylonjs/scene";
 
 import "./fire.fragment";
 import "./fire.vertex";

@@ -1,4 +1,9 @@
-import { StandardMaterial, Texture, Mesh, Effect, StandardMaterialDefines, Scene } from "babylonjs";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Effect } from "babylonjs/Materials/effect";
+import { StandardMaterialDefines } from "babylonjs/Materials/standardMaterial";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Scene } from "babylonjs/scene";
 
 export class CustomShaderStructure {
 
