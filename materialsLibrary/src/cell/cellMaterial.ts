@@ -1,4 +1,18 @@
-import { MaterialDefines, PushMaterial, serializeAsTexture, expandToProperty, BaseTexture, serializeAsColor3, Scene, Color3, serialize, AbstractMesh, Nullable, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Matrix, Mesh, IAnimatable, SerializationHelper } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Color3, Matrix } from "babylonjs/Maths/math";
+import { IAnimatable } from "babylonjs/Misc/tools";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
+import { MaterialHelper } from "babylonjs/Materials/materialHelper";
+import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { SubMesh } from "babylonjs/Meshes/subMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Scene } from "babylonjs/scene";
 
 import "./cell.fragment";
 import "./cell.vertex";

@@ -1,4 +1,22 @@
-import { MaterialDefines, PushMaterial, serializeAsTexture, BaseTexture, expandToProperty, serializeAsColor3, Color3, serialize, serializeAsVector2, Vector2, SmartArray, RenderTargetTexture, Nullable, AbstractMesh, Matrix, Scene, SubMesh, StandardMaterial, MaterialHelper, EffectFallbacks, VertexBuffer, EffectCreationOptions, Mesh, Plane, Vector3, Camera, IAnimatable, SerializationHelper, Constants } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { serializeAsVector2, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Plane, Vector3, Vector2, Color3, Matrix } from "babylonjs/Maths/math";
+import { IAnimatable } from "babylonjs/Misc/tools";
+import { Constants } from "babylonjs/Engines/constants";
+import { SmartArray } from "babylonjs/Misc/smartArray";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
+import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
+import { MaterialHelper } from "babylonjs/Materials/materialHelper";
+import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { SubMesh } from "babylonjs/Meshes/subMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Camera } from "babylonjs/Cameras/camera";
+import { Scene } from "babylonjs/scene";
 
 import "./water.fragment";
 import "./water.vertex";

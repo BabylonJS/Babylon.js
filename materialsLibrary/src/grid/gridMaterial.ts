@@ -1,4 +1,15 @@
-import { PushMaterial, MaterialDefines, serializeAsColor3, serializeAsTexture, expandToProperty, Color3, serialize, Vector3, Vector4, Scene, AbstractMesh, SubMesh, MaterialHelper, VertexBuffer, Matrix, Mesh, SerializationHelper, BaseTexture, StandardMaterial } from "babylonjs";
+import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Color3, Vector3, Vector4, Matrix } from "babylonjs/Maths/math";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
+import { MaterialHelper } from "babylonjs/Materials/materialHelper";
+import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { SubMesh } from "babylonjs/Meshes/subMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Scene } from "babylonjs/scene";
 
 import "./grid.fragment";
 import "./grid.vertex";
