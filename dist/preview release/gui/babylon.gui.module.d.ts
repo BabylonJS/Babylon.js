@@ -219,13 +219,21 @@ declare module 'babylonjs-gui/2D/advancedDynamicTexture' {
              */
             executeOnAllControls(func: (control: Control) => void, container?: Container): void;
             /**
-                * Invalidates a rectangle area on the gui texture
-                * @param minX left most position of the rectangle to invalidate in pixels
-                * @param minY top most position of the rectangle to invalidate in pixels
-                * @param maxX right most position of the rectangle to invalidate in pixels
-                * @param maxY bottom most position of the rectangle to invalidate in pixels
+                * Gets or sets a boolean indicating if the InvalidateRect optimization should be turned on
                 */
-            invalidateRect(minX: number, minY: number, maxX: number, maxY: number): void;
+            useInvalidateRectOptimization: boolean;
+            /**
+                * Invalidates a rectangle area on the gui texture
+                * @param clearMinX left most position of the rectangle to clear in the texture
+                * @param clearMinY top most position of the rectangle to clear in the texture
+                * @param clearMaxX right most position of the rectangle to clear in the texture
+                * @param clearMaxY bottom most position of the rectangle to clear in the texture
+                * @param minX left most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+                * @param minY top most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+                * @param maxX right most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+                * @param maxY bottom most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+                */
+            invalidateRect(clearMinX: number, clearMinY: number, clearMaxX: number, clearMaxY: number, minX: number, minY: number, maxX: number, maxY: number): void;
             /**
              * Marks the texture as dirty forcing a complete update
              */
@@ -1020,13 +1028,15 @@ declare module 'babylonjs-gui/2D/controls/container' {
             /** @hidden */
             _markAllAsDirty(): void;
             /** @hidden */
-            protected _localDraw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+            protected _localDraw(context: CanvasRenderingContext2D): void;
             /** @hidden */
             _link(host: AdvancedDynamicTexture): void;
             /** @hidden */
             protected _beforeLayout(): void;
             /** @hidden */
-            _layout(parentMeasure: Measure, context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean;
+            protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            /** @hidden */
+            _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
             protected _postMeasure(): void;
             /** @hidden */
             _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
@@ -1086,6 +1096,8 @@ declare module 'babylonjs-gui/2D/controls/control' {
             protected _wasDirty: boolean;
             /** @hidden */
             _tempParentMeasure: Measure;
+            /** @hidden */
+            _tempCurrentMeasure: Measure;
             /** @hidden */
             protected _cachedParentMeasure: Measure;
             /** @hidden */
@@ -1444,7 +1456,7 @@ declare module 'babylonjs-gui/2D/controls/control' {
             /** @hidden */
             _intersectsRect(rect: Measure): boolean;
             /** @hidden */
-            protected invalidateRect(): void;
+            protected invalidateRect(left: number, top: number, right: number, bottom: number): void;
             /** @hidden */
             _markAsDirty(force?: boolean): void;
             /** @hidden */
@@ -1460,9 +1472,10 @@ declare module 'babylonjs-gui/2D/controls/control' {
             /** @hidden */
             protected _applyStates(context: CanvasRenderingContext2D): void;
             /** @hidden */
-            _layout(parentMeasure: Measure, context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean;
+            _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
             /** @hidden */
             protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            protected _evaluateClippingState(parentMeasure: Measure): void;
             /** @hidden */
             _measure(): void;
             /** @hidden */
@@ -2542,7 +2555,7 @@ declare module 'babylonjs-gui/2D/controls/rectangle' {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
-            protected _localDraw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+            protected _localDraw(context: CanvasRenderingContext2D): void;
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             protected _clipForChildren(context: CanvasRenderingContext2D): void;
     }
@@ -3483,13 +3496,21 @@ declare module BABYLON.GUI {
              */
             executeOnAllControls(func: (control: Control) => void, container?: Container): void;
             /**
-                * Invalidates a rectangle area on the gui texture
-                * @param minX left most position of the rectangle to invalidate in pixels
-                * @param minY top most position of the rectangle to invalidate in pixels
-                * @param maxX right most position of the rectangle to invalidate in pixels
-                * @param maxY bottom most position of the rectangle to invalidate in pixels
+                * Gets or sets a boolean indicating if the InvalidateRect optimization should be turned on
                 */
-            invalidateRect(minX: number, minY: number, maxX: number, maxY: number): void;
+            useInvalidateRectOptimization: boolean;
+            /**
+                * Invalidates a rectangle area on the gui texture
+                * @param clearMinX left most position of the rectangle to clear in the texture
+                * @param clearMinY top most position of the rectangle to clear in the texture
+                * @param clearMaxX right most position of the rectangle to clear in the texture
+                * @param clearMaxY bottom most position of the rectangle to clear in the texture
+                * @param minX left most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+                * @param minY top most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+                * @param maxX right most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+                * @param maxY bottom most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+                */
+            invalidateRect(clearMinX: number, clearMinY: number, clearMaxX: number, clearMaxY: number, minX: number, minY: number, maxX: number, maxY: number): void;
             /**
              * Marks the texture as dirty forcing a complete update
              */
@@ -4228,13 +4249,15 @@ declare module BABYLON.GUI {
             /** @hidden */
             _markAllAsDirty(): void;
             /** @hidden */
-            protected _localDraw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+            protected _localDraw(context: CanvasRenderingContext2D): void;
             /** @hidden */
             _link(host: AdvancedDynamicTexture): void;
             /** @hidden */
             protected _beforeLayout(): void;
             /** @hidden */
-            _layout(parentMeasure: Measure, context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): boolean;
+            protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            /** @hidden */
+            _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
             protected _postMeasure(): void;
             /** @hidden */
             _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
@@ -4286,6 +4309,8 @@ declare module BABYLON.GUI {
             protected _wasDirty: boolean;
             /** @hidden */
             _tempParentMeasure: Measure;
+            /** @hidden */
+            _tempCurrentMeasure: Measure;
             /** @hidden */
             protected _cachedParentMeasure: Measure;
             /** @hidden */
@@ -4644,7 +4669,7 @@ declare module BABYLON.GUI {
             /** @hidden */
             _intersectsRect(rect: Measure): boolean;
             /** @hidden */
-            protected invalidateRect(): void;
+            protected invalidateRect(left: number, top: number, right: number, bottom: number): void;
             /** @hidden */
             _markAsDirty(force?: boolean): void;
             /** @hidden */
@@ -4660,9 +4685,10 @@ declare module BABYLON.GUI {
             /** @hidden */
             protected _applyStates(context: CanvasRenderingContext2D): void;
             /** @hidden */
-            _layout(parentMeasure: Measure, context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): boolean;
+            _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
             /** @hidden */
             protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+            protected _evaluateClippingState(parentMeasure: Measure): void;
             /** @hidden */
             _measure(): void;
             /** @hidden */
@@ -5684,7 +5710,7 @@ declare module BABYLON.GUI {
                 */
             constructor(name?: string | undefined);
             protected _getTypeName(): string;
-            protected _localDraw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+            protected _localDraw(context: CanvasRenderingContext2D): void;
             protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
             protected _clipForChildren(context: CanvasRenderingContext2D): void;
     }

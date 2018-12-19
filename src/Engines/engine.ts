@@ -517,7 +517,7 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
          * Returns the current version of the framework
          */
         public static get Version(): string {
-            return "4.0.0-alpha.15";
+            return "4.0.0-alpha.16";
         }
 
         /**
