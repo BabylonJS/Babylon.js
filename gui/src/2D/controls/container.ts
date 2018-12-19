@@ -243,7 +243,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _localDraw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
+    protected _localDraw(context: CanvasRenderingContext2D): void {
         if (this._background) {
             context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -274,9 +274,21 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            super._processMeasures(parentMeasure, context);
+            this._evaluateClippingState(parentMeasure);
+        }
+    }
+
+    /** @hidden */
+    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
         if (!this.isVisible || this.notRenderable) {
             return false;
+        }
+
+        if (this._isDirty) {
+            this._tempCurrentMeasure.copyFrom(this._currentMeasure);
         }
 
         let rebuildCount = 0;
@@ -295,15 +307,9 @@ export class Container extends Control {
 
             if (!this._isClipped) {
                 for (var child of this._children) {
-                    // Only redraw parts of the screen that are invalidated
-                    if (invalidatedRectangle) {
-                        if (!child._intersectsRect(invalidatedRectangle)) {
-                            continue;
-                        }
-                    }
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
-                    if (child._layout(this._measureForChildren, context, invalidatedRectangle)) {
+                    if (child._layout(this._measureForChildren, context)) {
 
                         if (this.adaptWidthToChildren && child._width.isPixel) {
                             computedWidth = Math.max(computedWidth, child._currentMeasure.width);
@@ -334,12 +340,21 @@ export class Container extends Control {
         while (this._rebuildLayout && rebuildCount < 3);
 
         if (rebuildCount >= 3) {
-            Logger.Error(`Layout cycle detected in GUI (Container uniqueId=${this.uniqueId})`);
+            BABYLON.Tools.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 
         context.restore();
 
-        this._isDirty = false;
+        if (this._isDirty) {
+            this.invalidateRect(
+                Math.min(this._currentMeasure.left, this._tempCurrentMeasure.left),
+                Math.min(this._currentMeasure.top, this._tempCurrentMeasure.top),
+                Math.max(this._currentMeasure.left + this._currentMeasure.width, this._tempCurrentMeasure.left + this._tempCurrentMeasure.width) - 1,
+                Math.max(this._currentMeasure.top + this._currentMeasure.height, this._tempCurrentMeasure.top + this._tempCurrentMeasure.height) - 1
+            );
+
+            this._isDirty = false;
+        }
 
         return true;
     }
@@ -351,7 +366,7 @@ export class Container extends Control {
     /** @hidden */
     public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
 
-        this._localDraw(context, invalidatedRectangle);
+        this._localDraw(context);
 
         if (this.clipChildren) {
             this._clipForChildren(context);
@@ -361,7 +376,7 @@ export class Container extends Control {
             // Only redraw parts of the screen that are invalidated
             if (invalidatedRectangle) {
                 if (!child._intersectsRect(invalidatedRectangle)) {
-                    continue;
+                    // continue;
                 }
             }
             child._render(context, invalidatedRectangle);

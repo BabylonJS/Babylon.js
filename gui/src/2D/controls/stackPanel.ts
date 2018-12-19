@@ -1,6 +1,7 @@
 import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
+import { Tools } from "babylonjs";
 
 /**
  * Class used to create a 2D stack panel container
@@ -126,7 +127,11 @@ export class StackPanel extends Container {
                     child._top.ignoreAdaptiveScaling = true;
                 }
 
-                stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels;
+                if (child._height.isPercentage) {
+                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
+                } else {
+                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels;
+                }
             } else {
                 if (child.left !== stackWidth + "px") {
                     child.left = stackWidth + "px";
@@ -134,7 +139,11 @@ export class StackPanel extends Container {
                     child._left.ignoreAdaptiveScaling = true;
                 }
 
-                stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels;
+                if (child._width.isPercentage) {
+                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
+                } else {
+                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels;
+                }
             }
         }
 

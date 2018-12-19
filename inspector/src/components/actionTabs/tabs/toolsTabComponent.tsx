@@ -125,7 +125,10 @@ export class ToolsTabComponent extends PaneComponent {
                         <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
                     }
                 </LineContainerComponent>
-                <GLTFComponent scene={scene} globalState={this.props.globalState!} />
+                {
+                    (BABYLON as any).GLTFFileLoader &&
+                    <GLTFComponent scene={scene} globalState={this.props.globalState!} />
+                }
             </div>
         );
     }
