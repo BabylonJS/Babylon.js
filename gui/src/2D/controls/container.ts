@@ -340,7 +340,7 @@ export class Container extends Control {
         while (this._rebuildLayout && rebuildCount < 3);
 
         if (rebuildCount >= 3) {
-            BABYLON.Tools.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
+            Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 
         context.restore();
