@@ -30,9 +30,10 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { Constants } from "./constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
-declare type Texture = import("Materials/Textures/texture").Texture;
-declare type VideoTexture = import("Materials/Textures/videoTexture").VideoTexture;
-declare type RenderTargetTexture = import("Materials/Textures/renderTargetTexture").RenderTargetTexture;
+
+declare type Texture = import("../Materials/Textures/texture").Texture;
+declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
+declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 
     /**
      * Keeps track of all the buffer info used in engine.

@@ -7,7 +7,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { Layer } from "./layer";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
-declare module "abstractScene" {
+declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of layers (background and foreground) of the scene

@@ -15,7 +15,7 @@ import { Node } from "../node";
 import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
 
-declare module "Meshes/abstractMesh" {
+declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
          * Disables the mesh edge rendering mode
@@ -61,7 +61,7 @@ declare module "Meshes/abstractMesh" {
         configurable: true
     });
 
-declare module "Meshes/linesMesh" {
+declare module "../Meshes/linesMesh" {
     export interface LinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.
@@ -80,7 +80,7 @@ declare module "Meshes/linesMesh" {
         return this;
     };
 
-declare module "Meshes/linesMesh" {
+declare module "../Meshes/linesMesh" {
     export interface InstancedLinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.

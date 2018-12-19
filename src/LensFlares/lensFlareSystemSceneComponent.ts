@@ -24,7 +24,7 @@ import { LensFlareSystem } from "./lensFlareSystem";
         }
     });
 
-declare module "abstractScene" {
+declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of lens flare system added to the scene

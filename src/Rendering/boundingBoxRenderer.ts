@@ -15,7 +15,7 @@ import { ShaderMaterial } from "../Materials/shaderMaterial";
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _boundingBoxRenderer: BoundingBoxRenderer;
@@ -60,7 +60,7 @@ declare module "scene" {
         return this._boundingBoxRenderer;
     };
 
-declare module "Meshes/abstractMesh" {
+declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /** @hidden (Backing field) */
         _showBoundingBox: boolean;

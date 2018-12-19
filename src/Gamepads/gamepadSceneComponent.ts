@@ -11,7 +11,7 @@ import { FreeCameraGamepadInput } from "../Cameras/Inputs/freeCameraGamepadInput
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
 import { ArcRotateCameraGamepadInput } from "../Cameras/Inputs/arcRotateCameraGamepadInput";
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /** @hidden */
         _gamepadManager: Nullable<GamepadManager>;
@@ -41,7 +41,7 @@ declare module "scene" {
         configurable: true
     });
 
-declare module "Cameras/freeCameraInputsManager" {
+declare module "../Cameras/freeCameraInputsManager" {
     /**
      * Interface representing a free camera inputs manager
      */
@@ -62,7 +62,7 @@ declare module "Cameras/freeCameraInputsManager" {
         return this;
     };
 
-declare module "Cameras/arcRotateCameraInputsManager" {
+declare module "../Cameras/arcRotateCameraInputsManager" {
     /**
      * Interface representing an arc rotate camera inputs manager
      */

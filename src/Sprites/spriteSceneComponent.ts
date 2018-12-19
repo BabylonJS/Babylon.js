@@ -10,7 +10,7 @@ import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { ActionEvent } from "../Actions/actionEvent";
 import { Constants } from "../Engines/constants";
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /** @hidden */
         _pointerOverSprite: Nullable<Sprite>;

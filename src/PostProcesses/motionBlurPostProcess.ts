@@ -10,7 +10,7 @@ import { Scene } from "../scene";
 
 import "../Shaders/motionBlur.fragment";
 
-declare type Engine = import("Engines/engine").Engine;
+declare type Engine = import("../Engines/engine").Engine;
 
     /**
      * The Motion Blur Post Process which blurs an image based on the objects velocity in scene.

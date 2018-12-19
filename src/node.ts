@@ -6,12 +6,12 @@ import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
 import { Observable, Observer } from "./Misc/observable";
 
-declare type Animatable = import("Animations/animatable").Animatable;
-declare type AnimationPropertiesOverride = import("Animations/animationPropertiesOverride").AnimationPropertiesOverride;
-declare type Animation = import("Animations/animation").Animation;
-declare type AnimationRange = import("Animations/animation").AnimationRange;
+declare type Animatable = import("./Animations/animatable").Animatable;
+declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
+declare type Animation = import("./Animations/animation").Animation;
+declare type AnimationRange = import("./Animations/animation").AnimationRange;
 
-declare type AbstractMesh = import("Meshes/abstractMesh").AbstractMesh;
+declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
 
     /**
      * Defines how a node can be built from a string name.

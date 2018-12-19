@@ -11,9 +11,9 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/postprocess.vertex";
 
-declare type InternalTexture  = import("Materials/Textures/internalTexture").InternalTexture;
-declare type WebVRFreeCamera = import("Cameras/VR/webVRCamera").WebVRFreeCamera;
-declare type Engine = import("Engines/engine").Engine;
+declare type InternalTexture  = import("../Materials/Textures/internalTexture").InternalTexture;
+declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
+declare type Engine = import("../Engines/engine").Engine;
 
     /**
      * Size options for a post process

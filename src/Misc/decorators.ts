@@ -2,14 +2,14 @@ import { Tags } from "../Misc/tags";
 import { Nullable } from "../types";
 import { Color4, Quaternion, Color3, Vector2, Vector3 } from "../Maths/math";
 
-declare type Scene = import("scene").Scene;
-declare type Camera = import("Cameras/camera").Camera;
+declare type Scene = import("../scene").Scene;
+declare type Camera = import("../Cameras/camera").Camera;
 
-declare type ImageProcessingConfiguration = import("Materials/imageProcessingConfiguration").ImageProcessingConfiguration;
-declare type FresnelParameters = import("Materials/fresnelParameters").FresnelParameters;
-declare type ColorCurves = import("Materials/colorCurves").ColorCurves;
-declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
-declare type IAnimatable = import("Misc/tools").IAnimatable;
+declare type ImageProcessingConfiguration = import("../Materials/imageProcessingConfiguration").ImageProcessingConfiguration;
+declare type FresnelParameters = import("../Materials/fresnelParameters").FresnelParameters;
+declare type ColorCurves = import("../Materials/colorCurves").ColorCurves;
+declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
+declare type IAnimatable = import("../Misc/tools").IAnimatable;
 
     var __decoratorInitialStore = {};
     var __mergedStore = {};

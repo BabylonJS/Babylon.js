@@ -77,7 +77,7 @@ import { Scene } from "../scene";
         explorerExtensibility?: IExplorerExtensibilityGroup[];
     }
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /**
          * @hidden

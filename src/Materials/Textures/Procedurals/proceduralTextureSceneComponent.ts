@@ -7,7 +7,7 @@ import { Layer } from "../../../Layers/layer";
 
 import { ProceduralTexture } from "./proceduralTexture";
 
-declare module "abstractScene" {
+declare module "../../../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of procedural textures added to the scene

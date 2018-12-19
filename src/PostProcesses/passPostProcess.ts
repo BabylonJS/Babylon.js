@@ -6,7 +6,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import "../Shaders/pass.fragment";
 import "../Shaders/passCube.fragment";
 
-declare type Engine = import("Engines/engine").Engine;
+declare type Engine = import("../Engines/engine").Engine;
 
     /**
      * PassPostProcess which produces an output the same as it's input

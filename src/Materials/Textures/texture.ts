@@ -8,10 +8,10 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { _AlphaState } from "../../States/index";
 
-declare type Animation = import("Animations/animation").Animation;
-declare type CubeTexture = import("Materials/Textures/cubeTexture").CubeTexture;
-declare type MirrorTexture = import("Materials/Textures/mirrorTexture").MirrorTexture;
-declare type RenderTargetTexture = import ("Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type Animation = import("../../Animations/animation").Animation;
+declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
+declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
+declare type RenderTargetTexture = import("../../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 
     /**
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.

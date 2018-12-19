@@ -4,10 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 
 /** @hidden */
-export var _forceOcclusionQueryToBundle = true;
-
-    /** @hidden */
-    class _OcclusionDataStorage {
+export class _OcclusionDataStorage {
         /** @hidden */
         public occlusionInternalRetryCounter = 0;
 
@@ -27,7 +24,7 @@ export var _forceOcclusionQueryToBundle = true;
         public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
     }
 
-declare module "Engines/engine" {
+declare module "../../Engines/engine" {
     export interface Engine {
         /**
          * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
@@ -278,7 +275,7 @@ declare module "Engines/engine" {
         return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? this._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : this._gl.ANY_SAMPLES_PASSED;
     };
 
-declare module "Meshes/abstractMesh" {
+declare module "../../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
          * Backing filed

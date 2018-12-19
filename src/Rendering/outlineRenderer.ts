@@ -12,7 +12,7 @@ import { Material } from "../Materials/material";
 import "../Shaders/outline.fragment";
 import "../Shaders/outline.vertex";
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /** @hidden */
         _outlineRenderer: OutlineRenderer;
@@ -36,7 +36,7 @@ declare module "scene" {
         return this._outlineRenderer;
     };
 
-declare module "Meshes/abstractMesh" {
+declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /** @hidden (Backing field) */
         _renderOutline: boolean;

@@ -23,7 +23,7 @@ import { AssetContainer } from "../assetContainer";
         }
     });
 
-declare module "abstractScene" {
+declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of effect layers (highlights/glow) added to the scene
