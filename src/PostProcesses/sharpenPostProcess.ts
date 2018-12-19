@@ -6,7 +6,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/sharpen.fragment";
 
-declare type Engine = import("Engines/engine").Engine;
+declare type Engine = import("../Engines/engine").Engine;
     /**
      * The SharpenPostProcess applies a sharpen kernel to every pixel
      * See http://en.wikipedia.org/wiki/Kernel_(image_processing)

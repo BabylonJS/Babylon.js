@@ -7,8 +7,8 @@ import { IParticleSystem } from "../Particles/IParticleSystem";
 import { Material } from "../Materials/material";
 import { RenderingGroup } from "./renderingGroup";
 
-declare type Scene = import("scene").Scene;
-declare type Camera = import("Cameras/camera").Camera;
+declare type Scene = import("../scene").Scene;
+declare type Camera = import("../Cameras/camera").Camera;
 
     /**
      * Interface describing the different options available in the rendering manager

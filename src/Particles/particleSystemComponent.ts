@@ -39,7 +39,7 @@ import "../Shaders/particles.vertex";
         }
     });
 
-declare module "Engines/engine" {
+declare module "../Engines/engine" {
     export interface Engine {
         /**
          * Create an effect to use with particle systems.
@@ -82,7 +82,7 @@ declare module "Engines/engine" {
             samplers, defines, fallbacks, onCompiled, onError);
     };
 
-declare module "Meshes/mesh" {
+declare module "../Meshes/mesh" {
     export interface Mesh {
         /**
          * Returns an array populated with IParticleSystem objects whose the mesh is the emitter

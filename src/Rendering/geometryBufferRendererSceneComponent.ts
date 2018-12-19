@@ -5,7 +5,7 @@ import { SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { GeometryBufferRenderer } from "./geometryBufferRenderer";
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;

@@ -7,7 +7,7 @@ import { AbstractScene } from "../abstractScene";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 
-declare module "abstractScene" {
+declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of reflection probes added to the scene

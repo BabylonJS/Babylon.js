@@ -9,7 +9,7 @@ import { SceneComponentConstants } from "../../sceneComponent";
 
 import { Octree } from "./octree";
 
-declare module "scene" {
+declare module "../../scene" {
     export interface Scene {
         /**
          * @hidden
@@ -61,7 +61,7 @@ declare module "scene" {
         configurable: true
     });
 
-declare module "Meshes/abstractMesh" {
+declare module "../../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
          * @hidden

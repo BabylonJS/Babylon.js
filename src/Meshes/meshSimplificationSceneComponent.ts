@@ -3,7 +3,7 @@ import { Mesh } from "./mesh";
 import { SimplificationQueue, ISimplificationSettings, SimplificationType } from "./meshSimplification";
 import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _simplificationQueue: SimplificationQueue;
@@ -34,7 +34,7 @@ declare module "scene" {
         configurable: true
     });
 
-declare module "Meshes/mesh" {
+declare module "../Meshes/mesh" {
     export interface Mesh {
         /**
          * Simplify the mesh according to the given array of settings.

@@ -21,7 +21,7 @@ import { VRExperienceHelperOptions, VRExperienceHelper } from "../Cameras/VR/vrE
 /** @hidden */
 export var _forceSceneHelpersToBundle = true;
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /**
          * Creates a default light for the scene.

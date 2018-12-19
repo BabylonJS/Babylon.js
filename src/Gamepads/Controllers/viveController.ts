@@ -7,6 +7,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/ind
 import { WebVRController } from "./webVRController";
 import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 import { GamepadButtonChanges } from "../../Gamepads/gamepad";
+import { Observable } from '../../Misc/observable';
 
     /**
      * Vive Controller
@@ -60,21 +61,21 @@ import { GamepadButtonChanges } from "../../Gamepads/gamepad";
         /**
          * Fired when the left button on this controller is modified
          */
-        public get onLeftButtonStateChangedObservable() {
+        public get onLeftButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onMainButtonStateChangedObservable;
         }
 
         /**
          * Fired when the right button on this controller is modified
          */
-        public get onRightButtonStateChangedObservable() {
+        public get onRightButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onMainButtonStateChangedObservable;
         }
 
         /**
          * Fired when the menu button on this controller is modified
          */
-        public get onMenuButtonStateChangedObservable() {
+        public get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onSecondaryButtonStateChangedObservable;
         }
 

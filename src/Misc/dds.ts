@@ -6,7 +6,7 @@ import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 
-declare type Engine = import("Engines/engine").Engine;
+declare type Engine = import("../Engines/engine").Engine;
 
     // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
     // All values and structures referenced from:

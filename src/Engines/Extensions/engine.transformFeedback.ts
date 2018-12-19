@@ -5,7 +5,7 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 /** @hidden */
 export var _forceTransformFeedbackToBundle = true;
 
-declare module "Engines/engine" {
+declare module "../../Engines/engine" {
     export interface Engine {
         /**
          * Creates a webGL transform feedback object

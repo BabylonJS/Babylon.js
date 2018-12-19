@@ -2,7 +2,7 @@ import { ISceneComponent, SceneComponentConstants } from "../../sceneComponent";
 import { PostProcessRenderPipelineManager } from "./postProcessRenderPipelineManager";
 import { Scene } from "../../scene";
 
-declare module "scene" {
+declare module "../../scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _postProcessRenderPipelineManager: PostProcessRenderPipelineManager;

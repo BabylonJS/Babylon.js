@@ -13,7 +13,7 @@ import { PhysicsEngine } from "./physicsEngine";
 import { PhysicsImpostor } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _physicsEngine: Nullable<IPhysicsEngine>;
@@ -138,7 +138,7 @@ declare module "scene" {
         }
     };
 
-declare module "Meshes/abstractMesh" {
+declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /** @hidden */
         _physicsImpostor: Nullable<PhysicsImpostor>;

@@ -37,7 +37,7 @@ import { AssetContainer } from "../assetContainer";
         loadedSounds = [];
     });
 
-declare module "abstractScene" {
+declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of sounds used in the scene.
@@ -46,7 +46,7 @@ declare module "abstractScene" {
     }
 }
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /**
          * @hidden

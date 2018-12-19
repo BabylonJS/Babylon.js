@@ -7,7 +7,7 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 
-declare type BaseTexture = import("Materials/Textures/baseTexture").BaseTexture;
+declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
 
     /**
      * Class used to store data associated with WebGL texture data for the engine

@@ -7,7 +7,7 @@ import { Constants } from "../Engines/constants";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
-declare module "scene" {
+declare module "../scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _depthRenderer: { [id: string]: DepthRenderer };

@@ -5,12 +5,12 @@ import { Constants } from "../Engines/constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
 
-declare type Engine = import("Engines/engine").Engine;
-declare type InternalTexture = import("Materials/Textures/internalTexture").InternalTexture;
-declare type BaseTexture  = import("Materials/Textures/baseTexture").BaseTexture;
-declare type RenderTargetTexture = import("Materials/Textures/renderTargetTexture").RenderTargetTexture;
-declare type PostProcess = import("PostProcesses/postProcess").PostProcess;
-declare type AbstractMesh = import("Meshes/abstractMesh").AbstractMesh;
+declare type Engine = import("../Engines/engine").Engine;
+declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
+declare type BaseTexture  = import("../Materials/Textures/baseTexture").BaseTexture;
+declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
     /**
      * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
      * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)

@@ -2,8 +2,8 @@ import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Matrix, Vector3, Vector2, Color3, Color4, Vector4, Axis, Epsilon } from "../Maths/math";
 import { VertexBuffer } from "../Meshes/buffer";
 
-declare type Geometry = import("Meshes/geometry").Geometry;
-declare type Mesh = import("Meshes/mesh").Mesh;
+declare type Geometry = import("../Meshes/geometry").Geometry;
+declare type Mesh = import("../Meshes/mesh").Mesh;
 
     /**
      * Define an interface for all classes that will get and set the data on vertices

@@ -12,7 +12,7 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 
-declare type Animation = import("Animations/animation").Animation;
+declare type Animation = import("../../Animations/animation").Animation;
 
     /**
      * Base class of all the textures in babylon.

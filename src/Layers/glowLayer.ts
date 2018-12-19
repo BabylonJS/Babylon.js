@@ -21,7 +21,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
 
-declare module "abstractScene" {
+declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * Return a the first highlight layer of the scene with a given name.

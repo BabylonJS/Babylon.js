@@ -20,7 +20,7 @@ import "../Shaders/depth.vertex";
 import "../Shaders/volumetricLightScattering.fragment";
 import "../Shaders/volumetricLightScatteringPass.fragment";
 
-declare type Engine = import("Engines/engine").Engine;
+declare type Engine = import("../Engines/engine").Engine;
 
     /**
      *  Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html

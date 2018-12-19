@@ -2,13 +2,13 @@ import { Observable } from "../Misc/observable";
 import { Vector2, Vector3, Color3, Color4 } from "../Maths/math";
 import { Condition } from "./condition";
 
-declare type Scene = import("scene").Scene;
+declare type Scene = import("../scene").Scene;
 declare type ActionManager = import("./actionManager").ActionManager;
 declare type ActionEvent = import("./actionEvent").ActionEvent;
-declare type Mesh = import("Meshes/mesh").Mesh;
-declare type Light = import("Lights/light").Light;
-declare type Camera = import("Cameras/camera").Camera;
-declare type Node = import("node").Node;
+declare type Mesh = import("../Meshes/mesh").Mesh;
+declare type Light = import("../Lights/light").Light;
+declare type Camera = import("../Cameras/camera").Camera;
+declare type Node = import("../node").Node;
 
     /**
      * The action to be carried out following a trigger
