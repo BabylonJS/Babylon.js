@@ -11,28 +11,30 @@ var rmDir = require("../../NodeHelpers/rmDir");
 // Read the full config.
 var config = require("../config.json");
 
+// Constants
+var module = "core";
+
 /**
- * Clean shader ts files.
+ * Process shader ts files.
  */
-var cleanShaders = function(settings) {
-    return del([settings.srcDirectory + "**/*.fx.ts"]);
-}
+gulp.task("watchCore-cleanShaders", async function startWatch() {
+    var settings = config[module].build;
+
+    // Clean shaders.
+    await del([settings.srcDirectory + "**/*.fx.ts"]);
+
+    // Generate shaders.
+    return gulp.src(settings.srcDirectory + "**/*.fx")
+        .pipe(uncommentShaders())
+        .pipe(processShaders(true));
+});
 
 /**
  * Watch ts files and fire repective tasks.
  */
-gulp.task("watchCore", async function startWatch() {
-    var module = "core";
+gulp.task("watchCore", gulp.series("watchCore-cleanShaders"), async function startWatch() {
     var settings = config[module].build;
     var library = config[module].libraries[0];
-
-    // Clean shaders.
-    await cleanShaders(settings);
-
-    // Generate shaders.
-    gulp.src(settings.srcDirectory + "**/*.fx")
-        .pipe(uncommentShaders())
-        .pipe(processShaders(true))
 
     // Generat output path.
     var outputDirectory = "../.temp/" + config.build.localDevES6FolderName + "/" + module;
