@@ -14,7 +14,8 @@ var processModuleDeclarationToNamespace = require('../helpers/gulp-processModule
 var del = require("del");
 
 // Import Build Config
-var config = require("../config.json");
+var configPath = "../config.json";
+var config = require(configPath);
 
 // Constants
 const tempTypingsFile = "tempTypings.js";
@@ -48,7 +49,8 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     var isMinOutputName = libraries[0].output.indexOf(".min.") > -1;
 
     // Webpack Config.
-    var wpConfig = require(settings.build.webpack);
+    var configFolder = path.dirname(path.resolve(__dirname, configPath));
+    var wpConfig = require(path.resolve(configFolder, settings.build.webpack));
 
     // Create multi entry list.
     wpConfig.entry = { };

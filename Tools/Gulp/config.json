@@ -51,7 +51,7 @@
             }
         ],
         "build": {
-            "webpack": "../../../src/webpack.config.js",
+            "webpack": "../../src/webpack.config.js",
             "srcDirectory": "../../src/",
             "loseDTSFiles": "../../src/LibDeclarations/*.d.ts",
             "distOutputDirectory": "/",
@@ -173,7 +173,7 @@
             }
         ],
         "build": {
-            "webpack": "../../../materialsLibrary/webpack.config.js",
+            "webpack": "../../materialsLibrary/webpack.config.js",
             "srcDirectory": "../../materialsLibrary/src/",
             "distOutputDirectory": "/materialsLibrary/",
             "processDeclaration": {
@@ -212,7 +212,7 @@
             }
         ],
         "build": {
-            "webpack": "../../../postProcessLibrary/webpack.config.js",
+            "webpack": "../../postProcessLibrary/webpack.config.js",
             "srcDirectory": "../../postProcessLibrary/src/",
             "distOutputDirectory": "/postProcessesLibrary/",
             "processDeclaration": {
@@ -291,7 +291,7 @@
             }
         ],
         "build": {
-            "webpack": "../../../proceduralTexturesLibrary/webpack.config.js",
+            "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
             "srcDirectory": "../../proceduralTexturesLibrary/src/",
             "distOutputDirectory": "/proceduralTexturesLibrary/",
             "processDeclaration": {
@@ -345,7 +345,7 @@
             }
         ],
         "build": {
-            "webpack": "../../../loaders/webpack.config.js",
+            "webpack": "../../loaders/webpack.config.js",
             "srcDirectory": "../../loaders/src/",
             "distOutputDirectory": "/loaders/",
             "processDeclaration": {
@@ -403,7 +403,7 @@
             }
         ],
         "build": {
-            "webpack": "../../../serializers/webpack.config.js",
+            "webpack": "../../serializers/webpack.config.js",
             "srcDirectory": "../../serializers/src/",
             "distOutputDirectory": "/serializers/",
             "processDeclaration": {
@@ -453,7 +453,7 @@
             }
         ],
         "build": {
-            "webpack": "../../../gui/webpack.config.js",
+            "webpack": "../../gui/webpack.config.js",
             "srcDirectory": "../../gui/src/",
             "distOutputDirectory": "/gui/",
             "processDeclaration": {
@@ -486,7 +486,7 @@
         ],
         "build": {
             "ignoreInTestMode": true,
-            "webpack": "../../../inspector/webpack.config.js",
+            "webpack": "../../inspector/webpack.config.js",
             "srcDirectory": "../../inspector/src/",
             "distOutputDirectory": "/inspector/",
             "processDeclaration": {

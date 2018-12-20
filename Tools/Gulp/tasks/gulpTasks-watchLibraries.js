@@ -7,7 +7,8 @@ var processShaders = require("../helpers/gulp-processShaders");
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 
 // Read the full config.
-var config = require("../config.json");
+var configPath = "../config.json";
+var config = require(configPath);
 
 /**
  * Watch ts files and fire repective tasks.
@@ -24,7 +25,9 @@ gulp.task("watchLibraries", function startWatch() {
                     continue;
                 }
 
-                let wpConfig = require(settings.webpack);
+                var configFolder = path.dirname(path.resolve(__dirname, configPath));
+                var wpConfig = require(path.resolve(configFolder, settings.build.webpack));
+
                 // watch on.
                 wpConfig.watch = true;
                 // dev mode and absolute path sourcemaps for debugging
