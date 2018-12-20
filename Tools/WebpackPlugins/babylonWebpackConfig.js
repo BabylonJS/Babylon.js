@@ -19,6 +19,8 @@ module.exports = function defaultConfig(options) {
     const webpackFolder = path.dirname(path.resolve(configFolder, settings.build.webpack));
 
     options.resolveExtensions = options.resolveExtensions || [];
+    options.moduleRules = options.moduleRules || [];
+    options.plugins = options.plugins || [];
 
     return {
         context: src,
@@ -36,7 +38,7 @@ module.exports = function defaultConfig(options) {
             },
             umdNamedDefine: true
         },
-        resolve: {
+        resolve: options.resolve || {
             extensions: [".ts", ...options.resolveExtensions]
         },
         externals: [babylonExternals()],
@@ -49,7 +51,7 @@ module.exports = function defaultConfig(options) {
                     configFileName: path.resolve(webpackFolder, './tsconfig.json'),
                     declaration: false
                 }
-            }]
+            }, ...options.moduleRules]
         },
         mode: "production",
         performance: {
@@ -61,7 +63,8 @@ module.exports = function defaultConfig(options) {
                 /\.js$/,
                 /\.d\.ts$/,
                 /\.fx$/
-            ])
+            ]),
+            ...options.plugins
         ]
     }
 };
