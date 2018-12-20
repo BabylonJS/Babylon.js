@@ -26,7 +26,7 @@ gulp.task("watchLibraries", function startWatch() {
                 }
 
                 var configFolder = path.dirname(path.resolve(__dirname, configPath));
-                var wpConfig = require(path.resolve(configFolder, settings.build.webpack));
+                var wpConfig = require(path.resolve(configFolder, settings.webpack));
 
                 // watch on.
                 wpConfig.watch = true;
