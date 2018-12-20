@@ -123,7 +123,7 @@ function processEs6Packages(version) {
 
         colorConsole.log("Process " + "ES6".magenta + " Package: " + moduleName.blue.bold);
 
-        let projectPath = es6Config.tsFolder;
+        let projectPath = module.build.mainFolder;
         let buildPath = path.normalize(tempPath + moduleName);
         let legacyPackageJson = require(module.build.packageJSON || basePath + module.build.distOutputDirectory + 'package.json');
 
