@@ -33,6 +33,9 @@ module.exports = {
         }]
     },
     mode: "production",
+    performance: {
+        hints: false
+    },
     plugins: [
         new HardSourceWebpackPlugin(),
         new webpack.WatchIgnorePlugin([

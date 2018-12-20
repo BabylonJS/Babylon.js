@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const babylonExternals = require('../Tools/WebpackPlugins/babylonExternals');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
@@ -25,35 +26,7 @@ module.exports = {
             "re-resizable$": path.resolve(__dirname, '../node_modules/re-resizable/lib/index.es5.js')
         }
     },
-    externals: [
-            {
-            babylonjs: {
-                root: "BABYLON",
-                commonjs: "babylonjs",
-                commonjs2: "babylonjs",
-                amd: "babylonjs"
-            },
-            "babylonjs-gui": {
-                root: ["BABYLON", "GUI"],
-                commonjs: "babylonjs-gui",
-                commonjs2: "babylonjs-gui",
-                amd: "babylonjs-gui"
-            },
-            "babylonjs-loaders": {
-                root: "BABYLON",
-                commonjs: "babylonjs-loaders",
-                commonjs2: "babylonjs-loaders",
-                amd: "babylonjs-loaders"
-            },
-            "babylonjs-serializers": {
-                root: "BABYLON",
-                commonjs: "babylonjs-serializers",
-                commonjs2: "babylonjs-serializers",
-                amd: "babylonjs-serializers"
-            }
-        },
-        /^babylonjs.*$/i
-    ],
+    externals: [babylonExternals()],
     devtool: "source-map",
     module: {
         rules: [{
