@@ -74,7 +74,8 @@ var processData = function(data, options) {
     str = lines.join('\n');
 
     // Add Entry point.
-    str += `declare module "${moduleName}" {
+    str += `
+declare module "${moduleName}" {
     export * from "${moduleName}/${entryPoint.replace(/\.\//g,"").replace(".ts", "")}";
 }`;
 
