@@ -22,8 +22,8 @@ var buildViewerLibrary = function(library, settings) {
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
     settings.build.outputs.forEach(out => {
-        var configPath = path.join(settings.build.mainFolder, "webpack.config.js");
-        let wpConfig = require(configPath);
+        var wpConfigPath = path.join(settings.build.mainFolder, "webpack.config.js");
+        let wpConfig = require(wpConfigPath);
         if (!out.minified) {
             wpConfig.mode = "development";
         }

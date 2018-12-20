@@ -50,8 +50,8 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
 
     // Webpack Config.
     var configFolder = path.dirname(path.resolve(__dirname, configPath));
-    var configPath = path.join(settings.build.mainFolder, "webpack.config.js");
-    var wpConfig = require(path.resolve(configFolder, configPath));
+    var wpConfigPath = path.join(settings.build.mainFolder, "webpack.config.js");
+    var wpConfig = require(path.resolve(configFolder, wpConfigPath));
 
     // Create multi entry list.
     wpConfig.entry = { };
