@@ -16,7 +16,8 @@ module.exports = function defaultConfig(options) {
     const settings = config[module];
 
     const src = path.resolve(__dirname, settings.build.srcDirectory);
-    const webpackFolder = path.dirname(path.resolve(configFolder, settings.build.webpack));
+    const configPath = path.join(settings.build.mainFolder, "webpack.config.js");
+    const webpackFolder = path.dirname(path.resolve(configFolder, configPath));
 
     options.resolveExtensions = options.resolveExtensions || [];
     options.moduleRules = options.moduleRules || [];

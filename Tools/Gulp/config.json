@@ -51,7 +51,7 @@
             }
         ],
         "build": {
-            "webpack": "../../src/webpack.config.js",
+            "mainFolder": "../../src/",
             "srcDirectory": "../../src/",
             "loseDTSFiles": "../../src/LibDeclarations/*.d.ts",
             "distOutputDirectory": "/",
@@ -83,7 +83,6 @@
             },
             "es6": {
                 "packageName": "@babylonjs/core",
-                "tsFolder": "../../src/",
                 "requiredFiles": [
                     "../../readme.md"
                 ]
@@ -173,7 +172,7 @@
             }
         ],
         "build": {
-            "webpack": "../../materialsLibrary/webpack.config.js",
+            "mainFolder": "../../materialsLibrary/",
             "srcDirectory": "../../materialsLibrary/src/",
             "distOutputDirectory": "/materialsLibrary/",
             "processDeclaration": {
@@ -187,7 +186,6 @@
             },
             "es6": {
                 "packageName": "@babylonjs/materials",
-                "tsFolder": "../../materialsLibrary/",
                 "requiredFiles": [
                     "../../dist/preview release/materialsLibrary/readme.md"
                 ]
@@ -212,7 +210,7 @@
             }
         ],
         "build": {
-            "webpack": "../../postProcessLibrary/webpack.config.js",
+            "mainFolder": "../../postProcessLibrary/",
             "srcDirectory": "../../postProcessLibrary/src/",
             "distOutputDirectory": "/postProcessesLibrary/",
             "processDeclaration": {
@@ -226,7 +224,6 @@
             },
             "es6": {
                 "packageName": "@babylonjs/post-processes",
-                "tsFolder": "../../postProcessLibrary/",
                 "requiredFiles": [
                     "../../dist/preview release/postProcessesLibrary/readme.md"
                 ]
@@ -291,7 +288,7 @@
             }
         ],
         "build": {
-            "webpack": "../../proceduralTexturesLibrary/webpack.config.js",
+            "mainFolder": "../../proceduralTexturesLibrary/",
             "srcDirectory": "../../proceduralTexturesLibrary/src/",
             "distOutputDirectory": "/proceduralTexturesLibrary/",
             "processDeclaration": {
@@ -305,7 +302,6 @@
             },
             "es6": {
                 "packageName": "@babylonjs/procedural-textures",
-                "tsFolder": "../../proceduralTexturesLibrary/",
                 "requiredFiles": [
                     "../../dist/preview release/proceduralTexturesLibrary/readme.md"
                 ]
@@ -345,7 +341,7 @@
             }
         ],
         "build": {
-            "webpack": "../../loaders/webpack.config.js",
+            "mainFolder": "../../loaders/",
             "srcDirectory": "../../loaders/src/",
             "distOutputDirectory": "/loaders/",
             "processDeclaration": {
@@ -378,7 +374,6 @@
             },
             "es6": {
                 "packageName": "@babylonjs/loaders",
-                "tsFolder": "../../loaders/",
                 "requiredFiles": [
                     "../../dist/preview release/loaders/readme.md"
                 ]
@@ -403,7 +398,7 @@
             }
         ],
         "build": {
-            "webpack": "../../serializers/webpack.config.js",
+            "mainFolder": "../../serializers/",
             "srcDirectory": "../../serializers/src/",
             "distOutputDirectory": "/serializers/",
             "processDeclaration": {
@@ -438,7 +433,6 @@
             },
             "es6": {
                 "packageName": "@babylonjs/serializers",
-                "tsFolder": "../../serializers/",
                 "requiredFiles": [
                     "../../dist/preview release/serializers/readme.md"
                 ]
@@ -453,7 +447,7 @@
             }
         ],
         "build": {
-            "webpack": "../../gui/webpack.config.js",
+            "mainFolder": "../../gui/",
             "srcDirectory": "../../gui/src/",
             "distOutputDirectory": "/gui/",
             "processDeclaration": {
@@ -469,7 +463,6 @@
             },
             "es6": {
                 "packageName": "@babylonjs/gui",
-                "tsFolder": "../../gui/",
                 "requiredFiles": [
                     "../../dist/preview release/gui/readme.md"
                 ]
@@ -486,7 +479,7 @@
         ],
         "build": {
             "ignoreInTestMode": true,
-            "webpack": "../../inspector/webpack.config.js",
+            "mainFolder": "../../inspector/",
             "srcDirectory": "../../inspector/src/",
             "distOutputDirectory": "/inspector/",
             "processDeclaration": {

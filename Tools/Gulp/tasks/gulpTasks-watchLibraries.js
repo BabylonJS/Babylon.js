@@ -18,7 +18,7 @@ gulp.task("watchLibraries", function startWatch() {
 
     config.modules.map(function(module) {
         var settings = config[module].build;
-        if (!config[module].isCore && settings && settings.webpack) {
+        if (!config[module].isCore && settings) {
             for (var index = 0; index < config[module].libraries.length; index++) {
                 var library = config[module].libraries[index];
                 if (library.preventLoadLibrary) { 
@@ -26,7 +26,8 @@ gulp.task("watchLibraries", function startWatch() {
                 }
 
                 var configFolder = path.dirname(path.resolve(__dirname, configPath));
-                var wpConfig = require(path.resolve(configFolder, settings.webpack));
+                var configPath = path.join(settings.build.mainFolder, "webpack.config.js");
+                var wpConfig = require(path.resolve(configFolder, configPath));
 
                 // watch on.
                 wpConfig.watch = true;
