@@ -56,30 +56,33 @@
             "loseDTSFiles": "LibDeclarations/*.d.ts",
             "distOutputDirectory": "/",
             "packageJSON": "../../package.json",
-            "processDeclaration": {
-                "filename": "babylon.module.d.ts",
+            "umd": {
                 "packageName": "babylonjs",
-                "moduleName": "BABYLON",
-                "moduleSpecifics": [
-                    {
-                        "path": "babylonjs/Debug/axesViewer",
-                        "namespace": "BABYLON.Debug"
-                    },
-                    {
-                        "path": "babylonjs/Debug/boneAxesViewer",
-                        "namespace": "BABYLON.Debug"
-                    },
-                    {
-                        "path": "babylonjs/Debug/physicsViewer",
-                        "namespace": "BABYLON.Debug"
-                    },
-                    {
-                        "path": "babylonjs/Debug/skeletonViewer",
-                        "namespace": "BABYLON.Debug"
-                    }
-                ],
-                "doNotAppendNamespace": true,
-                "prependToNamespaceText": "declare module 'babylonjs' { export = BABYLON; }"
+                "webpackRoot": "BABYLON",
+                "processDeclaration": {
+                    "filename": "babylon.module.d.ts",
+                    "moduleName": "BABYLON",
+                    "moduleSpecifics": [
+                        {
+                            "path": "babylonjs/Debug/axesViewer",
+                            "namespace": "BABYLON.Debug"
+                        },
+                        {
+                            "path": "babylonjs/Debug/boneAxesViewer",
+                            "namespace": "BABYLON.Debug"
+                        },
+                        {
+                            "path": "babylonjs/Debug/physicsViewer",
+                            "namespace": "BABYLON.Debug"
+                        },
+                        {
+                            "path": "babylonjs/Debug/skeletonViewer",
+                            "namespace": "BABYLON.Debug"
+                        }
+                    ],
+                    "doNotAppendNamespace": true,
+                    "prependToNamespaceText": "declare module 'babylonjs' { export = BABYLON; }"
+                }
             },
             "es6": {
                 "packageName": "@babylonjs/core",
@@ -175,13 +178,16 @@
             "mainFolder": "../../materialsLibrary/",
             "srcDirectory": "../../materialsLibrary/src/",
             "distOutputDirectory": "/materialsLibrary/",
-            "processDeclaration": {
-                "filename": "babylonjs.materials.module.d.ts",
+            "umd": {
                 "packageName": "babylonjs-materials",
-                "moduleName": "BABYLON",
-                "importsToRemove": [],
-                "classMap": {
-                    "babylonjs": "BABYLON"
+                "webpackRoot": "MATERIALS",
+                "processDeclaration": {
+                    "filename": "babylonjs.materials.module.d.ts",
+                    "moduleName": "BABYLON",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON"
+                    }
                 }
             },
             "es6": {
@@ -213,13 +219,16 @@
             "mainFolder": "../../postProcessLibrary/",
             "srcDirectory": "../../postProcessLibrary/src/",
             "distOutputDirectory": "/postProcessesLibrary/",
-            "processDeclaration": {
-                "filename": "babylonjs.postProcess.module.d.ts",
+            "umd": {
                 "packageName": "babylonjs-post-process",
-                "moduleName": "BABYLON",
-                "importsToRemove": [],
-                "classMap": {
-                    "babylonjs": "BABYLON"
+                "webpackRoot": "POSTPROCESSES",
+                "processDeclaration": {
+                    "filename": "babylonjs.postProcess.module.d.ts",
+                    "moduleName": "BABYLON",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON"
+                    }
                 }
             },
             "es6": {
@@ -291,13 +300,16 @@
             "mainFolder": "../../proceduralTexturesLibrary/",
             "srcDirectory": "../../proceduralTexturesLibrary/src/",
             "distOutputDirectory": "/proceduralTexturesLibrary/",
-            "processDeclaration": {
-                "filename": "babylonjs.proceduralTextures.module.d.ts",
+            "umd": {
                 "packageName": "babylonjs-procedural-textures",
-                "moduleName": "BABYLON",
-                "importsToRemove": [],
-                "classMap": {
-                    "babylonjs": "BABYLON"
+                "webpackRoot": "PROCEDURALTEXTURES",
+                "processDeclaration": {
+                    "filename": "babylonjs.proceduralTextures.module.d.ts",
+                    "moduleName": "BABYLON",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON"
+                    }
                 }
             },
             "es6": {
@@ -344,32 +356,35 @@
             "mainFolder": "../../loaders/",
             "srcDirectory": "../../loaders/src/",
             "distOutputDirectory": "/loaders/",
-            "processDeclaration": {
-                "filename": "babylonjs.loaders.module.d.ts",
+            "umd": {
                 "packageName": "babylonjs-loaders",
-                "moduleName": "BABYLON",
-                "moduleSpecifics": [
-                    {
-                        "path": "babylonjs-loaders/glTF/1.0",
-                        "namespace": "BABYLON.GLTF1"
-                    },
-                    {
-                        "path": "babylonjs-loaders/glTF/2.0",
-                        "namespace": "BABYLON.GLTF2"
-                    },
-                    {
-                        "path": "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces",
-                        "namespace": "BABYLON.GLTF2.Loader"
-                    },
-                    {
-                        "path": "babylonjs-loaders/glTF/2.0/Extensions",
-                        "namespace": "BABYLON.GLTF2.Loader.Extensions"
+                "webpackRoot": "LOADERS",
+                "processDeclaration": {
+                    "filename": "babylonjs.loaders.module.d.ts",
+                    "moduleName": "BABYLON",
+                    "moduleSpecifics": [
+                        {
+                            "path": "babylonjs-loaders/glTF/1.0",
+                            "namespace": "BABYLON.GLTF1"
+                        },
+                        {
+                            "path": "babylonjs-loaders/glTF/2.0",
+                            "namespace": "BABYLON.GLTF2"
+                        },
+                        {
+                            "path": "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces",
+                            "namespace": "BABYLON.GLTF2.Loader"
+                        },
+                        {
+                            "path": "babylonjs-loaders/glTF/2.0/Extensions",
+                            "namespace": "BABYLON.GLTF2.Loader.Extensions"
+                        }
+                    ],
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "babylonjs-gltf2interface": "BABYLON.GLTF2"
                     }
-                ],
-                "importsToRemove": [],
-                "classMap": {
-                    "babylonjs": "BABYLON",
-                    "babylonjs-gltf2interface": "BABYLON.GLTF2"
                 }
             },
             "es6": {
@@ -401,35 +416,38 @@
             "mainFolder": "../../serializers/",
             "srcDirectory": "../../serializers/src/",
             "distOutputDirectory": "/serializers/",
-            "processDeclaration": {
-                "filename": "babylonjs.serializers.module.d.ts",
+            "umd": {
                 "packageName": "babylonjs-serializers",
-                "moduleName": "BABYLON",
-                "importsToRemove": [],
-                "classMap": {
-                    "babylonjs": "BABYLON",
-                    "babylonjs-loaders": "BABYLON",
-                    "babylonjs-serializers": "BABYLON",
-                    "babylonjs-gltf2interface": "BABYLON.GLTF2"
-                },
-                "moduleSpecifics": [
-                    {
-                        "path": "babylonjs-serializers/glTF/2.0",
-                        "namespace": "BABYLON.GLTF2.Exporter"
+                "webpackRoot": "SERIALIZERS",
+                "processDeclaration": {
+                    "filename": "babylonjs.serializers.module.d.ts",
+                    "moduleName": "BABYLON",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "babylonjs-loaders": "BABYLON",
+                        "babylonjs-serializers": "BABYLON",
+                        "babylonjs-gltf2interface": "BABYLON.GLTF2"
                     },
-                    {
-                        "path": "babylonjs-serializers/glTF/2.0/Extensions",
-                        "namespace": "BABYLON.GLTF2.Exporter.Extensions"
-                    },
-                    {
-                        "path": "babylonjs-serializers/glTF/2.0/glTFData",
-                        "namespace": "BABYLON"
-                    },
-                    {
-                        "path": "babylonjs-serializers/glTF/2.0/glTFSerializer",
-                        "namespace": "BABYLON"
-                    }
-                ]
+                    "moduleSpecifics": [
+                        {
+                            "path": "babylonjs-serializers/glTF/2.0",
+                            "namespace": "BABYLON.GLTF2.Exporter"
+                        },
+                        {
+                            "path": "babylonjs-serializers/glTF/2.0/Extensions",
+                            "namespace": "BABYLON.GLTF2.Exporter.Extensions"
+                        },
+                        {
+                            "path": "babylonjs-serializers/glTF/2.0/glTFData",
+                            "namespace": "BABYLON"
+                        },
+                        {
+                            "path": "babylonjs-serializers/glTF/2.0/glTFSerializer",
+                            "namespace": "BABYLON"
+                        }
+                    ]
+                }
             },
             "es6": {
                 "packageName": "@babylonjs/serializers",
@@ -450,15 +468,18 @@
             "mainFolder": "../../gui/",
             "srcDirectory": "../../gui/src/",
             "distOutputDirectory": "/gui/",
-            "processDeclaration": {
-                "filename": "babylon.gui.module.d.ts",
+            "umd": {
                 "packageName": "babylonjs-gui",
-                "moduleName": "BABYLON.GUI",
-                "importsToRemove": [],
-                "classMap": {
-                    "babylonjs": "BABYLON",
-                    "babylonjs-loaders": "BABYLON",
-                    "babylonjs-serializers": "BABYLON"
+                "webpackRoot": "BABYLON.GUI",
+                "processDeclaration": {
+                    "filename": "babylon.gui.module.d.ts",
+                    "moduleName": "BABYLON.GUI",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "babylonjs-loaders": "BABYLON",
+                        "babylonjs-serializers": "BABYLON"
+                    }
                 }
             },
             "es6": {
@@ -482,16 +503,18 @@
             "mainFolder": "../../inspector/",
             "srcDirectory": "../../inspector/src/",
             "distOutputDirectory": "/inspector/",
-            "processDeclaration": {
-                "filename": "babylon.inspector.module.d.ts",
+            "umd": {
                 "packageName": "babylonjs-inspector",
-                "moduleName": "INSPECTOR",
-                "importsToRemove": [],
-                "classMap": {
-                    "babylonjs": "BABYLON",
-                    "babylonjs-loaders": "BABYLON",
-                    "babylonjs-serializers": "BABYLON",
-                    "babylonjs-gui": "BABYLON.GUI"
+                "webpackRoot": "INSPECTOR",
+                "processDeclaration": {
+                    "filename": "babylon.inspector.module.d.ts",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "babylonjs-loaders": "BABYLON",
+                        "babylonjs-serializers": "BABYLON",
+                        "babylonjs-gui": "BABYLON.GUI"
+                    }
                 }
             }
         }
@@ -516,18 +539,20 @@
                 "main": "../../dist/preview release/viewer/build/src/index.d.ts",
                 "out": "../../babylon.viewer.module.d.ts"
             },
-            "processDeclaration": {
+            "umd": {
                 "packageName": "babylonjs-viewer",
-                "moduleName": "BabylonViewer",
-                "doNotAppendNamespace": true,
-                "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n",
-                "importsToRemove": [
-                    "pep",
-                    "babylonjs-loaders"
-                ],
-                "classMap": {
-                    "babylonjs": "BABYLON",
-                    "babylonjs-loaders": "BABYLON"
+                "processDeclaration": {
+                    "moduleName": "BabylonViewer",
+                    "doNotAppendNamespace": true,
+                    "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n",
+                    "importsToRemove": [
+                        "pep",
+                        "babylonjs-loaders"
+                    ],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "babylonjs-loaders": "BABYLON"
+                    }
                 }
             },
             "outputs": [
@@ -586,6 +611,9 @@
             "webpack": "../../../Viewer/webpack.assets.config.js",
             "srcDirectory": "../../Viewer/src/",
             "distOutputDirectory": "/viewer/",
+            "umd": {
+                "packageName": "babylonjs-viewer-assets"
+            },
             "dtsBundle": {
                 "name": "babylonjs-viewer-assets",
                 "main": "../../dist/preview release/viewer/build/src/assets/index.d.ts",

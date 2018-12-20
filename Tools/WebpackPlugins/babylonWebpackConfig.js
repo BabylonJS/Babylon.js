@@ -26,16 +26,16 @@ module.exports = function defaultConfig(options) {
     return {
         context: src,
         entry: {
-            [settings.build.processDeclaration.packageName]: path.resolve(src, settings.libraries[0].entry),
+            [settings.build.umd.packageName]: path.resolve(src, settings.libraries[0].entry),
         },
         output: {
             path: path.resolve(__dirname, config.build.outputDirectory) + settings.build.distOutputDirectory,
             filename: settings.libraries[0].output,
             libraryTarget: 'umd',
             library: {
-                root: settings.build.processDeclaration.moduleName.split("."),
-                amd: settings.build.processDeclaration.packageName,
-                commonjs: settings.build.processDeclaration.packageName
+                root: settings.build.umd.webpackRoot.split("."),
+                amd: settings.build.umd.packageName,
+                commonjs: settings.build.umd.packageName
             },
             umdNamedDefine: true
         },
