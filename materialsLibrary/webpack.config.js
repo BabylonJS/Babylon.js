@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const babylonExternals = require('../Tools/WebpackPlugins/babylonExternals');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
@@ -21,37 +22,22 @@ module.exports = {
     resolve: {
         extensions: ['.ts']
     },
-    externals: [
-        function(_, request, callback) {
-            if (/^babylonjs.*$/i.test(request)) {
-                callback(null, {
-                    root: "BABYLON",
-                    commonjs: "babylonjs",
-                    commonjs2: "babylonjs",
-                    amd: "babylonjs"
-                });
-            }
-            else {
-                callback();
-            }
-        },
-    ],
+    externals: [babylonExternals()],
     devtool: "souce-map",
     module: {
         rules: [{
             test: /\.tsx?$/,
-            exclude: /node_modules/,
-            use: [
-            {
-                loader: 'awesome-typescript-loader',
-                options: {
-                    configFileName: path.resolve(__dirname, './tsconfig.json'),
-                    declaration: false
-                }
-            }]
+            loader: 'awesome-typescript-loader',
+            options: {
+                configFileName: path.resolve(__dirname, './tsconfig.json'),
+                declaration: false
+            }
         }]
     },
     mode: "production",
+    performance: {
+        hints: false
+    },
     plugins: [
         new HardSourceWebpackPlugin(),
         new webpack.WatchIgnorePlugin([
