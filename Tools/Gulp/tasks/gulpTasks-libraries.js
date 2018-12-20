@@ -137,18 +137,18 @@ var processDTSFiles = function(libraries, settings, cb) {
     let library = libraries[0];
     if (!library.preventLoadLibrary) {
         // Find declaration path.
-        let fileLocation = path.join(outputDirectory, settings.build.processDeclaration.filename);
+        let fileLocation = path.join(outputDirectory, settings.build.umd.processDeclaration.filename);
 
         // Convert the tsc AMD BUNDLED declaration to our expected one
         processAmdDeclarationToModule(tempTypingsPath, {
             output: fileLocation,
-            moduleName: settings.build.processDeclaration.packageName,
+            moduleName: settings.build.umd.packageName,
             entryPoint: library.entry,
-            externals: settings.build.processDeclaration.classMap,
+            externals: settings.build.umd.processDeclaration.classMap,
         });
 
         // Convert Module to Namespace for globals
-        processModuleDeclarationToNamespace(fileLocation, settings.build.processDeclaration);
+        processModuleDeclarationToNamespace(fileLocation, settings.build.umd.packageName, settings.build.umd.processDeclaration);
     }
     cb();
 }

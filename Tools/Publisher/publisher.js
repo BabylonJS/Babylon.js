@@ -170,7 +170,7 @@ function processEs6Packages(version) {
                         colorConsole.log("    Checking Internal Dependency: " + packageName.cyan);
                         let dependencyName = packageName;
                         for (var moduleName of modules) {
-                            if (config[moduleName] && config[moduleName].build.processDeclaration && config[moduleName].build.processDeclaration.packageName === packageName) {
+                            if (config[moduleName] && config[moduleName].build.umd && config[moduleName].build.umd.packageName === packageName) {
                                 if (config[moduleName].build.es6) {
                                     dependencyName = config[moduleName].build.es6.packageName;
                                     colorConsole.log("    Replace Dependency: " + packageName.cyan + " by " + dependencyName.cyan);

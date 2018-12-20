@@ -22,8 +22,7 @@ var buildViewerLibrary = function(library, settings) {
     var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
 
     settings.build.outputs.forEach(out => {
-        var wpConfigPath = path.join(settings.build.mainFolder, "webpack.config.js");
-        let wpConfig = require(wpConfigPath);
+        let wpConfig = require(settings.build.webpack);
         if (!out.minified) {
             wpConfig.mode = "development";
         }
@@ -47,7 +46,7 @@ var buildViewerLibrary = function(library, settings) {
                 dtsBundle.bundle(settings.build.dtsBundle);
                 // process the declaration
                 let fileLocation = path.join(path.dirname(settings.build.dtsBundle.main), settings.build.dtsBundle.out);
-                processDeclaration(fileLocation, settings.build.processDeclaration);
+                processDeclaration(fileLocation, settings.build.umd.packageName, settings.build.umd.processDeclaration);
             });
         }
 

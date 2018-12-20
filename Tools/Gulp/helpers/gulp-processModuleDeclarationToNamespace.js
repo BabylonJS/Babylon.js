@@ -1,14 +1,11 @@
 // Gulp Tools
 var fs = require("fs");
 
-var processData = function(data, options) {
+var processData = function(data, packageName, options) {
     var str = "" + data;
 
     // Start process by extracting all lines.
     let lines = str.split('\n');
-    // var firstIndex = lines.findIndex((line => { return line.indexOf(`'${options.packageName}/`) !== -1 }));
-    // var lastIndex = lines.findIndex(((line, idx) => { return line.trim() === '}' && idx > firstIndex }));
-    // lines.splice(firstIndex, lastIndex - firstIndex + 1);
 
     // Let's go line by line and check if we have special folder replacements
     // Replaces declare module 'babylonjs'; by declare module BABYLON for instance
@@ -122,7 +119,7 @@ var processData = function(data, options) {
     // Let s clean up all the import * from BABYLON or the package itself as we know it is part of
     // the same namespace... Should be
     str = str.replace("import * as BABYLON from 'babylonjs';", "");
-    let regexp = new RegExp(`import {(.*)} from ['"]${options.packageName}(.*)['"];`, 'g');
+    let regexp = new RegExp(`import {(.*)} from ['"]${packageName}(.*)['"];`, 'g');
     str = str.replace(regexp, '');
     
     // Let s clean other chosen imports from the mix.
@@ -216,7 +213,7 @@ var processData = function(data, options) {
     return str;
 }
 
-module.exports = function(fileLocation, options, cb) {
+module.exports = function(fileLocation, packageName, options, cb) {
     options = options || { };
 
     fs.readFile(fileLocation, function(err, data) {
@@ -232,7 +229,7 @@ module.exports = function(fileLocation, options, cb) {
 
         var newData = "";
         if (options) {
-            newData = processData(data, options);
+            newData = processData(data, packageName, options);
 
             var namespaceData = newData;
             if (options.prependToNamespaceText) {
