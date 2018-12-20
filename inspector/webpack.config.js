@@ -1,3 +1,5 @@
+const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const babylonWebpackConfig = require('../Tools/WebpackPlugins/babylonWebpackConfig');
 
 var config = babylonWebpackConfig({
