@@ -5,7 +5,7 @@ const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 module.exports = {
     context: path.resolve(__dirname, './src'),
     entry: {
-        'babylonjs-materials': path.resolve(__dirname, './src/legacy/legacy.ts'),
+        'babylonjs-materials': path.resolve(__dirname, './src/legacy/legacy-grid.ts'),
     },
     output: {
         path: path.resolve(__dirname, '../dist/preview release/materialsLibrary'),
@@ -22,15 +22,19 @@ module.exports = {
         extensions: ['.ts']
     },
     externals: [
-        {
-            babylonjs: {
-                root: "BABYLON",
-                commonjs: "babylonjs",
-                commonjs2: "babylonjs",
-                amd: "babylonjs"
+        function(_, request, callback) {
+            if (/^babylonjs.*$/i.test(request)) {
+                callback(null, {
+                    root: "BABYLON",
+                    commonjs: "babylonjs",
+                    commonjs2: "babylonjs",
+                    amd: "babylonjs"
+                });
+            }
+            else {
+                callback();
             }
         },
-        /^babylonjs.*$/i,
     ],
     devtool: "souce-map",
     module: {
