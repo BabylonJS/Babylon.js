@@ -461,7 +461,7 @@
         "libraries": [
             {
                 "output": "babylon.gui.min.js",
-                "entry": "././legacy/legacy.ts"
+                "entry": "./legacy/legacy.ts"
             }
         ],
         "build": {
