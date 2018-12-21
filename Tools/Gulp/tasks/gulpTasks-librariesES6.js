@@ -3,10 +3,12 @@ var gulp = require("gulp");
 var path = require("path");
 var fs = require("fs-extra");
 var shelljs = require("shelljs");
+var concat = require('gulp-concat');
 
 // Gulp Helpers
 var rmDir = require("../../NodeHelpers/rmDir");
 var processImports = require("../helpers/gulp-processImportsToEs6");
+var processLooseDeclaration = require("../helpers/gulp-processLooseDeclarationEs6");
 
 // Import Build Config
 var config = require("../../Config/config.js");
@@ -151,6 +153,20 @@ var modifyTsConfig = function(settings, cb) {
 }
 
 /**
+ * Append Lose DTS Files allowing isolated Modules build
+ */
+var appendLoseDTSFiles = function(settings) {
+    if (settings.build.loseDTSFiles) {
+        const indexDTS = path.join(settings.computed.ES6PackageDirectory, "index.d.ts");
+        return gulp.src([indexDTS, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles)])
+            .pipe(concat("index.d.ts"))
+            .pipe(processLooseDeclaration())
+            .pipe(gulp.dest(settings.computed.ES6PackageDirectory));
+    }
+    return Promise.resolve();
+}
+
+/**
  * Dynamic es 6 module creation.
  */
 function buildES6Library(settings) {
@@ -163,8 +179,9 @@ function buildES6Library(settings) {
     var adaptSourceImportPaths = function() { return modifySources(settings); };
     var adaptTsConfigImportPaths = function(cb) { return modifyTsConfig(settings, cb); };
     var buildes6 = function(cb) { return build(settings, cb) };
+    var appendLoseDTS = function() { return appendLoseDTSFiles(settings) };
 
-    tasks.push(cleanup, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, buildes6);
+    tasks.push(cleanup, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, buildes6, appendLoseDTS);
 
     return gulp.series.apply(this, tasks);
 }

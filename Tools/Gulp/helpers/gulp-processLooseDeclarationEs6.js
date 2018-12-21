@@ -4,20 +4,22 @@ var PluginError = require('plugin-error');
 let fs = require('fs');
 
 /**
- * Replace all imports by their corresponding ES6 imports.
+ * Encapsulates types in declare global { }
  */
-function processImports(sourceCode, replacements) {
-
-    for (let replacement of replacements) {
-        var regex = new RegExp(`(["'])${replacement.packageName}([/"'])`, "g");
-        sourceCode = sourceCode.replace(regex, `$1${replacement.newPackageName}$2`);
-    }
+function processLooseDeclarations(sourceCode) {
+    // To replace if that causes issue (defining start point of the concat
+    // as interface like the first code line of the first mixin)
+    sourceCode = sourceCode.replace(/declare /g, "");
+    sourceCode = sourceCode.replace(/interface /, `declare global {
+interface `);
+    sourceCode += `
+}`;
 
     return sourceCode;
 }
 
 /**
- * Replaces all imports by their es6 peers.
+ * Prepare loose declarations to be added to the package.
  */
 function main(replacements) {
     return through.obj(function (file, enc, cb) {
@@ -30,10 +32,10 @@ function main(replacements) {
             }
 
             let data = file.contents.toString();
-            data = processImports(data, replacements);
+            data = processLooseDeclarations(data, replacements);
 
-            // Go to disk.
-            fs.writeFileSync(file.path, data);
+            file.contents = Buffer.from(data);
+            this.push(file);
 
             return cb();
         });
