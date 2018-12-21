@@ -181,7 +181,7 @@ function processEs6Packages(version) {
         });
 
         // Inject tslib as a dependency
-        var mainPackageJSONPath = path.join(config.rootFolder, "package.json");
+        var mainPackageJSONPath = path.join(config.computed.rootFolder, "package.json");
         var mainPackageJSON = require(mainPackageJSONPath);
         legacyPackageJson["dependencies"]["tslib"] = mainPackageJSON["dependencies"]["tslib"];
 
