@@ -4,6 +4,7 @@ var gulp = require("gulp");
 
 // Import Gulp Tasks
 require("./tasks/gulpTasks-libraries");
+require("./tasks/gulpTasks-librariesES6");
 require("./tasks/gulpTasks-viewerLibraries");
 require("./tasks/gulpTasks-tsLint");
 require("./tasks/gulpTasks-netlify");
@@ -35,6 +36,11 @@ gulp.task("typescript", gulp.series("core"));
  * Build all libs.
  */
 gulp.task("typescript-libraries", gulp.series(config.modules, config.viewerModules));
+
+/**
+ * Build all es 6 libs.
+ */
+gulp.task("typescript-es6", gulp.series(config.modules.map((module) => module + "-es6")));
 
 /**
  * Validate compile the code and check the comments and style case convention through typedoc

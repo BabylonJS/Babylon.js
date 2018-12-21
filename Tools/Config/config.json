@@ -4,6 +4,7 @@
         "tempDirectory": "./.temp/",
         "localDevES6FolderName": "localDevES6",
         "localDevUMDFolderName": "localDevUMD",
+        "intermediateES6Package": "intermediateES6Package",
         "ES6Package": "packageES6",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",

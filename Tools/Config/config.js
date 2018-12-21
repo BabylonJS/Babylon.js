@@ -9,6 +9,7 @@ const outputFolder = path.resolve(configFolder, config.build.outputDirectory);
 const localDevES6 = path.join(tempFolder, config.build.localDevES6FolderName);
 const localDevUMD = path.join(tempFolder, config.build.localDevUMDFolderName);
 const ES6Package = path.join(tempFolder, config.build.ES6Package);
+const intermediateES6Package = path.join(tempFolder, config.build.intermediateES6Package);
 
 config.computed = {
     rootFolder,
@@ -16,7 +17,8 @@ config.computed = {
     outputFolder,
     localDevES6,
     localDevUMD,
-    ES6Package
+    ES6Package,
+    intermediateES6Package
 }
 
 config.modules.map(function(module) {
@@ -28,6 +30,7 @@ config.modules.map(function(module) {
     const localDevES6Directory = path.join(localDevES6, module);
     const localDevUMDDirectory = path.join(localDevUMD, distFolder);
     const ES6PackageDirectory = path.join(ES6Package, module);
+    const intermediateES6PackageDirectory = path.join(intermediateES6Package, module);
 
     const webpackConfigPath = path.join(mainDirectory, "webpack.config.js");
     const tsConfigPath = path.join(mainDirectory, "tsconfig.json");
@@ -56,6 +59,7 @@ config.modules.map(function(module) {
         localDevES6Directory,
         localDevUMDDirectory,
         ES6PackageDirectory,
+        intermediateES6PackageDirectory,
         webpackConfigPath,
         tsConfigPath,
         packageJSONPath,
