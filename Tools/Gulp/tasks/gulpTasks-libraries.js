@@ -25,14 +25,14 @@ const tempTypingsPath = path.join(config.computed.tempFolder, tempTypingsFileNam
  * Clean shader ts files.
  */
 var cleanShaders = function(settings) {
-    return del([settings.computed.srcDirectory + "**/*.fx.ts"]);
+    return del([settings.computed.shaderTSGlob], { force: true });
 }
 
 /**
  * Create shader ts files.
  */
 var buildShaders = function(settings) {
-    return gulp.src(settings.computed.srcDirectory + "**/*.fx")
+    return gulp.src(settings.computed.shaderGlob)
             .pipe(uncommentShaders())
             .pipe(processShaders(settings.isCore));
 }

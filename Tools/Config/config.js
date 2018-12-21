@@ -36,6 +36,9 @@ config.modules.map(function(module) {
     const tsConfig = require(tsConfigPath);
     const srcDirectory = path.resolve(mainDirectory, tsConfig.compilerOptions.rootDir);
 
+    const shaderGlob = srcDirectory + "/**/*.fx";
+    const shaderTSGlob = srcDirectory + "/**/*.fx.ts";
+
     for (let library of settings.libraries) {
         const entryPath = path.join(srcDirectory, library.entry);
 
@@ -53,7 +56,9 @@ config.modules.map(function(module) {
         ES6PackageDirectory,
         webpackConfigPath,
         tsConfigPath,
-        packageJSONPath
+        packageJSONPath,
+        shaderGlob,
+        shaderTSGlob
     }
 });
 
