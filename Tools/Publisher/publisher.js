@@ -10,16 +10,14 @@ const colorConsole = require("../NodeHelpers/colorConsole");
 let doNotBuild = false;
 let doNotPublish = false;
 
-// Pathe management.
+// Path management.
 process.env.PATH += (path.delimiter + path.join(__dirname, 'node_modules', '.bin'));
 
 // Global Variables.
-const config = require("../gulp/config.json");
+const config = require("../Config/config.js");
 const modules = config.modules.concat(config.viewerModules);
 const basePath = config.build.outputDirectory;
-const tempPath = config.build.tempDirectory + "packageES6/";
-const coreSrc = config.core.build.srcDirectory;
-const enginePath = coreSrc + "Engines/engine.ts";
+const enginePath = path.join(config.core.computed.srcDirectory, "Engines/engine.ts");
 
 /**
  * Get Files from folder.
@@ -72,8 +70,8 @@ function getEngineVersion() {
 /**
  * Publish a package to npm.
  */
-function publish(version, packageName, basePath, public) {
-    colorConsole.log('    Publishing ' + packageName.blue.bold + " from " + basePath.cyan);
+function publish(version, packageName, publishPath, public) {
+    colorConsole.log('    Publishing ' + packageName.blue.bold + " from " + publishPath.cyan);
 
     let tag = "";
     // check for alpha or beta
@@ -82,7 +80,7 @@ function publish(version, packageName, basePath, public) {
     }
 
     //publish the respected package
-    var cmd = 'npm publish \"' + basePath + "\"" + tag;
+    var cmd = 'npm publish "' + publishPath + '"' + tag;
     if (public) {
        cmd += " --access public";
     }
@@ -123,14 +121,14 @@ function processEs6Packages(version) {
 
         colorConsole.log("Process " + "ES6".magenta + " Package: " + moduleName.blue.bold);
 
-        let projectPath = module.build.mainFolder;
-        let buildPath = path.normalize(tempPath + moduleName);
-        let legacyPackageJson = require(module.build.packageJSON || basePath + module.build.distOutputDirectory + 'package.json');
+        let projectPath = module.computed.mainDirectory;
+        let buildPath = module.computed.ES6PackageDirectory;
+        let legacyPackageJson = require(module.computed.packageJSONPath);
 
         colorConsole.log("    Cleanup " + buildPath.cyan);
         rmDir(buildPath);
 
-        let command = 'tsc --inlineSources -t es5 -m esNext -p ' + projectPath + ' --outDir ' + buildPath;
+        let command = 'tsc --inlineSources -t es5 -m esNext -p "' + projectPath + '" --outDir "' + buildPath + '"';
         colorConsole.log("    Executing " + command.yellow);
 
         let tscCompile = shelljs.exec(command);
@@ -209,7 +207,7 @@ function processLegacyPackages(version) {
             processLegacyViewer(module, version);
         }
         else {
-            let outputDirectory = module.build.legacyPackageOutputDirectory || basePath + module.build.distOutputDirectory;
+            let outputDirectory = module.build.legacyPackageOutputDirectory || module.computed.distDirectory;
 
             if (module.build.requiredFiles) {
                 module.build.requiredFiles.forEach(file => {
@@ -218,7 +216,7 @@ function processLegacyPackages(version) {
                 });
             }
 
-            let packageJson = require(outputDirectory + 'package.json');
+            let packageJson = require(outputDirectory + '/package.json');
             packageJson.version = version;
             colorConsole.log("    Update package version to: " + version.green);
 
@@ -229,7 +227,7 @@ function processLegacyPackages(version) {
                     }
                 });
             }
-            fs.writeFileSync(outputDirectory + 'package.json', JSON.stringify(packageJson, null, 4));
+            fs.writeFileSync(outputDirectory + '/package.json', JSON.stringify(packageJson, null, 4));
 
             publish(version, moduleName, outputDirectory);
 

@@ -9,7 +9,7 @@ var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 var rmDir = require("../../NodeHelpers/rmDir");
 
 // Read the full config.
-var config = require("../config.json");
+var config = require("../../Config/config.js");
 
 // Constants
 var module = "core";
@@ -18,7 +18,7 @@ var module = "core";
  * Process shader ts files.
  */
 gulp.task("watchCore-cleanShaders", async function startWatch() {
-    var settings = config[module].build;
+    var settings = config[module].computed;
 
     // Clean shaders.
     await del([settings.srcDirectory + "**/*.fx.ts"]);
@@ -32,12 +32,12 @@ gulp.task("watchCore-cleanShaders", async function startWatch() {
 /**
  * Watch ts files and fire repective tasks.
  */
-gulp.task("watchCore", gulp.series("watchCore-cleanShaders"), async function startWatch() {
-    var settings = config[module].build;
+gulp.task("watchCore", gulp.series("watchCore-cleanShaders", async function() {
+    var settings = config[module].computed;
     var library = config[module].libraries[0];
 
-    // Generat output path.
-    var outputDirectory = "../.temp/" + config.build.localDevES6FolderName + "/" + module;
+    // Generate output path.
+    var outputDirectory = settings.localDevES6Directory;
 
     // Clean Folder.
     rmDir(outputDirectory);
@@ -48,7 +48,7 @@ gulp.task("watchCore", gulp.series("watchCore-cleanShaders"), async function sta
         async: true,
         verbose: true
     };
-    shelljs.exec(`tsc --isolatedModules true --declaration false --target es5 --module es2015 --outDir ${outputDirectory} -w`, options, function(code, stdout, stderr) {
+    shelljs.exec(`tsc --importHelpers false --isolatedModules true --declaration false --target es5 --module es2015 --outDir "${outputDirectory}" -w`, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);
         }
@@ -57,11 +57,11 @@ gulp.task("watchCore", gulp.series("watchCore-cleanShaders"), async function sta
         }
     });
 
-    // Launch shader watch    
+    // Launch shader watch.
     gulp.watch(settings.srcDirectory + "**/*.fx", { interval: 1000 }, function() {
         console.log(library.output + ": Shaders.");
         return gulp.src(settings.srcDirectory + "**/*.fx")
             .pipe(uncommentShaders())
             .pipe(processShaders(true));
     });
-});
+}));

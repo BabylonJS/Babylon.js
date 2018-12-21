@@ -14,26 +14,25 @@ var processModuleDeclarationToNamespace = require('../helpers/gulp-processModule
 var del = require("del");
 
 // Import Build Config
-var configPath = "../config.json";
-var config = require(configPath);
+var config = require("../../Config/config.js");
 
 // Constants
-const tempTypingsFile = "tempTypings.js";
-const tempTypingsFolder = "../../.temp/";
-const tempTypingsPath = tempTypingsFolder + tempTypingsFile.replace(".js", ".d.ts");
+const tempTypingsFileName = "tempTypings.js";
+const tempTypingsFile = path.join(config.computed.tempFolder, tempTypingsFileName);
+const tempTypingsPath = path.join(config.computed.tempFolder, tempTypingsFileName.replace(".js", ".d.ts"));
 
 /**
  * Clean shader ts files.
  */
 var cleanShaders = function(settings) {
-    return del([settings.build.srcDirectory + "**/*.fx.ts"]);
+    return del([settings.computed.srcDirectory + "**/*.fx.ts"]);
 }
 
 /**
  * Create shader ts files.
  */
 var buildShaders = function(settings) {
-    return gulp.src(settings.build.srcDirectory + "**/*.fx")
+    return gulp.src(settings.computed.srcDirectory + "**/*.fx")
             .pipe(uncommentShaders())
             .pipe(processShaders(settings.isCore));
 }
@@ -43,21 +42,19 @@ var buildShaders = function(settings) {
  */
 var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     // Convert Module to Namespace for globals
-    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
+    var outputDirectory = settings.computed.distDirectory;
 
     // Does name contain .min. for min files.
     var isMinOutputName = libraries[0].output.indexOf(".min.") > -1;
 
     // Webpack Config.
-    var configFolder = path.dirname(path.resolve(__dirname, configPath));
-    var wpConfigPath = path.join(settings.build.mainFolder, "webpack.config.js");
-    var wpConfig = require(path.resolve(configFolder, wpConfigPath));
+    var wpConfig = require(settings.computed.webpackConfigPath);
 
     // Create multi entry list.
     wpConfig.entry = { };
     for (let library of settings.libraries) {
         let name = library.output.replace(isMinOutputName ? ".min.js" : ".js", "");
-        wpConfig.entry[name] = path.resolve(wpConfig.context, library.entry);
+        wpConfig.entry[name] = library.computed.entryPath;
     }
 
     // Create output by type (min vs max).
@@ -68,16 +65,14 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     else {
         // Map Output
         wpConfig.devtool = "source-map";
-        var rootPath = path.resolve(__dirname, "../../../");
-        var absoluteSrc = path.resolve(__dirname, "../", settings.build.srcDirectory);
         wpConfig.output.devtoolModuleFilenameTemplate = (info) => {
             info.resourcePath = path.normalize(info.resourcePath);
 
             if (!path.isAbsolute(info.resourcePath)) {
-                info.resourcePath = path.join(absoluteSrc, info.resourcePath);
+                info.resourcePath = path.join(settings.computed.srcDirectory, info.resourcePath);
             }
 
-            return `webpack://BABYLONJS/${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
+            return `webpack://BABYLONJS/${path.relative(config.computed.rootFolder, info.resourcePath).replace(/\\/g, "/")}`;
         };
 
         // Generate unminified file.
@@ -97,18 +92,9 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
     // TODO. Generate all d.ts
     let library = libraries[0];
     if (!library.preventLoadLibrary) {
-        // Create temp directory.
-        let srcDirectory = settings.build.srcDirectory;
-        let depthCount = srcDirectory.match(/\//g).length - srcDirectory.match(/\.\.\//g).length;
-        let tempDirectory = "";
-        for (let i = 0; i < depthCount; i++) {
-            tempDirectory += "../"
-        }
-        tempDirectory += ".temp/";
-
         // Generate DTS the old way...
-        cp.execSync('tsc --module amd --outFile "' + tempDirectory + tempTypingsFile + '" --emitDeclarationOnly true', {
-            cwd: settings.build.srcDirectory
+        cp.execSync(`tsc --module amd --outFile "${tempTypingsFile}" --emitDeclarationOnly true`, {
+            cwd: settings.computed.srcDirectory
         });
     }
     cb();
@@ -119,7 +105,7 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        return gulp.src([tempTypingsPath, path.join(settings.build.srcDirectory, settings.build.loseDTSFiles)], { base: "./"})
+        return gulp.src([tempTypingsPath, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles)], { base: "./"})
             .pipe(concat(tempTypingsPath))
             .pipe(gulp.dest(tempTypingsPath));
     }
@@ -131,7 +117,7 @@ var appendLoseDTSFiles = function(settings) {
  */
 var processDTSFiles = function(libraries, settings, cb) {
     // Convert Module to Namespace for globals
-    var outputDirectory = config.build.outputDirectory + settings.build.distOutputDirectory;
+    var outputDirectory = settings.computed.distDirectory;
 
     // TODO. Generate all d.ts
     let library = libraries[0];

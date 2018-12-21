@@ -12,7 +12,7 @@ var processDeclaration = require('../helpers/gulp-processModuleDeclarationToName
 var addModuleExports = require("../helpers/gulp-addModuleExports");
 
 // Import Build Config
-var config = require("../config.json");
+var config = require("../../Config/config.json");
 
 /**
  * Build the viewer
