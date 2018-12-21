@@ -50,7 +50,7 @@ var dep = function(settings) {
     }
 
     return gulp.src(copyPaths, { base: config.computed.rootFolder })
-        .pipe(gulp.dest(config.computed.sourceES6FolderName));
+        .pipe(gulp.dest(config.computed.sourceES6Folder));
 }
 
 /**
