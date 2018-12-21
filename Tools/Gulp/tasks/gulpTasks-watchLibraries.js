@@ -44,7 +44,7 @@ gulp.task("watchLibraries", function startWatch() {
                 };
 
                 tasks.push(
-                    gulp.src(settings.srcDirectory + "**/*.fx")
+                    gulp.src(settings.shaderGlob)
                         .pipe(uncommentShaders())
                         .pipe(processShaders(false))
                 );
@@ -56,9 +56,9 @@ gulp.task("watchLibraries", function startWatch() {
                 );
 
                 tasks.push(
-                    gulp.watch(settings.srcDirectory + "**/*.fx", { interval: 1000 }, function() {
+                    gulp.watch(settings.shaderGlob, { interval: 1000 }, function() {
                         console.log(library.output + ": Shaders.");
-                        return gulp.src(settings.srcDirectory + "**/*.fx")
+                        return gulp.src(settings.shaderGlob)
                             .pipe(uncommentShaders())
                             .pipe(processShaders(false));
                     })

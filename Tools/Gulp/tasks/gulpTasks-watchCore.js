@@ -21,10 +21,10 @@ gulp.task("watchCore-cleanShaders", async function startWatch() {
     var settings = config[module].computed;
 
     // Clean shaders.
-    await del([settings.srcDirectory + "**/*.fx.ts"]);
+    await del([settings.shaderTSGlob], { force: true });
 
     // Generate shaders.
-    return gulp.src(settings.srcDirectory + "**/*.fx")
+    return gulp.src(settings.shaderGlob)
         .pipe(uncommentShaders())
         .pipe(processShaders(true));
 });
@@ -58,9 +58,9 @@ gulp.task("watchCore", gulp.series("watchCore-cleanShaders", async function() {
     });
 
     // Launch shader watch.
-    gulp.watch(settings.srcDirectory + "**/*.fx", { interval: 1000 }, function() {
+    gulp.watch(settings.shaderGlob, { interval: 1000 }, function() {
         console.log(library.output + ": Shaders.");
-        return gulp.src(settings.srcDirectory + "**/*.fx")
+        return gulp.src(settings.shaderGlob)
             .pipe(uncommentShaders())
             .pipe(processShaders(true));
     });
