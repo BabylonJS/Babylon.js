@@ -112,44 +112,40 @@ function buildBabylonJSAndDependencies() {
  * Process ES6 Packages.
  */
 function processEs6Packages(version) {
-    modules.forEach(moduleName => {
+    config.modulesES6.forEach(moduleName => {
         let module = config[moduleName];
         let es6Config = module.build.es6;
-        if (!es6Config) {
-            return;
-        }
 
         colorConsole.log("Process " + "ES6".magenta + " Package: " + moduleName.blue.bold);
 
-        let projectPath = module.computed.mainDirectory;
-        let buildPath = module.computed.ES6PackageDirectory;
+        let distPath = module.computed.distES6Directory;
+        let packagePath = module.computed.packageES6Directory;
         let legacyPackageJson = require(module.computed.packageJSONPath);
 
-        colorConsole.log("    Cleanup " + buildPath.cyan);
-        rmDir(buildPath);
+        colorConsole.log("    Cleanup " + packagePath.cyan);
+        rmDir(packagePath);
 
-        let command = 'tsc --inlineSources -t es5 -m esNext -p "' + projectPath + '" --outDir "' + buildPath + '"';
-        colorConsole.log("    Executing " + command.yellow);
-
-        let tscCompile = shelljs.exec(command);
-        if (tscCompile.code !== 0) {
-            throw new Error("Tsc compilation failed");
-        }
+        colorConsole.log("    Copy Dist folder " + distPath.cyan + " to " + packagePath.cyan);
+        fs.copySync(distPath, packagePath);
 
         if (module.build.requiredFiles) {
             module.build.requiredFiles.forEach(file => {
-                colorConsole.log("    Copy required file: ", file.cyan, (buildPath + '/' + path.basename(file)).cyan);
-                fs.copySync(file, buildPath + '/' + path.basename(file));
+                let destination = path.join(packagePath, path.basename(file));
+                colorConsole.log("    Copy required file: ", file.cyan, destination.cyan);
+                fs.copySync(file, destination);
             });
         }
         if (es6Config.requiredFiles) {
             es6Config.requiredFiles.forEach(file => {
-                colorConsole.log("    Copy es6 required file: ", file.cyan, (buildPath + '/' + path.basename(file)).cyan);
-                fs.copySync(file, buildPath + '/' + path.basename(file));
+                let destination = path.join(packagePath, path.basename(file));
+                colorConsole.log("    Copy es6 required file: ", file.cyan, destination.cyan);
+                fs.copySync(file, destination);
             });
         }
 
-        let files = getFiles(buildPath).map(f => f.replace(buildPath + "/", "")).filter(f => f.indexOf("assets/") === -1);
+        let files = getFiles(packagePath)
+            .map(f => f.replace(packagePath + "/", ""))
+            .filter(f => f.indexOf("assets/") === -1);
 
         legacyPackageJson.name = es6Config.packageName;
         legacyPackageJson.version = version;
@@ -184,7 +180,13 @@ function processEs6Packages(version) {
             }
         });
 
-        fs.writeFileSync(buildPath + '/package.json', JSON.stringify(legacyPackageJson, null, 4));
+        // Inject tslib as a dependency
+        var mainPackageJSONPath = path.join(config.rootFolder, "package.json");
+        var mainPackageJSON = require(mainPackageJSONPath);
+        legacyPackageJson["dependencies"]["tslib"] = mainPackageJSON["dependencies"]["tslib"];
+
+        let packageJSONPath = path.join(packagePath, "package.json");
+        fs.writeFileSync(packageJSONPath, JSON.stringify(legacyPackageJson, null, 4));
 
         // Do not publish yet.
         // publish(version, es6Config.packageName, buildPath, true);

@@ -4,8 +4,9 @@
         "tempDirectory": "./.temp/",
         "localDevES6FolderName": "localDevES6",
         "localDevUMDFolderName": "localDevUMD",
-        "intermediateES6Package": "intermediateES6Package",
-        "ES6Package": "packageES6",
+        "sourceES6FolderName": "sourceES6",
+        "distES6FolderName": "distES6",
+        "packageES6FolderName": "packageES6",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
@@ -38,6 +39,15 @@
         "serializers",
         "gui",
         "inspector"
+    ],
+    "modulesES6": [
+        "core",
+        "materialsLibrary",
+        "postProcessesLibrary",
+        "proceduralTexturesLibrary",
+        "loaders",
+        "serializers",
+        "gui"
     ],
     "viewerModules": [
         "viewer",

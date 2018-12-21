@@ -6,19 +6,21 @@ const configFolder = __dirname;
 const rootFolder = path.resolve(configFolder, "../../");
 const tempFolder = path.resolve(rootFolder, config.build.tempDirectory);
 const outputFolder = path.resolve(configFolder, config.build.outputDirectory);
-const localDevES6 = path.join(tempFolder, config.build.localDevES6FolderName);
-const localDevUMD = path.join(tempFolder, config.build.localDevUMDFolderName);
-const ES6Package = path.join(tempFolder, config.build.ES6Package);
-const intermediateES6Package = path.join(tempFolder, config.build.intermediateES6Package);
+const localDevES6Folder = path.join(tempFolder, config.build.localDevES6FolderName);
+const localDevUMDFolder = path.join(tempFolder, config.build.localDevUMDFolderName);
+const sourceES6Folder = path.join(tempFolder, config.build.sourceES6FolderName);
+const distES6Folder = path.join(tempFolder, config.build.distES6FolderName);
+const packageES6Folder = path.join(tempFolder, config.build.packageES6FolderName);
 
 config.computed = {
     rootFolder,
     tempFolder,
     outputFolder,
-    localDevES6,
-    localDevUMD,
-    ES6Package,
-    intermediateES6Package
+    localDevES6Folder,
+    localDevUMDFolder,
+    sourceES6Folder,
+    distES6Folder,
+    packageES6Folder
 }
 
 config.modules.map(function(module) {
@@ -27,10 +29,11 @@ config.modules.map(function(module) {
     const mainDirectory = path.resolve(rootFolder, settings.build.mainFolder);
     const distFolder = (settings.build.distOutputDirectory !== undefined) ? settings.build.distOutputDirectory : module;
     const distDirectory = path.join(outputFolder, distFolder);
-    const localDevES6Directory = path.join(localDevES6, module);
-    const localDevUMDDirectory = path.join(localDevUMD, distFolder);
-    const ES6PackageDirectory = path.join(ES6Package, module);
-    const intermediateES6PackageDirectory = path.join(intermediateES6Package, module);
+    const localDevES6Directory = path.join(localDevES6Folder, module);
+    const localDevUMDDirectory = path.join(localDevUMDFolder, distFolder);
+    const sourceES6Directory = path.join(sourceES6Folder, module);
+    const distES6Directory = path.join(distES6Folder, module);
+    const packageES6Directory = path.join(packageES6Folder, module);
 
     const webpackConfigPath = path.join(mainDirectory, "webpack.config.js");
     const tsConfigPath = path.join(mainDirectory, "tsconfig.json");
@@ -40,7 +43,6 @@ config.modules.map(function(module) {
 
     const tsConfig = require(tsConfigPath);
     const srcDirectory = path.resolve(mainDirectory, tsConfig.compilerOptions.rootDir);
-    const intermediateES6PackageSrcDirectory = path.resolve(intermediateES6PackageDirectory, tsConfig.compilerOptions.rootDir);
 
     const shaderGlob = srcDirectory + "/**/*.fx";
     const shaderTSGlob = srcDirectory + "/**/*.fx.ts";
@@ -59,9 +61,9 @@ config.modules.map(function(module) {
         distDirectory,
         localDevES6Directory,
         localDevUMDDirectory,
-        ES6PackageDirectory,
-        intermediateES6PackageDirectory,
-        intermediateES6PackageSrcDirectory,
+        sourceES6Directory,
+        distES6Directory,
+        packageES6Directory,
         webpackConfigPath,
         tsConfigPath,
         packageJSONPath,
