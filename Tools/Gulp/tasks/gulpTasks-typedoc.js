@@ -6,7 +6,7 @@ var typedoc = require("gulp-typedoc");
 var validateTypedoc = require("../helpers/gulp-validateTypedoc");
 
 // Read the full config.
-var config = require("../config.json");
+var config = require("../../Config/config.json");
 
 /**
  * Generate the TypeDoc JSON output in order to create code metadata.

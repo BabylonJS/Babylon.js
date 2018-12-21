@@ -18,14 +18,14 @@ var tsLintConfig = {
 }
 
 // Read the full config.
-var config = require("../config.json");
+var config = require("../../Config/config.js");
 
 /*
  * TsLint all typescript files from the src directory.
  */
-var tsLintExternalLibrary = function(library, settings, watch) {
+var tsLintExternalLibrary = function(settings) {
     const fxFilter = filter(['**', '!**/*.fragment.ts', '!**/*.vertex.ts', '!**/ShadersInclude/**'], { restore: false });
-    return gulp.src((settings.build.srcDirectory) + "/**/*.ts")
+    return gulp.src((settings.computed.srcDirectory) + "/**/*.ts")
         .pipe(fxFilter)
         .pipe(gulpTslint(tsLintConfig))
         .pipe(gulpTslint.report());
@@ -39,12 +39,7 @@ config.modules.map(function(module) {
     gulp.task(module + "-tsLint", function() {
         var settings = config[module];
 
-        var tasks = settings.libraries.map(function(library) {
-            return tsLintExternalLibrary(library, settings, false);
-        });
-    
-        let mergedTasks = merge2(tasks);
-        return mergedTasks;
+        return tsLintExternalLibrary(settings, false);
     });
 });
 

@@ -4,7 +4,7 @@ var concat = require("gulp-concat");
 var replace = require("gulp-replace");
 
 // Read the full config.
-var config = require("../config.json");
+var config = require("../../Config/config.json");
 
 /**
  * Process the .d.ts files or Playground intellisense.

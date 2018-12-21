@@ -7,8 +7,7 @@ var processShaders = require("../helpers/gulp-processShaders");
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 
 // Read the full config.
-var configPath = "../config.json";
-var config = require(configPath);
+var config = require("../../Config/config.js");
 
 /**
  * Watch ts files and fire repective tasks.
@@ -17,7 +16,7 @@ gulp.task("watchLibraries", function startWatch() {
     var tasks = [];
 
     config.modules.map(function(module) {
-        var settings = config[module].build;
+        var settings = config[module].computed;
         if (!config[module].isCore && settings) {
             for (var index = 0; index < config[module].libraries.length; index++) {
                 var library = config[module].libraries[index];
@@ -25,9 +24,7 @@ gulp.task("watchLibraries", function startWatch() {
                     continue;
                 }
 
-                var configFolder = path.dirname(path.resolve(__dirname, configPath));
-                var wpConfigPath = path.join(settings.build.mainFolder, "webpack.config.js");
-                var wpConfig = require(path.resolve(configFolder, wpConfigPath));
+                var wpConfig = require(settings.webpackConfigPath);
 
                 // watch on.
                 wpConfig.watch = true;
@@ -35,16 +32,15 @@ gulp.task("watchLibraries", function startWatch() {
                 wpConfig.mode = "development";
                 wpConfig.devtool = "nosources-source-map";
 
-                var rootPath = path.resolve(__dirname, "../../../");
-                var absoluteSrc = path.resolve(__dirname, "../", settings.srcDirectory);
+                // Source Map Remapping for dev tools.
                 wpConfig.output.devtoolModuleFilenameTemplate = (info) => {
                     info.resourcePath = path.normalize(info.resourcePath);
 
                     if (!path.isAbsolute(info.resourcePath)) {
-                        info.resourcePath = path.join(absoluteSrc, info.resourcePath);
+                        info.resourcePath = path.join(settings.srcDirectory, info.resourcePath);
                     }
 
-                    return `../../../${path.relative(rootPath, info.resourcePath).replace(/\\/g, "/")}`;
+                    return `../../../${path.relative(config.computed.rootFolder, info.resourcePath).replace(/\\/g, "/")}`;
                 };
 
                 tasks.push(
@@ -53,9 +49,10 @@ gulp.task("watchLibraries", function startWatch() {
                         .pipe(processShaders(false))
                 );
 
-                var outputDirectory = config.build.tempDirectory + config.build.localDevUMDFolderName + settings.distOutputDirectory;
+                var outputDirectory = settings.localDevUMDDirectory;
                 tasks.push(
-                    webpackStream(wpConfig, webpack).pipe(gulp.dest(outputDirectory))
+                    webpackStream(wpConfig, webpack)
+                        .pipe(gulp.dest(outputDirectory))
                 );
 
                 tasks.push(

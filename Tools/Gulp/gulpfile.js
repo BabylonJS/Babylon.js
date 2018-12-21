@@ -17,7 +17,7 @@ require("./tasks/gulpTasks-tests");
 require("./tasks/gulpTasks-remapPaths");
 
 // Import Build Config
-var config = require("./config.json");
+var config = require("../Config/config.json");
 
 /**
  * Full TsLint.

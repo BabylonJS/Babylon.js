@@ -6,7 +6,7 @@ var fs = require('fs');
 var path = require('path');
 
 // Read the full config.
-var config = require("../config.json");
+var config = require("../../Config/config.json");
 
 // Comand line parsing.
 var commandLineOptions = minimist(process.argv.slice(2), {
@@ -20,8 +20,9 @@ var skipExtensions = [".js", ".glb", ".gltf", ".bin", ".html", ".gif", ".jpg", "
  * Embedded webserver for test convenience.
  */
 gulp.task("webserver", function() {
+    var rootRelativePath = "../../";
     var options = {
-        root: "../../.",
+        root: rootRelativePath,
         port: 1338,
         livereload: false,
         middleware: function(connect, opt) {
@@ -29,7 +30,7 @@ gulp.task("webserver", function() {
                 var extension = path.extname(decodeURIComponent(req.originalUrl));
                 if (req.originalUrl.indexOf(config.build.localDevES6FolderName) > -1 && skipExtensions.indexOf(extension) === -1) {
                     // Append .js for es6 modules.
-                    if (!fs.existsSync("../../" + req.originalUrl)) {
+                    if (!fs.existsSync(rootRelativePath + req.originalUrl)) {
                         req.url += ".js";
                     }
                 }

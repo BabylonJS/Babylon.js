@@ -11,7 +11,7 @@ var rename = require("gulp-rename");
 var rmDir = require("../../NodeHelpers/rmDir");
 
 // Read the full config.
-var config = require("../config.json");
+var config = require("../../Config/config.json");
 var relativeRootDir = "../../../";
 var rootDir = __dirname + "/" + relativeRootDir;
 

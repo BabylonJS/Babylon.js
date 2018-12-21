@@ -4,6 +4,7 @@
         "tempDirectory": "../../.temp/",
         "localDevES6FolderName": "localDevES6",
         "localDevUMDFolderName": "localDevUMD",
+        "ES6Package": "packageES6",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
@@ -46,15 +47,13 @@
         "libraries": [
             {
                 "output": "babylon.js",
-                "maxOutput": "babylon.max.js",
                 "entry": "./Legacy/legacy.ts"
             }
         ],
         "build": {
             "mainFolder": "../../src/",
-            "srcDirectory": "../../src/",
             "loseDTSFiles": "LibDeclarations/*.d.ts",
-            "distOutputDirectory": "/",
+            "distOutputDirectory": "",
             "packageJSON": "../../package.json",
             "umd": {
                 "packageName": "babylonjs",
@@ -176,8 +175,6 @@
         ],
         "build": {
             "mainFolder": "../../materialsLibrary/",
-            "srcDirectory": "../../materialsLibrary/src/",
-            "distOutputDirectory": "/materialsLibrary/",
             "umd": {
                 "packageName": "babylonjs-materials",
                 "webpackRoot": "MATERIALS",
@@ -217,8 +214,6 @@
         ],
         "build": {
             "mainFolder": "../../postProcessLibrary/",
-            "srcDirectory": "../../postProcessLibrary/src/",
-            "distOutputDirectory": "/postProcessesLibrary/",
             "umd": {
                 "packageName": "babylonjs-post-process",
                 "webpackRoot": "POSTPROCESSES",
@@ -298,8 +293,6 @@
         ],
         "build": {
             "mainFolder": "../../proceduralTexturesLibrary/",
-            "srcDirectory": "../../proceduralTexturesLibrary/src/",
-            "distOutputDirectory": "/proceduralTexturesLibrary/",
             "umd": {
                 "packageName": "babylonjs-procedural-textures",
                 "webpackRoot": "PROCEDURALTEXTURES",
@@ -354,8 +347,6 @@
         ],
         "build": {
             "mainFolder": "../../loaders/",
-            "srcDirectory": "../../loaders/src/",
-            "distOutputDirectory": "/loaders/",
             "umd": {
                 "packageName": "babylonjs-loaders",
                 "webpackRoot": "LOADERS",
@@ -414,8 +405,6 @@
         ],
         "build": {
             "mainFolder": "../../serializers/",
-            "srcDirectory": "../../serializers/src/",
-            "distOutputDirectory": "/serializers/",
             "umd": {
                 "packageName": "babylonjs-serializers",
                 "webpackRoot": "SERIALIZERS",
@@ -466,8 +455,6 @@
         ],
         "build": {
             "mainFolder": "../../gui/",
-            "srcDirectory": "../../gui/src/",
-            "distOutputDirectory": "/gui/",
             "umd": {
                 "packageName": "babylonjs-gui",
                 "webpackRoot": "BABYLON.GUI",
@@ -494,15 +481,12 @@
         "libraries": [
             {
                 "output": "babylon.inspector.bundle.js",
-                "maxOutput": "babylon.inspector.bundle.max.js",
                 "entry": "./legacy/legacy.ts"
             }
         ],
         "build": {
             "ignoreInTestMode": true,
             "mainFolder": "../../inspector/",
-            "srcDirectory": "../../inspector/src/",
-            "distOutputDirectory": "/inspector/",
             "umd": {
                 "packageName": "babylonjs-inspector",
                 "webpackRoot": "INSPECTOR",
@@ -532,7 +516,6 @@
         ],
         "build": {
             "webpack": "../../../Viewer/webpack.gulp.config.js",
-            "srcDirectory": "../../Viewer/src/",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
                 "name": "babylonjs-viewer",
@@ -609,7 +592,6 @@
         ],
         "build": {
             "webpack": "../../../Viewer/webpack.assets.config.js",
-            "srcDirectory": "../../Viewer/src/",
             "distOutputDirectory": "/viewer/",
             "umd": {
                 "packageName": "babylonjs-viewer-assets"

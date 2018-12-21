@@ -1,11 +1,8 @@
-const path = require('path');
 const webpack = require('webpack');
 const babylonExternals = require('./babylonExternals');
 const hardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
-var configPath = "../Gulp/config.json";
-const configFolder = path.dirname(path.resolve(__dirname, configPath));
-const config = require(configPath);
+const config = require("../Config/config.js");
 
 module.exports = function defaultConfig(options) {
     if (!options) {
@@ -15,21 +12,17 @@ module.exports = function defaultConfig(options) {
     const module = options.module;
     const settings = config[module];
 
-    const src = path.resolve(__dirname, settings.build.srcDirectory);
-    const wpConfigPath = path.join(settings.build.mainFolder, "webpack.config.js");
-    const webpackFolder = path.dirname(path.resolve(configFolder, wpConfigPath));
-
     options.resolveExtensions = options.resolveExtensions || [];
     options.moduleRules = options.moduleRules || [];
     options.plugins = options.plugins || [];
 
     return {
-        context: src,
+        context: settings.computed.srcDirectory,
         entry: {
-            [settings.build.umd.packageName]: path.resolve(src, settings.libraries[0].entry),
+            [settings.build.umd.packageName]: settings.libraries[0].computed.entryPath,
         },
         output: {
-            path: path.resolve(__dirname, config.build.outputDirectory) + settings.build.distOutputDirectory,
+            path: settings.computed.distDirectory,
             filename: settings.libraries[0].output,
             libraryTarget: 'umd',
             library: {
@@ -49,7 +42,7 @@ module.exports = function defaultConfig(options) {
                 test: /\.tsx?$/,
                 loader: 'awesome-typescript-loader',
                 options: {
-                    configFileName: path.resolve(webpackFolder, './tsconfig.json'),
+                    configFileName: settings.computed.tsConfigPath,
                     declaration: false
                 }
             }, ...options.moduleRules]

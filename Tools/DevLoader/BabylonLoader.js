@@ -158,21 +158,32 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadLibrary = function(library, module) {
+        Loader.prototype.loadLibrary = function(moduleName, library, module) {
             if (library.preventLoadLibrary) {
                 return;
             }
 
+            var distFolder = (module.build.distOutputDirectory !== undefined) ?
+                module.build.distOutputDirectory :
+                "/" + moduleName;
+            distFolder += "/";
+            
             if (!useDist) {
-                var tempDirectory = '/.temp/' + localDevUMDFolderName + module.build.distOutputDirectory;
+                var tempDirectory = '/.temp/' + localDevUMDFolderName + distFolder;
                 this.loadScript(babylonJSPath + tempDirectory + library.output);
             }
-            else if (module.build.distOutputDirectory && (!testMode || !module.build.ignoreInTestMode)) {
+            else if (!testMode || !module.build.ignoreInTestMode) {
                 if (min) {
-                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
+                    this.loadScript(babylonJSPath + '/dist/preview release' + distFolder + library.output);
                 }
                 else {
-                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + (library.maxOutput || library.output.replace(".min", "")));
+                    var isMinOutputName = library.output.indexOf(".min.") > -1;
+                    if (isMinOutputName) {
+                        this.loadScript(babylonJSPath + '/dist/preview release' + distFolder + library.output.replace(".min", ""));
+                    }
+                    else {
+                        this.loadScript(babylonJSPath + '/dist/preview release' + distFolder + library.output.replace(".js", ".max.js"));
+                    }
                 }
             }
         }
@@ -182,13 +193,13 @@ var BABYLONDEVTOOLS;
             this.loadESMScript(babylonJSPath + "/.temp/" + localDevES6FolderName + "/core/legacy/legacy.js");
         }
 
-        Loader.prototype.loadModule = function(module) {
+        Loader.prototype.loadModule = function(moduleName, module) {
             for (var i = 0; i < module.libraries.length; i++) {
                 if (!useDist && module.isCore) {
                     this.loadCoreDev();
                 }
                 else {
-                    this.loadLibrary(module.libraries[i], module);
+                    this.loadLibrary(moduleName, module.libraries[i], module);
                 }
             }
         }
@@ -214,7 +225,7 @@ var BABYLONDEVTOOLS;
         Loader.prototype.loadBJSScripts = function(settings) {
             // Load all the modules from the config.json.
             for (var i = 0; i < settings.modules.length; i++) {
-                this.loadModule(settings[settings.modules[i]]);
+                this.loadModule(settings.modules[i], settings[settings.modules[i]]);
             }
         }
 
@@ -223,7 +234,7 @@ var BABYLONDEVTOOLS;
             if (newCallback) {
                 callback = newCallback;
             }
-            getJson('/Tools/Gulp/config.json',
+            getJson('/Tools/Config/config.json',
                 function(data) {
                     localDevES6FolderName = data.build.localDevES6FolderName;
                     localDevUMDFolderName = data.build.localDevUMDFolderName;
