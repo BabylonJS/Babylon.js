@@ -4,7 +4,7 @@ var webpack = require('webpack');
 var webpackStream = require("webpack-stream");
 var cp = require('child_process');
 var path = require("path");
-var append = require('gulp-append');
+var concat = require('gulp-concat');
 
 // Gulp Helpers
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
@@ -107,8 +107,9 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        return gulp.src([path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles)])
-            .pipe(append(tempTypingsFile));
+        return gulp.src([tempTypingsFile, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles)])
+            .pipe(concat("toto.txt"))
+            .pipe(gulp.dest(config.computed.tempFolder));
     }
     return Promise.resolve();
 }
