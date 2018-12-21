@@ -17,8 +17,8 @@ var config = require("../../Config/config.js");
  * Clean folders.
  */
 var clean = function(settings, cb) {
-    rmDir(settings.computed.intermediateES6PackageDirectory);
-    rmDir(settings.computed.ES6PackageDirectory);
+    rmDir(settings.computed.sourceES6Directory);
+    rmDir(settings.computed.distES6Directory);
     cb();
 }
 
@@ -27,7 +27,7 @@ var clean = function(settings, cb) {
  */
 var source = function(settings) {
     return gulp.src(settings.computed.mainDirectory + "/**/*")
-        .pipe(gulp.dest(settings.computed.intermediateES6PackageDirectory));
+        .pipe(gulp.dest(settings.computed.sourceES6Directory));
 }
 
 /**
@@ -50,7 +50,7 @@ var dep = function(settings) {
     }
 
     return gulp.src(copyPaths, { base: config.computed.rootFolder })
-        .pipe(gulp.dest(config.computed.intermediateES6Package));
+        .pipe(gulp.dest(config.computed.sourceES6FolderName));
 }
 
 /**
@@ -59,11 +59,11 @@ var dep = function(settings) {
 var build = function(settings, cb) {
     // Launch TSC.
     const options = {
-        cwd: settings.computed.intermediateES6PackageDirectory,
+        cwd: settings.computed.sourceES6Directory,
         verbose: true
     };
 
-    let command = `tsc --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.ES6PackageDirectory}"`;
+    let command = `tsc --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.distES6Directory}"`;
     shelljs.exec(command, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);
@@ -109,7 +109,8 @@ var modifySources = function(settings) {
         }
     }
 
-    return gulp.src([settings.computed.intermediateES6PackageDirectory + "/**/*.ts", settings.computed.intermediateES6PackageDirectory + "/**/*.tsx"])
+    return gulp.src([settings.computed.sourceES6Directory + "/**/*.ts", 
+        settings.computed.sourceES6Directory + "/**/*.tsx"])
         .pipe(processImports(replacements));
 }
 
@@ -133,7 +134,7 @@ var modifyTsConfig = function(settings, cb) {
             if (module.build.umd.packageName === pathName) {
                 if (module.build.es6.packageName) {
                     newPathName = module.build.es6.packageName + "*";
-                    newPaths[newPathName] = [ module.computed.ES6PackageDirectory.replace(/\\/g, "/") ];
+                    newPaths[newPathName] = [ module.computed.distES6Directory.replace(/\\/g, "/") ];
                     mapped = true;
                     break;
                 }
@@ -146,7 +147,7 @@ var modifyTsConfig = function(settings, cb) {
 
     tsconfig.compilerOptions.paths = newPaths;
 
-    const destTsConfig = path.join(settings.computed.intermediateES6PackageDirectory, "tsconfig.json");
+    const destTsConfig = path.join(settings.computed.sourceES6Directory, "tsconfig.json");
     fs.writeJSONSync(destTsConfig, tsconfig);
 
     cb();
@@ -157,11 +158,11 @@ var modifyTsConfig = function(settings, cb) {
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        const indexDTS = path.join(settings.computed.ES6PackageDirectory, "index.d.ts");
+        const indexDTS = path.join(settings.computed.distES6Directory, "index.d.ts");
         return gulp.src([indexDTS, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles)])
             .pipe(concat("index.d.ts"))
             .pipe(processLooseDeclaration())
-            .pipe(gulp.dest(settings.computed.ES6PackageDirectory));
+            .pipe(gulp.dest(settings.computed.distES6Directory));
     }
     return Promise.resolve();
 }
@@ -189,7 +190,7 @@ function buildES6Library(settings) {
 /**
  * Dynamic es 6 module creation.
  */
-config.modules.map(function(module) {
+config.modulesES6.map(function(module) {
     const settings = config[module];
     gulp.task(module + "-es6", buildES6Library(settings));
 });
