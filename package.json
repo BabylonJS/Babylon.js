@@ -60,7 +60,6 @@
         "file-loader": "~2.0.0",
         "fs-extra": "^5.0.0",
         "gulp": "^4.0.0",
-        "gulp-append": "^0.3.4",
         "gulp-concat": "~2.6.1",
         "gulp-connect": "^5.6.1",
         "gulp-filter": "^5.1.0",
