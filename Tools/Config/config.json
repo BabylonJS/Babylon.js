@@ -1,7 +1,7 @@
 {
     "build": {
         "outputDirectory": "../../dist/preview release",
-        "tempDirectory": "../../.temp/",
+        "tempDirectory": "./.temp/",
         "localDevES6FolderName": "localDevES6",
         "localDevUMDFolderName": "localDevUMD",
         "ES6Package": "packageES6",
@@ -51,10 +51,10 @@
             }
         ],
         "build": {
-            "mainFolder": "../../src/",
+            "mainFolder": "./src/",
             "loseDTSFiles": "LibDeclarations/*.d.ts",
             "distOutputDirectory": "",
-            "packageJSON": "../../package.json",
+            "packageJSON": "package.json",
             "umd": {
                 "packageName": "babylonjs",
                 "webpackRoot": "BABYLON",
@@ -174,7 +174,7 @@
             }
         ],
         "build": {
-            "mainFolder": "../../materialsLibrary/",
+            "mainFolder": "./materialsLibrary/",
             "umd": {
                 "packageName": "babylonjs-materials",
                 "webpackRoot": "MATERIALS",
@@ -213,7 +213,7 @@
             }
         ],
         "build": {
-            "mainFolder": "../../postProcessLibrary/",
+            "mainFolder": "./postProcessLibrary/",
             "umd": {
                 "packageName": "babylonjs-post-process",
                 "webpackRoot": "POSTPROCESSES",
@@ -292,7 +292,7 @@
             }
         ],
         "build": {
-            "mainFolder": "../../proceduralTexturesLibrary/",
+            "mainFolder": "./proceduralTexturesLibrary/",
             "umd": {
                 "packageName": "babylonjs-procedural-textures",
                 "webpackRoot": "PROCEDURALTEXTURES",
@@ -346,7 +346,7 @@
             }
         ],
         "build": {
-            "mainFolder": "../../loaders/",
+            "mainFolder": "./loaders/",
             "umd": {
                 "packageName": "babylonjs-loaders",
                 "webpackRoot": "LOADERS",
@@ -404,7 +404,7 @@
             }
         ],
         "build": {
-            "mainFolder": "../../serializers/",
+            "mainFolder": "./serializers/",
             "umd": {
                 "packageName": "babylonjs-serializers",
                 "webpackRoot": "SERIALIZERS",
@@ -454,7 +454,7 @@
             }
         ],
         "build": {
-            "mainFolder": "../../gui/",
+            "mainFolder": "./gui/",
             "umd": {
                 "packageName": "babylonjs-gui",
                 "webpackRoot": "BABYLON.GUI",
@@ -486,7 +486,7 @@
         ],
         "build": {
             "ignoreInTestMode": true,
-            "mainFolder": "../../inspector/",
+            "mainFolder": "./inspector/",
             "umd": {
                 "packageName": "babylonjs-inspector",
                 "webpackRoot": "INSPECTOR",

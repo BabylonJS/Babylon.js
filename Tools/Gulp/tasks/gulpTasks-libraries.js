@@ -4,7 +4,7 @@ var webpack = require('webpack');
 var webpackStream = require("webpack-stream");
 var cp = require('child_process');
 var path = require("path");
-var concat = require("gulp-concat");
+var append = require('gulp-append');
 
 // Gulp Helpers
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
@@ -17,9 +17,11 @@ var del = require("del");
 var config = require("../../Config/config.js");
 
 // Constants
-const tempTypingsFileName = "tempTypings.js";
+const tempTypingsAMDFileName = "tempTypings.js";
+const tempTypingsFileName = tempTypingsAMDFileName.replace(".js", ".d.ts");
+
+const tempTypingsAMDFile = path.join(config.computed.tempFolder, tempTypingsAMDFileName);
 const tempTypingsFile = path.join(config.computed.tempFolder, tempTypingsFileName);
-const tempTypingsPath = path.join(config.computed.tempFolder, tempTypingsFileName.replace(".js", ".d.ts"));
 
 /**
  * Clean shader ts files.
@@ -93,7 +95,7 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
     let library = libraries[0];
     if (!library.preventLoadLibrary) {
         // Generate DTS the old way...
-        cp.execSync(`tsc --module amd --outFile "${tempTypingsFile}" --emitDeclarationOnly true`, {
+        cp.execSync(`tsc --module amd --outFile "${tempTypingsAMDFile}" --emitDeclarationOnly true`, {
             cwd: settings.computed.srcDirectory
         });
     }
@@ -105,11 +107,11 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        console.log(tempTypingsPath);
+        console.log(tempTypingsFile);
+        console.log(tempTypingsFileName);
         console.log(path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles));
-        return gulp.src([tempTypingsPath, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles)])
-            .pipe(concat(tempTypingsPath))
-            .pipe(gulp.dest(tempTypingsPath));
+        return gulp.src([path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles)])
+            .pipe(append(tempTypingsFile));
     }
     return Promise.resolve();
 }
@@ -128,7 +130,7 @@ var processDTSFiles = function(libraries, settings, cb) {
         let fileLocation = path.join(outputDirectory, settings.build.umd.processDeclaration.filename);
 
         // Convert the tsc AMD BUNDLED declaration to our expected one
-        processAmdDeclarationToModule(tempTypingsPath, {
+        processAmdDeclarationToModule(tempTypingsFile, {
             output: fileLocation,
             moduleName: settings.build.umd.packageName,
             entryPoint: library.entry,
