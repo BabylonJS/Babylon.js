@@ -19,11 +19,13 @@ module.exports = function defaultConfig(options) {
     return {
         context: settings.computed.srcDirectory,
         entry: {
-            [settings.build.umd.packageName]: settings.libraries[0].computed.entryPath,
+            [settings.build.umd.packageName]: settings.libraries[0].computed.entryPath
         },
         output: {
             path: settings.computed.distDirectory,
-            filename: settings.libraries[0].output,
+            filename: settings.libraries[0].output
+                .replace(".min.", ".")
+                .replace(".max.", "."),
             libraryTarget: 'umd',
             library: {
                 root: settings.build.umd.webpackRoot.split("."),

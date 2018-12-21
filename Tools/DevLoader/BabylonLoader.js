@@ -170,7 +170,9 @@ var BABYLONDEVTOOLS;
             
             if (!useDist) {
                 var tempDirectory = '/.temp/' + localDevUMDFolderName + distFolder;
-                this.loadScript(babylonJSPath + tempDirectory + library.output);
+                this.loadScript((babylonJSPath + tempDirectory + library.output)
+                    .replace(".min.", ".")
+                    .replace(".max.", "."));
             }
             else if (!testMode || !module.build.ignoreInTestMode) {
                 if (min) {
