@@ -128,6 +128,7 @@ function main(isCore) {
 export var ${shaderName} = { name, shader };`)
 
             // Go to disk.
+            console.log(directory + '/' + tsFilename);
             fs.writeFileSync(directory + '/' + tsFilename, tsContent);
 
             return cb();
