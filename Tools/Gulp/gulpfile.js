@@ -55,7 +55,7 @@ gulp.task("run", gulp.series("watchCore", "watchLibraries", "webserver"));
 /**
  * Do it all (Build).
  */
-gulp.task("typescript-all", gulp.series("typescript-libraries", "netlify-cleanup"));
+gulp.task("typescript-all", gulp.series("typescript-libraries", "typescript-es6", "netlify-cleanup"));
 
 /**
  * Do it all (tests).
