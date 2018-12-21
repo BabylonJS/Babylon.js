@@ -40,6 +40,7 @@ config.modules.map(function(module) {
 
     const tsConfig = require(tsConfigPath);
     const srcDirectory = path.resolve(mainDirectory, tsConfig.compilerOptions.rootDir);
+    const intermediateES6PackageSrcDirectory = path.resolve(intermediateES6PackageDirectory, tsConfig.compilerOptions.rootDir);
 
     const shaderGlob = srcDirectory + "/**/*.fx";
     const shaderTSGlob = srcDirectory + "/**/*.fx.ts";
@@ -60,6 +61,7 @@ config.modules.map(function(module) {
         localDevUMDDirectory,
         ES6PackageDirectory,
         intermediateES6PackageDirectory,
+        intermediateES6PackageSrcDirectory,
         webpackConfigPath,
         tsConfigPath,
         packageJSONPath,
