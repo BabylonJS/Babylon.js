@@ -54,7 +54,7 @@ module.exports = function defaultConfig(options) {
             hints: false
         },
         plugins: [
-            // new hardSourceWebpackPlugin(),
+            new hardSourceWebpackPlugin(),
             new webpack.WatchIgnorePlugin([
                 /\.js$/,
                 /\.d\.ts$/,
