@@ -192,3 +192,7 @@
 - `Viewport.toglobal` does not allow passing engine in to prevent circular dependency ([Sebavan](https://github.com/Sebavan))
 - `Vector3.UnprojectRayToRef` has been moved to `Ray.unprojectRayToRef` instance method to decrease class coupling ([Sebavan](https://github.com/Sebavan))
 - `Material.ParseMultiMaterial` has been moved to `MultiMaterial.ParseMultiMaterial` to decrease class coupling ([Sebavan](https://github.com/Sebavan))
+- no more `babylon.no-module.max.js` javascript version has the Webpack UMD bundle covers both ([Sebavan]
+(https://github.com/Sebavan))
+- no more `es6.js` javascript as it is now available as a true es6 npm package ([Sebavan](https://github.com/Sebavan))
+- no more `babylon.worker.js` javascript following the lack of usage from the feature ([Sebavan](https://github.com/Sebavan))
