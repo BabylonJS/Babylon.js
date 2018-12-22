@@ -21,7 +21,7 @@ gulp.task("watchCore-cleanShaders", async function startWatch() {
     var settings = config[module].computed;
 
     // Clean shaders.
-    await del([settings.shaderTSGlob], { force: true });
+    await del(settings.shaderTSGlob, { force: true });
 
     // Generate shaders.
     return gulp.src(settings.shaderGlob)

@@ -27,7 +27,7 @@ const tempTypingsFile = path.join(config.computed.tempFolder, tempTypingsFileNam
  * Clean shader ts files.
  */
 var cleanShaders = function(settings) {
-    return del([settings.computed.shaderTSGlob], { force: true });
+    return del(settings.computed.shaderTSGlob, { force: true });
 }
 
 /**

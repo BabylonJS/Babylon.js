@@ -9,17 +9,36 @@ var concat = require('gulp-concat');
 var rmDir = require("../../NodeHelpers/rmDir");
 var processImports = require("../helpers/gulp-processImportsToEs6");
 var processLooseDeclaration = require("../helpers/gulp-processLooseDeclarationEs6");
+var uncommentShaders = require('../helpers/gulp-removeShaderComments');
+var processShaders = require("../helpers/gulp-processShaders");
+var del = require("del");
 
 // Import Build Config
 var config = require("../../Config/config.js");
 
 /**
- * Clean folders.
+ * Clean Source And Dist folders.
  */
-var clean = function(settings, cb) {
+var cleanSourceAndDist = function(settings, cb) {
     rmDir(settings.computed.sourceES6Directory);
     rmDir(settings.computed.distES6Directory);
     cb();
+}
+
+/**
+ * Clean shader ts files.
+ */
+var cleanShaders = function(settings) {
+    return del(settings.computed.shaderTSGlob, { force: true });
+}
+
+/**
+ * Create shader ts files.
+ */
+var buildShaders = function(settings) {
+    return gulp.src(settings.computed.shaderGlob)
+            .pipe(uncommentShaders())
+            .pipe(processShaders(settings.isCore));
 }
 
 /**
@@ -220,11 +239,17 @@ function buildES6Library(settings, module) {
     // Creates the required tasks.
     var tasks = [];
 
-    var cleanup = function(cb) { return clean(settings, cb); };
+    var cleanTasks = [
+        function cleanES6(cb) { return cleanSourceAndDist(settings, cb); },
+        function cleanES6Shaders() { return cleanShaders(settings); }
+    ];
+    var shaders = function() { return buildShaders(settings); };
     var copySource = function() { return source(settings); };
     var dependencies = function() { return dep(settings); };
     var adaptSourceImportPaths = function() { return modifySources(settings); };
     var adaptTsConfigImportPaths = function(cb) { return modifyTsConfig(settings, cb); };
+
+    // Build with ts or webpack
     var buildSteps = null;
     if (settings.build.es6.webpackBuild) {
         buildSteps = [
@@ -239,7 +264,7 @@ function buildES6Library(settings, module) {
         ];
     }
 
-    tasks.push(cleanup, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, ...buildSteps);
+    tasks.push(...cleanTasks, shaders, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, ...buildSteps);
 
     return gulp.series.apply(this, tasks);
 }
