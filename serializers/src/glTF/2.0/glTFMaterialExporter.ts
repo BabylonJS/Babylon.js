@@ -1,5 +1,21 @@
-import { Nullable, Color3, Scalar, Material, StandardMaterial, PBRMetallicRoughnessMaterial, PBRMaterial, Tools, Engine, Scene, Texture, PostProcess, RawTexture, BaseTexture, TextureTools, Vector2 } from "babylonjs";
 import { ITextureInfo, ImageMimeType, IMaterial, IMaterialPbrMetallicRoughness, MaterialAlphaMode, IMaterialOcclusionTextureInfo, ISampler, TextureMagFilter, TextureMinFilter, TextureWrapMode, ITexture, IImage } from "babylonjs-gltf2interface";
+
+import { Nullable } from "babylonjs/types";
+import { Vector2, Color3 } from "babylonjs/Maths/math";
+import { Scalar } from "babylonjs/Maths/math.scalar";
+import { Tools } from "babylonjs/Misc/tools";
+import { TextureTools } from "babylonjs/Misc/textureTools";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { RawTexture } from "babylonjs/Materials/Textures/rawTexture";
+import { Material } from "babylonjs/Materials/material";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
+import { PostProcess } from "babylonjs/PostProcesses/postProcess";
+import { Engine } from "babylonjs/Engines/engine";
+import { Scene } from "babylonjs/scene";
+
 import { _Exporter } from "./glTFExporter";
 
 /**

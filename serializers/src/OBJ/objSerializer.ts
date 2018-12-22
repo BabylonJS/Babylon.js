@@ -1,4 +1,10 @@
-import { Mesh, Nullable, Matrix, Geometry, Tools, StandardMaterial } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Matrix } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Geometry } from "babylonjs/Meshes/geometry";
+import { Mesh } from "babylonjs/Meshes/mesh";
 
 /**
  * Class for generating OBJ data from a Babylon scene.
