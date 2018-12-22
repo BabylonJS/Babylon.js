@@ -1,4 +1,7 @@
-import { ProceduralTexture, Scene, Texture, serialize, SerializationHelper } from "babylonjs";
+import { serialize, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "babylonjs/scene";
 
 import "./starfieldProceduralTexture.fragment";
 
