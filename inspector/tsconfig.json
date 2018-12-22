@@ -19,7 +19,7 @@
             ],
             "babylonjs/*": [
                 "../../dist/preview release/babylon.module.d.ts"
-            ],
+            ]
         }
     }
 }
