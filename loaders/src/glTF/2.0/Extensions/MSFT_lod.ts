@@ -1,4 +1,10 @@
-import { Observable, Nullable, Deferred, Mesh, TransformNode, Material } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Observable } from "babylonjs/Misc/observable";
+import { Deferred } from "babylonjs/Misc/deferred";
+import { Material } from "babylonjs/Materials/material";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Mesh } from "babylonjs/Meshes/mesh";
+
 import { INode, IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";

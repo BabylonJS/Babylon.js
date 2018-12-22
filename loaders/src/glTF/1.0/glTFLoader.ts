@@ -1,6 +1,37 @@
 import { IGLTFRuntime, IGLTFTechniqueParameter, IGLTFAnimation, IGLTFAnimationSampler, IGLTFNode, IGLTFSkins, INodeToRoot, IJointNode, IGLTFMesh, IGLTFAccessor, IGLTFLight, IGLTFAmbienLight, IGLTFDirectionalLight, IGLTFPointLight, IGLTFSpotLight, IGLTFCamera, IGLTFCameraPerspective, IGLTFScene, IGLTFTechnique, IGLTFMaterial, EParameterType, IGLTFProgram, IGLTFBuffer, IGLTFTexture, IGLTFImage, IGLTFSampler, ETextureFilterType, IGLTFShader, IGLTFTechniqueStates, ECullingType, EBlendingFunction, EShaderType } from "./glTFLoaderInterfaces";
+
+import { FloatArray, Nullable } from "babylonjs/types";
+import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { Camera } from "babylonjs/Cameras/camera";
+import { FreeCamera } from "babylonjs/Cameras/freeCamera";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Animation } from "babylonjs/Animations/animation";
+import { Bone } from "babylonjs/Bones/bone";
+import { Skeleton } from "babylonjs/Bones/skeleton";
+import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+import { Effect } from "babylonjs/Materials/effect";
+import { Material } from "babylonjs/Materials/material";
+import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Node } from "babylonjs/node";
+import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { Geometry } from "babylonjs/Meshes/geometry";
+import { SubMesh } from "babylonjs/Meshes/subMesh";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
+import { DirectionalLight } from "babylonjs/Lights/directionalLight";
+import { PointLight } from "babylonjs/Lights/pointLight";
+import { SpotLight } from "babylonjs/Lights/spotLight";
+import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+import { Engine } from "babylonjs/Engines/engine";
+import { Scene } from "babylonjs/scene";
+
 import { GLTFUtils } from "./glTFLoaderUtils";
-import { Nullable, Node, Tools, Bone, Animation, Quaternion, Vector3, Matrix, Skeleton, Mesh, Material, VertexData, VertexBuffer, FloatArray, StandardMaterial, MultiMaterial, Geometry, SubMesh, HemisphericLight, Color3, DirectionalLight, PointLight, SpotLight, FreeCamera, Camera, AbstractMesh, ShaderMaterial, Effect, Texture, Scene, Engine, SceneLoaderProgressEvent, IParticleSystem, AnimationGroup } from "babylonjs";
 import { GLTFFileLoader, IGLTFLoader, GLTFLoaderState, IGLTFLoaderData } from "../glTFFileLoader";
 import { GLTFLoaderExtension } from "./glTFLoaderExtension";
 

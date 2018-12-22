@@ -2,7 +2,14 @@ import { GLTFLoaderExtension, GLTFLoaderBase } from ".";
 
 import { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 
-import { HemisphericLight, Vector3, Color3, PointLight, DirectionalLight, SpotLight, Tools, Material, StandardMaterial } from "babylonjs";
+import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { Material } from "babylonjs/Materials/material";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
+import { DirectionalLight } from "babylonjs/Lights/directionalLight";
+import { PointLight } from "babylonjs/Lights/pointLight";
+import { SpotLight } from "babylonjs/Lights/spotLight";
 
 import { GLTFLoader } from "./glTFLoader";
 

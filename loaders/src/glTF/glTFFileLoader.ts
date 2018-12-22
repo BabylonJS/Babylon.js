@@ -1,5 +1,18 @@
-import { IDisposable, Nullable, Scene, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, Observable, Observer, SceneLoaderProgressEvent, AbstractMesh, IParticleSystem, Skeleton, AnimationGroup, BaseTexture, Material, Camera, ISceneLoaderPluginExtensions, ISceneLoaderPlugin, AssetContainer, Tools, SceneLoader } from "babylonjs";
 import { IGLTFValidationResults, IGLTFValidationOptions } from "babylonjs-gltf2interface";
+
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Tools } from "babylonjs/Misc/tools";
+import { Camera } from "babylonjs/Cameras/camera";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Skeleton } from "babylonjs/Bones/skeleton";
+import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Material } from "babylonjs/Materials/material";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { SceneLoader, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderProgressEvent, ISceneLoaderPluginExtensions } from "babylonjs/Loading/sceneLoader";
+import { AssetContainer } from "babylonjs/assetContainer";
+import { Scene, IDisposable } from "babylonjs/scene";
 
 /**
  * glTF validator object

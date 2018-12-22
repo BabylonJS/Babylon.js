@@ -1,4 +1,10 @@
-import { BaseTexture, Nullable, RawCubeTexture, Quaternion, Matrix, SphericalHarmonics, SphericalPolynomial, Scalar } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Scalar } from "babylonjs/Maths/math.scalar";
+import { SphericalHarmonics, SphericalPolynomial } from "babylonjs/Maths/sphericalPolynomial";
+import { Quaternion, Matrix } from "babylonjs/Maths/math";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { RawCubeTexture } from "babylonjs/Materials/Textures/rawCubeTexture";
+
 import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";

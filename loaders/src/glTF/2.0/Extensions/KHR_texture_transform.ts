@@ -1,4 +1,7 @@
-import { BaseTexture, Nullable, Texture } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+
 import { ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";

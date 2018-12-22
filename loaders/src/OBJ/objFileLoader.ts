@@ -1,5 +1,18 @@
-import { Geometry, Mesh, SceneLoader, Vector3, Vector2, Tools, Color3, StandardMaterial, Nullable, Scene, Texture, ISceneLoaderPluginAsync, SceneLoaderProgressEvent, AbstractMesh, IParticleSystem, Skeleton, AnimationGroup, AssetContainer, VertexData } from "babylonjs";
-
+import { Nullable } from "babylonjs/types";
+import { Vector3, Vector2, Color3 } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
+import { Geometry } from "babylonjs/Meshes/geometry";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Skeleton } from "babylonjs/Bones/skeleton";
+import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { SceneLoader, ISceneLoaderPluginAsync, SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+import { AssetContainer } from "babylonjs/assetContainer";
+import { Scene } from "babylonjs/scene";
 /**
  * Class reading and parsing the MTL file bundled with the obj file.
  */
