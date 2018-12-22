@@ -116,6 +116,10 @@ function processEs6Packages(version) {
         let module = config[moduleName];
         let es6Config = module.build.es6;
 
+        if (!es6Config) {
+            return;
+        }
+
         colorConsole.log("Process " + "ES6".magenta + " Package: " + moduleName.blue.bold);
 
         let distPath = module.computed.distES6Directory;
