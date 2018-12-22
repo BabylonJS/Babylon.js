@@ -189,3 +189,6 @@
   - `TransformNode` objects are excluded from the returned list of meshes when importing mesh
   - `TransformNode` objects do not raise `onMeshLoaded` events
 - `xAxisMesh`, `yAxisMesh`, and `zAxisMesh` of `AxesViewer` was renamed to `xAxis`, `yAxis`, and `zAxis` respectively and now return a `TransformNode` to represent the parent node of the cylinder and line of the arrow ([bghgary](https://github.com/bghgary))
+- `Viewport.toglobal` does not allow passing engine in to prevent circular dependency ([Sebavan](https://github.com/Sebavan))
+- `Vector3.UnprojectRayToRef` has been moved to `Ray.unprojectRayToRef` instance method to decrease class coupling ([Sebavan](https://github.com/Sebavan))
+- `Material.ParseMultiMaterial` has been moved to `MultiMaterial.ParseMultiMaterial` to decrease class coupling ([Sebavan](https://github.com/Sebavan))
