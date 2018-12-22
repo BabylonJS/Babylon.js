@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs-extra");
 
 const config = require("./config.json");
 const configFolder = __dirname;
@@ -41,23 +42,8 @@ config.modules.map(function(module) {
         path.join(rootFolder, settings.build.packageJSON) : 
         path.join(distDirectory, 'package.json');
 
-    const tsConfig = require(tsConfigPath);
-    const srcDirectory = path.resolve(mainDirectory, tsConfig.compilerOptions.rootDir);
-
-    const shaderGlob = srcDirectory + "/**/*.fx";
-    const shaderTSGlob = srcDirectory + "/**/*.fx.ts";
-
-    for (let library of settings.libraries) {
-        const entryPath = path.join(srcDirectory, library.entry);
-
-        library.computed = {
-            entryPath
-        };
-    }
-
     settings.computed = {
         mainDirectory,
-        srcDirectory,
         distDirectory,
         localDevES6Directory,
         localDevUMDDirectory,
@@ -66,9 +52,28 @@ config.modules.map(function(module) {
         packageES6Directory,
         webpackConfigPath,
         tsConfigPath,
-        packageJSONPath,
-        shaderGlob,
-        shaderTSGlob
+        packageJSONPath
+    }
+
+    // Prevent es6 bundled lib crash.
+    if (fs.existsSync(tsConfigPath)) {
+        const tsConfig = require(tsConfigPath);
+        const srcDirectory = path.resolve(mainDirectory, tsConfig.compilerOptions.rootDir);
+
+        const shaderGlob = srcDirectory + "/**/*.fx";
+        const shaderTSGlob = srcDirectory + "/**/*.fx.ts";
+
+        for (let library of settings.libraries) {
+            const entryPath = path.join(srcDirectory, library.entry);
+
+            library.computed = {
+                entryPath
+            };
+        }
+
+        settings.computed.srcDirectory = srcDirectory;
+        settings.computed.shaderGlob = shaderGlob;
+        settings.computed.shaderTSGlob = shaderTSGlob;
     }
 });
 
