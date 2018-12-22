@@ -2,7 +2,7 @@
 
 module BABYLON {
     class GradientMaterialDefines extends MaterialDefines {
-        public DIFFUSE = false;
+        public EMISSIVE = false;
         public CLIPPLANE = false;
         public CLIPPLANE2 = false;
         public CLIPPLANE3 = false;
@@ -11,47 +11,6 @@ module BABYLON {
         public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
-        public LIGHT0 = false;
-        public LIGHT1 = false;
-        public LIGHT2 = false;
-        public LIGHT3 = false;
-        public SPOTLIGHT0 = false;
-        public SPOTLIGHT1 = false;
-        public SPOTLIGHT2 = false;
-        public SPOTLIGHT3 = false;
-        public HEMILIGHT0 = false;
-        public HEMILIGHT1 = false;
-        public HEMILIGHT2 = false;
-        public HEMILIGHT3 = false;
-        public DIRLIGHT0 = false;
-        public DIRLIGHT1 = false;
-        public DIRLIGHT2 = false;
-        public DIRLIGHT3 = false;
-        public POINTLIGHT0 = false;
-        public POINTLIGHT1 = false;
-        public POINTLIGHT2 = false;
-        public POINTLIGHT3 = false;
-        public SHADOW0 = false;
-        public SHADOW1 = false;
-        public SHADOW2 = false;
-        public SHADOW3 = false;
-        public SHADOWS = false;
-        public SHADOWESM0 = false;
-        public SHADOWESM1 = false;
-        public SHADOWESM2 = false;
-        public SHADOWESM3 = false;
-        public SHADOWPOISSON0 = false;
-        public SHADOWPOISSON1 = false;
-        public SHADOWPOISSON2 = false;
-        public SHADOWPOISSON3 = false;
-        public SHADOWPCF0 = false;
-        public SHADOWPCF1 = false;
-        public SHADOWPCF2 = false;
-        public SHADOWPCF3 = false;
-        public SHADOWPCSS0 = false;
-        public SHADOWPCSS1 = false;
-        public SHADOWPCSS2 = false;
-        public SHADOWPCSS3 = false;
         public NORMAL = false;
         public UV1 = false;
         public UV2 = false;
@@ -98,9 +57,11 @@ module BABYLON {
         @serialize()
         public smoothness = 1.0;
 
-        @serialize()
-        public disableLighting = false;
-        private _scaledDiffuse = new Color3();
+        @serialize("disableLighting")
+        private _disableLighting = false;
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public disableLighting: boolean;
+
         private _renderId: number;
 
         constructor(name: string, scene: Scene) {
@@ -143,10 +104,11 @@ module BABYLON {
             var engine = scene.getEngine();
 
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
-
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
-            defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
+            // Disable lighting?
+            defines.EMISSIVE = this._disableLighting;
 
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
@@ -195,14 +157,13 @@ module BABYLON {
                 var shaderName = "gradient";
                 var join = defines.toString();
 
-                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                     "vFogInfos", "vFogColor", "pointSize",
-                    "vDiffuseInfos",
                     "mBones",
-                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
                     "topColor", "bottomColor", "offset", "smoothness", "scale"
                 ];
-                var samplers = ["diffuseSampler"];
+                var samplers: string[] = [];
                 var uniformBuffers = new Array<string>();
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
@@ -270,10 +231,8 @@ module BABYLON {
                 MaterialHelper.BindEyePosition(effect, scene);
             }
 
-            this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
-
             if (scene.lightsEnabled && !this.disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines);
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);
             }
 
             // View

@@ -23,12 +23,6 @@ attribute vec4 color;
 uniform mat4 view;
 uniform mat4 viewProjection;
 
-#ifdef DIFFUSE
-varying vec2 vDiffuseUV;
-uniform mat4 diffuseMatrix;
-uniform vec2 vDiffuseInfos;
-#endif
-
 #ifdef POINTSIZE
 uniform float pointSize;
 #endif
@@ -69,17 +63,6 @@ void main(void) {
 #endif
 #ifndef UV2
 	vec2 uv2 = vec2(0., 0.);
-#endif
-
-#ifdef DIFFUSE
-	if (vDiffuseInfos.x == 0.)
-	{
-		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
-	}
-	else
-	{
-		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
-	}
 #endif
 
 	// Clip plane
