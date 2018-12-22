@@ -134,16 +134,18 @@ function processEs6Packages(version) {
 
         if (module.build.requiredFiles) {
             module.build.requiredFiles.forEach(file => {
+                let source = path.join(config.computed.rootFolder, file);
                 let destination = path.join(packagePath, path.basename(file));
-                colorConsole.log("    Copy required file: ", file.cyan, destination.cyan);
-                fs.copySync(file, destination);
+                colorConsole.log("    Copy required file: ", source.cyan, destination.cyan);
+                fs.copySync(source, destination);
             });
         }
         if (es6Config.requiredFiles) {
             es6Config.requiredFiles.forEach(file => {
+                let source = path.join(config.computed.rootFolder, file);
                 let destination = path.join(packagePath, path.basename(file));
-                colorConsole.log("    Copy es6 required file: ", file.cyan, destination.cyan);
-                fs.copySync(file, destination);
+                colorConsole.log("    Copy es6 required file: ", source.cyan, destination.cyan);
+                fs.copySync(source, destination);
             });
         }
 
@@ -219,8 +221,10 @@ function processLegacyPackages(version) {
 
             if (module.build.requiredFiles) {
                 module.build.requiredFiles.forEach(file => {
-                    colorConsole.log("    Copy required file: ", file.cyan, (outputDirectory + '/' + path.basename(file)).cyan);
-                    fs.copySync(file, outputDirectory + '/' + path.basename(file));
+                    let source = path.join(config.computed.rootFolder, file);
+                    let destination = path.join(outputDirectory, path.basename(file));
+                    colorConsole.log("    Copy required file: ", source.cyan, destination.cyan);
+                    fs.copySync(source, destination);
                 });
             }
 
@@ -254,8 +258,10 @@ function processLegacyViewer(module, version) {
 
     if (module.build.requiredFiles) {
         module.build.requiredFiles.forEach(file => {
-            colorConsole.log("    Copy required file: ", file.cyan, (buildPath + path.basename(file)).cyan);
-            fs.copySync(file, buildPath + path.basename(file));
+            let source = path.join(config.computed.rootFolder, file);
+            let destination = path.join(buildPath, path.basename(file));
+            colorConsole.log("    Copy required file: ", source.cyan, destination.cyan);
+            fs.copySync(file, destination);
         });
     }
 
