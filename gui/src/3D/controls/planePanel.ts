@@ -1,4 +1,5 @@
-import { Tmp, Vector3 } from "babylonjs";
+import { Tmp, Vector3 } from "babylonjs/Maths/math";
+
 import { Container3D } from "./container3D";
 import { Control3D } from "./control3D";
 import { VolumeBasedPanel } from "./volumeBasedPanel";

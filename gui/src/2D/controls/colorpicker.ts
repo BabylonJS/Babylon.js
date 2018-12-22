@@ -1,5 +1,7 @@
+import { Observable } from "babylonjs/Misc/observable";
+import { Color3, Vector2 } from "babylonjs/Maths/math";
+
 import { Control } from "./control";
-import { Color3, Observable, Vector2 } from "babylonjs";
 import { Measure } from "../measure";
 
 /** Class used to create color pickers */

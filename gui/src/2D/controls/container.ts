@@ -1,6 +1,8 @@
+import { Nullable } from "babylonjs/types";
+import { Logger } from "babylonjs/Misc/logger";
+
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Nullable, Logger } from "babylonjs";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**

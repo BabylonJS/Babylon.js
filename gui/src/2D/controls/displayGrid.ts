@@ -1,4 +1,3 @@
-
 import { Control } from ".";
 
 /** Class used to render a grid  */
