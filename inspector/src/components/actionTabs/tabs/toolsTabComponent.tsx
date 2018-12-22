@@ -2,10 +2,23 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 import { ButtonLineComponent } from "../lines/buttonLineComponent";
-import { VideoRecorder, Nullable, TransformNode, PBRMaterial, StandardMaterial, BackgroundMaterial, EnvironmentTextureTools, CubeTexture, Tools, Mesh, Texture, SceneSerializer } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { VideoRecorder } from "babylonjs/Misc/videoRecorder";
+import { Tools } from "babylonjs/Misc/tools";
+import { EnvironmentTextureTools } from "babylonjs/Misc/environmentTextureTools";
+import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { SceneSerializer } from "babylonjs/Misc/sceneSerializer";
+import { Mesh } from "babylonjs/Meshes/mesh";
+
 import { GLTFComponent } from "./tools/gltfComponent";
-import { GLTFData } from "babylonjs-serializers";
-import { GLTF2Export } from "babylonjs-serializers";
+
+import { GLTFData, GLTF2Export } from "babylonjs-serializers/glTF/2.0/index";
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;

@@ -1,5 +1,14 @@
 import * as React from "react";
-import { Observable, Scene, BaseTexture, Nullable, Vector3, CubeTexture, Tools, ImageProcessingConfiguration } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Observable } from "babylonjs/Misc/observable";
+import { Tools } from "babylonjs/Misc/tools";
+import { Vector3 } from "babylonjs/Maths/math";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
+import { ImageProcessingConfiguration } from "babylonjs/Materials/imageProcessingConfiguration";
+import { Scene } from "babylonjs/scene";
+
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { RadioButtonLineComponent } from "../../lines/radioLineComponent";

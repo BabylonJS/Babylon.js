@@ -1,5 +1,14 @@
 import * as React from "react";
-import { Mesh, Observable, VertexBuffer, Color3, Vector3, MeshBuilder, Tools, PhysicsImpostor, Scene } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
+import { Tools } from "babylonjs/Misc/tools";
+import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { MeshBuilder } from "babylonjs/Meshes/meshBuilder";
+import { PhysicsImpostor } from "babylonjs/Physics/physicsImpostor";
+import { Scene } from "babylonjs/scene";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";

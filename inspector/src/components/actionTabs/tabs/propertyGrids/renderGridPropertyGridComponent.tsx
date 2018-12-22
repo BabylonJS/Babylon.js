@@ -1,5 +1,14 @@
 import * as React from "react";
-import { Scene, AbstractMesh, Nullable, UtilityLayerRenderer, Tools, Mesh, Color3, Texture } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Tools } from "babylonjs/Misc/tools";
+import { Color3 } from "babylonjs/Maths/math";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
+import { Scene } from "babylonjs/scene";
+
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 
 interface IRenderGridPropertyGridComponentProps {

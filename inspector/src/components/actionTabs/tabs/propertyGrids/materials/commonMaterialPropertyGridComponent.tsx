@@ -1,5 +1,10 @@
 import * as React from "react";
-import { Material, Observable, PBRMaterial, Engine } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
+import { Material } from "babylonjs/Materials/material";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { Engine } from "babylonjs/Engines/engine";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";

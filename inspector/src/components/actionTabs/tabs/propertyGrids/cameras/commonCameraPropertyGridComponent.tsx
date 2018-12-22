@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Camera, Observable } from "babylonjs";
+import { Camera } from "babylonjs/Cameras/camera";
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";

@@ -1,5 +1,9 @@
 import * as React from "react";
-import { Observable, BackgroundMaterial, BaseTexture } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../lines/color3LineComponent";

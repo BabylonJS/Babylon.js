@@ -1,5 +1,8 @@
 import * as React from "react";
-import { Nullable, IExplorerExtensibilityGroup } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faBan, faExpandArrowsAlt, faCompress } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";

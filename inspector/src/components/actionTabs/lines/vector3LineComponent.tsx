@@ -1,5 +1,7 @@
 import * as React from "react";
-import { Vector3, Observable } from "babylonjs";
+import { Vector3 } from "babylonjs/Maths/math";
+import { Observable } from "babylonjs/Misc/observable";
+
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";

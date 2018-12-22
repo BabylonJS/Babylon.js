@@ -1,5 +1,7 @@
+import { Nullable } from "babylonjs/types";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+
 import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
-import { Nullable, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Tools } from "../../tools";

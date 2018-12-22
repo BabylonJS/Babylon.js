@@ -1,7 +1,11 @@
-import { Observable, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observer, Nullable, Scene } from "babylonjs";
+import { GLTFFileLoader, IGLTFLoaderExtension } from "babylonjs-loaders/glTF/index";
+
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
+import { Scene } from "babylonjs/scene";
+
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { IGLTFLoaderExtension, GLTFFileLoader } from "babylonjs-loaders";
-import { } from "babylonjs-gltf2interface";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<string>;

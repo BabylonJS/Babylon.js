@@ -1,10 +1,10 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { LockObject } from "../lockObject";
-import { Image } from "babylonjs-gui";
+import { Image } from "babylonjs-gui/2D/controls/image";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
