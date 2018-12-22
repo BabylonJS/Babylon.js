@@ -17,6 +17,7 @@ import { WebXRInput } from "../Cameras/XR/webXRInput";
 import { WebXREnterExitUI } from "../Cameras/XR/webXREnterExitUI";
 import { WebXRExperienceHelper } from "../Cameras/XR/webXRExperienceHelper";
 import { VRExperienceHelperOptions, VRExperienceHelper } from "../Cameras/VR/vrExperienceHelper";
+import "../Meshes/meshBuilder";
 
 /** @hidden */
 export var _forceSceneHelpersToBundle = true;

@@ -7,6 +7,8 @@ import { Texture } from "../Materials/Textures/texture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+import "../Meshes/meshBuilder";
+
     /**
      * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
      * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.
