@@ -499,9 +499,22 @@
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON",
                         "babylonjs-serializers": "BABYLON",
-                        "babylonjs-gui": "BABYLON.GUI"
+                        "babylonjs-gui": "BABYLON.GUI",
+                        "@babylonjs/core": "BABYLON",
+                        "@babylonjs/loaders": "BABYLON",
+                        "@babylonjs/serializers": "BABYLON",
+                        "@babylonjs/gui": "BABYLON.GUI"
                     }
                 }
+            },
+            "es6": {
+                "webpackBuild": {
+                    "dependencies": [
+                        "node_modules/re-resizable/lib/index.es5.js",
+                        "Tools/**/*"
+                    ]
+                },
+                "packageName": "@babylonjs/inspector"
             }
         }
     },

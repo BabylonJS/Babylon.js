@@ -40,7 +40,7 @@ var dep = function(settings) {
 
     const tsconfig = require(settings.computed.tsConfigPath);
     for (let pathName in tsconfig.compilerOptions.paths) {
-        var paths = tsconfig.compilerOptions.paths[pathName];
+        let paths = tsconfig.compilerOptions.paths[pathName];
         for (let dep of paths) {
             const fullPath = path.resolve(settings.computed.mainDirectory, 
                 tsconfig.compilerOptions.baseUrl, 
@@ -49,36 +49,15 @@ var dep = function(settings) {
         }
     }
 
+    if (settings.build.es6.webpackBuild && settings.build.es6.webpackBuild.dependencies) {
+        for (let pathName of settings.build.es6.webpackBuild.dependencies) {
+            const dependencyPath = path.join(config.computed.rootFolder, pathName);
+            copyPaths.push(dependencyPath);
+        }
+    }
+
     return gulp.src(copyPaths, { base: config.computed.rootFolder })
         .pipe(gulp.dest(config.computed.sourceES6Folder));
-}
-
-/**
- * TSC Build.
- */
-var build = function(settings, cb) {
-    // Launch TSC.
-    const options = {
-        cwd: settings.computed.sourceES6Directory,
-        verbose: true
-    };
-
-    let command = `tsc --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.distES6Directory}"`;
-    shelljs.exec(command, options, function(code, stdout, stderr) {
-        if (stderr) {
-            console.log(stderr);
-        }
-        if (stdout) {
-            console.log(stdout);
-        }
-
-        if (code !== 0) {
-            cb("TSC Failed.")
-        }
-        else {
-            cb();
-        }
-    });
 }
 
 /**
@@ -168,9 +147,76 @@ var appendLoseDTSFiles = function(settings) {
 }
 
 /**
+ * TSC Build.
+ */
+var build = function(settings, cb) {
+    // Launch TSC.
+    const options = {
+        cwd: settings.computed.sourceES6Directory,
+        verbose: true
+    };
+
+    let command = `tsc --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.distES6Directory}"`;
+    shelljs.exec(command, options, function(code, stdout, stderr) {
+        if (stderr) {
+            console.log(stderr);
+        }
+        if (stdout) {
+            console.log(stdout);
+        }
+
+        if (code !== 0) {
+            cb("TSC Failed.")
+        }
+        else {
+            cb();
+        }
+    });
+}
+
+/**
+ * Webpack Build.
+ */
+var buildWebpack = function(module, cb) {
+    const gulpPath = path.join(config.computed.sourceES6Folder, "Tools/Gulp");
+    // Launch TSC.
+    const options = {
+        cwd: gulpPath,
+        verbose: true
+    };
+
+    let command = `gulp ${module}`;
+    shelljs.exec(command, options, function(code, stdout, stderr) {
+        if (stderr) {
+            console.log(stderr);
+        }
+        if (stdout) {
+            console.log(stdout);
+        }
+
+        if (code !== 0) {
+            cb("Webpack Build Failed.")
+        }
+        else {
+            cb();
+        }
+    });
+}
+
+/**
+ * Copy Webpack Dist.
+ */
+var copyWebpackDist = function(settings, module) {
+    var es6Config = require(path.join(config.computed.sourceES6Folder, "Tools/Config/config"));
+
+    return gulp.src(es6Config[module].computed.distDirectory + "/**/*")
+        .pipe(gulp.dest(settings.computed.distES6Directory));
+}
+
+/**
  * Dynamic es 6 module creation.
  */
-function buildES6Library(settings) {
+function buildES6Library(settings, module) {
     // Creates the required tasks.
     var tasks = [];
 
@@ -179,10 +225,21 @@ function buildES6Library(settings) {
     var dependencies = function() { return dep(settings); };
     var adaptSourceImportPaths = function() { return modifySources(settings); };
     var adaptTsConfigImportPaths = function(cb) { return modifyTsConfig(settings, cb); };
-    var buildes6 = function(cb) { return build(settings, cb) };
-    var appendLoseDTS = function() { return appendLoseDTSFiles(settings) };
+    var buildSteps = null;
+    if (settings.build.es6.webpackBuild) {
+        buildSteps = [
+            function buildes6(cb) { return buildWebpack(module, cb) },
+            function copyDist() { return copyWebpackDist(settings, module) }
+        ];
+    }
+    else {
+        buildSteps = [
+            function buildes6(cb) { return build(settings, cb) }, 
+            function appendLoseDTS() { return appendLoseDTSFiles(settings) }
+        ];
+    }
 
-    tasks.push(cleanup, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, buildes6, appendLoseDTS);
+    tasks.push(cleanup, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, ...buildSteps);
 
     return gulp.series.apply(this, tasks);
 }
@@ -192,5 +249,5 @@ function buildES6Library(settings) {
  */
 config.modules.map(function(module) {
     const settings = config[module];
-    gulp.task(module + "-es6", buildES6Library(settings));
+    gulp.task(module + "-es6", buildES6Library(settings, module));
 });
