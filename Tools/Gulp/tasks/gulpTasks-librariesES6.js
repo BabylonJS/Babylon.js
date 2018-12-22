@@ -190,7 +190,7 @@ function buildES6Library(settings) {
 /**
  * Dynamic es 6 module creation.
  */
-config.modulesES6.map(function(module) {
+config.modules.map(function(module) {
     const settings = config[module];
     gulp.task(module + "-es6", buildES6Library(settings));
 });
