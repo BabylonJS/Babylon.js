@@ -6,6 +6,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { Texture } from "../Materials/Textures/texture";
 import { VideoTexture, VideoTextureSettings } from "../Materials/Textures/videoTexture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
+import "../Meshes/meshBuilder";
 
     /**
      * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
