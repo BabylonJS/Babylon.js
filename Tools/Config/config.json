@@ -514,7 +514,10 @@
                         "Tools/**/*"
                     ]
                 },
-                "packageName": "@babylonjs/inspector"
+                "packageName": "@babylonjs/inspector",
+                "requiredFiles": [
+                    "../../dist/preview release/inspector/readme.md"
+                ]
             }
         }
     },
