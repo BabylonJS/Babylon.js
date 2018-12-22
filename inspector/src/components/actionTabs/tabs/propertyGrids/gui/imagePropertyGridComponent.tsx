@@ -24,11 +24,11 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         const image = this.props.image;
 
         var stretchOptions = [
-            { label: "None", value: BABYLON.GUI.Image.STRETCH_NONE },
-            { label: "Fill", value: BABYLON.GUI.Image.STRETCH_FILL },
-            { label: "Uniform", value: BABYLON.GUI.Image.STRETCH_UNIFORM },
-            { label: "Extend", value: BABYLON.GUI.Image.STRETCH_EXTEND },
-            { label: "NinePatch", value: BABYLON.GUI.Image.STRETCH_NINE_PATCH }
+            { label: "None", value: Image.STRETCH_NONE },
+            { label: "Fill", value: Image.STRETCH_FILL },
+            { label: "Uniform", value: Image.STRETCH_UNIFORM },
+            { label: "Extend", value: Image.STRETCH_EXTEND },
+            { label: "NinePatch", value: Image.STRETCH_NINE_PATCH }
         ];
 
         return (
