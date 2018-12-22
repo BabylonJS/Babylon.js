@@ -261,7 +261,7 @@ function processLegacyViewer(module, version) {
             let source = path.join(config.computed.rootFolder, file);
             let destination = path.join(buildPath, path.basename(file));
             colorConsole.log("    Copy required file: ", source.cyan, destination.cyan);
-            fs.copySync(file, destination);
+            fs.copySync(source, destination);
         });
     }
 
