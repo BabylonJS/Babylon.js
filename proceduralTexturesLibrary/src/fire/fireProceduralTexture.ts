@@ -1,4 +1,8 @@
-import { ProceduralTexture, Vector2, Color3, Scene, Texture, serialize, serializeAsVector2, SerializationHelper } from "babylonjs";
+import { serialize, serializeAsVector2, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Vector2, Color3 } from "babylonjs/Maths/math";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "babylonjs/scene";
 
 import "./fireProceduralTexture.fragment";
 

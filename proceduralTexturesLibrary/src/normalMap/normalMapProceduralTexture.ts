@@ -1,4 +1,7 @@
-import { ProceduralTexture, Texture, Scene, serializeAsTexture, SerializationHelper } from "babylonjs";
+import { serializeAsTexture, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "babylonjs/scene";
 
 import "./normalMapProceduralTexture.fragment";
 
