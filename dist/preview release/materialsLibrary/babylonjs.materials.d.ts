@@ -30,8 +30,8 @@ declare module BABYLON {
         offset: number;
         scale: number;
         smoothness: number;
+        private _disableLighting;
         disableLighting: boolean;
-        private _scaledDiffuse;
         private _renderId;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
