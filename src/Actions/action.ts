@@ -1,6 +1,7 @@
 import { Observable } from "../Misc/observable";
 import { Vector2, Vector3, Color3, Color4 } from "../Maths/math";
 import { Condition } from "./condition";
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type Scene = import("../scene").Scene;
 declare type ActionManager = import("./actionManager").ActionManager;
@@ -247,3 +248,5 @@ declare type Node = import("../node").Node;
             };
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.Action"] = Action;

@@ -17,6 +17,7 @@ import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
+import { _TypeStore } from '../Misc/typeStore';
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
@@ -576,3 +577,5 @@ declare module "../abstractScene" {
             return gl;
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.GlowLayer"] = GlowLayer;

@@ -23,6 +23,7 @@ import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
+import { _TypeStore } from '../Misc/typeStore';
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
@@ -833,3 +834,5 @@ declare module "../abstractScene" {
             return hl;
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.HighlightLayer"] = HighlightLayer;

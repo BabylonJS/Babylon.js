@@ -22,6 +22,7 @@ import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "../../../PostProcesses/depthOfFieldEffect";
 import { BloomEffect } from "../../../PostProcesses/bloomEffect";
+import { _TypeStore } from '../../../Misc/typeStore';
 
     /**
 	 * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
@@ -703,3 +704,5 @@ import { BloomEffect } from "../../../PostProcesses/bloomEffect";
             return SerializationHelper.Parse(() => new DefaultRenderingPipeline(source._name, source._name._hdr, scene), source, scene, rootUrl);
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.DefaultRenderingPipeline"] = DefaultRenderingPipeline;

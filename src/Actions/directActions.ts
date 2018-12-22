@@ -3,6 +3,7 @@ import { Vector3 } from "../Maths/math";
 import { Action } from "./action";
 import { Condition } from "./condition";
 import { Constants } from "../Engines/constants";
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type ActionEvent = import("./actionEvent").ActionEvent;
 
@@ -541,3 +542,13 @@ declare type ActionEvent = import("./actionEvent").ActionEvent;
             }, parent);
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.SetParentAction"] = SetParentAction;
+    _TypeStore.RegisteredTypes["BABYLON.ExecuteCodeAction"] = ExecuteCodeAction;
+    _TypeStore.RegisteredTypes["BABYLON.DoNothingAction"] = DoNothingAction;
+    _TypeStore.RegisteredTypes["BABYLON.StopAnimationAction"] = StopAnimationAction;
+    _TypeStore.RegisteredTypes["BABYLON.PlayAnimationAction"] = PlayAnimationAction;
+    _TypeStore.RegisteredTypes["BABYLON.IncrementValueAction"] = IncrementValueAction;
+    _TypeStore.RegisteredTypes["BABYLON.SetValueAction"] = SetValueAction;
+    _TypeStore.RegisteredTypes["BABYLON.SetStateAction"] = SetStateAction;
+    _TypeStore.RegisteredTypes["BABYLON.SetParentAction"] = SetParentAction;

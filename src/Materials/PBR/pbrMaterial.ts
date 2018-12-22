@@ -9,6 +9,8 @@ import { ImageProcessingConfiguration } from "../../Materials/imageProcessingCon
 import { ColorCurves } from "../../Materials/colorCurves";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { _TypeStore } from '../../Misc/typeStore';
+
     /**
      * The Physically based material of BJS.
      *
@@ -822,3 +824,5 @@ import { PBRBaseMaterial } from "./pbrBaseMaterial";
             return SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.PBRMaterial"] = PBRMaterial;

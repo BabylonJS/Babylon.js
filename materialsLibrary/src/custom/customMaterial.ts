@@ -4,6 +4,7 @@ import { StandardMaterialDefines } from "babylonjs/Materials/standardMaterial";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 export class CustomShaderStructure {
 
@@ -233,3 +234,5 @@ export class CustomMaterial extends StandardMaterial {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.CustomMaterial"] = CustomMaterial;

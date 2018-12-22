@@ -5,6 +5,7 @@ import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 import { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
+import { _TypeStore } from '../../../Misc/typeStore';
 
 import "../../../Shaders/noise.fragment";
 
@@ -100,3 +101,5 @@ import "../../../Shaders/noise.fragment";
             return texture;
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.NoiseProceduralTexture"] = NoiseProceduralTexture;

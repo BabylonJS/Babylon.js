@@ -9,6 +9,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
 import { EffectFallbacks, EffectCreationOptions } from "./effect";
 import { Material } from "./material";
+import { _TypeStore } from '../Misc/typeStore';
 
     /**
      * Defines the options associated with the creation of a shader material.
@@ -920,3 +921,5 @@ import { Material } from "./material";
             return material;
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.ShaderMaterial"] = ShaderMaterial;

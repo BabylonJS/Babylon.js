@@ -13,6 +13,7 @@ import { TGATools } from "./tga";
 import { Constants } from "../Engines/constants";
 import { DomManagement } from "./domManagement";
 import { Logger } from "./logger";
+import { _TypeStore } from './typeStore';
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -303,6 +304,13 @@ declare type Engine = import("../Engines/engine").Engine;
             if (Tools.RegisteredExternalClasses && Tools.RegisteredExternalClasses[className]) {
                 return Tools.RegisteredExternalClasses[className];
             }
+
+            const internalClass = _TypeStore.GetClass(className);
+            if (internalClass) {
+                return internalClass;
+            }
+
+            Logger.Warn(className + " not found, you may have missed an import.");
 
             var arr = className.split(".");
 

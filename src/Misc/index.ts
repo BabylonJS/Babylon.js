@@ -22,3 +22,4 @@ export * from "./videoRecorder";
 export * from "./virtualJoystick";
 export * from "./workerPool";
 export * from "./logger";
+export * from "./typeStore";

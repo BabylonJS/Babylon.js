@@ -24,6 +24,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { _TypeStore } from '../Misc/typeStore';
 
 import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
@@ -1890,3 +1891,5 @@ import { Constants } from "../Engines/constants";
             Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_FresnelDirtyFlag);
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.StandardMaterial"] = StandardMaterial;

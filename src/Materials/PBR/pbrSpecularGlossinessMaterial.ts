@@ -5,6 +5,8 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
+import { _TypeStore } from '../../Misc/typeStore';
+
     /**
      * The PBR material of BJS following the specular glossiness convention.
      *
@@ -134,3 +136,5 @@ import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
             return SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.PBRSpecularGlossinessMaterial"] = PBRSpecularGlossinessMaterial;

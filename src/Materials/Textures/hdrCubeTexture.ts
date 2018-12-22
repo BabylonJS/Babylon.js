@@ -9,6 +9,8 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
+import { _TypeStore } from '../../Misc/typeStore';
+
     /**
      * This represents a texture coming from an HDR input.
      *
@@ -352,3 +354,5 @@ import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/c
             return serializationObject;
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.HDRCubeTexture"] = HDRCubeTexture;

@@ -10,6 +10,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./grid.fragment";
 import "./grid.vertex";
@@ -268,3 +269,5 @@ export class GridMaterial extends PushMaterial {
         return SerializationHelper.Parse(() => new GridMaterial(source.name, scene), source, scene, rootUrl);
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.GridMaterial"] = GridMaterial;
