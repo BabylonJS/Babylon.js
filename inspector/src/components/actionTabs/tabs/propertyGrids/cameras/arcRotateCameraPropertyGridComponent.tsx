@@ -1,5 +1,8 @@
 import * as React from "react";
-import { Observable, ArcRotateCamera } from "babylonjs";
+
+import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
+import { Observable } from "babylonjs/Misc/observable";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonCameraPropertyGridComponent } from "./commonCameraPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";

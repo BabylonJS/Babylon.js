@@ -1,4 +1,8 @@
-import { AbstractMesh, IExplorerExtensibilityGroup, Color3, BoundingBoxGizmo } from "babylonjs";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Color3 } from "babylonjs/Maths/math";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { BoundingBoxGizmo } from "babylonjs/Gizmos/boundingBoxGizmo";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';

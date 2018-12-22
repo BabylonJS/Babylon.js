@@ -2,7 +2,12 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { TextLineComponent } from "../lines/textLineComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
-import { SceneInstrumentation, EngineInstrumentation, Nullable, Engine } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { EngineInstrumentation } from "babylonjs/Instrumentation/engineInstrumentation";
+import { SceneInstrumentation } from "babylonjs/Instrumentation/sceneInstrumentation";
+import { Engine } from "babylonjs/Engines/engine";
+
 import { ValueLineComponent } from "../lines/valueLineComponent";
 import { BooleanLineComponent } from "../lines/booleanLineComponent";
 

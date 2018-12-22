@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Scene } from "babylonjs";
+import { Scene } from "babylonjs/scene";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 import { GlobalState } from "../../../globalState";

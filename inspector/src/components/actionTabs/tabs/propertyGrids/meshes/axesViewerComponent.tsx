@@ -1,5 +1,9 @@
 import * as React from "react";
-import { TransformNode, Vector3, Tmp, AxesViewer } from "babylonjs";
+
+import { Vector3, Tmp } from "babylonjs/Maths/math";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { AxesViewer } from "babylonjs/Debug/axesViewer";
+
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 
 interface IAxisViewerComponentProps {

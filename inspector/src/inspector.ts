@@ -1,13 +1,20 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+
+import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Engine } from "babylonjs/Engines/engine";
+import { Scene } from "babylonjs/scene";
+import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+
 import { ActionTabsComponent } from "./components/actionTabs/actionTabsComponent";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-import { Scene, Observable, Observer, Nullable, IInspectorOptions, SceneLoader, Engine } from "babylonjs";
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
-import { GLTFFileLoader } from "babylonjs-loaders";
+import { GLTFFileLoader } from "babylonjs-loaders/glTF/index";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;

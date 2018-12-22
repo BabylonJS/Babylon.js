@@ -1,7 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWindowRestore, faTimes, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { Observable, Observer, Nullable } from "babylonjs";
 import * as React from "react";
+
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
 
 export interface IHeaderComponentProps {
     title: string,

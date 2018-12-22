@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Observable, HemisphericLight } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
+import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";

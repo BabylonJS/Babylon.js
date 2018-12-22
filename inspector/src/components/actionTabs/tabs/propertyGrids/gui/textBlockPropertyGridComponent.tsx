@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
-import { TextBlock } from "babylonjs-gui";
+import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { LockObject } from "../lockObject";

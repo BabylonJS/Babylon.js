@@ -1,5 +1,10 @@
 import * as React from "react";
-import { Observable, AnimationGroup, Scene, Nullable, Observer } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Scene } from "babylonjs/scene";
+
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { ButtonLineComponent } from "../../lines/buttonLineComponent";
 import { LineContainerComponent } from "../../lineContainerComponent";

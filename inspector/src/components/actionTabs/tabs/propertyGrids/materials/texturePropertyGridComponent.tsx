@@ -1,5 +1,12 @@
 import * as React from "react";
-import { Texture, BaseTexture, CubeTexture, Observable, Nullable, Tools } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Tools } from "babylonjs/Misc/tools";
+import { Observable } from "babylonjs/Misc/observable";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
@@ -13,7 +20,8 @@ import { LockObject } from "../lockObject";
 import { ValueLineComponent } from "../../../lines/valueLineComponent";
 import { GlobalState } from "components/globalState";
 
-import { AdvancedDynamicTextureInstrumentation, AdvancedDynamicTexture } from "babylonjs-gui";
+import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,

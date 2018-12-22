@@ -1,4 +1,12 @@
-import { AbstractMesh, Camera, Light, Material, Texture, TransformNode, IExplorerExtensibilityGroup, AnimationGroup } from "babylonjs";
+import { Camera } from "babylonjs/Cameras/camera";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Material } from "babylonjs/Materials/material";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Light } from "babylonjs/Lights/light";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+
 import { MeshTreeItemComponent } from "./entities/meshTreeItemComponent";
 import { CameraTreeItemComponent } from "./entities/cameraTreeItemComponent";
 import { LightTreeItemComponent } from "./entities/lightTreeItemComponent";
@@ -9,7 +17,8 @@ import { TextureTreeItemComponent } from "./entities/textureTreeItemComponent";
 import { TransformNodeItemComponent } from "./entities/transformNodeTreeItemComponent";
 import * as React from "react";
 import { ControlTreeItemComponent } from "./entities/gui/controlTreeItemComponent";
-import { Control, AdvancedDynamicTexture } from "babylonjs-gui";
+import { Control } from "babylonjs-gui/2D/controls/control";
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { AdvancedDynamicTextureTreeItemComponent } from "./entities/gui/advancedDynamicTextureTreeItemComponent";
 import { AnimationGroupItemComponent } from "./entities/animationGroupTreeItemComponent";
 import { GlobalState } from "../globalState";

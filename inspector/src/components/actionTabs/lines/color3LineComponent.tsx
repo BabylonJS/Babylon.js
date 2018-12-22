@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Observable, Color3 } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
+import { Color3 } from "babylonjs/Maths/math";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

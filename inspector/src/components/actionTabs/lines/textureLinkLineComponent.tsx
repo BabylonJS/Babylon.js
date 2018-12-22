@@ -1,5 +1,11 @@
 import * as React from "react";
-import { BaseTexture, Observable, Material, Observer, Nullable, StandardMaterial } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Material } from "babylonjs/Materials/material";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+
 import { TextLineComponent } from "./textLineComponent";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWrench } from '@fortawesome/free-solid-svg-icons';

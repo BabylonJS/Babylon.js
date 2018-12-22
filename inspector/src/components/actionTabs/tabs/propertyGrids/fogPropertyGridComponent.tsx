@@ -1,5 +1,7 @@
 import * as React from "react";
-import { Observable, Scene } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
+import { Scene } from "babylonjs/scene";
+
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { Color3LineComponent } from "../../lines/color3LineComponent";
 import { FloatLineComponent } from "../../lines/floatLineComponent";

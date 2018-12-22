@@ -1,4 +1,10 @@
-import { Scene, Observable, PointerInfo, Observer, Nullable, GizmoManager, IExplorerExtensibilityGroup, PointerEventTypes } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Observer, Observable } from "babylonjs/Misc/observable";
+import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { GizmoManager } from "babylonjs/Gizmos/gizmoManager";
+import { Scene } from "babylonjs/scene";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsComponent } from "../extensionsComponent";

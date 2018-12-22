@@ -1,5 +1,11 @@
 import * as React from "react";
-import { Scene, Observer, Nullable, IExplorerExtensibilityGroup, Engine } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Engine } from "babylonjs/Engines/engine";
+import { Scene } from "babylonjs/scene";
+
 import { TreeItemComponent } from "./treeItemComponent";
 import Resizable from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
