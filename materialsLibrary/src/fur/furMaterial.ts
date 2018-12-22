@@ -16,6 +16,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./fur.fragment";
 import "./fur.vertex";
@@ -548,3 +549,5 @@ export class FurMaterial extends PushMaterial {
         return meshes;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.FurMaterial"] = FurMaterial;

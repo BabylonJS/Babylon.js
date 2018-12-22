@@ -23,6 +23,7 @@ import { IShadowLight } from "../../Lights/shadowLight";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
+import { _TypeStore } from '../../Misc/typeStore';
 
 import "../../Shaders/background.fragment";
 import "../../Shaders/background.vertex";
@@ -1198,3 +1199,5 @@ import "../../Shaders/background.vertex";
             return SerializationHelper.Parse(() => new BackgroundMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.BackgroundMaterial"] = BackgroundMaterial;

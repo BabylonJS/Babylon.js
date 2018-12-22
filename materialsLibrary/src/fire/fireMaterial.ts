@@ -15,6 +15,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./fire.fragment";
 import "./fire.vertex";
@@ -396,3 +397,5 @@ export class FireMaterial extends PushMaterial {
         return material;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.FireMaterial"] = FireMaterial;

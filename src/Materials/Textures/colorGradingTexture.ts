@@ -7,6 +7,8 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
+import { _TypeStore } from '../../Misc/typeStore';
+
     /**
      * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
      * It can help converting any input color in a desired output one. This can then be used to create effects
@@ -270,3 +272,5 @@ import { Constants } from "../../Engines/constants";
             return serializationObject;
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.ColorGradingTexture"] = ColorGradingTexture;

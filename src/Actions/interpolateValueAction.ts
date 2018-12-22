@@ -5,6 +5,7 @@ import { Logger } from "../Misc/logger";
 import { Observable } from "../Misc/observable";
 import { Color3, Vector3, Matrix, Quaternion } from "../Maths/math";
 import { Animation } from "../Animations/animation";
+import { _TypeStore } from '../Misc/typeStore';
 
     /**
      * This defines an action responsible to change the value of a property
@@ -142,3 +143,5 @@ import { Animation } from "../Animations/animation";
             }, parent);
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.InterpolateValueAction"] = Action;

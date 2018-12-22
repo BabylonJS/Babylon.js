@@ -12,6 +12,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./gradient.fragment";
 import "./gradient.vertex";
@@ -296,3 +297,5 @@ export class GradientMaterial extends PushMaterial {
         return SerializationHelper.Parse(() => new GradientMaterial(source.name, scene), source, scene, rootUrl);
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.GradientMaterial"] = GradientMaterial;

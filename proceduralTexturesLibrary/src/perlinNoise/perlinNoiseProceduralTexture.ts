@@ -2,6 +2,7 @@ import { serialize, SerializationHelper } from "babylonjs/Misc/decorators";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./perlinNoiseProceduralTexture.fragment";
 
@@ -72,3 +73,5 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
         return texture;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.PerlinNoiseProceduralTexture"] = PerlinNoiseProceduralTexture;

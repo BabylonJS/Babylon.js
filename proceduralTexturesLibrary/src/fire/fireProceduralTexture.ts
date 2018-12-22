@@ -3,6 +3,7 @@ import { Vector2, Color3 } from "babylonjs/Maths/math";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./fireProceduralTexture.fragment";
 
@@ -168,3 +169,5 @@ export class FireProceduralTexture extends ProceduralTexture {
         return texture;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.FireProceduralTexture"] = FireProceduralTexture;

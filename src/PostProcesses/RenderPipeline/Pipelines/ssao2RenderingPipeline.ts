@@ -12,6 +12,7 @@ import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
 import { Engine } from "../../../Engines/engine";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Scene } from "../../../scene";
+import { _TypeStore } from '../../../Misc/typeStore';
 
 import "../../../Shaders/ssao2.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
@@ -463,3 +464,5 @@ import "../../../Shaders/ssaoCombine.fragment";
             return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.SSAO2RenderingPipeline"] = SSAO2RenderingPipeline;

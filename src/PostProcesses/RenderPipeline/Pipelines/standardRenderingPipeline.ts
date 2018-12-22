@@ -19,6 +19,7 @@ import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRendere
 import { Scene } from "../../../scene";
 import { Animation } from "../../../Animations/animation";
 import { Constants } from "../../../Engines/constants";
+import { _TypeStore } from '../../../Misc/typeStore';
 
 import "../../../Shaders/standard.fragment";
     /**
@@ -1109,3 +1110,5 @@ import "../../../Shaders/standard.fragment";
          */
         public static LuminanceSteps: number = 6;
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.StandardRenderingPipeline"] = StandardRenderingPipeline;

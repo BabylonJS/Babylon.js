@@ -1,6 +1,6 @@
 import { Action } from "./action";
 import { Condition } from "./condition";
-
+import { _TypeStore } from '../Misc/typeStore';
 import { Sound } from "../Audio/sound";
 
     /**
@@ -88,3 +88,6 @@ import { Sound } from "../Audio/sound";
             }, parent);
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.PlaySoundAction"] = StopSoundAction;
+    _TypeStore.RegisteredTypes["BABYLON.StopSoundAction"] = StopSoundAction;
