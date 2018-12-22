@@ -1,8 +1,11 @@
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
+
 import { Rectangle } from "../rectangle";
 import { Grid } from "../grid";
 import { Control } from "../control";
 import { Container } from "../container";
-import { PointerInfo, Observer, Nullable, PointerEventTypes } from "babylonjs";
 import { Measure } from "../../measure";
 import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 import { _ScrollViewerWindow } from "./scrollViewerWindow";

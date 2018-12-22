@@ -1,5 +1,15 @@
 import { Button3D } from "./button3D";
-import { Mesh, StandardMaterial, Nullable, Observer, Vector3, Scene, TransformNode, MeshBuilder, Color3, FadeInOutBehavior } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { MeshBuilder } from "babylonjs/Meshes/meshBuilder";
+import { FadeInOutBehavior } from "babylonjs/Behaviors/Meshes/fadeInOutBehavior";
+import { Scene } from "babylonjs/scene";
+
 import { FluentMaterial } from "../materials/fluentMaterial";
 import { StackPanel } from "../../2D/controls/stackPanel";
 import { Image } from "../../2D/controls/image";

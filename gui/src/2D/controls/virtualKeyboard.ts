@@ -1,5 +1,7 @@
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+
 import { StackPanel } from "./stackPanel";
-import { Observable, Nullable, Observer } from "babylonjs";
 import { Button } from "./button";
 import { Container } from "./container";
 import { TextBlock } from "./textBlock";

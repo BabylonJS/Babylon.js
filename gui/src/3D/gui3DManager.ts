@@ -1,4 +1,14 @@
-import { IDisposable, Scene, Nullable, Observer, UtilityLayerRenderer, PointerInfo, Observable, Vector3, Material, AbstractMesh, Engine, HemisphericLight, PointerEventTypes } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Vector3 } from "babylonjs/Maths/math";
+import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { Material } from "babylonjs/Materials/material";
+import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
+import { Engine } from "babylonjs/Engines/engine";
+import { IDisposable, Scene } from "babylonjs/scene";
+
 import { Container3D } from "./controls/container3D";
 import { Control3D } from "./controls/control3D";
 

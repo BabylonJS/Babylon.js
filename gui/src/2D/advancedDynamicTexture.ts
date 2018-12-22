@@ -1,4 +1,19 @@
-import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, PointerInfoPre, PointerInfo, ClipboardEventTypes, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3, Observable, ClipboardInfo } from 'babylonjs';
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Viewport, Color3, Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { PointerInfoPre, PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
+import { KeyboardInfoPre, KeyboardEventTypes } from "babylonjs/Events/keyboardEvents";
+import { Camera } from "babylonjs/Cameras/camera";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Layer } from "babylonjs/Layers/layer";
+import { Engine } from "babylonjs/Engines/engine";
+import { Scene } from "babylonjs/scene";
+
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";

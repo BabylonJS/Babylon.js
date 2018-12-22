@@ -1,7 +1,16 @@
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { Logger } from "babylonjs/Misc/logger";
+import { Tools } from "babylonjs/Misc/tools";
+import { Polygon } from "babylonjs/Meshes/polygonMesh";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Scene } from "babylonjs/scene";
+
 import { Container } from "./container";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes, Logger, Polygon } from "babylonjs";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
