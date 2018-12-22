@@ -1,6 +1,6 @@
 import { GLTFLoaderExtension } from "./glTFLoaderExtension";
 import { GLTFUtils } from "./glTFLoaderUtils";
-import { Scene } from "babylonjs";
+import { Scene } from "babylonjs/scene";
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime, IGLTFTexture, IGLTFImage, IGLTFBufferView, EComponentType, IGLTFShader } from "./glTFLoaderInterfaces";
 import { GLTFLoader, GLTFLoaderBase } from "./glTFLoader";

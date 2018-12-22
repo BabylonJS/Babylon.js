@@ -1,4 +1,12 @@
-﻿import { VertexBuffer, Buffer, AnimationGroup, Material, TransformNode, AbstractMesh, Mesh, Bone, Skeleton } from "babylonjs";
+﻿import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Bone } from "babylonjs/Bones/bone";
+import { Skeleton } from "babylonjs/Bones/skeleton";
+import { Material } from "babylonjs/Materials/material";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Buffer, VertexBuffer } from "babylonjs/Meshes/buffer";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+
 import * as IGLTF2 from "babylonjs-gltf2interface";
 
     /**

@@ -1,4 +1,13 @@
-import { Scene, SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions, Nullable, AbstractMesh, IParticleSystem, Skeleton, Mesh, Tools, AssetContainer, VertexBuffer } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Tools } from "babylonjs/Misc/tools";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { Skeleton } from "babylonjs/Bones/skeleton";
+import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "babylonjs/Loading/sceneLoader";
+import { AssetContainer } from "babylonjs/assetContainer";
+import { Scene } from "babylonjs/scene";
 
 /**
  * STL file type loader.

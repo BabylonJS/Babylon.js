@@ -1,4 +1,13 @@
-﻿import { IDisposable, Nullable, TransformNode, Mesh, Camera, Geometry, Material, BaseTexture, AnimationGroup } from "babylonjs";
+﻿import { Nullable } from "babylonjs/types";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Material } from "babylonjs/Materials/material";
+import { Camera } from "babylonjs/Cameras/camera";
+import { Geometry } from "babylonjs/Meshes/geometry";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { IDisposable } from "babylonjs/scene";
+
 import { IScene, INode, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 

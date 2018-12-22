@@ -1,4 +1,9 @@
-import { Geometry, DracoCompression, Mesh, Nullable, VertexBuffer } from "babylonjs";
+import { DracoCompression } from "babylonjs/Meshes/Compression/dracoCompression";
+import { Nullable } from "babylonjs/types";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { Geometry } from "babylonjs/Meshes/geometry";
+import { Mesh } from "babylonjs/Meshes/mesh";
+
 import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import { IBufferView, IMeshPrimitive } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";

@@ -1,4 +1,8 @@
-import { Texture, Skeleton, Scene, Bone, Node } from "babylonjs";
+import { Bone } from "babylonjs/Bones/bone";
+import { Skeleton } from "babylonjs/Bones/skeleton";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Node } from "babylonjs/node";
+import { Scene } from "babylonjs/scene";
 
 /**
 * Enums

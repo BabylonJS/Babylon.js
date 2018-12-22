@@ -1,4 +1,8 @@
-import { Scene, Texture, Material, Nullable } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Material } from "babylonjs/Materials/material";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Scene } from "babylonjs/scene";
+
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime } from "./glTFLoaderInterfaces";
 import { GLTFLoader, GLTFLoaderBase } from "./glTFLoader";

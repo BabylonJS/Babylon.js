@@ -1,4 +1,7 @@
-import { Material, Nullable, PBRMaterial } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Material } from "babylonjs/Materials/material";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";

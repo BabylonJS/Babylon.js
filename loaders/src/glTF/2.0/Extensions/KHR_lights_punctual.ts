@@ -1,4 +1,11 @@
-import { TransformNode, Nullable, Light, DirectionalLight, Vector3, PointLight, SpotLight, Color3 } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { DirectionalLight } from "babylonjs/Lights/directionalLight";
+import { PointLight } from "babylonjs/Lights/pointLight";
+import { SpotLight } from "babylonjs/Lights/spotLight";
+import { Light } from "babylonjs/Lights/light";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+
 import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { INode } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
