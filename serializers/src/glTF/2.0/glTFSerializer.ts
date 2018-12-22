@@ -1,4 +1,5 @@
-import { TransformNode, Scene } from "babylonjs";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Scene } from "babylonjs/scene";
 import { GLTFData } from "./glTFData";
 import { _Exporter } from "./glTFExporter";
 

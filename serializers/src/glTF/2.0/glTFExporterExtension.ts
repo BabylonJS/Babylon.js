@@ -1,6 +1,9 @@
-import { IDisposable, Texture, Nullable, SubMesh } from "babylonjs";
-
 import { ImageMimeType, IMeshPrimitive } from "babylonjs-gltf2interface";
+
+import { Nullable } from "babylonjs/types";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { SubMesh } from "babylonjs/Meshes/subMesh";
+import { IDisposable } from "babylonjs/scene";
 
 import { _BinaryWriter } from "./glTFExporter";
 import { IGLTFExporterExtension } from "../glTFFileExporter";

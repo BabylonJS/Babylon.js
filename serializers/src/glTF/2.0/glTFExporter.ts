@@ -1,5 +1,22 @@
-import { Scene, TransformNode, Node, Engine, Nullable, Texture, BaseTexture, SubMesh, Tools, Viewport, IndicesArray, Material, FloatArray, Mesh, VertexBuffer, Vector2, Vector3, Vector4, Quaternion, InstancedMesh, AbstractMesh, LinesMesh, Color3, MultiMaterial } from "babylonjs";
 import { AccessorType, IBufferView, IAccessor, INode, IAsset, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType } from "babylonjs-gltf2interface";
+
+import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
+import { Viewport, Color3, Vector2, Vector3, Vector4, Quaternion } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { Node } from "babylonjs/node";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { SubMesh } from "babylonjs/Meshes/subMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { LinesMesh } from "babylonjs/Meshes/linesMesh";
+import { InstancedMesh } from "babylonjs/Meshes/instancedMesh";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Material } from "babylonjs/Materials/material";
+import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
+import { Engine } from "babylonjs/Engines/engine";
+import { Scene } from "babylonjs/scene";
 
 import { IGLTFExporterExtensionV2 } from "./glTFExporterExtension";
 import { _GLTFMaterialExporter } from "./glTFMaterialExporter";

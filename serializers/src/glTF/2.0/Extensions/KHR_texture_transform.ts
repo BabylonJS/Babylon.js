@@ -1,5 +1,13 @@
-import { Texture, Nullable, Vector2, Scene, BaseTexture, ProceduralTexture, Tools } from "babylonjs";
 import { ImageMimeType } from "babylonjs-gltf2interface";
+
+import { Nullable } from "babylonjs/types";
+import { Vector2 } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "babylonjs/scene";
+
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 
