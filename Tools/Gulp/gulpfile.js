@@ -40,7 +40,7 @@ gulp.task("typescript-libraries", gulp.series(config.modules, config.viewerModul
 /**
  * Build all es 6 libs.
  */
-gulp.task("typescript-es6", gulp.series(config.modulesES6.map((module) => module + "-es6")));
+gulp.task("typescript-es6", gulp.series(config.modules.map((module) => module + "-es6")));
 
 /**
  * Validate compile the code and check the comments and style case convention through typedoc

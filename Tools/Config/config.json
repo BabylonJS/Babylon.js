@@ -40,15 +40,6 @@
         "gui",
         "inspector"
     ],
-    "modulesES6": [
-        "core",
-        "materialsLibrary",
-        "postProcessesLibrary",
-        "proceduralTexturesLibrary",
-        "loaders",
-        "serializers",
-        "gui"
-    ],
     "viewerModules": [
         "viewer",
         "viewer-assets"

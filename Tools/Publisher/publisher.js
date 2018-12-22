@@ -112,7 +112,7 @@ function buildBabylonJSAndDependencies() {
  * Process ES6 Packages.
  */
 function processEs6Packages(version) {
-    config.modulesES6.forEach(moduleName => {
+    config.modules.forEach(moduleName => {
         let module = config[moduleName];
         let es6Config = module.build.es6;
 
