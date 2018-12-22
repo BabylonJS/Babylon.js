@@ -1,4 +1,12 @@
-import { BaseTexture, serialize, Nullable, Scene, Texture, SerializationHelper, PostProcess, Camera, Matrix, Effect } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { serialize, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Matrix } from "babylonjs/Maths/math";
+import { Camera } from "babylonjs/Cameras/camera";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Effect } from "babylonjs/Materials/effect";
+import { PostProcess } from "babylonjs/PostProcesses/postProcess";
+import { Scene } from "babylonjs/scene";
 
 import "./digitalrain.fragment";
 
