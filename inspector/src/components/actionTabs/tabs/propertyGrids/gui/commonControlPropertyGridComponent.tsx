@@ -50,15 +50,15 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         const control = this.props.control;
 
         var horizontalOptions = [
-            { label: "Left", value: BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT },
-            { label: "Right", value: BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT },
-            { label: "Center", value: BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER },
+            { label: "Left", value: Control.HORIZONTAL_ALIGNMENT_LEFT },
+            { label: "Right", value: Control.HORIZONTAL_ALIGNMENT_RIGHT },
+            { label: "Center", value: Control.HORIZONTAL_ALIGNMENT_CENTER },
         ];
 
         var verticalOptions = [
-            { label: "Top", value: BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP },
-            { label: "Bottom", value: BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM },
-            { label: "Center", value: BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER },
+            { label: "Top", value: Control.VERTICAL_ALIGNMENT_TOP },
+            { label: "Bottom", value: Control.VERTICAL_ALIGNMENT_BOTTOM },
+            { label: "Center", value: Control.VERTICAL_ALIGNMENT_CENTER },
         ];
 
         return (
