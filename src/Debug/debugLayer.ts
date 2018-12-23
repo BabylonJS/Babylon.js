@@ -171,7 +171,7 @@ declare module "../scene" {
             }
 
             // In case of module let s check the global emitted from the Inspector entry point.
-            if (BABYLON && BABYLON.Inspector) {
+            if (typeof BABYLON !== 'undefined' && typeof  BABYLON.Inspector !== 'undefined') {
                 return BABYLON;
             }
 
