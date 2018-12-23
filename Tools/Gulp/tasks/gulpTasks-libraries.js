@@ -114,7 +114,7 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        return gulp.src([tempTypingsFile, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles)])
+        return gulp.src([tempTypingsFile, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
             .pipe(concat(tempTypingsFileName))
             .pipe(gulp.dest(config.computed.tempFolder));
     }

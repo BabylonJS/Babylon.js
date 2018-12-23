@@ -60,7 +60,10 @@
         ],
         "build": {
             "mainFolder": "./src/",
-            "loseDTSFiles": "LibDeclarations/*.d.ts",
+            "loseDTSFiles": {
+                "glob": "LibDeclarations/*.d.ts",
+                "destFileES6": "Engines/engine.d.ts"
+            },
             "distOutputDirectory": "",
             "packageJSON": "package.json",
             "umd": {
