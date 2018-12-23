@@ -16,6 +16,7 @@ require("./tasks/gulpTasks-typedoc");
 require("./tasks/gulpTasks-intellisense");
 require("./tasks/gulpTasks-tests");
 require("./tasks/gulpTasks-remapPaths");
+require("./tasks/gulpTasks-npmPackages");
 
 // Import Build Config
 var config = require("../Config/config.json");
@@ -61,6 +62,11 @@ gulp.task("typescript-all", gulp.series("typescript-libraries", "typescript-es6"
  * Do it all (tests).
  */
 gulp.task("tests-all", gulp.series("tests-unit", "tests-modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
+
+/**
+ * Get Ready to test Npm Packages.
+ */
+gulp.task("npmPackages", gulp.series("typescript-libraries", "typescript-es6", "npmPackages-generate"));
 
 /**
  * The default task, concat and min the main BJS files.
