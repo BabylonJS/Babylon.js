@@ -16,7 +16,6 @@ process.env.PATH += (path.delimiter + path.join(__dirname, 'node_modules', '.bin
 // Global Variables.
 const config = require("../Config/config.js");
 const modules = config.modules.concat(config.viewerModules);
-const basePath = config.build.outputDirectory;
 const enginePath = path.join(config.core.computed.srcDirectory, "Engines/engine.ts");
 
 /**
