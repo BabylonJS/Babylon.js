@@ -268,7 +268,9 @@ function processLegacyPackages(version) {
             if (module.build.umd.dependencies) {
                 packageJson.dependencies = module.build.umd.dependencies;
             }
-            else if (packageJson.dependencies) {
+
+            // Package dependencies version
+            if (packageJson.dependencies) {
                 Object.keys(packageJson.dependencies).forEach(key => {
                     if (key.indexOf("babylonjs") !== -1) {
                         packageJson.dependencies[key] = version;
