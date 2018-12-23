@@ -16,7 +16,7 @@ const distES6Folder = path.join(tempFolder, config.build.distES6FolderName);
 const packageES6Folder = path.join(tempFolder, config.build.packageES6FolderName);
 const packageES6DevFolder = path.join(tempFolder, config.build.packageES6DevFolderName);
 
-const tempTypingsAMDFileName = config.tempTypingsAMDFileName;
+const tempTypingsAMDFileName = config.build.tempTypingsAMDFileName;
 const tempTypingsFileName = tempTypingsAMDFileName.replace(".js", ".d.ts");
 const tempTypingsAMDFilePath = path.join(tempFolder, tempTypingsAMDFileName);
 const tempTypingsFilePath = path.join(tempFolder, tempTypingsFileName);
