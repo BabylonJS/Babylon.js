@@ -44,6 +44,12 @@
         "viewer",
         "viewer-assets"
     ],
+    "additionalNpmPackages": [
+        {
+            "name": "gltf2interface",
+            "path": "dist/preview release/gltf2interface/"
+        }
+    ],
     "core": {
         "isCore": true,
         "libraries": [

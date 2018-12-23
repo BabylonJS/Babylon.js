@@ -24,6 +24,14 @@ config.computed = {
     packageES6Folder
 }
 
+config.additionalNpmPackages.forEach(package => {
+    let packagePath = path.join(rootFolder, package.path);
+
+    package.computed = {
+        path: packagePath
+    };
+});
+
 config.modules.map(function(module) {
     const settings = config[module];
 
