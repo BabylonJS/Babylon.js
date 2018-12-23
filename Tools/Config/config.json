@@ -506,7 +506,8 @@
                         "@babylonjs/core": "BABYLON",
                         "@babylonjs/loaders": "BABYLON",
                         "@babylonjs/serializers": "BABYLON",
-                        "@babylonjs/gui": "BABYLON.GUI"
+                        "@babylonjs/gui": "BABYLON.GUI",
+                        "@fortawesome": false
                     }
                 }
             },

@@ -160,8 +160,22 @@ var processData = function(data, packageName, options) {
                     alias = tokens[1];
                 }
 
-                const rg = new RegExp(`([ <])(${alias})([^\\w])`, "g")
-                str = str.replace(rg, `$1${options.classMap[package]}.${className}$3`);
+                // !!! Be carefull
+                // Could cause issues if this appears in several import scope
+                // with different aliases.
+
+                // !!! Be carefull multiline not managed.
+
+                // False is a special case to remove all the lines.
+                if (options.classMap[package] === false) {
+                    const rg = new RegExp(`.*[ <]${alias}[^\\w].*`, "g")
+                    str = str.replace(rg, "");
+                }
+                // Else replace with the namespace prefix.
+                else {
+                    const rg = new RegExp(`([ <])(${alias})([^\\w])`, "g")
+                    str = str.replace(rg, `$1${options.classMap[package]}.${className}$3`);
+                }
             });
         });
 
@@ -205,7 +219,7 @@ var processData = function(data, packageName, options) {
     }
 
     // Remove Empty Lines
-    str = str.replace(/^\s*$/g, "");
+    str = str.replace(/^\s*$/gm, "");
 
     // Remove Inlined Import
     str = str.replace(/import\("[A-Za-z0-9\/]*"\)\./g, "");
