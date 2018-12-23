@@ -1,6 +1,5 @@
 // Import Dependencies.
 var gulp = require("gulp");
-var merge2 = require("merge2");
 var gulpTslint = require("gulp-tslint");
 var minimist = require("minimist");
 var filter = require('gulp-filter');

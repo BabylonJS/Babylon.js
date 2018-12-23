@@ -204,7 +204,7 @@ var buildWebpack = function(module, cb) {
         verbose: true
     };
 
-    let command = `gulp ${module}`;
+    let command = `gulp ${module} --noNamespace`;
     shelljs.exec(command, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);

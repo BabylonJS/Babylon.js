@@ -5,6 +5,7 @@ var webpackStream = require("webpack-stream");
 var cp = require('child_process');
 var path = require("path");
 var concat = require('gulp-concat');
+var minimist = require("minimist");
 
 // Gulp Helpers
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
@@ -12,6 +13,12 @@ var processShaders = require("../helpers/gulp-processShaders");
 var processAmdDeclarationToModule = require('../helpers/gulp-processAmdDeclarationToModule');
 var processModuleDeclarationToNamespace = require('../helpers/gulp-processModuleDeclarationToNamespace');
 var del = require("del");
+
+// Parse Command Line.
+var commandLineOptions = minimist(process.argv.slice(2), {
+    boolean: ["noNamespace"]
+});
+
 
 // Import Build Config
 var config = require("../../Config/config.js");
@@ -136,7 +143,9 @@ var processDTSFiles = function(libraries, settings, cb) {
         });
 
         // Convert Module to Namespace for globals
-        processModuleDeclarationToNamespace(fileLocation, settings.build.umd.packageName, settings.build.umd.processDeclaration);
+        if (!commandLineOptions.noNamespace) {
+            processModuleDeclarationToNamespace(fileLocation, settings.build.umd.packageName, settings.build.umd.processDeclaration);
+        }
     }
     cb();
 }
