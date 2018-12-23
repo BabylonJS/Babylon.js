@@ -23,22 +23,22 @@ interface `);
  */
 function main(replacements) {
     return through.obj(function (file, enc, cb) {
-            if (file.isNull()) {
-                cb(null, file);
-                return;
-            }
-            if (file.isStream()) {
-                cb(new PluginError("Process Shader", "Streaming not supported."));
-            }
+        if (file.isNull()) {
+            cb(null, file);
+            return;
+        }
+        if (file.isStream()) {
+            cb(new PluginError("Process Shader", "Streaming not supported."));
+        }
 
-            let data = file.contents.toString();
-            data = processLooseDeclarations(data, replacements);
+        let data = file.contents.toString();
+        data = processLooseDeclarations(data, replacements);
 
-            file.contents = Buffer.from(data);
-            this.push(file);
+        file.contents = Buffer.from(data);
+        this.push(file);
 
-            return cb();
-        });
+        return cb();
+    });
 }
 
 module.exports = main;
