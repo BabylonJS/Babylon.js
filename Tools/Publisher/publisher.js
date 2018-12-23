@@ -48,6 +48,18 @@ function updateEngineVersion(newVersion) {
 }
 
 /**
+ * Update the root package.json version
+ */
+function updateRootPackageVersion(newVersion) {
+    colorConsole.log("Updating version in /package.json to: " + newVersion.green);
+    const packageJSONPath = config.core.computed.packageJSONPath;
+    const packageJson = require(packageJSONPath);
+    packageJson.version = newVersion;
+    fs.writeFileSync(packageJSONPath, JSON.stringify(packageJson, null, 4));
+    colorConsole.emptyLine();
+}
+
+/**
  * Get the version from the engine class for Babylon
  */
 function getEngineVersion() {
@@ -115,10 +127,6 @@ function processEs6Packages(version) {
     config.modules.forEach(moduleName => {
         let module = config[moduleName];
         let es6Config = module.build.es6;
-
-        if (!es6Config) {
-            return;
-        }
 
         colorConsole.log("Process " + "ES6".magenta + " Package: " + moduleName.blue.bold);
 
@@ -201,8 +209,7 @@ function processEs6Packages(version) {
         let packageJSONPath = path.join(packagePath, "package.json");
         fs.writeFileSync(packageJSONPath, JSON.stringify(legacyPackageJson, null, 4));
 
-        // Do not publish yet.
-        // publish(version, es6Config.packageName, packagePath, true);
+        publish(version, es6Config.packageName, packagePath, true);
         colorConsole.emptyLine();
     });
 }
@@ -234,10 +241,7 @@ function processLegacyPackages(version) {
         let module = config[moduleName];
         colorConsole.log("Process " + "UMD".magenta + " Package: " + moduleName.blue.bold);
 
-        if (moduleName === "core") {
-            processLegacyCore(version);
-        }
-        else if (moduleName === "viewer") {
+        if (moduleName === "viewer") {
             processLegacyViewer(module, version);
         }
         else {
@@ -252,20 +256,74 @@ function processLegacyPackages(version) {
                 });
             }
 
-            let packageJson = require(outputDirectory + '/package.json');
-            packageJson.version = version;
+            // Package version
+            const packageJSONPath = module.computed ?
+                module.computed.packageJSONPath :
+                outputDirectory + '/package.json';
+            let packageJson = require(packageJSONPath);
             colorConsole.log("    Update package version to: " + version.green);
+            packageJson.version = version;
 
-            if (packageJson.dependencies) {
+            // Package dependencies version
+            if (module.build.umd.dependencies) {
+                packageJson.dependencies = module.build.umd.dependencies;
+            }
+            else if (packageJson.dependencies) {
                 Object.keys(packageJson.dependencies).forEach(key => {
                     if (key.indexOf("babylonjs") !== -1) {
                         packageJson.dependencies[key] = version;
                     }
                 });
             }
-            fs.writeFileSync(outputDirectory + '/package.json', JSON.stringify(packageJson, null, 4));
 
-            publish(version, moduleName, outputDirectory);
+            // Package dev dependencies
+            if (module.build.umd.devDependencies) {
+                packageJson.devDependencies = module.build.umd.devDependencies;
+            }
+
+            // Typings
+            if (module.build.umd.typings) {
+                packageJson.typings = module.build.umd.typings;
+            }
+
+            // Main
+            if (module.build.umd.index) {
+                packageJson.main = module.build.umd.index;
+                packageJson.module = module.build.umd.index;
+                packageJson.esnext = module.build.umd.index;
+            }
+
+            // Files
+            if (module.build.umd.pacakagesFiles) {
+                packageJson.files = module.build.umd.pacakagesFiles;
+            }
+
+            // Write to disk output directory
+            fs.writeFileSync(path.join(outputDirectory, 'package.json'), JSON.stringify(packageJson, null, 4));
+
+            if (!module.build.legacyPackageOutputDirectory) {
+                let packageUMDPath = module.computed.packageUMDDirectory;
+                colorConsole.log("    Cleanup " + packageUMDPath.cyan);
+                rmDir(packageUMDPath);
+
+                if (module.build.umd.pacakagesFiles) {
+                    fs.ensureDirSync(packageUMDPath);
+                    for (let file of module.build.umd.pacakagesFiles.concat(["package.json"])) {
+                        let source = path.join(outputDirectory, file);
+                        let destination = path.join(packageUMDPath, path.basename(file));
+                        colorConsole.log("    Copy Package file: ", source.cyan, destination.cyan);
+                        fs.copyFileSync(source, destination);
+                    }
+                }
+                else {
+                    colorConsole.log("    Copy Package folder " + outputDirectory.cyan + " to " + packageUMDPath.cyan);
+                    fs.copySync(outputDirectory, packageUMDPath);
+                }
+                publish(version, moduleName, packageUMDPath);
+            }
+            else {
+                publish(version, moduleName, outputDirectory);
+            }
 
             colorConsole.emptyLine();
         }
@@ -315,87 +373,49 @@ function processLegacyViewer(module, version) {
 }
 
 /**
- * Special treatment for legacy core.
+ * Prepare a UMD Dev folder npm linked for test purpose.
  */
-function processLegacyCore(version) {
-    let package = {
-        "name": "core",
-        "path": "/../../"
-    };
-    let packageJson = require('../../package.json');
+function prepareUMDDevPackages() {
+    config.modules.forEach(moduleName => {
+        let module = config[moduleName];
+        let umdConfig = module.build.umd;
 
-    // make a temporary directory
-    fs.ensureDirSync(basePath + '/package/');
+        colorConsole.log("Prepare " + "UMDDev".magenta + " Package: " + moduleName.blue.bold);
 
-    let files = [
-        {
-            path: basePath + "/babylon.d.ts",
-            objectName: "babylon.d.ts"
-        },
-        {
-            path: basePath + "/babylon.js",
-            objectName: "babylon.js"
-        },
-        {
-            path: basePath + "/babylon.max.js",
-            objectName: "babylon.max.js"
-        },
-        {
-            path: basePath + "/babylon.max.js.map",
-            objectName: "babylon.max.js.map"
-        },
-        {
-            path: basePath + "/Oimo.js",
-            objectName: "Oimo.js"
-        },
-        {
-            path: basePath + package.path + "readme.md",
-            objectName: "readme.md"
-        }
-    ];
+        let packagePath = module.computed.packageUMDDirectory;
+        let packageDevPath = module.computed.packageUMDDevDirectory;
 
-    //copy them to the package path
-    files.forEach(file => {
-        fs.copySync(file.path, basePath + '/package/' + file.objectName);
+        colorConsole.log("    Cleanup " + packageDevPath.cyan);
+        rmDir(packageDevPath);
+
+        colorConsole.log("    Copy Package folder " + packagePath.cyan + " to " + packageDevPath.cyan);
+        fs.copySync(packagePath, packageDevPath);
+
+        colorConsole.emptyLine();
     });
+}
 
-    // update package.json
-    packageJson.version = version;
-    colorConsole.log("    Generating file list");
-    let packageFiles = ["package.json"];
-    files.forEach(file => {
-        if (!file.isDir) {
-            packageFiles.push(file.objectName);
-        } else {
-            //todo is it better to read the content and add it? leave it like that ATM
-            packageFiles.push(file.objectName + "/index.js", file.objectName + "/index.d.ts", file.objectName + "/es6.js")
-        }
+/**
+ * Prepare an es6 Dev folder npm linked for test purpose.
+ */
+function prepareEs6DevPackages() {
+    config.modules.forEach(moduleName => {
+        let module = config[moduleName];
+        let es6Config = module.build.es6;
+
+        colorConsole.log("Prepare " + "ES6Dev".magenta + " Package: " + moduleName.blue.bold);
+
+        let packagePath = module.computed.packageES6Directory;
+        let packageDevPath = module.computed.packageES6DevDirectory;
+
+        colorConsole.log("    Cleanup " + packageDevPath.cyan);
+        rmDir(packageDevPath);
+
+        colorConsole.log("    Copy Package folder " + packagePath.cyan + " to " + packageDevPath.cyan);
+        fs.copySync(packagePath, packageDevPath);
+
+        colorConsole.emptyLine();
     });
-    colorConsole.log("    Updating package.json");
-    packageJson.files = packageFiles;
-    packageJson.main = "babylon.js";
-    packageJson.typings = "babylon.d.ts";
-
-    fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
-
-    publish(version, package.name, basePath + '/package/');
-
-    // remove package directory
-    fs.removeSync(basePath + '/package/');
-
-    // now update the main package.json
-    packageJson.files = packageJson.files.map(file => {
-        if (file !== 'package.json' && file !== 'readme.md') {
-            return 'dist/preview release/' + file;
-        } else {
-            return file;
-        }
-    });
-    packageJson.main = "dist/preview release/babylon.js";
-    packageJson.typings = "dist/preview release/babylon.d.ts";
-
-    fs.writeFileSync('../../package.json', JSON.stringify(packageJson, null, 4));
-    colorConsole.emptyLine();
 }
 
 const createVersion = function(version) {
@@ -410,9 +430,15 @@ const createVersion = function(version) {
     // Create the packages and publish if needed.
     processLegacyPackages(version);
 
+    // Prepare es6 Dev Folder.
+    prepareUMDDevPackages();
+
     // Do not publish es6 yet.
     doNotPublish = true;
     processEs6Packages(version);
+
+    // Prepare es6 Dev Folder.
+    prepareEs6DevPackages();
 }
 
 /**
@@ -436,6 +462,7 @@ module.exports = function(noBuild, noPublish, askVersion) {
             }
 
             updateEngineVersion(version);
+            updateRootPackageVersion(version);
             createVersion(version);
 
             // Invite user to tag with the new version.
