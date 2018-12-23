@@ -625,7 +625,7 @@
                     ]
                 }
             ],
-            "legacyPackageOutputDirectory": "../../Viewer/build/src/",
+            "legacyPackageOutputDirectory": "../../../Viewer/build/src/",
             "requiredFiles": [
                 "dist/preview release/viewer/readme.md",
                 "dist/preview release/viewer/package.json",
@@ -667,7 +667,7 @@
                     "minified": true
                 }
             ],
-            "legacyPackageOutputDirectory": "../../Viewer/build/assets/",
+            "legacyPackageOutputDirectory": "../../../Viewer/build/assets/",
             "requiredFiles": [
                 "Viewer/assets/readme.md",
                 "Viewer/assets/package.json"
