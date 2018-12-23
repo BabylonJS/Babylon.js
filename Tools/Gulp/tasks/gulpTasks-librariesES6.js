@@ -16,13 +16,6 @@ var del = require("del");
 // Import Build Config
 var config = require("../../Config/config.js");
 
-// Constants
-const tempTypingsAMDFileName = "tempTypings.js";
-const tempTypingsFileName = tempTypingsAMDFileName.replace(".js", ".d.ts");
-
-const tempTypingsAMDFile = path.join(config.computed.tempFolder, tempTypingsAMDFileName);
-const tempTypingsFile = path.join(config.computed.tempFolder, tempTypingsFileName);
-
 /**
  * Clean Source And Dist folders.
  */
@@ -164,7 +157,7 @@ var modifyTsConfig = function(settings, cb) {
 var concatLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
         return gulp.src([path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
-            .pipe(concat(tempTypingsFileName))
+            .pipe(concat(config.computed.tempTypingsFileName))
             .pipe(processLooseDeclarations())
             .pipe(gulp.dest(config.computed.tempFolder));
     }
@@ -177,7 +170,7 @@ var concatLoseDTSFiles = function(settings) {
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
         const mainDeclarationFile = path.join(settings.computed.distES6Directory, settings.build.loseDTSFiles.destFileES6 || "index.d.ts");
-        return gulp.src([mainDeclarationFile, tempTypingsFile])
+        return gulp.src([mainDeclarationFile, config.computed.tempTypingsFilePath])
             .pipe(concat(settings.build.loseDTSFiles.destFileES6))
             .pipe(gulp.dest(settings.computed.distES6Directory));
     }

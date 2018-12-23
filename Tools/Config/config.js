@@ -16,6 +16,11 @@ const distES6Folder = path.join(tempFolder, config.build.distES6FolderName);
 const packageES6Folder = path.join(tempFolder, config.build.packageES6FolderName);
 const packageES6DevFolder = path.join(tempFolder, config.build.packageES6DevFolderName);
 
+const tempTypingsAMDFileName = config.tempTypingsAMDFileName;
+const tempTypingsFileName = tempTypingsAMDFileName.replace(".js", ".d.ts");
+const tempTypingsAMDFilePath = path.join(tempFolder, tempTypingsAMDFileName);
+const tempTypingsFilePath = path.join(tempFolder, tempTypingsFileName);
+
 config.computed = {
     rootFolder,
     tempFolder,
@@ -27,7 +32,11 @@ config.computed = {
     sourceES6Folder,
     distES6Folder,
     packageES6Folder,
-    packageES6DevFolder
+    packageES6DevFolder,
+    tempTypingsAMDFileName,
+    tempTypingsFileName,
+    tempTypingsAMDFilePath,
+    tempTypingsFilePath
 }
 
 config.additionalNpmPackages.forEach(package => {

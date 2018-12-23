@@ -2,6 +2,7 @@
     "build": {
         "outputDirectory": "../../dist/preview release",
         "tempDirectory": "./.temp/",
+        "tempTypingsAMDFileName": "tempTypings.js",
         "localDevES6FolderName": "localDevES6",
         "localDevUMDFolderName": "localDevUMD",
         "packageUMDFolderName": "packageUMD",

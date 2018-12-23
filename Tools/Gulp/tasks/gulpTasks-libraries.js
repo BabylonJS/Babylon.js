@@ -19,16 +19,8 @@ var commandLineOptions = minimist(process.argv.slice(2), {
     boolean: ["noNamespace"]
 });
 
-
 // Import Build Config
 var config = require("../../Config/config.js");
-
-// Constants
-const tempTypingsAMDFileName = "tempTypings.js";
-const tempTypingsFileName = tempTypingsAMDFileName.replace(".js", ".d.ts");
-
-const tempTypingsAMDFile = path.join(config.computed.tempFolder, tempTypingsAMDFileName);
-const tempTypingsFile = path.join(config.computed.tempFolder, tempTypingsFileName);
 
 /**
  * Clean shader ts files.
@@ -102,7 +94,7 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
     let library = libraries[0];
     if (!library.preventLoadLibrary) {
         // Generate DTS the old way...
-        cp.execSync(`tsc --module amd --outFile "${tempTypingsAMDFile}" --emitDeclarationOnly true`, {
+        cp.execSync(`tsc --module amd --outFile "${config.computed.tempTypingsAMDFilePath}" --emitDeclarationOnly true`, {
             cwd: settings.computed.srcDirectory
         });
     }
@@ -114,8 +106,8 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        return gulp.src([tempTypingsFile, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
-            .pipe(concat(tempTypingsFileName))
+        return gulp.src([config.computed.tempTypingsFilePath, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
+            .pipe(concat(config.computed.tempTypingsFileName))
             .pipe(gulp.dest(config.computed.tempFolder));
     }
     return Promise.resolve();
@@ -135,7 +127,7 @@ var processDTSFiles = function(libraries, settings, cb) {
         let fileLocation = path.join(outputDirectory, settings.build.umd.processDeclaration.filename);
 
         // Convert the tsc AMD BUNDLED declaration to our expected one
-        processAmdDeclarationToModule(tempTypingsFile, {
+        processAmdDeclarationToModule(config.computed.tempTypingsFilePath, {
             output: fileLocation,
             moduleName: settings.build.umd.packageName,
             entryPoint: library.entry,
