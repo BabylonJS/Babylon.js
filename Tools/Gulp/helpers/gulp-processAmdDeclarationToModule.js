@@ -73,6 +73,54 @@ var processData = function(data, options) {
     // Recreate the file.
     str = lines.join('\n');
 
+    // !!! Be carefull
+    // Could cause issues if this appears in several import scope
+    // with different aliases.
+
+    // !!! Be carefull multiline not managed.
+
+    // Remove unmanaged externals Appears as classMap false in the config.
+    if (options.externals) {
+        for (let ext in options.externals) {
+            // Need to remove the module and dependencies if false.
+            if (options.externals[ext] === false) {
+                // Replace import { foo, bar } from ...
+                const package = ext;
+                var babylonRegex = new RegExp(`import {(.*)} from ['"](${package})[\/'"](.*);`, "g");
+                var match = babylonRegex.exec(str);
+                let classes = new Set();
+                while (match != null) {
+                    if (match[1]) {
+                        match[1].split(",").forEach(element => {
+                            classes.add(element.trim());
+                        });
+                    }
+                    match = babylonRegex.exec(str);
+                }
+                str = str.replace(babylonRegex, '');
+
+                classes.forEach(cls => {
+                    let className = cls;
+                    let alias = cls;
+
+                    // Deal with import { foo as A, bar as B } from ...
+                    if (cls.indexOf(" as ") > -1) {
+                        const tokens = cls.split(" as ");
+                        className = tokens[0];
+                        alias = tokens[1];
+                    }
+
+                    // !!! Be carefull multiline not managed.
+                    const rg = new RegExp(`.*[ <]${alias}[^\\w].*`, "g")
+                    str = str.replace(rg, "");
+                });
+            }
+        }
+
+        // Remove Empty Lines
+        str = str.replace(/^\s*$/gm, "");
+    }
+
     // Add Entry point.
     str += `
 declare module "${moduleName}" {
