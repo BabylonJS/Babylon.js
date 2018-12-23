@@ -1,4 +1,5 @@
 import { GLTFFileLoader, IGLTFLoaderExtension } from "babylonjs-loaders/glTF/index";
+import { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";

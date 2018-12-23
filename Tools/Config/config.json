@@ -494,11 +494,14 @@
                 "webpackRoot": "INSPECTOR",
                 "processDeclaration": {
                     "filename": "babylon.inspector.module.d.ts",
+                    "moduleName": "INSPECTOR",
                     "importsToRemove": [],
                     "classMap": {
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON",
                         "babylonjs-serializers": "BABYLON",
+                        "babylonjs-gltf2interface": "BABYLON.GLTF2",
+                        "react": "React",
                         "babylonjs-gui": "BABYLON.GUI",
                         "@babylonjs/core": "BABYLON",
                         "@babylonjs/loaders": "BABYLON",

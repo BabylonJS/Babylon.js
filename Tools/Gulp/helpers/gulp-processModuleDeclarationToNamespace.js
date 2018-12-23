@@ -135,7 +135,7 @@ var processData = function(data, packageName, options) {
     if ((options.classMap)) {
         // Replace import { foo, bar } from ...
         Object.keys(options.classMap).forEach(package => {
-            var babylonRegex = new RegExp(`import {(.*)} from ['"](${package})['"];`, "g");
+            var babylonRegex = new RegExp(`import {(.*)} from ['"](${package})[\/'"](.*);`, "g");
 
             var match = babylonRegex.exec(str);
             let classes = new Set();
