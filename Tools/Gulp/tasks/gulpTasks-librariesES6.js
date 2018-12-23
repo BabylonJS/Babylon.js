@@ -8,7 +8,7 @@ var concat = require('gulp-concat');
 // Gulp Helpers
 var rmDir = require("../../NodeHelpers/rmDir");
 var processImports = require("../helpers/gulp-processImportsToEs6");
-var processLooseDeclaration = require("../helpers/gulp-processLooseDeclarationEs6");
+var processLooseDeclarations = require("../helpers/gulp-processLooseDeclarationsEs6");
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 var processShaders = require("../helpers/gulp-processShaders");
 var del = require("del");
@@ -156,10 +156,11 @@ var modifyTsConfig = function(settings, cb) {
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        const indexDTS = path.join(settings.computed.distES6Directory, "index.d.ts");
-        return gulp.src([indexDTS, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles)])
-            .pipe(concat("index.d.ts"))
-            .pipe(processLooseDeclaration())
+        const mainDeclarationFile = "" || "index.d.ts";
+        const indexDTS = path.join(settings.computed.distES6Directory, mainDeclarationFile);
+        return gulp.src([indexDTS, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
+            .pipe(concat(settings.build.loseDTSFiles.destFileES6 || "index.d.ts"))
+            .pipe(processLooseDeclarations())
             .pipe(gulp.dest(settings.computed.distES6Directory));
     }
     return Promise.resolve();
