@@ -16,6 +16,13 @@ var del = require("del");
 // Import Build Config
 var config = require("../../Config/config.js");
 
+// Constants
+const tempTypingsAMDFileName = "tempTypings.js";
+const tempTypingsFileName = tempTypingsAMDFileName.replace(".js", ".d.ts");
+
+const tempTypingsAMDFile = path.join(config.computed.tempFolder, tempTypingsAMDFileName);
+const tempTypingsFile = path.join(config.computed.tempFolder, tempTypingsFileName);
+
 /**
  * Clean Source And Dist folders.
  */
@@ -152,15 +159,26 @@ var modifyTsConfig = function(settings, cb) {
 }
 
 /**
+ * Concat Lose DTS Files allowing isolated Modules build
+ */
+var concatLoseDTSFiles = function(settings) {
+    if (settings.build.loseDTSFiles) {
+        return gulp.src([path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
+            .pipe(concat(tempTypingsFileName))
+            .pipe(processLooseDeclarations())
+            .pipe(gulp.dest(config.computed.tempFolder));
+    }
+    return Promise.resolve();
+}
+
+/**
  * Append Lose DTS Files allowing isolated Modules build
  */
 var appendLoseDTSFiles = function(settings) {
     if (settings.build.loseDTSFiles) {
-        const mainDeclarationFile = "" || "index.d.ts";
-        const indexDTS = path.join(settings.computed.distES6Directory, mainDeclarationFile);
-        return gulp.src([indexDTS, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
-            .pipe(concat(settings.build.loseDTSFiles.destFileES6 || "index.d.ts"))
-            .pipe(processLooseDeclarations())
+        const mainDeclarationFile = path.join(settings.computed.distES6Directory, settings.build.loseDTSFiles.destFileES6 || "index.d.ts");
+        return gulp.src([mainDeclarationFile, tempTypingsFile])
+            .pipe(concat(settings.build.loseDTSFiles.destFileES6))
             .pipe(gulp.dest(settings.computed.distES6Directory));
     }
     return Promise.resolve();
@@ -261,6 +279,7 @@ function buildES6Library(settings, module) {
     else {
         buildSteps = [
             function buildes6(cb) { return build(settings, cb) }, 
+            function concatLoseDTS() { return concatLoseDTSFiles(settings) },
             function appendLoseDTS() { return appendLoseDTSFiles(settings) }
         ];
     }

@@ -4,9 +4,12 @@
         "tempDirectory": "./.temp/",
         "localDevES6FolderName": "localDevES6",
         "localDevUMDFolderName": "localDevUMD",
+        "packageUMDFolderName": "packageUMD",
+        "packageUMDDevFolderName": "packageUMDDev",
         "sourceES6FolderName": "sourceES6",
         "distES6FolderName": "distES6",
         "packageES6FolderName": "packageES6",
+        "packageES6DevFolderName": "packageES6Dev",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
         "intellisenseSources": [
@@ -92,14 +95,26 @@
                     ],
                     "doNotAppendNamespace": true,
                     "prependToNamespaceText": "declare module 'babylonjs' { export = BABYLON; }"
-                }
+                },
+                "pacakagesFiles": [
+                    "babylon.d.ts",
+                    "babylon.js",
+                    "babylon.max.js",
+                    "babylon.max.js.map",
+                    "Oimo.js",
+                    "readme.md"
+                ],
+                "typings": "babylon.d.ts",
+                "index": "babylon.js",
+                "dependencies": [],
+                "devDependencies": []
             },
             "es6": {
-                "packageName": "@babylonjs/core",
-                "requiredFiles": [
-                    "readme.md"
-                ]
-            }
+                "packageName": "@babylonjs/core"
+            },
+            "requiredFiles": [
+                "readme.md"
+            ]
         }
     },
     "materialsLibrary": {

@@ -9,9 +9,12 @@ const tempFolder = path.resolve(rootFolder, config.build.tempDirectory);
 const outputFolder = path.resolve(configFolder, config.build.outputDirectory);
 const localDevES6Folder = path.join(tempFolder, config.build.localDevES6FolderName);
 const localDevUMDFolder = path.join(tempFolder, config.build.localDevUMDFolderName);
+const packageUMDFolder = path.join(tempFolder, config.build.packageUMDFolderName);
+const packageUMDDevFolder = path.join(tempFolder, config.build.packageUMDDevFolderName);
 const sourceES6Folder = path.join(tempFolder, config.build.sourceES6FolderName);
 const distES6Folder = path.join(tempFolder, config.build.distES6FolderName);
 const packageES6Folder = path.join(tempFolder, config.build.packageES6FolderName);
+const packageES6DevFolder = path.join(tempFolder, config.build.packageES6DevFolderName);
 
 config.computed = {
     rootFolder,
@@ -19,9 +22,12 @@ config.computed = {
     outputFolder,
     localDevES6Folder,
     localDevUMDFolder,
+    packageUMDFolder,
+    packageUMDDevFolder,
     sourceES6Folder,
     distES6Folder,
-    packageES6Folder
+    packageES6Folder,
+    packageES6DevFolder
 }
 
 config.additionalNpmPackages.forEach(package => {
@@ -40,9 +46,12 @@ config.modules.map(function(module) {
     const distDirectory = path.join(outputFolder, distFolder);
     const localDevES6Directory = path.join(localDevES6Folder, module);
     const localDevUMDDirectory = path.join(localDevUMDFolder, distFolder);
+    const packageUMDDirectory = path.join(packageUMDFolder, module);
+    const packageUMDDevDirectory = path.join(packageUMDDevFolder, module);
     const sourceES6Directory = path.join(sourceES6Folder, module);
     const distES6Directory = path.join(distES6Folder, module);
     const packageES6Directory = path.join(packageES6Folder, module);
+    const packageES6DevDirectory = path.join(packageES6DevFolder, module);
 
     const webpackConfigPath = path.join(mainDirectory, "webpack.config.js");
     const tsConfigPath = path.join(mainDirectory, "tsconfig.json");
@@ -55,9 +64,12 @@ config.modules.map(function(module) {
         distDirectory,
         localDevES6Directory,
         localDevUMDDirectory,
+        packageUMDDirectory,
+        packageUMDDevDirectory,
         sourceES6Directory,
         distES6Directory,
         packageES6Directory,
+        packageES6DevDirectory,
         webpackConfigPath,
         tsConfigPath,
         packageJSONPath
