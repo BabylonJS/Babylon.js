@@ -527,7 +527,15 @@
                 "packageName": "@babylonjs/inspector",
                 "requiredFiles": [
                     "dist/preview release/inspector/readme.md"
-                ]
+                ],
+                "pacakagesFiles": [
+                    "babylon.inspector.bundle.max.js",
+                    "babylon.inspector.bundle.max.js.map",
+                    "babylon.inspector.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.inspector.module.d.ts",
+                "index": "babylon.inspector.bundle.max.js"
             }
         }
     },

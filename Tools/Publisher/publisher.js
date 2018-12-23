@@ -149,17 +149,22 @@ function processEs6Packages(version) {
             });
         }
 
-        let files = getFiles(packagePath)
-            .map(f => f.replace(packagePath + "/", ""))
-            .filter(f => f.indexOf("assets/") === -1);
-
         legacyPackageJson.name = es6Config.packageName;
         legacyPackageJson.version = version;
-        legacyPackageJson.main = "index.js";
-        legacyPackageJson.module = "index.js";
-        legacyPackageJson.esnext = "index.js";
-        legacyPackageJson.typings = "index.d.ts";
-        legacyPackageJson.files = files;
+        legacyPackageJson.main = es6Config.index || "index.js";
+        legacyPackageJson.module = es6Config.index || "index.js";
+        legacyPackageJson.esnext = es6Config.index || "index.js";
+        legacyPackageJson.typings = es6Config.typings || "index.d.ts";
+
+        if (es6Config.pacakagesFiles) {
+            legacyPackageJson.files = es6Config.pacakagesFiles;
+        }
+        else {
+            let files = getFiles(packagePath)
+                .map(f => f.replace(packagePath + "/", ""))
+                .filter(f => f.indexOf("assets/") === -1);
+            legacyPackageJson.files = files;
+        }
 
         ["dependencies", "peerDependencies", "devDependencies"].forEach(key => {
             if (legacyPackageJson[key]) {
