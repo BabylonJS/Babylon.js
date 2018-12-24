@@ -41,9 +41,11 @@ config.computed = {
 
 config.additionalNpmPackages.forEach(package => {
     let packagePath = path.join(rootFolder, package.path);
+    let packageDevDirectory = path.join(localDevUMDFolder, package.name);
 
     package.computed = {
-        path: packagePath
+        path: packagePath,
+        packageDevDirectory
     };
 });
 
