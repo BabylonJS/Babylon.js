@@ -15,28 +15,38 @@ const prepareEs6DevPackages = require("./prepareEs6DevPackages");
 // Path management.
 process.env.PATH += (path.delimiter + path.join(__dirname, '../node_modules', '.bin'));
 
-const createVersion = function(version) {
-    // Publish additional packages from the config.
-    processAdditionalPackages(version);
+const createVersion = function(version, options) {
+    options = options || {
+        additional: true,
+        umd: true,
+        es6: true
+    };
 
-    // Create the packages and publish if needed.
-    processLegacyPackages(version);
+    if (options.additional) {
+        // Publish additional packages from the config.
+        processAdditionalPackages(version);
+    }
 
-    // Prepare es6 Dev Folder.
-    prepareUMDDevPackages();
+    if (options.umd) {
+        // Create the packages and publish if needed.
+        processLegacyPackages(version);
+        // Prepare umd Dev Folder.
+        prepareUMDDevPackages();
+    }
 
-    // Do not publish es6 yet.
-    process.env.BABYLONJSREALPUBLISH = false;
-    processEs6Packages(version);
-
-    // Prepare es6 Dev Folder.
-    prepareEs6DevPackages();
+    if (options.es6) {
+        // Do not publish es6 yet.
+        process.env.BABYLONJSREALPUBLISH = false;
+        processEs6Packages(version);
+        // Prepare es6 Dev Folder.
+        prepareEs6DevPackages();
+    }
 }
 
 /**
  * Main function driving the publication.
  */
-module.exports = function(production) {
+module.exports = function(production, options) {
     if (production) {
         prompt.start();
 
@@ -56,7 +66,7 @@ module.exports = function(production) {
 
             process.env.BABYLONJSREALPUBLISH = true;
 
-            createVersion(version);
+            createVersion(version, options);
 
             // Invite user to tag with the new version.
             colorConsole.log("Done, please tag git with " + version);

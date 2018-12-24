@@ -289,3 +289,8 @@ config.modules.map(function(module) {
     const settings = config[module];
     gulp.task(module + "-es6", buildES6Library(settings, module));
 });
+
+/**
+ * Build all es 6 libs.
+ */
+gulp.task("typescript-es6", gulp.series(config.modules.map((module) => module + "-es6")));

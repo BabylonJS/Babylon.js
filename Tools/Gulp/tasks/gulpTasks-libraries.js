@@ -170,3 +170,8 @@ config.modules.map(function(module) {
     const settings = config[module];
     gulp.task(module, buildExternalLibraries(settings));
 });
+
+/**
+ * Build all libs.
+ */
+gulp.task("typescript-libraries", gulp.series(config.modules, config.viewerModules));
