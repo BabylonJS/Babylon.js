@@ -33,7 +33,7 @@ var tsLintExternalLibrary = function(settings) {
 /**
  * Dynamic module linting for external library (mat, post processes, ...).
  */
-config.modules.map(function(module) {
+config.lintModules.map(function(module) {
     // Task will be like moduleName-tsLint
     gulp.task(module + "-tsLint", function() {
         var settings = config[module];
@@ -46,7 +46,7 @@ config.modules.map(function(module) {
  * Full Librairies tsLint.
  */
 gulp.task("typescript-libraries-tsLint",
-    gulp.series(config.modules.map((module) => {
+    gulp.series(config.lintModules.map((module) => {
         return module + "-tsLint";
     })
 ));

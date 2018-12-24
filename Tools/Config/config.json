@@ -44,6 +44,15 @@
         "gui",
         "inspector"
     ],
+    "lintModules": [
+        "core",
+        "materialsLibrary",
+        "postProcessesLibrary",
+        "proceduralTexturesLibrary",
+        "loaders",
+        "serializers",
+        "gui"
+    ],
     "viewerModules": [
         "viewer",
         "viewer-assets"
