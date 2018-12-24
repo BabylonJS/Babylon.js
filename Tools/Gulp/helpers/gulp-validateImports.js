@@ -9,6 +9,47 @@ var config = require("../../Config/config");
 
 const indexExlclusion = ["States", "EmitterTypes"];
 
+const mapping = { };
+config.modules.forEach(moduleName => {
+    mapping[config[moduleName].build.umd.packageName] = moduleName;
+});
+
+var validatePath = function(fileLocation, directory, module, lineNumber, errors) {
+    let internalModulePath = path.join(directory, module + ".ts");
+    // Check .ts path.
+    if (!fs.existsSync(internalModulePath)) {
+        let internalModulePath = path.join(directory, module + ".tsx");
+        // Check .tsx path.
+        if (!fs.existsSync(internalModulePath)) {
+            // If not found, check index.ts for legacy and index files.
+            if (fileLocation.indexOf("legacy") > -1 || fileLocation.indexOf("index") > -1) {
+                let internalModulePath = path.join(directory, module, "index.ts");
+                if (!fs.existsSync(internalModulePath)) {
+                    errors.push(`Line ${lineNumber} Export from folder only allowes if index is present. ${module}`);
+                }
+            }
+            else {
+                errors.push(`Line ${lineNumber} Imports ${module} needs to be full path (not from directory) for tree shaking.`);
+            }
+        }
+    }
+
+    if (internalModulePath.indexOf("index.") > -1) {
+        if (fileLocation.indexOf("legacy") === -1) {
+            let excluded = false;
+            for (let exclusion of indexExlclusion) {
+                if (internalModulePath.indexOf(exclusion) > -1) {
+                    excluded = true;
+                    break;
+                }
+            }
+            if (!excluded) {
+                errors.push(`Line ${lineNumber} Imports ${module} should not be from index for tree shaking.`);
+            }
+        }
+    }
+}
+
 var validateImports = function(data, fileLocation, options) {
     var str = "" + data;
     var errors = [];
@@ -52,13 +93,6 @@ var validateImports = function(data, fileLocation, options) {
 
             // Check if path is correct internal.
             if (externalModule) {
-                const mapping = {
-                    "babylonjs": "core",
-                    "babylonjs-loaders": "loaders",
-                    "babylonjs-serializers": "serializers",
-                    "babylonjs-gui": "gui",
-                };
-
                 const splitter = module.indexOf("/");
                 const baseModule = module.substring(0, splitter);
                 if (mapping[baseModule]) {
@@ -66,81 +100,17 @@ var validateImports = function(data, fileLocation, options) {
 
                     const directory = config[configName].computed.srcDirectory;
                     module = module.substring(splitter);
-
-                    let internalModulePath = path.join(directory, module + ".ts");
-                    if (!fs.existsSync(internalModulePath)) {
-                        let internalModulePath = path.join(directory, module + ".tsx");
-                        if (!fs.existsSync(internalModulePath)) {
-                            if (fileLocation.indexOf("legacy") > -1 || fileLocation.indexOf("index") > -1) {
-                                let internalModulePath = path.join(directory, module + "index.ts");
-                                if (!fs.existsSync(internalModulePath)) {
-                                    let internalModulePath = path.join(directory, module + "/index.ts");
-                                    if (!fs.existsSync(internalModulePath)) {
-                                        errors.push(`Line ${index} Imports needs to be full path. ${module}`);
-                                    }
-                                }
-                            }
-                            else {
-                                errors.push(`Line ${index} Imports ${module} needs to be full path.`);
-                            }
-                        }
-                    }
-
-                    if (internalModulePath.indexOf("index.") > -1) {
-                        if (fileLocation.indexOf("legacy") === -1) {
-                            let excluded = false;
-                            for (let exclusion of indexExlclusion) {
-                                if (internalModulePath.indexOf(exclusion) > -1) {
-                                    excluded = true;
-                                    break;
-                                }
-                            }
-                            if (!excluded) {
-                                errors.push(`Line ${index} Imports ${module} should not be from index for tree shaking.`);
-                            }
-                        }
-                    }
+                    validatePath(fileLocation, directory, module, index + 1, errors);
                 }
             }
             else {
                 // Check Relative.
                 if (!module.startsWith(".")) {
-                    errors.push(`Line ${index} Imports needs to be relative. ${module}`);
+                    errors.push(`Line ${index + 1} Import ${module} needs to be relative.`);
                 }
-
-                const directory = path.dirname(fileLocation);
-                let internalModulePath = path.join(directory, module + ".ts");
-                if (!fs.existsSync(internalModulePath)) {
-                    let internalModulePath = path.join(directory, module + ".tsx");
-                    if (!fs.existsSync(internalModulePath)) {
-                        if (fileLocation.indexOf("legacy") > -1 || fileLocation.indexOf("index") > -1) {
-                            let internalModulePath = path.join(directory, module + "index.ts");
-                            if (!fs.existsSync(internalModulePath)) {
-                                let internalModulePath = path.join(directory, module + "/index.ts");
-                                if (!fs.existsSync(internalModulePath)) {
-                                    errors.push(`Line ${index} Imports needs to be full path. ${module}`);
-                                }
-                            }
-                        }
-                        else {
-                            errors.push(`Line ${index} Imports ${module} needs to be full path.`);
-                        }
-                    }
-                }
-
-                if (internalModulePath.indexOf("index.") > -1) {
-                    if (fileLocation.indexOf("legacy") === -1) {
-                        let excluded = false;
-                        for (let exclusion of indexExlclusion) {
-                            if (internalModulePath.indexOf(exclusion) > -1) {
-                                excluded = true;
-                                break;
-                            }
-                        }
-                        if (!excluded) {
-                            errors.push(`Line ${index} Imports ${module} should not be from index for tree shaking.`);
-                        }
-                    }
+                else {
+                    const directory = path.dirname(fileLocation);
+                    validatePath(fileLocation, directory, module, index + 1, errors);
                 }
             }
         }

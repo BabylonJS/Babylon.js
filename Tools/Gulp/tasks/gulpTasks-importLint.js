@@ -2,7 +2,7 @@
 var gulp = require("gulp");
 var filter = require('gulp-filter');
 
-// Helpers
+// Helpers.
 var validateImports = require("../helpers/gulp-validateImports");
 
 // Read the full config.
