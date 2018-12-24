@@ -172,6 +172,12 @@ config.modules.map(function(module) {
 });
 
 /**
+ * Build the releasable files.
+ * Back Compat Only, now name core as it is a lib
+ */
+gulp.task("typescript", gulp.series("core"));
+
+/**
  * Build all libs.
  */
 gulp.task("typescript-libraries", gulp.series(config.modules, config.viewerModules));

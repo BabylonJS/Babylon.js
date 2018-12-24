@@ -17,20 +17,11 @@ require("./tasks/gulpTasks-tests");
 require("./tasks/gulpTasks-remapPaths");
 require("./tasks/gulpTasks-npmPackages");
 
-// Import Build Config
-var config = require("../Config/config.json");
-
 /**
  * Full TsLint.
  * Back Compat Only, now included in typescript-libraries-tsLint.
  */
 gulp.task("tsLint", gulp.series("typescript-libraries-tsLint"));
-
-/**
- * Build the releasable files.
- * Back Compat Only, now name core as it is a lib
- */
-gulp.task("typescript", gulp.series("core"));
 
 /**
  * Validate compile the code and check the comments and style case convention through typedoc
