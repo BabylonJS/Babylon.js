@@ -163,9 +163,7 @@ var processData = function(data, packageName, options) {
                 // !!! Be carefull
                 // Could cause issues if this appears in several import scope
                 // with different aliases.
-
                 // !!! Be carefull multiline not managed.
-
                 // False is a special case to remove all the lines.
                 if (options.classMap[package] === false) {
                     const rg = new RegExp(`.*[ <]${alias}[^\\w].*`, "g")

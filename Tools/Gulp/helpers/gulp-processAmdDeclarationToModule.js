@@ -76,9 +76,7 @@ var processData = function(data, options) {
     // !!! Be carefull
     // Could cause issues if this appears in several import scope
     // with different aliases.
-
     // !!! Be carefull multiline not managed.
-
     // Remove unmanaged externals Appears as classMap false in the config.
     if (options.externals) {
         for (let ext in options.externals) {
