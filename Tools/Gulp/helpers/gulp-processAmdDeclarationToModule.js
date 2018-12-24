@@ -49,7 +49,7 @@ var processData = function(data, options) {
             line = line.replace(/import "/g, `import "${moduleName}/`);
         }
 
-        // Replace Static Readonly declaration for Legacy TS Version compat
+        // Replace Static Readonly declaration for UMD TS Version compat
         var regexVar = /(.*)readonly (.*) = (.*);/g;
         match = regexVar.exec(line);
         if (match) {
