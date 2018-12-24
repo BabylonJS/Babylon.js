@@ -5,7 +5,7 @@ const colorConsole = require("../../NodeHelpers/colorConsole");
 
 // Global Variables.
 const config = require("../../Config/config.js");
-const enginePath = path.join(config.core.computed.srcDirectory, "Engines/engine.ts");
+const enginePath = path.join(config.core.computed.mainDirectory, "Engines/engine.ts");
 
 /**
  * Get the version from the engine class for Babylon

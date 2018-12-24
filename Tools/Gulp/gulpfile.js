@@ -1,11 +1,10 @@
 // Gulp Tools
 var gulp = require("gulp");
-// var optimisejs = require("gulp-optimize-js");
 
 // Import Gulp Tasks
+require("./tasks/gulpTasks-viewerLibraries");
 require("./tasks/gulpTasks-libraries");
 require("./tasks/gulpTasks-librariesES6");
-require("./tasks/gulpTasks-viewerLibraries");
 require("./tasks/gulpTasks-tsLint");
 require("./tasks/gulpTasks-netlify");
 require("./tasks/gulpTasks-whatsNew");
@@ -34,16 +33,6 @@ gulp.task("tsLint", gulp.series("typescript-libraries-tsLint"));
 gulp.task("typescript", gulp.series("core"));
 
 /**
- * Build all libs.
- */
-gulp.task("typescript-libraries", gulp.series(config.modules, config.viewerModules));
-
-/**
- * Build all es 6 libs.
- */
-gulp.task("typescript-es6", gulp.series(config.modules.map((module) => module + "-es6")));
-
-/**
  * Validate compile the code and check the comments and style case convention through typedoc
  */
 gulp.task("typedoc-check", gulp.series("core", "gui", "loaders", "serializers", "typedoc-generate", "typedoc-validate"));
@@ -66,7 +55,7 @@ gulp.task("tests-all", gulp.series("tests-unit", "tests-modules", "tests-validat
 /**
  * Get Ready to test Npm Packages.
  */
-gulp.task("npmPackages", gulp.series("typescript-libraries", "typescript-es6", "npmPackages-generate"));
+gulp.task("npmPackages", gulp.series("npmPackages-all"));
 
 /**
  * The default task, concat and min the main BJS files.
