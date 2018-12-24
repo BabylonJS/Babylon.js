@@ -22,7 +22,7 @@ jobs:
   - env: JOB=DocumentationCheck
     script: gulp typedoc-check
   - env: JOB=Styling
-    script: gulp tsLint
+    script: gulp fullLint
   - env: JOB=Build
     script: gulp typescript-all
   - env: JOB=Tests

@@ -2,7 +2,8 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Vector2 } from "babylonjs/Maths/math";
 
 import { Control } from "./control";
-import { StackPanel, TextBlock } from ".";
+import { StackPanel } from "./stackPanel";
+import { TextBlock } from "./textBlock";
 
 /**
  * Class used to create radio button controls
