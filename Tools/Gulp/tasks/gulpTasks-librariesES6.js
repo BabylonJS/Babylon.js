@@ -208,7 +208,7 @@ var build = function(settings, cb) {
 /**
  * Webpack Build.
  */
-var buildWebpack = function(module, cb) {
+var buildWebpack = function(settings, module, cb) {
     const gulpPath = path.join(config.computed.sourceES6Folder, "Tools/Gulp");
     // Launch TSC.
     const options = {
@@ -216,7 +216,7 @@ var buildWebpack = function(module, cb) {
         verbose: true
     };
 
-    let command = `gulp ${module} --noNamespace`;
+    let command = `gulp ${module} --noNamespace --moduleName ${settings.build.es6.packageName}`;
     shelljs.exec(command, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);
@@ -265,7 +265,7 @@ function buildES6Library(settings, module) {
     var buildSteps = null;
     if (settings.build.es6.webpackBuild) {
         buildSteps = [
-            function buildes6(cb) { return buildWebpack(module, cb) },
+            function buildes6(cb) { return buildWebpack(settings, module, cb) },
             function copyDist() { return copyWebpackDist(settings, module) }
         ];
     }

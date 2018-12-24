@@ -16,7 +16,7 @@ function modifyPath(str, filePath, opts) {
     for (let index = 0; index < lines.length; index++) {
         let line = lines[index];
 
-        // Replace Static Readonly declaration for Legacy TS Version compat
+        // Replace Static Readonly declaration for UMD TS Version compat
         var regexVar = /(.*)import .*"(.*)";/g;
         var match = regexVar.exec(line);
         if (match) {

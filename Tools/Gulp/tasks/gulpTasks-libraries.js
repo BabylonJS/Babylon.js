@@ -16,7 +16,8 @@ var del = require("del");
 
 // Parse Command Line.
 var commandLineOptions = minimist(process.argv.slice(2), {
-    boolean: ["noNamespace"]
+    boolean: ["noNamespace"],
+    string: ["moduleName"]
 });
 
 // Import Build Config
@@ -129,7 +130,7 @@ var processDTSFiles = function(libraries, settings, cb) {
         // Convert the tsc AMD BUNDLED declaration to our expected one
         processAmdDeclarationToModule(config.computed.tempTypingsFilePath, {
             output: fileLocation,
-            moduleName: settings.build.umd.packageName,
+            moduleName: commandLineOptions.moduleName || settings.build.umd.packageName,
             entryPoint: library.entry,
             externals: settings.build.umd.processDeclaration.classMap,
         });
