@@ -17,7 +17,4 @@ function buildBabylonJSAndDependencies() {
     }
 }
 
-/**
- * Main function driving the publication.
- */
 module.exports = buildBabylonJSAndDependencies;

@@ -28,7 +28,4 @@ function processAdditionalPackages(version) {
     });
 }
 
-/**
- * Main function driving the publication.
- */
 module.exports = processAdditionalPackages;

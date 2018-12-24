@@ -31,7 +31,4 @@ function publish(version, packageName, publishPath, public) {
     colorConsole.success('    Publishing ' + "OK".green);
 }
 
-/**
- * Main function driving the publication.
- */
 module.exports = publish;

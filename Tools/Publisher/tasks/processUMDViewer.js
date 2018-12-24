@@ -55,7 +55,4 @@ function processUMDViewer(module, version) {
     colorConsole.emptyLine();
 }
 
-/**
- * Main function driving the publication.
- */
 module.exports = processUMDViewer;
