@@ -30,7 +30,7 @@ function prepareEs6DevPackages() {
         const packageES6DevJSONPath = path.join(packageDevPath, "package.json");
         const packageES6DevJSON = require(packageES6DevJSONPath);
         for (let dependency in packageES6DevJSON.dependencies) {
-            if (dependency.indexOf("@babylon") > -1) {
+            if (dependency.indexOf("babylon") > -1) {
                 colorConsole.log("    Execute Npm Link " + dependency.yellow);
                 const command = `npm link ${dependency}`;
                 const result = shelljs.exec(command, { 

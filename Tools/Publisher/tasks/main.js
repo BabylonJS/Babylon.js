@@ -11,21 +11,20 @@ const processLegacyPackages = require("./processLegacyPackages");
 const processEs6Packages = require("./processEs6Packages");
 const prepareUMDDevPackages = require("./prepareUMDDevPackages");
 const prepareEs6DevPackages = require("./prepareEs6DevPackages");
+const prepareAdditionalDevPackages = require("./prepareAdditionalDevPackages");
 
 // Path management.
 process.env.PATH += (path.delimiter + path.join(__dirname, '../node_modules', '.bin'));
 
 const createVersion = function(version, options) {
     options = options || {
-        additional: true,
         umd: true,
         es6: true
     };
 
-    if (options.additional) {
-        // Publish additional packages from the config.
-        processAdditionalPackages(version);
-    }
+    // Publish additional packages from the config.
+    processAdditionalPackages(version);
+    prepareAdditionalDevPackages();
 
     if (options.umd) {
         // Create the packages and publish if needed.
