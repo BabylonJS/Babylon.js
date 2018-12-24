@@ -1,7 +1,9 @@
 // Dependecies.
 const fs = require('fs-extra');
+const path = require('path');
 const rmDir = require("../../NodeHelpers/rmDir");
 const colorConsole = require("../../NodeHelpers/colorConsole");
+var shelljs = require("shelljs");
 
 // Global Variables.
 const config = require("../../Config/config.js");
@@ -11,19 +13,47 @@ const config = require("../../Config/config.js");
  */
 function prepareEs6DevPackages() {
     config.modules.forEach(moduleName => {
-        let module = config[moduleName];
-        let es6Config = module.build.es6;
+        const module = config[moduleName];
+        const es6Config = module.build.es6;
 
         colorConsole.log("Prepare " + "ES6Dev".magenta + " Package: " + moduleName.blue.bold);
 
-        let packagePath = module.computed.packageES6Directory;
-        let packageDevPath = module.computed.packageES6DevDirectory;
+        const packagePath = module.computed.packageES6Directory;
+        const packageDevPath = module.computed.packageES6DevDirectory;
 
         colorConsole.log("    Cleanup " + packageDevPath.cyan);
         rmDir(packageDevPath);
 
         colorConsole.log("    Copy Package folder " + packagePath.cyan + " to " + packageDevPath.cyan);
         fs.copySync(packagePath, packageDevPath);
+
+        const packageES6DevJSONPath = path.join(packageDevPath, "package.json");
+        const packageES6DevJSON = require(packageES6DevJSONPath);
+        for (let dependency in packageES6DevJSON.dependencies) {
+            if (dependency.indexOf("@babylon") > -1) {
+                colorConsole.log("    Execute Npm Link " + dependency.yellow);
+                const command = `npm link ${dependency}`;
+                const result = shelljs.exec(command, { 
+                    async: false,
+                    cwd: packageDevPath
+                });
+
+                if (result.code != 0) {
+                    throw "Failed to link the ES6 package."
+                }
+            }
+        }
+
+        colorConsole.log("    Execute Npm Link command");
+        const command = `npm link`;
+        const result = shelljs.exec(command, { 
+            async: false,
+            cwd: packageDevPath
+        });
+
+        if (result.code != 0) {
+            throw "Failed to link the ES6 package."
+        }
 
         colorConsole.emptyLine();
     });

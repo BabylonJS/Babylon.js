@@ -74,6 +74,6 @@ module.exports = function(production, options) {
     }
     else {
         const version = versionNumberManager.getEngineVersion();
-        createVersion(version);
+        createVersion(version, options);
     }
 };
