@@ -7,7 +7,7 @@ const colorConsole = require("../../NodeHelpers/colorConsole");
 const versionNumberManager = require("./versionNumberManager");
 const buildBabylonJSAndDependencies = require("./buildBabylonJSAndDependencies");
 const processAdditionalPackages = require("./processAdditionalPackages");
-const processLegacyPackages = require("./processLegacyPackages");
+const processUMDackages = require("./processUMDPackages");
 const processEs6Packages = require("./processEs6Packages");
 const prepareUMDDevPackages = require("./prepareUMDDevPackages");
 const prepareEs6DevPackages = require("./prepareEs6DevPackages");
@@ -28,7 +28,7 @@ const createVersion = function(version, options) {
 
     if (options.umd) {
         // Create the packages and publish if needed.
-        processLegacyPackages(version);
+        processUMDPackages(version);
         // Prepare umd Dev Folder.
         prepareUMDDevPackages();
     }

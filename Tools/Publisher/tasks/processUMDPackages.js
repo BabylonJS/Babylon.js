@@ -6,22 +6,22 @@ const colorConsole = require("../../NodeHelpers/colorConsole");
 
 // Helpers.
 const publish = require("../helpers/publish");
-const processLegacyViewer = require("./processLegacyViewer");
+const processUMDViewer = require("./processUMDViewer");
 
 // Global Variables.
 const config = require("../../Config/config.js");
 const modules = config.modules.concat(config.viewerModules);
 
 /**
- * Process Legacy Packages.
+ * Process UMD Packages.
  */
-function processLegacyPackages(version) {
+function processUMDPackages(version) {
     modules.forEach(moduleName => {
         let module = config[moduleName];
         colorConsole.log("Process " + "UMD".magenta + " Package: " + moduleName.blue.bold);
 
         if (moduleName === "viewer") {
-            processLegacyViewer(module, version);
+            processUMDViewer(module, version);
         }
         else {
             let outputDirectory = module.build.legacyPackageOutputDirectory || module.computed.distDirectory;
@@ -114,4 +114,4 @@ function processLegacyPackages(version) {
 /**
  * Main function driving the publication.
  */
-module.exports = processLegacyPackages;
+module.exports = processUMDPackages;
