@@ -97,6 +97,7 @@ config.modules.map(function(module) {
             srcDirectory.replace(/\\/g, "/") + "/**/*.vertex.ts",
             srcDirectory.replace(/\\/g, "/") + "/**/ShadersInclude/*.ts",
         ];
+        const tsGlob = srcDirectory.replace(/\\/g, "/") + "/**/*.ts*";
 
         for (let library of settings.libraries) {
             const entryPath = path.join(srcDirectory, library.entry);
@@ -109,6 +110,7 @@ config.modules.map(function(module) {
         settings.computed.srcDirectory = srcDirectory;
         settings.computed.shaderGlob = shaderGlob;
         settings.computed.shaderTSGlob = shaderTSGlob;
+        settings.computed.tsGlob = tsGlob;
     }
 });
 

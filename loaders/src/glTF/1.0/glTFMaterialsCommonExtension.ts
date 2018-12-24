@@ -1,4 +1,5 @@
-import { GLTFLoaderExtension, GLTFLoaderBase } from ".";
+import { GLTFLoaderExtension } from "./glTFLoaderExtension";
+import { GLTFLoaderBase } from "./glTFLoader";
 
 import { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 

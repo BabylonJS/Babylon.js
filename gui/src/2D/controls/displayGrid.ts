@@ -1,4 +1,4 @@
-import { Control } from ".";
+import { Control } from "./control";
 
 /** Class used to render a grid  */
 export class DisplayGrid extends Control {

@@ -6,6 +6,7 @@ require("./tasks/gulpTasks-viewerLibraries");
 require("./tasks/gulpTasks-libraries");
 require("./tasks/gulpTasks-librariesES6");
 require("./tasks/gulpTasks-tsLint");
+require("./tasks/gulpTasks-importLint");
 require("./tasks/gulpTasks-netlify");
 require("./tasks/gulpTasks-whatsNew");
 require("./tasks/gulpTasks-localRun");
@@ -19,9 +20,18 @@ require("./tasks/gulpTasks-npmPackages");
 
 /**
  * Full TsLint.
- * Back Compat Only, now included in typescript-libraries-tsLint.
  */
 gulp.task("tsLint", gulp.series("typescript-libraries-tsLint"));
+
+/**
+ * Full ImportLint.
+ */
+gulp.task("importLint", gulp.series("typescript-libraries-importLint"));
+
+/**
+ * Full Lint.
+ */
+gulp.task("fullLint", gulp.series("tsLint", "importLint"));
 
 /**
  * Validate compile the code and check the comments and style case convention through typedoc
@@ -51,4 +61,4 @@ gulp.task("npmPackages", gulp.series("npmPackages-all"));
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("tsLint", "typescript-all", "intellisense", "typedoc-all", "tests-all"));
+gulp.task("default", gulp.series("tsLint", "importLint", "typescript-all", "intellisense", "typedoc-all", "tests-all"));

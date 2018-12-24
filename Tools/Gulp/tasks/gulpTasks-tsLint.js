@@ -24,7 +24,7 @@ var config = require("../../Config/config.js");
  */
 var tsLintExternalLibrary = function(settings) {
     const fxFilter = filter(['**', '!**/*.fragment.ts', '!**/*.vertex.ts', '!**/ShadersInclude/**'], { restore: false });
-    return gulp.src((settings.computed.srcDirectory) + "/**/*.ts")
+    return gulp.src(settings.computed.tsGlob)
         .pipe(fxFilter)
         .pipe(gulpTslint(tsLintConfig))
         .pipe(gulpTslint.report());
