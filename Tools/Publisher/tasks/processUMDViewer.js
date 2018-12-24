@@ -12,9 +12,9 @@ const getFiles = require("../helpers/getFiles");
 const config = require("../../Config/config.js");
 
 /**
- * Special treatment for legacy viewer.
+ * Special treatment for umd viewer.
  */
-function processLegacyViewer(module, version) {
+function processUMDViewer(module, version) {
 
     let projectPath = '../../../Viewer';
     let buildPath = projectPath + "/build/src/";
@@ -58,4 +58,4 @@ function processLegacyViewer(module, version) {
 /**
  * Main function driving the publication.
  */
-module.exports = processLegacyViewer;
+module.exports = processUMDViewer;

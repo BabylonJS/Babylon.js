@@ -24,7 +24,7 @@ function processEs6Packages(version) {
 
         let distPath = module.computed.distES6Directory;
         let packagePath = module.computed.packageES6Directory;
-        let legacyPackageJson = require(module.computed.packageJSONPath);
+        let umdPackageJson = require(module.computed.packageJSONPath);
 
         colorConsole.log("    Cleanup " + packagePath.cyan);
         rmDir(packagePath);
@@ -49,27 +49,27 @@ function processEs6Packages(version) {
             });
         }
 
-        legacyPackageJson.name = es6Config.packageName;
-        legacyPackageJson.version = version;
-        legacyPackageJson.main = es6Config.index || "index.js";
-        legacyPackageJson.module = es6Config.index || "index.js";
-        legacyPackageJson.esnext = es6Config.index || "index.js";
-        legacyPackageJson.typings = es6Config.typings || "index.d.ts";
+        umdPackageJson.name = es6Config.packageName;
+        umdPackageJson.version = version;
+        umdPackageJson.main = es6Config.index || "index.js";
+        umdPackageJson.module = es6Config.index || "index.js";
+        umdPackageJson.esnext = es6Config.index || "index.js";
+        umdPackageJson.typings = es6Config.typings || "index.d.ts";
 
         if (es6Config.pacakagesFiles) {
-            legacyPackageJson.files = es6Config.pacakagesFiles;
+            umdPackageJson.files = es6Config.pacakagesFiles;
         }
         else {
             let files = getFiles(packagePath)
                 .map(f => f.replace(packagePath + "/", ""))
                 .filter(f => f.indexOf("assets/") === -1);
-            legacyPackageJson.files = files;
+            umdPackageJson.files = files;
         }
 
         ["dependencies", "peerDependencies", "devDependencies"].forEach(key => {
-            if (legacyPackageJson[key]) {
-                let dependencies = legacyPackageJson[key];
-                legacyPackageJson[key] = {};
+            if (umdPackageJson[key]) {
+                let dependencies = umdPackageJson[key];
+                umdPackageJson[key] = {};
                 Object.keys(dependencies).forEach(packageName => {
                     if (packageName.indexOf("babylonjs") !== -1) {
                         colorConsole.log("    Checking Internal Dependency: " + packageName.cyan);
@@ -83,9 +83,9 @@ function processEs6Packages(version) {
                                 }
                             }
                         }
-                        legacyPackageJson[key][dependencyName] = version;
+                        umdPackageJson[key][dependencyName] = version;
                     } else if (!module.isCore) {
-                        legacyPackageJson[key][packageName] = dependencies[packageName];
+                        umdPackageJson[key][packageName] = dependencies[packageName];
                     }
                 });
             }
@@ -96,10 +96,10 @@ function processEs6Packages(version) {
         var mainPackageJSON = fs.readJSONSync(mainPackageJSONPath);
         var tslibSemver = mainPackageJSON["devDependencies"]["tslib"];
         colorConsole.log("    Adding tslib version: ", tslibSemver.yellow);
-        legacyPackageJson["dependencies"]["tslib"] = tslibSemver;
+        umdPackageJson["dependencies"]["tslib"] = tslibSemver;
 
         let packageJSONPath = path.join(packagePath, "package.json");
-        fs.writeFileSync(packageJSONPath, JSON.stringify(legacyPackageJson, null, 4));
+        fs.writeFileSync(packageJSONPath, JSON.stringify(umdPackageJson, null, 4));
 
         publish(version, es6Config.packageName, packagePath, true);
         colorConsole.emptyLine();
