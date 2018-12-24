@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const rmDir = require("../../NodeHelpers/rmDir");
 const colorConsole = require("../../NodeHelpers/colorConsole");
-var shelljs = require("shelljs");
+const shelljs = require("shelljs");
 
 // Global Variables.
 const config = require("../../Config/config.js");
@@ -14,7 +14,6 @@ const config = require("../../Config/config.js");
 function prepareEs6DevPackages() {
     config.modules.forEach(moduleName => {
         const module = config[moduleName];
-        const es6Config = module.build.es6;
 
         colorConsole.log("Prepare " + "ES6Dev".magenta + " Package: " + moduleName.blue.bold);
 
@@ -59,7 +58,4 @@ function prepareEs6DevPackages() {
     });
 }
 
-/**
- * Main function driving the publication.
- */
 module.exports = prepareEs6DevPackages;

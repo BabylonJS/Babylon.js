@@ -111,7 +111,4 @@ function processUMDPackages(version) {
     });
 }
 
-/**
- * Main function driving the publication.
- */
 module.exports = processUMDPackages;

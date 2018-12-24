@@ -18,7 +18,4 @@ const getFiles = function(dir, files_) {
     return files_;
 }
 
-/**
- * Get Files from folder.
- */
 module.exports = getFiles;

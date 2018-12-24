@@ -50,9 +50,6 @@ function updateRootPackageVersion(newVersion) {
     colorConsole.emptyLine();
 }
 
-/**
- * Main function driving the publication.
- */
 module.exports = {
     getEngineVersion,
     updateEngineVersion,

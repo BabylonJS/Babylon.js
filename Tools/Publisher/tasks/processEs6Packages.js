@@ -106,7 +106,4 @@ function processEs6Packages(version) {
     });
 }
 
-/**
- * Main function driving the publication.
- */
 module.exports = processEs6Packages;
