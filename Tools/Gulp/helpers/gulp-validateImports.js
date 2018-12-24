@@ -50,49 +50,8 @@ var validateImports = function(data, fileLocation, options) {
                 }
             }
 
-            // Check Relative.
-            if (!externalModule && !module.startsWith(".")) {
-                errors.push(`Line ${index} Imports needs to be relative. ${module}`);
-            }
-
             // Check if path is correct internal.
-            if (!externalModule) {
-                const directory = path.dirname(fileLocation);
-                let internalModulePath = path.join(directory, module + ".ts");
-                if (!fs.existsSync(internalModulePath)) {
-                    let internalModulePath = path.join(directory, module + ".tsx");
-                    if (!fs.existsSync(internalModulePath)) {
-                        if (fileLocation.indexOf("legacy") > -1 || fileLocation.indexOf("index") > -1) {
-                            let internalModulePath = path.join(directory, module + "index.ts");
-                            if (!fs.existsSync(internalModulePath)) {
-                                let internalModulePath = path.join(directory, module + "/index.ts");
-                                if (!fs.existsSync(internalModulePath)) {
-                                    errors.push(`Line ${index} Imports needs to be full path. ${module}`);
-                                }
-                            }
-                        }
-                        else {
-                            errors.push(`Line ${index} Imports ${module} needs to be full path.`);
-                        }
-                    }
-                }
-
-                if (internalModulePath.indexOf("index.") > -1) {
-                    if (fileLocation.indexOf("legacy") === -1) {
-                        let excluded = false;
-                        for (let exclusion of indexExlclusion) {
-                            if (internalModulePath.indexOf(exclusion) > -1) {
-                                excluded = true;
-                                break;
-                            }
-                        }
-                        if (!excluded) {
-                            errors.push(`Line ${index} Imports ${module} should not be from index for tree shaking.`);
-                        }
-                    }
-                }
-            }
-            else {
+            if (externalModule) {
                 const mapping = {
                     "babylonjs": "core",
                     "babylonjs-loaders": "loaders",
@@ -139,6 +98,47 @@ var validateImports = function(data, fileLocation, options) {
                             if (!excluded) {
                                 errors.push(`Line ${index} Imports ${module} should not be from index for tree shaking.`);
                             }
+                        }
+                    }
+                }
+            }
+            else {
+                // Check Relative.
+                if (!module.startsWith(".")) {
+                    errors.push(`Line ${index} Imports needs to be relative. ${module}`);
+                }
+
+                const directory = path.dirname(fileLocation);
+                let internalModulePath = path.join(directory, module + ".ts");
+                if (!fs.existsSync(internalModulePath)) {
+                    let internalModulePath = path.join(directory, module + ".tsx");
+                    if (!fs.existsSync(internalModulePath)) {
+                        if (fileLocation.indexOf("legacy") > -1 || fileLocation.indexOf("index") > -1) {
+                            let internalModulePath = path.join(directory, module + "index.ts");
+                            if (!fs.existsSync(internalModulePath)) {
+                                let internalModulePath = path.join(directory, module + "/index.ts");
+                                if (!fs.existsSync(internalModulePath)) {
+                                    errors.push(`Line ${index} Imports needs to be full path. ${module}`);
+                                }
+                            }
+                        }
+                        else {
+                            errors.push(`Line ${index} Imports ${module} needs to be full path.`);
+                        }
+                    }
+                }
+
+                if (internalModulePath.indexOf("index.") > -1) {
+                    if (fileLocation.indexOf("legacy") === -1) {
+                        let excluded = false;
+                        for (let exclusion of indexExlclusion) {
+                            if (internalModulePath.indexOf(exclusion) > -1) {
+                                excluded = true;
+                                break;
+                            }
+                        }
+                        if (!excluded) {
+                            errors.push(`Line ${index} Imports ${module} should not be from index for tree shaking.`);
                         }
                     }
                 }

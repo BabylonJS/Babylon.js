@@ -20,12 +20,10 @@ var importLintLibrary = function(settings) {
         }));
 }
 
-const lintModules = config.modules.filter((module) => module != "inspector");
-
 /**
  * Dynamic module linting for library (mat, post processes, ...).
  */
-lintModules.map(function(module) {
+config.lintModules.map(function(module) {
     // Task will be like moduleName-importLint
     gulp.task(module + "-importLint", function() {
         var settings = config[module];
@@ -38,7 +36,7 @@ lintModules.map(function(module) {
  * Full Librairies importLint.
  */
 gulp.task("typescript-libraries-importLint",
-    gulp.series(lintModules.map((module) => {
+    gulp.series(config.lintModules.map((module) => {
         return module + "-importLint";
     })
 ));
