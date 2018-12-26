@@ -344,4 +344,39 @@ export class Constants {
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
      */
     public static readonly PARTICLES_BILLBOARDMODE_STRETCHED = 8;
+
+    /** Default culling strategy : this is an exclusion test and it's the more accurate.
+     *  Test order :
+     *  Is the bounding sphere outside the frustum ?
+     *  If not, are the bounding box vertices outside the frustum ?
+     *  It not, then the cullable object is in the frustum.
+     */
+    public static readonly MESHES_CULLINGSTRATEGY_STANDARD = 0;
+    /** Culling strategy : Bounding Sphere Only.
+     *  This is an exclusion test. It's faster than the standard strategy because the bounding box is not tested.
+     *  It's also less accurate than the standard because some not visible objects can still be selected.
+     *  Test : is the bounding sphere outside the frustum ?
+     *  If not, then the cullable object is in the frustum.
+     */
+    public static readonly MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;
+    /** Culling strategy : Optimistic Inclusion.
+     *  This in an inclusion test first, then the standard exclusion test.
+     *  This can be faster when a cullable object is expected to be almost always in the camera frustum.
+     *  This could also be a little slower than the standard test when the tested object center is not the frustum but one of its bounding box vertex is still inside.
+     *  Anyway, it's as accurate as the standard strategy.
+     *  Test :
+     *  Is the cullable object bounding sphere center in the frustum ?
+     *  If not, apply the default culling strategy.
+     */
+    public static readonly MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = 2;
+    /** Culling strategy : Optimistic Inclusion then Bounding Sphere Only.
+     *  This in an inclusion test first, then the bounding sphere only exclusion test.
+     *  This can be the fastest test when a cullable object is expected to be almost always in the camera frustum.
+     *  This could also be a little slower than the BoundingSphereOnly strategy when the tested object center is not in the frustum but its bounding sphere still intersects it.
+     *  It's less accurate than the standard strategy and as accurate as the BoundingSphereOnly strategy.
+     *  Test :
+     *  Is the cullable object bounding sphere center in the frustum ?
+     *  If not, apply the Bounding Sphere Only strategy. No Bounding Box is tested here.
+     */
+    public static readonly MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = 3;
 }
