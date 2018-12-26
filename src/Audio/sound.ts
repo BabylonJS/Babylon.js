@@ -4,10 +4,8 @@ import { Vector3, Tmp } from "../Maths/math";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
-import { AudioSceneComponent } from "../Audio/audioSceneComponent";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
-import { SceneComponentConstants } from "../sceneComponent";
 import { Logger } from "../Misc/logger";
 
     /**
@@ -115,6 +113,11 @@ import { Logger } from "../Misc/logger";
         private _htmlAudioElement: HTMLAudioElement;
         private _urlType: 'Unknown' | 'String' | 'Array' | 'ArrayBuffer' | 'MediaStream' = "Unknown";
 
+        /** @hidden */
+        public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+            throw "Import AudioSceneComponent before creating sound.";
+        }
+
         /**
         * Create a sound and attach it to a scene
         * @param name Name of your sound
@@ -125,11 +128,7 @@ import { Logger } from "../Misc/logger";
         constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback: Nullable<() => void> = null, options?: any) {
             this.name = name;
             this._scene = scene;
-            let compo = scene._getComponent(SceneComponentConstants.NAME_AUDIO);
-            if (!compo) {
-                compo = new AudioSceneComponent(scene);
-                scene._addComponent(compo);
-            }
+            Sound._SceneComponentInitialization(scene);
 
             this._readyToPlayCallback = readyToPlayCallback;
             // Default custom attenuation function is a linear attenuation

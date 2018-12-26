@@ -1,7 +1,8 @@
 import { DeepImmutable } from "../types";
 import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "../Maths/math";
-import { Animatable } from "./animatable";
 import { Animation, AnimationEvent } from "./animation";
+
+declare type Animatable = import("./animatable").Animatable;
 
 import { Scene } from "../scene";
 

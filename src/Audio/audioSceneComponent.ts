@@ -427,3 +427,11 @@ declare module "../scene" {
             }
         }
     }
+
+    Sound._SceneComponentInitialization = (scene: Scene) => {
+        let compo = scene._getComponent(SceneComponentConstants.NAME_AUDIO);
+        if (!compo) {
+            compo = new AudioSceneComponent(scene);
+            scene._addComponent(compo);
+        }
+    };

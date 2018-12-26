@@ -1,7 +1,4 @@
-import { Animatable } from "./animatable";
 import { IEasingFunction, EasingFunction } from "./easing";
-import { RuntimeAnimation } from "./runtimeAnimation";
-
 import { Path2, Vector3, Quaternion, Vector2, Color3, Size, Matrix } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
 
@@ -11,6 +8,9 @@ import { IAnimatable } from "../Misc/tools";
 import { Node } from "../node";
 import { Texture } from "../Materials/Textures/texture";
 import { SerializationHelper } from "../Misc/decorators";
+
+declare type Animatable = import("./animatable").Animatable;
+declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
 
     /**
      * Represents the range of an animation
