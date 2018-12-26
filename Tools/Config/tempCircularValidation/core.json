@@ -10,12 +10,6 @@
     "../../src/Animations/runtimeAnimation.ts": [
         "../../src/Animations/animation.ts"
     ],
-    "../../src/Audio/audioSceneComponent.ts": [
-        "../../src/Audio/sound.ts"
-    ],
-    "../../src/Audio/sound.ts": [
-        "../../src/Audio/audioSceneComponent.ts"
-    ],
     "../../src/Behaviors/Meshes/pointerDragBehavior.ts": [
         "../../src/Gizmos/boundingBoxGizmo.ts"
     ],
@@ -241,5 +235,5 @@
         "../../src/Misc/tools.ts",
         "../../src/PostProcesses/postProcessManager.ts"
     ],
-    "errorCount": 120
+    "errorCount": 118
 }
