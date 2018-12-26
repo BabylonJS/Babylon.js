@@ -39,6 +39,7 @@ const dependencies = function(settings, moduleName, cb) {
 
     if (cruiseResult.summary.error > 0) {
         var errors = cruiseResult.summary.violations;
+        var errorCount = cruiseResult.summary.error;
 
         // Comparaison to remove once all done.
         // Comparaison to remove once all done.
@@ -50,21 +51,33 @@ const dependencies = function(settings, moduleName, cb) {
         }
 
         var fs = require("fs-extra");
-        var baseValidationFile = "../../Config/" + moduleName + ".json";
+        var baseValidationFile = "../../Config/tempCircularValidation/" + moduleName + ".json";
         if (fs.existsSync(path.resolve(__dirname, baseValidationFile))) {
             var baseValidation = require(baseValidationFile);
             errors = [];
             for (let error in comparaisonData) {
-                if (!baseValidation[error] || JSON.stringify(comparaisonData[error])!=JSON.stringify(baseValidation[error])) {
-                    errors.push({
-                        from: error.from,
-                        to: error.to
-                    });
+                if (!baseValidation[error]) {
+                    for (let errorTo of comparaisonData[error]) {
+                        errors.push({
+                            from: error,
+                            to: errorTo
+                        });
+                    }
+                }
+                else {
+                    if (JSON.stringify(comparaisonData[error])!=JSON.stringify(baseValidation[error])) {
+                        for (let errorTo of comparaisonData[error]) {
+                            if (baseValidation[error].indexOf(errorTo) === -1) {
+                                errors.push({
+                                    from: error,
+                                    to: errorTo
+                                });
+                            }
+                        }
+                    }
                 }
             }
-        }
-        else {
-            errors = cruiseResult.summary.violations;
+            errorCount = errors.length;
         }
 
         var minimist = require("minimist");
@@ -72,22 +85,24 @@ const dependencies = function(settings, moduleName, cb) {
             boolean: ["saveCircular"]
         });
         if (commandLineOptions.saveCircular) {
-            fs.writeJSONSync(path.resolve(__dirname, baseValidationFile), comparaisonData);
+            fs.writeJSONSync(path.resolve(__dirname, baseValidationFile), comparaisonData, {
+                spaces: 4,
+                EOL: '\n'
+            });
         }
-        colorConsole.warn(`Still circular dependencies in ${moduleName.cyan}: ${("" + cruiseResult.summary.error).red}`);
-        cb();
-        return;
         // End Comparaison to remove once all done.
         // End Comparaison to remove once all done.
         // End Comparaison to remove once all done.
 
-        colorConsole.error(`New circular dependencies in ${moduleName.cyan}: ${("" + cruiseResult.summary.error).red}`);
-        for (let error of errors) {
-            colorConsole.error(`    From: '${error.from.replace(/\.\.\//g, "").yellow}' To: '${error.to.replace(/\.\.\//g, "").yellow}'`);
+        if (errorCount > 0) {
+            colorConsole.error(`New circular dependencies in ${moduleName.cyan}: ${("" + errorCount).red}`);
+            for (let error of errors) {
+                colorConsole.error(`    From: '${error.from.replace(/\.\.\//g, "").yellow}' To: '${error.to.replace(/\.\.\//g, "").yellow}'`);
+            }
+            process.exit(1);
         }
-        process.exit(1);
     }
-    
+
     colorConsole.success("No New circular dependencies.");
     cb();
 }
