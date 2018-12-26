@@ -153,6 +153,7 @@
 - Fix a bug when a call to `updateIndices` leads to changing the size of the index buffer by recreating the subMeshes in that case ([barroij](https://github.com/barroij))
 - Add option to disable gazeTracker color changes in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBehavior validateDrag predicate to stop dragging to specific points ([TrevorDev](https://github.com/TrevorDev))
+- Auto Update Touch Action [#5674](https://github.com/BabylonJS/Babylon.js/issues/5674)([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 
