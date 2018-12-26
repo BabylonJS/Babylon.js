@@ -1,9 +1,7 @@
 import { FloatArray, IndicesArray, Nullable } from "../types";
-import { Animation } from "../Animations/animation";
 import { Color4, Color3, Vector2, Vector3 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
-import { Camera } from "../Cameras/camera";
 import { Observable } from "./observable";
 import { FilesInput } from "./filesInput";
 import { Constants } from "../Engines/constants";
@@ -13,7 +11,9 @@ import { _TypeStore } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from './precisionDate';
 
+declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
+declare type Animation = import("../Animations/animation").Animation;
 
     /**
      * Interface for any object that can request an animation frame
