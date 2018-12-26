@@ -17,6 +17,7 @@ require("./tasks/gulpTasks-intellisense");
 require("./tasks/gulpTasks-tests");
 require("./tasks/gulpTasks-remapPaths");
 require("./tasks/gulpTasks-npmPackages");
+require("./tasks/gulpTasks-dependencies");
 
 /**
  * Full TsLint.
@@ -31,7 +32,7 @@ gulp.task("importLint", gulp.series("typescript-libraries-importLint"));
 /**
  * Full Lint.
  */
-gulp.task("fullLint", gulp.series("tsLint", "importLint"));
+gulp.task("fullLint", gulp.series("tsLint", "importLint", "circularDependencies"));
 
 /**
  * Validate compile the code and check the comments and style case convention through typedoc
@@ -61,4 +62,4 @@ gulp.task("npmPackages", gulp.series("npmPackages-all"));
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("tsLint", "importLint", "typescript-all", "intellisense", "typedoc-all", "tests-all"));
+gulp.task("default", gulp.series("tsLint", "importLint", "circularDependencies", "typescript-all", "intellisense", "typedoc-all", "tests-all"));
