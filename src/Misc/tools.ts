@@ -3,7 +3,7 @@ import { Color4, Color3, Vector2, Vector3 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { Observable } from "./observable";
-import { FilesInput } from "./filesInput";
+import { FilesInputStore } from "./filesInputStore";
 import { Constants } from "../Engines/constants";
 import { DomManagement } from "./domManagement";
 import { Logger } from "./logger";
@@ -805,15 +805,15 @@ declare type Animation = import("../Animations/animation").Animation;
             else {
                 if (url.indexOf("file:") !== -1) {
                     var textureName = decodeURIComponent(url.substring(5).toLowerCase());
-                    if (FilesInput.FilesToLoad[textureName]) {
+                    if (FilesInputStore.FilesToLoad[textureName]) {
                         try {
                             var blobURL;
                             try {
-                                blobURL = URL.createObjectURL(FilesInput.FilesToLoad[textureName]);
+                                blobURL = URL.createObjectURL(FilesInputStore.FilesToLoad[textureName]);
                             }
                             catch (ex) {
                                 // Chrome doesn't support oneTimeOnly parameter
-                                blobURL = URL.createObjectURL(FilesInput.FilesToLoad[textureName]);
+                                blobURL = URL.createObjectURL(FilesInputStore.FilesToLoad[textureName]);
                             }
                             img.src = blobURL;
                             usingObjectURL = true;
@@ -849,8 +849,8 @@ declare type Animation = import("../Animations/animation").Animation;
             // If file and file input are set
             if (url.indexOf("file:") !== -1) {
                 const fileName = decodeURIComponent(url.substring(5).toLowerCase());
-                if (FilesInput.FilesToLoad[fileName]) {
-                    return Tools.ReadFile(FilesInput.FilesToLoad[fileName], onSuccess, onProgress, useArrayBuffer);
+                if (FilesInputStore.FilesToLoad[fileName]) {
+                    return Tools.ReadFile(FilesInputStore.FilesToLoad[fileName], onSuccess, onProgress, useArrayBuffer);
                 }
             }
 
