@@ -8,12 +8,8 @@
     "../../src/Culling/Octrees/octreeBlock.ts": [
         "../../src/Culling/Octrees/octree.ts"
     ],
-    "../../src/Culling/boundingInfo.ts": [
-        "../../src/Meshes/abstractMesh.ts"
-    ],
     "../../src/Engines/engine.ts": [
-        "../../src/Materials/Textures/internalTexture.ts",
-        "../../src/Materials/material.ts"
+        "../../src/Materials/Textures/internalTexture.ts"
     ],
     "../../src/Gizmos/boundingBoxGizmo.ts": [
         "../../src/Behaviors/Meshes/pointerDragBehavior.ts"
@@ -52,10 +48,6 @@
         "../../src/Materials/materialHelper.ts",
         "../../src/scene.ts"
     ],
-    "../../src/Meshes/abstractMesh.ts": [
-        "../../src/Culling/boundingInfo.ts",
-        "../../src/Engines/engine.ts"
-    ],
     "../../src/Meshes/geometry.ts": [
         "../../src/Meshes/mesh.ts"
     ],
@@ -63,7 +55,6 @@
         "../../src/Meshes/geometry.ts"
     ],
     "../../src/Meshes/subMesh.ts": [
-        "../../src/Culling/boundingInfo.ts",
         "../../src/Materials/material.ts"
     ],
     "../../src/Misc/filesInput.ts": [
@@ -102,5 +93,5 @@
     "../../src/scene.ts": [
         "../../src/Materials/standardMaterial.ts"
     ],
-    "errorCount": 37
+    "errorCount": 32
 }

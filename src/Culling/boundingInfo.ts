@@ -1,7 +1,7 @@
 import { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3, Plane } from "../Maths/math";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Constants } from "../Engines/constants";
 import { Collider } from "../Collisions/collider";
 
 import { BoundingBox } from "./boundingBox";
@@ -159,8 +159,8 @@ import { BoundingSphere } from "./boundingSphere";
          * @param strategy defines the strategy to use for the culling (default is BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD)
          * @returns true if the bounding info is in the frustum planes
          */
-        public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = AbstractMesh.CULLINGSTRATEGY_STANDARD): boolean {
-            let inclusionTest = (strategy === AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION || strategy === AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY);
+        public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = Constants.MESHES_CULLINGSTRATEGY_STANDARD): boolean {
+            let inclusionTest = (strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION || strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY);
             if (inclusionTest) {
                 if (this.boundingSphere.isCenterInFrustum(frustumPlanes)) {
                     return true;
@@ -171,7 +171,7 @@ import { BoundingSphere } from "./boundingSphere";
                 return false;
             }
 
-            let bSphereOnlyTest = (strategy === AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY || strategy === AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY);
+            let bSphereOnlyTest = (strategy === Constants.MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY || strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY);
             if (bSphereOnlyTest) {
                 return true;
             }

@@ -74,14 +74,14 @@ import { Constants } from "../Engines/constants";
          *  If not, are the bounding box vertices outside the frustum ?
          *  It not, then the cullable object is in the frustum.
          */
-        public static readonly CULLINGSTRATEGY_STANDARD = 0;
+        public static readonly CULLINGSTRATEGY_STANDARD = Constants.MESHES_CULLINGSTRATEGY_STANDARD;
         /** Culling strategy : Bounding Sphere Only.
          *  This is an exclusion test. It's faster than the standard strategy because the bounding box is not tested.
          *  It's also less accurate than the standard because some not visible objects can still be selected.
          *  Test : is the bounding sphere outside the frustum ?
          *  If not, then the cullable object is in the frustum.
          */
-        public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;
+        public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = Constants.MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY;
         /** Culling strategy : Optimistic Inclusion.
          *  This in an inclusion test first, then the standard exclusion test.
          *  This can be faster when a cullable object is expected to be almost always in the camera frustum.
@@ -91,7 +91,7 @@ import { Constants } from "../Engines/constants";
          *  Is the cullable object bounding sphere center in the frustum ?
          *  If not, apply the default culling strategy.
          */
-        public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = 2;
+        public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION;
         /** Culling strategy : Optimistic Inclusion then Bounding Sphere Only.
          *  This in an inclusion test first, then the bounding sphere only exclusion test.
          *  This can be the fastest test when a cullable object is expected to be almost always in the camera frustum.
@@ -101,7 +101,7 @@ import { Constants } from "../Engines/constants";
          *  Is the cullable object bounding sphere center in the frustum ?
          *  If not, apply the Bounding Sphere Only strategy. No Bounding Box is tested here.
          */
-        public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = 3;
+        public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
 
         /**
          * No billboard
