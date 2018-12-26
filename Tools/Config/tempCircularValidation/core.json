@@ -82,11 +82,6 @@
     "../../src/Materials/Textures/internalTexture.ts": [
         "../../src/Engines/engine.ts"
     ],
-    "../../src/Materials/Textures/renderTargetTexture.ts": [
-        "../../src/Materials/Textures/texture.ts",
-        "../../src/Misc/tools.ts",
-        "../../src/PostProcesses/postProcessManager.ts"
-    ],
     "../../src/Materials/Textures/texture.ts": [
         "../../src/Materials/Textures/baseTexture.ts",
         "../../src/Misc/decorators.ts",
@@ -157,10 +152,7 @@
         "../../src/Misc/tools.ts"
     ],
     "../../src/Misc/tools.ts": [
-        "../../src/Materials/Textures/renderTargetTexture.ts",
-        "../../src/Materials/Textures/texture.ts",
-        "../../src/Misc/filesInput.ts",
-        "../../src/PostProcesses/fxaaPostProcess.ts"
+        "../../src/Misc/filesInput.ts"
     ],
     "../../src/Particles/particleHelper.ts": [
         "../../src/Particles/particleSystemSet.ts"
@@ -181,10 +173,6 @@
         "../../src/Physics/Plugins/cannonJSPlugin.ts"
     ],
     "../../src/PostProcesses/anaglyphPostProcess.ts": [
-        "../../src/PostProcesses/postProcess.ts"
-    ],
-    "../../src/PostProcesses/fxaaPostProcess.ts": [
-        "../../src/Materials/Textures/texture.ts",
         "../../src/PostProcesses/postProcess.ts"
     ],
     "../../src/PostProcesses/passPostProcess.ts": [
@@ -231,5 +219,5 @@
         "../../src/Misc/tools.ts",
         "../../src/PostProcesses/postProcessManager.ts"
     ],
-    "errorCount": 116
+    "errorCount": 108
 }
