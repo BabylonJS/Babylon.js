@@ -6,7 +6,6 @@ import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { Camera } from "../Cameras/camera";
 import { Observable } from "./observable";
 import { FilesInput } from "./filesInput";
-import { TGATools } from "./tga";
 import { Constants } from "../Engines/constants";
 import { DomManagement } from "./domManagement";
 import { Logger } from "./logger";
@@ -1371,53 +1370,6 @@ declare type Engine = import("../Engines/engine").Engine;
          */
         public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
             throw "Import ScreenshotTools before creating screenshot.";
-        }
-
-        /**
-         * Validates if xhr data is correct
-         * @param xhr defines the request to validate
-         * @param dataType defines the expected data type
-         * @returns true if data is correct
-         */
-        public static ValidateXHRData(xhr: XMLHttpRequest, dataType = 7): boolean {
-            // 1 for text (.babylon, manifest and shaders), 2 for TGA, 4 for DDS, 7 for all
-
-            try {
-                if (dataType & 1) {
-                    if (xhr.responseText && xhr.responseText.length > 0) {
-                        return true;
-                    } else if (dataType === 1) {
-                        return false;
-                    }
-                }
-
-                if (dataType & 2) {
-                    // Check header width and height since there is no "TGA" magic number
-                    var tgaHeader = TGATools.GetTGAHeader(xhr.response);
-
-                    if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
-                        return true;
-                    } else if (dataType === 2) {
-                        return false;
-                    }
-                }
-
-                if (dataType & 4) {
-                    // Check for the "DDS" magic number
-                    var ddsHeader = new Uint8Array(xhr.response, 0, 3);
-
-                    if (ddsHeader[0] === 68 && ddsHeader[1] === 68 && ddsHeader[2] === 83) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-
-            } catch (e) {
-                // Global protection
-            }
-
-            return false;
         }
 
         /**

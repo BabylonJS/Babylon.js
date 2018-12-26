@@ -54,7 +54,7 @@ import { ProceduralTexture } from "./proceduralTexture";
 
             xhr.open("GET", configFileUrl, true);
             xhr.addEventListener("load", () => {
-                if (xhr.status === 200 || Tools.ValidateXHRData(xhr, 1)) {
+                if (xhr.status === 200 || (xhr.responseText && xhr.responseText.length > 0)) {
                     try {
                         this._config = JSON.parse(xhr.response);
 
