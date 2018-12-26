@@ -13,6 +13,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
+import { PivotTools } from "../Misc/pivotTools";
     /**
      * Bounding box gizmo
      */
@@ -85,40 +86,6 @@ import { StandardMaterial } from "../Materials/standardMaterial";
         private _dragMesh: Nullable<Mesh> = null;
         private pointerDragBehavior = new PointerDragBehavior();
 
-        // Stores the state of the pivot cache (_oldPivotPoint, _pivotTranslation)
-        // store/remove pivot point should only be applied during their outermost calls
-        private static _PivotCached = 0;
-        private static _OldPivotPoint = new Vector3();
-        private static _PivotTranslation = new Vector3();
-        private static _PivotTmpVector = new Vector3();
-        /** @hidden */
-        public static _RemoveAndStorePivotPoint(mesh: AbstractMesh) {
-            if (mesh && BoundingBoxGizmo._PivotCached === 0) {
-                // Save old pivot and set pivot to 0,0,0
-                mesh.getPivotPointToRef(BoundingBoxGizmo._OldPivotPoint);
-                if (!BoundingBoxGizmo._OldPivotPoint.equalsToFloats(0, 0, 0)) {
-                    mesh.setPivotMatrix(Matrix.IdentityReadOnly);
-                    BoundingBoxGizmo._OldPivotPoint.subtractToRef(mesh.getPivotPoint(), BoundingBoxGizmo._PivotTranslation);
-                    BoundingBoxGizmo._PivotTmpVector.copyFromFloats(1, 1, 1);
-                    BoundingBoxGizmo._PivotTmpVector.subtractInPlace(mesh.scaling);
-                    BoundingBoxGizmo._PivotTmpVector.multiplyInPlace(BoundingBoxGizmo._PivotTranslation);
-                    mesh.position.addInPlace(BoundingBoxGizmo._PivotTmpVector);
-                }
-            }
-            BoundingBoxGizmo._PivotCached++;
-        }
-        /** @hidden */
-        public static _RestorePivotPoint(mesh: AbstractMesh) {
-            if (mesh && !BoundingBoxGizmo._OldPivotPoint.equalsToFloats(0, 0, 0) && BoundingBoxGizmo._PivotCached === 1) {
-                mesh.setPivotPoint(BoundingBoxGizmo._OldPivotPoint);
-                BoundingBoxGizmo._PivotTmpVector.copyFromFloats(1, 1, 1);
-                BoundingBoxGizmo._PivotTmpVector.subtractInPlace(mesh.scaling);
-                BoundingBoxGizmo._PivotTmpVector.multiplyInPlace(BoundingBoxGizmo._PivotTranslation);
-                mesh.position.subtractInPlace(BoundingBoxGizmo._PivotTmpVector);
-            }
-            this._PivotCached--;
-        }
-
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -185,7 +152,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
                 _dragBehavior.onDragObservable.add((event) => {
                     this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
-                        BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
+                        PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
 
                         var worldDragDirection = startingTurnDirection;
 
@@ -225,7 +192,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
                         }
                         this.updateBoundingBox();
 
-                        BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
+                        PivotTools._RestorePivotPoint(this.attachedMesh);
                     }
                     this._updateDummy();
                 });
@@ -262,7 +229,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
                         _dragBehavior.onDragObservable.add((event) => {
                             this.onScaleBoxDragObservable.notifyObservers({});
                             if (this.attachedMesh) {
-                                BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
+                                PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
                                 var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
                                 var deltaScale = new Vector3(relativeDragDistance, relativeDragDistance, relativeDragDistance);
                                 deltaScale.scaleInPlace(this._scaleDragSpeed);
@@ -289,7 +256,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
                                 }
                                 this._anchorMesh.removeChild(this.attachedMesh);
 
-                                BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
+                                PivotTools._RestorePivotPoint(this.attachedMesh);
                             }
                             this._updateDummy();
                         });
@@ -352,10 +319,10 @@ import { StandardMaterial } from "../Materials/standardMaterial";
             if (value) {
                 // Reset anchor mesh to match attached mesh's scale
                 // This is needed to avoid invalid box/sphere position on first drag
-                BoundingBoxGizmo._RemoveAndStorePivotPoint(value);
+                PivotTools._RemoveAndStorePivotPoint(value);
                 this._anchorMesh.addChild(value);
                 this._anchorMesh.removeChild(value);
-                BoundingBoxGizmo._RestorePivotPoint(value);
+                PivotTools._RestorePivotPoint(value);
                 this.updateBoundingBox();
 
                 this.gizmoLayer.utilityLayerScene.onAfterRenderObservable.addOnce(() => {
@@ -376,7 +343,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
          */
         public updateBoundingBox() {
             if (this.attachedMesh) {
-                BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
+                PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
                 this._update();
                 // Rotate based on axis
                 if (!this.attachedMesh.rotationQuaternion) {
@@ -415,7 +382,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 
             if (this.attachedMesh) {
                 this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
-                BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
+                PivotTools._RestorePivotPoint(this.attachedMesh);
             }
         }
 

@@ -6,8 +6,8 @@ import { Nullable } from "../../types";
 import { Observer, Observable } from "../../Misc/observable";
 import { Vector3 } from "../../Maths/math";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { BoundingBoxGizmo } from "../../Gizmos/boundingBoxGizmo";
 import { Ray } from "../../Culling/ray";
+import { PivotTools } from '../../Misc/pivotTools';
 
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
@@ -202,7 +202,7 @@ import { Ray } from "../../Culling/ray";
 
             this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
                 if (this._moving && this.moveAttached) {
-                    BoundingBoxGizmo._RemoveAndStorePivotPoint(this._attachedNode);
+                    PivotTools._RemoveAndStorePivotPoint(this._attachedNode);
                     // Slowly move mesh to avoid jitter
                     this._targetPosition.subtractToRef((this._attachedNode).absolutePosition, this._tmpVector);
                     this._tmpVector.scaleInPlace(this.dragDeltaRatio);
@@ -210,7 +210,7 @@ import { Ray } from "../../Culling/ray";
                     if (this.validateDrag(this._tmpVector)) {
                         (this._attachedNode).setAbsolutePosition(this._tmpVector);
                     }
-                    BoundingBoxGizmo._RestorePivotPoint(this._attachedNode);
+                    PivotTools._RestorePivotPoint(this._attachedNode);
                 }
             });
         }
@@ -257,7 +257,7 @@ import { Ray } from "../../Culling/ray";
                 return;
             }
 
-            BoundingBoxGizmo._RemoveAndStorePivotPoint(this._attachedNode);
+            PivotTools._RemoveAndStorePivotPoint(this._attachedNode);
             // Create start ray from the camera to the object
             if (fromRay) {
                 this._startDragRay.direction.copyFrom(fromRay.direction);
@@ -288,7 +288,7 @@ import { Ray } from "../../Culling/ray";
                     }
                 }
             }
-            BoundingBoxGizmo._RestorePivotPoint(this._attachedNode);
+            PivotTools._RestorePivotPoint(this._attachedNode);
         }
 
         private _dragDelta = new Vector3();
