@@ -2,9 +2,9 @@ import { Behavior } from "../../Behaviors/behavior";
 import { Camera } from "../../Cameras/camera";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { Nullable } from "../../types";
-import { Tools } from "../../Misc/tools";
 import { Observer } from "../../Misc/observable";
 import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
+import { PrecisionDate } from "../../Misc/precisionDate";
 
     /**
      * The autoRotation behavior (AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
@@ -122,7 +122,7 @@ import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
             });
 
             this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
-                let now = Tools.Now;
+                let now = PrecisionDate.Now;
                 let dt = 0;
                 if (this._lastFrameTime != null) {
                     dt =  now - this._lastFrameTime;
@@ -192,7 +192,7 @@ import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
          */
         private _applyUserInteraction(): void {
             if (this._userIsMoving() && !this._shouldAnimationStopForInteraction()) {
-                this._lastInteractionTime = Tools.Now;
+                this._lastInteractionTime = PrecisionDate.Now;
             }
         }
 

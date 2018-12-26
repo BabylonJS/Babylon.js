@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Tools } from "./tools";
+import { PrecisionDate } from "./precisionDate";
 
     /**
 	 * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
@@ -22,7 +22,7 @@ import { Tools } from "./tools";
 		 * Samples current frame
 		 * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
 		 */
-        public sampleFrame(timeMs: number = Tools.Now) {
+        public sampleFrame(timeMs: number = PrecisionDate.Now) {
             if (!this._enabled) { return; }
 
             if (this._lastFrameTimeMs != null) {

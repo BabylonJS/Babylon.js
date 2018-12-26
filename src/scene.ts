@@ -1,5 +1,6 @@
 import { Nullable } from "./types";
 import { IAnimatable, IFileRequest, Tools, PerfCounter } from "./Misc/tools";
+import { PrecisionDate } from "./Misc/precisionDate";
 import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
@@ -2694,7 +2695,7 @@ import { EngineStore } from "./Engines/engineStore";
             }
 
             // Getting time
-            var now = Tools.Now;
+            var now = PrecisionDate.Now;
             if (!this._animationTimeLast) {
                 if (this._pendingData.length > 0) {
                     return;

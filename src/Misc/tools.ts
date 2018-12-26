@@ -15,6 +15,7 @@ import { DomManagement } from "./domManagement";
 import { Logger } from "./logger";
 import { _TypeStore } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
+import { PrecisionDate } from './precisionDate';
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -1801,11 +1802,7 @@ declare type Engine = import("../Engines/engine").Engine;
          * Gets either window.performance.now() if supported or Date.now() else
          */
         public static get Now(): number {
-            if (DomManagement.IsWindowObjectExist() && window.performance && window.performance.now) {
-                return window.performance.now();
-            }
-
-            return Date.now();
+            return PrecisionDate.Now;
         }
 
         /**
@@ -2029,7 +2026,7 @@ declare type Engine = import("../Engines/engine").Engine;
             if (!PerfCounter.Enabled) {
                 return;
             }
-            this._startMonitoringTime = Tools.Now;
+            this._startMonitoringTime = PrecisionDate.Now;
         }
 
         /**
@@ -2045,7 +2042,7 @@ declare type Engine = import("../Engines/engine").Engine;
                 this.fetchNewFrame();
             }
 
-            let currentTime = Tools.Now;
+            let currentTime = PrecisionDate.Now;
             this._current = currentTime - this._startMonitoringTime;
 
             if (newFrame) {
@@ -2063,7 +2060,7 @@ declare type Engine = import("../Engines/engine").Engine;
             this._average = this._totalAccumulated / this._totalValueCount;
 
             // Reset last sec?
-            let now = Tools.Now;
+            let now = PrecisionDate.Now;
             if ((now - this._lastSecTime) > 1000) {
                 this._lastSecAverage = this._lastSecAccumulated / this._lastSecValueCount;
                 this._lastSecTime = now;
