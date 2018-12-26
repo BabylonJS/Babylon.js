@@ -1,6 +1,6 @@
 import { IFileRequest, Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { FilesInput } from "../Misc/filesInput";
+import { FilesInputStore } from "../Misc/filesInputStore";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -422,7 +422,7 @@ import { Logger } from "../Misc/logger";
                 return plugin;
             }
 
-            const file = fileInfo.file || FilesInput.FilesToLoad[fileInfo.name.toLowerCase()];
+            const file = fileInfo.file || FilesInputStore.FilesToLoad[fileInfo.name.toLowerCase()];
 
             if (fileInfo.rootUrl.indexOf("file:") === -1 || (fileInfo.rootUrl.indexOf("file:") !== -1 && !file)) {
                 let engine = scene.getEngine();

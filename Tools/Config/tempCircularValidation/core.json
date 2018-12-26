@@ -32,9 +32,6 @@
     "../../src/Lights/Shadows/shadowGeneratorSceneComponent.ts": [
         "../../src/Lights/Shadows/shadowGenerator.ts"
     ],
-    "../../src/Loading/sceneLoader.ts": [
-        "../../src/Misc/filesInput.ts"
-    ],
     "../../src/Materials/Textures/internalTexture.ts": [
         "../../src/Engines/engine.ts"
     ],
@@ -56,9 +53,6 @@
     ],
     "../../src/Meshes/subMesh.ts": [
         "../../src/Materials/material.ts"
-    ],
-    "../../src/Misc/filesInput.ts": [
-        "../../src/Loading/sceneLoader.ts"
     ],
     "../../src/Particles/particleHelper.ts": [
         "../../src/Particles/particleSystemSet.ts"
@@ -93,5 +87,5 @@
     "../../src/scene.ts": [
         "../../src/Materials/standardMaterial.ts"
     ],
-    "errorCount": 32
+    "errorCount": 30
 }
