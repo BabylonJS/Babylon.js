@@ -39,7 +39,6 @@
         "../../src/Materials/Textures/baseTexture.ts",
         "../../src/Materials/Textures/internalTexture.ts",
         "../../src/Materials/material.ts",
-        "../../src/Misc/performanceMonitor.ts",
         "../../src/Misc/promise.ts",
         "../../src/Misc/tools.ts",
         "../../src/PostProcesses/passPostProcess.ts"
@@ -151,9 +150,6 @@
         "../../src/Loading/sceneLoader.ts",
         "../../src/Misc/tools.ts"
     ],
-    "../../src/Misc/performanceMonitor.ts": [
-        "../../src/Misc/tools.ts"
-    ],
     "../../src/Misc/promise.ts": [
         "../../src/Misc/tools.ts"
     ],
@@ -235,5 +231,5 @@
         "../../src/Misc/tools.ts",
         "../../src/PostProcesses/postProcessManager.ts"
     ],
-    "errorCount": 118
+    "errorCount": 116
 }

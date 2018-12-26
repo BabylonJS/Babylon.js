@@ -5,6 +5,7 @@ import { ExponentialEase, EasingFunction } from "../../Animations/easing";
 import { Nullable } from "../../types";
 import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
+import { PrecisionDate } from "../../Misc/precisionDate";
 import { Observer } from "../../Misc/observable";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Vector3, Vector2 } from "../../Maths/math";
@@ -430,7 +431,7 @@ import { Animation } from "../../Animations/animation";
                 return;
             }
 
-            let timeSinceInteraction = Tools.Now - this._lastInteractionTime;
+            let timeSinceInteraction = PrecisionDate.Now - this._lastInteractionTime;
             let defaultBeta = Math.PI * 0.5 - this._defaultElevation;
             let limitBeta = Math.PI * 0.5;
 
@@ -498,7 +499,7 @@ import { Animation } from "../../Animations/animation";
 		 */
         private _applyUserInteraction(): void {
             if (this.isUserIsMoving) {
-                this._lastInteractionTime = Tools.Now;
+                this._lastInteractionTime = PrecisionDate.Now;
                 this.stopAllAnimations();
                 this._clearAnimationLocks();
             }
