@@ -1,8 +1,10 @@
+import { Nullable } from "../types";
 import { Tools } from "../Misc/tools";
 import { Logger } from "../Misc/logger";
-import { Nullable } from "../types";
+import { TGATools } from '../Misc/tga';
 import { Engine } from "../Engines/engine";
 import { IOfflineProvider } from "./IOfflineProvider";
+
     // Sets the default offline provider to Babylon.js
     Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) => { return new Database(urlToScene, callbackManifestChecked, disableManifestCheck); };
 
@@ -117,7 +119,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
             xhr.open("GET", manifestURL, true);
 
             xhr.addEventListener("load", () => {
-                if (xhr.status === 200 || Tools.ValidateXHRData(xhr, 1)) {
+                if (xhr.status === 200 || Database._ValidateXHRData(xhr, 1)) {
                     try {
                         var manifestFile = JSON.parse(xhr.response);
                         this._enableSceneOffline = manifestFile.enableSceneOffline;
@@ -601,7 +603,7 @@ import { IOfflineProvider } from "./IOfflineProvider";
                 }
 
                 xhr.addEventListener("load", () => {
-                    if (xhr.status === 200 || (xhr.status < 400 && Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6))) {
+                    if (xhr.status === 200 || (xhr.status < 400 && Database._ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6))) {
                         // Blob as response (XHR2)
                         fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
 
@@ -675,5 +677,52 @@ import { IOfflineProvider } from "./IOfflineProvider";
                 Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js Database is not open.");
                 callback();
             }
+        }
+
+        /**
+         * Validates if xhr data is correct
+         * @param xhr defines the request to validate
+         * @param dataType defines the expected data type
+         * @returns true if data is correct
+         */
+        private static _ValidateXHRData(xhr: XMLHttpRequest, dataType = 7): boolean {
+            // 1 for text (.babylon, manifest and shaders), 2 for TGA, 4 for DDS, 7 for all
+
+            try {
+                if (dataType & 1) {
+                    if (xhr.responseText && xhr.responseText.length > 0) {
+                        return true;
+                    } else if (dataType === 1) {
+                        return false;
+                    }
+                }
+
+                if (dataType & 2) {
+                    // Check header width and height since there is no "TGA" magic number
+                    var tgaHeader = TGATools.GetTGAHeader(xhr.response);
+
+                    if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
+                        return true;
+                    } else if (dataType === 2) {
+                        return false;
+                    }
+                }
+
+                if (dataType & 4) {
+                    // Check for the "DDS" magic number
+                    var ddsHeader = new Uint8Array(xhr.response, 0, 3);
+
+                    if (ddsHeader[0] === 68 && ddsHeader[1] === 68 && ddsHeader[2] === 83) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+
+            } catch (e) {
+                // Global protection
+            }
+
+            return false;
         }
     }
