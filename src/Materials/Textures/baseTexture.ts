@@ -6,7 +6,7 @@ import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix, Size, ISize } from "../../Maths/math";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
-import { Engine } from "../../Engines/engine";
+import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
@@ -339,7 +339,7 @@ declare type Animation = import("../../Animations/animation").Animation;
          * @param scene Define the scene the texture blongs to
          */
         constructor(scene: Nullable<Scene>) {
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
             if (this._scene) {
                 this.uniqueId = this._scene.getUniqueId();
                 this._scene.addTexture(this);

@@ -23,6 +23,7 @@ import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/p
 import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "../../../PostProcesses/depthOfFieldEffect";
 import { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { _TypeStore } from '../../../Misc/typeStore';
+import { EngineStore } from "../../../Engines/engineStore";
 
     /**
 	 * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
@@ -391,7 +392,7 @@ import { _TypeStore } from '../../../Misc/typeStore';
          * @param cameras - The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
          * @param automaticBuild - if false, you will have to manually call prepare() to update the pipeline (default: true)
          */
-        constructor(name: string = "", hdr: boolean = true, scene: Scene = Engine.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
+        constructor(name: string = "", hdr: boolean = true, scene: Scene = EngineStore.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
             super(scene.getEngine(), name);
             this._cameras = cameras ||  scene.cameras;
             this._cameras = this._cameras.slice();

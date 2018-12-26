@@ -1,4 +1,4 @@
-import { Tools } from "../../Misc/tools";
+import { DeepCopier } from "../../Misc/deepCopier";
 import { Vector3, Matrix } from "../../Maths/math";
 import { Scalar } from "../../Maths/math.scalar";
 import { Effect } from "../../Materials/effect";
@@ -73,7 +73,7 @@ import { IParticleEmitterType } from "./IParticleEmitterType";
         public clone(): HemisphericParticleEmitter {
             let newOne = new HemisphericParticleEmitter(this.radius, this.directionRandomizer);
 
-            Tools.DeepCopy(this, newOne);
+            DeepCopier.DeepCopy(this, newOne);
 
             return newOne;
         }

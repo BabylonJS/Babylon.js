@@ -1,6 +1,6 @@
 import { Nullable } from "../../../types";
 import { Scene } from "../../../scene";
-import { Engine } from "../../../Engines/engine";
+import { EngineStore } from "../../../Engines/engineStore";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 import { Texture } from "../../../Materials/Textures/texture";
@@ -35,7 +35,7 @@ import "../../../Shaders/noise.fragment";
          * @param fallbackTexture defines the texture to use if the NoiseProceduralTexture can't be created
          * @param generateMipMaps defines if mipmaps must be generated (true by default)
          */
-        constructor(name: string, size: number = 256, scene: Nullable<Scene> = Engine.LastCreatedScene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+        constructor(name: string, size: number = 256, scene: Nullable<Scene> = EngineStore.LastCreatedScene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "noise", scene, fallbackTexture, generateMipMaps);
             this.autoClear = false;
             this._updateShaderUniforms();

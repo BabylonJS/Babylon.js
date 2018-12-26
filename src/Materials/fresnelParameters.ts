@@ -1,4 +1,4 @@
-import { Tools } from "../Misc/tools";
+import { DeepCopier } from "../Misc/deepCopier";
 import { Color3 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { SerializationHelper } from "../Misc/decorators";
@@ -52,7 +52,7 @@ import { Constants } from "../Engines/constants";
         public clone(): FresnelParameters {
             var newFresnelParameters = new FresnelParameters();
 
-            Tools.DeepCopy(this, newFresnelParameters);
+            DeepCopier.DeepCopy(this, newFresnelParameters);
 
             return newFresnelParameters;
         }

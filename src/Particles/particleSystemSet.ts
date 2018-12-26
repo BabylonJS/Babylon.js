@@ -6,10 +6,11 @@ import { MeshBuilder } from "../Meshes/meshBuilder";
 import { IParticleSystem } from "./IParticleSystem";
 import { ParticleHelper } from "./particleHelper";
 import { GPUParticleSystem } from "./gpuParticleSystem";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { ParticleSystem } from "../Particles/particleSystem";
 import { Scene, IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
+
     /** Internal class used to store shapes for emitters */
     class ParticleSystemSetEmitterCreationOptions {
         public kind: string;
@@ -126,7 +127,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
             var result = new ParticleSystemSet();
             var rootUrl = ParticleHelper.BaseAssetsUrl + "/textures/";
 
-            scene = scene || Engine.LastCreatedScene;
+            scene = scene || EngineStore.LastCreatedScene;
 
             for (var system of data.systems) {
                 result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true) : ParticleSystem.Parse(system, scene, rootUrl, true));

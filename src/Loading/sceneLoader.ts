@@ -4,6 +4,7 @@ import { FilesInput } from "../Misc/filesInput";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { AnimationGroup } from "../Animations/animationGroup";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -548,7 +549,7 @@ import { Logger } from "../Misc/logger";
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded plugin
          */
-        public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = Engine.LastCreatedScene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if (!scene) {
                 Logger.Error("No scene available to import mesh to");
                 return null;
@@ -643,7 +644,7 @@ import { Logger } from "../Misc/logger";
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
          */
-        public static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = Engine.LastCreatedScene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+        public static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return new Promise((resolve, reject) => {
                 SceneLoader.ImportMesh(meshNames, rootUrl, sceneFilename, scene, (meshes, particleSystems, skeletons, animationGroups) => {
                     resolve({
@@ -670,7 +671,7 @@ import { Logger } from "../Misc/logger";
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded plugin
          */
-        public static Load(rootUrl: string, sceneFilename: string | File = "", engine: Nullable<Engine> = Engine.LastCreatedEngine, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        public static Load(rootUrl: string, sceneFilename: string | File = "", engine: Nullable<Engine> = EngineStore.LastCreatedEngine, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if (!engine) {
                 Tools.Error("No engine available");
                 return null;
@@ -688,7 +689,7 @@ import { Logger } from "../Misc/logger";
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded scene
          */
-        public static LoadAsync(rootUrl: string, sceneFilename: string | File = "", engine: Nullable<Engine> = Engine.LastCreatedEngine, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<Scene> {
+        public static LoadAsync(rootUrl: string, sceneFilename: string | File = "", engine: Nullable<Engine> = EngineStore.LastCreatedEngine, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<Scene> {
             return new Promise((resolve, reject) => {
                 SceneLoader.Load(rootUrl, sceneFilename, engine, (scene) => {
                     resolve(scene);
@@ -709,7 +710,7 @@ import { Logger } from "../Misc/logger";
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded plugin
          */
-        public static Append(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = Engine.LastCreatedScene, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        public static Append(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if (!scene) {
                 Logger.Error("No scene available to append to");
                 return null;
@@ -802,7 +803,7 @@ import { Logger } from "../Misc/logger";
          * @param pluginExtension the extension used to determine the plugin
          * @returns The given scene
          */
-        public static AppendAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = Engine.LastCreatedScene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<Scene> {
+        public static AppendAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<Scene> {
             return new Promise((resolve, reject) => {
                 SceneLoader.Append(rootUrl, sceneFilename, scene, (scene) => {
                     resolve(scene);
@@ -826,7 +827,7 @@ import { Logger } from "../Misc/logger";
         public static LoadAssetContainer(
             rootUrl: string,
             sceneFilename: string | File = "",
-            scene: Nullable<Scene> = Engine.LastCreatedScene,
+            scene: Nullable<Scene> = EngineStore.LastCreatedScene,
             onSuccess: Nullable<(assets: AssetContainer) => void> = null,
             onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null,
             onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
@@ -922,7 +923,7 @@ import { Logger } from "../Misc/logger";
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded asset container
          */
-        public static LoadAssetContainerAsync(rootUrl: string, sceneFilename: string = "", scene: Nullable<Scene> = Engine.LastCreatedScene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<AssetContainer> {
+        public static LoadAssetContainerAsync(rootUrl: string, sceneFilename: string = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<AssetContainer> {
             return new Promise((resolve, reject) => {
                 SceneLoader.LoadAssetContainer(rootUrl, sceneFilename, scene, (assetContainer) => {
                     resolve(assetContainer);

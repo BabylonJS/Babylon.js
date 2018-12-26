@@ -5,7 +5,7 @@ import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Plane, Matrix } from "../Maths/math";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -587,7 +587,7 @@ declare var BABYLON: any;
             this.name = name;
             this.id = name || Tools.RandomId();
 
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
             this.uniqueId = this._scene.getUniqueId();
 
             if (this._scene.useRightHandedSystem) {

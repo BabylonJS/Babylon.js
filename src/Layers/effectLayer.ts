@@ -7,6 +7,7 @@ import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { Color4, ISize } from "../Maths/math";
 import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -156,7 +157,7 @@ import "../Shaders/glowMapGeneration.vertex";
             scene: Scene) {
             this.name = name;
 
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
             let component = this._scene._getComponent(SceneComponentConstants.NAME_EFFECTLAYER) as EffectLayerSceneComponent;
             if (!component) {
                 component = new EffectLayerSceneComponent(this._scene);

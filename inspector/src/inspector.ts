@@ -4,7 +4,7 @@ import * as ReactDOM from "react-dom";
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Engine } from "babylonjs/Engines/engine";
+import { EngineStore } from "babylonjs/Engines/engineStore";
 import { Scene } from "babylonjs/scene";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
 
@@ -331,12 +331,12 @@ export class Inspector {
         }
 
         if (!scene) {
-            scene = Engine.LastCreatedScene!;
+            scene = EngineStore.LastCreatedScene!;
         }
 
         this._Scene = scene;
 
-        var canvas = scene ? scene.getEngine().getRenderingCanvas() : Engine.LastCreatedEngine!.getRenderingCanvas();
+        var canvas = scene ? scene.getEngine().getRenderingCanvas() : EngineStore.LastCreatedEngine!.getRenderingCanvas();
 
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {

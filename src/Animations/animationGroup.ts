@@ -4,7 +4,7 @@ import { IAnimationKey, Animation } from "./animation";
 import { Scene, IDisposable } from "../scene";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
     /**
      * This class defines the direct association between an animation and a target
      */
@@ -139,7 +139,7 @@ import { Engine } from "../Engines/engine";
             /** The name of the animation group */
             public name: string,
             scene: Nullable<Scene> = null) {
-            this._scene = scene || Engine.LastCreatedScene!;
+            this._scene = scene || EngineStore.LastCreatedScene!;
             this.uniqueId = this._scene.getUniqueId();
 
             this._scene.animationGroups.push(this);

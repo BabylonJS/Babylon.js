@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Vector3, Color3, Viewport } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Ray } from "../Culling/ray";
@@ -82,7 +82,7 @@ import "../Shaders/lensFlare.vertex";
             emitter: any,
             scene: Scene) {
 
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
             let component = this._scene._getComponent(SceneComponentConstants.NAME_LENSFLARESYSTEM) as LensFlareSystemSceneComponent;
             if (!component) {
                 component = new LensFlareSystemSceneComponent(this._scene);

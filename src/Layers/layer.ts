@@ -2,7 +2,7 @@ import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Vector2, Color4 } from "../Maths/math";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
@@ -157,7 +157,7 @@ import "../Shaders/layer.vertex";
             this.isBackground = isBackground === undefined ? true : isBackground;
             this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
 
-            this._scene = <Scene>(scene || Engine.LastCreatedScene);
+            this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
             let layerComponent = this._scene._getComponent(SceneComponentConstants.NAME_LAYER) as LayerSceneComponent;
             if (!layerComponent) {
                 layerComponent = new LayerSceneComponent(this._scene);

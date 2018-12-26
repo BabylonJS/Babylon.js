@@ -7,11 +7,12 @@ import { Condition, ValueCondition } from "./condition";
 import { Action } from "./action";
 import { DoNothingAction } from "./directActions";
 
-import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
-import { Tools } from "../Misc/tools";
+import { EngineStore } from "../Engines/engineStore";
 import { ActionEvent } from "../Actions/actionEvent";
 import { Logger } from "../Misc/logger";
+import { DeepCopier } from "../Misc/deepCopier";
+import { _TypeStore } from "../Misc/typeStore";
 
     /**
      * Action Manager manages all events to be triggered on a given mesh or the global scene.
@@ -137,7 +138,7 @@ import { Logger } from "../Misc/logger";
          * @param scene defines the hosting scene
          */
         constructor(scene: Scene) {
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
 
             scene.actionManagers.push(this);
         }
@@ -436,7 +437,7 @@ import { Logger } from "../Misc/logger";
                     }
                     else {
                         var parameter = <any>{};
-                        Tools.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
+                        DeepCopier.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
 
                         if (triggerOptions.parameter && triggerOptions.parameter.mesh) {
                             parameter._meshId = triggerOptions.parameter.mesh.id;
@@ -473,10 +474,12 @@ import { Logger } from "../Misc/logger";
 
             // instanciate a new object
             var instanciate = (name: string, params: Array<any>): any => {
-                // TODO: We will need to find a solution for the next line when using commonjs / es6 .
-                var newInstance: Object = Object.create(Tools.Instantiate("BABYLON." + name).prototype);
-                newInstance.constructor.apply(newInstance, params);
-                return newInstance;
+                const internalClassType = _TypeStore.GetClass("BABYLON." + name);
+                if (internalClassType) {
+                    var newInstance: Object = Object.create(internalClassType.prototype);
+                    newInstance.constructor.apply(newInstance, params);
+                    return newInstance;
+                }
             };
 
             var parseParameter = (name: string, value: string, target: any, propertyPath: Nullable<string>): any => {

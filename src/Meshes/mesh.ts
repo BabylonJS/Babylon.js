@@ -1,5 +1,6 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Tools, IAnimatable, AsyncLoop } from "../Misc/tools";
+import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Camera } from "../Cameras/camera";
@@ -310,7 +311,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId",
+                DeepCopier.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId",
                     "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
                     "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw",
                     "onAfterWorldMatrixUpdateObservable", "onCollideObservable", "onCollisionPositionChangeObservable", "onRebuildObservable",

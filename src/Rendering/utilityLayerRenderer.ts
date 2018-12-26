@@ -3,8 +3,8 @@ import { Nullable } from "../types";
 import { Observable, Observer } from "../Misc/observable";
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { Engine } from "../Engines/engine";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { EngineStore } from "../Engines/engineStore";
 
     /**
      * Renders a layer on top of an existing scene
@@ -24,7 +24,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
          */
         public static get DefaultUtilityLayer(): UtilityLayerRenderer {
             if (UtilityLayerRenderer._DefaultUtilityLayer == null) {
-                UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(Engine.LastCreatedScene!);
+                UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(EngineStore.LastCreatedScene!);
                 UtilityLayerRenderer._DefaultUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
                     UtilityLayerRenderer._DefaultUtilityLayer = null;
                 });
@@ -36,7 +36,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
          */
         public static get DefaultKeepDepthUtilityLayer(): UtilityLayerRenderer {
             if (UtilityLayerRenderer._DefaultKeepDepthUtilityLayer == null) {
-                UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = new UtilityLayerRenderer(Engine.LastCreatedScene!);
+                UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = new UtilityLayerRenderer(EngineStore.LastCreatedScene!);
                 UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
                 UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
                     UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = null;

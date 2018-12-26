@@ -50,6 +50,7 @@ import { MorphTarget } from "./Morph/morphTarget";
 import { Constants } from "./Engines/constants";
 import { DomManagement } from "./Misc/domManagement";
 import { Logger } from "./Misc/logger";
+import { EngineStore } from "./Engines/engineStore";
 
     /**
      * Define an interface for all classes that will hold resources
@@ -1278,7 +1279,7 @@ import { Logger } from "./Misc/logger";
          */
         constructor(engine: Engine, options?: SceneOptions) {
             super();
-            this._engine = engine || Engine.LastCreatedEngine;
+            this._engine = engine || EngineStore.LastCreatedEngine;
 
             this._engine.scenes.push(this);
             this._uid = null;

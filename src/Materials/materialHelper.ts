@@ -4,6 +4,7 @@ import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { Tmp, Color3 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -471,8 +472,8 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
         public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {
             var influencers = defines["NUM_MORPH_INFLUENCERS"];
 
-            if (influencers > 0 && Engine.LastCreatedEngine) {
-                var maxAttributesCount = Engine.LastCreatedEngine.getCaps().maxVertexAttribs;
+            if (influencers > 0 && EngineStore.LastCreatedEngine) {
+                var maxAttributesCount = EngineStore.LastCreatedEngine.getCaps().maxVertexAttribs;
                 var manager = (<Mesh>mesh).morphTargetManager;
                 var normal = manager && manager.supportsNormals && defines["NORMAL"];
                 var tangent = manager && manager.supportsTangents && defines["TANGENT"];

@@ -1,8 +1,4 @@
 {
-    "../../src/Actions/actionManager.ts": [
-        "../../src/Engines/engine.ts",
-        "../../src/Misc/tools.ts"
-    ],
     "../../src/Animations/animatable.ts": [
         "../../src/Animations/runtimeAnimation.ts"
     ],
@@ -87,7 +83,6 @@
         "../../src/scene.ts"
     ],
     "../../src/Materials/Textures/baseTexture.ts": [
-        "../../src/Engines/engine.ts",
         "../../src/Misc/decorators.ts",
         "../../src/Misc/tools.ts"
     ],
@@ -113,13 +108,11 @@
         "../../src/Misc/tools.ts"
     ],
     "../../src/Materials/material.ts": [
-        "../../src/Engines/engine.ts",
         "../../src/Meshes/subMesh.ts",
         "../../src/Misc/decorators.ts",
         "../../src/Misc/tools.ts"
     ],
     "../../src/Materials/materialHelper.ts": [
-        "../../src/Engines/engine.ts",
         "../../src/Lights/light.ts",
         "../../src/scene.ts"
     ],
@@ -233,16 +226,13 @@
         "../../src/Rendering/geometryBufferRenderer.ts"
     ],
     "../../src/node.ts": [
-        "../../src/Engines/engine.ts",
         "../../src/Misc/decorators.ts"
     ],
     "../../src/scene.ts": [
-        "../../src/Actions/actionManager.ts",
         "../../src/Animations/animatable.ts",
         "../../src/Animations/animation.ts",
         "../../src/Cameras/camera.ts",
         "../../src/Collisions/collisionCoordinator.ts",
-        "../../src/Engines/engine.ts",
         "../../src/Lights/light.ts",
         "../../src/Materials/imageProcessingConfiguration.ts",
         "../../src/Materials/standardMaterial.ts",
@@ -250,5 +240,6 @@
         "../../src/Misc/tags.ts",
         "../../src/Misc/tools.ts",
         "../../src/PostProcesses/postProcessManager.ts"
-    ]
+    ],
+    "errorCount": 120
 }

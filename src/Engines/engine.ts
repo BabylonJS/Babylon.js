@@ -30,6 +30,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { Constants } from "./constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
+import { EngineStore } from "./engineStore";
 
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
@@ -267,33 +268,22 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
         ];
 
         /** Gets the list of created engines */
-        public static Instances = new Array<Engine>();
+        public static get Instances(): Engine[] {
+            return EngineStore.Instances;
+        }
 
         /**
          * Gets the latest created engine
          */
         public static get LastCreatedEngine(): Nullable<Engine> {
-            if (Engine.Instances.length === 0) {
-                return null;
-            }
-
-            return Engine.Instances[Engine.Instances.length - 1];
+            return EngineStore.LastCreatedEngine;
         }
 
         /**
          * Gets the latest created scene
          */
         public static get LastCreatedScene(): Nullable<Scene> {
-            var lastCreatedEngine = Engine.LastCreatedEngine;
-            if (!lastCreatedEngine) {
-                return null;
-            }
-
-            if (lastCreatedEngine.scenes.length === 0) {
-                return null;
-            }
-
-            return lastCreatedEngine.scenes[lastCreatedEngine.scenes.length - 1];
+            return EngineStore.LastCreatedScene;
         }
 
         /**

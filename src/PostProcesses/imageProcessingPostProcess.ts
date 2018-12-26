@@ -9,6 +9,7 @@ import { ColorCurves } from "../Materials/colorCurves";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 
@@ -75,7 +76,7 @@ import "../Shaders/postprocess.vertex";
                     scene = scenes[scenes.length - 1];
                 }
                 else {
-                    scene = Engine.LastCreatedScene;
+                    scene = EngineStore.LastCreatedScene;
                 }
 
                 this._imageProcessingConfiguration = (<Scene>scene).imageProcessingConfiguration;

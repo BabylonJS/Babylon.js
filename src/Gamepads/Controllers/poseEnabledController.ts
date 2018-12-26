@@ -7,12 +7,13 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
-import { Engine } from "../../Engines/engine";
+import { EngineStore } from "../../Engines/engineStore";
 
 import { Gamepad } from "../../Gamepads/gamepad";
 import { ExtendedGamepadButton } from "./poseEnabledController";
 import { WebVRFreeCamera, PoseControlled, DevicePose } from "../../Cameras/VR/webVRCamera";
 import { TargetCamera } from "../../Cameras/targetCamera";
+
     /**
     * Defines the types of pose enabled controllers that are supported
     */
@@ -239,8 +240,8 @@ import { TargetCamera } from "../../Cameras/targetCamera";
             var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
 
-            if (!this._trackPosition && Engine.LastCreatedScene && Engine.LastCreatedScene.activeCamera && (<WebVRFreeCamera>Engine.LastCreatedScene.activeCamera).devicePosition) {
-                var camera = <WebVRFreeCamera>Engine.LastCreatedScene.activeCamera;
+            if (!this._trackPosition && EngineStore.LastCreatedScene && EngineStore.LastCreatedScene.activeCamera && (<WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera).devicePosition) {
+                var camera = <WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera;
                 camera._computeDevicePosition();
 
                 this._deviceToWorld.setTranslation(camera.devicePosition);

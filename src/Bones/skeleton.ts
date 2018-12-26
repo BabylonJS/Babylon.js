@@ -1,6 +1,6 @@
 import { Bone } from "./bone";
 
-import { IAnimatable, Tools } from "../Misc/tools";
+import { IAnimatable } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, Tmp } from "../Maths/math";
 import { Scene } from "../scene";
@@ -10,9 +10,10 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Animatable } from "../Animations/animatable";
 import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { AnimationRange, Animation } from "../Animations/animation";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
+import { DeepCopier } from "../Misc/deepCopier";
 
     /**
      * Class used to handle skinning animations
@@ -113,7 +114,7 @@ import { Logger } from "../Misc/logger";
             public id: string, scene: Scene) {
             this.bones = [];
 
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
 
             this._scene.skeletons.push(this);
 
@@ -498,7 +499,7 @@ import { Logger } from "../Misc/logger";
                 }
 
                 var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
-                Tools.DeepCopy(source.animations, bone.animations);
+                DeepCopier.DeepCopy(source.animations, bone.animations);
             }
 
             if (this._ranges) {
