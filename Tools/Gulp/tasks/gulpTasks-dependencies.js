@@ -78,6 +78,9 @@ const dependencies = function(settings, moduleName, cb) {
                 }
             }
             errorCount = errors.length;
+            if (errorCount === 0) {
+                colorConsole.warn(`Still ${("" + cruiseResult.summary.error).yellow} to go.`);
+            }
         }
 
         var minimist = require("minimist");
