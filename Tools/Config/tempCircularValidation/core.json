@@ -1,30 +1,6 @@
 {
-    "../../src/Animations/animatable.ts": [
-        "../../src/Animations/runtimeAnimation.ts"
-    ],
-    "../../src/Animations/animation.ts": [
-        "../../src/Materials/Textures/texture.ts",
-        "../../src/Misc/decorators.ts",
-        "../../src/node.ts"
-    ],
-    "../../src/Animations/runtimeAnimation.ts": [
-        "../../src/Animations/animation.ts"
-    ],
     "../../src/Behaviors/Meshes/pointerDragBehavior.ts": [
         "../../src/Gizmos/boundingBoxGizmo.ts"
-    ],
-    "../../src/Cameras/camera.ts": [
-        "../../src/Animations/animation.ts",
-        "../../src/Misc/decorators.ts",
-        "../../src/Misc/tools.ts",
-        "../../src/PostProcesses/anaglyphPostProcess.ts",
-        "../../src/PostProcesses/passPostProcess.ts",
-        "../../src/PostProcesses/stereoscopicInterlacePostProcess.ts",
-        "../../src/PostProcesses/vrDistortionCorrectionPostProcess.ts",
-        "../../src/node.ts"
-    ],
-    "../../src/Collisions/collisionCoordinator.ts": [
-        "../../src/Engines/engine.ts"
     ],
     "../../src/Culling/Octrees/octree.ts": [
         "../../src/Culling/Octrees/octreeBlock.ts"
@@ -36,12 +12,8 @@
         "../../src/Meshes/abstractMesh.ts"
     ],
     "../../src/Engines/engine.ts": [
-        "../../src/Materials/Textures/baseTexture.ts",
         "../../src/Materials/Textures/internalTexture.ts",
-        "../../src/Materials/material.ts",
-        "../../src/Misc/promise.ts",
-        "../../src/Misc/tools.ts",
-        "../../src/PostProcesses/passPostProcess.ts"
+        "../../src/Materials/material.ts"
     ],
     "../../src/Gizmos/boundingBoxGizmo.ts": [
         "../../src/Behaviors/Meshes/pointerDragBehavior.ts"
@@ -64,63 +36,25 @@
     "../../src/Lights/Shadows/shadowGeneratorSceneComponent.ts": [
         "../../src/Lights/Shadows/shadowGenerator.ts"
     ],
-    "../../src/Lights/light.ts": [
-        "../../src/Animations/animation.ts",
-        "../../src/Misc/decorators.ts",
-        "../../src/node.ts"
-    ],
     "../../src/Loading/sceneLoader.ts": [
-        "../../src/Engines/engine.ts",
-        "../../src/Misc/filesInput.ts",
-        "../../src/Misc/tools.ts",
-        "../../src/scene.ts"
-    ],
-    "../../src/Materials/Textures/baseTexture.ts": [
-        "../../src/Misc/decorators.ts",
-        "../../src/Misc/tools.ts"
+        "../../src/Misc/filesInput.ts"
     ],
     "../../src/Materials/Textures/internalTexture.ts": [
         "../../src/Engines/engine.ts"
     ],
-    "../../src/Materials/Textures/texture.ts": [
-        "../../src/Materials/Textures/baseTexture.ts",
-        "../../src/Misc/decorators.ts",
-        "../../src/Misc/tools.ts"
-    ],
-    "../../src/Materials/colorCurves.ts": [
-        "../../src/Misc/decorators.ts"
-    ],
-    "../../src/Materials/imageProcessingConfiguration.ts": [
-        "../../src/Materials/colorCurves.ts",
-        "../../src/Misc/decorators.ts",
-        "../../src/Misc/tools.ts"
-    ],
     "../../src/Materials/material.ts": [
-        "../../src/Meshes/subMesh.ts",
-        "../../src/Misc/decorators.ts",
-        "../../src/Misc/tools.ts"
+        "../../src/Meshes/subMesh.ts"
     ],
     "../../src/Materials/materialHelper.ts": [
-        "../../src/Lights/light.ts",
         "../../src/scene.ts"
     ],
-    "../../src/Materials/pushMaterial.ts": [
-        "../../src/Materials/material.ts"
-    ],
     "../../src/Materials/standardMaterial.ts": [
-        "../../src/Engines/engine.ts",
-        "../../src/Materials/Textures/texture.ts",
-        "../../src/Materials/imageProcessingConfiguration.ts",
         "../../src/Materials/materialHelper.ts",
-        "../../src/Materials/pushMaterial.ts",
-        "../../src/Misc/decorators.ts",
         "../../src/scene.ts"
     ],
     "../../src/Meshes/abstractMesh.ts": [
         "../../src/Culling/boundingInfo.ts",
-        "../../src/Engines/engine.ts",
-        "../../src/Meshes/transformNode.ts",
-        "../../src/Misc/tools.ts"
+        "../../src/Engines/engine.ts"
     ],
     "../../src/Meshes/geometry.ts": [
         "../../src/Meshes/mesh.ts"
@@ -130,29 +64,10 @@
     ],
     "../../src/Meshes/subMesh.ts": [
         "../../src/Culling/boundingInfo.ts",
-        "../../src/Materials/material.ts",
-        "../../src/Misc/tools.ts"
-    ],
-    "../../src/Meshes/transformNode.ts": [
-        "../../src/Misc/decorators.ts",
-        "../../src/Misc/tags.ts",
-        "../../src/node.ts"
-    ],
-    "../../src/Misc/decorators.ts": [
-        "../../src/Misc/tags.ts"
+        "../../src/Materials/material.ts"
     ],
     "../../src/Misc/filesInput.ts": [
-        "../../src/Loading/sceneLoader.ts",
-        "../../src/Misc/tools.ts"
-    ],
-    "../../src/Misc/promise.ts": [
-        "../../src/Misc/tools.ts"
-    ],
-    "../../src/Misc/tags.ts": [
-        "../../src/Misc/tools.ts"
-    ],
-    "../../src/Misc/tools.ts": [
-        "../../src/Misc/filesInput.ts"
+        "../../src/Loading/sceneLoader.ts"
     ],
     "../../src/Particles/particleHelper.ts": [
         "../../src/Particles/particleSystemSet.ts"
@@ -172,25 +87,6 @@
     "../../src/Physics/physicsEngine.ts": [
         "../../src/Physics/Plugins/cannonJSPlugin.ts"
     ],
-    "../../src/PostProcesses/anaglyphPostProcess.ts": [
-        "../../src/PostProcesses/postProcess.ts"
-    ],
-    "../../src/PostProcesses/passPostProcess.ts": [
-        "../../src/PostProcesses/postProcess.ts"
-    ],
-    "../../src/PostProcesses/postProcess.ts": [
-        "../../src/Misc/tools.ts"
-    ],
-    "../../src/PostProcesses/postProcessManager.ts": [
-        "../../src/Materials/material.ts"
-    ],
-    "../../src/PostProcesses/stereoscopicInterlacePostProcess.ts": [
-        "../../src/PostProcesses/postProcess.ts"
-    ],
-    "../../src/PostProcesses/vrDistortionCorrectionPostProcess.ts": [
-        "../../src/Materials/Textures/texture.ts",
-        "../../src/PostProcesses/postProcess.ts"
-    ],
     "../../src/Rendering/depthRenderer.ts": [
         "../../src/Rendering/depthRendererSceneComponent.ts"
     ],
@@ -203,21 +99,8 @@
     "../../src/Rendering/geometryBufferRendererSceneComponent.ts": [
         "../../src/Rendering/geometryBufferRenderer.ts"
     ],
-    "../../src/node.ts": [
-        "../../src/Misc/decorators.ts"
-    ],
     "../../src/scene.ts": [
-        "../../src/Animations/animatable.ts",
-        "../../src/Animations/animation.ts",
-        "../../src/Cameras/camera.ts",
-        "../../src/Collisions/collisionCoordinator.ts",
-        "../../src/Lights/light.ts",
-        "../../src/Materials/imageProcessingConfiguration.ts",
-        "../../src/Materials/standardMaterial.ts",
-        "../../src/Meshes/abstractMesh.ts",
-        "../../src/Misc/tags.ts",
-        "../../src/Misc/tools.ts",
-        "../../src/PostProcesses/postProcessManager.ts"
+        "../../src/Materials/standardMaterial.ts"
     ],
-    "errorCount": 108
+    "errorCount": 37
 }

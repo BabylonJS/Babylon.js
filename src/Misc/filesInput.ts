@@ -1,8 +1,8 @@
 import { Engine } from "../Engines/engine";
 import { Scene } from "../scene";
 import { SceneLoaderProgressEvent, SceneLoader } from "../Loading/sceneLoader";
-import { Tools } from "./tools";
 import { Logger } from "../Misc/logger";
+import { FilesInputStore } from "./filesInputStore";
 
     /**
      * Class used to help managing file picking and drag'n'drop
@@ -11,7 +11,9 @@ import { Logger } from "../Misc/logger";
         /**
          * List of files ready to be loaded
          */
-        public static FilesToLoad: { [key: string]: File } = {};
+        public static get FilesToLoad() {
+            return FilesInputStore.FilesToLoad;
+        }
 
         /**
          * Callback called when a file is processed
@@ -258,7 +260,7 @@ import { Logger } from "../Misc/logger";
             if (this._sceneFileToLoad) {
                 if (this._currentScene) {
                     if (Logger.errorsCount > 0) {
-                        Tools.ClearLogCache();
+                        Logger.ClearLogCache();
                     }
                     this._engine.stopRenderLoop();
                 }
