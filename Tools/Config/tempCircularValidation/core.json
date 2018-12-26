@@ -1,7 +1,4 @@
 {
-    "../../src/Behaviors/Meshes/pointerDragBehavior.ts": [
-        "../../src/Gizmos/boundingBoxGizmo.ts"
-    ],
     "../../src/Culling/Octrees/octree.ts": [
         "../../src/Culling/Octrees/octreeBlock.ts"
     ],
@@ -10,9 +7,6 @@
     ],
     "../../src/Engines/engine.ts": [
         "../../src/Materials/Textures/internalTexture.ts"
-    ],
-    "../../src/Gizmos/boundingBoxGizmo.ts": [
-        "../../src/Behaviors/Meshes/pointerDragBehavior.ts"
     ],
     "../../src/Layers/effectLayer.ts": [
         "../../src/Layers/effectLayerSceneComponent.ts"
@@ -87,5 +81,5 @@
     "../../src/scene.ts": [
         "../../src/Materials/standardMaterial.ts"
     ],
-    "errorCount": 30
+    "errorCount": 28
 }
