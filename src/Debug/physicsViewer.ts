@@ -5,7 +5,7 @@ import { Mesh } from "../Meshes/mesh";
 import { MeshBuilder } from "../Meshes/meshBuilder";
 import { Quaternion, Color3 } from "../Maths/math";
 import { Material } from "../Materials/material";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
@@ -38,7 +38,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
          * @param scene defines the hosting scene
          */
         constructor(scene: Scene) {
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
             let physicEngine = this._scene.getPhysicsEngine();
 
             if (physicEngine) {

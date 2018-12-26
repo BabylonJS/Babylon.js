@@ -1,9 +1,9 @@
-import { Tools } from "../../Misc/tools";
 import { Vector3, Matrix } from "../../Maths/math";
 import { Scalar } from "../../Maths/math.scalar";
 import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
+import { DeepCopier } from "../../Misc/deepCopier";
     /**
      * Particle emitter emitting particles from the inside of a sphere.
      * It emits the particles alongside the sphere radius. The emission direction might be randomized.
@@ -73,7 +73,7 @@ import { IParticleEmitterType } from "./IParticleEmitterType";
         public clone(): SphereParticleEmitter {
             let newOne = new SphereParticleEmitter(this.radius, this.directionRandomizer);
 
-            Tools.DeepCopy(this, newOne);
+            DeepCopier.DeepCopy(this, newOne);
 
             return newOne;
         }
@@ -173,7 +173,7 @@ import { IParticleEmitterType } from "./IParticleEmitterType";
         public clone(): SphereDirectedParticleEmitter {
             let newOne = new SphereDirectedParticleEmitter(this.radius, this.direction1, this.direction2);
 
-            Tools.DeepCopy(this, newOne);
+            DeepCopier.DeepCopy(this, newOne);
 
             return newOne;
         }

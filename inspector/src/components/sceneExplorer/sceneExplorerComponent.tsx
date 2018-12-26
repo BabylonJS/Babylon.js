@@ -3,8 +3,8 @@ import * as React from "react";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
+import { EngineStore } from "babylonjs/Engines/engineStore";
 
 import { TreeItemComponent } from "./treeItemComponent";
 import Resizable from "re-resizable";
@@ -85,7 +85,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         if (this._onNewSceneAddedObserver) {
-            Engine.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
+            EngineStore.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
         }
 
         const scene = this.state.scene;
@@ -197,7 +197,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         const scene = this.state.scene;
 
         if (!scene) {
-            this._onNewSceneAddedObserver = Engine.LastCreatedEngine!.onNewSceneAddedObservable.addOnce((scene) => this.setState({ scene: scene }));
+            this._onNewSceneAddedObserver = EngineStore.LastCreatedEngine!.onNewSceneAddedObservable.addOnce((scene) => this.setState({ scene: scene }));
             return null;
         }
 

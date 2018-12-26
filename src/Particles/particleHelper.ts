@@ -4,7 +4,7 @@ import { Tools } from "../Misc/tools";
 import { Vector3, Color4 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Texture } from "../Materials/Textures/texture";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { ParticleSystemSet } from "./particleSystemSet";
@@ -70,7 +70,7 @@ import { ParticleSystem } from "./particleSystem";
         public static CreateAsync(type: string, scene: Nullable<Scene>, gpu: boolean = false): Promise<ParticleSystemSet> {
 
             if (!scene) {
-                scene = Engine.LastCreatedScene;
+                scene = EngineStore.LastCreatedScene;
             }
 
             let token = {};

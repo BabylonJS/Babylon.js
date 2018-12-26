@@ -1,9 +1,9 @@
-import { Tools } from "../../Misc/tools";
 import { Vector3, Matrix } from "../../Maths/math";
 import { Scalar } from "../../Maths/math.scalar";
 import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
+import { DeepCopier } from "../../Misc/deepCopier";
     /**
      * Particle emitter emitting particles from the inside of a cylinder.
      * It emits the particles alongside the cylinder radius. The emission direction might be randomized.
@@ -82,7 +82,7 @@ import { IParticleEmitterType } from "./IParticleEmitterType";
         public clone(): CylinderParticleEmitter {
             let newOne = new CylinderParticleEmitter(this.radius, this.directionRandomizer);
 
-            Tools.DeepCopy(this, newOne);
+            DeepCopier.DeepCopy(this, newOne);
 
             return newOne;
         }
@@ -190,7 +190,7 @@ import { IParticleEmitterType } from "./IParticleEmitterType";
         public clone(): CylinderDirectedParticleEmitter {
             let newOne = new CylinderDirectedParticleEmitter(this.radius, this.height, this.radiusRange, this.direction1, this.direction2);
 
-            Tools.DeepCopy(this, newOne);
+            DeepCopier.DeepCopy(this, newOne);
 
             return newOne;
         }

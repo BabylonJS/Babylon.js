@@ -4,11 +4,12 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
 import { MeshBuilder } from "../Meshes/meshBuilder";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
 import { DepthSortedParticle, SolidParticle, ModelShape } from "./solidParticle";
 import { TargetCamera } from "../Cameras/targetCamera";
 import { BoundingInfo } from "../Culling/boundingInfo";
+
     const depthSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p2.sqDistance - p1.sqDistance;
 
     /**
@@ -127,7 +128,7 @@ import { BoundingInfo } from "../Culling/boundingInfo";
          */
         constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number }) {
             this.name = name;
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
             this._camera = <TargetCamera>scene.activeCamera;
             this._pickable = options ? <boolean>options.isPickable : false;
             this._depthSort = options ? <boolean>options.enableDepthSort : false;

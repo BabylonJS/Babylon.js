@@ -19,6 +19,8 @@ import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfig
 import { Texture } from "../Materials/Textures/texture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
+import { EngineStore } from "../Engines/engineStore";
+import { DeepCopier } from "../Misc/deepCopier";
 
 import "../Shaders/gpuUpdateParticles.fragment";
 import "../Shaders/gpuUpdateParticles.vertex";
@@ -76,10 +78,10 @@ import "../Shaders/gpuRenderParticles.vertex";
          * Gets a boolean indicating if the GPU particles can be rendered on current browser
          */
         public static get IsSupported(): boolean {
-            if (!Engine.LastCreatedEngine) {
+            if (!EngineStore.LastCreatedEngine) {
                 return false;
             }
-            return Engine.LastCreatedEngine.webGLVersion > 1;
+            return EngineStore.LastCreatedEngine.webGLVersion > 1;
         }
 
         /**
@@ -621,7 +623,7 @@ import "../Shaders/gpuRenderParticles.vertex";
             randomTextureSize: number
         }>, scene: Scene, isAnimationSheetEnabled: boolean = false) {
             super(name);
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
             // Setup the default processing configuration to the scene.
             this._attachImageProcessingConfiguration(null);
 
@@ -1477,7 +1479,7 @@ import "../Shaders/gpuRenderParticles.vertex";
         public clone(name: string, newEmitter: any): GPUParticleSystem {
             var result = new GPUParticleSystem(name, { capacity: this._capacity, randomTextureSize: this._randomTextureSize }, this._scene);
 
-            Tools.DeepCopy(this, result);
+            DeepCopier.DeepCopy(this, result);
 
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;

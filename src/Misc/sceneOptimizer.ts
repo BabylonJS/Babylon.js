@@ -1,5 +1,5 @@
 import { Scene, IDisposable } from "../scene";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Nullable } from "../types";
@@ -716,7 +716,7 @@ import { Observer, Observable } from "./observable";
             }
 
             this._improvementMode = improvementMode;
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
             this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => {
                 this._sceneDisposeObserver = null;
                 this.dispose();

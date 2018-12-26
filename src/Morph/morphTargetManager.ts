@@ -3,7 +3,7 @@ import { SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
     /**
@@ -29,7 +29,7 @@ import { MorphTarget } from "./morphTarget";
          */
         public constructor(scene: Nullable<Scene> = null) {
             if (!scene) {
-                scene = Engine.LastCreatedScene;
+                scene = EngineStore.LastCreatedScene;
             }
 
             this._scene = scene;

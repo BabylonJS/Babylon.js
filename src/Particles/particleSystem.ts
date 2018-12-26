@@ -13,7 +13,7 @@ import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfig
 import { Texture } from "../Materials/Textures/texture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
 import { Animation } from "../Animations/animation";
 import { BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
@@ -23,6 +23,7 @@ import { Particle } from "./particle";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
+import { DeepCopier } from "../Misc/deepCopier";
 
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
@@ -204,7 +205,7 @@ import "../Shaders/particles.vertex";
             this._epsilon = epsilon;
             this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
-            this._scene = scene || Engine.LastCreatedScene;
+            this._scene = scene || EngineStore.LastCreatedScene;
 
             // Setup the default processing configuration to the scene.
             this._attachImageProcessingConfiguration(null);
@@ -1909,7 +1910,7 @@ import "../Shaders/particles.vertex";
             var result = new ParticleSystem(name, this._capacity, this._scene, custom);
             result.customShader = program;
 
-            Tools.DeepCopy(this, result, ["particles", "customShader", "noiseTexture"]);
+            DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture"]);
 
             if (newEmitter === undefined) {
                 newEmitter = this.emitter;

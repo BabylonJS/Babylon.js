@@ -1,4 +1,4 @@
-import { Tools } from "../../Misc/tools";
+import { DeepCopier } from "../../Misc/deepCopier";
 import { Vector3, Matrix } from "../../Maths/math";
 import { Scalar } from "../../Maths/math.scalar";
 import { Effect } from "../../Materials/effect";
@@ -58,7 +58,7 @@ import { IParticleEmitterType } from "./IParticleEmitterType";
         {
             let newOne = new PointParticleEmitter();
 
-            Tools.DeepCopy(this, newOne);
+            DeepCopier.DeepCopy(this, newOne);
 
             return newOne;
         }

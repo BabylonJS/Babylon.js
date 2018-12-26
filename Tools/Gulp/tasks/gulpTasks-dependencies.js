@@ -85,6 +85,7 @@ const dependencies = function(settings, moduleName, cb) {
             boolean: ["saveCircular"]
         });
         if (commandLineOptions.saveCircular) {
+            comparaisonData.errorCount = cruiseResult.summary.error;
             fs.writeJSONSync(path.resolve(__dirname, baseValidationFile), comparaisonData, {
                 spaces: 4,
                 EOL: '\n'

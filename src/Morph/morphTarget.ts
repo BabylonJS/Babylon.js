@@ -2,12 +2,13 @@ import { IAnimatable } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Nullable, FloatArray } from "../types";
 import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Animation } from "../Animations/animation";
 import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize, SerializationHelper } from "../Misc/decorators";
+
     /**
      * Defines a target to use with MorphTargetManager
      * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -82,7 +83,7 @@ import { serialize, SerializationHelper } from "../Misc/decorators";
         public constructor(
             /** defines the name of the target */
             public name: string, influence = 0, scene: Nullable<Scene> = null) {
-                this._scene = scene || Engine.LastCreatedScene;
+                this._scene = scene || EngineStore.LastCreatedScene;
                 this.influence = influence;
         }
 

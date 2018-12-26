@@ -5,6 +5,7 @@ import { Engine } from "./Engines/engine";
 import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
 import { Observable, Observer } from "./Misc/observable";
+import { EngineStore } from "./Engines/engineStore";
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -259,7 +260,7 @@ declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
         constructor(name: string, scene: Nullable<Scene> = null, addToRootNodes = true) {
             this.name = name;
             this.id = name;
-            this._scene = <Scene>(scene || Engine.LastCreatedScene);
+            this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
             this.uniqueId = this._scene.getUniqueId();
             this._initCache();
 

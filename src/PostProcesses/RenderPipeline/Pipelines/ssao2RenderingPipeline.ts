@@ -9,10 +9,10 @@ import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
-import { Engine } from "../../../Engines/engine";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Scene } from "../../../scene";
 import { _TypeStore } from '../../../Misc/typeStore';
+import { EngineStore } from '../../../Engines/engineStore';
 
 import "../../../Shaders/ssao2.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
@@ -152,7 +152,7 @@ import "../../../Shaders/ssaoCombine.fragment";
         *  Support test.
         */
         public static get IsSupported(): boolean {
-            var engine = Engine.LastCreatedEngine;
+            var engine = EngineStore.LastCreatedEngine;
             if (!engine) {
                 return false;
             }
