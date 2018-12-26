@@ -235,6 +235,11 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
          * If this event happens when this parameter is true, you will have to reload the page to restore rendering
          */
         doNotHandleContextLost?: boolean;
+        /**
+         * Defines that engine should ignore modifying touch action attribute and style
+         * If not handle, you might need to set it up on your side for expected touch devices behavior.
+         */
+        doNotHandleTouchAction?: boolean;
     }
 
     /**
@@ -1181,6 +1186,10 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
                     canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                     canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
                 }
+
+                if (!options.doNotHandleTouchAction) {
+                    this._disableTouchAction();
+                }
             } else {
                 this._gl = <WebGLRenderingContext>canvasOrContext;
                 this._renderingCanvas = this._gl.canvas;
@@ -1292,6 +1301,16 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
             console.log(`Babylon.js v${Engine.Version} - ${this.description}`);
 
             this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
+        }
+
+        private _disableTouchAction(): void {
+            if (!this._renderingCanvas) {
+                return;
+            }
+
+            this._renderingCanvas.setAttribute("touch-action", "none");
+            this._renderingCanvas.style.touchAction = "none";
+            this._renderingCanvas.style.msTouchAction = "none";
         }
 
         private _rebuildInternalTextures(): void {
