@@ -4,21 +4,8 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Ray } from "../Culling/ray";
 import { Sprite } from "../Sprites/sprite";
-    /**
-     * @hidden
-     */
-    export class IntersectionInfo {
-        public faceId = 0;
-        public subMeshId = 0;
 
-        constructor(
-            public bu: Nullable<number>,
-            public bv: Nullable<number>,
-            public distance: number) {
-        }
-    }
-
-    /**
+/**
      * Information about the result of picking within a scene
      * @see https://doc.babylonjs.com/babylon101/picking_collisions
      */
