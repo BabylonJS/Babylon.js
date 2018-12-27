@@ -8,6 +8,7 @@ import { Vector3, Quaternion, Matrix } from "../../Maths/math";
 import { Observer, Observable } from "../../Misc/observable";
 import { BoundingBoxGizmo } from "../../Gizmos/boundingBoxGizmo";
 import { Camera } from "../../Cameras/camera";
+import { PivotTools } from "../../Misc/pivotTools";
     /**
      * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
      */
@@ -107,7 +108,7 @@ import { Camera } from "../../Cameras/camera";
                         }
 
                         pickedMesh = this._ownerNode;
-                        BoundingBoxGizmo._RemoveAndStorePivotPoint(pickedMesh);
+                        PivotTools._RemoveAndStorePivotPoint(pickedMesh);
                         lastSixDofOriginPosition.copyFrom(pointerInfo.pickInfo.ray.origin);
 
                         // Set position and orientation of the controller
@@ -141,7 +142,7 @@ import { Camera } from "../../Cameras/camera";
                                 attachedElement = null;
                             }
                         }
-                        BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
+                        PivotTools._RestorePivotPoint(pickedMesh);
                         this.onDragStartObservable.notifyObservers({});
                     }
                 } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
@@ -201,7 +202,7 @@ import { Camera } from "../../Cameras/camera";
             // On every frame move towards target scaling to avoid jitter caused by vr controllers
             this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(() => {
                 if (this.dragging && this._moving && pickedMesh) {
-                    BoundingBoxGizmo._RemoveAndStorePivotPoint(pickedMesh);
+                    PivotTools._RemoveAndStorePivotPoint(pickedMesh);
                     // Slowly move mesh to avoid jitter
                     pickedMesh.position.addInPlace(this._targetPosition.subtract(pickedMesh.position).scale(this.dragDeltaRatio));
 
@@ -220,7 +221,7 @@ import { Camera } from "../../Cameras/camera";
                         pickedMesh.setParent(null);
                         Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
                         pickedMesh.setParent(oldParent);
-                        BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
+                        PivotTools._RestorePivotPoint(pickedMesh);
                     }
                 }
             });
