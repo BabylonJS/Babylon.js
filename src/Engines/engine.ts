@@ -25,7 +25,7 @@ import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { IAudioEngine } from "../Audio/audioEngine";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
-import { ILoadingScreen, DefaultLoadingScreen } from "../Loading/loadingScreen";
+import { ILoadingScreen } from "../Loading/loadingScreen";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Constants } from "./constants";
 import { DomManagement } from "../Misc/domManagement";
@@ -517,10 +517,6 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
         public static CollisionsEpsilon = 0.001;
 
         /**
-         * Gets or sets the relative url used to load code if using the engine in non-minified mode
-         */
-        public static CodeRepository = "src/";
-        /**
          * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
          */
         public static get ShadersRepository(): string {
@@ -528,6 +524,16 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
         }
         public static set ShadersRepository(value: string) {
             Effect.ShadersRepository = value;
+        }
+
+        /**
+         * Method called to create the default loading screen.
+         * This can be overriden in your own app.
+         * @param canvas The rendering canvas element
+         * @returns The loading screen
+         */
+        public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
+            throw "Import LoadingScreen or set DefaultLoadingScreenFactory on engine before using the loading screen";
         }
 
         // Public members
@@ -7040,8 +7046,8 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
          */
         public get loadingScreen(): ILoadingScreen {
-            if (!this._loadingScreen && DefaultLoadingScreen && this._renderingCanvas) {
-                this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
+            if (!this._loadingScreen && this._renderingCanvas) {
+                this._loadingScreen = Engine.DefaultLoadingScreenFactory(this._renderingCanvas);
             }
             return this._loadingScreen;
         }
