@@ -657,3 +657,5 @@ import { PhysicsEngine } from "../../Physics/physicsEngine";
             };
         }
     }
+
+    PhysicsEngine.DefaultPluginFactory = () => { return new CannonJSPlugin(); };
