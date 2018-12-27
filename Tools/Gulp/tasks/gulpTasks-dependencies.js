@@ -38,69 +38,11 @@ const dependencies = function(settings, moduleName, cb) {
         });
 
     if (cruiseResult.summary.error > 0) {
-        var errors = cruiseResult.summary.violations;
         var errorCount = cruiseResult.summary.error;
-
-        // Comparaison to remove once all done.
-        // Comparaison to remove once all done.
-        // Comparaison to remove once all done.
-        var comparaisonData = { };
-        for (let error of cruiseResult.summary.violations) {
-            comparaisonData[error.from] = comparaisonData[error.from] || [];
-            comparaisonData[error.from].push(error.to);
-        }
-
-        var fs = require("fs-extra");
-        var baseValidationFile = "../../Config/tempCircularValidation/" + moduleName + ".json";
-        if (fs.existsSync(path.resolve(__dirname, baseValidationFile))) {
-            var baseValidation = require(baseValidationFile);
-            errors = [];
-            for (let error in comparaisonData) {
-                if (!baseValidation[error]) {
-                    for (let errorTo of comparaisonData[error]) {
-                        errors.push({
-                            from: error,
-                            to: errorTo
-                        });
-                    }
-                }
-                else {
-                    if (JSON.stringify(comparaisonData[error])!=JSON.stringify(baseValidation[error])) {
-                        for (let errorTo of comparaisonData[error]) {
-                            if (baseValidation[error].indexOf(errorTo) === -1) {
-                                errors.push({
-                                    from: error,
-                                    to: errorTo
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            errorCount = errors.length;
-            if (errorCount === 0) {
-                colorConsole.warn(`Still ${("" + cruiseResult.summary.error).yellow} to go.`);
-            }
-        }
-
-        var minimist = require("minimist");
-        var commandLineOptions = minimist(process.argv.slice(2), {
-            boolean: ["saveCircular"]
-        });
-        if (commandLineOptions.saveCircular) {
-            comparaisonData.errorCount = cruiseResult.summary.error;
-            fs.writeJSONSync(path.resolve(__dirname, baseValidationFile), comparaisonData, {
-                spaces: 4,
-                EOL: '\n'
-            });
-        }
-        // End Comparaison to remove once all done.
-        // End Comparaison to remove once all done.
-        // End Comparaison to remove once all done.
 
         if (errorCount > 0) {
             colorConsole.error(`New circular dependencies in ${moduleName.cyan}: ${("" + errorCount).red}`);
-            for (let error of errors) {
+            for (let error of cruiseResult.summary.violations) {
                 colorConsole.error(`    From: '${error.from.replace(/\.\.\//g, "").yellow}' To: '${error.to.replace(/\.\.\//g, "").yellow}'`);
             }
             process.exit(1);
