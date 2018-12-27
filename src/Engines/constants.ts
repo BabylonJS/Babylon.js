@@ -205,27 +205,22 @@ export class Constants {
      * The dirty texture flag value
      */
     public static readonly MATERIAL_TextureDirtyFlag = 1;
-
     /**
      * The dirty light flag value
      */
     public static readonly MATERIAL_LightDirtyFlag = 2;
-
     /**
      * The dirty fresnel flag value
      */
     public static readonly MATERIAL_FresnelDirtyFlag = 4;
-
     /**
      * The dirty attribute flag value
      */
     public static readonly MATERIAL_AttributesDirtyFlag = 8;
-
     /**
      * The dirty misc flag value
      */
     public static readonly MATERIAL_MiscDirtyFlag = 16;
-
     /**
      * The all dirty flag value
      */
@@ -235,32 +230,26 @@ export class Constants {
      * Returns the triangle fill mode
      */
     public static readonly MATERIAL_TriangleFillMode = 0;
-
     /**
      * Returns the wireframe mode
      */
     public static readonly MATERIAL_WireFrameFillMode = 1;
-
     /**
      * Returns the point fill mode
      */
     public static readonly MATERIAL_PointFillMode = 2;
-
     /**
      * Returns the point list draw mode
      */
     public static readonly MATERIAL_PointListDrawMode = 3;
-
     /**
      * Returns the line list draw mode
      */
     public static readonly MATERIAL_LineListDrawMode = 4;
-
     /**
      * Returns the line loop draw mode
      */
     public static readonly MATERIAL_LineLoopDrawMode = 5;
-
     /**
      * Returns the line strip draw mode
      */
@@ -270,7 +259,6 @@ export class Constants {
      * Returns the triangle strip draw mode
      */
     public static readonly MATERIAL_TriangleStripDrawMode = 7;
-
     /**
      * Returns the triangle fan draw mode
      */
@@ -280,7 +268,6 @@ export class Constants {
      * Stores the clock-wise side orientation
      */
     public static readonly MATERIAL_ClockWiseSideOrientation = 0;
-
     /**
      * Stores the counter clock-wise side orientation
      */
@@ -291,43 +278,36 @@ export class Constants {
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_NothingTrigger = 0;
-
     /**
      * On pick
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickTrigger = 1;
-
     /**
      * On left pick
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnLeftPickTrigger  = 2;
-
     /**
      * On right pick
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnRightPickTrigger = 3;
-
     /**
      * On center pick
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnCenterPickTrigger = 4;
-
     /**
      * On pick down
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickDownTrigger = 5;
-
     /**
      * On double pick
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnDoublePickTrigger = 6;
-
     /**
      * On pick up
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
@@ -339,25 +319,21 @@ export class Constants {
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickOutTrigger = 16;
-
     /**
      * On long press
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnLongPressTrigger = 8;
-
     /**
      * On pointer over
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPointerOverTrigger = 9;
-
     /**
      * On pointer out
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPointerOutTrigger = 10;
-
     /**
      * On every frame
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
@@ -368,19 +344,16 @@ export class Constants {
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnIntersectionEnterTrigger = 12;
-
     /**
      * On intersection exit
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnIntersectionExitTrigger = 13;
-
     /**
      * On key down
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnKeyDownTrigger = 14;
-
     /**
      * On key up
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
@@ -399,6 +372,10 @@ export class Constants {
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
      */
     public static readonly PARTICLES_BILLBOARDMODE_STRETCHED = 8;
+    /**
+     * Gets or sets base Assets URL
+     */
+    public static readonly PARTICLES_BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :

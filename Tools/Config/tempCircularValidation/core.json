@@ -1,9 +1,0 @@
-{
-    "../../src/Particles/particleHelper.ts": [
-        "../../src/Particles/particleSystemSet.ts"
-    ],
-    "../../src/Particles/particleSystemSet.ts": [
-        "../../src/Particles/particleHelper.ts"
-    ],
-    "errorCount": 2
-}
