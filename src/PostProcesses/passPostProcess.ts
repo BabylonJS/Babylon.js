@@ -2,11 +2,10 @@ import { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
 import { Camera } from "../Cameras/camera";
 import { PostProcess, PostProcessOptions } from "./postProcess";
+import { Engine } from "../Engines/engine";
 
 import "../Shaders/pass.fragment";
 import "../Shaders/passCube.fragment";
-
-declare type Engine = import("../Engines/engine").Engine;
 
     /**
      * PassPostProcess which produces an output the same as it's input
@@ -90,3 +89,7 @@ declare type Engine = import("../Engines/engine").Engine;
             super(name, "passCube", null, null, options, camera, samplingMode, engine, reusable, "#define POSITIVEX", textureType, undefined, null, blockCompilation);
         }
     }
+
+    Engine._RescalePostProcessFactory = (engine: Engine) => {
+        return new PassPostProcess("rescale", 1, null, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+    };
