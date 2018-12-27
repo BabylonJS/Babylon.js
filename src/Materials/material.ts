@@ -25,104 +25,52 @@ declare var BABYLON: any;
      * Base class for the main features of a material in Babylon.js
      */
     export class Material implements IAnimatable {
-        // Triangle views
-        private static _TriangleFillMode = 0;
-        private static _WireFrameFillMode = 1;
-        private static _PointFillMode = 2;
-        // Draw modes
-        private static _PointListDrawMode = 3;
-        private static _LineListDrawMode = 4;
-        private static _LineLoopDrawMode = 5;
-        private static _LineStripDrawMode = 6;
-        private static _TriangleStripDrawMode = 7;
-        private static _TriangleFanDrawMode = 8;
-
         /**
          * Returns the triangle fill mode
          */
-        public static get TriangleFillMode(): number {
-            return Material._TriangleFillMode;
-        }
-
+        public static readonly TriangleFillMode = Constants.MATERIAL_TriangleFillMode;
         /**
          * Returns the wireframe mode
          */
-        public static get WireFrameFillMode(): number {
-            return Material._WireFrameFillMode;
-        }
-
+        public static readonly WireFrameFillMode = Constants.MATERIAL_WireFrameFillMode;
         /**
          * Returns the point fill mode
          */
-        public static get PointFillMode(): number {
-            return Material._PointFillMode;
-        }
-
+        public static readonly PointFillMode = Constants.MATERIAL_PointFillMode;
         /**
          * Returns the point list draw mode
          */
-        public static get PointListDrawMode(): number {
-            return Material._PointListDrawMode;
-        }
-
+        public static readonly PointListDrawMode = Constants.MATERIAL_PointListDrawMode;
         /**
          * Returns the line list draw mode
          */
-        public static get LineListDrawMode(): number {
-            return Material._LineListDrawMode;
-        }
-
+        public static readonly LineListDrawMode = Constants.MATERIAL_LineListDrawMode;
         /**
          * Returns the line loop draw mode
          */
-        public static get LineLoopDrawMode(): number {
-            return Material._LineLoopDrawMode;
-        }
-
+        public static readonly LineLoopDrawMode = Constants.MATERIAL_LineLoopDrawMode;
         /**
          * Returns the line strip draw mode
          */
-        public static get LineStripDrawMode(): number {
-            return Material._LineStripDrawMode;
-        }
-
+        public static readonly LineStripDrawMode = Constants.MATERIAL_LineStripDrawMode;
         /**
          * Returns the triangle strip draw mode
          */
-        public static get TriangleStripDrawMode(): number {
-            return Material._TriangleStripDrawMode;
-        }
-
+        public static readonly TriangleStripDrawMode = Constants.MATERIAL_TriangleStripDrawMode;
         /**
          * Returns the triangle fan draw mode
          */
-        public static get TriangleFanDrawMode(): number {
-            return Material._TriangleFanDrawMode;
-        }
+        public static readonly TriangleFanDrawMode = Constants.MATERIAL_TriangleFanDrawMode;
 
         /**
          * Stores the clock-wise side orientation
          */
-        private static _ClockWiseSideOrientation = 0;
+        public static readonly ClockWiseSideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
 
         /**
          * Stores the counter clock-wise side orientation
          */
-        private static _CounterClockWiseSideOrientation = 1;
-
-        /**
-         * Returns the clock-wise side orientation
-         */
-        public static get ClockWiseSideOrientation(): number {
-            return Material._ClockWiseSideOrientation;
-        }
-
-        /**
-         * Returns the counter clock-wise side orientation
-         */
-        public static get CounterClockWiseSideOrientation(): number {
-            return Material._CounterClockWiseSideOrientation;
-        }
+        public static readonly CounterClockWiseSideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
 
         /**
          * The dirty texture flag value
