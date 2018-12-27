@@ -17,12 +17,12 @@ var module = "core";
 /**
  * Process shader ts files.
  */
-gulp.task("watchCore-cleanShaders", async function startWatch() {
+gulp.task("watchCore-cleanShaders", function startWatch(cb) {
     var settings = config[module].computed;
 
     // Clean shaders.
-    await del(settings.shaderTSGlob, { force: true });
-
+    del(settings.shaderTSGlob, { force: true });
+    
     // Generate shaders.
     return gulp.src(settings.shaderGlob)
         .pipe(uncommentShaders())
@@ -32,7 +32,7 @@ gulp.task("watchCore-cleanShaders", async function startWatch() {
 /**
  * Watch ts files and fire repective tasks.
  */
-gulp.task("watchCore", gulp.series("watchCore-cleanShaders", async function() {
+gulp.task("watchCore", gulp.series("watchCore-cleanShaders", function() {
     var settings = config[module].computed;
     var library = config[module].libraries[0];
 
@@ -58,9 +58,24 @@ gulp.task("watchCore", gulp.series("watchCore-cleanShaders", async function() {
     });
 
     // Launch shader watch.
-    gulp.watch(settings.shaderGlob, { interval: 1000 }, function() {
+    var watch = gulp.watch(settings.shaderGlob, { interval: 1000 }, function() {
         console.log(library.output + ": Shaders.");
-        return gulp.src(settings.shaderGlob)
+    })
+    watch.on("add", (event) => {
+        console.log(event);
+        return gulp.src(event)
+            .pipe(uncommentShaders())
+            .pipe(processShaders(true));
+    });
+    watch.on("change", (event) => {
+        console.log(event);
+        return gulp.src(event)
+            .pipe(uncommentShaders())
+            .pipe(processShaders(true));
+    });
+    watch.on("unlink", (event) => {
+        console.log(event);
+        return gulp.src(event)
             .pipe(uncommentShaders())
             .pipe(processShaders(true));
     });
