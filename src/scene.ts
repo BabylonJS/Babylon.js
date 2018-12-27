@@ -152,7 +152,7 @@ import { EngineStore } from "./Engines/engineStore";
          * @returns The default material
          */
         public static DefaultMaterialFactory(scene: Scene): Material {
-            throw "Import StandardMaterial or Fill DefaultMaterialFactory static property on scene before using relying on default material creation.";
+            throw "Import StandardMaterial or Fill DefaultMaterialFactory static property on scene before relying on default material creation.";
         }
 
         // Members

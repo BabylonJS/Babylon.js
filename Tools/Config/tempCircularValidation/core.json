@@ -29,12 +29,6 @@
     "../../src/Particles/subEmitter.ts": [
         "../../src/Particles/particleSystem.ts"
     ],
-    "../../src/Physics/Plugins/cannonJSPlugin.ts": [
-        "../../src/Physics/physicsEngine.ts"
-    ],
-    "../../src/Physics/physicsEngine.ts": [
-        "../../src/Physics/Plugins/cannonJSPlugin.ts"
-    ],
     "../../src/Rendering/depthRenderer.ts": [
         "../../src/Rendering/depthRendererSceneComponent.ts"
     ],
@@ -47,5 +41,5 @@
     "../../src/Rendering/geometryBufferRendererSceneComponent.ts": [
         "../../src/Rendering/geometryBufferRenderer.ts"
     ],
-    "errorCount": 16
+    "errorCount": 14
 }

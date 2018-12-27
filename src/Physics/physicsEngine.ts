@@ -4,8 +4,6 @@ import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IP
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
 
-import { CannonJSPlugin } from "../Physics/Plugins/cannonJSPlugin";
-
     /**
      * Class used to control physics engine
      * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -25,11 +23,19 @@ import { CannonJSPlugin } from "../Physics/Plugins/cannonJSPlugin";
         public gravity: Vector3;
 
         /**
+         * Factory used to create the default physics plugin.
+         * @returns The default physics plugin
+         */
+        public static DefaultPluginFactory(): IPhysicsEnginePlugin {
+            throw "Import CannonJSPlugin or Fill DefaultPluginFactory static property on PhysicsEngine before relying on default physics plugin.";
+        }
+
+        /**
          * Creates a new Physics Engine
          * @param gravity defines the gravity vector used by the simulation
          * @param _physicsPlugin defines the plugin to use (CannonJS by default)
          */
-        constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = new CannonJSPlugin()) {
+        constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = PhysicsEngine.DefaultPluginFactory()) {
             if (!this._physicsPlugin.isSupported()) {
                 throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. "
                     + "Please make sure it is included.");
