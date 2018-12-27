@@ -18,8 +18,6 @@ import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoa
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
-import { PostProcess } from "../PostProcesses/postProcess";
-import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { IAudioEngine } from "../Audio/audioEngine";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
@@ -31,6 +29,7 @@ import { Logger } from "../Misc/logger";
 import { EngineStore } from "./engineStore";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 
+declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -534,6 +533,11 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
             throw "Import LoadingScreen or set DefaultLoadingScreenFactory on engine before using the loading screen";
         }
 
+        /**
+         * Method called to create the default rescale post process on each engine.
+         */
+        public static _RescalePostProcessFactory: Nullable<(engine: Engine) => PostProcess> = null;
+
         // Public members
 
         /**
@@ -879,7 +883,7 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
 
         private _workingCanvas: Nullable<HTMLCanvasElement>;
         private _workingContext: Nullable<CanvasRenderingContext2D>;
-        private _rescalePostProcess: PassPostProcess;
+        private _rescalePostProcess: PostProcess;
 
         private _dummyFramebuffer: WebGLFramebuffer;
 
@@ -4400,7 +4404,7 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
 
                         let maxTextureSize = this._caps.maxTextureSize;
 
-                        if (img.width > maxTextureSize || img.height > maxTextureSize) {
+                        if (img.width > maxTextureSize || img.height > maxTextureSize || Engine._RescalePostProcessFactory === null) {
                             this._prepareWorkingCanvas();
                             if (!this._workingCanvas || !this._workingContext) {
                                 return false;
@@ -4470,8 +4474,8 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
                 }
             );
 
-            if (!this._rescalePostProcess) {
-                this._rescalePostProcess = new PassPostProcess("rescale", 1, null, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            if (!this._rescalePostProcess && Engine._RescalePostProcessFactory) {
+                this._rescalePostProcess = Engine._RescalePostProcessFactory(this);
             }
 
             this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
