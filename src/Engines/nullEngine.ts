@@ -481,7 +481,7 @@ import { Constants } from "./constants";
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {
         }
 
-        protected _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
+        public _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
             if (this._boundTexturesCache[this._activeChannel] !== texture) {
                 this._boundTexturesCache[this._activeChannel] = texture;
                 return true;

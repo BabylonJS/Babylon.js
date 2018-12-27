@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
-import { Engine } from 'Engines';
+import { Engine } from "../Engines/engine";
     /**
      * Interface used to present a loading screen while loading a scene
      * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
