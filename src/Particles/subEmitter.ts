@@ -1,9 +1,11 @@
 import { Vector3 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { ParticleSystem } from "../Particles/particleSystem";
-import { Scene } from "../scene";
-    /**
+
+declare type Scene = import("../scene").Scene;
+declare type ParticleSystem = import("../Particles/particleSystem").ParticleSystem;
+
+/**
      * Type of sub emitter
      */
     export enum SubEmitterType {
@@ -98,6 +100,11 @@ import { Scene } from "../scene";
             return serializationObject;
         }
 
+        /** @hidden */
+        public static _ParseParticleSystem(system: any, scene: Scene, rootUrl: string): ParticleSystem {
+            throw "Import ParseParticle before parsing SubEmitter.";
+        }
+
         /**
          * Creates a new SubEmitter from a serialized JSON version
          * @param serializationObject defines the JSON object to read from
@@ -107,7 +114,7 @@ import { Scene } from "../scene";
          */
         public static Parse(serializationObject: any, scene: Scene, rootUrl: string): SubEmitter {
             let system = serializationObject.particleSystem;
-            let subEmitter = new SubEmitter(ParticleSystem.Parse(system, scene, rootUrl));
+            let subEmitter = new SubEmitter(SubEmitter._ParseParticleSystem(system, scene, rootUrl));
             subEmitter.type = serializationObject.type;
             subEmitter.inheritDirection = serializationObject.inheritDirection;
             subEmitter.inheritedVelocityAmount = serializationObject.inheritedVelocityAmount;

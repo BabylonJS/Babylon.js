@@ -2,14 +2,8 @@
     "../../src/Particles/particleHelper.ts": [
         "../../src/Particles/particleSystemSet.ts"
     ],
-    "../../src/Particles/particleSystem.ts": [
-        "../../src/Particles/subEmitter.ts"
-    ],
     "../../src/Particles/particleSystemSet.ts": [
         "../../src/Particles/particleHelper.ts"
     ],
-    "../../src/Particles/subEmitter.ts": [
-        "../../src/Particles/particleSystem.ts"
-    ],
-    "errorCount": 4
+    "errorCount": 2
 }
