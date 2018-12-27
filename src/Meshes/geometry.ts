@@ -6,13 +6,15 @@
     import { VertexBuffer } from "../Meshes/buffer";
     import { SubMesh } from "../Meshes/subMesh";
     import { AbstractMesh } from "../Meshes/abstractMesh";
-    import { Mesh } from "../Meshes/mesh";
     import { Effect } from "../Materials/effect";
     import { SceneLoader } from "../Loading/sceneLoader";
     import { BoundingInfo } from "../Culling/boundingInfo";
     import { Constants } from "../Engines/constants";
     import { Tools } from "../Misc/tools";
     import { Tags } from "../Misc/tags";
+
+    declare type Mesh = import("../Meshes/mesh").Mesh;
+
     /**
      * Class used to store geometry data (vertex buffers + index buffer)
      */
@@ -1603,7 +1605,7 @@
             /**
              * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
-            public side: number = Mesh.DEFAULTSIDE) {
+            public side: number = VertexData.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
@@ -1643,7 +1645,7 @@
             /**
              * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
-            public side: number = Mesh.DEFAULTSIDE) {
+            public side: number = VertexData.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
@@ -1711,7 +1713,7 @@
             /**
              * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
-            public side: number = Mesh.DEFAULTSIDE) {
+            public side: number = VertexData.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
@@ -1780,7 +1782,7 @@
             /**
              * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
-            public side: number = Mesh.DEFAULTSIDE) {
+            public side: number = VertexData.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
@@ -1840,7 +1842,7 @@
             /**
              * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
-            public side: number = Mesh.DEFAULTSIDE) {
+            public side: number = VertexData.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
@@ -1916,7 +1918,7 @@
             /**
              * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
-            public side: number = Mesh.DEFAULTSIDE) {
+            public side: number = VertexData.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
@@ -2111,7 +2113,7 @@
             /**
              * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
-            public side: number = Mesh.DEFAULTSIDE) {
+            public side: number = VertexData.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
@@ -2199,7 +2201,7 @@
             /**
              * Defines if the created geometry is double sided or not (default is Mesh.DEFAULTSIDE)
              */
-            public side: number = Mesh.DEFAULTSIDE) {
+            public side: number = VertexData.DEFAULTSIDE) {
             super(id, scene, canBeRegenerated, mesh);
         }
 
