@@ -13,7 +13,6 @@ import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
-import { StandardMaterial } from "../../Materials/standardMaterial";
 import { ColorCurves } from "../../Materials/colorCurves";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -23,7 +22,8 @@ import { IShadowLight } from "../../Lights/shadowLight";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from '../../Misc/typeStore';
+import { _TypeStore } from "../../Misc/typeStore";
+import { MaterialFlags } from "../materialFlags";
 
 import "../../Shaders/background.fragment";
 import "../../Shaders/background.vertex";
@@ -683,7 +683,7 @@ import "../../Shaders/background.vertex";
                         defines.TEXTURELODSUPPORT = true;
                     }
 
-                    if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    if (this._diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
                         if (!this._diffuseTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
@@ -700,7 +700,7 @@ import "../../Shaders/background.vertex";
                     }
 
                     var reflectionTexture = this._reflectionTexture;
-                    if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                         if (!reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
@@ -1046,12 +1046,12 @@ import "../../Shaders/background.vertex";
 
                     // Texture uniforms
                     if (scene.texturesEnabled) {
-                        if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                        if (this._diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                             MaterialHelper.BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
                         }
 
-                        if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, this._reflectionBlur);
 
@@ -1085,11 +1085,11 @@ import "../../Shaders/background.vertex";
 
                 // Textures
                 if (scene.texturesEnabled) {
-                    if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    if (this._diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
                         this._uniformBuffer.setTexture("diffuseSampler", this._diffuseTexture);
                     }
 
-                    if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                         if (defines.REFLECTIONBLUR && defines.TEXTURELODSUPPORT) {
                             this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
                         }

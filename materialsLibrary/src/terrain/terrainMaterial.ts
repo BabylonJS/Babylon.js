@@ -8,7 +8,7 @@ import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effe
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { MaterialFlags } from "babylonjs/Materials/materialFlags";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
@@ -144,7 +144,7 @@ export class TerrainMaterial extends PushMaterial {
 
         // Textures
         if (scene.texturesEnabled) {
-            if (this.mixTexture && StandardMaterial.DiffuseTextureEnabled) {
+            if (this.mixTexture && MaterialFlags.DiffuseTextureEnabled) {
                 if (!this.mixTexture.isReady()) {
                     return false;
                 } else {
@@ -152,7 +152,7 @@ export class TerrainMaterial extends PushMaterial {
                     defines.DIFFUSE = true;
                 }
             }
-            if ((this.bumpTexture1 || this.bumpTexture2 || this.bumpTexture3) && StandardMaterial.BumpTextureEnabled) {
+            if ((this.bumpTexture1 || this.bumpTexture2 || this.bumpTexture3) && MaterialFlags.BumpTextureEnabled) {
                 defines._needUVs = true;
                 defines._needNormals = true;
                 defines.BUMP = true;
@@ -285,7 +285,7 @@ export class TerrainMaterial extends PushMaterial {
                 this._activeEffect.setFloat2("vTextureInfos", this._mixTexture.coordinatesIndex, this._mixTexture.level);
                 this._activeEffect.setMatrix("textureMatrix", this._mixTexture.getTextureMatrix());
 
-                if (StandardMaterial.DiffuseTextureEnabled) {
+                if (MaterialFlags.DiffuseTextureEnabled) {
                     if (this._diffuseTexture1) {
                         this._activeEffect.setTexture("diffuse1Sampler", this._diffuseTexture1);
                         this._activeEffect.setFloat2("diffuse1Infos", this._diffuseTexture1.uScale, this._diffuseTexture1.vScale);
@@ -300,7 +300,7 @@ export class TerrainMaterial extends PushMaterial {
                     }
                 }
 
-                if (StandardMaterial.BumpTextureEnabled && scene.getEngine().getCaps().standardDerivatives) {
+                if (MaterialFlags.BumpTextureEnabled && scene.getEngine().getCaps().standardDerivatives) {
                     if (this._bumpTexture1) {
                         this._activeEffect.setTexture("bump1Sampler", this._bumpTexture1);
                     }

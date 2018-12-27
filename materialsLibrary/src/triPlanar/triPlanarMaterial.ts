@@ -7,7 +7,7 @@ import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effe
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { MaterialFlags } from "babylonjs/Materials/materialFlags";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
@@ -149,7 +149,7 @@ export class TriPlanarMaterial extends PushMaterial {
         // Textures
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
-                if (StandardMaterial.DiffuseTextureEnabled) {
+                if (MaterialFlags.DiffuseTextureEnabled) {
                     var textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
                     var textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
 
@@ -163,7 +163,7 @@ export class TriPlanarMaterial extends PushMaterial {
                         }
                     }
                 }
-                if (StandardMaterial.BumpTextureEnabled) {
+                if (MaterialFlags.BumpTextureEnabled) {
                     var textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
                     var textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
 
