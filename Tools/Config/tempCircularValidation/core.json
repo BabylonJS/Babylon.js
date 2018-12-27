@@ -1,7 +1,4 @@
 {
-    "../../src/Engines/engine.ts": [
-        "../../src/Materials/Textures/internalTexture.ts"
-    ],
     "../../src/Layers/effectLayer.ts": [
         "../../src/Layers/effectLayerSceneComponent.ts"
     ],
@@ -19,9 +16,6 @@
     ],
     "../../src/Lights/Shadows/shadowGeneratorSceneComponent.ts": [
         "../../src/Lights/Shadows/shadowGenerator.ts"
-    ],
-    "../../src/Materials/Textures/internalTexture.ts": [
-        "../../src/Engines/engine.ts"
     ],
     "../../src/Particles/particleHelper.ts": [
         "../../src/Particles/particleSystemSet.ts"
@@ -53,5 +47,5 @@
     "../../src/Rendering/geometryBufferRendererSceneComponent.ts": [
         "../../src/Rendering/geometryBufferRenderer.ts"
     ],
-    "errorCount": 18
+    "errorCount": 16
 }

@@ -5,7 +5,7 @@ import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
 import { Matrix, Vector3, Color4 } from "../../Maths/math";
-import { Engine, RenderTargetCreationOptions } from "../../Engines/engine";
+import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SubMesh } from "../../Meshes/subMesh";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
@@ -14,6 +14,9 @@ import { PostProcessManager } from "../../PostProcesses/postProcessManager";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
+
+declare type Engine = import("../../Engines/engine").Engine;
+
     /**
      * This Helps creating a texture that will be created from a camera in your scene.
      * It is basically a dynamic texture that could be used to create special effects for instance.
