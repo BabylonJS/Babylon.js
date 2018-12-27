@@ -81,7 +81,7 @@ import { Constants } from "../Engines/constants";
                 return false;
             }
 
-            var postProcesses = postProcesses || (<Nullable<PostProcess[]>>camera._postProcesses.filter((pp) => { return pp != null; }));
+            postProcesses = postProcesses || (<Nullable<PostProcess[]>>camera._postProcesses.filter((pp) => { return pp != null; }));
 
             if (!postProcesses || postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return false;
