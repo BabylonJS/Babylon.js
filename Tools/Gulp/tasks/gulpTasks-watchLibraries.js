@@ -55,14 +55,29 @@ gulp.task("watchLibraries", function startWatch() {
                         .pipe(gulp.dest(outputDirectory))
                 );
 
-                tasks.push(
-                    gulp.watch(settings.shaderGlob, { interval: 1000 }, function() {
-                        console.log(library.output + ": Shaders.");
-                        return gulp.src(settings.shaderGlob)
-                            .pipe(uncommentShaders())
-                            .pipe(processShaders(false));
-                    })
-                );
+                var watch = gulp.watch(settings.shaderGlob, { interval: 1000 }, function() {
+                    console.log(library.output + ": Shaders.");
+                })
+                watch.on("add", (event) => {
+                    console.log(event);
+                    return gulp.src(event)
+                    .pipe(uncommentShaders())
+                    .pipe(processShaders(false));
+                });
+                watch.on("change", (event) => {
+                    console.log(event);
+                    return gulp.src(event)
+                    .pipe(uncommentShaders())
+                    .pipe(processShaders(false));
+                });
+                watch.on("unlink", (event) => {
+                    console.log(event);
+                    return gulp.src(event)
+                    .pipe(uncommentShaders())
+                    .pipe(processShaders(false));
+                });
+
+                tasks.push(watch);
             }
         }
     });
