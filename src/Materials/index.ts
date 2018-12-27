@@ -13,3 +13,4 @@ export * from "./shaderMaterial";
 export * from "./standardMaterial";
 export * from "./Textures/index";
 export * from "./uniformBuffer";
+export * from "./materialFlags";

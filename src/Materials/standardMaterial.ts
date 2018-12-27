@@ -6,7 +6,6 @@ import { IAnimatable } from "../Misc/tools";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Color3 } from "../Maths/math";
-import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -24,7 +23,8 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { _TypeStore } from '../Misc/typeStore';
+import { _TypeStore } from "../Misc/typeStore";
+import { MaterialFlags } from "./materialFlags";
 
 import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
@@ -1715,180 +1715,114 @@ import { Constants } from "../Engines/constants";
         }
 
         // Flags used to enable or disable a type of texture for all Standard Materials
-        private static _DiffuseTextureEnabled = true;
         /**
          * Are diffuse textures enabled in the application.
          */
         public static get DiffuseTextureEnabled(): boolean {
-            return StandardMaterial._DiffuseTextureEnabled;
+            return MaterialFlags.DiffuseTextureEnabled;
         }
         public static set DiffuseTextureEnabled(value: boolean) {
-            if (StandardMaterial._DiffuseTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._DiffuseTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.DiffuseTextureEnabled = value;
         }
 
-        private static _AmbientTextureEnabled = true;
         /**
          * Are ambient textures enabled in the application.
          */
         public static get AmbientTextureEnabled(): boolean {
-            return StandardMaterial._AmbientTextureEnabled;
+            return MaterialFlags.AmbientTextureEnabled;
         }
         public static set AmbientTextureEnabled(value: boolean) {
-            if (StandardMaterial._AmbientTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._AmbientTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.AmbientTextureEnabled = value;
         }
 
-        private static _OpacityTextureEnabled = true;
         /**
          * Are opacity textures enabled in the application.
          */
         public static get OpacityTextureEnabled(): boolean {
-            return StandardMaterial._OpacityTextureEnabled;
+            return MaterialFlags.OpacityTextureEnabled;
         }
         public static set OpacityTextureEnabled(value: boolean) {
-            if (StandardMaterial._OpacityTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._OpacityTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.OpacityTextureEnabled = value;
         }
 
-        private static _ReflectionTextureEnabled = true;
         /**
          * Are reflection textures enabled in the application.
          */
         public static get ReflectionTextureEnabled(): boolean {
-            return StandardMaterial._ReflectionTextureEnabled;
+            return MaterialFlags.ReflectionTextureEnabled;
         }
         public static set ReflectionTextureEnabled(value: boolean) {
-            if (StandardMaterial._ReflectionTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._ReflectionTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.ReflectionTextureEnabled = value;
         }
 
-        private static _EmissiveTextureEnabled = true;
         /**
          * Are emissive textures enabled in the application.
          */
         public static get EmissiveTextureEnabled(): boolean {
-            return StandardMaterial._EmissiveTextureEnabled;
+            return MaterialFlags.EmissiveTextureEnabled;
         }
         public static set EmissiveTextureEnabled(value: boolean) {
-            if (StandardMaterial._EmissiveTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._EmissiveTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.EmissiveTextureEnabled = value;
         }
 
-        private static _SpecularTextureEnabled = true;
         /**
          * Are specular textures enabled in the application.
          */
         public static get SpecularTextureEnabled(): boolean {
-            return StandardMaterial._SpecularTextureEnabled;
+            return MaterialFlags.SpecularTextureEnabled;
         }
         public static set SpecularTextureEnabled(value: boolean) {
-            if (StandardMaterial._SpecularTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._SpecularTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.SpecularTextureEnabled = value;
         }
 
-        private static _BumpTextureEnabled = true;
         /**
          * Are bump textures enabled in the application.
          */
         public static get BumpTextureEnabled(): boolean {
-            return StandardMaterial._BumpTextureEnabled;
+            return MaterialFlags.BumpTextureEnabled;
         }
         public static set BumpTextureEnabled(value: boolean) {
-            if (StandardMaterial._BumpTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._BumpTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.BumpTextureEnabled = value;
         }
 
-        private static _LightmapTextureEnabled = true;
         /**
          * Are lightmap textures enabled in the application.
          */
         public static get LightmapTextureEnabled(): boolean {
-            return StandardMaterial._LightmapTextureEnabled;
+            return MaterialFlags.LightmapTextureEnabled;
         }
         public static set LightmapTextureEnabled(value: boolean) {
-            if (StandardMaterial._LightmapTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._LightmapTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.LightmapTextureEnabled = value;
         }
 
-        private static _RefractionTextureEnabled = true;
         /**
          * Are refraction textures enabled in the application.
          */
         public static get RefractionTextureEnabled(): boolean {
-            return StandardMaterial._RefractionTextureEnabled;
+            return MaterialFlags.RefractionTextureEnabled;
         }
         public static set RefractionTextureEnabled(value: boolean) {
-            if (StandardMaterial._RefractionTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._RefractionTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.RefractionTextureEnabled = value;
         }
 
-        private static _ColorGradingTextureEnabled = true;
         /**
          * Are color grading textures enabled in the application.
          */
         public static get ColorGradingTextureEnabled(): boolean {
-            return StandardMaterial._ColorGradingTextureEnabled;
+            return MaterialFlags.ColorGradingTextureEnabled;
         }
         public static set ColorGradingTextureEnabled(value: boolean) {
-            if (StandardMaterial._ColorGradingTextureEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._ColorGradingTextureEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            MaterialFlags.ColorGradingTextureEnabled = value;
         }
 
-        private static _FresnelEnabled = true;
         /**
          * Are fresnels enabled in the application.
          */
         public static get FresnelEnabled(): boolean {
-            return StandardMaterial._FresnelEnabled;
+            return MaterialFlags.FresnelEnabled;
         }
         public static set FresnelEnabled(value: boolean) {
-            if (StandardMaterial._FresnelEnabled === value) {
-                return;
-            }
-
-            StandardMaterial._FresnelEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_FresnelDirtyFlag);
+            MaterialFlags.FresnelEnabled = value;
         }
     }
 

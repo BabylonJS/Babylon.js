@@ -8,7 +8,7 @@ import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effe
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { MaterialFlags } from "babylonjs/Materials/materialFlags";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
@@ -171,7 +171,7 @@ export class MixMaterial extends PushMaterial {
 
         // Textures
         if (scene.texturesEnabled) {
-            if (StandardMaterial.DiffuseTextureEnabled) {
+            if (MaterialFlags.DiffuseTextureEnabled) {
                 if (this._mixTexture1) {
                     if (!this._mixTexture1.isReady()) {
                         return false;
@@ -320,7 +320,7 @@ export class MixMaterial extends PushMaterial {
                 this._activeEffect.setFloat2("vTextureInfos", this._mixTexture1.coordinatesIndex, this._mixTexture1.level);
                 this._activeEffect.setMatrix("textureMatrix", this._mixTexture1.getTextureMatrix());
 
-                if (StandardMaterial.DiffuseTextureEnabled) {
+                if (MaterialFlags.DiffuseTextureEnabled) {
                     if (this._diffuseTexture1) {
                         this._activeEffect.setTexture("diffuse1Sampler", this._diffuseTexture1);
                         this._activeEffect.setFloat2("diffuse1Infos", this._diffuseTexture1.uScale, this._diffuseTexture1.vScale);
@@ -343,7 +343,7 @@ export class MixMaterial extends PushMaterial {
             if (this._mixTexture2) {
                 this._activeEffect.setTexture("mixMap2Sampler", this._mixTexture2);
 
-                if (StandardMaterial.DiffuseTextureEnabled) {
+                if (MaterialFlags.DiffuseTextureEnabled) {
                     if (this._diffuseTexture5) {
                         this._activeEffect.setTexture("diffuse5Sampler", this._diffuseTexture5);
                         this._activeEffect.setFloat2("diffuse5Infos", this._diffuseTexture5.uScale, this._diffuseTexture5.vScale);

@@ -10,7 +10,7 @@ import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effe
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { MaterialFlags } from "babylonjs/Materials/materialFlags";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
@@ -180,7 +180,7 @@ export class FurMaterial extends PushMaterial {
         // Textures
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
-                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                if (this.diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
                     if (!this.diffuseTexture.isReady()) {
                         return false;
                     } else {
@@ -327,7 +327,7 @@ export class FurMaterial extends PushMaterial {
 
         if (scene.getCachedMaterial() !== this) {
             // Textures
-            if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+            if (this._diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
                 this._activeEffect.setTexture("diffuseSampler", this._diffuseTexture);
 
                 this._activeEffect.setFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);

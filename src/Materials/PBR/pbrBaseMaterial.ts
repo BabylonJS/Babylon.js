@@ -27,7 +27,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
-import { StandardMaterial } from "../../Materials/standardMaterial";
+import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
 
 import "../../Shaders/pbr.fragment";
@@ -657,11 +657,11 @@ import "../../Shaders/pbr.vertex";
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
 
-                if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+                if (MaterialFlags.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                     this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
                 }
 
-                if (StandardMaterial.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
+                if (MaterialFlags.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
                     this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
                 }
 
@@ -675,11 +675,11 @@ import "../../Shaders/pbr.vertex";
          * Gets a boolean indicating that current material needs to register RTT
          */
         public get hasRenderTargetTextures(): boolean {
-            if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+            if (MaterialFlags.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 return true;
             }
 
-            if (StandardMaterial.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
+            if (MaterialFlags.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
                 return true;
             }
 
@@ -830,44 +830,44 @@ import "../../Shaders/pbr.vertex";
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
-                    if (this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                         if (!this._albedoTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                     }
 
-                    if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
+                    if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
                         if (!this._ambientTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                     }
 
-                    if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                    if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                         if (!this._opacityTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                     }
 
                     var reflectionTexture = this._getReflectionTexture();
-                    if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                         if (!reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                     }
 
-                    if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
+                    if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                         if (!this._lightmapTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                     }
 
-                    if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
+                    if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
                         if (!this._emissiveTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                     }
 
-                    if (StandardMaterial.SpecularTextureEnabled) {
+                    if (MaterialFlags.SpecularTextureEnabled) {
                         if (this._metallicTexture) {
                             if (!this._metallicTexture.isReadyOrNotBlocking()) {
                                 return false;
@@ -886,7 +886,7 @@ import "../../Shaders/pbr.vertex";
                         }
                     }
 
-                    if (engine.getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
+                    if (engine.getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                         // Bump texture cannot be not blocking.
                         if (!this._bumpTexture.isReady()) {
                             return false;
@@ -894,13 +894,13 @@ import "../../Shaders/pbr.vertex";
                     }
 
                     var refractionTexture = this._getRefractionTexture();
-                    if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                    if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                         if (!refractionTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                     }
 
-                    if (this._environmentBRDFTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                         // This is blocking.
                         if (!this._environmentBRDFTexture.isReady()) {
                             return false;
@@ -1137,20 +1137,20 @@ import "../../Shaders/pbr.vertex";
                         defines.LODBASEDMICROSFURACE = true;
                     }
 
-                    if (this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._albedoTexture, defines, "ALBEDO");
                     } else {
                         defines.ALBEDO = false;
                     }
 
-                    if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
+                    if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
                         defines.AMBIENTINGRAYSCALE = this._useAmbientInGrayScale;
                     } else {
                         defines.AMBIENT = false;
                     }
 
-                    if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                    if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
                         defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
                     } else {
@@ -1158,7 +1158,7 @@ import "../../Shaders/pbr.vertex";
                     }
 
                     var reflectionTexture = this._getReflectionTexture();
-                    if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                         defines.REFLECTION = true;
                         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
                         defines.RGBDREFLECTION = reflectionTexture.isRGBD;
@@ -1252,7 +1252,7 @@ import "../../Shaders/pbr.vertex";
                         defines.RGBDREFLECTION = false;
                     }
 
-                    if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
+                    if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                         defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
                         defines.GAMMALIGHTMAP = this._lightmapTexture.gammaSpace;
@@ -1260,13 +1260,13 @@ import "../../Shaders/pbr.vertex";
                         defines.LIGHTMAP = false;
                     }
 
-                    if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
+                    if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
                     } else {
                         defines.EMISSIVE = false;
                     }
 
-                    if (StandardMaterial.SpecularTextureEnabled) {
+                    if (MaterialFlags.SpecularTextureEnabled) {
                         if (this._metallicTexture) {
                             MaterialHelper.PrepareDefinesForMergedUV(this._metallicTexture, defines, "REFLECTIVITY");
                             defines.ROUGHNESSSTOREINMETALMAPALPHA = this._useRoughnessFromMetallicTextureAlpha;
@@ -1292,10 +1292,10 @@ import "../../Shaders/pbr.vertex";
                         defines.MICROSURFACEMAP = false;
                     }
 
-                    if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
+                    if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
 
-                        if (this._useParallax && this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
+                        if (this._useParallax && this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                             defines.PARALLAX = true;
                             defines.PARALLAXOCCLUSION = !!this._useParallaxOcclusion;
                         }
@@ -1309,7 +1309,7 @@ import "../../Shaders/pbr.vertex";
                     }
 
                     var refractionTexture = this._getRefractionTexture();
-                    if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                    if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                         defines.REFRACTION = true;
                         defines.REFRACTIONMAP_3D = refractionTexture.isCube;
                         defines.GAMMAREFRACTION = refractionTexture.gammaSpace;
@@ -1324,7 +1324,7 @@ import "../../Shaders/pbr.vertex";
                         defines.REFRACTION = false;
                     }
 
-                    if (this._environmentBRDFTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                         defines.ENVIRONMENTBRDF = true;
                     } else {
                         defines.ENVIRONMENTBRDF = false;
@@ -1522,22 +1522,22 @@ import "../../Shaders/pbr.vertex";
 
                     // Texture uniforms
                     if (scene.texturesEnabled) {
-                        if (this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
+                        if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vAlbedoInfos", this._albedoTexture.coordinatesIndex, this._albedoTexture.level);
                             MaterialHelper.BindTextureMatrix(this._albedoTexture, this._uniformBuffer, "albedo");
                         }
 
-                        if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
+                        if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
                             this._uniformBuffer.updateFloat4("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level, this._ambientTextureStrength, this._ambientTextureImpactOnAnalyticalLights);
                             MaterialHelper.BindTextureMatrix(this._ambientTexture, this._uniformBuffer, "ambient");
                         }
 
-                        if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                        if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                             MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
                         }
 
-                        if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
 
@@ -1571,17 +1571,17 @@ import "../../Shaders/pbr.vertex";
                                 reflectionTexture.lodGenerationOffset);
                         }
 
-                        if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
+                        if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
                             MaterialHelper.BindTextureMatrix(this._emissiveTexture, this._uniformBuffer, "emissive");
                         }
 
-                        if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
+                        if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
                             MaterialHelper.BindTextureMatrix(this._lightmapTexture, this._uniformBuffer, "lightmap");
                         }
 
-                        if (StandardMaterial.SpecularTextureEnabled) {
+                        if (MaterialFlags.SpecularTextureEnabled) {
                             if (this._metallicTexture) {
                                 this._uniformBuffer.updateFloat3("vReflectivityInfos", this._metallicTexture.coordinatesIndex, this._metallicTexture.level, this._ambientTextureStrength);
                                 MaterialHelper.BindTextureMatrix(this._metallicTexture, this._uniformBuffer, "reflectivity");
@@ -1597,7 +1597,7 @@ import "../../Shaders/pbr.vertex";
                             }
                         }
 
-                        if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
+                        if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level, this._parallaxScaleBias);
                             MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
 
@@ -1608,7 +1608,7 @@ import "../../Shaders/pbr.vertex";
                             }
                         }
 
-                        if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                        if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
 
                             var depth = 1.0;
@@ -1640,7 +1640,7 @@ import "../../Shaders/pbr.vertex";
                         this._uniformBuffer.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);
                     }
 
-                    this._uniformBuffer.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
+                    this._uniformBuffer.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                     this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
                     this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha * mesh.visibility);
 
@@ -1655,19 +1655,19 @@ import "../../Shaders/pbr.vertex";
 
                 // Textures
                 if (scene.texturesEnabled) {
-                    if (this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                         this._uniformBuffer.setTexture("albedoSampler", this._albedoTexture);
                     }
 
-                    if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
+                    if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
                         this._uniformBuffer.setTexture("ambientSampler", this._ambientTexture);
                     }
 
-                    if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                    if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                         this._uniformBuffer.setTexture("opacitySampler", this._opacityTexture);
                     }
 
-                    if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                         if (defines.LODBASEDMICROSFURACE) {
                             this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
                         }
@@ -1682,7 +1682,7 @@ import "../../Shaders/pbr.vertex";
                         this._uniformBuffer.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
                     }
 
-                    if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                    if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                         if (defines.LODBASEDMICROSFURACE) {
                             this._uniformBuffer.setTexture("refractionSampler", refractionTexture);
                         }
@@ -1693,15 +1693,15 @@ import "../../Shaders/pbr.vertex";
                         }
                     }
 
-                    if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
+                    if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
                         this._uniformBuffer.setTexture("emissiveSampler", this._emissiveTexture);
                     }
 
-                    if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
+                    if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                         this._uniformBuffer.setTexture("lightmapSampler", this._lightmapTexture);
                     }
 
-                    if (StandardMaterial.SpecularTextureEnabled) {
+                    if (MaterialFlags.SpecularTextureEnabled) {
                         if (this._metallicTexture) {
                             this._uniformBuffer.setTexture("reflectivitySampler", this._metallicTexture);
                         }
@@ -1714,7 +1714,7 @@ import "../../Shaders/pbr.vertex";
                         }
                     }
 
-                    if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
+                    if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                         this._uniformBuffer.setTexture("bumpSampler", this._bumpTexture);
                     }
                 }

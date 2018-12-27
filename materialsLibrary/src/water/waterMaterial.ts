@@ -10,7 +10,7 @@ import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effe
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { MaterialFlags } from "babylonjs/Materials/materialFlags";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
@@ -290,7 +290,7 @@ export class WaterMaterial extends PushMaterial {
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
             if (scene.texturesEnabled) {
-                if (this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
+                if (this.bumpTexture && MaterialFlags.BumpTextureEnabled) {
                     if (!this.bumpTexture.isReady()) {
                         return false;
                     } else {
@@ -299,7 +299,7 @@ export class WaterMaterial extends PushMaterial {
                     }
                 }
 
-                if (StandardMaterial.ReflectionTextureEnabled) {
+                if (MaterialFlags.ReflectionTextureEnabled) {
                     defines.REFLECTION = true;
                 }
             }
@@ -457,7 +457,7 @@ export class WaterMaterial extends PushMaterial {
 
         if (this._mustRebind(scene, effect)) {
             // Textures
-            if (this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
+            if (this.bumpTexture && MaterialFlags.BumpTextureEnabled) {
                 this._activeEffect.setTexture("normalSampler", this.bumpTexture);
 
                 this._activeEffect.setFloat2("vNormalInfos", this.bumpTexture.coordinatesIndex, this.bumpTexture.level);
@@ -496,7 +496,7 @@ export class WaterMaterial extends PushMaterial {
         MaterialHelper.BindLogDepth(defines, this._activeEffect, scene);
 
         // Water
-        if (StandardMaterial.ReflectionTextureEnabled) {
+        if (MaterialFlags.ReflectionTextureEnabled) {
             this._activeEffect.setTexture("refractionSampler", this._refractionRTT);
             this._activeEffect.setTexture("reflectionSampler", this._reflectionRTT);
         }

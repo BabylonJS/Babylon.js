@@ -4,7 +4,7 @@ import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { MaterialFlags } from "babylonjs/Materials/materialFlags";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
@@ -146,7 +146,7 @@ export class GridMaterial extends PushMaterial {
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
             if (scene.texturesEnabled) {
-                if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                     if (!this._opacityTexture.isReady()) {
                         return false;
                     } else {
@@ -231,7 +231,7 @@ export class GridMaterial extends PushMaterial {
             this._gridControl.w = this.opacity;
             this._activeEffect.setVector4("gridControl", this._gridControl);
 
-            if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+            if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                 this._activeEffect.setTexture("opacitySampler", this._opacityTexture);
                  this._activeEffect.setFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                 this._activeEffect.setMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
