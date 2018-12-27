@@ -2,14 +2,12 @@ import { Observer, Observable } from "../Misc/observable";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import { StringDictionary } from "../Misc/stringDictionary";
 import { PromisePolyfill } from "../Misc/promise";
-import { DDSTools, DDSInfo } from "../Misc/dds";
 import { Tools, ICustomAnimationFrameRequester, PerfCounter, IFileRequest } from "../Misc/tools";
 import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { Matrix, Color3, Color4, Viewport, Size, Vector4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
-import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { IDisplayChangedEventArgs } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
@@ -5594,115 +5592,6 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
         }
 
         /**
-         * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
-         * @param rootUrl defines the url where the file to load is located
-         * @param scene defines the current scene
-         * @param lodScale defines scale to apply to the mip map selection
-         * @param lodOffset defines offset to apply to the mip map selection
-         * @param onLoad defines an optional callback raised when the texture is loaded
-         * @param onError defines an optional callback raised if there is an issue to load the texture
-         * @param format defines the format of the data
-         * @param forcedExtension defines the extension to use to pick the right loader
-         * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
-         * @returns the cube texture as an InternalTexture
-         */
-        public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
-            onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
-            onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null,
-            createPolynomials: boolean = true): InternalTexture {
-            var callback = (loadData: any) => {
-                if (!loadData) {
-                    if (onLoad) {
-                        onLoad(null);
-                    }
-                    return;
-                }
-
-                let texture = loadData.texture as InternalTexture;
-                if (!createPolynomials) {
-                    texture._sphericalPolynomial = new SphericalPolynomial();
-                }
-                else if (loadData.info.sphericalPolynomial) {
-                    texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
-                }
-                texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
-
-                if (this._caps.textureLOD) {
-                    // Do not add extra process if texture lod is supported.
-                    if (onLoad) {
-                        onLoad(texture);
-                    }
-                    return;
-                }
-
-                const mipSlices = 3;
-
-                var gl = this._gl;
-                const width = loadData.width;
-                if (!width) {
-                    return;
-                }
-
-                const textures: BaseTexture[] = [];
-                for (let i = 0; i < mipSlices; i++) {
-                    //compute LOD from even spacing in smoothness (matching shader calculation)
-                    let smoothness = i / (mipSlices - 1);
-                    let roughness = 1 - smoothness;
-
-                    let minLODIndex = lodOffset; // roughness = 0
-                    let maxLODIndex = Scalar.Log2(width) * lodScale + lodOffset; // roughness = 1
-
-                    let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
-                    let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
-
-                    var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
-                    glTextureFromLod.type = texture.type;
-                    glTextureFromLod.format = texture.format;
-                    glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));
-                    glTextureFromLod.height = glTextureFromLod.width;
-                    glTextureFromLod.isCube = true;
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
-
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-                    if (loadData.isDDS) {
-                        var info: DDSInfo = loadData.info;
-                        var data: any = loadData.data;
-                        this._unpackFlipY(info.isCompressed);
-
-                        DDSTools.UploadDDSLevels(this, glTextureFromLod, data, info, true, 6, mipmapIndex);
-                    }
-                    else {
-                        Logger.Warn("DDS is the only prefiltered cube map supported so far.");
-                    }
-
-                    this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-
-                    // Wrap in a base texture for easy binding.
-                    const lodTexture = new BaseTexture(scene);
-                    lodTexture.isCube = true;
-                    lodTexture._texture = glTextureFromLod;
-
-                    glTextureFromLod.isReady = true;
-                    textures.push(lodTexture);
-                }
-
-                texture._lodTextureHigh = textures[2];
-                texture._lodTextureMid = textures[1];
-                texture._lodTextureLow = textures[0];
-
-                if (onLoad) {
-                    onLoad(texture);
-                }
-            };
-
-            return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
-        }
-
-        /**
          * Creates a cube texture
          * @param rootUrl defines the url where the files to load is located
          * @param scene defines the current scene
@@ -6461,7 +6350,7 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
         }
 
         /** @hidden */
-        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
+        public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
             var wasPreviouslyBound = false;
             if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
                 this._activeChannel = texture._designatedSlot;
