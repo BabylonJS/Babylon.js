@@ -2,7 +2,8 @@ import { DeepImmutable, Nullable, float } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3, Plane, Tmp } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { PickingInfo, IntersectionInfo } from "../Collisions/pickingInfo";
+import { PickingInfo } from "../Collisions/pickingInfo";
+import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
     /**

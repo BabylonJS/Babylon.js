@@ -4,7 +4,7 @@ import { Matrix, Vector3, Plane } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "./buffer";
 import { Collider } from "../Collisions/collider";
-import { IntersectionInfo } from "../Collisions/pickingInfo";
+import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import { Ray } from "../Culling/ray";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Effect } from "../Materials/effect";
