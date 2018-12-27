@@ -2581,3 +2581,5 @@ import "../Shaders/particles.vertex";
             return particleSystem;
         }
     }
+
+    SubEmitter._ParseParticleSystem = ParticleSystem.Parse;
