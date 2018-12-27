@@ -255,3 +255,11 @@ declare module "../abstractScene" {
             }
         }
     }
+
+    EffectLayer._SceneComponentInitialization = (scene: Scene) => {
+        let component = scene._getComponent(SceneComponentConstants.NAME_EFFECTLAYER) as EffectLayerSceneComponent;
+        if (!component) {
+            component = new EffectLayerSceneComponent(scene);
+            scene._addComponent(component);
+        }
+    };

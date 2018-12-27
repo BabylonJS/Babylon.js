@@ -10,8 +10,6 @@ import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import { SceneComponentConstants } from "../sceneComponent";
-import { DepthRendererSceneComponent } from "./depthRendererSceneComponent";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
@@ -35,6 +33,11 @@ import "../Shaders/depth.vertex";
          */
         public useOnlyInActiveCamera: boolean = false;
 
+        /** @hidden */
+        public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+            throw "Import DepthRendererSceneComponent before creating DepthRenderer.";
+        }
+
         /**
          * Instantiates a depth renderer
          * @param scene The scene the renderer belongs to
@@ -43,12 +46,7 @@ import "../Shaders/depth.vertex";
          */
         constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null) {
             this._scene = scene;
-            // Register the G Buffer component to the scene.
-            let component = scene._getComponent(SceneComponentConstants.NAME_DEPTHRENDERER) as DepthRendererSceneComponent;
-            if (!component) {
-                component = new DepthRendererSceneComponent(scene);
-                scene._addComponent(component);
-            }
+            DepthRenderer._SceneComponentInitialization(this._scene);
 
             this._camera = camera;
             var engine = scene.getEngine();

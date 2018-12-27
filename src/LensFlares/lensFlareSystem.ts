@@ -9,11 +9,9 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { Ray } from "../Culling/ray";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { SceneComponentConstants } from "../sceneComponent";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { LensFlare } from "./lensFlare";
-import { LensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/lensFlare.fragment";
@@ -65,6 +63,11 @@ import "../Shaders/lensFlare.vertex";
         private _positionY: number;
         private _isEnabled = true;
 
+        /** @hidden */
+        public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+            throw "Import LensFlareSystemSceneComponent before creating LensFlareSystem.";
+        }
+
         /**
          * Instantiates a lens flare system.
          * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -83,11 +86,7 @@ import "../Shaders/lensFlare.vertex";
             scene: Scene) {
 
             this._scene = scene || EngineStore.LastCreatedScene;
-            let component = this._scene._getComponent(SceneComponentConstants.NAME_LENSFLARESYSTEM) as LensFlareSystemSceneComponent;
-            if (!component) {
-                component = new LensFlareSystemSceneComponent(this._scene);
-                scene._addComponent(component);
-            }
+            LensFlareSystem._SceneComponentInitialization(this._scene);
 
             this._emitter = emitter;
             this.id = name;

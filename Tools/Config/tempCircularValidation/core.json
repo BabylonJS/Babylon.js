@@ -1,22 +1,4 @@
 {
-    "../../src/Layers/effectLayer.ts": [
-        "../../src/Layers/effectLayerSceneComponent.ts"
-    ],
-    "../../src/Layers/effectLayerSceneComponent.ts": [
-        "../../src/Layers/effectLayer.ts"
-    ],
-    "../../src/LensFlares/lensFlareSystem.ts": [
-        "../../src/LensFlares/lensFlareSystemSceneComponent.ts"
-    ],
-    "../../src/LensFlares/lensFlareSystemSceneComponent.ts": [
-        "../../src/LensFlares/lensFlareSystem.ts"
-    ],
-    "../../src/Lights/Shadows/shadowGenerator.ts": [
-        "../../src/Lights/Shadows/shadowGeneratorSceneComponent.ts"
-    ],
-    "../../src/Lights/Shadows/shadowGeneratorSceneComponent.ts": [
-        "../../src/Lights/Shadows/shadowGenerator.ts"
-    ],
     "../../src/Particles/particleHelper.ts": [
         "../../src/Particles/particleSystemSet.ts"
     ],
@@ -29,17 +11,5 @@
     "../../src/Particles/subEmitter.ts": [
         "../../src/Particles/particleSystem.ts"
     ],
-    "../../src/Rendering/depthRenderer.ts": [
-        "../../src/Rendering/depthRendererSceneComponent.ts"
-    ],
-    "../../src/Rendering/depthRendererSceneComponent.ts": [
-        "../../src/Rendering/depthRenderer.ts"
-    ],
-    "../../src/Rendering/geometryBufferRenderer.ts": [
-        "../../src/Rendering/geometryBufferRendererSceneComponent.ts"
-    ],
-    "../../src/Rendering/geometryBufferRendererSceneComponent.ts": [
-        "../../src/Rendering/geometryBufferRenderer.ts"
-    ],
-    "errorCount": 14
+    "errorCount": 4
 }

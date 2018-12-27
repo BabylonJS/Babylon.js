@@ -8,9 +8,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { GeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent";
 import { Scene } from "../scene";
-import { SceneComponentConstants } from "../sceneComponent";
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
@@ -124,6 +122,11 @@ import "../Shaders/geometry.vertex";
             return this._ratio;
         }
 
+        /** @hidden */
+        public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+            throw "Import GeometryBufferRendererSceneComponent before creating GeometryBufferRenderer.";
+        }
+
         /**
          * Creates a new G Buffer for the scene
          * @param scene The scene the buffer belongs to
@@ -133,12 +136,7 @@ import "../Shaders/geometry.vertex";
             this._scene = scene;
             this._ratio = ratio;
 
-            // Register the G Buffer component to the scene.
-            let component = scene._getComponent(SceneComponentConstants.NAME_GEOMETRYBUFFERRENDERER) as GeometryBufferRendererSceneComponent;
-            if (!component) {
-                component = new GeometryBufferRendererSceneComponent(scene);
-                scene._addComponent(component);
-            }
+            GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
             // Render target
             this._createRenderTargets();
