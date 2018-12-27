@@ -62,21 +62,20 @@ gulp.task("watchCore", gulp.series("watchCore-cleanShaders", function() {
         console.log(library.output + ": Shaders.");
     })
     watch.on("add", (event) => {
-        console.log(event);
         return gulp.src(event)
             .pipe(uncommentShaders())
             .pipe(processShaders(true));
     });
     watch.on("change", (event) => {
-        console.log(event);
         return gulp.src(event)
             .pipe(uncommentShaders())
             .pipe(processShaders(true));
     });
     watch.on("unlink", (event) => {
-        console.log(event);
         return gulp.src(event)
             .pipe(uncommentShaders())
             .pipe(processShaders(true));
     });
+
+    return Promise.resolve();
 }));

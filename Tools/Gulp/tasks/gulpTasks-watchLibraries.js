@@ -59,22 +59,19 @@ gulp.task("watchLibraries", function startWatch() {
                     console.log(library.output + ": Shaders.");
                 })
                 watch.on("add", (event) => {
-                    console.log(event);
                     return gulp.src(event)
-                    .pipe(uncommentShaders())
-                    .pipe(processShaders(false));
+                        .pipe(uncommentShaders())
+                        .pipe(processShaders(false));
                 });
                 watch.on("change", (event) => {
-                    console.log(event);
                     return gulp.src(event)
-                    .pipe(uncommentShaders())
-                    .pipe(processShaders(false));
+                        .pipe(uncommentShaders())
+                        .pipe(processShaders(false));
                 });
                 watch.on("unlink", (event) => {
-                    console.log(event);
                     return gulp.src(event)
-                    .pipe(uncommentShaders())
-                    .pipe(processShaders(false));
+                        .pipe(uncommentShaders())
+                        .pipe(processShaders(false));
                 });
 
                 tasks.push(watch);
