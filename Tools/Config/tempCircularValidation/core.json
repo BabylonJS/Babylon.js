@@ -1,10 +1,4 @@
 {
-    "../../src/Culling/Octrees/octree.ts": [
-        "../../src/Culling/Octrees/octreeBlock.ts"
-    ],
-    "../../src/Culling/Octrees/octreeBlock.ts": [
-        "../../src/Culling/Octrees/octree.ts"
-    ],
     "../../src/Engines/engine.ts": [
         "../../src/Materials/Textures/internalTexture.ts"
     ],
@@ -81,5 +75,5 @@
     "../../src/scene.ts": [
         "../../src/Materials/standardMaterial.ts"
     ],
-    "errorCount": 28
+    "errorCount": 26
 }

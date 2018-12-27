@@ -2,7 +2,17 @@ import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
 import { Vector3, Plane } from "../../Maths/math";
 import { Ray } from "../../Culling/ray";
 import { BoundingBox } from "../../Culling/boundingBox";
-import { Octree } from "./octree";
+
+    /**
+     * Contains an array of blocks representing the octree
+     */
+    export interface IOctreeContainer<T> {
+        /**
+         * Blocks within the octree
+         */
+        blocks: Array<OctreeBlock<T>>;
+    }
+
     /**
      * Class used to store a cell in an octree
      * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
@@ -213,6 +223,28 @@ import { Octree } from "./octree";
          * Subdivide the content into child blocks (this block will then be empty)
          */
         public createInnerBlocks(): void {
-            Octree._CreateBlocks(this._minPoint, this._maxPoint, this.entries, this._capacity, this._depth, this._maxDepth, this, this._creationFunc);
+            OctreeBlock._CreateBlocks(this._minPoint, this._maxPoint, this.entries, this._capacity, this._depth, this._maxDepth, this, this._creationFunc);
+        }
+
+        /**
+         * @hidden
+         */
+        public static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void {
+            target.blocks = new Array<OctreeBlock<T>>();
+            var blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
+
+            // Segmenting space
+            for (var x = 0; x < 2; x++) {
+                for (var y = 0; y < 2; y++) {
+                    for (var z = 0; z < 2; z++) {
+                        var localMin = worldMin.add(blockSize.multiplyByFloats(x, y, z));
+                        var localMax = worldMin.add(blockSize.multiplyByFloats(x + 1, y + 1, z + 1));
+
+                        var block = new OctreeBlock<T>(localMin, localMax, maxBlockCapacity, currentDepth + 1, maxDepth, creationFunc);
+                        block.addEntries(entries);
+                        target.blocks.push(block);
+                    }
+                }
+            }
         }
     }
