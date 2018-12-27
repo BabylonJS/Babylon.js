@@ -1893,3 +1893,7 @@ import { Constants } from "../Engines/constants";
     }
 
     _TypeStore.RegisteredTypes["BABYLON.StandardMaterial"] = StandardMaterial;
+
+    Scene.DefaultMaterialFactory = (scene: Scene) => {
+        return new StandardMaterial("default material", scene);
+    };
