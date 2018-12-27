@@ -19,7 +19,7 @@ import { BoundingSphere } from "../Culling/boundingSphere";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Animation } from "../Animations/animation";
-import { SceneLoader } from "../Loading/sceneLoader";
+import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { Skeleton } from "../Bones/skeleton";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
@@ -2812,7 +2812,7 @@ declare type GroundMesh = import("./groundMesh").GroundMesh;
 
                 mesh._delayLoadingFunction = Geometry._ImportGeometry;
 
-                if (SceneLoader.ForceFullSceneLoadingForIncremental) {
+                if (SceneLoaderFlags.ForceFullSceneLoadingForIncremental) {
                     mesh._checkDelayState();
                 }
 

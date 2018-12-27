@@ -7,7 +7,7 @@
     import { SubMesh } from "../Meshes/subMesh";
     import { AbstractMesh } from "../Meshes/abstractMesh";
     import { Effect } from "../Materials/effect";
-    import { SceneLoader } from "../Loading/sceneLoader";
+    import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
     import { BoundingInfo } from "../Culling/boundingInfo";
     import { Constants } from "../Engines/constants";
     import { Tools } from "../Misc/tools";
@@ -1335,7 +1335,7 @@
 
         private static _CleanMatricesWeights(parsedGeometry: any, mesh: Mesh): void {
             const epsilon: number = 1e-3;
-            if (!SceneLoader.CleanBoneMatrixWeights) {
+            if (!SceneLoaderFlags.CleanBoneMatrixWeights) {
                 return;
             }
             let noInfluenceBoneIndex = 0.0;
