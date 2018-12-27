@@ -121,4 +121,4 @@ import { AbstractScene } from "../../abstractScene";
             component = new ShadowGeneratorSceneComponent(scene);
             scene._addComponent(component);
         }
-    }
+    };
