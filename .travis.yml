@@ -21,7 +21,7 @@ jobs:
     script: gulp tests-whatsnew
   - env: JOB=DocumentationCheck
     script: gulp typedoc-check
-  - env: JOB=Styling
+  - env: JOB=Linting
     script: gulp fullLint
   - env: JOB=Build
     script: gulp typescript-all
