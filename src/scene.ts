@@ -22,7 +22,6 @@ import { Texture } from "./Materials/Textures/texture";
 import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { Material } from "./Materials/material";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
-import { StandardMaterial } from "./Materials/standardMaterial";
 import { Effect } from "./Materials/effect";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { MultiMaterial } from "./Materials/multiMaterial";
@@ -145,6 +144,16 @@ import { EngineStore } from "./Engines/engineStore";
          * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
          */
         public static MaxDeltaTime = 1000.0;
+
+        /**
+         * Factory used to create the default material.
+         * @param name The name of the material to create
+         * @param scene The scene to create the material for
+         * @returns The default material
+         */
+        public static DefaultMaterialFactory(scene: Scene): Material {
+            throw "Import StandardMaterial or Fill DefaultMaterialFactory static property on scene before using relying on default material creation.";
+        }
 
         // Members
 
@@ -845,7 +854,7 @@ import { EngineStore } from "./Engines/engineStore";
         /** The default material used on meshes when no material is affected */
         public get defaultMaterial(): Material {
             if (!this._defaultMaterial) {
-                this._defaultMaterial = new StandardMaterial("default material", this);
+                this._defaultMaterial = Scene.DefaultMaterialFactory(this);
             }
 
             return this._defaultMaterial;

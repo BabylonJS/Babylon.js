@@ -26,13 +26,6 @@
     "../../src/Materials/material.ts": [
         "../../src/Meshes/subMesh.ts"
     ],
-    "../../src/Materials/materialHelper.ts": [
-        "../../src/scene.ts"
-    ],
-    "../../src/Materials/standardMaterial.ts": [
-        "../../src/Materials/materialHelper.ts",
-        "../../src/scene.ts"
-    ],
     "../../src/Meshes/geometry.ts": [
         "../../src/Meshes/mesh.ts"
     ],
@@ -72,8 +65,5 @@
     "../../src/Rendering/geometryBufferRendererSceneComponent.ts": [
         "../../src/Rendering/geometryBufferRenderer.ts"
     ],
-    "../../src/scene.ts": [
-        "../../src/Materials/standardMaterial.ts"
-    ],
-    "errorCount": 26
+    "errorCount": 22
 }
