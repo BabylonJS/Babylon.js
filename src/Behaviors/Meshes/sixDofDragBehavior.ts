@@ -6,7 +6,6 @@ import { Nullable } from "../../types";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Vector3, Quaternion, Matrix } from "../../Maths/math";
 import { Observer, Observable } from "../../Misc/observable";
-import { BoundingBoxGizmo } from "../../Gizmos/boundingBoxGizmo";
 import { Camera } from "../../Cameras/camera";
 import { PivotTools } from "../../Misc/pivotTools";
     /**
