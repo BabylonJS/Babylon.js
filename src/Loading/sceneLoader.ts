@@ -14,6 +14,8 @@ import { AssetContainer } from "../assetContainer";
 import { IParticleSystem } from "../Particles/IParticleSystem";
 import { Skeleton } from "../Bones/skeleton";
 import { Logger } from "../Misc/logger";
+import { Constants } from "../Engines/constants";
+import { SceneLoaderFlags } from "./sceneLoaderFlags";
     /**
      * Class used to represent data loading progression
      */
@@ -233,53 +235,46 @@ import { Logger } from "../Misc/logger";
      * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
      */
     export class SceneLoader {
-        // Flags
-        private static _ForceFullSceneLoadingForIncremental = false;
-        private static _ShowLoadingScreen = true;
-        private static _CleanBoneMatrixWeights = false;
-
         /**
          * No logging while loading
          */
-        public static readonly NO_LOGGING = 0;
+        public static readonly NO_LOGGING = Constants.SCENELOADER_NO_LOGGING;
 
         /**
          * Minimal logging while loading
          */
-        public static readonly MINIMAL_LOGGING = 1;
+        public static readonly MINIMAL_LOGGING = Constants.SCENELOADER_MINIMAL_LOGGING;
 
         /**
          * Summary logging while loading
          */
-        public static readonly SUMMARY_LOGGING = 2;
+        public static readonly SUMMARY_LOGGING = Constants.SCENELOADER_SUMMARY_LOGGING;
 
         /**
          * Detailled logging while loading
          */
-        public static readonly DETAILED_LOGGING = 3;
-
-        private static _loggingLevel = SceneLoader.NO_LOGGING;
+        public static readonly DETAILED_LOGGING = Constants.SCENELOADER_DETAILED_LOGGING;
 
         /**
          * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
          */
         public static get ForceFullSceneLoadingForIncremental() {
-            return SceneLoader._ForceFullSceneLoadingForIncremental;
+            return SceneLoaderFlags.ForceFullSceneLoadingForIncremental;
         }
 
         public static set ForceFullSceneLoadingForIncremental(value: boolean) {
-            SceneLoader._ForceFullSceneLoadingForIncremental = value;
+            SceneLoaderFlags.ForceFullSceneLoadingForIncremental = value;
         }
 
         /**
          * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
          */
         public static get ShowLoadingScreen(): boolean {
-            return SceneLoader._ShowLoadingScreen;
+            return SceneLoaderFlags.ShowLoadingScreen;
         }
 
         public static set ShowLoadingScreen(value: boolean) {
-            SceneLoader._ShowLoadingScreen = value;
+            SceneLoaderFlags.ShowLoadingScreen = value;
         }
 
         /**
@@ -287,22 +282,22 @@ import { Logger } from "../Misc/logger";
          * @ignorenaming
          */
         public static get loggingLevel(): number {
-            return SceneLoader._loggingLevel;
+            return SceneLoaderFlags.loggingLevel;
         }
 
         public static set loggingLevel(value: number) {
-            SceneLoader._loggingLevel = value;
+            SceneLoaderFlags.loggingLevel = value;
         }
 
         /**
          * Gets or set a boolean indicating if matrix weights must be cleaned upon loading
          */
         public static get CleanBoneMatrixWeights(): boolean {
-            return SceneLoader._CleanBoneMatrixWeights;
+            return SceneLoaderFlags.CleanBoneMatrixWeights;
         }
 
         public static set CleanBoneMatrixWeights(value: boolean) {
-            SceneLoader._CleanBoneMatrixWeights = value;
+            SceneLoaderFlags.CleanBoneMatrixWeights = value;
         }
 
         // Members

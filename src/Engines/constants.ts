@@ -411,4 +411,21 @@ export class Constants {
      *  If not, apply the Bounding Sphere Only strategy. No Bounding Box is tested here.
      */
     public static readonly MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = 3;
+
+    /**
+     * No logging while loading
+     */
+    public static readonly SCENELOADER_NO_LOGGING = 0;
+    /**
+     * Minimal logging while loading
+     */
+    public static readonly SCENELOADER_MINIMAL_LOGGING = 1;
+    /**
+     * Summary logging while loading
+     */
+    public static readonly SCENELOADER_SUMMARY_LOGGING = 2;
+    /**
+     * Detailled logging while loading
+     */
+    public static readonly SCENELOADER_DETAILED_LOGGING = 3;
 }
