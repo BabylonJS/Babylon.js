@@ -4,12 +4,12 @@ import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { MeshBuilder } from "../Meshes/meshBuilder";
 import { IParticleSystem } from "./IParticleSystem";
-import { ParticleHelper } from "./particleHelper";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { EngineStore } from "../Engines/engineStore";
 import { ParticleSystem } from "../Particles/particleSystem";
 import { Scene, IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
+import { Constants } from "../Engines/constants";
 
     /** Internal class used to store shapes for emitters */
     class ParticleSystemSetEmitterCreationOptions {
@@ -125,7 +125,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
          */
         public static Parse(data: any, scene: Scene, gpu = false): ParticleSystemSet {
             var result = new ParticleSystemSet();
-            var rootUrl = ParticleHelper.BaseAssetsUrl + "/textures/";
+            var rootUrl = Constants.PARTICLES_BaseAssetsUrl + "/textures/";
 
             scene = scene || EngineStore.LastCreatedScene;
 
