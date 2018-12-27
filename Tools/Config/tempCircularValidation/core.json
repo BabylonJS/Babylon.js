@@ -23,12 +23,6 @@
     "../../src/Materials/Textures/internalTexture.ts": [
         "../../src/Engines/engine.ts"
     ],
-    "../../src/Materials/material.ts": [
-        "../../src/Meshes/subMesh.ts"
-    ],
-    "../../src/Meshes/subMesh.ts": [
-        "../../src/Materials/material.ts"
-    ],
     "../../src/Particles/particleHelper.ts": [
         "../../src/Particles/particleSystemSet.ts"
     ],
@@ -59,5 +53,5 @@
     "../../src/Rendering/geometryBufferRendererSceneComponent.ts": [
         "../../src/Rendering/geometryBufferRenderer.ts"
     ],
-    "errorCount": 20
+    "errorCount": 18
 }

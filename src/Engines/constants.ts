@@ -232,6 +232,61 @@ export class Constants {
     public static readonly MATERIAL_AllDirtyFlag = 31;
 
     /**
+     * Returns the triangle fill mode
+     */
+    public static readonly MATERIAL_TriangleFillMode = 0;
+
+    /**
+     * Returns the wireframe mode
+     */
+    public static readonly MATERIAL_WireFrameFillMode = 1;
+
+    /**
+     * Returns the point fill mode
+     */
+    public static readonly MATERIAL_PointFillMode = 2;
+
+    /**
+     * Returns the point list draw mode
+     */
+    public static readonly MATERIAL_PointListDrawMode = 3;
+
+    /**
+     * Returns the line list draw mode
+     */
+    public static readonly MATERIAL_LineListDrawMode = 4;
+
+    /**
+     * Returns the line loop draw mode
+     */
+    public static readonly MATERIAL_LineLoopDrawMode = 5;
+
+    /**
+     * Returns the line strip draw mode
+     */
+    public static readonly MATERIAL_LineStripDrawMode = 6;
+
+    /**
+     * Returns the triangle strip draw mode
+     */
+    public static readonly MATERIAL_TriangleStripDrawMode = 7;
+
+    /**
+     * Returns the triangle fan draw mode
+     */
+    public static readonly MATERIAL_TriangleFanDrawMode = 8;
+
+    /**
+     * Stores the clock-wise side orientation
+     */
+    public static readonly MATERIAL_ClockWiseSideOrientation = 0;
+
+    /**
+     * Stores the counter clock-wise side orientation
+     */
+    public static readonly MATERIAL_CounterClockWiseSideOrientation = 1;
+
+    /**
      * Nothing
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */

@@ -8,10 +8,11 @@ import { IntersectionInfo } from "../Collisions/pickingInfo";
 import { Ray } from "../Culling/ray";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Effect } from "../Materials/effect";
-import { Material } from "../Materials/material";
-import { MaterialDefines } from "../Materials/materialDefines";
-import { MultiMaterial } from "../Materials/multiMaterial";
+import { Constants } from "../Engines/constants";
 
+declare type Material = import("../Materials/material").Material;
+declare type MaterialDefines = import("../Materials/materialDefines").MaterialDefines;
+declare type MultiMaterial = import("../Materials/multiMaterial").MultiMaterial;
 declare type AbstractMesh = import("./abstractMesh").AbstractMesh;
 declare type Mesh = import("./mesh").Mesh;
 
@@ -349,12 +350,12 @@ declare type Mesh = import("./mesh").Mesh;
             }
 
             switch (material.fillMode) {
-                case Material.PointListDrawMode:
-                case Material.LineListDrawMode:
-                case Material.LineLoopDrawMode:
-                case Material.LineStripDrawMode:
-                case Material.TriangleFanDrawMode:
-                case Material.TriangleStripDrawMode:
+                case Constants.MATERIAL_PointListDrawMode:
+                case Constants.MATERIAL_LineListDrawMode:
+                case Constants.MATERIAL_LineLoopDrawMode:
+                case Constants.MATERIAL_LineStripDrawMode:
+                case Constants.MATERIAL_TriangleFanDrawMode:
+                case Constants.MATERIAL_TriangleStripDrawMode:
                     return null;
             }
 
