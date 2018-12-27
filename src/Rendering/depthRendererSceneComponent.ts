@@ -131,3 +131,12 @@ declare module "../scene" {
             }
         }
     }
+
+    DepthRenderer._SceneComponentInitialization = (scene: Scene) => {
+        // Register the G Buffer component to the scene.
+        let component = scene._getComponent(SceneComponentConstants.NAME_DEPTHRENDERER) as DepthRendererSceneComponent;
+        if (!component) {
+            component = new DepthRendererSceneComponent(scene);
+            scene._addComponent(component);
+        }
+    };

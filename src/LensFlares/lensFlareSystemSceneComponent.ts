@@ -196,3 +196,11 @@ declare module "../abstractScene" {
             }
         }
     }
+
+    LensFlareSystem._SceneComponentInitialization = (scene: Scene) => {
+        let component = scene._getComponent(SceneComponentConstants.NAME_LENSFLARESYSTEM) as LensFlareSystemSceneComponent;
+        if (!component) {
+            component = new LensFlareSystemSceneComponent(scene);
+            scene._addComponent(component);
+        }
+    };

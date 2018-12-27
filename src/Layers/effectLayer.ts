@@ -13,10 +13,8 @@ import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { PostProcess } from "../PostProcesses/postProcess";
-import { SceneComponentConstants } from "../sceneComponent";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
-import { EffectLayerSceneComponent } from "./effectLayerSceneComponent";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -146,6 +144,11 @@ import "../Shaders/glowMapGeneration.vertex";
          */
         public onSizeChangedObservable = new Observable<EffectLayer>();
 
+        /** @hidden */
+        public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+            throw "Import EffectLayerSceneComponent before creating EffectLayer.";
+        }
+
         /**
          * Instantiates a new effect Layer and references it in the scene.
          * @param name The name of the layer
@@ -158,11 +161,7 @@ import "../Shaders/glowMapGeneration.vertex";
             this.name = name;
 
             this._scene = scene || EngineStore.LastCreatedScene;
-            let component = this._scene._getComponent(SceneComponentConstants.NAME_EFFECTLAYER) as EffectLayerSceneComponent;
-            if (!component) {
-                component = new EffectLayerSceneComponent(this._scene);
-                this._scene._addComponent(component);
-            }
+            EffectLayer._SceneComponentInitialization(this._scene);
 
             this._engine = this._scene.getEngine();
             this._maxSize = this._engine.getCaps().maxTextureSize;

@@ -9,7 +9,6 @@ import { Mesh } from "../../Meshes/mesh";
 
 import { IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
-import { ShadowGeneratorSceneComponent } from "./shadowGeneratorSceneComponent";
 
 import { Material } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
@@ -20,7 +19,6 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
-import { SceneComponentConstants } from "../../sceneComponent";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
@@ -670,6 +668,11 @@ import "../../Shaders/depthBoxBlur.fragment";
         private _textureType: number;
         private _defaultTextureMatrix = Matrix.Identity();
 
+        /** @hidden */
+        public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+            throw "Import ShadowGeneratorSceneComponent before creating ShadowGenerator.";
+        }
+
         /**
          * Creates a ShadowGenerator object.
          * A ShadowGenerator is the required tool to use the shadows.
@@ -685,11 +688,7 @@ import "../../Shaders/depthBoxBlur.fragment";
             this._scene = light.getScene();
             light._shadowGenerator = this;
 
-            let component = this._scene._getComponent(SceneComponentConstants.NAME_SHADOWGENERATOR);
-            if (!component) {
-                component = new ShadowGeneratorSceneComponent(this._scene);
-                this._scene._addComponent(component);
-            }
+            ShadowGenerator._SceneComponentInitialization(this._scene);
 
             // Texture type fallback from float to int if not supported.
             var caps = this._scene.getEngine().getCaps();
