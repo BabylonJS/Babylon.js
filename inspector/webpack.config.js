@@ -7,7 +7,7 @@ var config = babylonWebpackConfig({
     resolve: {
         extensions: [".js", '.ts', ".tsx"],
         alias: {
-            "re-resizable$": path.resolve(__dirname, '../node_modules/re-resizable/lib/index.es5.js')
+            "re-resizable$": __dirname + "/../node_modules/re-resizable/lib/index.es5.js"
         }
     },
     moduleRules: [
