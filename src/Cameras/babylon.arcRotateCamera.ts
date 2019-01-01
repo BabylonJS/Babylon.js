@@ -877,7 +877,10 @@ module BABYLON {
                     this._targetBoundingCenter = null;
                 }
                 this._targetHost = <AbstractMesh>target;
-                this._target = this._getTargetPosition();
+
+                if (!this.useFramingBehavior) {
+                    this._target = this._getTargetPosition();
+                }
 
                 this.onMeshTargetChangedObservable.notifyObservers(this._targetHost);
             } else {
