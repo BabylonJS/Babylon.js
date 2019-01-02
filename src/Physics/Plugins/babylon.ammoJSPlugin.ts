@@ -333,7 +333,7 @@ module BABYLON {
                     joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
                     break;
             }
-            this.world.addConstraint(joint, true);
+            this.world.addConstraint(joint, !impostorJoint.joint.jointData.collision);
             impostorJoint.joint.physicsJoint = joint;
         }
 
