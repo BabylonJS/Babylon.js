@@ -208,11 +208,15 @@ module BABYLON {
                         tmpQuaternion.multiplyToRef(this._startingOrientation, tmpQuaternion);
                         // Slowly move mesh to avoid jitter
                         var oldParent = pickedMesh.parent;
-                        pickedMesh.setParent(null);
-                        Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
-                        pickedMesh.setParent(oldParent);
-                        BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
+
+                        // Only rotate the mesh if it's parent has uniform scaling
+                        if (!oldParent || ((oldParent as Mesh).scaling && !BoundingBoxGizmo._isNonUniform((oldParent as Mesh).scaling))) {
+                            pickedMesh.setParent(null);
+                            Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
+                            pickedMesh.setParent(oldParent);
+                        }
                     }
+                    BoundingBoxGizmo._RestorePivotPoint(pickedMesh);
                 }
             });
         }

@@ -131,7 +131,8 @@
 - Update physics position using absolutePosition instead of pivotPosition ([TrevorDev](https://github.com/TrevorDev))
 - Disable camera arrow key controls when the Command key is selected on Mac OS ([kcoley](https://github.com/kcoley))
 - Viewer should not set receiveShadows on an instanced mesh ([TrevorDev](https://github.com/TrevorDev))
-- Updated comment in TransformNode.rotationQuaternion to include undefined as one of the potential return values ([nathankmiller](https://github.com/nathankmiller))
+- Updated comment in TransformNode.rotationQuaternion to include undefined as one of the potential return values ([nathankmiller](https://github.com/nathankmiller)
+- Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
