@@ -161,6 +161,8 @@
 
 ### Loaders
 
+- Added missing `loadedAnimationGroups` to `MeshAssetTask` ([bghgary](https://github.com/bghgary))
+
 ## Breaking changes
 
 - `Database.IDBStorageEnabled` is now false by default ([Deltakosh](https://github.com/deltakosh))
