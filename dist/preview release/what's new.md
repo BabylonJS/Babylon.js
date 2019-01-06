@@ -88,6 +88,9 @@
 - Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 
+### OBJ Loader
+- Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
+
 ### glTF Loader
 
 - Added support for mesh instancing for improved performance when multiple nodes point to the same mesh ([bghgary](https://github.com/bghgary))

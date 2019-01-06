@@ -209,7 +209,7 @@ module BABYLON {
         colors?: Array<number>;
         uvs?: Array<number>;
         materialName: string;
-    }
+    };
 
     export class OBJFileLoader implements ISceneLoaderPluginAsync {
 
@@ -351,7 +351,7 @@ module BABYLON {
             var handledMesh: MeshObject;      //The current mesh of meshes array
             var indicesForBabylon: Array<number> = [];      //The list of indices for VertexData
             var wrappedPositionForBabylon: Array<BABYLON.Vector3> = [];      //The list of position in vectors
-            var wrappedColorsForBabylon: Array<BABYLON.Color4> = [] // Array with all color values to match with the indices
+            var wrappedColorsForBabylon: Array<BABYLON.Color4> = []; // Array with all color values to match with the indices
             var wrappedUvsForBabylon: Array<BABYLON.Vector2> = [];      //Array with all value of uvs to match with the indices
             var wrappedNormalsForBabylon: Array<BABYLON.Vector3> = [];      //Array with all value of normals to match with the indices
             var tuplePosNorm: Array<{ normals: Array<number>; idx: Array<number>; uv: Array<number> }> = [];      //Create a tuple with indice of Position, Normal, UV  [pos, norm, uvs]
@@ -369,7 +369,7 @@ module BABYLON {
             var increment: number = 1;      //Id for meshes created by the multimaterial
             var isFirstMaterial: boolean = true;
 
-            var grayColor = new BABYLON.Color4(0.5, 0.5, 0.5, 1)
+            var grayColor = new BABYLON.Color4(0.5, 0.5, 0.5, 1);
 
             /**
              * Search for obj in the given array.
@@ -478,7 +478,7 @@ module BABYLON {
                     unwrappedUVForBabylon.push(wrappedUvsForBabylon[l].x, wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
                     if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
                         //Push the r, g, b, a values of each element in the unwrapped array
-                        unwrappedColorsForBabylon.push(wrappedColorsForBabylon[l].r, wrappedColorsForBabylon[l].g, wrappedColorsForBabylon[l].b, wrappedColorsForBabylon[l].a)
+                        unwrappedColorsForBabylon.push(wrappedColorsForBabylon[l].r, wrappedColorsForBabylon[l].g, wrappedColorsForBabylon[l].b, wrappedColorsForBabylon[l].a);
                     }
                 }
                 // Reset arrays for the next new meshes
@@ -739,7 +739,7 @@ module BABYLON {
 
                     if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
                         if (result.length >= 7) {
-                            // TODO: if these numbers are > 1 we can use Color4.FromInts(r,g,b,a)                            
+                            // TODO: if these numbers are > 1 we can use Color4.FromInts(r,g,b,a)
                             colors.push(new BABYLON.Color4(
                                 parseFloat(result[4]),
                                 parseFloat(result[5]),
@@ -978,7 +978,7 @@ module BABYLON {
                 }
 
                 if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
-                    vertexData.colors = handledMesh.colors as FloatArray
+                    vertexData.colors = handledMesh.colors as FloatArray;
                 }
 
                 //Set the data from the VertexBuffer to the current BABYLON.Mesh
