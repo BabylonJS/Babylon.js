@@ -263,9 +263,10 @@ module BABYLON {
                     body.setCollisionFlags(body.getCollisionFlags() | AmmoJSPlugin.DISABLE_COLLISION_FLAG);
                 }
 
-                body.setRestitution(impostor.getParam("restitution"));
                 this.world.addRigidBody(body);
                 impostor.physicsBody = body;
+                this.setBodyRestitution(impostor, impostor.getParam("restitution"));
+                this.setBodyFriction(impostor, impostor.getParam("friction"));
 
                 impostor._pluginData.toDispose.concat([body, rbInfo, myMotionState, startTransform, localInertia, colShape]);
             }
@@ -333,7 +334,7 @@ module BABYLON {
                     joint = new Ammo.btPoint2PointConstraint(mainBody, connectedBody, new Ammo.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new Ammo.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
                     break;
             }
-            this.world.addConstraint(joint, true);
+            this.world.addConstraint(joint, !impostorJoint.joint.jointData.collision);
             impostorJoint.joint.physicsJoint = joint;
         }
 
@@ -611,7 +612,7 @@ module BABYLON {
          * @returns friction value
          */
         public getBodyFriction(impostor: PhysicsImpostor): number {
-            return impostor.physicsBody.getFriction();
+            return impostor._pluginData.friction;
         }
 
         /**
@@ -621,6 +622,7 @@ module BABYLON {
          */
         public setBodyFriction(impostor: PhysicsImpostor, friction: number) {
             impostor.physicsBody.setFriction(friction);
+            impostor._pluginData.friction = friction;
         }
 
         /**
@@ -629,7 +631,7 @@ module BABYLON {
          * @returns restitution value
          */
         public getBodyRestitution(impostor: PhysicsImpostor): number {
-            return impostor.physicsBody.getRestitution();
+            return impostor._pluginData.restitution;
         }
 
         /**
@@ -639,6 +641,7 @@ module BABYLON {
          */
         public setBodyRestitution(impostor: PhysicsImpostor, restitution: number) {
             impostor.physicsBody.setRestitution(restitution);
+            impostor._pluginData.restitution = restitution;
         }
 
         /**
