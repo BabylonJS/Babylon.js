@@ -166,7 +166,7 @@ import { Bone } from "../Bones/bone";
         }
 
         /**
-         * Gets or sets the rotation Quaternion property : this a Quaternion object defining the node rotation by using a unit quaternion (null by default).
+         * Gets or sets the rotation Quaternion property : this a Quaternion object defining the node rotation by using a unit quaternion (undefined by default, but can be null).
          * If set, only the rotationQuaternion is then used to compute the node rotation (ie. node.rotation will be ignored)
          */
         public get rotationQuaternion(): Nullable<Quaternion> {

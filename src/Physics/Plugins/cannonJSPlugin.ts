@@ -204,7 +204,7 @@ import { PhysicsEngine } from "../../Physics/physicsEngine";
                 case PhysicsJoint.PointToPointJoint:
                 case PhysicsJoint.BallAndSocketJoint:
                 default:
-                    constraint = new this.BJSCANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
+                    constraint = new this.BJSCANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotB, constraintData.maxForce);
                     break;
             }
             //set the collideConnected flag after the creation, since DistanceJoint ignores it.
