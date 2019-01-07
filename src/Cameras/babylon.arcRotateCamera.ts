@@ -91,7 +91,7 @@ module BABYLON {
          * This can help limiting how the Camera is able to move in the scene.
          */
         @serialize()
-        public upperBetaLimit = Math.PI;
+        public upperBetaLimit = Math.PI - 0.01;
 
         /**
          * Minimum allowed distance of the camera to the target (The camera can not get closer).
