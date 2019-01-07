@@ -226,6 +226,10 @@ import { Logger } from "../Misc/logger";
          * Gets the list of loaded skeletons
          */
         public loadedSkeletons: Array<Skeleton>;
+        /**
+         * Gets the list of loaded animation groups
+         */
+        public loadedAnimationGroups: Array<AnimationGroup>;
 
         /**
          * Callback called when the task is successful
@@ -272,10 +276,11 @@ import { Logger } from "../Misc/logger";
          */
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             SceneLoader.ImportMesh(this.meshesNames, this.rootUrl, this.sceneFilename, scene,
-                (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[]) => {
+                (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => {
                     this.loadedMeshes = meshes;
                     this.loadedParticleSystems = particleSystems;
                     this.loadedSkeletons = skeletons;
+                    this.loadedAnimationGroups = animationGroups;
                     onSuccess();
                 }, null, (scene, message, exception) => {
                     onError(message, exception);
