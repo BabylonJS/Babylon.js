@@ -2703,7 +2703,7 @@ import { EngineStore } from "./Engines/engineStore";
          * Useful to override when animations start running when loading a scene for the first time.
          */
         public resetLastAnimationTimeFrame(): void {
-            this._animationTimeLast = BABYLON.Tools.Now;
+            this._animationTimeLast = PrecisionDate.Now;
         }
 
         private _animate(): void {
