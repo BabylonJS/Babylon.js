@@ -10,6 +10,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { Logger } from "../Misc/logger";
+import { AnimationGroup } from '../Animations/animationGroup';
 
     /**
      * Defines the list of states available for a task inside a AssetsManager
