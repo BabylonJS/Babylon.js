@@ -210,7 +210,7 @@ module BABYLON {
                         var oldParent = pickedMesh.parent;
 
                         // Only rotate the mesh if it's parent has uniform scaling
-                        if (!oldParent || ((oldParent as Mesh).scaling && !BoundingBoxGizmo._isNonUniform((oldParent as Mesh).scaling))) {
+                        if (!oldParent || ((oldParent as Mesh).scaling && !(oldParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
                             pickedMesh.setParent(null);
                             Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
                             pickedMesh.setParent(oldParent);

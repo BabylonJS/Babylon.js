@@ -1926,6 +1926,31 @@ module BABYLON {
         }
 
         /**
+         * Due to float precision, scale of a mesh could be uniform but float values are off by a small fraction
+         * Check if is non uniform within a certain amount of decimal places to account for this
+         * @param epsilon the amount the values can differ
+         * @returns if the the vector is non uniform to a certain number of decimal places
+         */
+        public isNonUniformWithinEpsilon(epsilon:number) {
+            let absX = Math.abs(this.x);
+            let absY = Math.abs(this.y);
+            if (!Scalar.WithinEpsilon(absX, absY, epsilon)) {
+                return true;
+            }
+
+            let absZ = Math.abs(this.z);
+            if (!Scalar.WithinEpsilon(absX, absZ, epsilon)) {
+                return true;
+            }
+
+            if (!Scalar.WithinEpsilon(absY, absZ, epsilon)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        /**
          * Gets a boolean indicating that the vector is non uniform meaning x, y or z are not all the same
          */
         public get isNonUniform(): boolean {
