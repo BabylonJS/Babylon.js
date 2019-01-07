@@ -2698,6 +2698,14 @@ import { EngineStore } from "./Engines/engineStore";
             }
         }
 
+        /**
+         * Resets the last animation time frame.
+         * Useful to override when animations start running when loading a scene for the first time.
+         */
+        public resetLastAnimationTimeFrame(): void {
+            this._animationTimeLast = BABYLON.Tools.Now;
+        }
+
         private _animate(): void {
             if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
