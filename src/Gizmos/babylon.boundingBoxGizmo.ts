@@ -171,6 +171,11 @@ module BABYLON {
                 _dragBehavior.onDragObservable.add((event) => {
                     this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
+                        var originalParent = this.attachedMesh.parent;
+                        if (originalParent && ((originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
+                            Tools.Warn("BoundingBoxGizmo controls are not supported on child meshes with non-uniform parent scaling");
+                            return;
+                        }
                         BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
 
                         var worldDragDirection = startingTurnDirection;
@@ -208,6 +213,7 @@ module BABYLON {
                             this._anchorMesh.addChild(this.attachedMesh);
                             this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
                             this._anchorMesh.removeChild(this.attachedMesh);
+                            this.attachedMesh.setParent(originalParent);
                         }
                         this.updateBoundingBox();
 
@@ -248,6 +254,11 @@ module BABYLON {
                         _dragBehavior.onDragObservable.add((event) => {
                             this.onScaleBoxDragObservable.notifyObservers({});
                             if (this.attachedMesh) {
+                                var originalParent = this.attachedMesh.parent;
+                                if (originalParent && ((originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
+                                    Tools.Warn("BoundingBoxGizmo controls are not supported on child meshes with non-uniform parent scaling");
+                                    return;
+                                }
                                 BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
                                 var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
                                 var deltaScale = new Vector3(relativeDragDistance, relativeDragDistance, relativeDragDistance);
@@ -274,7 +285,7 @@ module BABYLON {
                                     this._anchorMesh.scaling.subtractInPlace(deltaScale);
                                 }
                                 this._anchorMesh.removeChild(this.attachedMesh);
-
+                                this.attachedMesh.setParent(originalParent);
                                 BoundingBoxGizmo._RestorePivotPoint(this.attachedMesh);
                             }
                             this._updateDummy();
@@ -339,10 +350,15 @@ module BABYLON {
                 // Reset anchor mesh to match attached mesh's scale
                 // This is needed to avoid invalid box/sphere position on first drag
                 BoundingBoxGizmo._RemoveAndStorePivotPoint(value);
+                var originalParent = value.parent;
                 this._anchorMesh.addChild(value);
                 this._anchorMesh.removeChild(value);
+                value.setParent(originalParent);
                 BoundingBoxGizmo._RestorePivotPoint(value);
                 this.updateBoundingBox();
+                value.getChildMeshes(false).forEach((m) => {
+                    m.markAsDirty("scaling");
+                });
 
                 this.gizmoLayer.utilityLayerScene.onAfterRenderObservable.addOnce(() => {
                     this._updateDummy();
@@ -363,6 +379,8 @@ module BABYLON {
         public updateBoundingBox() {
             if (this.attachedMesh) {
                 BoundingBoxGizmo._RemoveAndStorePivotPoint(this.attachedMesh);
+                var originalParent = this.attachedMesh.parent;
+                this.attachedMesh.setParent(null);
                 this._update();
                 // Rotate based on axis
                 if (!this.attachedMesh.rotationQuaternion) {
@@ -394,6 +412,7 @@ module BABYLON {
                 // restore position/rotation values
                 this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
                 this.attachedMesh.position.copyFrom(this._tmpVector);
+                this.attachedMesh.setParent(originalParent);
             }
 
             this._updateRotationSpheres();
@@ -473,6 +492,16 @@ module BABYLON {
                 } else {
                     m.setEnabled(axis.indexOf("z") != -1);
                 }
+            });
+        }
+
+        /**
+         * Enables/disables scaling
+         * @param enable if scaling should be enabled
+         */
+        public setEnabledScaling(enable: boolean) {
+            this._scaleBoxesParent.getChildMeshes().forEach((m, i) => {
+                m.setEnabled(enable);
             });
         }
 
