@@ -417,7 +417,7 @@ var BABYLON;
             this.mtllib = /^mtllib /;
             this.usemtl = /^usemtl /;
             this.smooth = /^s /;
-            this.vertexPattern = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+            this.vertexPattern = /v( +[\d|\.|\+|\-|e|E]+){3,7}/;
             // vn float float float
             this.normalPattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
             // vt float float
@@ -451,10 +451,10 @@ var BABYLON;
             BABYLON.Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, function () { console.warn("Error - Unable to load " + pathOfFile); });
         };
         /**
-         * Imports one or more meshes from the loaded glTF data and adds them to the scene
+         * Imports one or more meshes from the loaded OBJ data and adds them to the scene
          * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
          * @param scene the scene the meshes should be added to
-         * @param data the glTF data to load
+         * @param data the OBJ data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
          * @param fileName Defines the name of the file to load
@@ -472,9 +472,10 @@ var BABYLON;
             });
         };
         /**
-         * Imports all objects from the loaded glTF data and adds them to the scene
+         * Imports all objects from the loaded OBJ data and adds them to the scene
+         *
          * @param scene the scene the objects should be added to
-         * @param data the glTF data to load
+         * @param data the OBJ data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
          * @param fileName Defines the name of the file to load
@@ -520,16 +521,19 @@ var BABYLON;
             var positions = []; //values for the positions of vertices
             var normals = []; //Values for the normals
             var uvs = []; //Values for the textures
+            var colors = [];
             var meshesFromObj = []; //[mesh] Contains all the obj meshes
             var handledMesh; //The current mesh of meshes array
             var indicesForBabylon = []; //The list of indices for VertexData
             var wrappedPositionForBabylon = []; //The list of position in vectors
+            var wrappedColorsForBabylon = []; // Array with all color values to match with the indices
             var wrappedUvsForBabylon = []; //Array with all value of uvs to match with the indices
             var wrappedNormalsForBabylon = []; //Array with all value of normals to match with the indices
             var tuplePosNorm = []; //Create a tuple with indice of Position, Normal, UV  [pos, norm, uvs]
             var curPositionInIndices = 0;
             var hasMeshes = false; //Meshes are defined in the file
             var unwrappedPositionsForBabylon = []; //Value of positionForBabylon w/o Vector3() [x,y,z]
+            var unwrappedColorsForBabylon = []; // Value of colorForBabylon w/o Color4() [r,g,b,a]
             var unwrappedNormalsForBabylon = []; //Value of normalsForBabylon w/o Vector3()  [x,y,z]
             var unwrappedUVForBabylon = []; //Value of uvsForBabylon w/o Vector3()      [x,y,z]
             var triangles = []; //Indices from new triangles coming from polygons
@@ -539,11 +543,12 @@ var BABYLON;
             var objMeshName = ""; //The name of the current obj mesh
             var increment = 1; //Id for meshes created by the multimaterial
             var isFirstMaterial = true;
+            var grayColor = new BABYLON.Color4(0.5, 0.5, 0.5, 1);
             /**
              * Search for obj in the given array.
              * This function is called to check if a couple of data already exists in an array.
              *
-             * If found, returns the index of the founded tuple index. Returns -1 if not found
+             * If found, returns the index of the found tuple index. Returns -1 if not found
              * @param arr Array<{ normals: Array<number>, idx: Array<number> }>
              * @param obj Array<number>
              * @returns {boolean}
@@ -578,7 +583,7 @@ var BABYLON;
              * @param textureVectorFromOBJ Vector3 The value of uvs
              * @param normalsVectorFromOBJ Vector3 The value of normals at index objNormale
              */
-            var setData = function (indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ) {
+            var setData = function (indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ, positionColorsFromOBJ) {
                 //Check if this tuple already exists in the list of tuples
                 var _index;
                 if (OBJFileLoader.OPTIMIZE_WITH_UV) {
@@ -609,6 +614,11 @@ var BABYLON;
                     //Push the normals for Babylon
                     //Each element is a BABYLON.Vector3(x,y,z)
                     wrappedNormalsForBabylon.push(normalsVectorFromOBJ);
+                    if (positionColorsFromOBJ !== undefined) {
+                        //Push the colors for Babylon
+                        //Each element is a BABYLON.Color4(r,g,b,a)
+                        wrappedColorsForBabylon.push(positionColorsFromOBJ);
+                    }
                     //Add the tuple in the comparison list
                     tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                     tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
@@ -619,12 +629,12 @@ var BABYLON;
                 else {
                     //The tuple already exists
                     //Add the index of the already existing tuple
-                    //At this index we can get the value of position, normal and uvs of vertex
+                    //At this index we can get the value of position, normal, color and uvs of vertex
                     indicesForBabylon.push(_index);
                 }
             };
             /**
-             * Transform BABYLON.Vector() object onto 3 digits in an array
+             * Transform BABYLON.Vector() and BABYLON.Color() objects into numbers in an array
              */
             var unwrapData = function () {
                 //Every array has the same length
@@ -633,11 +643,16 @@ var BABYLON;
                     unwrappedPositionsForBabylon.push(wrappedPositionForBabylon[l].x, wrappedPositionForBabylon[l].y, wrappedPositionForBabylon[l].z);
                     unwrappedNormalsForBabylon.push(wrappedNormalsForBabylon[l].x, wrappedNormalsForBabylon[l].y, wrappedNormalsForBabylon[l].z);
                     unwrappedUVForBabylon.push(wrappedUvsForBabylon[l].x, wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
+                    if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                        //Push the r, g, b, a values of each element in the unwrapped array
+                        unwrappedColorsForBabylon.push(wrappedColorsForBabylon[l].r, wrappedColorsForBabylon[l].g, wrappedColorsForBabylon[l].b, wrappedColorsForBabylon[l].a);
+                    }
                 }
                 // Reset arrays for the next new meshes
                 wrappedPositionForBabylon = [];
                 wrappedNormalsForBabylon = [];
                 wrappedUvsForBabylon = [];
+                wrappedColorsForBabylon = [];
                 tuplePosNorm = [];
                 curPositionInIndices = 0;
             };
@@ -688,8 +703,8 @@ var BABYLON;
                     var indicePositionFromObj = parseInt(triangles[k]) - 1;
                     setData(indicePositionFromObj, 0, 0, //In the pattern 1, normals and uvs are not defined
                     positions[indicePositionFromObj], //Get the vectors data
-                    BABYLON.Vector2.Zero(), BABYLON.Vector3.Up() //Create default vectors
-                    );
+                    BABYLON.Vector2.Zero(), BABYLON.Vector3.Up(), //Create default vectors
+                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined);
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -713,8 +728,8 @@ var BABYLON;
                     var indiceUvsFromObj = parseInt(point[1]) - 1;
                     setData(indicePositionFromObj, indiceUvsFromObj, 0, //Default value for normals
                     positions[indicePositionFromObj], //Get the values for each element
-                    uvs[indiceUvsFromObj], BABYLON.Vector3.Up() //Default value for normals
-                    );
+                    uvs[indiceUvsFromObj], BABYLON.Vector3.Up(), //Default value for normals
+                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined);
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -738,8 +753,8 @@ var BABYLON;
                     var indiceUvsFromObj = parseInt(point[1]) - 1;
                     // Set normal indice
                     var indiceNormalFromObj = parseInt(point[2]) - 1;
-                    setData(indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj] //Set the vector for each component
-                    );
+                    setData(indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj], //Set the vector for each component
+                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined);
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -761,7 +776,7 @@ var BABYLON;
                     var indiceNormalFromObj = parseInt(point[1]) - 1;
                     setData(indicePositionFromObj, 1, //Default value for uv
                     indiceNormalFromObj, positions[indicePositionFromObj], //Get each vector of data
-                    BABYLON.Vector2.Zero(), normals[indiceNormalFromObj]);
+                    BABYLON.Vector2.Zero(), normals[indiceNormalFromObj], OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined);
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -785,8 +800,8 @@ var BABYLON;
                     var indiceUvsFromObj = uvs.length + parseInt(point[1]);
                     // Set normal indice
                     var indiceNormalFromObj = normals.length + parseInt(point[2]);
-                    setData(indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj] //Set the vector for each component
-                    );
+                    setData(indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj], //Set the vector for each component
+                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined);
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -807,9 +822,13 @@ var BABYLON;
                     handledMesh.positions = unwrappedPositionsForBabylon.slice();
                     handledMesh.normals = unwrappedNormalsForBabylon.slice();
                     handledMesh.uvs = unwrappedUVForBabylon.slice();
+                    if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                        handledMesh.colors = unwrappedColorsForBabylon.slice();
+                    }
                     //Reset the array for the next mesh
                     indicesForBabylon = [];
                     unwrappedPositionsForBabylon = [];
+                    unwrappedColorsForBabylon = [];
                     unwrappedNormalsForBabylon = [];
                     unwrappedUVForBabylon = [];
                 }
@@ -826,12 +845,23 @@ var BABYLON;
                     continue;
                     //Get information about one position possible for the vertices
                 }
-                else if ((result = this.vertexPattern.exec(line)) !== null) {
+                else if (this.vertexPattern.test(line)) {
+                    result = line.split(' ');
+                    //Value of result with line: "v 1.0 2.0 3.0"
+                    // ["v", "1.0", "2.0", "3.0"]
                     //Create a Vector3 with the position x, y, z
-                    //Value of result:
-                    // ["v 1.0 2.0 3.0", "1.0", "2.0", "3.0"]
                     //Add the Vector in the list of positions
                     positions.push(new BABYLON.Vector3(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])));
+                    if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                        if (result.length >= 7) {
+                            // TODO: if these numbers are > 1 we can use Color4.FromInts(r,g,b,a)
+                            colors.push(new BABYLON.Color4(parseFloat(result[4]), parseFloat(result[5]), parseFloat(result[6]), (result.length === 7 || result[7] === undefined) ? 1 : parseFloat(result[7])));
+                        }
+                        else {
+                            // TODO: maybe push NULL and if all are NULL to skip (and remove grayColor var).
+                            colors.push(grayColor);
+                        }
+                    }
                 }
                 else if ((result = this.normalPattern.exec(line)) !== null) {
                     //Create a Vector3 with the normals x, y, z
@@ -889,13 +919,12 @@ var BABYLON;
                 else if (this.group.test(line) || this.obj.test(line)) {
                     //Create a new mesh corresponding to the name of the group.
                     //Definition of the mesh
-                    var objMesh = 
-                    //Set the name of the current obj mesh
-                    {
+                    var objMesh = {
                         name: line.substring(2).trim(),
                         indices: undefined,
                         positions: undefined,
                         normals: undefined,
+                        colors: undefined,
                         uvs: undefined,
                         materialName: ""
                     };
@@ -916,13 +945,12 @@ var BABYLON;
                         //Set the data for the previous mesh
                         addPreviousObjMesh();
                         //Create a new mesh
-                        var objMesh = 
-                        //Set the name of the current obj mesh
-                        {
+                        var objMesh = {
                             name: objMeshName + "_mm" + increment.toString(),
                             indices: undefined,
                             positions: undefined,
                             normals: undefined,
+                            colors: undefined,
                             uvs: undefined,
                             materialName: materialNameFromObj
                         };
@@ -957,7 +985,7 @@ var BABYLON;
             if (hasMeshes) {
                 //Set the data for the last mesh
                 handledMesh = meshesFromObj[meshesFromObj.length - 1];
-                //Reverse indices for displaying faces in the good sens
+                //Reverse indices for displaying faces in the good sense
                 indicesForBabylon.reverse();
                 //Get the good array
                 unwrapData();
@@ -966,8 +994,11 @@ var BABYLON;
                 handledMesh.positions = unwrappedPositionsForBabylon;
                 handledMesh.normals = unwrappedNormalsForBabylon;
                 handledMesh.uvs = unwrappedUVForBabylon;
+                if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                    handledMesh.colors = unwrappedColorsForBabylon;
+                }
             }
-            //If any o or g keyword found, create a mesj with a random id
+            //If any o or g keyword found, create a mesh with a random id
             if (!hasMeshes) {
                 // reverse tab of indices
                 indicesForBabylon.reverse();
@@ -978,6 +1009,7 @@ var BABYLON;
                     name: BABYLON.Geometry.RandomId(),
                     indices: indicesForBabylon,
                     positions: unwrappedPositionsForBabylon,
+                    colors: unwrappedColorsForBabylon,
                     normals: unwrappedNormalsForBabylon,
                     uvs: unwrappedUVForBabylon,
                     materialName: materialNameFromObj
@@ -1010,11 +1042,21 @@ var BABYLON;
                 //This is indispensable for the importMesh function
                 materialToUse.push(meshesFromObj[j].materialName);
                 var vertexData = new BABYLON.VertexData(); //The container for the values
-                //Set the data for the babylonMesh
-                vertexData.positions = handledMesh.positions;
-                vertexData.normals = handledMesh.normals;
+                //Set the vertex data for the babylonMesh
                 vertexData.uvs = handledMesh.uvs;
                 vertexData.indices = handledMesh.indices;
+                vertexData.positions = handledMesh.positions;
+                if (OBJFileLoader.COMPUTE_NORMALS === true) {
+                    var normals_1 = new Array();
+                    BABYLON.VertexData.ComputeNormals(handledMesh.positions, handledMesh.indices, normals_1);
+                    vertexData.normals = normals_1;
+                }
+                else {
+                    vertexData.normals = handledMesh.normals;
+                }
+                if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                    vertexData.colors = handledMesh.colors;
+                }
                 //Set the data from the VertexBuffer to the current BABYLON.Mesh
                 vertexData.applyToMesh(babylonMesh);
                 if (OBJFileLoader.INVERT_Y) {
@@ -1072,7 +1114,18 @@ var BABYLON;
             });
         };
         OBJFileLoader.OPTIMIZE_WITH_UV = false;
+        /**
+         * Invert model on y-axis (does a model scaling inversion)
+         */
         OBJFileLoader.INVERT_Y = false;
+        /**
+         * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
+         */
+        OBJFileLoader.IMPORT_VERTEX_COLORS = false;
+        /**
+         * Compute the normals for the model, even if normals are present in the file
+         */
+        OBJFileLoader.COMPUTE_NORMALS = false;
         return OBJFileLoader;
     }());
     BABYLON.OBJFileLoader = OBJFileLoader;

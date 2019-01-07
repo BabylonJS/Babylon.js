@@ -30,7 +30,18 @@ declare module BABYLON {
     }
     class OBJFileLoader implements ISceneLoaderPluginAsync {
         static OPTIMIZE_WITH_UV: boolean;
+        /**
+         * Invert model on y-axis (does a model scaling inversion)
+         */
         static INVERT_Y: boolean;
+        /**
+         * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
+         */
+        static IMPORT_VERTEX_COLORS: boolean;
+        /**
+         * Compute the normals for the model, even if normals are present in the file
+         */
+        static COMPUTE_NORMALS: boolean;
         name: string;
         extensions: string;
         obj: RegExp;
@@ -59,10 +70,10 @@ declare module BABYLON {
          */
         private _loadMTL;
         /**
-         * Imports one or more meshes from the loaded glTF data and adds them to the scene
+         * Imports one or more meshes from the loaded OBJ data and adds them to the scene
          * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
          * @param scene the scene the meshes should be added to
-         * @param data the glTF data to load
+         * @param data the OBJ data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
          * @param fileName Defines the name of the file to load
@@ -75,9 +86,10 @@ declare module BABYLON {
             animationGroups: AnimationGroup[];
         }>;
         /**
-         * Imports all objects from the loaded glTF data and adds them to the scene
+         * Imports all objects from the loaded OBJ data and adds them to the scene
+         *
          * @param scene the scene the objects should be added to
-         * @param data the glTF data to load
+         * @param data the OBJ data to load
          * @param rootUrl root url to load from
          * @param onProgress event that fires when loading progress has occured
          * @param fileName Defines the name of the file to load
