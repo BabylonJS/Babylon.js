@@ -17,22 +17,28 @@ var module = "core";
 /**
  * Process shader ts files.
  */
-gulp.task("watchCore-cleanShaders", function startWatch(cb) {
+gulp.task("watchCore-cleanShaders", function startWatch() {
     var settings = config[module].computed;
 
     // Clean shaders.
-    del(settings.shaderTSGlob, { force: true });
-    
+    return del(settings.shaderTSGlob, { force: true });
+});
+
+gulp.task("watchCore-buildShaders", gulp.series("watchCore-cleanShaders", function buildShaders() {
+    var settings = config[module].computed;
+    uncommentShaders.displayName = "Uncomment";
+    processShaders.displayName = "Process";
+
     // Generate shaders.
     return gulp.src(settings.shaderGlob)
         .pipe(uncommentShaders())
         .pipe(processShaders(true));
-});
+}));
 
 /**
  * Watch ts files and fire repective tasks.
  */
-gulp.task("watchCore", gulp.series("watchCore-cleanShaders", function() {
+gulp.task("watchCore", gulp.series("watchCore-buildShaders", function watch() {
     var settings = config[module].computed;
     var library = config[module].libraries[0];
 
