@@ -1931,7 +1931,7 @@ module BABYLON {
          * @param epsilon the amount the values can differ
          * @returns if the the vector is non uniform to a certain number of decimal places
          */
-        public isNonUniformWithinEpsilon(epsilon:number) {
+        public isNonUniformWithinEpsilon(epsilon: number) {
             let absX = Math.abs(this.x);
             let absY = Math.abs(this.y);
             if (!Scalar.WithinEpsilon(absX, absY, epsilon)) {
