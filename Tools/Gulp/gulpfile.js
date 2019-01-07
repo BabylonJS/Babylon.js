@@ -848,7 +848,7 @@ gulp.task("deployLocalDev", function() {
 gulp.task("webserver", function() {
     var options = {
         root: "../../.",
-        port: 1338,
+        port: 8080,
         livereload: false,
         middleware: function() {
             return [cors()];

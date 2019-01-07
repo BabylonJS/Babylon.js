@@ -7,7 +7,6 @@ import { Button } from "./button";
 import { Grid } from "./grid";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { TextBlock } from ".";
-import { parse } from "url";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -494,7 +493,9 @@ export class ColorPicker extends Control {
     }
 
     /**
-     *
+     * This function expands the color picker by creating a color picker dialog with manual
+     * color value input and the ability to save colors into an array to be used later in
+     * subsequent launches of the dialogue.
      * @param advancedTexture defines the AdvancedDynamicTexture the dialog is assigned to
      * @param options defines size for dialog and options for saved colors. Also accepts last color picked as hex string and saved colors array as hex strings.
      * @returns picked color as a hex string and the saved colors array as hex strings.
@@ -518,7 +519,7 @@ export class ColorPicker extends Control {
             // Default options
             options.pickerWidth = options.pickerWidth || "640px";
             options.pickerHeight = options.pickerHeight || "400px";
-            options.headerHeight = options.headerHeight || "35px"
+            options.headerHeight = options.headerHeight || "35px";
             options.lastColor = options.lastColor || "#000000";
             options.swatchLimit = options.swatchLimit || 20;
             options.numSwatchesPerLine = options.numSwatchesPerLine || 10;
@@ -530,7 +531,7 @@ export class ColorPicker extends Control {
             var colGutters: number = gutterSize * (options.numSwatchesPerLine + 1);
             var swatchSize: number = Math.floor((parseFloat(<string>options.pickerWidth) - colGutters) / options.numSwatchesPerLine);
             var drawerMaxSize: number = (swatchSize * drawerMaxRows) + (gutterSize * (drawerMaxRows + 1));
-            var containerSize: string = (parseInt(options.pickerHeight) + drawerMaxSize + Math.floor(swatchSize * 0.25)).toString() + "px";  
+            var containerSize: string = (parseInt(options.pickerHeight) + drawerMaxSize + Math.floor(swatchSize * 0.25)).toString() + "px";
 
             // Button Colors
             var buttonColor: string = "#c0c0c0";
@@ -685,10 +686,10 @@ export class ColorPicker extends Control {
                 if (newValue != "" && newValue != "." && parseFloat(newValue) != 0) {
                     newValue = parseFloat(newValue).toString();
                     field.text = newValue;
-                }          
+                }
                 else {
                     newValue = "0.0";
-                }          
+                }
                 var newSwatchRGB = BABYLON.Color3.FromHexString(newSwatch.background);
                 if (activeField == field.name) {
                     if (channel == "r") {
@@ -784,7 +785,7 @@ export class ColorPicker extends Control {
                     }
                     if (butEdit !== undefined) {
                         butEdit.textBlock!.text = "Done";
-                    }    
+                    }
                 }
                 else {
                     for (var i = 0; i < swatchDrawer.children.length; i++) {
@@ -821,7 +822,7 @@ export class ColorPicker extends Control {
                     if (swatchDrawer.rowCount != rowCount + gutterCount) {
                         var currentRows: number = swatchDrawer.rowCount;
                         for (var i = 0; i < currentRows; i++) {
-                            swatchDrawer.removeRowDefinition(0);                           
+                            swatchDrawer.removeRowDefinition(0);
                         }
                         for (var i = 0; i < rowCount + gutterCount; i++) {
                             if (i % 2) {
@@ -912,18 +913,18 @@ export class ColorPicker extends Control {
 
             // Called when the user hits the limit of saved colors in the drawer.
             function disableButton(button: Button, disabled: boolean) {
-                if(disabled) {
+                if (disabled) {
                     button.color = buttonDisabledColor;
-                    button.background = buttonDisabledBackgroundColor;    
+                    button.background = buttonDisabledBackgroundColor;
                 }
-                else {        
+                else {
                     button.color = buttonColor;
-                    button.background = buttonBackgroundColor;    
+                    button.background = buttonBackgroundColor;
                 }
-            }            
+            }
 
             // Passes last chosen color back to scene and kills dialog by removing from AdvancedDynamicTexture
-            function closePicker (color: string) {
+            function closePicker(color: string) {
                 if (options.savedColors && options.savedColors.length > 0) {
                     resolve({
                         savedColors: options.savedColors,
@@ -985,7 +986,7 @@ export class ColorPicker extends Control {
                     else {
                         swatchDrawer.addColumnDefinition(gutterSize, true);
                     }
-                }    
+                }
                 dialogContainer.addControl(swatchDrawer, 1, 0);
             }
 
@@ -994,7 +995,7 @@ export class ColorPicker extends Control {
             pickerPanel.name = "Picker Panel";
             pickerPanel.height = options.pickerHeight;
             var panelHead: number = parseInt(options.headerHeight) / parseInt(options.pickerHeight);
-            var pickerPanelRows: number[] = [panelHead, 1.0 - panelHead]
+            var pickerPanelRows: number[] = [panelHead, 1.0 - panelHead];
             pickerPanel.addRowDefinition(pickerPanelRows[0], false);
             pickerPanel.addRowDefinition(pickerPanelRows[1], false);
             dialogContainer.addControl(pickerPanel, 0, 0);
@@ -1089,7 +1090,7 @@ export class ColorPicker extends Control {
             // Picker container swatches and buttons
             var pickerSwatchesButtons: Grid = new Grid();
             pickerSwatchesButtons.name = "Swatches and Buttons";
-            var pickerButtonsCol: number[] = [0.417, 0.583] 
+            var pickerButtonsCol: number[] = [0.417, 0.583];
             pickerSwatchesButtons.addRowDefinition(1.0, false);
             pickerSwatchesButtons.addColumnDefinition(pickerButtonsCol[0], false);
             pickerSwatchesButtons.addColumnDefinition(pickerButtonsCol[1], false);
@@ -1111,10 +1112,10 @@ export class ColorPicker extends Control {
             activeSwatches.width = 0.67;
             activeSwatches.addRowDefinition(0.5, false);
             activeSwatches.addRowDefinition(0.5, false);
-            pickerSwatches.addControl(activeSwatches, 2, 0)
+            pickerSwatches.addControl(activeSwatches, 2, 0);
 
             var labelWidth: number = (Math.floor(parseInt(options.pickerWidth) * dialogBodyCols[1] * pickerButtonsCol[0] * 0.11));
-            var labelHeight: number = (Math.floor(parseInt(options.pickerHeight) * pickerPanelRows[1] * pickerBodyRightRows[0] * pickeSwatchesRows[1] * 0.5));   
+            var labelHeight: number = (Math.floor(parseInt(options.pickerHeight) * pickerPanelRows[1] * pickerBodyRightRows[0] * pickeSwatchesRows[1] * 0.5));
 
             if (options.pickerWidth > options.pickerHeight) {
                 var labelTextSize: number = labelHeight;
@@ -1177,14 +1178,14 @@ export class ColorPicker extends Control {
 
             // Determine pixel width and height for all buttons from overall panel dimensions
             buttonWidth = (Math.floor(parseInt(options.pickerWidth) * dialogBodyCols[1] * pickerButtonsCol[1] * 0.67)).toString() + "px";
-            buttonHeight = (Math.floor(parseInt(options.pickerHeight) * pickerPanelRows[1] * pickerBodyRightRows[0] * (parseFloat(buttonGrid.height.toString()) / 100) * buttonGridRows * 0.7)).toString() + "px";   
- 
+            buttonHeight = (Math.floor(parseInt(options.pickerHeight) * pickerPanelRows[1] * pickerBodyRightRows[0] * (parseFloat(buttonGrid.height.toString()) / 100) * buttonGridRows * 0.7)).toString() + "px";
+
             // Determine button type size
             if (parseFloat(buttonWidth) > parseFloat(buttonHeight)) {
                 buttonFontSize = Math.floor(parseFloat(buttonHeight) * 0.45);
             }
             else {
-                buttonFontSize= Math.floor(parseFloat(buttonWidth) * 0.11);
+                buttonFontSize = Math.floor(parseFloat(buttonWidth) * 0.11);
             }
 
             // Panel Buttons
@@ -1282,7 +1283,7 @@ export class ColorPicker extends Control {
                         if (options.savedColors.length < options.swatchLimit!) {
                             updateSwatches(newSwatch.background, butSave);
                         }
-                        editSwatches(false);                        
+                        editSwatches(false);
                     }
                 });
                 if (options.savedColors.length > 0) {
