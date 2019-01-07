@@ -117,7 +117,10 @@ module BABYLON {
                     if (this.snapDistance != 0) {
                         currentSnapDragDistance += angle;
                         if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
-                            var dragSteps = Math.floor(currentSnapDragDistance / this.snapDistance);
+                            var dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
+                            if (currentSnapDragDistance < 0) {
+                                dragSteps *= -1;
+                            }
                             currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                             angle = this.snapDistance * dragSteps;
                             snapped = true;
