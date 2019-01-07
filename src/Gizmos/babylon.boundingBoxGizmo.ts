@@ -106,30 +106,6 @@ module BABYLON {
         }
 
         /**
-         * @hidden
-         * Due to float precisiion, scale of a mesh may be uniform but float values are off by a small fraction
-         * Check if uniform within 3 decimal places to account for this
-         */
-        public static _isNonUniform(vec: Vector3) {
-            let absX = Math.abs(Math.round(vec.x * 1000) / 1000);
-            let absY = Math.abs(Math.round(vec.y * 1000) / 1000);
-            if (absX !== absY) {
-                return true;
-            }
-
-            let absZ = Math.abs(Math.round(vec.z * 1000) / 1000);
-            if (absX !== absZ) {
-                return true;
-            }
-
-            if (absY !== absZ) {
-                return true;
-            }
-
-            return false;
-        }
-
-        /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param color The color of the gizmo
@@ -196,7 +172,7 @@ module BABYLON {
                     this.onRotationSphereDragObservable.notifyObservers({});
                     if (this.attachedMesh) {
                         var originalParent = this.attachedMesh.parent;
-                        if (originalParent && ((originalParent as Mesh).scaling && BoundingBoxGizmo._isNonUniform((originalParent as Mesh).scaling))) {
+                        if (originalParent && ((originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
                             Tools.Warn("BoundingBoxGizmo controls are not supported on child meshes with non-uniform parent scaling");
                             return;
                         }
@@ -279,7 +255,7 @@ module BABYLON {
                             this.onScaleBoxDragObservable.notifyObservers({});
                             if (this.attachedMesh) {
                                 var originalParent = this.attachedMesh.parent;
-                                if (originalParent && ((originalParent as Mesh).scaling && BoundingBoxGizmo._isNonUniform((originalParent as Mesh).scaling))) {
+                                if (originalParent && ((originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
                                     Tools.Warn("BoundingBoxGizmo controls are not supported on child meshes with non-uniform parent scaling");
                                     return;
                                 }
