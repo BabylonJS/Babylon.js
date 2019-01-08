@@ -383,18 +383,42 @@ import "../Shaders/glowMapGeneration.vertex";
             var uv1 = false;
             var uv2 = false;
 
-            // Alpha test
-            if (material && material.needAlphaTesting()) {
-                var alphaTexture = material.getAlphaTestTexture();
-                if (alphaTexture) {
-                    defines.push("#define ALPHATEST");
+            // Diffuse
+            if (material) {
+                const needAlphaTest = material.needAlphaTesting();
+
+                const diffuseTexture = material.getAlphaTestTexture();
+                const needAlphaBlendFromDiffuse = diffuseTexture && diffuseTexture.hasAlpha &&
+                    ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
+
+                if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
+                    defines.push("#define DIFFUSE");
                     if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) &&
-                        alphaTexture.coordinatesIndex === 1) {
+                        diffuseTexture.coordinatesIndex === 1) {
                         defines.push("#define DIFFUSEUV2");
                         uv2 = true;
                     }
                     else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         defines.push("#define DIFFUSEUV1");
+                        uv1 = true;
+                    }
+
+                    if (needAlphaTest) {
+                        defines.push("#define ALPHATEST");
+                        defines.push("#define ALPHATESTVALUE 0.4");
+                    }
+                }
+
+                var opacityTexture = (material as any).opacityTexture;
+                if (opacityTexture) {
+                    defines.push("#define OPACITY");
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) &&
+                        opacityTexture.coordinatesIndex === 1) {
+                        defines.push("#define OPACITYUV2");
+                        uv2 = true;
+                    }
+                    else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                        defines.push("#define OPACITYUV1");
                         uv1 = true;
                     }
                 }
@@ -412,6 +436,12 @@ import "../Shaders/glowMapGeneration.vertex";
                     defines.push("#define EMISSIVEUV1");
                     uv1 = true;
                 }
+            }
+
+            // Vertex
+            if (mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && mesh.hasVertexAlpha) {
+                attribs.push(VertexBuffer.ColorKind);
+                defines.push("#define VERTEXALPHA");
             }
 
             if (uv1) {
@@ -464,8 +494,10 @@ import "../Shaders/glowMapGeneration.vertex";
                 this._cachedDefines = join;
                 this._effectLayerMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "color", "emissiveMatrix", "morphTargetInfluences"],
-                    ["diffuseSampler", "emissiveSampler"], join,
+                    ["world", "mBones", "viewProjection",
+                    "color", "morphTargetInfluences",
+                    "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
+                    ["diffuseSampler", "emissiveSampler", "opacitySampler"], join,
                     undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
             }
 
@@ -556,6 +588,16 @@ import "../Shaders/glowMapGeneration.vertex";
         }
 
         /**
+         * Returns true if the mesh can be rendered, otherwise false.
+         * @param mesh The mesh to render
+         * @param material The material used on the mesh
+         * @returns true if it can be rendered otherwise false
+         */
+        protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+            return material.needAlphaBlendingForMesh(mesh);
+        }
+
+        /**
          * Returns true if the mesh should render, otherwise false.
          * @param mesh The mesh to render
          * @returns true if it should render otherwise false
@@ -582,7 +624,7 @@ import "../Shaders/glowMapGeneration.vertex";
             }
 
             // Do not block in blend mode.
-            if (material.needAlphaBlendingForMesh(mesh)) {
+            if (this._canRenderMesh(mesh, material)) {
                 return;
             }
 
@@ -616,16 +658,28 @@ import "../Shaders/glowMapGeneration.vertex";
                     this._emissiveTextureAndColor.color.b,
                     this._emissiveTextureAndColor.color.a);
 
-                // Alpha test
-                if (material && material.needAlphaTesting()) {
-                    var alphaTexture = material.getAlphaTestTexture();
-                    if (alphaTexture) {
-                        this._effectLayerMapGenerationEffect.setTexture("diffuseSampler", alphaTexture);
-                        let textureMatrix = alphaTexture.getTextureMatrix();
+                const needAlphaTest = material.needAlphaTesting();
 
-                        if (textureMatrix) {
-                            this._effectLayerMapGenerationEffect.setMatrix("diffuseMatrix", textureMatrix);
-                        }
+                const diffuseTexture = material.getAlphaTestTexture();
+                const needAlphaBlendFromDiffuse = diffuseTexture && diffuseTexture.hasAlpha &&
+                    ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
+
+                if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
+                    this._effectLayerMapGenerationEffect.setTexture("diffuseSampler", diffuseTexture);
+                    const textureMatrix = diffuseTexture.getTextureMatrix();
+
+                    if (textureMatrix) {
+                        this._effectLayerMapGenerationEffect.setMatrix("diffuseMatrix", textureMatrix);
+                    }
+                }
+
+                const opacityTexture = (material as any).opacityTexture;
+                if (opacityTexture) {
+                    this._effectLayerMapGenerationEffect.setTexture("opacitySampler", opacityTexture);
+                    this._effectLayerMapGenerationEffect.setFloat("opacityIntensity", opacityTexture.level);
+                    const textureMatrix = opacityTexture.getTextureMatrix();
+                    if (textureMatrix) {
+                        this._effectLayerMapGenerationEffect.setMatrix("opacityMatrix", textureMatrix);
                     }
                 }
 
