@@ -86,7 +86,10 @@ module BABYLON {
                     } else {
                         currentSnapDragDistance += event.dragDistance;
                         if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
-                            dragSteps = Math.floor(currentSnapDragDistance / this.snapDistance);
+                            dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
+                            if (currentSnapDragDistance < 0) {
+                                dragSteps *= -1;
+                            }
                             currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                             tmpVector.scaleToRef(this.snapDistance * dragSteps, tmpVector);
                             snapped = true;
