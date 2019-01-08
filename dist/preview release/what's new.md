@@ -87,7 +87,7 @@
 - Invert vScale of compressed ktx textures as they are inverted in the file and UNPACK_FLIP_Y_WEBGL is not supported by ktx ([TrevorDev](https://github.com/TrevorDev))
 - Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
-- Added InputsManager for FollowCamera and keyboard bindings. ([mrdunk](https://github.com))
+- Added InputsManager and keyboard bindings for FollowCamera. ([mrdunk](https://github.com))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
