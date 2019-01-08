@@ -315,29 +315,46 @@ var engine = new BABYLON.NullEngine();
 // var serialized = BABYLON.SceneSerializer.SerializeMesh(parent, true, true);
 // console.log(serialized);
 
+// var scene = new BABYLON.Scene(engine);
+
+// var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
+
+// var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
+
+// BABYLON.SceneLoader.ImportMesh("", "https://playground.babylonjs.com/scenes/", "skull.babylon", scene, function(newMeshes) {
+//     camera.target = newMeshes[0];
+
+//     console.log("Meshes loaded from babylon file: " + newMeshes.length);
+//     for (var index = 0; index < newMeshes.length; index++) {
+//         console.log(newMeshes[index].toString());
+//     }
+
+//     BABYLON.SceneLoader.ImportMesh("", "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/", "DamagedHelmet.gltf", scene, function(meshes) {
+//         console.log("Meshes loaded from gltf file: " + meshes.length);
+//         for (var index = 0; index < meshes.length; index++) {
+//             console.log(meshes[index].toString());
+//         }
+//     });
+
+//     console.log("render started")
+//     engine.runRenderLoop(function() {
+//         scene.render();
+//     })
+// });
 var scene = new BABYLON.Scene(engine);
-
-var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
-
 var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
+const scaling = engine.getHardwareScalingLevel();
 
-BABYLON.SceneLoader.ImportMesh("", "https://playground.babylonjs.com/scenes/", "skull.babylon", scene, function(newMeshes) {
-    camera.target = newMeshes[0];
-
-    console.log("Meshes loaded from babylon file: " + newMeshes.length);
-    for (var index = 0; index < newMeshes.length; index++) {
-        console.log(newMeshes[index].toString());
-    }
-
-    BABYLON.SceneLoader.ImportMesh("", "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/", "DamagedHelmet.gltf", scene, function(meshes) {
-        console.log("Meshes loaded from gltf file: " + meshes.length);
-        for (var index = 0; index < meshes.length; index++) {
-            console.log(meshes[index].toString());
-        }
-    });
-
-    console.log("render started")
-    engine.runRenderLoop(function() {
-        scene.render();
-    })
-});
+const pos = BABYLON.Vector3.Project(
+    new BABYLON.Vector3(5, 10, 3),
+    BABYLON.Matrix.IdentityReadOnly,
+    scene.getTransformMatrix(),
+    scene.activeCamera.viewport.toGlobal(
+        engine.getRenderWidth(),
+        engine.getRenderHeight(),
+    ),
+);
+pos.x *= scaling;
+pos.y *= scaling;
+pos.z *= scaling;
+return pos;
