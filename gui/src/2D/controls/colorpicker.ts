@@ -500,7 +500,6 @@ export class ColorPicker extends Control {
      * @param options defines size for dialog and options for saved colors. Also accepts last color picked as hex string and saved colors array as hex strings.
      * @returns picked color as a hex string and the saved colors array as hex strings.
      */
-
     public static ShowPickerDialogAsync(advancedTexture: AdvancedDynamicTexture,
         options: {
             pickerWidth?: string,
@@ -509,7 +508,8 @@ export class ColorPicker extends Control {
             lastColor?: string,
             swatchLimit?: number,
             numSwatchesPerLine?: number,
-            savedColors?: Array<string>}
+            savedColors?: Array<string>
+        }
     ): Promise<{
         savedColors?: string[],
         pickedColor: string
@@ -613,7 +613,7 @@ export class ColorPicker extends Control {
                     hexVal.text = minusPound[1];
                 }
                 if (picker.name != activeField) {
-                   picker.value = value;
+                    picker.value = value;
                 }
             }
 
@@ -682,7 +682,7 @@ export class ColorPicker extends Control {
                     if (activeField == field.name) {
                         lastVal = newValue;
                     }
-            }
+                }
                 if (newValue != "" && newValue != "." && parseFloat(newValue) != 0) {
                     newValue = parseFloat(newValue).toString();
                     field.text = newValue;
@@ -728,7 +728,7 @@ export class ColorPicker extends Control {
                     var swatch: Button = Button.CreateSimpleButton("Swatch_" + swatchNumber, icon);
                     swatch.fontFamily = "BabylonJSglyphs";
                     var swatchColor: Color3 = Color3.FromHexString(options.savedColors[swatchNumber]);
-                    var swatchLuminence: number =  swatchColor.r + swatchColor.g + swatchColor.b;
+                    var swatchLuminence: number = swatchColor.r + swatchColor.g + swatchColor.b;
 
                     // Set color of outline and textBlock based on luminance of the color swatch so feedback always visible
                     if (swatchLuminence > luminanceLimit) {
@@ -1145,10 +1145,10 @@ export class ColorPicker extends Control {
                 updateValues(revertColor, currentSwatch.name!);
                 editSwatches(false);
             });
-            currentSwatch.pointerDownAnimation = () => {};
-            currentSwatch.pointerUpAnimation = () => {};
-            currentSwatch.pointerEnterAnimation = () => {};
-            currentSwatch.pointerOutAnimation = () => {};
+            currentSwatch.pointerDownAnimation = () => { };
+            currentSwatch.pointerUpAnimation = () => { };
+            currentSwatch.pointerEnterAnimation = () => { };
+            currentSwatch.pointerOutAnimation = () => { };
             activeSwatches.addControl(currentSwatch, 1, 0);
 
             var swatchOutline: Rectangle = new Rectangle();
@@ -1374,7 +1374,7 @@ export class ColorPicker extends Control {
                 if (activeField == gValInt.name) {
                     activeField = "";
                 }
-           });
+            });
             gValInt.onTextChangedObservable.add(() => {
                 if (activeField == gValInt.name) {
                     updateInt(gValInt, "g");
