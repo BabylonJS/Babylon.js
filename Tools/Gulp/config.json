@@ -755,7 +755,6 @@
         },
         "additionalCameras": {
             "files": [
-                "../../src/Cameras/babylon.followCamera.js",
                 "../../src/Cameras/babylon.universalCamera.js",
                 "../../src/Cameras/babylon.gamepadCamera.js"
             ],
