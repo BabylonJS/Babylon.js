@@ -24,7 +24,13 @@ function processUMDPackages(version) {
             processUMDViewer(module, version);
         }
         else {
-            let outputDirectory = module.build.legacyPackageOutputDirectory || module.computed.distDirectory;
+            let outputDirectory = module.build.legacyPackageOutputDirectory;
+            if (outputDirectory) {
+                outputDirectory = path.resolve(__dirname, outputDirectory);
+            }
+            else {
+                outputDirectory = module.computed.distDirectory;
+            }
 
             if (module.build.requiredFiles) {
                 module.build.requiredFiles.forEach(file => {
