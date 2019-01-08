@@ -8,7 +8,7 @@ import { Rectangle } from "./rectangle";
 import { Button } from "./button";
 import { Grid } from "./grid";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { TextBlock } from ".";
+import { TextBlock } from "../controls/textBlock";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
