@@ -1,6 +1,6 @@
 /*Babylon.js Inspector*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../tools/gulp/babylonjs
 
 declare module 'babylonjs-inspector' {
     export * from "babylonjs-inspector/inspector";
@@ -31,7 +31,7 @@ declare module 'babylonjs-inspector/components/propertyChangedEvent' {
 
 /*Babylon.js Inspector*/
 // Dependencies for this module:
-//   ../../../../Tools/Gulp/babylonjs
+//   ../../../../tools/gulp/babylonjs
 declare module INSPECTOR {
 }
 declare module INSPECTOR {
