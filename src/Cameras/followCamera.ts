@@ -58,6 +58,11 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
         public lockedTarget: Nullable<AbstractMesh>;
 
         /**
+         * Defines the input associated with the camera.
+         */
+        public inputs: FollowCameraInputsManager;
+
+        /**
          * Instantiates the follow camera.
          * @see http://doc.babylonjs.com/features/cameras#follow-camera
          * @param name Define the name of the camera in the scene
@@ -69,6 +74,10 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
             super(name, position, scene);
 
             this.lockedTarget = lockedTarget;
+            this.inputs = new FollowCameraInputsManager(this);
+            this.inputs.addKeyboard();
+            // Uncomment the following line when the relevant handlers have been implemented.
+            // this.inputs.addKeyboard().addMouseWheel().addPointers().addVRDeviceOrientation();
         }
 
         private _follow(cameraTarget: AbstractMesh) {
@@ -112,8 +121,34 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
             this.setTarget(targetPosition);
         }
 
+        /**
+         * Attached controls to the current camera.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+          this.inputs.attachElement(element, noPreventDefault);
+
+          this._reset = () => {
+          };
+        }
+
+        /**
+         * Detach the current controls from the camera.
+         * The camera will stop reacting to inputs.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        public detachControl(element: HTMLElement): void {
+          this.inputs.detachElement(element);
+
+          if (this._reset) {
+            this._reset();
+          }
+        }
+
         /** @hidden */
         public _checkInputs(): void {
+            this.inputs.checkInputs();
             super._checkInputs();
             if (this.lockedTarget) {
                 this._follow(this.lockedTarget);
