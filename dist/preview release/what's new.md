@@ -88,6 +88,7 @@
 - Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 - Added per solid particle culling possibility : `solidParticle.isInFrustum()`  ([jerome](https://github.com/jbousquie))
+- Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))

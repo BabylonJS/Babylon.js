@@ -355,6 +355,16 @@ declare module "../abstractScene" {
         }
 
         /**
+         * Returns true if the mesh can be rendered, otherwise false.
+         * @param mesh The mesh to render
+         * @param material The material used on the mesh
+         * @returns true if it can be rendered otherwise false
+         */
+        protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+            return true;
+        }
+
+        /**
          * Implementation specific of rendering the generating effect on the main canvas.
          * @param effect The effect used to render through
          */
@@ -405,7 +415,7 @@ declare module "../abstractScene" {
                         (<any>material).emissiveColor.r * textureLevel,
                         (<any>material).emissiveColor.g * textureLevel,
                         (<any>material).emissiveColor.b * textureLevel,
-                        1.0);
+                        material.alpha);
                 }
                 else {
                     this._emissiveTextureAndColor.color.set(
