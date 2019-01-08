@@ -17,7 +17,7 @@ const config = require("../../Config/config.js");
 function processUMDViewer(module, version) {
 
     let projectPath = '../../../Viewer';
-    let buildPath = projectPath + "/build/src/";
+    let buildPath = path.resolve(__dirname, projectPath + "/build/src/");
 
     if (module.build.requiredFiles) {
         module.build.requiredFiles.forEach(file => {
@@ -39,9 +39,9 @@ function processUMDViewer(module, version) {
         throw new Error("tsc compilation failed");
     }
 
-    let packageJson = require(buildPath + 'package.json');
+    let packageJson = require(path.join(buildPath, 'package.json'));
 
-    let files = getFiles(buildPath).map(f => f.replace(buildPath + "/", "")).filter(f => f.indexOf("assets/") === -1);
+    let files = getFiles(buildPath).map(f => f.replace(buildPath, "")).filter(f => f.indexOf("assets/") === -1);
 
     packageJson.files = files;
     packageJson.version = version;
@@ -49,7 +49,7 @@ function processUMDViewer(module, version) {
     packageJson.main = "babylon.viewer.js";
     packageJson.typings = "index.d.ts";
 
-    fs.writeFileSync(buildPath + '/package.json', JSON.stringify(packageJson, null, 4));
+    fs.writeFileSync(buildPath + 'package.json', JSON.stringify(packageJson, null, 4));
 
     publish(version, "viewer", buildPath);
     colorConsole.emptyLine();
