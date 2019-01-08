@@ -1,5 +1,5 @@
-import { Nullable } from "babylonjs/types";
-import { Vector3, Vector2, Color3 } from "babylonjs/Maths/math";
+import { Nullable, FloatArray } from "babylonjs/types";
+import { Vector3, Vector2, Color3, Color4 } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
 import { Geometry } from "babylonjs/Meshes/geometry";
@@ -214,6 +214,16 @@ export class MTLFileLoader {
     }
 }
 
+type MeshObject = {
+    name: string;
+    indices?: Array<number>;
+    positions?: Array<number>;
+    normals?: Array<number>;
+    colors?: Array<number>;
+    uvs?: Array<number>;
+    materialName: string;
+};
+
 /**
  * OBJ file type loader.
  * This is a babylon scene loader plugin.
@@ -225,9 +235,17 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
      */
     public static OPTIMIZE_WITH_UV = false;
     /**
-     * Defines if Y is inverted by default during load.
+     * Invert model on y-axis (does a model scaling inversion)
      */
     public static INVERT_Y = false;
+    /**
+     * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
+     */
+    public static IMPORT_VERTEX_COLORS = false;
+    /**
+     * Compute the normals for the model, even if normals are present in the file
+     */
+    public static COMPUTE_NORMALS = false;
     /**
      * Defines the name of the plugin.
      */
@@ -247,7 +265,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
     /** @hidden */
     public smooth = /^s /;
     /** @hidden */
-    public vertexPattern = /v( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+    public vertexPattern = /v( +[\d|\.|\+|\-|e|E]+){3,7}/;
     // vn float float float
     /** @hidden */
     public normalPattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
@@ -295,10 +313,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
     }
 
     /**
-     * Imports one or more meshes from the loaded glTF data and adds them to the scene
+     * Imports one or more meshes from the loaded OBJ data and adds them to the scene
      * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
      * @param scene the scene the meshes should be added to
-     * @param data the glTF data to load
+     * @param data the OBJ data to load
      * @param rootUrl root url to load from
      * @param onProgress event that fires when loading progress has occured
      * @param fileName Defines the name of the file to load
@@ -317,9 +335,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
     }
 
     /**
-     * Imports all objects from the loaded glTF data and adds them to the scene
+     * Imports all objects from the loaded OBJ data and adds them to the scene
      * @param scene the scene the objects should be added to
-     * @param data the glTF data to load
+     * @param data the OBJ data to load
      * @param rootUrl root url to load from
      * @param onProgress event that fires when loading progress has occured
      * @param fileName Defines the name of the file to load
@@ -367,16 +385,19 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
         var positions: Array<Vector3> = [];      //values for the positions of vertices
         var normals: Array<Vector3> = [];      //Values for the normals
         var uvs: Array<Vector2> = [];      //Values for the textures
-        var meshesFromObj: Array<any> = [];      //[mesh] Contains all the obj meshes
-        var handledMesh: any;      //The current mesh of meshes array
+        var colors: Array<Color4> = [];
+        var meshesFromObj: Array<MeshObject> = [];      //[mesh] Contains all the obj meshes
+        var handledMesh: MeshObject;      //The current mesh of meshes array
         var indicesForBabylon: Array<number> = [];      //The list of indices for VertexData
         var wrappedPositionForBabylon: Array<Vector3> = [];      //The list of position in vectors
         var wrappedUvsForBabylon: Array<Vector2> = [];      //Array with all value of uvs to match with the indices
+        var wrappedColorsForBabylon: Array<Color4> = []; // Array with all color values to match with the indices
         var wrappedNormalsForBabylon: Array<Vector3> = [];      //Array with all value of normals to match with the indices
         var tuplePosNorm: Array<{ normals: Array<number>; idx: Array<number>; uv: Array<number> }> = [];      //Create a tuple with indice of Position, Normal, UV  [pos, norm, uvs]
         var curPositionInIndices = 0;
         var hasMeshes: Boolean = false;   //Meshes are defined in the file
         var unwrappedPositionsForBabylon: Array<number> = [];      //Value of positionForBabylon w/o Vector3() [x,y,z]
+        var unwrappedColorsForBabylon: Array<number> = [];       // Value of colorForBabylon w/o Color4() [r,g,b,a]
         var unwrappedNormalsForBabylon: Array<number> = [];      //Value of normalsForBabylon w/o Vector3()  [x,y,z]
         var unwrappedUVForBabylon: Array<number> = [];      //Value of uvsForBabylon w/o Vector3()      [x,y,z]
         var triangles: Array<string> = [];      //Indices from new triangles coming from polygons
@@ -386,6 +407,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
         var objMeshName: string = "";      //The name of the current obj mesh
         var increment: number = 1;      //Id for meshes created by the multimaterial
         var isFirstMaterial: boolean = true;
+        var grayColor = new Color4(0.5, 0.5, 0.5, 1);
 
         /**
          * Search for obj in the given array.
@@ -425,7 +447,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
          * @param textureVectorFromOBJ Vector3 The value of uvs
          * @param normalsVectorFromOBJ Vector3 The value of normals at index objNormale
          */
-        var setData = (indicePositionFromObj: number, indiceUvsFromObj: number, indiceNormalFromObj: number, positionVectorFromOBJ: Vector3, textureVectorFromOBJ: Vector2, normalsVectorFromOBJ: Vector3) => {
+        var setData = (indicePositionFromObj: number, indiceUvsFromObj: number, indiceNormalFromObj: number, positionVectorFromOBJ: Vector3, textureVectorFromOBJ: Vector2, normalsVectorFromOBJ: Vector3, positionColorsFromOBJ?: Color4) => {
             //Check if this tuple already exists in the list of tuples
             var _index: number;
             if (OBJFileLoader.OPTIMIZE_WITH_UV) {
@@ -463,6 +485,13 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 //Push the normals for Babylon
                 //Each element is a Vector3(x,y,z)
                 wrappedNormalsForBabylon.push(normalsVectorFromOBJ);
+
+                if (positionColorsFromOBJ !== undefined) {
+                    //Push the colors for Babylon
+                    //Each element is a BABYLON.Color4(r,g,b,a)
+                    wrappedColorsForBabylon.push(positionColorsFromOBJ);
+                }
+
                 //Add the tuple in the comparison list
                 tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                 tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
@@ -470,13 +499,13 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
             } else {
                 //The tuple already exists
                 //Add the index of the already existing tuple
-                //At this index we can get the value of position, normal and uvs of vertex
+                //At this index we can get the value of position, normal, color and uvs of vertex
                 indicesForBabylon.push(_index);
             }
         };
 
         /**
-         * Transform Vector() object onto 3 digits in an array
+         * Transform Vector() and BABYLON.Color() objects into numbers in an array
          */
         var unwrapData = () => {
             //Every array has the same length
@@ -486,10 +515,15 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 unwrappedNormalsForBabylon.push(wrappedNormalsForBabylon[l].x, wrappedNormalsForBabylon[l].y, wrappedNormalsForBabylon[l].z);
                 unwrappedUVForBabylon.push(wrappedUvsForBabylon[l].x, wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
             }
+            if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                //Push the r, g, b, a values of each element in the unwrapped array
+                unwrappedColorsForBabylon.push(wrappedColorsForBabylon[l].r, wrappedColorsForBabylon[l].g, wrappedColorsForBabylon[l].b, wrappedColorsForBabylon[l].a);
+            }
             // Reset arrays for the next new meshes
             wrappedPositionForBabylon = [];
             wrappedNormalsForBabylon = [];
             wrappedUvsForBabylon = [];
+            wrappedColorsForBabylon = [];
             tuplePosNorm = [];
             curPositionInIndices = 0;
         };
@@ -546,7 +580,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                     indicePositionFromObj,
                     0, 0,                                           //In the pattern 1, normals and uvs are not defined
                     positions[indicePositionFromObj],               //Get the vectors data
-                    Vector2.Zero(), Vector3.Up()    //Create default vectors
+                    Vector2.Zero(), Vector3.Up(),    //Create default vectors
+                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined
                 );
             }
             //Reset variable for the next line
@@ -577,7 +612,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                     0,                                  //Default value for normals
                     positions[indicePositionFromObj],   //Get the values for each element
                     uvs[indiceUvsFromObj],
-                    Vector3.Up()                //Default value for normals
+                    Vector3.Up(),                //Default value for normals
+                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined
                 );
             }
 
@@ -639,7 +675,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                     indiceNormalFromObj,
                     positions[indicePositionFromObj], //Get each vector of data
                     Vector2.Zero(),
-                    normals[indiceNormalFromObj]
+                    normals[indiceNormalFromObj],
+                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined
                 );
             }
             //Reset variable for the next line
@@ -669,7 +706,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
 
                 setData(
                     indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj,
-                    positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj] //Set the vector for each component
+                    positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj], //Set the vector for each component
+                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined
                 );
 
             }
@@ -697,9 +735,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 handledMesh.normals = unwrappedNormalsForBabylon.slice();
                 handledMesh.uvs = unwrappedUVForBabylon.slice();
 
+                if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                    handledMesh.colors = unwrappedColorsForBabylon.slice();
+                }
+
                 //Reset the array for the next mesh
                 indicesForBabylon = [];
                 unwrappedPositionsForBabylon = [];
+                unwrappedColorsForBabylon = [];
                 unwrappedNormalsForBabylon = [];
                 unwrappedUVForBabylon = [];
             }
@@ -718,16 +761,31 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 continue;
 
                 //Get information about one position possible for the vertices
-            } else if ((result = this.vertexPattern.exec(line)) !== null) {
+            } else if (this.vertexPattern.test(line)) {
+                result = line.split(' ');
+                //Value of result with line: "v 1.0 2.0 3.0"
+                // ["v", "1.0", "2.0", "3.0"]
                 //Create a Vector3 with the position x, y, z
-                //Value of result:
-                // ["v 1.0 2.0 3.0", "1.0", "2.0", "3.0"]
-                //Add the Vector in the list of positions
                 positions.push(new Vector3(
                     parseFloat(result[1]),
                     parseFloat(result[2]),
                     parseFloat(result[3])
                 ));
+
+                if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                    if (result.length >= 7) {
+                        // TODO: if these numbers are > 1 we can use Color4.FromInts(r,g,b,a)
+                        colors.push(new Color4(
+                            parseFloat(result[4]),
+                            parseFloat(result[5]),
+                            parseFloat(result[6]),
+                            (result.length === 7 || result[7] === undefined) ? 1 : parseFloat(result[7])
+                        ));
+                    } else {
+                        // TODO: maybe push NULL and if all are NULL to skip (and remove grayColor var).
+                        colors.push(grayColor);
+                    }
+                }
 
             } else if ((result = this.normalPattern.exec(line)) !== null) {
                 //Create a Vector3 with the normals x, y, z
@@ -807,21 +865,13 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
             } else if (this.group.test(line) || this.obj.test(line)) {
                 //Create a new mesh corresponding to the name of the group.
                 //Definition of the mesh
-                var objMesh: {
-                    name: string;
-                    indices?: Array<number>;
-                    positions?: Array<number>;
-                    normals?: Array<number>;
-                    uvs?: Array<number>;
-                    materialName: string;
-                } =
-                //Set the name of the current obj mesh
-                {
-                    name: line.substring(2).trim(),
+                var objMesh: MeshObject = {
+                    name: line.substring(2).trim(), //Set the name of the current obj mesh
                     indices: undefined,
                     positions: undefined,
                     normals: undefined,
                     uvs: undefined,
+                    colors: undefined,
                     materialName: ""
                 };
                 addPreviousObjMesh();
@@ -844,21 +894,15 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                     //Set the data for the previous mesh
                     addPreviousObjMesh();
                     //Create a new mesh
-                    var objMesh: {
-                        name: string;
-                        indices?: Array<number>;
-                        positions?: Array<number>;
-                        normals?: Array<number>;
-                        uvs?: Array<number>;
-                        materialName: string;
-                    } =
+                    var objMesh: MeshObject =
                     //Set the name of the current obj mesh
                     {
-                        name: objMeshName + "_mm" + increment.toString(),
+                        name: objMeshName + "_mm" + increment.toString(), //Set the name of the current obj mesh
                         indices: undefined,
                         positions: undefined,
                         normals: undefined,
                         uvs: undefined,
+                        colors: undefined,
                         materialName: materialNameFromObj
                     };
                     increment++;
@@ -893,7 +937,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
             //Set the data for the last mesh
             handledMesh = meshesFromObj[meshesFromObj.length - 1];
 
-            //Reverse indices for displaying faces in the good sens
+            //Reverse indices for displaying faces in the good sense
             indicesForBabylon.reverse();
             //Get the good array
             unwrapData();
@@ -902,9 +946,13 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
             handledMesh.positions = unwrappedPositionsForBabylon;
             handledMesh.normals = unwrappedNormalsForBabylon;
             handledMesh.uvs = unwrappedUVForBabylon;
+
+            if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                handledMesh.colors = unwrappedColorsForBabylon;
+            }
         }
 
-        //If any o or g keyword found, create a mesj with a random id
+        //If any o or g keyword found, create a mesh with a random id
         if (!hasMeshes) {
             // reverse tab of indices
             indicesForBabylon.reverse();
@@ -915,6 +963,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 name: Geometry.RandomId(),
                 indices: indicesForBabylon,
                 positions: unwrappedPositionsForBabylon,
+                colors: unwrappedColorsForBabylon,
                 normals: unwrappedNormalsForBabylon,
                 uvs: unwrappedUVForBabylon,
                 materialName: materialNameFromObj
@@ -953,10 +1002,19 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
 
             var vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh
-            vertexData.positions = handledMesh.positions;
-            vertexData.normals = handledMesh.normals;
-            vertexData.uvs = handledMesh.uvs;
-            vertexData.indices = handledMesh.indices;
+            vertexData.uvs = handledMesh.uvs as FloatArray;
+            vertexData.indices = handledMesh.indices as FloatArray;
+            vertexData.positions = handledMesh.positions as FloatArray;
+            if (OBJFileLoader.COMPUTE_NORMALS === true) {
+                let normals: Array<number> = new Array<number>();
+                VertexData.ComputeNormals(handledMesh.positions, handledMesh.indices, normals);
+                vertexData.normals = normals;
+            } else {
+                vertexData.normals = handledMesh.normals as FloatArray;
+            }
+            if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                vertexData.colors = handledMesh.colors as FloatArray;
+            }
             //Set the data from the VertexBuffer to the current Mesh
             vertexData.applyToMesh(babylonMesh);
             if (OBJFileLoader.INVERT_Y) {

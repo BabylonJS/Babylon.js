@@ -519,6 +519,39 @@ describe('Babylon Scene Loader', function() {
         // TODO: test KHR_lights
     });
 
+    /**
+     * Integration tests for loading OBJ assets.
+     */
+    describe('#OBJ', () => {
+        it('should load a tetrahedron (without colors)', () => {
+            var fileContents = `               
+                g tetrahedron
+                
+                v 1.00 1.00 1.00 0.666 0 0
+                v 2.00 1.00 1.00 0.666 0 0
+                v 1.00 2.00 1.00 0.666 0 0
+                v 1.00 1.00 2.00 0.666 0 0
+                
+                f 1 3 2
+                f 1 4 3
+                f 1 2 4
+                f 2 3 4
+            `;
+
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+                expect(container.meshes.length).to.eq(1);
+                let tetrahedron = container.meshes[0];
+
+                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var colors : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+
+                expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
+                assert.isNull(colors, 'expecting colors vertex buffer to be null')
+            })
+        })
+    })
+
     describe('#AssetContainer', () => {
         it('should be loaded from BoomBox GLTF', () => {
             var scene = new BABYLON.Scene(subject);

@@ -217,11 +217,15 @@ import { PivotTools } from "../../Misc/pivotTools";
                         tmpQuaternion.multiplyToRef(this._startingOrientation, tmpQuaternion);
                         // Slowly move mesh to avoid jitter
                         var oldParent = pickedMesh.parent;
-                        pickedMesh.setParent(null);
-                        Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
-                        pickedMesh.setParent(oldParent);
-                        PivotTools._RestorePivotPoint(pickedMesh);
+
+                        // Only rotate the mesh if it's parent has uniform scaling
+                        if (!oldParent || ((oldParent as Mesh).scaling && !(oldParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
+                            pickedMesh.setParent(null);
+                            Quaternion.SlerpToRef(pickedMesh.rotationQuaternion!, tmpQuaternion, this.dragDeltaRatio, pickedMesh.rotationQuaternion!);
+                            pickedMesh.setParent(oldParent);
+                        }
                     }
+                    PivotTools._RestorePivotPoint(pickedMesh);
                 }
             });
         }
