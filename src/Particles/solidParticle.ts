@@ -105,6 +105,18 @@ import { SolidParticleSystem } from "./solidParticleSystem";
          */
         public parentId: Nullable<number> = null;
         /**
+         * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
+         * The possible values are :
+         * - AbstractMesh.CULLINGSTRATEGY_STANDARD
+         * - AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+         * - AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION
+         * - AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY
+         * The default value for solid particles is AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+         * Please read each static variable documentation in the class AbstractMesh to get details about the culling process.
+         * */
+        public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY;
+
+        /**
          * @hidden Internal global position in the SPS.
          */
         public _globalPosition: Vector3 = Vector3.Zero();
@@ -176,6 +188,16 @@ import { SolidParticleSystem } from "./solidParticleSystem";
                 return BoundingSphere.Intersects(this._boundingInfo.boundingSphere, target._boundingInfo.boundingSphere);
             }
             return this._boundingInfo.intersects(target._boundingInfo, false);
+        }
+
+        /**
+         * Returns `true` if the solid particle is within the frustum defined by the passed array of planes.
+         * A particle is in the frustum if its bounding box intersects the frustum
+         * @param frustumPlanes defines the frustum to test
+         * @returns true if the particle is in the frustum planes
+         */
+        public isInFrustum(frustumPlanes: Plane[]): boolean {
+            return this._boundingInfo !== null && this._boundingInfo.isInFrustum(frustumPlanes, this.cullingStrategy);
         }
 
         /**
