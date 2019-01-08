@@ -846,6 +846,26 @@ declare module BABYLON.GUI {
             _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
             _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
             _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+            /**
+                * This function expands the color picker by creating a color picker dialog with manual
+                * color value input and the ability to save colors into an array to be used later in
+                * subsequent launches of the dialogue.
+                * @param advancedTexture defines the AdvancedDynamicTexture the dialog is assigned to
+                * @param options defines size for dialog and options for saved colors. Also accepts last color picked as hex string and saved colors array as hex strings.
+                * @returns picked color as a hex string and the saved colors array as hex strings.
+                */
+            static ShowPickerDialogAsync(advancedTexture: AdvancedDynamicTexture, options: {
+                    pickerWidth?: string;
+                    pickerHeight?: string;
+                    headerHeight?: string;
+                    lastColor?: string;
+                    swatchLimit?: number;
+                    numSwatchesPerLine?: number;
+                    savedColors?: Array<string>;
+            }): Promise<{
+                    savedColors?: string[];
+                    pickedColor: string;
+            }>;
     }
 }
 declare module BABYLON.GUI {
