@@ -46,6 +46,7 @@
             "freeCamera",
             "flyCamera",
             "arcRotateCamera",
+            "followCamera",
             "hemisphericLight",
             "pointLight",
             "directionalLight",
@@ -562,6 +563,16 @@
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraPointersInput.js",
                 "../../src/Cameras/babylon.arcRotateCameraInputsManager.js",
                 "../../src/Cameras/babylon.arcRotateCamera.js"
+            ],
+            "dependUpon": [
+                "targetCamera"
+            ]
+        },
+        "followCamera": {
+            "files": [
+                "../../src/Cameras/Inputs/babylon.followCameraKeyboardMoveInput.js",
+                "../../src/Cameras/babylon.followCameraInputsManager.js",
+                "../../src/Cameras/babylon.followCamera.js"
             ],
             "dependUpon": [
                 "targetCamera"
