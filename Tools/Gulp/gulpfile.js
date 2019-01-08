@@ -42,7 +42,7 @@ gulp.task("typedoc-check", gulp.series("core", "gui", "loaders", "serializers", 
 /**
  * Combine Webserver and Watch as long as vscode does not handle multi tasks.
  */
-gulp.task("run", gulp.series("watchCore", "watchLibraries", "webserver"));
+gulp.task("run", gulp.series("cleanup", "watchCore", "watchLibraries", "webserver"));
 
 /**
  * Do it all (Build).
@@ -62,4 +62,31 @@ gulp.task("npmPackages", gulp.series("npmPackages-all"));
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("tsLint", "importLint", "circularDependencies", "typescript-all", "intellisense", "typedoc-all", "tests-all"));
+gulp.task("default", gulp.series("cleanup", "tsLint", "importLint", "circularDependencies", "typescript-all", "intellisense", "typedoc-all", "tests-all"));
+
+/**
+ * Temp cleanup after upgrade.
+ */
+var cp = require('child_process');
+var fs = require('fs-extra');
+var config = require("../Config/config.js");
+gulp.task("cleanup", function(cb) {
+    console.log("Cleaning up from 3.3");
+    if (fs.existsSync("../../src/Actions/babylon.action.d.ts") || fs.existsSync("../../src/gui/node_modules")) {
+        config.modules.forEach(module => {
+            cp.execSync(`git clean -fdx`, {
+                cwd: config[module].computed.srcDirectory
+            });
+        });
+
+        cp.execSync(`git clean -fdx`, {
+            cwd: "../../gui/"
+        });
+
+        cp.execSync(`git clean -fdx`, {
+            cwd: "../../tests/"
+        });
+    }
+
+    cb();
+});
