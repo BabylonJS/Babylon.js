@@ -1,4 +1,7 @@
-module BABYLON {
+import { CameraInputsManager } from "./cameraInputsManager";
+import { FollowCamera } from "./followCamera";
+import { FollowCameraKeyboardMoveInput } from './Inputs/followCameraKeyboardMoveInput';
+
     /**
      * Default Inputs manager for the FollowCamera.
      * It groups all the default supported inputs for ease of use.
@@ -49,4 +52,3 @@ module BABYLON {
             return this;
         }
     }
-}

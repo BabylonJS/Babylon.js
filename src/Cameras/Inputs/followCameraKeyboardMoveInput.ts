@@ -1,4 +1,12 @@
-module BABYLON {
+import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { FollowCamera } from "../../Cameras/followCamera";
+import { serialize } from "../../Misc/decorators";
+import { Nullable } from "../../types";
+import { Observer } from "../../Misc/observable";
+import { Engine } from "../../Engines/engine";
+import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
+import { Scene } from "../../scene";
+
     /**
      * Manage the keyboard inputs to control the movement of an arc rotate camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -206,4 +214,3 @@ module BABYLON {
     }
 
     (<any>CameraInputTypes)["FollowCameraKeyboardMoveInput"] = FollowCameraKeyboardMoveInput;
-}

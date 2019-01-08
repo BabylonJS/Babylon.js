@@ -6,6 +6,7 @@ import { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { FollowCameraInputsManager } from './followCameraInputsManager';
     Node.AddNodeConstructor("FollowCamera", (name, scene) => {
         return () => new FollowCamera(name, Vector3.Zero(), scene);
     });
