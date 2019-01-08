@@ -106,7 +106,7 @@
                     "doNotAppendNamespace": true,
                     "prependToNamespaceText": "declare module 'babylonjs' { export = BABYLON; }"
                 },
-                "pacakagesFiles": [
+                "packagesFiles": [
                     "babylon.d.ts",
                     "babylon.js",
                     "babylon.max.js",
@@ -556,7 +556,7 @@
                 "requiredFiles": [
                     "dist/preview release/inspector/readme.md"
                 ],
-                "pacakagesFiles": [
+                "packagesFiles": [
                     "babylon.inspector.bundle.max.js",
                     "babylon.inspector.bundle.max.js.map",
                     "babylon.inspector.module.d.ts",

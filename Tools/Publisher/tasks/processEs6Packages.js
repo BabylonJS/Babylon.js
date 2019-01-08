@@ -56,8 +56,8 @@ function processEs6Packages(version) {
         umdPackageJson.esnext = es6Config.index || "index.js";
         umdPackageJson.typings = es6Config.typings || "index.d.ts";
 
-        if (es6Config.pacakagesFiles) {
-            umdPackageJson.files = es6Config.pacakagesFiles;
+        if (es6Config.packagesFiles) {
+            umdPackageJson.files = es6Config.packagesFiles;
         }
         else {
             let files = getFiles(packagePath)
