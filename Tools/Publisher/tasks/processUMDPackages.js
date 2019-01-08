@@ -75,8 +75,8 @@ function processUMDPackages(version) {
             }
 
             // Files
-            if (module.build.umd.pacakagesFiles) {
-                packageJson.files = module.build.umd.pacakagesFiles;
+            if (module.build.umd.packagesFiles) {
+                packageJson.files = module.build.umd.packagesFiles;
             }
 
             // Write to disk output directory
@@ -87,9 +87,9 @@ function processUMDPackages(version) {
                 colorConsole.log("    Cleanup " + packageUMDPath.cyan);
                 rmDir(packageUMDPath);
 
-                if (module.build.umd.pacakagesFiles) {
+                if (module.build.umd.packagesFiles) {
                     fs.ensureDirSync(packageUMDPath);
-                    for (let file of module.build.umd.pacakagesFiles.concat(["package.json"])) {
+                    for (let file of module.build.umd.packagesFiles.concat(["package.json"])) {
                         let source = path.join(outputDirectory, file);
                         let destination = path.join(packageUMDPath, path.basename(file));
                         colorConsole.log("    Copy Package file: ", source.cyan, destination.cyan);
