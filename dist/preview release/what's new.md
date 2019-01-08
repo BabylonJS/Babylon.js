@@ -88,6 +88,9 @@
 - Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 
+### OBJ Loader
+- Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
+
 ### glTF Loader
 
 - Added support for mesh instancing for improved performance when multiple nodes point to the same mesh ([bghgary](https://github.com/bghgary))
@@ -131,8 +134,11 @@
 - Update physics position using absolutePosition instead of pivotPosition ([TrevorDev](https://github.com/TrevorDev))
 - Disable camera arrow key controls when the Command key is selected on Mac OS ([kcoley](https://github.com/kcoley))
 - Viewer should not set receiveShadows on an instanced mesh ([TrevorDev](https://github.com/TrevorDev))
-- Updated comment in TransformNode.rotationQuaternion to include undefined as one of the potential return values ([nathankmiller](https://github.com/nathankmiller)
-- CannonJS ignores connectedPivot joint parameter ([TrevorDev](https://github.com/TrevorDev)))
+- Rotation/Scaling snapping not working in the negative direction ([TrevorDev](https://github.com/TrevorDev))
+- Updated comment in TransformNode.rotationQuaternion to include undefined as one of the potential return values ([nathankmiller](https://github.com/nathankmiller))
+- CannonJS ignores connectedPivot joint parameter ([TrevorDev](https://github.com/TrevorDev))
+- Fix case sensitive paths ([mrdunk](https://github.com))
+- Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
