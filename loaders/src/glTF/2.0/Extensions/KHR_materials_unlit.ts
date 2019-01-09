@@ -71,7 +71,7 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
 
         this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
 
-        return Promise.all(promises).then(() => {});
+        return Promise.all(promises).then(() => { });
     }
 }
 

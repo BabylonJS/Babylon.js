@@ -24,22 +24,22 @@ declare module "../scene" {
     }
 }
 
-    Object.defineProperty(Scene.prototype, "gamepadManager", {
-        get: function(this: Scene) {
-            if (!this._gamepadManager) {
-                this._gamepadManager = new GamepadManager(this);
-                let component = this._getComponent(SceneComponentConstants.NAME_GAMEPAD) as GamepadSystemSceneComponent;
-                if (!component) {
-                    component = new GamepadSystemSceneComponent(this);
-                    this._addComponent(component);
-                }
+Object.defineProperty(Scene.prototype, "gamepadManager", {
+    get: function(this: Scene) {
+        if (!this._gamepadManager) {
+            this._gamepadManager = new GamepadManager(this);
+            let component = this._getComponent(SceneComponentConstants.NAME_GAMEPAD) as GamepadSystemSceneComponent;
+            if (!component) {
+                component = new GamepadSystemSceneComponent(this);
+                this._addComponent(component);
             }
+        }
 
-            return this._gamepadManager;
-        },
-        enumerable: true,
-        configurable: true
-    });
+        return this._gamepadManager;
+    },
+    enumerable: true,
+    configurable: true
+});
 
 declare module "../Cameras/freeCameraInputsManager" {
     /**
@@ -54,13 +54,13 @@ declare module "../Cameras/freeCameraInputsManager" {
     }
 }
 
-    /**
-     * Adds a gamepad to the free camera inputs manager
-     */
-    FreeCameraInputsManager.prototype.addGamepad = function(): FreeCameraInputsManager {
-        this.add(new FreeCameraGamepadInput());
-        return this;
-    };
+/**
+ * Adds a gamepad to the free camera inputs manager
+ */
+FreeCameraInputsManager.prototype.addGamepad = function(): FreeCameraInputsManager {
+    this.add(new FreeCameraGamepadInput());
+    return this;
+};
 
 declare module "../Cameras/arcRotateCameraInputsManager" {
     /**
@@ -75,67 +75,67 @@ declare module "../Cameras/arcRotateCameraInputsManager" {
     }
 }
 
+/**
+ * Adds a gamepad to the arc rotate camera inputs manager
+ */
+ArcRotateCameraInputsManager.prototype.addGamepad = function(): ArcRotateCameraInputsManager {
+    this.add(new ArcRotateCameraGamepadInput());
+    return this;
+};
+
+/**
+  * Defines the gamepad scene component responsible to manage gamepads in a given scene
+  */
+export class GamepadSystemSceneComponent implements ISceneComponent {
     /**
-     * Adds a gamepad to the arc rotate camera inputs manager
+     * The component name helpfull to identify the component in the list of scene components.
      */
-    ArcRotateCameraInputsManager.prototype.addGamepad = function(): ArcRotateCameraInputsManager {
-        this.add(new ArcRotateCameraGamepadInput());
-        return this;
-    };
+    public readonly name = SceneComponentConstants.NAME_GAMEPAD;
 
-   /**
-     * Defines the gamepad scene component responsible to manage gamepads in a given scene
+    /**
+     * The scene the component belongs to.
      */
-    export class GamepadSystemSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        public readonly name = SceneComponentConstants.NAME_GAMEPAD;
+    public scene: Scene;
 
-        /**
-         * The scene the component belongs to.
-         */
-        public scene: Scene;
+    /**
+     * Creates a new instance of the component for the given scene
+     * @param scene Defines the scene to register the component in
+     */
+    constructor(scene: Scene) {
+        this.scene = scene;
+    }
 
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene) {
-            this.scene = scene;
-        }
+    /**
+     * Registers the component in a given scene
+     */
+    public register(): void {
+        this.scene._beforeCameraUpdateStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERAUPDATE_GAMEPAD, this, this._beforeCameraUpdate);
+    }
 
-        /**
-         * Registers the component in a given scene
-         */
-        public register(): void {
-            this.scene._beforeCameraUpdateStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERAUPDATE_GAMEPAD, this, this._beforeCameraUpdate);
-        }
+    /**
+     * Rebuilds the elements related to this component in case of
+     * context lost for instance.
+     */
+    public rebuild(): void {
+        // Nothing to do for gamepads
+    }
 
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        public rebuild(): void {
-            // Nothing to do for gamepads
-        }
-
-        /**
-         * Disposes the component and the associated ressources
-         */
-        public dispose(): void {
-            let gamepadManager = this.scene._gamepadManager;
-            if (gamepadManager) {
-                gamepadManager.dispose();
-                this.scene._gamepadManager = null;
-            }
-        }
-
-        private _beforeCameraUpdate(): void {
-            let gamepadManager = this.scene._gamepadManager;
-
-            if (gamepadManager && gamepadManager._isMonitoring) {
-                gamepadManager._checkGamepadsStatus();
-            }
+    /**
+     * Disposes the component and the associated ressources
+     */
+    public dispose(): void {
+        let gamepadManager = this.scene._gamepadManager;
+        if (gamepadManager) {
+            gamepadManager.dispose();
+            this.scene._gamepadManager = null;
         }
     }
+
+    private _beforeCameraUpdate(): void {
+        let gamepadManager = this.scene._gamepadManager;
+
+        if (gamepadManager && gamepadManager._isMonitoring) {
+            gamepadManager._checkGamepadsStatus();
+        }
+    }
+}

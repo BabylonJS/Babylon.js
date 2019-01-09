@@ -46,7 +46,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
             this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         });
     }
 
@@ -88,7 +88,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
             babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
         }
 
-        return Promise.all(promises).then(() => {});
+        return Promise.all(promises).then(() => { });
     }
 }
 

@@ -8,11 +8,11 @@ import * as GLTF2 from "../glTF/2.0";
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || { };
+    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
     var BABYLON = (<any>globalObject).BABYLON;
-    BABYLON.GLTF2 = BABYLON.GLTF2 || { };
-    BABYLON.GLTF2.Loader = BABYLON.GLTF2.Loader || { };
-    BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || { };
+    BABYLON.GLTF2 = BABYLON.GLTF2 || {};
+    BABYLON.GLTF2.Loader = BABYLON.GLTF2.Loader || {};
+    BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || {};
 
     const keys = [];
     for (var key in Extensions) {

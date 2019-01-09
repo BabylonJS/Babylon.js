@@ -1,4 +1,4 @@
-    /** Defines the cross module used constants to avoid circular dependncies */
+/** Defines the cross module used constants to avoid circular dependncies */
 export class Constants {
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;
@@ -287,7 +287,7 @@ export class Constants {
      * On left pick
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
-    public static readonly ACTION_OnLeftPickTrigger  = 2;
+    public static readonly ACTION_OnLeftPickTrigger = 2;
     /**
      * On right pick
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
