@@ -1,6 +1,16 @@
-/// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
+import { Nullable } from "babylonjs/types";
+import { Vector3 } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { AnimationEvent } from "babylonjs/Animations/animation";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Sound } from "babylonjs/Audio/sound";
+import { WeightedSound } from "babylonjs/Audio/weightedsound";
 
-module BABYLON.GLTF2.Loader.Extensions {
+import { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { GLTFLoader, ArrayItem } from "../glTFLoader";
+
     const NAME = "MSFT_audio_emitter";
 
     interface IClipReference {
@@ -299,4 +309,3 @@ module BABYLON.GLTF2.Loader.Extensions {
     }
 
     GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_audio_emitter(loader));
-}

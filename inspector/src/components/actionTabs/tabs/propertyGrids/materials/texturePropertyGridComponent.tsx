@@ -1,5 +1,12 @@
 import * as React from "react";
-import { Texture, BaseTexture, CubeTexture, Observable, Nullable } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Tools } from "babylonjs/Misc/tools";
+import { Observable } from "babylonjs/Misc/observable";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
@@ -13,6 +20,9 @@ import { LockObject } from "../lockObject";
 import { ValueLineComponent } from "../../../lines/valueLineComponent";
 import { GlobalState } from "components/globalState";
 
+import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
     lockObject: LockObject,
@@ -22,24 +32,24 @@ interface ITexturePropertyGridComponentProps {
 
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
 
-    private _adtInstrumentation: Nullable<BABYLON.GUI.AdvancedDynamicTextureInstrumentation>;
+    private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
 
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
     }
 
     componentWillMount() {
-        const texture = this.props.texture
+        const texture = this.props.texture;
 
         if (!texture || !(texture as any).rootContainer) {
             return;
         }
 
-        const adt = texture as BABYLON.GUI.AdvancedDynamicTexture;
+        const adt = texture as AdvancedDynamicTexture;
 
-        this._adtInstrumentation = new BABYLON.GUI.AdvancedDynamicTextureInstrumentation(adt);
-        this._adtInstrumentation.captureRenderTime = true;
-        this._adtInstrumentation.captureLayoutTime = true;
+        this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
+        this._adtInstrumentation!.captureRenderTime = true;
+        this._adtInstrumentation!.captureLayoutTime = true;
     }
 
     componentWillUnmount() {
@@ -51,7 +61,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     updateTexture(file: File) {
         const texture = this.props.texture;
-        BABYLON.Tools.ReadFile(file, (data) => {
+        Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
             var url = URL.createObjectURL(blob);
 
@@ -75,9 +85,9 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const texture = this.props.texture;
 
         var samplingMode = [
-            { label: "Nearest", value: BABYLON.Texture.NEAREST_NEAREST },
-            { label: "Nearest & linear mip", value: BABYLON.Texture.NEAREST_LINEAR },
-            { label: "Linear", value: BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR },
+            { label: "Nearest", value: Texture.NEAREST_NEAREST },
+            { label: "Nearest & linear mip", value: Texture.NEAREST_LINEAR },
+            { label: "Linear", value: Texture.LINEAR_LINEAR_MIPLINEAR },
         ];
 
         return (
@@ -97,7 +107,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         texture.updateSamplingMode &&
-                        <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => texture.updateSamplingMode(value)} />
+                        <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
                     }
                 </LineContainerComponent>
                 {
@@ -125,8 +135,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                             <FloatLineComponent lockObject={this.props.lockObject} label="U angle" target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <FloatLineComponent lockObject={this.props.lockObject} label="V angle" target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <FloatLineComponent lockObject={this.props.lockObject} label="W angle" target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
-                            <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
+                            <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE} />
+                            <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE} />
                         </div>
                     }
                     {

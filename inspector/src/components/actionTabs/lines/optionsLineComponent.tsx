@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 class ListLineOption {

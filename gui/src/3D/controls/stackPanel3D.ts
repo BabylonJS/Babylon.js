@@ -1,5 +1,7 @@
+import { Tools } from "babylonjs/Misc/tools";
+import { Matrix, Tmp, Vector3 } from "babylonjs/Maths/math";
+
 import { Container3D } from "./container3D";
-import { Tools, Matrix, Tmp, Vector3 } from "babylonjs";
 
 /**
  * Class used to create a stack panel in 3D on XY plane

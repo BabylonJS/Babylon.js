@@ -1,6 +1,22 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { Mesh, TransformNode, Material, StandardMaterial, Texture, PBRMaterial, Scene, FreeCamera, ArcRotateCamera, HemisphericLight, PointLight, BackgroundMaterial, AnimationGroup, PBRMetallicRoughnessMaterial, PBRSpecularGlossinessMaterial } from "babylonjs";
+
+import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
+import { FreeCamera } from "babylonjs/Cameras/freeCamera";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Material } from "babylonjs/Materials/material";
+import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
+import { PBRSpecularGlossinessMaterial } from "babylonjs/Materials/PBR/pbrSpecularGlossinessMaterial";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
+import { PointLight } from "babylonjs/Lights/pointLight";
+import { Scene } from "babylonjs/scene";
+
 import { MaterialPropertyGridComponent } from "./propertyGrids/materials/materialPropertyGridComponent";
 import { StandardMaterialPropertyGridComponent } from "./propertyGrids/materials/standardMaterialPropertyGridComponent";
 import { TexturePropertyGridComponent } from "./propertyGrids/materials/texturePropertyGridComponent";
@@ -19,7 +35,20 @@ import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPro
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { InputText } from "babylonjs-gui/2D/controls/inputText";
 import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
-import { ColorPicker, Image, Slider, ImageBasedSlider, Rectangle, Ellipse, Checkbox, RadioButton, Line, ScrollViewer, Grid, StackPanel } from "babylonjs-gui";
+
+import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
+import { Image } from "babylonjs-gui/2D/controls/image";
+import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
+import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
+import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
+import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
+import { Line } from "babylonjs-gui/2D/controls/line";
+import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
+
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
 import { AnimationGroupGridComponent } from "./propertyGrids/animationGroupPropertyGridComponent";
 import { LockObject } from "./propertyGrids/lockObject";

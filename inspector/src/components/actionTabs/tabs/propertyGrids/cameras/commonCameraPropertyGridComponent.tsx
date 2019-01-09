@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Camera, Observable } from "babylonjs";
+import { Camera } from "babylonjs/Cameras/camera";
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
@@ -9,9 +10,9 @@ import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
 
 interface ICommonCameraPropertyGridComponentProps {
-    camera: Camera,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    camera: Camera;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class CommonCameraPropertyGridComponent extends React.Component<ICommonCameraPropertyGridComponentProps, { mode: number }> {
@@ -25,8 +26,8 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
         const camera = this.props.camera;
 
         var modeOptions = [
-            { label: "Perspective", value: BABYLON.Camera.PERSPECTIVE_CAMERA },
-            { label: "Orthographic", value: BABYLON.Camera.ORTHOGRAPHIC_CAMERA }
+            { label: "Perspective", value: Camera.PERSPECTIVE_CAMERA },
+            { label: "Orthographic", value: Camera.ORTHOGRAPHIC_CAMERA }
         ];
 
         return (
@@ -37,25 +38,25 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                 <FloatLineComponent lockObject={this.props.lockObject} label="Near plane" target={camera} propertyName="minZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent lockObject={this.props.lockObject} label="Far plane" target={camera} propertyName="maxZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <SliderLineComponent label="Inertia" target={camera} propertyName="inertia" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <OptionsLineComponent label="Mode" options={modeOptions} target={camera} propertyName="mode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => this.setState({ mode: value })} />
+                <OptionsLineComponent label="Mode" options={modeOptions} target={camera} propertyName="mode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
                 {
-                    camera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA &&
+                    camera.mode === Camera.PERSPECTIVE_CAMERA &&
                     <SliderLineComponent label="Field of view" target={camera} propertyName="fov" minimum={0.1} maximum={Math.PI} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
-                    camera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA &&
+                    camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
                     <FloatLineComponent lockObject={this.props.lockObject} label="Left" target={camera} propertyName="orthoLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
-                    camera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA &&
+                    camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
                     <FloatLineComponent lockObject={this.props.lockObject} label="Top" target={camera} propertyName="orthoTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
-                    camera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA &&
+                    camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
                     <FloatLineComponent lockObject={this.props.lockObject} label="Right" target={camera} propertyName="orthoRight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
                 {
-                    camera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA &&
+                    camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
                     <FloatLineComponent lockObject={this.props.lockObject} label="Bottom" target={camera} propertyName="orthoBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
 

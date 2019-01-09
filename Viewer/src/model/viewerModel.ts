@@ -1,5 +1,6 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, IParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
-import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
+import { GLTFFileLoader } from "babylonjs-loaders";
+import { IAsset } from "babylonjs-gltf2interface";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
@@ -90,7 +91,7 @@ export class ViewerModel implements IDisposable {
      */
     public loadId: number;
 
-    public loadInfo: GLTF2.IAsset;
+    public loadInfo: IAsset;
     private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
@@ -623,7 +624,7 @@ export class ViewerModel implements IDisposable {
         animations: Animation[],
         duration: number,
         easingFunction: any,
-        easingMode: number = BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
+        easingMode: number = 2, // BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
         onAnimationEnd: () => void): void {
 
         if (easingFunction) {

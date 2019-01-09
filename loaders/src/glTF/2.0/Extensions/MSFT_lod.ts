@@ -1,6 +1,14 @@
-/// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
+import { Nullable } from "babylonjs/types";
+import { Observable } from "babylonjs/Misc/observable";
+import { Deferred } from "babylonjs/Misc/deferred";
+import { Material } from "babylonjs/Materials/material";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Mesh } from "babylonjs/Meshes/mesh";
 
-module BABYLON.GLTF2.Loader.Extensions {
+import { INode, IMaterial } from "../glTFLoaderInterfaces";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { GLTFLoader, ArrayItem } from "../glTFLoader";
+
     const NAME = "MSFT_lod";
 
     interface IMSFTLOD {
@@ -277,4 +285,3 @@ module BABYLON.GLTF2.Loader.Extensions {
     }
 
     GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));
-}

@@ -1,5 +1,8 @@
+import { Nullable } from "babylonjs/types";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Scene } from "babylonjs/scene";
+
 import { Control3D } from "./control3D";
-import { Scene, Nullable, TransformNode } from "babylonjs";
 
 /**
  * Class used to create containers for controls
