@@ -437,6 +437,14 @@ declare module "../abstractScene" {
         }
 
         /**
+         * Adds specific effects defines.
+         * @param defines The defines to add specifics to.
+         */
+        protected _addCustomEffectDefines(defines: string[]): void {
+            defines.push("#define GLOW");
+        }
+
+        /**
          * Add a mesh in the exclusion list to prevent it to impact or being impacted by the glow layer.
          * @param mesh The mesh to exclude from the glow layer
          */
