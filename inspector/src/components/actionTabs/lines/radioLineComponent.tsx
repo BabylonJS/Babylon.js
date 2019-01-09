@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Observer, Observable, Nullable } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Observer, Observable } from "babylonjs/Misc/observable";
 
 interface IRadioButtonLineComponentProps {
     onSelectionChangedObservable: Observable<RadioButtonLineComponent>,

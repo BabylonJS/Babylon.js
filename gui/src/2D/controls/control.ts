@@ -1,7 +1,16 @@
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { Logger } from "babylonjs/Misc/logger";
+import { Tools } from "babylonjs/Misc/tools";
+import { Polygon } from "babylonjs/Meshes/polygonMesh";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Scene } from "babylonjs/scene";
+
 import { Container } from "./container";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes } from "babylonjs";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
@@ -1100,7 +1109,7 @@ export class Control {
     protected invalidateRect(left: number, top: number, right: number, bottom: number) {
         if (this.host && this.host.useInvalidateRectOptimization) {
             // Compute AABB of transformed container box (eg. to handle rotation and scaling)
-            var rectanglePoints = BABYLON.Polygon.Rectangle(left, top, right, bottom);
+            var rectanglePoints = Polygon.Rectangle(left, top, right, bottom);
             var min = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new Vector2(0, 0);
             for (var i = 0; i < 4; i++) {
@@ -1256,7 +1265,7 @@ export class Control {
             while (this._rebuildLayout && rebuildCount < 3);
 
             if (rebuildCount >= 3) {
-                BABYLON.Tools.Error(`Layout cycle detected in GUI (Control name=${this.name}, uniqueId=${this.uniqueId})`);
+                Logger.Error(`Layout cycle detected in GUI (Control name=${this.name}, uniqueId=${this.uniqueId})`);
             }
 
             context.restore();

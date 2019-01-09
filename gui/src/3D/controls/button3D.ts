@@ -1,5 +1,14 @@
+import { int, Nullable } from "babylonjs/types";
+import { Color3, Vector4 } from "babylonjs/Maths/math";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { MeshBuilder } from "babylonjs/Meshes/meshBuilder";
+import { Material } from "babylonjs/Materials/material";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Scene } from "babylonjs/scene";
+
 import { AbstractButton3D } from "./abstractButton3D";
-import { Material, Nullable, int, Color3, StandardMaterial, Texture, Scene, TransformNode, Vector4, MeshBuilder, AbstractMesh } from "babylonjs";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control } from "../../2D/controls/control";
 

@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper, Axis, Matrix } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper, Axis, Matrix, DirectionalLight, SpotLight, PointLight, IShadowLight } from 'babylonjs';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration';
 import { ViewerModel, ModelState } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
@@ -357,8 +357,8 @@ export class SceneManager {
 
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
-            var defaultMaterial = new BABYLON.PBRMaterial('defaultMaterial', this.scene);
-            defaultMaterial.reflectivityColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            var defaultMaterial = new PBRMaterial('defaultMaterial', this.scene);
+            defaultMaterial.reflectivityColor = new Color3(0.1, 0.1, 0.1);
             defaultMaterial.microSurface = 0.6;
 
             if (this.scene.defaultMaterial) {
@@ -379,7 +379,7 @@ export class SceneManager {
             if (typeof sceneConfiguration.glow === 'object') {
                 options = sceneConfiguration.glow
             }
-            var gl = new BABYLON.GlowLayer("glow", this.scene, options);
+            var gl = new GlowLayer("glow", this.scene, options);
         }*/
 
         return this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
@@ -815,7 +815,7 @@ export class SceneManager {
 
     protected _configureEnvironmentMap(environmentMapConfiguration: IEnvironmentMapConfiguration): any {
         if (environmentMapConfiguration.texture) {
-            this.scene.environmentTexture = new BABYLON.CubeTexture(this._getAssetUrl(environmentMapConfiguration.texture), this.scene);
+            this.scene.environmentTexture = new CubeTexture(this._getAssetUrl(environmentMapConfiguration.texture), this.scene);
         }
 
         //sanity check
@@ -1229,12 +1229,12 @@ export class SceneManager {
                     }
 
                     let isShadowEnabled = false;
-                    if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-                        (<BABYLON.DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
+                    if (light.getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+                        (<DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
                         isShadowEnabled = true;
                     }
-                    else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
-                        let spotLight: BABYLON.SpotLight = <BABYLON.SpotLight>light;
+                    else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
+                        let spotLight: SpotLight = <SpotLight>light;
                         if (lightConfig.spotAngle !== undefined) {
                             spotLight.angle = lightConfig.spotAngle * Math.PI / 180;
                         }
@@ -1243,14 +1243,14 @@ export class SceneManager {
                         }
                         isShadowEnabled = true;
                     }
-                    else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
+                    else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
                         if (lightConfig.shadowFieldOfView) {
-                            (<BABYLON.PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
+                            (<PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
                         }
                         isShadowEnabled = true;
                     }
 
-                    let shadowGenerator = <BABYLON.ShadowGenerator>light.getShadowGenerator();
+                    let shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
                     if (isShadowEnabled && lightConfig.shadowEnabled && this._maxShadows) {
                         let bufferSize = lightConfig.shadowBufferSize || 256;
 
@@ -1361,16 +1361,16 @@ export class SceneManager {
      * @param bufferSize The size of the shadow map
      * @return the kernel blur size
      */
-    public getBlurKernel(light: BABYLON.IShadowLight, bufferSize: number): number {
+    public getBlurKernel(light: IShadowLight, bufferSize: number): number {
         var normalizedBlurKernel = 0.05; // TODO Should come from the config.
-        if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-            normalizedBlurKernel = normalizedBlurKernel / (<BABYLON.DirectionalLight>light).shadowFrustumSize;
+        if (light.getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / (<DirectionalLight>light).shadowFrustumSize;
         }
-        else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
-            normalizedBlurKernel = normalizedBlurKernel / (<BABYLON.PointLight>light).shadowAngle;
+        else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / (<PointLight>light).shadowAngle;
         }
-        else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
-            normalizedBlurKernel = normalizedBlurKernel / ((<BABYLON.SpotLight>light).angle * (<BABYLON.SpotLight>light).shadowAngleScale);
+        else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / ((<SpotLight>light).angle * (<SpotLight>light).shadowAngleScale);
         }
 
         let minimumBlurKernel = 5 / (bufferSize / 256); //magic number that aims to keep away sawtooth shadows

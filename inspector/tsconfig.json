@@ -1,45 +1,25 @@
 {
+    "extends": "../tsconfigRules",
     "compilerOptions": {
-        "experimentalDecorators": true,
-        "module": "esnext",
-        "target": "es5",
         "jsx": "react",
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "noUnusedLocals": true,
-        "strictNullChecks": true,
-        "moduleResolution": "node",
-        "declaration": true,
-        "sourceMap": true,
-        "lib": [
-            "es5",
-            "dom",
-            "es2015.promise",
-            "es2015.collection",
-            "es2015.iterable"
-        ],
-        "skipDefaultLibCheck": true,
-        "skipLibCheck": true,
         "baseUrl": "./src/",
         "rootDir": "./src/",
         "paths": {
-            "babylonjs": [
-                "../../dist/preview release/babylon.d.ts"
-            ],
-            "babylonjs-gui": [
+            "babylonjs-gui/*": [
                 "../../dist/preview release/gui/babylon.gui.module.d.ts"
             ],
             "babylonjs-gltf2interface": [
                 "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
             ],
-            "babylonjs-loaders": [
+            "babylonjs-loaders/*": [
                 "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
             ],
-            "babylonjs-serializers": [
+            "babylonjs-serializers/*": [
                 "../../dist/preview release/serializers/babylonjs.serializers.module.d.ts"
+            ],
+            "babylonjs/*": [
+                "../../dist/preview release/babylon.module.d.ts"
             ]
-        },
-        "outDir": "./build"
+        }
     }
 }

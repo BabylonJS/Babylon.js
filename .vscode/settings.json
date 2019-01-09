@@ -11,7 +11,6 @@
         "**/node_modules": true,
         "**/temp": true,
         "**/.temp": true,
-        "src/**/*.d.ts": true,
         "gui/**/*.d.ts": true,
         "inspector/**/*.d.ts": true,
         "loaders/**/*.d.ts": true,
@@ -20,11 +19,20 @@
         "proceduralTexturesLibrary/**/*.d.ts": true,
         "serielazers/**/*.d.ts": true,
         "Viewer/**/*.d.ts": true,
-        "**/*.js.map": true,
+        "gui/**/*.js.map": true,
+        "inspector/**/*.js.map": true,
+        "loaders/**/*.js.map": true,
+        "materialsLibrary/**/*.js.map": true,
+        "postProcessesLibrary/**/*.js.map": true,
+        "proceduralTexturesLibrary/**/*.js.map": true,
+        "serielazers/**/*.js.map": true,
         "**/*.js.fx": true,
         "**/*.js": {
             "when": "$(basename).ts"
-        }
+        },
+        "**/*.fragment.ts": true,
+        "**/*.vertex.ts": true,
+        "**/ShadersInclude/**/*.ts": true
     },
     "files.associations": {
         "*.fx": "glsl"
@@ -40,9 +48,12 @@
         "**/*.js": {
             "when": "$(basename).ts"
         },
-        "**/*.d.ts": true,
+        "dist/**/*.d.ts": true,
+        "**/*.fragment.ts": true,
+        "**/*.vertex.ts": true,
+        "**/ShadersInclude/**/*.ts": true,
         "assets": true
     },
     "editor.tabSize": 4,
-    "typescript.tsdk": "./Tools/Gulp/node_modules/typescript/lib"
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }

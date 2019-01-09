@@ -1,10 +1,10 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { LockObject } from "../lockObject";
-import { Image } from "babylonjs-gui";
+import { Image } from "babylonjs-gui/2D/controls/image";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
@@ -24,11 +24,11 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         const image = this.props.image;
 
         var stretchOptions = [
-            { label: "None", value: BABYLON.GUI.Image.STRETCH_NONE },
-            { label: "Fill", value: BABYLON.GUI.Image.STRETCH_FILL },
-            { label: "Uniform", value: BABYLON.GUI.Image.STRETCH_UNIFORM },
-            { label: "Extend", value: BABYLON.GUI.Image.STRETCH_EXTEND },
-            { label: "NinePatch", value: BABYLON.GUI.Image.STRETCH_NINE_PATCH }
+            { label: "None", value: Image.STRETCH_NONE },
+            { label: "Fill", value: Image.STRETCH_FILL },
+            { label: "Uniform", value: Image.STRETCH_UNIFORM },
+            { label: "Extend", value: Image.STRETCH_EXTEND },
+            { label: "NinePatch", value: Image.STRETCH_NINE_PATCH }
         ];
 
         return (

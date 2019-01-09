@@ -15,7 +15,6 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 
 - <https://cdn.babylonjs.com/babylon.js>
 - <https://cdn.babylonjs.com/babylon.max.js>
-- <https://cdn.babylonjs.com/babylon.worker.js>
 
 Additional references can be found on <https://cdn.babylonjs.com/xxx> where `xxx` is the folder structure you can find in the /dist folder like <https://cdn.babylonjs.com/gui/babylon.gui.min.js>
 
@@ -23,7 +22,6 @@ For the preview release, use the following URLs:
 
 - <https://preview.babylonjs.com/babylon.js>
 - <https://preview.babylonjs.com/babylon.max.js>
-- <https://preview.babylonjs.com/babylon.worker.js>
 
 Additional references can be found on <https://preview.babylonjs.com/xxx> where xxx is the folder structure you can find in the /dist/preview release folder like <https://preview.babylonjs.com/gui/babylon.gui.min.js>
 

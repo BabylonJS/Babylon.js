@@ -1,15 +1,21 @@
-import { Scene, Observable, PointerInfo, Observer, Nullable, GizmoManager, IExplorerExtensibilityGroup } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Observer, Observable } from "babylonjs/Misc/observable";
+import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { GizmoManager } from "babylonjs/Gizmos/gizmoManager";
+import { Scene } from "babylonjs/scene";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface ISceneTreeItemComponentProps {
-    scene: Scene,
-    onRefresh: () => void,
-    selectedEntity?: any,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onSelectionChangedObservable?: Observable<any>
+    scene: Scene;
+    onRefresh: () => void;
+    selectedEntity?: any;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onSelectionChangedObservable?: Observable<any>;
 }
 
 export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean, isInPickingMode: boolean, gizmoMode: number }> {
@@ -101,12 +107,12 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         if (!this.state.isInPickingMode) {
             this._onPointerObserver = scene.onPointerObservable.add(() => {
                 const pickPosition = scene.unTranslatedPointer;
-                const pickInfo = scene.pick(pickPosition.x, pickPosition.y, mesh => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0);
+                const pickInfo = scene.pick(pickPosition.x, pickPosition.y, (mesh) => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0);
 
                 if (pickInfo && pickInfo.hit && this.props.onSelectionChangedObservable) {
                     this.props.onSelectionChangedObservable.notifyObservers(pickInfo.pickedMesh);
                 }
-            }, BABYLON.PointerEventTypes.POINTERTAP)
+            }, PointerEventTypes.POINTERTAP);
         }
 
         this.setState({ isInPickingMode: !this.state.isInPickingMode });
@@ -186,6 +192,6 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     }
                 </div>
             </div>
-        )
+        );
     }
 }
