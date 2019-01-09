@@ -6,5 +6,5 @@ export class FilesInputStore {
     /**
      * List of files ready to be loaded
      */
-    public static FilesToLoad: { [key: string]: File } = { };
+    public static FilesToLoad: { [key: string]: File } = {};
 }

@@ -48,10 +48,10 @@ export class GLTFData {
                 mimeType = { type: "model/gltf+json" };
             }
             else if (endsWith(key, ".jpeg" || ".jpg")) {
-                mimeType = {type: ImageMimeType.JPEG};
+                mimeType = { type: ImageMimeType.JPEG };
             }
             else if (endsWith(key, ".png")) {
-                mimeType = {type: ImageMimeType.PNG};
+                mimeType = { type: ImageMimeType.PNG };
             }
 
             link.href = window.URL.createObjectURL(new Blob([blob], mimeType));
