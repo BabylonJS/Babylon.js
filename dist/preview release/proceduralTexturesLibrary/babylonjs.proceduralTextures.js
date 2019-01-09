@@ -6,8 +6,8 @@
 	else if(typeof exports === 'object')
 		exports["babylonjs-procedural-textures"] = factory(require("babylonjs"));
 	else
-		root["PTLIB"] = factory(root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs__) {
+		root["PROCEDURALTEXTURES"] = factory(root["BABYLON"]);
+})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -96,10 +96,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
-/***/ "../node_modules/webpack/buildin/global.js":
-/*!*************************************************!*\
-  !*** ../node_modules/webpack/buildin/global.js ***!
-  \*************************************************/
+/***/ "../../node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -112,7 +112,7 @@ g = (function() {
 
 try {
 	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
+	g = g || new Function("return this")();
 } catch (e) {
 	// This works if the window reference is available
 	if (typeof window === "object") g = window;
@@ -127,100 +127,274 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./legacy/legacy.ts":
-/*!**************************!*\
-  !*** ./legacy/legacy.ts ***!
-  \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../node_modules/tslib/tslib.es6.js":
+/*!******************************************!*\
+  !*** ../node_modules/tslib/tslib.es6.js ***!
+  \******************************************/
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__extends", function() { return __extends; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__assign", function() { return __assign; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__rest", function() { return __rest; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__decorate", function() { return __decorate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__param", function() { return __param; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__metadata", function() { return __metadata; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__awaiter", function() { return __awaiter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__generator", function() { return __generator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__exportStar", function() { return __exportStar; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__values", function() { return __values; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spread", function() { return __spread; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__await", function() { return __await; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncGenerator", function() { return __asyncGenerator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncDelegator", function() { return __asyncDelegator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncValues", function() { return __asyncValues; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__makeTemplateObject", function() { return __makeTemplateObject; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importStar", function() { return __importStar; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importDefault", function() { return __importDefault; });
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
+
+THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+MERCHANTABLITY OR NON-INFRINGEMENT.
+
+See the Apache Version 2.0 License for specific language governing permissions
+and limitations under the License.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
-Object.defineProperty(exports, "__esModule", { value: true });
-var ProceduralTexturesLib = __webpack_require__(/*! ../src/index */ "./src/index.ts");
-/**
- * Legacy support, defining window.BABYLON.GridMaterial... (global variable).
- *
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    globalObject.BABYLON = globalObject.BABYLON || {};
-    for (var mat in ProceduralTexturesLib) {
-        if (ProceduralTexturesLib.hasOwnProperty(mat)) {
-            globalObject.BABYLON[mat] = ProceduralTexturesLib[mat];
+
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
         }
+        return t;
     }
+    return __assign.apply(this, arguments);
 }
-__export(__webpack_require__(/*! ../src/index */ "./src/index.ts"));
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+function __rest(s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+}
 
-/***/ }),
-
-/***/ "./src/brick/brickProceduralTexture.fragment.ts":
-/*!******************************************************!*\
-  !*** ./src/brick/brickProceduralTexture.fragment.ts ***!
-  \******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-var name = 'brickProceduralTexturePixelShader';
-exports.name = name;
-var shader = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth;\nuniform vec3 brickColor;\nuniform vec3 jointColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nfloat roundF(float number){\nreturn sign(number)*floor(abs(number)+0.5);\n}\nvoid main(void)\n{\nfloat brickW=1.0/numberOfBricksWidth;\nfloat brickH=1.0/numberOfBricksHeight;\nfloat jointWPercentage=0.01;\nfloat jointHPercentage=0.05;\nvec3 color=brickColor;\nfloat yi=vUV.y/brickH;\nfloat nyi=roundF(yi);\nfloat xi=vUV.x/brickW;\nif (mod(floor(yi),2.0) == 0.0){\nxi=xi-0.5;\n}\nfloat nxi=roundF(xi);\nvec2 brickvUV=vec2((xi-floor(xi))/brickH,(yi-floor(yi))/brickW);\nif (yi<nyi+jointHPercentage && yi>nyi-jointHPercentage){\ncolor=mix(jointColor,vec3(0.37,0.25,0.25),(yi-nyi)/jointHPercentage+0.2);\n}\nelse if (xi<nxi+jointWPercentage && xi>nxi-jointWPercentage){\ncolor=mix(jointColor,vec3(0.44,0.44,0.44),(xi-nxi)/jointWPercentage+0.2);\n}\nelse {\nfloat brickColorSwitch=mod(floor(yi)+floor(xi),3.0);\nif (brickColorSwitch == 0.0)\ncolor=mix(color,vec3(0.33,0.33,0.33),0.3);\nelse if (brickColorSwitch == 2.0)\ncolor=mix(color,vec3(0.11,0.11,0.11),0.3);\n}\ngl_FragColor=vec4(color,1.0);\n}";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
-
-
-/***/ }),
-
-/***/ "./src/brick/brickProceduralTexture.ts":
-/*!*********************************************!*\
-  !*** ./src/brick/brickProceduralTexture.ts ***!
-  \*********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+function __decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+function __param(paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+}
+
+function __metadata(metadataKey, metadataValue) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+}
+
+function __awaiter(thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+}
+
+function __generator(thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+}
+
+function __exportStar(m, exports) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+
+function __values(o) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+    if (m) return m.call(o);
+    return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+}
+
+function __read(o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+}
+
+function __spread() {
+    for (var ar = [], i = 0; i < arguments.length; i++)
+        ar = ar.concat(__read(arguments[i]));
+    return ar;
+}
+
+function __await(v) {
+    return this instanceof __await ? (this.v = v, this) : new __await(v);
+}
+
+function __asyncGenerator(thisArg, _arguments, generator) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var g = generator.apply(thisArg, _arguments || []), i, q = [];
+    return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
+    function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+    function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+    function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
+    function fulfill(value) { resume("next", value); }
+    function reject(value) { resume("throw", value); }
+    function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+}
+
+function __asyncDelegator(o) {
+    var i, p;
+    return i = {}, verb("next"), verb("throw", function (e) { throw e; }), verb("return"), i[Symbol.iterator] = function () { return this; }, i;
+    function verb(n, f) { i[n] = o[n] ? function (v) { return (p = !p) ? { value: __await(o[n](v)), done: n === "return" } : f ? f(v) : v; } : f; }
+}
+
+function __asyncValues(o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+}
+
+function __makeTemplateObject(cooked, raw) {
+    if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
+    return cooked;
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./brickProceduralTexture.fragment */ "./src/brick/brickProceduralTexture.fragment.ts");
+
+function __importStar(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result.default = mod;
+    return result;
+}
+
+function __importDefault(mod) {
+    return (mod && mod.__esModule) ? mod : { default: mod };
+}
+
+
+/***/ }),
+
+/***/ "./brick/brickProceduralTexture.fragment.ts":
+/*!**************************************************!*\
+  !*** ./brick/brickProceduralTexture.fragment.ts ***!
+  \**************************************************/
+/*! exports provided: brickProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "brickProceduralTexturePixelShader", function() { return brickProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'brickProceduralTexturePixelShader';
+var shader = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float numberOfBricksHeight;\nuniform float numberOfBricksWidth;\nuniform vec3 brickColor;\nuniform vec3 jointColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nfloat roundF(float number){\nreturn sign(number)*floor(abs(number)+0.5);\n}\nvoid main(void)\n{\nfloat brickW=1.0/numberOfBricksWidth;\nfloat brickH=1.0/numberOfBricksHeight;\nfloat jointWPercentage=0.01;\nfloat jointHPercentage=0.05;\nvec3 color=brickColor;\nfloat yi=vUV.y/brickH;\nfloat nyi=roundF(yi);\nfloat xi=vUV.x/brickW;\nif (mod(floor(yi),2.0) == 0.0){\nxi=xi-0.5;\n}\nfloat nxi=roundF(xi);\nvec2 brickvUV=vec2((xi-floor(xi))/brickH,(yi-floor(yi))/brickW);\nif (yi<nyi+jointHPercentage && yi>nyi-jointHPercentage){\ncolor=mix(jointColor,vec3(0.37,0.25,0.25),(yi-nyi)/jointHPercentage+0.2);\n}\nelse if (xi<nxi+jointWPercentage && xi>nxi-jointWPercentage){\ncolor=mix(jointColor,vec3(0.44,0.44,0.44),(xi-nxi)/jointWPercentage+0.2);\n}\nelse {\nfloat brickColorSwitch=mod(floor(yi)+floor(xi),3.0);\nif (brickColorSwitch == 0.0)\ncolor=mix(color,vec3(0.33,0.33,0.33),0.3);\nelse if (brickColorSwitch == 2.0)\ncolor=mix(color,vec3(0.11,0.11,0.11),0.3);\n}\ngl_FragColor=vec4(color,1.0);\n}";
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var brickProceduralTexturePixelShader = { name: name, shader: shader };
+
+
+/***/ }),
+
+/***/ "./brick/brickProceduralTexture.ts":
+/*!*****************************************!*\
+  !*** ./brick/brickProceduralTexture.ts ***!
+  \*****************************************/
+/*! exports provided: BrickProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BrickProceduralTexture", function() { return BrickProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _brickProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./brickProceduralTexture.fragment */ "./brick/brickProceduralTexture.fragment.ts");
+
+
+
+
+
+
 var BrickProceduralTexture = /** @class */ (function (_super) {
-    __extends(BrickProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BrickProceduralTexture, _super);
     function BrickProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._numberOfBricksHeight = 15;
         _this._numberOfBricksWidth = 5;
-        _this._jointColor = new babylonjs_1.Color3(0.72, 0.72, 0.72);
-        _this._brickColor = new babylonjs_1.Color3(0.77, 0.47, 0.40);
+        _this._jointColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.72, 0.72, 0.72);
+        _this._brickColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.77, 0.47, 0.40);
         _this.updateShaderUniforms();
         return _this;
     }
@@ -279,7 +453,7 @@ var BrickProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized brick procedural texture object
      */
     BrickProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.BrickProceduralTexture";
         return serializationObject;
     };
@@ -291,103 +465,94 @@ var BrickProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Brick Procedural Texture
      */
     BrickProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new BrickProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new BrickProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         return texture;
     };
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], BrickProceduralTexture.prototype, "numberOfBricksHeight", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], BrickProceduralTexture.prototype, "numberOfBricksWidth", null);
-    __decorate([
-        babylonjs_1.serializeAsColor3()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], BrickProceduralTexture.prototype, "jointColor", null);
-    __decorate([
-        babylonjs_1.serializeAsColor3()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], BrickProceduralTexture.prototype, "brickColor", null);
     return BrickProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.BrickProceduralTexture = BrickProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.BrickProceduralTexture"] = BrickProceduralTexture;
 
 
 /***/ }),
 
-/***/ "./src/brick/index.ts":
-/*!****************************!*\
-  !*** ./src/brick/index.ts ***!
-  \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./brick/index.ts":
+/*!************************!*\
+  !*** ./brick/index.ts ***!
+  \************************/
+/*! exports provided: BrickProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _brickProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./brickProceduralTexture */ "./brick/brickProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BrickProceduralTexture", function() { return _brickProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["BrickProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./brickProceduralTexture */ "./src/brick/brickProceduralTexture.ts"));
+
 
 
 /***/ }),
 
-/***/ "./src/cloud/cloudProceduralTexture.fragment.ts":
-/*!******************************************************!*\
-  !*** ./src/cloud/cloudProceduralTexture.fragment.ts ***!
-  \******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./cloud/cloudProceduralTexture.fragment.ts":
+/*!**************************************************!*\
+  !*** ./cloud/cloudProceduralTexture.fragment.ts ***!
+  \**************************************************/
+/*! exports provided: cloudProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cloudProceduralTexturePixelShader", function() { return cloudProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var name = 'cloudProceduralTexturePixelShader';
-exports.name = name;
 var shader = "precision highp float;\nvarying vec2 vUV;\nuniform vec4 skyColor;\nuniform vec4 cloudColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main() {\nvec2 p=vUV*12.0;\nvec4 c=mix(skyColor,cloudColor,fbm(p));\ngl_FragColor=c;\n}\n";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var cloudProceduralTexturePixelShader = { name: name, shader: shader };
 
 
 /***/ }),
 
-/***/ "./src/cloud/cloudProceduralTexture.ts":
-/*!*********************************************!*\
-  !*** ./src/cloud/cloudProceduralTexture.ts ***!
-  \*********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./cloud/cloudProceduralTexture.ts":
+/*!*****************************************!*\
+  !*** ./cloud/cloudProceduralTexture.ts ***!
+  \*****************************************/
+/*! exports provided: CloudProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CloudProceduralTexture", function() { return CloudProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _cloudProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./cloudProceduralTexture.fragment */ "./cloud/cloudProceduralTexture.fragment.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./cloudProceduralTexture.fragment */ "./src/cloud/cloudProceduralTexture.fragment.ts");
+
+
+
+
+
 var CloudProceduralTexture = /** @class */ (function (_super) {
-    __extends(CloudProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CloudProceduralTexture, _super);
     function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "cloudProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
-        _this._skyColor = new babylonjs_1.Color4(0.15, 0.68, 1.0, 1.0);
-        _this._cloudColor = new babylonjs_1.Color4(1, 1, 1, 1.0);
+        _this._skyColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.15, 0.68, 1.0, 1.0);
+        _this._cloudColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](1, 1, 1, 1.0);
         _this.updateShaderUniforms();
         return _this;
     }
@@ -422,7 +587,7 @@ var CloudProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized cloud procedural texture object
      */
     CloudProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.CloudProceduralTexture";
         return serializationObject;
     };
@@ -434,97 +599,88 @@ var CloudProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Cloud Procedural Texture
      */
     CloudProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new CloudProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new CloudProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         return texture;
     };
-    __decorate([
-        babylonjs_1.serializeAsColor4()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor4"])()
     ], CloudProceduralTexture.prototype, "skyColor", null);
-    __decorate([
-        babylonjs_1.serializeAsColor4()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor4"])()
     ], CloudProceduralTexture.prototype, "cloudColor", null);
     return CloudProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.CloudProceduralTexture = CloudProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.CloudProceduralTexture"] = CloudProceduralTexture;
 
 
 /***/ }),
 
-/***/ "./src/cloud/index.ts":
-/*!****************************!*\
-  !*** ./src/cloud/index.ts ***!
-  \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./cloud/index.ts":
+/*!************************!*\
+  !*** ./cloud/index.ts ***!
+  \************************/
+/*! exports provided: CloudProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _cloudProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./cloudProceduralTexture */ "./cloud/cloudProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CloudProceduralTexture", function() { return _cloudProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["CloudProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./cloudProceduralTexture */ "./src/cloud/cloudProceduralTexture.ts"));
+
 
 
 /***/ }),
 
-/***/ "./src/fire/fireProceduralTexture.fragment.ts":
-/*!****************************************************!*\
-  !*** ./src/fire/fireProceduralTexture.fragment.ts ***!
-  \****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./fire/fireProceduralTexture.fragment.ts":
+/*!************************************************!*\
+  !*** ./fire/fireProceduralTexture.fragment.ts ***!
+  \************************************************/
+/*! exports provided: fireProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fireProceduralTexturePixelShader", function() { return fireProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var name = 'fireProceduralTexturePixelShader';
-exports.name = name;
 var shader = "precision highp float;\nuniform float time;\nuniform vec3 c1;\nuniform vec3 c2;\nuniform vec3 c3;\nuniform vec3 c4;\nuniform vec3 c5;\nuniform vec3 c6;\nuniform vec2 speed;\nuniform float shift;\nuniform float alphaThreshold;\nvarying vec2 vUV;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main() {\nvec2 p=vUV*8.0;\nfloat q=fbm(p-time*0.1);\nvec2 r=vec2(fbm(p+q+time*speed.x-p.x-p.y),fbm(p+q-time*speed.y));\nvec3 c=mix(c1,c2,fbm(p+r))+mix(c3,c4,r.x)-mix(c5,c6,r.y);\nvec3 color=c*cos(shift*vUV.y);\nfloat luminance=dot(color.rgb,vec3(0.3,0.59,0.11));\ngl_FragColor=vec4(color,luminance*alphaThreshold+(1.0-alphaThreshold));\n}";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var fireProceduralTexturePixelShader = { name: name, shader: shader };
 
 
 /***/ }),
 
-/***/ "./src/fire/fireProceduralTexture.ts":
-/*!*******************************************!*\
-  !*** ./src/fire/fireProceduralTexture.ts ***!
-  \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./fire/fireProceduralTexture.ts":
+/*!***************************************!*\
+  !*** ./fire/fireProceduralTexture.ts ***!
+  \***************************************/
+/*! exports provided: FireProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FireProceduralTexture", function() { return FireProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _fireProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fireProceduralTexture.fragment */ "./fire/fireProceduralTexture.fragment.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./fireProceduralTexture.fragment */ "./src/fire/fireProceduralTexture.fragment.ts");
+
+
+
+
+
 var FireProceduralTexture = /** @class */ (function (_super) {
-    __extends(FireProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FireProceduralTexture, _super);
     function FireProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._time = 0.0;
-        _this._speed = new babylonjs_1.Vector2(0.5, 0.3);
+        _this._speed = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector2"](0.5, 0.3);
         _this._autoGenerateTime = true;
         _this._alphaThreshold = 0.5;
         _this._fireColors = FireProceduralTexture.RedFireColors;
@@ -553,12 +709,12 @@ var FireProceduralTexture = /** @class */ (function (_super) {
     Object.defineProperty(FireProceduralTexture, "PurpleFireColors", {
         get: function () {
             return [
-                new babylonjs_1.Color3(0.5, 0.0, 1.0),
-                new babylonjs_1.Color3(0.9, 0.0, 1.0),
-                new babylonjs_1.Color3(0.2, 0.0, 1.0),
-                new babylonjs_1.Color3(1.0, 0.9, 1.0),
-                new babylonjs_1.Color3(0.1, 0.1, 1.0),
-                new babylonjs_1.Color3(0.9, 0.9, 1.0)
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 0.0, 1.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.9, 0.0, 1.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.2, 0.0, 1.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1.0, 0.9, 1.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.1, 0.1, 1.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.9, 0.9, 1.0)
             ];
         },
         enumerable: true,
@@ -567,12 +723,12 @@ var FireProceduralTexture = /** @class */ (function (_super) {
     Object.defineProperty(FireProceduralTexture, "GreenFireColors", {
         get: function () {
             return [
-                new babylonjs_1.Color3(0.5, 1.0, 0.0),
-                new babylonjs_1.Color3(0.5, 1.0, 0.0),
-                new babylonjs_1.Color3(0.3, 0.4, 0.0),
-                new babylonjs_1.Color3(0.5, 1.0, 0.0),
-                new babylonjs_1.Color3(0.2, 0.0, 0.0),
-                new babylonjs_1.Color3(0.5, 1.0, 0.0)
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 1.0, 0.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 1.0, 0.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.3, 0.4, 0.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 1.0, 0.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.2, 0.0, 0.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 1.0, 0.0)
             ];
         },
         enumerable: true,
@@ -581,12 +737,12 @@ var FireProceduralTexture = /** @class */ (function (_super) {
     Object.defineProperty(FireProceduralTexture, "RedFireColors", {
         get: function () {
             return [
-                new babylonjs_1.Color3(0.5, 0.0, 0.1),
-                new babylonjs_1.Color3(0.9, 0.0, 0.0),
-                new babylonjs_1.Color3(0.2, 0.0, 0.0),
-                new babylonjs_1.Color3(1.0, 0.9, 0.0),
-                new babylonjs_1.Color3(0.1, 0.1, 0.1),
-                new babylonjs_1.Color3(0.9, 0.9, 0.9)
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 0.0, 0.1),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.9, 0.0, 0.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.2, 0.0, 0.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1.0, 0.9, 0.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.1, 0.1, 0.1),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.9, 0.9, 0.9)
             ];
         },
         enumerable: true,
@@ -595,12 +751,12 @@ var FireProceduralTexture = /** @class */ (function (_super) {
     Object.defineProperty(FireProceduralTexture, "BlueFireColors", {
         get: function () {
             return [
-                new babylonjs_1.Color3(0.1, 0.0, 0.5),
-                new babylonjs_1.Color3(0.0, 0.0, 0.5),
-                new babylonjs_1.Color3(0.1, 0.0, 0.2),
-                new babylonjs_1.Color3(0.0, 0.0, 1.0),
-                new babylonjs_1.Color3(0.1, 0.2, 0.3),
-                new babylonjs_1.Color3(0.0, 0.2, 0.9)
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.1, 0.0, 0.5),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.0, 0.0, 0.5),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.1, 0.0, 0.2),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.0, 0.0, 1.0),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.1, 0.2, 0.3),
+                new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.0, 0.2, 0.9)
             ];
         },
         enumerable: true,
@@ -665,7 +821,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized fire procedural texture object
      */
     FireProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.FireProceduralTexture";
         serializationObject.fireColors = [];
         for (var i = 0; i < this._fireColors.length; i++) {
@@ -681,111 +837,102 @@ var FireProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Fire Procedural Texture
      */
     FireProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         var colors = [];
         for (var i = 0; i < parsedTexture.fireColors.length; i++) {
-            colors.push(babylonjs_1.Color3.FromArray(parsedTexture.fireColors[i]));
+            colors.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(parsedTexture.fireColors[i]));
         }
         texture.fireColors = colors;
         return texture;
     };
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FireProceduralTexture.prototype, "autoGenerateTime", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FireProceduralTexture.prototype, "time", null);
-    __decorate([
-        babylonjs_1.serializeAsVector2()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsVector2"])()
     ], FireProceduralTexture.prototype, "speed", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FireProceduralTexture.prototype, "alphaThreshold", null);
     return FireProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.FireProceduralTexture = FireProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.FireProceduralTexture"] = FireProceduralTexture;
 
 
 /***/ }),
 
-/***/ "./src/fire/index.ts":
-/*!***************************!*\
-  !*** ./src/fire/index.ts ***!
-  \***************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./fire/index.ts":
+/*!***********************!*\
+  !*** ./fire/index.ts ***!
+  \***********************/
+/*! exports provided: FireProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _fireProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fireProceduralTexture */ "./fire/fireProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FireProceduralTexture", function() { return _fireProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["FireProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./fireProceduralTexture */ "./src/fire/fireProceduralTexture.ts"));
+
 
 
 /***/ }),
 
-/***/ "./src/grass/grassProceduralTexture.fragment.ts":
-/*!******************************************************!*\
-  !*** ./src/grass/grassProceduralTexture.fragment.ts ***!
-  \******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./grass/grassProceduralTexture.fragment.ts":
+/*!**************************************************!*\
+  !*** ./grass/grassProceduralTexture.fragment.ts ***!
+  \**************************************************/
+/*! exports provided: grassProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "grassProceduralTexturePixelShader", function() { return grassProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var name = 'grassProceduralTexturePixelShader';
-exports.name = name;
 var shader = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform vec3 herb1Color;\nuniform vec3 herb2Color;\nuniform vec3 herb3Color;\nuniform vec3 groundColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main(void) {\nvec3 color=mix(groundColor,herb1Color,rand(gl_FragCoord.xy*4.0));\ncolor=mix(color,herb2Color,rand(gl_FragCoord.xy*8.0));\ncolor=mix(color,herb3Color,rand(gl_FragCoord.xy));\ncolor=mix(color,herb1Color,fbm(gl_FragCoord.xy*16.0));\ngl_FragColor=vec4(color,1.0);\n}";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var grassProceduralTexturePixelShader = { name: name, shader: shader };
 
 
 /***/ }),
 
-/***/ "./src/grass/grassProceduralTexture.ts":
-/*!*********************************************!*\
-  !*** ./src/grass/grassProceduralTexture.ts ***!
-  \*********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./grass/grassProceduralTexture.ts":
+/*!*****************************************!*\
+  !*** ./grass/grassProceduralTexture.ts ***!
+  \*****************************************/
+/*! exports provided: GrassProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GrassProceduralTexture", function() { return GrassProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _grassProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./grassProceduralTexture.fragment */ "./grass/grassProceduralTexture.fragment.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./grassProceduralTexture.fragment */ "./src/grass/grassProceduralTexture.fragment.ts");
+
+
+
+
+
 var GrassProceduralTexture = /** @class */ (function (_super) {
-    __extends(GrassProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GrassProceduralTexture, _super);
     function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "grassProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
-        _this._groundColor = new babylonjs_1.Color3(1, 1, 1);
+        _this._groundColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1, 1, 1);
         _this._grassColors = [
-            new babylonjs_1.Color3(0.29, 0.38, 0.02),
-            new babylonjs_1.Color3(0.36, 0.49, 0.09),
-            new babylonjs_1.Color3(0.51, 0.6, 0.28)
+            new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.29, 0.38, 0.02),
+            new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.36, 0.49, 0.09),
+            new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.51, 0.6, 0.28)
         ];
         _this.updateShaderUniforms();
         return _this;
@@ -823,7 +970,7 @@ var GrassProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized grass procedural texture object
      */
     GrassProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.GrassProceduralTexture";
         serializationObject.grassColors = [];
         for (var i = 0; i < this._grassColors.length; i++) {
@@ -839,146 +986,212 @@ var GrassProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Grass Procedural Texture
      */
     GrassProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new GrassProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new GrassProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         var colors = [];
         for (var i = 0; i < parsedTexture.grassColors.length; i++) {
-            colors.push(babylonjs_1.Color3.FromArray(parsedTexture.grassColors[i]));
+            colors.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(parsedTexture.grassColors[i]));
         }
         texture.grassColors = colors;
         return texture;
     };
-    __decorate([
-        babylonjs_1.serializeAsColor3()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], GrassProceduralTexture.prototype, "groundColor", null);
     return GrassProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.GrassProceduralTexture = GrassProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.GrassProceduralTexture"] = GrassProceduralTexture;
 
 
 /***/ }),
 
-/***/ "./src/grass/index.ts":
-/*!****************************!*\
-  !*** ./src/grass/index.ts ***!
-  \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./grass/index.ts":
+/*!************************!*\
+  !*** ./grass/index.ts ***!
+  \************************/
+/*! exports provided: GrassProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _grassProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grassProceduralTexture */ "./grass/grassProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GrassProceduralTexture", function() { return _grassProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["GrassProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./grassProceduralTexture */ "./src/grass/grassProceduralTexture.ts"));
+
 
 
 /***/ }),
 
-/***/ "./src/index.ts":
-/*!**********************!*\
-  !*** ./src/index.ts ***!
-  \**********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./index.ts":
+/*!******************!*\
+  !*** ./index.ts ***!
+  \******************/
+/*! exports provided: BrickProceduralTexture, CloudProceduralTexture, FireProceduralTexture, GrassProceduralTexture, MarbleProceduralTexture, NormalMapProceduralTexture, PerlinNoiseProceduralTexture, RoadProceduralTexture, StarfieldProceduralTexture, WoodProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _brick__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./brick */ "./brick/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BrickProceduralTexture", function() { return _brick__WEBPACK_IMPORTED_MODULE_0__["BrickProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./brick */ "./src/brick/index.ts"));
-__export(__webpack_require__(/*! ./cloud */ "./src/cloud/index.ts"));
-__export(__webpack_require__(/*! ./fire */ "./src/fire/index.ts"));
-__export(__webpack_require__(/*! ./grass */ "./src/grass/index.ts"));
-__export(__webpack_require__(/*! ./marble */ "./src/marble/index.ts"));
-__export(__webpack_require__(/*! ./normalMap */ "./src/normalMap/index.ts"));
-__export(__webpack_require__(/*! ./perlinNoise */ "./src/perlinNoise/index.ts"));
-__export(__webpack_require__(/*! ./road */ "./src/road/index.ts"));
-__export(__webpack_require__(/*! ./starfield */ "./src/starfield/index.ts"));
-__export(__webpack_require__(/*! ./wood */ "./src/wood/index.ts"));
+/* harmony import */ var _cloud__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./cloud */ "./cloud/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CloudProceduralTexture", function() { return _cloud__WEBPACK_IMPORTED_MODULE_1__["CloudProceduralTexture"]; });
+
+/* harmony import */ var _fire__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fire */ "./fire/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FireProceduralTexture", function() { return _fire__WEBPACK_IMPORTED_MODULE_2__["FireProceduralTexture"]; });
+
+/* harmony import */ var _grass__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./grass */ "./grass/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GrassProceduralTexture", function() { return _grass__WEBPACK_IMPORTED_MODULE_3__["GrassProceduralTexture"]; });
+
+/* harmony import */ var _marble__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./marble */ "./marble/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MarbleProceduralTexture", function() { return _marble__WEBPACK_IMPORTED_MODULE_4__["MarbleProceduralTexture"]; });
+
+/* harmony import */ var _normalMap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./normalMap */ "./normalMap/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NormalMapProceduralTexture", function() { return _normalMap__WEBPACK_IMPORTED_MODULE_5__["NormalMapProceduralTexture"]; });
+
+/* harmony import */ var _perlinNoise__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./perlinNoise */ "./perlinNoise/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PerlinNoiseProceduralTexture", function() { return _perlinNoise__WEBPACK_IMPORTED_MODULE_6__["PerlinNoiseProceduralTexture"]; });
+
+/* harmony import */ var _road__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./road */ "./road/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RoadProceduralTexture", function() { return _road__WEBPACK_IMPORTED_MODULE_7__["RoadProceduralTexture"]; });
+
+/* harmony import */ var _starfield__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./starfield */ "./starfield/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StarfieldProceduralTexture", function() { return _starfield__WEBPACK_IMPORTED_MODULE_8__["StarfieldProceduralTexture"]; });
+
+/* harmony import */ var _wood__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./wood */ "./wood/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WoodProceduralTexture", function() { return _wood__WEBPACK_IMPORTED_MODULE_9__["WoodProceduralTexture"]; });
+
+
+
+
+
+
+
+
+
+
+
 
 
 /***/ }),
 
-/***/ "./src/marble/index.ts":
-/*!*****************************!*\
-  !*** ./src/marble/index.ts ***!
-  \*****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./legacy/legacy.ts":
+/*!**************************!*\
+  !*** ./legacy/legacy.ts ***!
+  \**************************/
+/*! exports provided: BrickProceduralTexture, CloudProceduralTexture, FireProceduralTexture, GrassProceduralTexture, MarbleProceduralTexture, NormalMapProceduralTexture, PerlinNoiseProceduralTexture, RoadProceduralTexture, StarfieldProceduralTexture, WoodProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../index */ "./index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "BrickProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["BrickProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./marbleProceduralTexture */ "./src/marble/marbleProceduralTexture.ts"));
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CloudProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["CloudProceduralTexture"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FireProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["FireProceduralTexture"]; });
 
-/***/ }),
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GrassProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["GrassProceduralTexture"]; });
 
-/***/ "./src/marble/marbleProceduralTexture.fragment.ts":
-/*!********************************************************!*\
-  !*** ./src/marble/marbleProceduralTexture.fragment.ts ***!
-  \********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MarbleProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["MarbleProceduralTexture"]; });
 
-"use strict";
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NormalMapProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["NormalMapProceduralTexture"]; });
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-var name = 'marbleProceduralTexturePixelShader';
-exports.name = name;
-var shader = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float numberOfTilesHeight;\nuniform float numberOfTilesWidth;\nuniform float amplitude;\nuniform vec3 marbleColor;\nuniform vec3 jointColor;\nconst vec3 tileSize=vec3(1.1,1.0,1.1);\nconst vec3 tilePct=vec3(0.98,1.0,0.98);\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat turbulence(vec2 P)\n{\nfloat val=0.0;\nfloat freq=1.0;\nfor (int i=0; i<4; i++)\n{\nval+=abs(noise(P*freq)/freq);\nfreq*=2.07;\n}\nreturn val;\n}\nfloat roundF(float number){\nreturn sign(number)*floor(abs(number)+0.5);\n}\nvec3 marble_color(float x)\n{\nvec3 col;\nx=0.5*(x+1.);\nx=sqrt(x);\nx=sqrt(x);\nx=sqrt(x);\ncol=vec3(.2+.75*x);\ncol.b*=0.95;\nreturn col;\n}\nvoid main()\n{\nfloat brickW=1.0/numberOfTilesWidth;\nfloat brickH=1.0/numberOfTilesHeight;\nfloat jointWPercentage=0.01;\nfloat jointHPercentage=0.01;\nvec3 color=marbleColor;\nfloat yi=vUV.y/brickH;\nfloat nyi=roundF(yi);\nfloat xi=vUV.x/brickW;\nif (mod(floor(yi),2.0) == 0.0){\nxi=xi-0.5;\n}\nfloat nxi=roundF(xi);\nvec2 brickvUV=vec2((xi-floor(xi))/brickH,(yi-floor(yi))/brickW);\nif (yi<nyi+jointHPercentage && yi>nyi-jointHPercentage){\ncolor=mix(jointColor,vec3(0.37,0.25,0.25),(yi-nyi)/jointHPercentage+0.2);\n}\nelse if (xi<nxi+jointWPercentage && xi>nxi-jointWPercentage){\ncolor=mix(jointColor,vec3(0.44,0.44,0.44),(xi-nxi)/jointWPercentage+0.2);\n}\nelse {\nfloat t=6.28*brickvUV.x/(tileSize.x+noise(vec2(vUV)*6.0));\nt+=amplitude*turbulence(brickvUV.xy);\nt=sin(t);\ncolor=marble_color(t);\n}\ngl_FragColor=vec4(color,0.0);\n}";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PerlinNoiseProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["PerlinNoiseProceduralTexture"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RoadProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["RoadProceduralTexture"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StarfieldProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["StarfieldProceduralTexture"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WoodProceduralTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["WoodProceduralTexture"]; });
 
 
-/***/ }),
-
-/***/ "./src/marble/marbleProceduralTexture.ts":
-/*!***********************************************!*\
-  !*** ./src/marble/marbleProceduralTexture.ts ***!
-  \***********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
+/**
+ * Legacy support, defining window.BABYLON.GridMaterial... (global variable).
+ *
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    for (var mat in _index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[mat] = _index__WEBPACK_IMPORTED_MODULE_0__[mat];
     }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./marbleProceduralTexture.fragment */ "./src/marble/marbleProceduralTexture.fragment.ts");
+}
+
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./marble/index.ts":
+/*!*************************!*\
+  !*** ./marble/index.ts ***!
+  \*************************/
+/*! exports provided: MarbleProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _marbleProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./marbleProceduralTexture */ "./marble/marbleProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MarbleProceduralTexture", function() { return _marbleProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["MarbleProceduralTexture"]; });
+
+
+
+
+/***/ }),
+
+/***/ "./marble/marbleProceduralTexture.fragment.ts":
+/*!****************************************************!*\
+  !*** ./marble/marbleProceduralTexture.fragment.ts ***!
+  \****************************************************/
+/*! exports provided: marbleProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "marbleProceduralTexturePixelShader", function() { return marbleProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
+
+var name = 'marbleProceduralTexturePixelShader';
+var shader = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float numberOfTilesHeight;\nuniform float numberOfTilesWidth;\nuniform float amplitude;\nuniform vec3 marbleColor;\nuniform vec3 jointColor;\nconst vec3 tileSize=vec3(1.1,1.0,1.1);\nconst vec3 tilePct=vec3(0.98,1.0,0.98);\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat turbulence(vec2 P)\n{\nfloat val=0.0;\nfloat freq=1.0;\nfor (int i=0; i<4; i++)\n{\nval+=abs(noise(P*freq)/freq);\nfreq*=2.07;\n}\nreturn val;\n}\nfloat roundF(float number){\nreturn sign(number)*floor(abs(number)+0.5);\n}\nvec3 marble_color(float x)\n{\nvec3 col;\nx=0.5*(x+1.);\nx=sqrt(x);\nx=sqrt(x);\nx=sqrt(x);\ncol=vec3(.2+.75*x);\ncol.b*=0.95;\nreturn col;\n}\nvoid main()\n{\nfloat brickW=1.0/numberOfTilesWidth;\nfloat brickH=1.0/numberOfTilesHeight;\nfloat jointWPercentage=0.01;\nfloat jointHPercentage=0.01;\nvec3 color=marbleColor;\nfloat yi=vUV.y/brickH;\nfloat nyi=roundF(yi);\nfloat xi=vUV.x/brickW;\nif (mod(floor(yi),2.0) == 0.0){\nxi=xi-0.5;\n}\nfloat nxi=roundF(xi);\nvec2 brickvUV=vec2((xi-floor(xi))/brickH,(yi-floor(yi))/brickW);\nif (yi<nyi+jointHPercentage && yi>nyi-jointHPercentage){\ncolor=mix(jointColor,vec3(0.37,0.25,0.25),(yi-nyi)/jointHPercentage+0.2);\n}\nelse if (xi<nxi+jointWPercentage && xi>nxi-jointWPercentage){\ncolor=mix(jointColor,vec3(0.44,0.44,0.44),(xi-nxi)/jointWPercentage+0.2);\n}\nelse {\nfloat t=6.28*brickvUV.x/(tileSize.x+noise(vec2(vUV)*6.0));\nt+=amplitude*turbulence(brickvUV.xy);\nt=sin(t);\ncolor=marble_color(t);\n}\ngl_FragColor=vec4(color,0.0);\n}";
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var marbleProceduralTexturePixelShader = { name: name, shader: shader };
+
+
+/***/ }),
+
+/***/ "./marble/marbleProceduralTexture.ts":
+/*!*******************************************!*\
+  !*** ./marble/marbleProceduralTexture.ts ***!
+  \*******************************************/
+/*! exports provided: MarbleProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MarbleProceduralTexture", function() { return MarbleProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _marbleProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./marbleProceduralTexture.fragment */ "./marble/marbleProceduralTexture.fragment.ts");
+
+
+
+
+
+
 var MarbleProceduralTexture = /** @class */ (function (_super) {
-    __extends(MarbleProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MarbleProceduralTexture, _super);
     function MarbleProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "marbleProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._numberOfTilesHeight = 3;
         _this._numberOfTilesWidth = 3;
         _this._amplitude = 9.0;
-        _this._jointColor = new babylonjs_1.Color3(0.72, 0.72, 0.72);
+        _this._jointColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.72, 0.72, 0.72);
         _this.updateShaderUniforms();
         return _this;
     }
@@ -1037,7 +1250,7 @@ var MarbleProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized marble procedural texture object
      */
     MarbleProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.MarbleProceduralTexture";
         return serializationObject;
     };
@@ -1049,99 +1262,89 @@ var MarbleProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Marble Procedural Texture
      */
     MarbleProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new MarbleProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new MarbleProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         return texture;
     };
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], MarbleProceduralTexture.prototype, "numberOfTilesHeight", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], MarbleProceduralTexture.prototype, "amplitude", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], MarbleProceduralTexture.prototype, "numberOfTilesWidth", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], MarbleProceduralTexture.prototype, "jointColor", null);
     return MarbleProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.MarbleProceduralTexture = MarbleProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.MarbleProceduralTexture"] = MarbleProceduralTexture;
 
 
 /***/ }),
 
-/***/ "./src/normalMap/index.ts":
-/*!********************************!*\
-  !*** ./src/normalMap/index.ts ***!
-  \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./normalMap/index.ts":
+/*!****************************!*\
+  !*** ./normalMap/index.ts ***!
+  \****************************/
+/*! exports provided: NormalMapProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _normalMapProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./normalMapProceduralTexture */ "./normalMap/normalMapProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NormalMapProceduralTexture", function() { return _normalMapProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["NormalMapProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./normalMapProceduralTexture */ "./src/normalMap/normalMapProceduralTexture.ts"));
+
 
 
 /***/ }),
 
-/***/ "./src/normalMap/normalMapProceduralTexture.fragment.ts":
-/*!**************************************************************!*\
-  !*** ./src/normalMap/normalMapProceduralTexture.fragment.ts ***!
-  \**************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./normalMap/normalMapProceduralTexture.fragment.ts":
+/*!**********************************************************!*\
+  !*** ./normalMap/normalMapProceduralTexture.fragment.ts ***!
+  \**********************************************************/
+/*! exports provided: normalMapProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "normalMapProceduralTexturePixelShader", function() { return normalMapProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var name = 'normalMapProceduralTexturePixelShader';
-exports.name = name;
 var shader = "precision highp float;\n\nuniform sampler2D baseSampler;\nuniform float size;\n\nvarying vec2 vUV;\n\nconst vec3 LUMA_COEFFICIENT=vec3(0.2126,0.7152,0.0722);\nfloat lumaAtCoord(vec2 coord)\n{\nvec3 pixel=texture2D(baseSampler,coord).rgb;\nfloat luma=dot(pixel,LUMA_COEFFICIENT);\nreturn luma;\n}\nvoid main()\n{\nfloat lumaU0=lumaAtCoord(vUV+vec2(-1.0,0.0)/size);\nfloat lumaU1=lumaAtCoord(vUV+vec2( 1.0,0.0)/size);\nfloat lumaV0=lumaAtCoord(vUV+vec2( 0.0,-1.0)/size);\nfloat lumaV1=lumaAtCoord(vUV+vec2( 0.0,1.0)/size);\nvec2 slope=(vec2(lumaU0-lumaU1,lumaV0-lumaV1)+1.0)*0.5;\ngl_FragColor=vec4(slope,1.0,1.0);\n}\n";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var normalMapProceduralTexturePixelShader = { name: name, shader: shader };
 
 
 /***/ }),
 
-/***/ "./src/normalMap/normalMapProceduralTexture.ts":
-/*!*****************************************************!*\
-  !*** ./src/normalMap/normalMapProceduralTexture.ts ***!
-  \*****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./normalMap/normalMapProceduralTexture.ts":
+/*!*************************************************!*\
+  !*** ./normalMap/normalMapProceduralTexture.ts ***!
+  \*************************************************/
+/*! exports provided: NormalMapProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NormalMapProceduralTexture", function() { return NormalMapProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _normalMapProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./normalMapProceduralTexture.fragment */ "./normalMap/normalMapProceduralTexture.fragment.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./normalMapProceduralTexture.fragment */ "./src/normalMap/normalMapProceduralTexture.fragment.ts");
+
+
+
+
 var NormalMapProceduralTexture = /** @class */ (function (_super) {
-    __extends(NormalMapProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NormalMapProceduralTexture, _super);
     function NormalMapProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "normalMapProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this.updateShaderUniforms();
@@ -1175,7 +1378,7 @@ var NormalMapProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized normal map procedural texture object
      */
     NormalMapProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.NormalMapProceduralTexture";
         return serializationObject;
     };
@@ -1187,90 +1390,80 @@ var NormalMapProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Normal Map Procedural Texture
      */
     NormalMapProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new NormalMapProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new NormalMapProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         return texture;
     };
-    __decorate([
-        babylonjs_1.serializeAsTexture()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])()
     ], NormalMapProceduralTexture.prototype, "baseTexture", null);
     return NormalMapProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.NormalMapProceduralTexture = NormalMapProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.NormalMapProceduralTexture"] = NormalMapProceduralTexture;
 
 
 /***/ }),
 
-/***/ "./src/perlinNoise/index.ts":
-/*!**********************************!*\
-  !*** ./src/perlinNoise/index.ts ***!
-  \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./perlinNoise/index.ts":
+/*!******************************!*\
+  !*** ./perlinNoise/index.ts ***!
+  \******************************/
+/*! exports provided: PerlinNoiseProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _perlinNoiseProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./perlinNoiseProceduralTexture */ "./perlinNoise/perlinNoiseProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PerlinNoiseProceduralTexture", function() { return _perlinNoiseProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["PerlinNoiseProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./perlinNoiseProceduralTexture */ "./src/perlinNoise/perlinNoiseProceduralTexture.ts"));
+
 
 
 /***/ }),
 
-/***/ "./src/perlinNoise/perlinNoiseProceduralTexture.fragment.ts":
-/*!******************************************************************!*\
-  !*** ./src/perlinNoise/perlinNoiseProceduralTexture.fragment.ts ***!
-  \******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./perlinNoise/perlinNoiseProceduralTexture.fragment.ts":
+/*!**************************************************************!*\
+  !*** ./perlinNoise/perlinNoiseProceduralTexture.fragment.ts ***!
+  \**************************************************************/
+/*! exports provided: perlinNoiseProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "perlinNoiseProceduralTexturePixelShader", function() { return perlinNoiseProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var name = 'perlinNoiseProceduralTexturePixelShader';
-exports.name = name;
 var shader = "\nprecision highp float;\n\nuniform float size;\nuniform float time;\nuniform float translationSpeed;\n\nvarying vec2 vUV;\n\nfloat r(float n)\n{\nreturn fract(cos(n*89.42)*343.42);\n}\nvec2 r(vec2 n)\n{\nreturn vec2(r(n.x*23.62-300.0+n.y*34.35),r(n.x*45.13+256.0+n.y*38.89));\n}\nfloat worley(vec2 n,float s)\n{\nfloat dis=1.0;\nfor(int x=-1; x<=1; x++)\n{\nfor(int y=-1; y<=1; y++)\n{\nvec2 p=floor(n/s)+vec2(x,y);\nfloat d=length(r(p)+vec2(x,y)-fract(n/s));\nif (dis>d)\ndis=d;\n}\n}\nreturn 1.0-dis;\n}\nvec3 hash33(vec3 p3)\n{\np3=fract(p3*vec3(0.1031,0.11369,0.13787));\np3+=dot(p3,p3.yxz+19.19);\nreturn -1.0+2.0*fract(vec3((p3.x+p3.y)*p3.z,(p3.x+p3.z)*p3.y,(p3.y+p3.z)*p3.x));\n}\nfloat perlinNoise(vec3 p)\n{\nvec3 pi=floor(p);\nvec3 pf=p-pi;\nvec3 w=pf*pf*(3.0-2.0*pf);\nreturn mix(\nmix(\nmix(\ndot(pf-vec3(0,0,0),hash33(pi+vec3(0,0,0))),\ndot(pf-vec3(1,0,0),hash33(pi+vec3(1,0,0))),\nw.x\n),\nmix(\ndot(pf-vec3(0,0,1),hash33(pi+vec3(0,0,1))),\ndot(pf-vec3(1,0,1),hash33(pi+vec3(1,0,1))),\nw.x\n),\nw.z\n),\nmix(\nmix(\ndot(pf-vec3(0,1,0),hash33(pi+vec3(0,1,0))),\ndot(pf-vec3(1,1,0),hash33(pi+vec3(1,1,0))),\nw.x\n),\nmix(\ndot(pf-vec3(0,1,1),hash33(pi+vec3(0,1,1))),\ndot(pf-vec3(1,1,1),hash33(pi+vec3(1,1,1))),\nw.x\n),\nw.z\n),\nw.y\n);\n}\n\nvoid main(void)\n{\nvec2 uv=gl_FragCoord.xy+translationSpeed;\nfloat dis=(\n1.0+perlinNoise(vec3(uv/vec2(size,size),time*0.05)*8.0))\n*(1.0+(worley(uv,32.0)+ 0.5*worley(2.0*uv,32.0)+0.25*worley(4.0*uv,32.0))\n);\ngl_FragColor=vec4(vec3(dis/4.0),1.0);\n}\n";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var perlinNoiseProceduralTexturePixelShader = { name: name, shader: shader };
 
 
 /***/ }),
 
-/***/ "./src/perlinNoise/perlinNoiseProceduralTexture.ts":
-/*!*********************************************************!*\
-  !*** ./src/perlinNoise/perlinNoiseProceduralTexture.ts ***!
-  \*********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./perlinNoise/perlinNoiseProceduralTexture.ts":
+/*!*****************************************************!*\
+  !*** ./perlinNoise/perlinNoiseProceduralTexture.ts ***!
+  \*****************************************************/
+/*! exports provided: PerlinNoiseProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerlinNoiseProceduralTexture", function() { return PerlinNoiseProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _perlinNoiseProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./perlinNoiseProceduralTexture.fragment */ "./perlinNoise/perlinNoiseProceduralTexture.fragment.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./perlinNoiseProceduralTexture.fragment */ "./src/perlinNoise/perlinNoiseProceduralTexture.fragment.ts");
+
+
+
+
 var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
-    __extends(PerlinNoiseProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PerlinNoiseProceduralTexture, _super);
     function PerlinNoiseProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "perlinNoiseProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this.time = 0.0;
@@ -1304,7 +1497,7 @@ var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized perlin noise procedural texture object
      */
     PerlinNoiseProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.PerlinNoiseProceduralTexture";
         return serializationObject;
     };
@@ -1316,99 +1509,90 @@ var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Perlin Noise Procedural Texture
      */
     PerlinNoiseProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new PerlinNoiseProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new PerlinNoiseProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         return texture;
     };
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], PerlinNoiseProceduralTexture.prototype, "time", void 0);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], PerlinNoiseProceduralTexture.prototype, "timeScale", void 0);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], PerlinNoiseProceduralTexture.prototype, "translationSpeed", void 0);
     return PerlinNoiseProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.PerlinNoiseProceduralTexture = PerlinNoiseProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.PerlinNoiseProceduralTexture"] = PerlinNoiseProceduralTexture;
 
 
 /***/ }),
 
-/***/ "./src/road/index.ts":
-/*!***************************!*\
-  !*** ./src/road/index.ts ***!
-  \***************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./road/index.ts":
+/*!***********************!*\
+  !*** ./road/index.ts ***!
+  \***********************/
+/*! exports provided: RoadProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _roadProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./roadProceduralTexture */ "./road/roadProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RoadProceduralTexture", function() { return _roadProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["RoadProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./roadProceduralTexture */ "./src/road/roadProceduralTexture.ts"));
+
 
 
 /***/ }),
 
-/***/ "./src/road/roadProceduralTexture.fragment.ts":
-/*!****************************************************!*\
-  !*** ./src/road/roadProceduralTexture.fragment.ts ***!
-  \****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./road/roadProceduralTexture.fragment.ts":
+/*!************************************************!*\
+  !*** ./road/roadProceduralTexture.fragment.ts ***!
+  \************************************************/
+/*! exports provided: roadProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "roadProceduralTexturePixelShader", function() { return roadProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var name = 'roadProceduralTexturePixelShader';
-exports.name = name;
 var shader = "precision highp float;\nvarying vec2 vUV;\nuniform vec3 roadColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main(void) {\nfloat ratioy=mod(gl_FragCoord.y*100.0 ,fbm(vUV*2.0));\nvec3 color=roadColor*ratioy;\ngl_FragColor=vec4(color,1.0);\n}";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var roadProceduralTexturePixelShader = { name: name, shader: shader };
 
 
 /***/ }),
 
-/***/ "./src/road/roadProceduralTexture.ts":
-/*!*******************************************!*\
-  !*** ./src/road/roadProceduralTexture.ts ***!
-  \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./road/roadProceduralTexture.ts":
+/*!***************************************!*\
+  !*** ./road/roadProceduralTexture.ts ***!
+  \***************************************/
+/*! exports provided: RoadProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RoadProceduralTexture", function() { return RoadProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _roadProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./roadProceduralTexture.fragment */ "./road/roadProceduralTexture.fragment.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./roadProceduralTexture.fragment */ "./src/road/roadProceduralTexture.fragment.ts");
+
+
+
+
+
 var RoadProceduralTexture = /** @class */ (function (_super) {
-    __extends(RoadProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RoadProceduralTexture, _super);
     function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "roadProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
-        _this._roadColor = new babylonjs_1.Color3(0.53, 0.53, 0.53);
+        _this._roadColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.53, 0.53, 0.53);
         _this.updateShaderUniforms();
         return _this;
     }
@@ -1431,7 +1615,7 @@ var RoadProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized road procedural texture object
      */
     RoadProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.RoadProceduralTexture";
         return serializationObject;
     };
@@ -1443,90 +1627,80 @@ var RoadProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Road Procedural Texture
      */
     RoadProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new RoadProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new RoadProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         return texture;
     };
-    __decorate([
-        babylonjs_1.serializeAsColor3()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], RoadProceduralTexture.prototype, "roadColor", null);
     return RoadProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.RoadProceduralTexture = RoadProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.RoadProceduralTexture"] = RoadProceduralTexture;
 
 
 /***/ }),
 
-/***/ "./src/starfield/index.ts":
-/*!********************************!*\
-  !*** ./src/starfield/index.ts ***!
-  \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./starfield/index.ts":
+/*!****************************!*\
+  !*** ./starfield/index.ts ***!
+  \****************************/
+/*! exports provided: StarfieldProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _starfieldProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./starfieldProceduralTexture */ "./starfield/starfieldProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StarfieldProceduralTexture", function() { return _starfieldProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["StarfieldProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./starfieldProceduralTexture */ "./src/starfield/starfieldProceduralTexture.ts"));
+
 
 
 /***/ }),
 
-/***/ "./src/starfield/starfieldProceduralTexture.fragment.ts":
-/*!**************************************************************!*\
-  !*** ./src/starfield/starfieldProceduralTexture.fragment.ts ***!
-  \**************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./starfield/starfieldProceduralTexture.fragment.ts":
+/*!**********************************************************!*\
+  !*** ./starfield/starfieldProceduralTexture.fragment.ts ***!
+  \**********************************************************/
+/*! exports provided: starfieldProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "starfieldProceduralTexturePixelShader", function() { return starfieldProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var name = 'starfieldProceduralTexturePixelShader';
-exports.name = name;
 var shader = "precision highp float;\n\n#define volsteps 20\n#define iterations 15\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float time;\nuniform float alpha;\nuniform float beta;\nuniform float zoom;\nuniform float formuparam;\nuniform float stepsize;\nuniform float tile;\nuniform float brightness;\nuniform float darkmatter;\nuniform float distfading;\nuniform float saturation;\nvoid main()\n{\nvec3 dir=vec3(vUV*zoom,1.);\nfloat localTime=time*0.0001;\n\nmat2 rot1=mat2(cos(alpha),sin(alpha),-sin(alpha),cos(alpha));\nmat2 rot2=mat2(cos(beta),sin(beta),-sin(beta),cos(beta));\ndir.xz*=rot1;\ndir.xy*=rot2;\nvec3 from=vec3(1.,.5,0.5);\nfrom+=vec3(-2.,localTime*2.,localTime);\nfrom.xz*=rot1;\nfrom.xy*=rot2;\n\nfloat s=0.1,fade=1.;\nvec3 v=vec3(0.);\nfor (int r=0; r<volsteps; r++) {\nvec3 p=from+s*dir*.5;\np=abs(vec3(tile)-mod(p,vec3(tile*2.)));\nfloat pa,a=pa=0.;\nfor (int i=0; i<iterations; i++) {\np=abs(p)/dot(p,p)-formuparam;\na+=abs(length(p)-pa);\npa=length(p);\n}\nfloat dm=max(0.,darkmatter-a*a*.001);\na*=a*a;\nif (r>6) fade*=1.-dm;\n\nv+=fade;\nv+=vec3(s,s*s,s*s*s*s)*a*brightness*fade;\nfade*=distfading;\ns+=stepsize;\n}\nv=mix(vec3(length(v)),v,saturation);\ngl_FragColor=vec4(v*.01,1.);\n}";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var starfieldProceduralTexturePixelShader = { name: name, shader: shader };
 
 
 /***/ }),
 
-/***/ "./src/starfield/starfieldProceduralTexture.ts":
-/*!*****************************************************!*\
-  !*** ./src/starfield/starfieldProceduralTexture.ts ***!
-  \*****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./starfield/starfieldProceduralTexture.ts":
+/*!*************************************************!*\
+  !*** ./starfield/starfieldProceduralTexture.ts ***!
+  \*************************************************/
+/*! exports provided: StarfieldProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StarfieldProceduralTexture", function() { return StarfieldProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _starfieldProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./starfieldProceduralTexture.fragment */ "./starfield/starfieldProceduralTexture.fragment.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./starfieldProceduralTexture.fragment */ "./src/starfield/starfieldProceduralTexture.fragment.ts");
+
+
+
+
 var StarfieldProceduralTexture = /** @class */ (function (_super) {
-    __extends(StarfieldProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](StarfieldProceduralTexture, _super);
     function StarfieldProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "starfieldProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._time = 1;
@@ -1682,7 +1856,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized starfield procedural texture object
      */
     StarfieldProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.StarfieldProceduralTexture";
         return serializationObject;
     };
@@ -1694,124 +1868,115 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Starfield Procedural Texture
      */
     StarfieldProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new StarfieldProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new StarfieldProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         return texture;
     };
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "time", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "alpha", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "beta", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "formuparam", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "stepsize", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "zoom", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "tile", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "brightness", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "darkmatter", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "distfading", null);
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StarfieldProceduralTexture.prototype, "saturation", null);
     return StarfieldProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.StarfieldProceduralTexture = StarfieldProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.StarfieldProceduralTexture"] = StarfieldProceduralTexture;
 
 
 /***/ }),
 
-/***/ "./src/wood/index.ts":
-/*!***************************!*\
-  !*** ./src/wood/index.ts ***!
-  \***************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./wood/index.ts":
+/*!***********************!*\
+  !*** ./wood/index.ts ***!
+  \***********************/
+/*! exports provided: WoodProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _woodProceduralTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./woodProceduralTexture */ "./wood/woodProceduralTexture.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "WoodProceduralTexture", function() { return _woodProceduralTexture__WEBPACK_IMPORTED_MODULE_0__["WoodProceduralTexture"]; });
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./woodProceduralTexture */ "./src/wood/woodProceduralTexture.ts"));
+
 
 
 /***/ }),
 
-/***/ "./src/wood/woodProceduralTexture.fragment.ts":
-/*!****************************************************!*\
-  !*** ./src/wood/woodProceduralTexture.fragment.ts ***!
-  \****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./wood/woodProceduralTexture.fragment.ts":
+/*!************************************************!*\
+  !*** ./wood/woodProceduralTexture.fragment.ts ***!
+  \************************************************/
+/*! exports provided: woodProceduralTexturePixelShader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "woodProceduralTexturePixelShader", function() { return woodProceduralTexturePixelShader; });
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
 var name = 'woodProceduralTexturePixelShader';
-exports.name = name;
 var shader = "precision highp float;\nvarying vec2 vPosition;\nvarying vec2 vUV;\nuniform float ampScale;\nuniform vec3 woodColor;\nfloat rand(vec2 n) {\nreturn fract(cos(dot(n,vec2(12.9898,4.1414)))*43758.5453);\n}\nfloat noise(vec2 n) {\nconst vec2 d=vec2(0.0,1.0);\nvec2 b=floor(n),f=smoothstep(vec2(0.0),vec2(1.0),fract(n));\nreturn mix(mix(rand(b),rand(b+d.yx),f.x),mix(rand(b+d.xy),rand(b+d.yy),f.x),f.y);\n}\nfloat fbm(vec2 n) {\nfloat total=0.0,amplitude=1.0;\nfor (int i=0; i<4; i++) {\ntotal+=noise(n)*amplitude;\nn+=n;\namplitude*=0.5;\n}\nreturn total;\n}\nvoid main(void) {\nfloat ratioy=mod(vUV.x*ampScale,2.0+fbm(vUV*0.8));\nvec3 wood=woodColor*ratioy;\ngl_FragColor=vec4(wood,1.0);\n}";
-exports.shader = shader;
-babylonjs_1.Effect.ShadersStore[name] = shader;
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
+/** @hidden */
+var woodProceduralTexturePixelShader = { name: name, shader: shader };
 
 
 /***/ }),
 
-/***/ "./src/wood/woodProceduralTexture.ts":
-/*!*******************************************!*\
-  !*** ./src/wood/woodProceduralTexture.ts ***!
-  \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./wood/woodProceduralTexture.ts":
+/*!***************************************!*\
+  !*** ./wood/woodProceduralTexture.ts ***!
+  \***************************************/
+/*! exports provided: WoodProceduralTexture */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WoodProceduralTexture", function() { return WoodProceduralTexture; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _woodProceduralTexture_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./woodProceduralTexture.fragment */ "./wood/woodProceduralTexture.fragment.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
-__webpack_require__(/*! ./woodProceduralTexture.fragment */ "./src/wood/woodProceduralTexture.fragment.ts");
+
+
+
+
+
 var WoodProceduralTexture = /** @class */ (function (_super) {
-    __extends(WoodProceduralTexture, _super);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](WoodProceduralTexture, _super);
     function WoodProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
         var _this = _super.call(this, name, size, "woodProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._ampScale = 100.0;
-        _this._woodColor = new babylonjs_1.Color3(0.32, 0.17, 0.09);
+        _this._woodColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.32, 0.17, 0.09);
         _this.updateShaderUniforms();
         return _this;
     }
@@ -1846,7 +2011,7 @@ var WoodProceduralTexture = /** @class */ (function (_super) {
      * @returns a serialized wood procedural texture object
      */
     WoodProceduralTexture.prototype.serialize = function () {
-        var serializationObject = babylonjs_1.SerializationHelper.Serialize(this, _super.prototype.serialize.call(this));
+        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this, _super.prototype.serialize.call(this));
         serializationObject.customType = "BABYLON.WoodProceduralTexture";
         return serializationObject;
     };
@@ -1858,30 +2023,31 @@ var WoodProceduralTexture = /** @class */ (function (_super) {
      * @returns a parsed Wood Procedural Texture
      */
     WoodProceduralTexture.Parse = function (parsedTexture, scene, rootUrl) {
-        var texture = babylonjs_1.SerializationHelper.Parse(function () { return new WoodProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
+        var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new WoodProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps); }, parsedTexture, scene, rootUrl);
         return texture;
     };
-    __decorate([
-        babylonjs_1.serialize()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], WoodProceduralTexture.prototype, "ampScale", null);
-    __decorate([
-        babylonjs_1.serializeAsColor3()
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], WoodProceduralTexture.prototype, "woodColor", null);
     return WoodProceduralTexture;
-}(babylonjs_1.ProceduralTexture));
-exports.WoodProceduralTexture = WoodProceduralTexture;
+}(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["ProceduralTexture"]));
+
+babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.WoodProceduralTexture"] = WoodProceduralTexture;
 
 
 /***/ }),
 
-/***/ "babylonjs":
+/***/ "babylonjs/Misc/decorators":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__;
 
 /***/ })
 

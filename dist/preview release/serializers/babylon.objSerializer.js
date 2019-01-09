@@ -7,7 +7,7 @@
 		exports["babylonjs-serializers"] = factory(require("babylonjs"));
 	else
 		root["SERIALIZERS"] = factory(root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs__) {
+})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -96,10 +96,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
-/***/ "../node_modules/webpack/buildin/global.js":
-/*!*************************************************!*\
-  !*** ../node_modules/webpack/buildin/global.js ***!
-  \*************************************************/
+/***/ "../../node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -112,7 +112,7 @@ g = (function() {
 
 try {
 	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
+	g = g || new Function("return this")();
 } catch (e) {
 	// This works if the window reference is available
 	if (typeof window === "object") g = window;
@@ -127,65 +127,37 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./legacy/legacy-objSerializer.ts":
-/*!****************************************!*\
-  !*** ./legacy/legacy-objSerializer.ts ***!
-  \****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./OBJ/index.ts":
+/*!**********************!*\
+  !*** ./OBJ/index.ts ***!
+  \**********************/
+/*! exports provided: OBJExport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-var Serializers = __webpack_require__(/*! ../src/OBJ */ "./src/OBJ/index.ts");
-/**
- * This is the entry point for the UMD module.
- * The entry point for a future ESM package should be index.ts
- */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
-if (typeof globalObject !== "undefined") {
-    for (var serializer in Serializers) {
-        globalObject.BABYLON[serializer] = Serializers[serializer];
-    }
-}
-__export(__webpack_require__(/*! ../src/OBJ */ "./src/OBJ/index.ts"));
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _objSerializer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./objSerializer */ "./OBJ/objSerializer.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJExport", function() { return _objSerializer__WEBPACK_IMPORTED_MODULE_0__["OBJExport"]; });
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
-/***/ }),
-
-/***/ "./src/OBJ/index.ts":
-/*!**************************!*\
-  !*** ./src/OBJ/index.ts ***!
-  \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./objSerializer */ "./src/OBJ/objSerializer.ts"));
 
 
 /***/ }),
 
-/***/ "./src/OBJ/objSerializer.ts":
-/*!**********************************!*\
-  !*** ./src/OBJ/objSerializer.ts ***!
-  \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./OBJ/objSerializer.ts":
+/*!******************************!*\
+  !*** ./OBJ/objSerializer.ts ***!
+  \******************************/
+/*! exports provided: OBJExport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OBJExport", function() { return OBJExport; });
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Maths/math");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "babylonjs");
+
 /**
  * Class for generating OBJ data from a Babylon scene.
  */
@@ -215,8 +187,8 @@ var OBJExport = /** @class */ (function () {
             //Uses the position of the item in the scene, to the file (this back to normal in the end)
             var lastMatrix = null;
             if (globalposition) {
-                var newMatrix = BABYLON.Matrix.Translation(mesh[j].position.x, mesh[j].position.y, mesh[j].position.z);
-                lastMatrix = BABYLON.Matrix.Translation(-(mesh[j].position.x), -(mesh[j].position.y), -(mesh[j].position.z));
+                var newMatrix = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Matrix"].Translation(mesh[j].position.x, mesh[j].position.y, mesh[j].position.z);
+                lastMatrix = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Matrix"].Translation(-(mesh[j].position.x), -(mesh[j].position.y), -(mesh[j].position.z));
                 mesh[j].bakeTransformIntoVertices(newMatrix);
             }
             //TODO: submeshes (groups)
@@ -229,7 +201,7 @@ var OBJExport = /** @class */ (function () {
             }
             var g = mesh[j].geometry;
             if (!g) {
-                babylonjs_1.Tools.Warn("No geometry is present on the mesh");
+                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("No geometry is present on the mesh");
                 continue;
             }
             var trunkVerts = g.getVerticesData('position');
@@ -238,7 +210,7 @@ var OBJExport = /** @class */ (function () {
             var trunkFaces = g.getIndices();
             var curV = 0;
             if (!trunkVerts || !trunkFaces) {
-                babylonjs_1.Tools.Warn("There are no position vertices or indices on the mesh!");
+                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("There are no position vertices or indices on the mesh!");
                 continue;
             }
             for (var i = 0; i < trunkVerts.length; i += 3) {
@@ -328,19 +300,48 @@ var OBJExport = /** @class */ (function () {
     };
     return OBJExport;
 }());
-exports.OBJExport = OBJExport;
+
 
 
 /***/ }),
 
-/***/ "babylonjs":
+/***/ "./legacy/legacy-objSerializer.ts":
+/*!****************************************!*\
+  !*** ./legacy/legacy-objSerializer.ts ***!
+  \****************************************/
+/*! exports provided: OBJExport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _OBJ__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../OBJ */ "./OBJ/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJExport", function() { return _OBJ__WEBPACK_IMPORTED_MODULE_0__["OBJExport"]; });
+
+
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var serializer in _OBJ__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[serializer] = _OBJ__WEBPACK_IMPORTED_MODULE_0__[serializer];
+    }
+}
+
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "babylonjs/Maths/math":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math__;
 
 /***/ })
 
