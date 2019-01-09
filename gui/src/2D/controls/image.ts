@@ -1,5 +1,8 @@
+import { Nullable } from "babylonjs/types";
+import { Observable } from "babylonjs/Misc/observable";
+import { Tools } from "babylonjs/Misc/tools";
+
 import { Control } from "./control";
-import { Nullable, Tools, Observable } from "babylonjs";
 import { Measure } from "../measure";
 
 /**

@@ -1,6 +1,11 @@
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { Vector3, Matrix } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { Scene } from "babylonjs/scene";
+
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observer, Vector3, Scene, Tools, Matrix } from "babylonjs";
 import { Measure } from "../measure";
 
 /** Class used to render 2D lines */

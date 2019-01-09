@@ -1,5 +1,8 @@
 import * as React from "react";
-import { Material, Observable } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
+import { Material } from "babylonjs/Materials/material";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { LockObject } from "../lockObject";

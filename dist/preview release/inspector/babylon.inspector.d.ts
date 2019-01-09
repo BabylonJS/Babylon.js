@@ -20,4 +20,4 @@ declare module INSPECTOR {
         value: any;
         initialValue: any;
     }
-}
+}

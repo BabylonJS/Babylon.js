@@ -1,4 +1,19 @@
-import { DynamicTexture, Nullable, Observer, Camera, Engine, KeyboardInfoPre, PointerInfoPre, PointerInfo, ClipboardEventTypes, Layer, Viewport, Scene, Texture, KeyboardEventTypes, Vector3, Matrix, Vector2, Tools, PointerEventTypes, AbstractMesh, StandardMaterial, Color3, Observable, ClipboardInfo } from 'babylonjs';
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Viewport, Color3, Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { Tools } from "babylonjs/Misc/tools";
+import { PointerInfoPre, PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
+import { KeyboardInfoPre, KeyboardEventTypes } from "babylonjs/Events/keyboardEvents";
+import { Camera } from "babylonjs/Cameras/camera";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Layer } from "babylonjs/Layers/layer";
+import { Engine } from "babylonjs/Engines/engine";
+import { Scene } from "babylonjs/scene";
+
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";
@@ -630,6 +645,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return;
         }
+
+        let tempViewport = new Viewport(0, 0, 0, 0);
+
         this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
             if (scene!.isPointerCaptured((<PointerEvent>(pi.event)).pointerId)) {
                 return;
@@ -642,14 +660,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (!scene) {
                 return;
             }
+
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
-            if (!camera) {
-                return;
-            }
             let engine = scene.getEngine();
-            let viewport = camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-            let x = scene.pointerX / engine.getHardwareScalingLevel() - viewport.x;
-            let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
+
+            if (!camera) {
+                tempViewport.x = 0;
+                tempViewport.y = 0;
+                tempViewport.width = engine.getRenderWidth();
+                tempViewport.height = engine.getRenderHeight();
+            } else {
+                camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+            }
+
+            let x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
+            let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
             this._doPicking(x, y, pi.type, (pi.event as PointerEvent).pointerId || 0, pi.event.button);
@@ -661,19 +686,22 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._attachToOnPointerOut(scene);
     }
     /** @hidden */
-    private onClipboardCopy = (evt: ClipboardEvent) => {
+    private onClipboardCopy = (rawEvt: Event) => {
+        const evt = rawEvt as ClipboardEvent;
         let ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     }
     /** @hidden */
-    private onClipboardCut = (evt: ClipboardEvent) => {
+    private onClipboardCut = (rawEvt: Event) => {
+        const evt = rawEvt as ClipboardEvent;
         let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     }
     /** @hidden */
-    private onClipboardPaste = (evt: ClipboardEvent) => {
+    private onClipboardPaste = (rawEvt: Event) => {
+        const evt = rawEvt as ClipboardEvent;
         let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();

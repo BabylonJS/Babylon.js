@@ -39,18 +39,15 @@ To build all materials and generate the *dist* folder, just run from the tools/g
 gulp materialsLibrary
 ```
 
-To integrate your new material to the build process, you have to edit the config.json file in the tools/gulp and add an entry in the "materialsLibrary/libraries" section of the file:
+To integrate your new material to the build process, you have to edit the config.json file in the tools/config and add an entry in the "materialsLibrary/libraries" section of the file:
 
 ```
   "libraries": [
     ...
       {
-        "files": ["../../materialsLibrary/src/gradient/babylon.gradientMaterial.ts"],
-        "shaderFiles": [
-          "../../materialsLibrary/src/gradient/gradient.vertex.fx",
-          "../../materialsLibrary/src/gradient/gradient.fragment.fx"
-        ],
-        "output": "babylon.gradientMaterial.js"
+        "output": "babylon.triPlanarMaterial.min.js",
+        "entry": "./legacy/legacy-triPlanar.ts",
+        "preventLoadLibrary": true
       }
       ...
   ]

@@ -1,5 +1,9 @@
 import * as React from "react";
-import { Observable, PBRSpecularGlossinessMaterial, BaseTexture } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { PBRSpecularGlossinessMaterial } from "babylonjs/Materials/PBR/pbrSpecularGlossinessMaterial";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../lines/color3LineComponent";
@@ -27,7 +31,7 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
             return null;
         }
 
-        const onDebugSelectionChangeObservable = new BABYLON.Observable<BaseTexture>();
+        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
             <LineContainerComponent title="TEXTURES">

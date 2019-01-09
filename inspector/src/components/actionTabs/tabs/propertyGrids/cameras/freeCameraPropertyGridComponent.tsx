@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Observable, FreeCamera } from "babylonjs";
+import { FreeCamera } from "babylonjs/Cameras/freeCamera";
+import { Observable } from "babylonjs/Misc/observable";
 import { CommonCameraPropertyGridComponent } from "./commonCameraPropertyGridComponent";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";

@@ -1,5 +1,8 @@
 import * as React from "react";
-import { TransformNode, Observable } from "babylonjs";
+
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Observable } from "babylonjs/Misc/observable";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";

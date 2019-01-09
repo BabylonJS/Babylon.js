@@ -89,6 +89,7 @@
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 - Added InputsManager and keyboard bindings for FollowCamera. ([mrdunk](https://github.com))
 - Added per solid particle culling possibility : `solidParticle.isInFrustum()`  ([jerome](https://github.com/jbousquie))
+- Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
@@ -202,3 +203,10 @@
   - `TransformNode` objects are excluded from the returned list of meshes when importing mesh
   - `TransformNode` objects do not raise `onMeshLoaded` events
 - `xAxisMesh`, `yAxisMesh`, and `zAxisMesh` of `AxesViewer` was renamed to `xAxis`, `yAxis`, and `zAxis` respectively and now return a `TransformNode` to represent the parent node of the cylinder and line of the arrow ([bghgary](https://github.com/bghgary))
+- `Viewport.toglobal` does not allow passing engine in to prevent circular dependency ([Sebavan](https://github.com/Sebavan))
+- `Vector3.UnprojectRayToRef` has been moved to `Ray.unprojectRayToRef` instance method to decrease class coupling ([Sebavan](https://github.com/Sebavan))
+- `Material.ParseMultiMaterial` has been moved to `MultiMaterial.ParseMultiMaterial` to decrease class coupling ([Sebavan](https://github.com/Sebavan))
+- no more `babylon.no-module.max.js` javascript version has the Webpack UMD bundle covers both ([Sebavan]
+(https://github.com/Sebavan))
+- no more `es6.js` javascript as it is now available as a true es6 npm package ([Sebavan](https://github.com/Sebavan))
+- no more `babylon.worker.js` javascript following the lack of usage from the feature ([Sebavan](https://github.com/Sebavan))

@@ -1,6 +1,8 @@
+import { Nullable } from "babylonjs/types";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+
 import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
-import { Nullable, AbstractMesh } from "babylonjs";
 import { Measure } from "../measure";
 
 /**
