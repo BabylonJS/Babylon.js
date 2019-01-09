@@ -125,3 +125,8 @@ declare module "../Meshes/mesh" {
 
         return results;
     };
+
+    /**
+     * @hidden
+     */
+    export var _IDoNeedToBeInTheBuild = 42;

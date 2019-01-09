@@ -3271,7 +3271,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public removeMaterial(toRemove: Material): number {
         var index = toRemove._indexInSceneMaterialArray;
-        if (index !== -1) {
+        if (index !== -1 && index < this.materials.length) {
             if (index !== this.materials.length - 1) {
                 const lastMaterial = this.materials[this.materials.length - 1];
                 this.materials[index] = lastMaterial;

@@ -1,4 +1,5 @@
 import { Action } from "./action";
+import { _TypeStore } from "../Misc/typeStore";
 
 declare type ActionManager = import("./actionManager").ActionManager;
 
@@ -320,3 +321,7 @@ declare type ActionManager = import("./actionManager").ActionManager;
             });
         }
     }
+
+    _TypeStore.RegisteredTypes["BABYLON.ValueCondition"] = ValueCondition;
+    _TypeStore.RegisteredTypes["BABYLON.PredicateCondition"] = PredicateCondition;
+    _TypeStore.RegisteredTypes["BABYLON.StateCondition"] = StateCondition;
