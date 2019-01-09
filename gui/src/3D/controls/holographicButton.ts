@@ -65,8 +65,8 @@ export class HolographicButton extends Button3D {
         }
         if (!this._tooltipFade) {
             // Create tooltip with mesh and text
-            this._tooltipMesh = MeshBuilder.CreatePlane("", {size: 1}, this._backPlate._scene);
-            var tooltipBackground = MeshBuilder.CreatePlane("", {size: 1, sideOrientation: Mesh.DOUBLESIDE}, this._backPlate._scene);
+            this._tooltipMesh = MeshBuilder.CreatePlane("", { size: 1 }, this._backPlate._scene);
+            var tooltipBackground = MeshBuilder.CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
             var mat = new StandardMaterial("", this._backPlate._scene);
             mat.diffuseColor = Color3.FromHexString("#212121");
             tooltipBackground.material = mat;

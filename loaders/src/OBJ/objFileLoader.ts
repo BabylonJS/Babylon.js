@@ -698,9 +698,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 //Split the data for getting position, uv, and normals
                 var point = triangles[k].split("/"); // ["-1", "-1", "-1"]
                 // Set position indice
-                var indicePositionFromObj =  positions.length + parseInt(point[0]);
+                var indicePositionFromObj = positions.length + parseInt(point[0]);
                 // Set uv indice
-                var indiceUvsFromObj =  uvs.length + parseInt(point[1]);
+                var indiceUvsFromObj = uvs.length + parseInt(point[1]);
                 // Set normal indice
                 var indiceNormalFromObj = normals.length + parseInt(point[2]);
 
