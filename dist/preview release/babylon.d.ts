@@ -48065,6 +48065,10 @@ declare module BABYLON {
              */
             getHierarchyEmittedParticleSystems(): IParticleSystem[];
         }
+    /**
+     * @hidden
+     */
+    export var _IDoNeedToBeInTheBuild: number;
 }
 declare module BABYLON {
         interface Scene {
