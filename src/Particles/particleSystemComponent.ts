@@ -11,33 +11,33 @@ import { AssetContainer } from "../assetContainer";
 
 import "../Shaders/particles.vertex";
 
-    // Adds the parsers to the scene parsers.
-    AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
+// Adds the parsers to the scene parsers.
+AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
 
-        let individualParser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
+    let individualParser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
 
-        if (!individualParser) {
-            return;
+    if (!individualParser) {
+        return;
+    }
+
+    // Particles Systems
+    if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
+        for (var index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
+            var parsedParticleSystem = parsedData.particleSystems[index];
+            container.particleSystems.push(individualParser(parsedParticleSystem, scene, rootUrl));
         }
+    }
+});
 
-        // Particles Systems
-        if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-            for (var index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                var parsedParticleSystem = parsedData.particleSystems[index];
-                container.particleSystems.push(individualParser(parsedParticleSystem, scene, rootUrl));
-            }
-        }
-    });
-
-    AbstractScene.AddIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedParticleSystem: any, scene: Scene, rootUrl: string) => {
-        if (parsedParticleSystem.activeParticleCount) {
-            let ps = GPUParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-            return ps;
-        } else {
-            let ps = ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-            return ps;
-        }
-    });
+AbstractScene.AddIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedParticleSystem: any, scene: Scene, rootUrl: string) => {
+    if (parsedParticleSystem.activeParticleCount) {
+        let ps = GPUParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
+        return ps;
+    } else {
+        let ps = ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
+        return ps;
+    }
+});
 
 declare module "../Engines/engine" {
     export interface Engine {
@@ -58,29 +58,29 @@ declare module "../Engines/engine" {
     }
 }
 
-    Engine.prototype.createEffectForParticles = function(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
-        onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
+Engine.prototype.createEffectForParticles = function(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
+    onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
 
-        var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions();
-        var effectCreationOption = ParticleSystem._GetEffectCreationOptions();
+    var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions();
+    var effectCreationOption = ParticleSystem._GetEffectCreationOptions();
 
-        if (defines.indexOf(" BILLBOARD") === -1) {
-            defines += "\n#define BILLBOARD\n";
-        }
+    if (defines.indexOf(" BILLBOARD") === -1) {
+        defines += "\n#define BILLBOARD\n";
+    }
 
-        if (samplers.indexOf("diffuseSampler") === -1) {
-            samplers.push("diffuseSampler");
-        }
+    if (samplers.indexOf("diffuseSampler") === -1) {
+        samplers.push("diffuseSampler");
+    }
 
-        return this.createEffect(
-            {
-                vertex: "particles",
-                fragmentElement: fragmentName
-            },
-            attributesNamesOrOptions,
-            effectCreationOption.concat(uniformsNames),
-            samplers, defines, fallbacks, onCompiled, onError);
-    };
+    return this.createEffect(
+        {
+            vertex: "particles",
+            fragmentElement: fragmentName
+        },
+        attributesNamesOrOptions,
+        effectCreationOption.concat(uniformsNames),
+        samplers, defines, fallbacks, onCompiled, onError);
+};
 
 declare module "../Meshes/mesh" {
     export interface Mesh {
@@ -98,35 +98,35 @@ declare module "../Meshes/mesh" {
     }
 }
 
-    Mesh.prototype.getEmittedParticleSystems = function(): IParticleSystem[] {
-        var results = new Array<IParticleSystem>();
-        for (var index = 0; index < this.getScene().particleSystems.length; index++) {
-            var particleSystem = this.getScene().particleSystems[index];
-            if (particleSystem.emitter === this) {
-                results.push(particleSystem);
-            }
+Mesh.prototype.getEmittedParticleSystems = function(): IParticleSystem[] {
+    var results = new Array<IParticleSystem>();
+    for (var index = 0; index < this.getScene().particleSystems.length; index++) {
+        var particleSystem = this.getScene().particleSystems[index];
+        if (particleSystem.emitter === this) {
+            results.push(particleSystem);
         }
-        return results;
-    };
+    }
+    return results;
+};
 
-    Mesh.prototype.getHierarchyEmittedParticleSystems = function(): IParticleSystem[] {
-        var results = new Array<IParticleSystem>();
-        var descendants = this.getDescendants();
-        descendants.push(this);
+Mesh.prototype.getHierarchyEmittedParticleSystems = function(): IParticleSystem[] {
+    var results = new Array<IParticleSystem>();
+    var descendants = this.getDescendants();
+    descendants.push(this);
 
-        for (var index = 0; index < this.getScene().particleSystems.length; index++) {
-            var particleSystem = this.getScene().particleSystems[index];
-            let emitter: any = particleSystem.emitter;
+    for (var index = 0; index < this.getScene().particleSystems.length; index++) {
+        var particleSystem = this.getScene().particleSystems[index];
+        let emitter: any = particleSystem.emitter;
 
-            if (emitter.position && descendants.indexOf(emitter) !== -1) {
-                results.push(particleSystem);
-            }
+        if (emitter.position && descendants.indexOf(emitter) !== -1) {
+            results.push(particleSystem);
         }
+    }
 
-        return results;
-    };
+    return results;
+};
 
-    /**
-     * @hidden
-     */
-    export var _IDoNeedToBeInTheBuild = 42;
+/**
+ * @hidden
+ */
+export var _IDoNeedToBeInTheBuild = 42;

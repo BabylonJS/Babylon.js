@@ -16,63 +16,63 @@ declare module "../../../abstractScene" {
         proceduralTextures: Array<ProceduralTexture>;
     }
 }
+/**
+ * Defines the Procedural Texture scene component responsible to manage any Procedural Texture
+ * in a given scene.
+ */
+export class ProceduralTextureSceneComponent implements ISceneComponent {
     /**
-     * Defines the Procedural Texture scene component responsible to manage any Procedural Texture
-     * in a given scene.
+     * The component name helpfull to identify the component in the list of scene components.
      */
-    export class ProceduralTextureSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        public readonly name = SceneComponentConstants.NAME_PROCEDURALTEXTURE;
+    public readonly name = SceneComponentConstants.NAME_PROCEDURALTEXTURE;
 
-        /**
-         * The scene the component belongs to.
-         */
-        public scene: Scene;
+    /**
+     * The scene the component belongs to.
+     */
+    public scene: Scene;
 
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene) {
-            this.scene = scene;
-            this.scene.proceduralTextures = new Array<ProceduralTexture>();
-            scene.layers = new Array<Layer>();
-        }
+    /**
+     * Creates a new instance of the component for the given scene
+     * @param scene Defines the scene to register the component in
+     */
+    constructor(scene: Scene) {
+        this.scene = scene;
+        this.scene.proceduralTextures = new Array<ProceduralTexture>();
+        scene.layers = new Array<Layer>();
+    }
 
-        /**
-         * Registers the component in a given scene
-         */
-        public register(): void {
-            this.scene._beforeClearStage.registerStep(SceneComponentConstants.STEP_BEFORECLEAR_PROCEDURALTEXTURE, this, this._beforeClear);
-        }
+    /**
+     * Registers the component in a given scene
+     */
+    public register(): void {
+        this.scene._beforeClearStage.registerStep(SceneComponentConstants.STEP_BEFORECLEAR_PROCEDURALTEXTURE, this, this._beforeClear);
+    }
 
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        public rebuild(): void {
-            // Nothing to do here.
-        }
+    /**
+     * Rebuilds the elements related to this component in case of
+     * context lost for instance.
+     */
+    public rebuild(): void {
+        // Nothing to do here.
+    }
 
-        /**
-         * Disposes the component and the associated ressources.
-         */
-        public dispose(): void {
-            // Nothing to do here.
-        }
+    /**
+     * Disposes the component and the associated ressources.
+     */
+    public dispose(): void {
+        // Nothing to do here.
+    }
 
-        private _beforeClear(): void {
-            if (this.scene.proceduralTexturesEnabled) {
-                Tools.StartPerformanceCounter("Procedural textures", this.scene.proceduralTextures.length > 0);
-                for (var proceduralIndex = 0; proceduralIndex < this.scene.proceduralTextures.length; proceduralIndex++) {
-                    var proceduralTexture = this.scene.proceduralTextures[proceduralIndex];
-                    if (proceduralTexture._shouldRender()) {
-                        proceduralTexture.render();
-                    }
+    private _beforeClear(): void {
+        if (this.scene.proceduralTexturesEnabled) {
+            Tools.StartPerformanceCounter("Procedural textures", this.scene.proceduralTextures.length > 0);
+            for (var proceduralIndex = 0; proceduralIndex < this.scene.proceduralTextures.length; proceduralIndex++) {
+                var proceduralTexture = this.scene.proceduralTextures[proceduralIndex];
+                if (proceduralTexture._shouldRender()) {
+                    proceduralTexture.render();
                 }
-                Tools.EndPerformanceCounter("Procedural textures", this.scene.proceduralTextures.length > 0);
             }
+            Tools.EndPerformanceCounter("Procedural textures", this.scene.proceduralTextures.length > 0);
         }
     }
+}

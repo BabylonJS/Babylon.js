@@ -15,24 +15,24 @@ declare module "../scene" {
         simplificationQueue: SimplificationQueue;
     }
 }
-    Object.defineProperty(Scene.prototype, "simplificationQueue", {
-        get: function(this: Scene) {
-            if (!this._simplificationQueue) {
-                this._simplificationQueue = new SimplificationQueue();
-                let component = this._getComponent(SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE) as SimplicationQueueSceneComponent;
-                if (!component) {
-                    component = new SimplicationQueueSceneComponent(this);
-                    this._addComponent(component);
-                }
+Object.defineProperty(Scene.prototype, "simplificationQueue", {
+    get: function(this: Scene) {
+        if (!this._simplificationQueue) {
+            this._simplificationQueue = new SimplificationQueue();
+            let component = this._getComponent(SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE) as SimplicationQueueSceneComponent;
+            if (!component) {
+                component = new SimplicationQueueSceneComponent(this);
+                this._addComponent(component);
             }
-            return this._simplificationQueue;
-        },
-        set: function(this: Scene, value: SimplificationQueue) {
-            this._simplificationQueue = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
+        }
+        return this._simplificationQueue;
+    },
+    set: function(this: Scene, value: SimplificationQueue) {
+        this._simplificationQueue = value;
+    },
+    enumerable: true,
+    configurable: true
+});
 
 declare module "../Meshes/mesh" {
     export interface Mesh {
@@ -49,65 +49,65 @@ declare module "../Meshes/mesh" {
     }
 }
 
-    Mesh.prototype.simplify = function(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
-        this.getScene().simplificationQueue.addTask({
-            settings: settings,
-            parallelProcessing: parallelProcessing,
-            mesh: this,
-            simplificationType: simplificationType,
-            successCallback: successCallback
-        });
-        return this;
-    };
+Mesh.prototype.simplify = function(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
+    this.getScene().simplificationQueue.addTask({
+        settings: settings,
+        parallelProcessing: parallelProcessing,
+        mesh: this,
+        simplificationType: simplificationType,
+        successCallback: successCallback
+    });
+    return this;
+};
+
+/**
+ * Defines the simplification queue scene component responsible to help scheduling the various simplification task
+ * created in a scene
+ */
+export class SimplicationQueueSceneComponent implements ISceneComponent {
+    /**
+     * The component name helpfull to identify the component in the list of scene components.
+     */
+    public readonly name = SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE;
 
     /**
-     * Defines the simplification queue scene component responsible to help scheduling the various simplification task
-     * created in a scene
+     * The scene the component belongs to.
      */
-    export class SimplicationQueueSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        public readonly name = SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE;
+    public scene: Scene;
 
-        /**
-         * The scene the component belongs to.
-         */
-        public scene: Scene;
+    /**
+     * Creates a new instance of the component for the given scene
+     * @param scene Defines the scene to register the component in
+     */
+    constructor(scene: Scene) {
+        this.scene = scene;
+    }
 
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene) {
-            this.scene = scene;
-        }
+    /**
+     * Registers the component in a given scene
+     */
+    public register(): void {
+        this.scene._beforeCameraUpdateStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE, this, this._beforeCameraUpdate);
+    }
 
-        /**
-         * Registers the component in a given scene
-         */
-        public register(): void {
-            this.scene._beforeCameraUpdateStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE, this, this._beforeCameraUpdate);
-        }
+    /**
+     * Rebuilds the elements related to this component in case of
+     * context lost for instance.
+     */
+    public rebuild(): void {
+        // Nothing to do for this component
+    }
 
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        public rebuild(): void {
-            // Nothing to do for this component
-        }
+    /**
+     * Disposes the component and the associated ressources
+     */
+    public dispose(): void {
+        // Nothing to do for this component
+    }
 
-        /**
-         * Disposes the component and the associated ressources
-         */
-        public dispose(): void {
-            // Nothing to do for this component
-        }
-
-        private _beforeCameraUpdate(): void {
-            if (this.scene._simplificationQueue && !this.scene._simplificationQueue.running) {
-                this.scene._simplificationQueue.executeNext();
-            }
+    private _beforeCameraUpdate(): void {
+        if (this.scene._simplificationQueue && !this.scene._simplificationQueue.running) {
+            this.scene._simplificationQueue.executeNext();
         }
     }
+}

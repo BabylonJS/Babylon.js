@@ -80,7 +80,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
             this._loader.logClose();
 
-            return Promise.all(promises).then(() => {});
+            return Promise.all(promises).then(() => { });
         });
     }
 

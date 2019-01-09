@@ -101,7 +101,7 @@ export enum EBlendingFunction {
 
 /** @hidden */
 export interface IGLTFProperty {
-    extensions?: {[key: string]: any};
+    extensions?: { [key: string]: any };
     extras?: Object;
 }
 
@@ -193,11 +193,11 @@ export interface IGLTFTechniqueStates {
 
 /** @hidden */
 export interface IGLTFTechnique extends IGLTFChildRootProperty {
-    parameters: {[key: string]: IGLTFTechniqueParameter};
+    parameters: { [key: string]: IGLTFTechniqueParameter };
     program: string;
 
-    attributes: {[key: string]: string};
-    uniforms: {[key: string]: string};
+    attributes: { [key: string]: string };
+    uniforms: { [key: string]: string };
     states: IGLTFTechniqueStates;
 }
 
@@ -209,7 +209,7 @@ export interface IGLTFMaterial extends IGLTFChildRootProperty {
 
 /** @hidden */
 export interface IGLTFMeshPrimitive extends IGLTFProperty {
-    attributes: {[key: string]: string};
+    attributes: { [key: string]: string };
     indices: string;
     material: string;
 
@@ -325,8 +325,8 @@ export interface IGLTFAnimationSampler {
 /** @hidden */
 export interface IGLTFAnimation extends IGLTFChildRootProperty {
     channels?: IGLTFAnimationChannel[];
-    parameters?:  {[key: string]: string};
-    samplers?: {[key: string]: IGLTFAnimationSampler};
+    parameters?: { [key: string]: string };
+    samplers?: { [key: string]: IGLTFAnimationSampler };
 }
 
 /** @hidden */
@@ -370,26 +370,26 @@ export interface IGLTFScene extends IGLTFChildRootProperty {
 
 /** @hidden */
 export interface IGLTFRuntime {
-    extensions: {[key: string]: any};
-    accessors: {[key: string]: IGLTFAccessor};
-    buffers: {[key: string]: IGLTFBuffer};
-    bufferViews: {[key: string]: IGLTFBufferView};
-    meshes: {[key: string]: IGLTFMesh};
-    lights: {[key: string]: IGLTFLight};
-    cameras: {[key: string]: IGLTFCamera};
-    nodes: {[key: string]: IGLTFNode};
-    images: {[key: string]: IGLTFImage};
-    textures: {[key: string]: IGLTFTexture};
-    shaders: {[key: string]: IGLTFShader};
-    programs: {[key: string]: IGLTFProgram};
-    samplers: {[key: string]: IGLTFSampler};
-    techniques: {[key: string]: IGLTFTechnique};
-    materials: {[key: string]: IGLTFMaterial};
-    animations: {[key: string]: IGLTFAnimation};
-    skins: {[key: string]: IGLTFSkins};
+    extensions: { [key: string]: any };
+    accessors: { [key: string]: IGLTFAccessor };
+    buffers: { [key: string]: IGLTFBuffer };
+    bufferViews: { [key: string]: IGLTFBufferView };
+    meshes: { [key: string]: IGLTFMesh };
+    lights: { [key: string]: IGLTFLight };
+    cameras: { [key: string]: IGLTFCamera };
+    nodes: { [key: string]: IGLTFNode };
+    images: { [key: string]: IGLTFImage };
+    textures: { [key: string]: IGLTFTexture };
+    shaders: { [key: string]: IGLTFShader };
+    programs: { [key: string]: IGLTFProgram };
+    samplers: { [key: string]: IGLTFSampler };
+    techniques: { [key: string]: IGLTFTechnique };
+    materials: { [key: string]: IGLTFMaterial };
+    animations: { [key: string]: IGLTFAnimation };
+    skins: { [key: string]: IGLTFSkins };
 
     currentScene?: Object;
-    scenes: {[key: string]: IGLTFScene}; // v1.1
+    scenes: { [key: string]: IGLTFScene }; // v1.1
 
     extensionsUsed: string[];
     extensionsRequired?: string[]; // v1.1

@@ -7,34 +7,34 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/convolution.fragment";
 
+/**
+ * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the
+ * input texture to perform effects such as edge detection or sharpening
+ * See http://en.wikipedia.org/wiki/Kernel_(image_processing)
+ */
+export class ConvolutionPostProcess extends PostProcess {
     /**
-     * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the
-     * input texture to perform effects such as edge detection or sharpening
-     * See http://en.wikipedia.org/wiki/Kernel_(image_processing)
+     * Creates a new instance ConvolutionPostProcess
+     * @param name The name of the effect.
+     * @param kernel Array of 9 values corrisponding to the 3x3 kernel to be applied
+     * @param options The required width/height ratio to downsize to before computing the render pass.
+     * @param camera The camera to apply the render pass to.
+     * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+     * @param engine The engine which the post process will be applied. (default: current engine)
+     * @param reusable If the post process can be reused on the same frame. (default: false)
+     * @param textureType Type of textures used when performing the post process. (default: 0)
      */
-    export class ConvolutionPostProcess extends PostProcess{
-        /**
-         * Creates a new instance ConvolutionPostProcess
-         * @param name The name of the effect.
-         * @param kernel Array of 9 values corrisponding to the 3x3 kernel to be applied
-         * @param options The required width/height ratio to downsize to before computing the render pass.
-         * @param camera The camera to apply the render pass to.
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         * @param textureType Type of textures used when performing the post process. (default: 0)
-         */
-        constructor(name: string,
-            /** Array of 9 values corrisponding to the 3x3 kernel to be applied */
-            public kernel: number[],
-            options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
+    constructor(name: string,
+        /** Array of 9 values corrisponding to the 3x3 kernel to be applied */
+        public kernel: number[],
+        options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
+        super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
 
-            this.onApply = (effect: Effect) => {
-                effect.setFloat2("screenSize", this.width, this.height);
-                effect.setArray("kernel", this.kernel);
-            };
-        }
+        this.onApply = (effect: Effect) => {
+            effect.setFloat2("screenSize", this.width, this.height);
+            effect.setArray("kernel", this.kernel);
+        };
+    }
 
     // Statics
     /**
@@ -61,4 +61,4 @@ import "../Shaders/convolution.fragment";
      * Kernel to blur an image see https://en.wikipedia.org/wiki/Kernel_(image_processing)
      */
     public static GaussianKernel = [0, 1, 0, 1, 1, 1, 0, 1, 0];
-    }
+}

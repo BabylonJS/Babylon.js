@@ -182,7 +182,7 @@ export class WaterMaterial extends PushMaterial {
      */
     public get hasRenderTargetTextures(): boolean {
         return true;
-        }
+    }
 
     /**
     * Constructor
