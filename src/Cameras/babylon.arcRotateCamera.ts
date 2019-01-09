@@ -397,7 +397,7 @@ module BABYLON {
         public _panningMouseButton: number;
 
         /**
-         * Defines the inpute associated to the camera.
+         * Defines the input associated to the camera.
          */
         public inputs: ArcRotateCameraInputsManager;
 
