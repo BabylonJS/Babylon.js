@@ -645,6 +645,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return;
         }
+
+        let tempViewport = new Viewport(0, 0, 0, 0);
+
         this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
             if (scene!.isPointerCaptured((<PointerEvent>(pi.event)).pointerId)) {
                 return;
@@ -657,14 +660,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (!scene) {
                 return;
             }
+
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
-            if (!camera) {
-                return;
-            }
             let engine = scene.getEngine();
-            let viewport = camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-            let x = scene.pointerX / engine.getHardwareScalingLevel() - viewport.x;
-            let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
+
+            if (!camera) {
+                tempViewport.x = 0;
+                tempViewport.y = 0;
+                tempViewport.width = engine.getRenderWidth();
+                tempViewport.height = engine.getRenderHeight();
+            } else {
+                camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+            }
+
+            let x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
+            let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
             this._doPicking(x, y, pi.type, (pi.event as PointerEvent).pointerId || 0, pi.event.button);
