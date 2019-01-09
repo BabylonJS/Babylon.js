@@ -12,6 +12,7 @@
     "main": "babylonjs.serializers.min.js",
     "files": [
         "babylonjs.serializers.js",
+        "babylonjs.serializers.js.map",
         "babylonjs.serializers.min.js",
         "babylonjs.serializers.module.d.ts",
         "readme.md",

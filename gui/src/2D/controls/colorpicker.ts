@@ -1,12 +1,14 @@
+import { Observable } from "babylonjs/Misc/observable";
+import { Color3, Vector2 } from "babylonjs/Maths/math";
+
 import { Control } from "./control";
-import { Color3, Observable, Vector2 } from "babylonjs";
 import { Measure } from "../measure";
 import { InputText } from "./inputText";
 import { Rectangle } from "./rectangle";
 import { Button } from "./button";
 import { Grid } from "./grid";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { TextBlock } from ".";
+import { TextBlock } from "../controls/textBlock";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -644,16 +646,16 @@ export class ColorPicker extends Control {
                 if (newValue != "") {
                     newValue = parseInt(newValue).toString();
                     field.text = newValue;
-                    var newSwatchRGB: Color3 = BABYLON.Color3.FromHexString(newSwatch.background);
+                    var newSwatchRGB: Color3 = Color3.FromHexString(newSwatch.background);
                     if (activeField == field.name) {
                         if (channel == "r") {
-                            updateValues(new BABYLON.Color3((parseInt(newValue)) / 255, newSwatchRGB.g, newSwatchRGB.b), field.name);
+                            updateValues(new Color3((parseInt(newValue)) / 255, newSwatchRGB.g, newSwatchRGB.b), field.name);
                         }
                         else if (channel == "g") {
-                            updateValues(new BABYLON.Color3(newSwatchRGB.r, (parseInt(newValue)) / 255, newSwatchRGB.b), field.name);
+                            updateValues(new Color3(newSwatchRGB.r, (parseInt(newValue)) / 255, newSwatchRGB.b), field.name);
                         }
                         else {
-                            updateValues(new BABYLON.Color3(newSwatchRGB.r, newSwatchRGB.g, (parseInt(newValue)) / 255), field.name);
+                            updateValues(new Color3(newSwatchRGB.r, newSwatchRGB.g, (parseInt(newValue)) / 255), field.name);
                         }
                     }
                 }
@@ -690,16 +692,16 @@ export class ColorPicker extends Control {
                 else {
                     newValue = "0.0";
                 }
-                var newSwatchRGB = BABYLON.Color3.FromHexString(newSwatch.background);
+                var newSwatchRGB = Color3.FromHexString(newSwatch.background);
                 if (activeField == field.name) {
                     if (channel == "r") {
-                        updateValues(new BABYLON.Color3(parseFloat(newValue), newSwatchRGB.g, newSwatchRGB.b), field.name);
+                        updateValues(new Color3(parseFloat(newValue), newSwatchRGB.g, newSwatchRGB.b), field.name);
                     }
                     else if (channel == "g") {
-                        updateValues(new BABYLON.Color3(newSwatchRGB.r, parseFloat(newValue), newSwatchRGB.b), field.name);
+                        updateValues(new Color3(newSwatchRGB.r, parseFloat(newValue), newSwatchRGB.b), field.name);
                     }
                     else {
-                        updateValues(new BABYLON.Color3(newSwatchRGB.r, newSwatchRGB.g, parseFloat(newValue)), field.name);
+                        updateValues(new Color3(newSwatchRGB.r, newSwatchRGB.g, parseFloat(newValue)), field.name);
                     }
                 }
 
@@ -758,7 +760,7 @@ export class ColorPicker extends Control {
                     swatch.onPointerClickObservable.add(() => {
                         if (!editSwatchMode) {
                             if (options.savedColors) {
-                                updateValues(BABYLON.Color3.FromHexString(options.savedColors[metadata]), swatch.name!);
+                                updateValues(Color3.FromHexString(options.savedColors[metadata]), swatch.name!);
                             }
                         }
                         else {

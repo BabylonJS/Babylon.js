@@ -12,6 +12,7 @@
     "main": "babylonjs.proceduralTextures.min.js",
     "files": [
         "babylonjs.proceduralTextures.js",
+        "babylonjs.proceduralTextures.js.map",
         "babylonjs.proceduralTextures.min.js",
         "babylonjs.proceduralTextures.module.d.ts",
         "readme.md",

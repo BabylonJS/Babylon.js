@@ -11,6 +11,7 @@
     },
     "main": "babylonjs.materials.min.js",
     "files": [
+        "babylonjs.materials.js.map",
         "babylonjs.materials.js",
         "babylonjs.materials.min.js",
         "babylonjs.materials.module.d.ts",

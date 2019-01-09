@@ -1,4 +1,12 @@
-import { IDisposable, IBehaviorAware, Nullable, TransformNode, Vector3, Observable, Behavior, AbstractMesh, Scene, PointerEventTypes } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Observable } from "babylonjs/Misc/observable";
+import { Vector3 } from "babylonjs/Maths/math";
+import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { IBehaviorAware, Behavior } from "babylonjs/Behaviors/behavior";
+import { IDisposable, Scene } from "babylonjs/scene";
+
 import { GUI3DManager } from "../gui3DManager";
 import { Vector3WithInfo } from "../vector3WithInfo";
 import { Container3D } from "./container3D";

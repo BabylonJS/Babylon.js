@@ -1,7 +1,8 @@
+import { Tools } from "babylonjs/Misc/tools";
+
 import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
-import { Tools } from "babylonjs";
 
 /**
  * Class used to create a 2D stack panel container

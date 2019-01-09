@@ -1,5 +1,11 @@
 import * as React from "react";
-import { Scene, Observer, Nullable, IExplorerExtensibilityGroup } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Scene } from "babylonjs/scene";
+import { EngineStore } from "babylonjs/Engines/engineStore";
+
 import { TreeItemComponent } from "./treeItemComponent";
 import Resizable from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
@@ -10,7 +16,7 @@ import { GlobalState } from "components/globalState";
 require("./sceneExplorer.scss");
 
 interface ISceneExplorerFilterComponentProps {
-    onFilter: (filter: string) => void
+    onFilter: (filter: string) => void;
 }
 
 export class SceneExplorerFilterComponent extends React.Component<ISceneExplorerFilterComponentProps> {
@@ -29,16 +35,16 @@ export class SceneExplorerFilterComponent extends React.Component<ISceneExplorer
 }
 
 interface ISceneExplorerComponentProps {
-    scene: Scene,
-    noCommands?: boolean,
-    noHeader?: boolean,
-    noExpand?: boolean,
-    noClose?: boolean,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    globalState: GlobalState,
-    popupMode?: boolean,
-    onPopup?: () => void,
-    onClose?: () => void
+    scene: Scene;
+    noCommands?: boolean;
+    noHeader?: boolean;
+    noExpand?: boolean;
+    noClose?: boolean;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    globalState: GlobalState;
+    popupMode?: boolean;
+    onPopup?: () => void;
+    onClose?: () => void;
 }
 
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Scene }> {
@@ -79,7 +85,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         if (this._onNewSceneAddedObserver) {
-            BABYLON.Engine.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
+            EngineStore.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
         }
 
         const scene = this.state.scene;
@@ -151,9 +157,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let search = false;
         let goNext = false;
 
-        if (keyEvent.keyCode === 38) { // up 
+        if (keyEvent.keyCode === 38) { // up
             search = true;
-        } else if (keyEvent.keyCode === 40) { // down 
+        } else if (keyEvent.keyCode === 40) { // down
             goNext = true;
             search = true;
         } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) { // enter or right
@@ -191,12 +197,12 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         const scene = this.state.scene;
 
         if (!scene) {
-            this._onNewSceneAddedObserver = BABYLON.Engine.LastCreatedEngine!.onNewSceneAddedObservable.addOnce((scene) => this.setState({ scene: scene }));
+            this._onNewSceneAddedObserver = EngineStore.LastCreatedEngine!.onNewSceneAddedObservable.addOnce((scene) => this.setState({ scene: scene }));
             return null;
         }
 
-        var guiElements = scene.textures.filter(t => t.getClassName() === "AdvancedDynamicTexture");
-        var textures = scene.textures.filter(t => t.getClassName() !== "AdvancedDynamicTexture");
+        var guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
+        var textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
 
         return (
             <div id="tree">
@@ -214,7 +220,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.animationGroups} label="Animation groups" offset={1} filter={this.state.filter} />
                 }
             </div>
-        )
+        );
     }
 
     onClose() {
@@ -275,7 +281,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         return (
-            <Resizable tabIndex={-1} id="sceneExplorer" ref="sceneExplorer" size={{ height: "100%" }} minWidth={300} maxWidth={600} minHeight="100%" enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }} onKeyDown={keyEvent => this.processKeys(keyEvent)}>
+            <Resizable tabIndex={-1} id="sceneExplorer" ref="sceneExplorer" size={{ height: "100%" }} minWidth={300} maxWidth={600} minHeight="100%" enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
                 {
                     !this.props.noHeader &&
                     <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />

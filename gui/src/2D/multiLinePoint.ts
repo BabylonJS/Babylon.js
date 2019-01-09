@@ -1,7 +1,12 @@
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { Vector2 } from "babylonjs/Maths/math";
+import { Camera } from "babylonjs/Cameras/camera";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+
 import { MultiLine } from "./controls/multiLine";
 import { ValueAndUnit } from "./valueAndUnit";
 import { Control } from "./controls/control";
-import { AbstractMesh, Nullable, Observer, Camera, Vector2 } from "babylonjs";
 
 /**
  * Class used to store a point for a MultiLine object.

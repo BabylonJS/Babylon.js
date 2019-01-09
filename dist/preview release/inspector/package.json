@@ -11,8 +11,9 @@
     },
     "main": "babylon.inspector.bundle.js",
     "files": [
+        "babylon.inspector.bundle.max.js",
+        "babylon.inspector.bundle.max.js.map",
         "babylon.inspector.bundle.js",
-        "babylon.inspector.bundle.js.map",
         "babylon.inspector.module.d.ts",
         "readme.md",
         "package.json"
@@ -28,10 +29,13 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
+        "@types/react": "~16.7.3",
+        "@types/react-dom": "~16.0.9",
         "babylonjs": "4.0.0-alpha.17",
         "babylonjs-gui": "4.0.0-alpha.17",
         "babylonjs-loaders": "4.0.0-alpha.17",
-        "babylonjs-serializers": "4.0.0-alpha.17"
+        "babylonjs-serializers": "4.0.0-alpha.17",
+        "babylonjs-gltf2interface": "4.0.0-alpha.17"
     },
     "engines": {
         "node": "*"

@@ -1,7 +1,12 @@
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Vector2 } from "babylonjs/Maths/math";
+import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
+import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+
 import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observable, Observer, Vector2, ClipboardEventTypes, ClipboardInfo, PointerInfo } from 'babylonjs';
 import { VirtualKeyboard } from "./virtualKeyboard";
 
 /**
@@ -397,7 +402,7 @@ export class InputText extends Control implements IFocusableControl {
                 if (!this._isFocused) {
                     return;
                 }
-                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
+                if (pointerInfo.type === PointerEventTypes.POINTERDOUBLETAP) {
                     this._processDblClick(pointerInfo);
                 }
             });
