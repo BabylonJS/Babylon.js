@@ -201,11 +201,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
+            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<string> | Promise<Template>;
+            hideOverlayScreen(): Promise<Template> | Promise<string>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -222,11 +222,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<string> | Promise<Template>;
+            showLoadingScreen(): Promise<Template> | Promise<string>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<string> | Promise<Template>;
+            hideLoadingScreen(): Promise<Template> | Promise<string>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
@@ -963,7 +963,27 @@ declare module 'babylonjs-viewer/loader/plugins/loaderPlugin' {
 }
 
 declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
-    
+    import { EventCallback, Template } from "babylonjs-viewer/templating/templateManager";
+    export interface IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach?: Array<string>;
+        interactionPredicate(event: EventCallback): boolean;
+        onEvent?(event: EventCallback): void;
+        addHTMLTemplate?(template: Template): void;
+    }
+    export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugin {
+        readonly templateName: string;
+        readonly eventsToAttach: Array<string>;
+        protected _prepend: boolean;
+        protected _buttonName: string;
+        protected _buttonClass: string;
+        protected _htmlTemplate: string;
+        constructor(buttonName: string, buttonClass?: string, htmlTemplate?: string);
+        interactionPredicate(event: EventCallback): boolean;
+        abstract onEvent(event: EventCallback): void;
+        addHTMLTemplate(template: Template): void;
+        protected _generateHTMLElement(template: Template): Element | DocumentFragment;
+    }
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {

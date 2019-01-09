@@ -34582,41 +34582,46 @@ var QuaternionLineComponent = /** @class */ (function (_super) {
         });
     };
     QuaternionLineComponent.prototype.updateQuaternion = function () {
-        var store = this.state.value.clone();
-        var quaternion = this._eulerValue.toQuaternion();
-        this.props.target[this.props.propertyName] = quaternion;
-        this.setState({ value: quaternion });
-        this.raiseOnPropertyChanged(quaternion, store);
+        var store = this.props.target[this.props.propertyName].clone();
+        this.props.target[this.props.propertyName] = this.state.value;
+        this.setState({ value: store });
+        this.raiseOnPropertyChanged(this.state.value, store);
     };
     QuaternionLineComponent.prototype.updateStateX = function (value) {
         this._localChange = true;
-        this._eulerValue.x = value;
+        this.state.value.x = value;
         this.updateQuaternion();
     };
     QuaternionLineComponent.prototype.updateStateY = function (value) {
         this._localChange = true;
-        this._eulerValue.y = value;
+        this.state.value.y = value;
         this.updateQuaternion();
     };
     QuaternionLineComponent.prototype.updateStateZ = function (value) {
         this._localChange = true;
-        this._eulerValue.z = value;
+        this.state.value.z = value;
+        this.updateQuaternion();
+    };
+    QuaternionLineComponent.prototype.updateStateW = function (value) {
+        this._localChange = true;
+        this.state.value.w = value;
         this.updateQuaternion();
     };
     QuaternionLineComponent.prototype.render = function () {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
-        this._eulerValue = this.state.value.toEulerAngles();
+        var quat = this.state.value;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this._eulerValue.x.toFixed(2) + ", Y: " + this._eulerValue.y.toFixed(2) + ", Z: " + this._eulerValue.z.toFixed(2)),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + quat.x.toFixed(2) + ", Y: " + quat.y.toFixed(2) + ", Z: " + quat.z.toFixed(2) + ", W: " + quat.w.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand", onClick: function () { return _this.switchExpandState(); } }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", value: this._eulerValue.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", value: this._eulerValue.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "z", value: this._eulerValue.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", value: quat.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", value: quat.y, onChange: function (value) { return _this.updateStateY(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "z", value: quat.z, onChange: function (value) { return _this.updateStateZ(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "w", value: quat.w, onChange: function (value) { return _this.updateStateW(value); } }))));
     };
     return QuaternionLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

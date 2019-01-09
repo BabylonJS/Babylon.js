@@ -600,7 +600,6 @@ declare module INSPECTOR {
         value: BABYLON.Quaternion;
     }> {
         private _localChange;
-        private _eulerValue;
         constructor(props: IQuaternionLineComponentProps);
         shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: {
             isExpanded: boolean;
@@ -612,6 +611,7 @@ declare module INSPECTOR {
         updateStateX(value: number): void;
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
+        updateStateW(value: number): void;
         render(): JSX.Element;
     }
 }

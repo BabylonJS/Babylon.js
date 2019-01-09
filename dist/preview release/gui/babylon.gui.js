@@ -11711,7 +11711,7 @@ var VirtualKeyboard = /** @class */ (function (_super) {
 /*!*********************!*\
   !*** ./2D/index.ts ***!
   \*********************/
-/*! exports provided: Measure, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, MultiLinePoint, Style, ValueAndUnit, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, name */
+/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, name */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15168,14 +15168,12 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: Measure, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, MultiLinePoint, Style, ValueAndUnit, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
+/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _2D__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./2D */ "./2D/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTexture"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTextureInstrumentation"]; });
@@ -15183,6 +15181,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Vector2WithInfo"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["MultiLinePoint"]; });
 
@@ -15293,14 +15293,12 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: Measure, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, MultiLinePoint, Style, ValueAndUnit, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
+/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../index */ "./index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTexture"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTextureInstrumentation"]; });
@@ -15308,6 +15306,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Vector2WithInfo"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["MultiLinePoint"]; });
 
