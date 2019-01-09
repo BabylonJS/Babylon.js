@@ -358,6 +358,14 @@ import "../Shaders/glowMapGeneration.vertex";
         }
 
         /**
+         * Adds specific effects defines.
+         * @param defines The defines to add specifics to.
+         */
+        protected _addCustomEffectDefines(defines: string[]): void {
+            // Nothing to add by default.
+        }
+
+        /**
          * Checks for the readiness of the element composing the layer.
          * @param subMesh the mesh to check for
          * @param useInstances specify wether or not to use instances to render the mesh
@@ -375,7 +383,7 @@ import "../Shaders/glowMapGeneration.vertex";
                 return false;
             }
 
-            var defines = [];
+            var defines: string[] = [];
 
             var attribs = [VertexBuffer.PositionKind];
 
@@ -488,6 +496,8 @@ import "../Shaders/glowMapGeneration.vertex";
                 attribs.push("world3");
             }
 
+            this._addCustomEffectDefines(defines);
+
             // Get correct effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
@@ -594,7 +604,7 @@ import "../Shaders/glowMapGeneration.vertex";
          * @returns true if it can be rendered otherwise false
          */
         protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
-            return material.needAlphaBlendingForMesh(mesh);
+            return !material.needAlphaBlendingForMesh(mesh);
         }
 
         /**
@@ -624,7 +634,7 @@ import "../Shaders/glowMapGeneration.vertex";
             }
 
             // Do not block in blend mode.
-            if (this._canRenderMesh(mesh, material)) {
+            if (!this._canRenderMesh(mesh, material)) {
                 return;
             }
 
