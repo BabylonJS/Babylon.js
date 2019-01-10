@@ -270,7 +270,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 break;
             //TMP also for cylinder - TODO Cannon supports cylinder natively.
             case PhysicsImpostor.CylinderImpostor:
-                returnValue = new this.BJSCANNON.Cylinder(this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.y), 16);
+                let nativeParams = impostor.getParam("nativeOptions");
+                let radiusTop = nativeParams.radiusTop !== undefined ? nativeParams.radiusTop : this._checkWithEpsilon(extendSize.x) / 2;
+                let radiusBottom = nativeParams.radiusBottom !== undefined ? nativeParams.radiusBottom : this._checkWithEpsilon(extendSize.x) / 2;
+                let height = nativeParams.height !== undefined ? nativeParams.height : this._checkWithEpsilon(extendSize.y) / 2;
+                let numSegments = nativeParams.numSegments !== undefined ? nativeParams.numSegments : 16;
+                returnValue = new this.BJSCANNON.Cylinder(radiusTop, radiusBottom, height, numSegments);
                 break;
             case PhysicsImpostor.BoxImpostor:
                 var box = extendSize.scale(0.5);

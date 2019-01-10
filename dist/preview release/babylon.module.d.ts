@@ -21962,8 +21962,9 @@ declare module "babylonjs/Materials/multiMaterial" {
          * Dispose the material and release its associated resources
          * @param forceDisposeEffect Define if we want to force disposing the associated effect (if false the shader is not released and could be reuse later on)
          * @param forceDisposeTextures Define if we want to force disposing the associated textures (if false, they will not be disposed and can still be use elsewhere in the app)
+         * @param forceDisposeChildren Define if we want to force disposing the associated submaterials (if false, they will not be disposed and can still be use elsewhere in the app)
          */
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, forceDisposeChildren?: boolean): void;
         /**
          * Creates a MultiMaterial from parsed MultiMaterial data.
          * @param parsedMultiMaterial defines parsed MultiMaterial data.
@@ -24501,7 +24502,7 @@ declare module "babylonjs/Particles/solidParticleSystem" {
     /**
      * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
      *As it is just a mesh, the SPS has all the same properties than any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
-
+    
      * The SPS is also a particle system. It provides some methods to manage the particles.
      * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
      *

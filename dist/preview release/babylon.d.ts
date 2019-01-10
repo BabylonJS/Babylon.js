@@ -21419,8 +21419,9 @@ declare module BABYLON {
          * Dispose the material and release its associated resources
          * @param forceDisposeEffect Define if we want to force disposing the associated effect (if false the shader is not released and could be reuse later on)
          * @param forceDisposeTextures Define if we want to force disposing the associated textures (if false, they will not be disposed and can still be use elsewhere in the app)
+         * @param forceDisposeChildren Define if we want to force disposing the associated submaterials (if false, they will not be disposed and can still be use elsewhere in the app)
          */
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, forceDisposeChildren?: boolean): void;
         /**
          * Creates a MultiMaterial from parsed MultiMaterial data.
          * @param parsedMultiMaterial defines parsed MultiMaterial data.

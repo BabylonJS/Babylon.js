@@ -68,7 +68,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0. 
+     * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
      * Beware using this as this will comsume more memory as the image has to be stored twice
      */
     public get detectPointerOnOpaqueOnly(): boolean {
