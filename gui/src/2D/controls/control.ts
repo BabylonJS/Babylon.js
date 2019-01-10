@@ -1440,11 +1440,6 @@ export class Control {
         context.beginPath();
         Control._ClipMeasure.copyFrom(this._currentMeasure);
         if (invalidatedRectangle) {
-            // Get the context's current transform into a babylon matrix
-            debugger;
-            // var inverseContextTransform = (context as any).getTransform().inverse();
-            // this._tmpMatrix.fromValues(inverseContextTransform.a, inverseContextTransform.b, inverseContextTransform.c, inverseContextTransform.d, inverseContextTransform.e, inverseContextTransform.f);
-
             // Rotate the invalidated rect into the control's space
             invalidatedRectangle.rotateByTransformMatrixToRef(this._invertTransformMatrix, this._tmpMeasureA);
 
