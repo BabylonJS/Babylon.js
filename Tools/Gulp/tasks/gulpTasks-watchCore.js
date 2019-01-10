@@ -77,11 +77,6 @@ gulp.task("watchCore", gulp.series("watchCore-buildShaders", function watch() {
             .pipe(uncommentShaders())
             .pipe(processShaders(true));
     });
-    watch.on("unlink", (event) => {
-        return gulp.src(event)
-            .pipe(uncommentShaders())
-            .pipe(processShaders(true));
-    });
 
     return Promise.resolve();
 }));
