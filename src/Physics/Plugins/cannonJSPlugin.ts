@@ -111,7 +111,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             //try to keep the body moving in the right direction by taking old properties.
             //Should be tested!
             if (oldBody) {
-                ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function(param) {
+                ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function (param) {
                     impostor.physicsBody[param].copy(oldBody[param]);
                 });
             }
@@ -214,7 +214,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         if (impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
             this.world.addConstraint(constraint);
         } else {
-            (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback = (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback || function() {
+            (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback = (<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback || function () {
                 constraint.applyForce();
             };
             impostorJoint.mainImpostor.registerAfterPhysicsStep((<SpringJointData>impostorJoint.joint.jointData).forceApplicationCallback);
@@ -270,7 +270,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 break;
             //TMP also for cylinder - TODO Cannon supports cylinder natively.
             case PhysicsImpostor.CylinderImpostor:
-                returnValue = new this.BJSCANNON.Cylinder(this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.x) / 2, this._checkWithEpsilon(extendSize.y), 16);
+                let nativeParams = impostor.getParam("nativeOptions");
+                let radiusTop = nativeParams.radiusTop !== undefined ? nativeParams.radiusTop : this._checkWithEpsilon(extendSize.x) / 2;
+                let radiusBottom = nativeParams.radiusBottom !== undefined ? nativeParams.radiusBottom : this._checkWithEpsilon(extendSize.x) / 2;
+                let height = nativeParams.height !== undefined ? nativeParams.height : this._checkWithEpsilon(extendSize.y) / 2;
+                let numSegments = nativeParams.numSegments !== undefined ? nativeParams.numSegments : 16;
+                returnValue = new this.BJSCANNON.Cylinder(radiusTop, radiusBottom, height, numSegments);
                 break;
             case PhysicsImpostor.BoxImpostor:
                 var box = extendSize.scale(0.5);
@@ -621,7 +626,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         //this will force cannon to execute at least one step when using interpolation
         let step_tmp1 = new this.BJSCANNON.Vec3();
         let Engine = this.BJSCANNON;
-        this.BJSCANNON.World.prototype.step = function(dt: number, timeSinceLastCalled: number, maxSubSteps: number) {
+        this.BJSCANNON.World.prototype.step = function (dt: number, timeSinceLastCalled: number, maxSubSteps: number) {
             maxSubSteps = maxSubSteps || 10;
             timeSinceLastCalled = timeSinceLastCalled || 0;
             if (timeSinceLastCalled === 0) {
