@@ -204,6 +204,7 @@
 - Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 - Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
 - Particle emit rate and start size over time do not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
+- SSAO2 now correctly takes diffuse texture alpha value into account. ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### Core Engine
 
