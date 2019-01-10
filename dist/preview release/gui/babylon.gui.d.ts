@@ -1406,6 +1406,7 @@ declare module BABYLON.GUI {
         private _sliceRight;
         private _sliceTop;
         private _sliceBottom;
+        private _detectPointerOnOpaqueOnly;
         /**
          * BABYLON.Observable notified when the content is loaded
          */
@@ -1418,6 +1419,11 @@ declare module BABYLON.GUI {
          * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
          */
         populateNinePatchSlicesFromImage: boolean;
+        /**
+         * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
+         * Beware using this as this will comsume more memory as the image has to be stored twice
+         */
+        detectPointerOnOpaqueOnly: boolean;
         /**
          * Gets or sets the left value for slicing (9-patch)
          */
@@ -1488,10 +1494,19 @@ declare module BABYLON.GUI {
          * @param url defines the image url
          */
         constructor(name?: string | undefined, url?: BABYLON.Nullable<string>);
+        /**
+         * Tests if a given coordinates belong to the current control
+         * @param x defines x coordinate to test
+         * @param y defines y coordinate to test
+         * @returns true if the coordinates are inside the control
+         */
+        contains(x: number, y: number): boolean;
         protected _getTypeName(): string;
         /** Force the control to synchronize with its content */
         synchronizeSizeWithContent(): void;
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        private _prepareWorkingCanvasForOpaqueDetection;
+        private _drawImage;
         _draw(context: CanvasRenderingContext2D): void;
         private _renderCornerPatch;
         private _renderNinePatch;

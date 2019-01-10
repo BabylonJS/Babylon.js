@@ -20,7 +20,7 @@ interface IGLTFBinaryExtensionImage {
 
 /** @hidden */
 export class GLTFBinaryExtension extends GLTFLoaderExtension {
-    private _bin : ArrayBufferView;
+    private _bin: ArrayBufferView;
 
     public constructor() {
         super("KHR_binary_glTF");

@@ -45,9 +45,9 @@ export class SkyMaterial extends PushMaterial {
     @serialize()
     public luminance: number = 1.0;
 
-     /**
-     * Defines the amount (scattering) of haze as opposed to molecules in atmosphere.
-     */
+    /**
+    * Defines the amount (scattering) of haze as opposed to molecules in atmosphere.
+    */
     @serialize()
     public turbidity: number = 10.0;
 
@@ -335,7 +335,7 @@ export class SkyMaterial extends PushMaterial {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
-        serializationObject.customType  = "BABYLON.SkyMaterial";
+        serializationObject.customType = "BABYLON.SkyMaterial";
         return serializationObject;
     }
 
