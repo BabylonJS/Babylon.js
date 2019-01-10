@@ -1,5 +1,5 @@
 import { Matrix2D } from "./math2D";
-import { Vector2 } from "babylonjs";
+import { Vector2, Polygon } from "babylonjs";
 
 /**
  * Class used to store 2D control sizes
@@ -72,7 +72,7 @@ export class Measure {
      * @param result the resulting AABB
      */
     public rotateByTransformMatrixToRef(transform: Matrix2D, result: Measure) {
-        var rectanglePoints = BABYLON.Polygon.Rectangle(this.left, this.top, this.left + this.width, this.top + this.height);
+        var rectanglePoints = Polygon.Rectangle(this.left, this.top, this.left + this.width, this.top + this.height);
         var min = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
         var max = new Vector2(0, 0);
         for (var i = 0; i < 4; i++) {

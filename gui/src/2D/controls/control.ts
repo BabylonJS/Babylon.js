@@ -4,7 +4,6 @@ import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { Logger } from "babylonjs/Misc/logger";
 import { Tools } from "babylonjs/Misc/tools";
-import { Polygon } from "babylonjs/Meshes/polygonMesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Scene } from "babylonjs/scene";
 
