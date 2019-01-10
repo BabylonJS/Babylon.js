@@ -4,10 +4,14 @@ import { LineContainerComponent } from "../lineContainerComponent";
 import { CheckBoxLineComponent } from "../lines/checkBoxLineComponent";
 import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
 
+import { SkeletonViewer } from "babylonjs/Debug/skeletonViewer";
+import { PhysicsViewer } from "babylonjs/Debug/physicsViewer";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+
 export class DebugTabComponent extends PaneComponent {
     private _skeletonViewersEnabled = false;
     private _physicsViewersEnabled = false;
-    private _skeletonViewers = new Array<BABYLON.Debug.SkeletonViewer>();
+    private _skeletonViewers = new Array<SkeletonViewer>();
 
     constructor(props: IPaneComponentProps) {
         super(props);
@@ -54,7 +58,7 @@ export class DebugTabComponent extends PaneComponent {
                     if (found) {
                         continue;
                     }
-                    var viewer = new BABYLON.Debug.SkeletonViewer(mesh.skeleton, mesh, scene, true, 0);
+                    var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, true, 0);
                     viewer.isEnabled = true;
                     this._skeletonViewers.push(viewer);
                     if (!mesh.reservedDataStore) {
@@ -78,7 +82,7 @@ export class DebugTabComponent extends PaneComponent {
         const scene = this.props.scene;
 
         if (this._physicsViewersEnabled) {
-            const physicsViewer = new BABYLON.Debug.PhysicsViewer(scene);
+            const physicsViewer = new PhysicsViewer(scene);
             scene.reservedDataStore.physicsViewer = physicsViewer;
 
             for (var mesh of scene.meshes) {
@@ -112,17 +116,17 @@ export class DebugTabComponent extends PaneComponent {
                     <CheckBoxLineComponent label="Physics" isSelected={() => this._physicsViewersEnabled} onSelect={() => this.switchPhysicsViewers()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="TEXTURE CHANNELS">
-                    <CheckBoxLineComponent label="Diffuse" isSelected={() => BABYLON.StandardMaterial.DiffuseTextureEnabled} onSelect={() => BABYLON.StandardMaterial.DiffuseTextureEnabled = !BABYLON.StandardMaterial.DiffuseTextureEnabled} />
-                    <CheckBoxLineComponent label="Ambient" isSelected={() => BABYLON.StandardMaterial.AmbientTextureEnabled} onSelect={() => BABYLON.StandardMaterial.AmbientTextureEnabled = !BABYLON.StandardMaterial.AmbientTextureEnabled} />
-                    <CheckBoxLineComponent label="Specular" isSelected={() => BABYLON.StandardMaterial.SpecularTextureEnabled} onSelect={() => BABYLON.StandardMaterial.SpecularTextureEnabled = !BABYLON.StandardMaterial.SpecularTextureEnabled} />
-                    <CheckBoxLineComponent label="Emissive" isSelected={() => BABYLON.StandardMaterial.EmissiveTextureEnabled} onSelect={() => BABYLON.StandardMaterial.EmissiveTextureEnabled = !BABYLON.StandardMaterial.EmissiveTextureEnabled} />
-                    <CheckBoxLineComponent label="Bump" isSelected={() => BABYLON.StandardMaterial.BumpTextureEnabled} onSelect={() => BABYLON.StandardMaterial.BumpTextureEnabled = !BABYLON.StandardMaterial.BumpTextureEnabled} />
-                    <CheckBoxLineComponent label="Opacity" isSelected={() => BABYLON.StandardMaterial.OpacityTextureEnabled} onSelect={() => BABYLON.StandardMaterial.OpacityTextureEnabled = !BABYLON.StandardMaterial.OpacityTextureEnabled} />
-                    <CheckBoxLineComponent label="Reflection" isSelected={() => BABYLON.StandardMaterial.ReflectionTextureEnabled} onSelect={() => BABYLON.StandardMaterial.ReflectionTextureEnabled = !BABYLON.StandardMaterial.ReflectionTextureEnabled} />
-                    <CheckBoxLineComponent label="Refraction" isSelected={() => BABYLON.StandardMaterial.RefractionTextureEnabled} onSelect={() => BABYLON.StandardMaterial.RefractionTextureEnabled = !BABYLON.StandardMaterial.RefractionTextureEnabled} />
-                    <CheckBoxLineComponent label="ColorGrading" isSelected={() => BABYLON.StandardMaterial.ColorGradingTextureEnabled} onSelect={() => BABYLON.StandardMaterial.ColorGradingTextureEnabled = !BABYLON.StandardMaterial.ColorGradingTextureEnabled} />
-                    <CheckBoxLineComponent label="Lightmap" isSelected={() => BABYLON.StandardMaterial.LightmapTextureEnabled} onSelect={() => BABYLON.StandardMaterial.LightmapTextureEnabled = !BABYLON.StandardMaterial.LightmapTextureEnabled} />
-                    <CheckBoxLineComponent label="Fresnel" isSelected={() => BABYLON.StandardMaterial.FresnelEnabled} onSelect={() => BABYLON.StandardMaterial.FresnelEnabled = !BABYLON.StandardMaterial.FresnelEnabled} />
+                    <CheckBoxLineComponent label="Diffuse" isSelected={() => StandardMaterial.DiffuseTextureEnabled} onSelect={() => StandardMaterial.DiffuseTextureEnabled = !StandardMaterial.DiffuseTextureEnabled} />
+                    <CheckBoxLineComponent label="Ambient" isSelected={() => StandardMaterial.AmbientTextureEnabled} onSelect={() => StandardMaterial.AmbientTextureEnabled = !StandardMaterial.AmbientTextureEnabled} />
+                    <CheckBoxLineComponent label="Specular" isSelected={() => StandardMaterial.SpecularTextureEnabled} onSelect={() => StandardMaterial.SpecularTextureEnabled = !StandardMaterial.SpecularTextureEnabled} />
+                    <CheckBoxLineComponent label="Emissive" isSelected={() => StandardMaterial.EmissiveTextureEnabled} onSelect={() => StandardMaterial.EmissiveTextureEnabled = !StandardMaterial.EmissiveTextureEnabled} />
+                    <CheckBoxLineComponent label="Bump" isSelected={() => StandardMaterial.BumpTextureEnabled} onSelect={() => StandardMaterial.BumpTextureEnabled = !StandardMaterial.BumpTextureEnabled} />
+                    <CheckBoxLineComponent label="Opacity" isSelected={() => StandardMaterial.OpacityTextureEnabled} onSelect={() => StandardMaterial.OpacityTextureEnabled = !StandardMaterial.OpacityTextureEnabled} />
+                    <CheckBoxLineComponent label="Reflection" isSelected={() => StandardMaterial.ReflectionTextureEnabled} onSelect={() => StandardMaterial.ReflectionTextureEnabled = !StandardMaterial.ReflectionTextureEnabled} />
+                    <CheckBoxLineComponent label="Refraction" isSelected={() => StandardMaterial.RefractionTextureEnabled} onSelect={() => StandardMaterial.RefractionTextureEnabled = !StandardMaterial.RefractionTextureEnabled} />
+                    <CheckBoxLineComponent label="ColorGrading" isSelected={() => StandardMaterial.ColorGradingTextureEnabled} onSelect={() => StandardMaterial.ColorGradingTextureEnabled = !StandardMaterial.ColorGradingTextureEnabled} />
+                    <CheckBoxLineComponent label="Lightmap" isSelected={() => StandardMaterial.LightmapTextureEnabled} onSelect={() => StandardMaterial.LightmapTextureEnabled = !StandardMaterial.LightmapTextureEnabled} />
+                    <CheckBoxLineComponent label="Fresnel" isSelected={() => StandardMaterial.FresnelEnabled} onSelect={() => StandardMaterial.FresnelEnabled = !StandardMaterial.FresnelEnabled} />
                 </LineContainerComponent>
                 <LineContainerComponent title="FEATURES">
                     <CheckBoxLineComponent label="Animations" isSelected={() => scene.animationsEnabled} onSelect={() => scene.animationsEnabled = !scene.animationsEnabled} />

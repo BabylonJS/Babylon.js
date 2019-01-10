@@ -1,7 +1,16 @@
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { Logger } from "babylonjs/Misc/logger";
+import { Tools } from "babylonjs/Misc/tools";
+import { Polygon } from "babylonjs/Meshes/polygonMesh";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Scene } from "babylonjs/scene";
+
 import { Container } from "./container";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes } from "babylonjs";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
@@ -1106,6 +1115,7 @@ export class Control {
             // get the boudning box of the current measure and last frames measure in global space and invalidate it
             // the previous measure is used to properly clear a control that is scaled down
             Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
+
             this.host.invalidateRect(
                 Math.floor(this._tmpMeasureA.left),
                 Math.floor(this._tmpMeasureA.top),
@@ -1247,7 +1257,7 @@ export class Control {
             while (this._rebuildLayout && rebuildCount < 3);
 
             if (rebuildCount >= 3) {
-                BABYLON.Tools.Error(`Layout cycle detected in GUI (Control name=${this.name}, uniqueId=${this.uniqueId})`);
+                Logger.Error(`Layout cycle detected in GUI (Control name=${this.name}, uniqueId=${this.uniqueId})`);
             }
 
             context.restore();

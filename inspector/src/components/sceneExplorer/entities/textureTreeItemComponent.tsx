@@ -1,5 +1,7 @@
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+
 import { faImage } from '@fortawesome/free-solid-svg-icons';
-import { Texture, IExplorerExtensibilityGroup } from "babylonjs";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from 'react';

@@ -1,4 +1,8 @@
-import { AbstractMesh, IExplorerExtensibilityGroup } from "babylonjs";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Color3 } from "babylonjs/Maths/math";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { BoundingBoxGizmo } from "babylonjs/Gizmos/boundingBoxGizmo";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
@@ -8,9 +12,9 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface IMeshTreeItemComponentProps {
-    mesh: AbstractMesh,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onClick: () => void
+    mesh: AbstractMesh;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onClick: () => void;
 }
 
 export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, { isGizmoEnabled: boolean, isVisible: boolean }> {
@@ -19,7 +23,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
 
         const mesh = this.props.mesh;
 
-        this.state = { isGizmoEnabled: mesh.reservedDataStore && mesh.reservedDataStore.gizmo, isVisible: this.props.mesh.isVisible }
+        this.state = { isGizmoEnabled: mesh.reservedDataStore && mesh.reservedDataStore.gizmo, isVisible: this.props.mesh.isVisible };
     }
 
     showGizmos(): void {
@@ -44,7 +48,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
                 mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren.push(mesh);
             }
 
-            const gizmo = new BABYLON.BoundingBoxGizmo(BABYLON.Color3.FromHexString("#0984e3"));
+            const gizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"));
             gizmo.attachedMesh = mesh;
             gizmo.enableDragBehavior();
 
@@ -80,7 +84,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
     render() {
         const mesh = this.props.mesh;
 
-        const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />
+        const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />;
 
         return (
             <div className="meshTools">
@@ -95,6 +99,6 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
                     <ExtensionsComponent target={mesh} extensibilityGroups={this.props.extensibilityGroups} />
                 }
             </div>
-        )
+        );
     }
 }

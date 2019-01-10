@@ -2,7 +2,12 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { TextLineComponent } from "../lines/textLineComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
-import { SceneInstrumentation, EngineInstrumentation, Nullable } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { EngineInstrumentation } from "babylonjs/Instrumentation/engineInstrumentation";
+import { SceneInstrumentation } from "babylonjs/Instrumentation/sceneInstrumentation";
+import { Engine } from "babylonjs/Engines/engine";
+
 import { ValueLineComponent } from "../lines/valueLineComponent";
 import { BooleanLineComponent } from "../lines/booleanLineComponent";
 
@@ -22,7 +27,7 @@ export class StatisticsTabComponent extends PaneComponent {
             return;
         }
 
-        this._sceneInstrumentation = new BABYLON.SceneInstrumentation(scene);
+        this._sceneInstrumentation = new SceneInstrumentation(scene);
         this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
         this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
         this._sceneInstrumentation.captureFrameTime = true;
@@ -33,7 +38,7 @@ export class StatisticsTabComponent extends PaneComponent {
         this._sceneInstrumentation.capturePhysicsTime = true;
         this._sceneInstrumentation.captureAnimationsTime = true;
 
-        this._engineInstrumentation = new BABYLON.EngineInstrumentation(scene.getEngine());
+        this._engineInstrumentation = new EngineInstrumentation(scene.getEngine());
         this._engineInstrumentation.captureGPUFrameTime = true;
 
         this._timerIntervalId = window.setInterval(() => this.forceUpdate(), 500);
@@ -67,7 +72,7 @@ export class StatisticsTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <TextLineComponent label="Version" value={BABYLON.Engine.Version} color="rgb(113, 159, 255)" />
+                <TextLineComponent label="Version" value={Engine.Version} color="rgb(113, 159, 255)" />
                 <ValueLineComponent label="FPS" value={engine.getFps()} fractionDigits={0} />
                 <LineContainerComponent title="COUNT">
                     <TextLineComponent label="Total meshes" value={scene.meshes.length.toString()} />

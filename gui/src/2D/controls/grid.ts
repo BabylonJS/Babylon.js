@@ -1,8 +1,9 @@
+import { Nullable } from "babylonjs/types";
+
 import { Container } from "./container";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Nullable } from "babylonjs";
 
 /**
  * Class used to create a 2D grid container
