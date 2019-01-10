@@ -1,5 +1,7 @@
 import * as React from "react";
-import { Observer, Scene, Nullable } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { Scene } from "babylonjs/scene";
 import { TabsComponent } from "./tabsComponent";
 import { faFileAlt, faWrench, faBug, faChartBar } from '@fortawesome/free-solid-svg-icons';
 import { StatisticsTabComponent } from "./tabs/statisticsTabComponent";

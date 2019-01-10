@@ -1,6 +1,8 @@
+import { Nullable } from "babylonjs/types";
+import { Logger } from "babylonjs/Misc/logger";
+
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Nullable } from "babylonjs";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
@@ -340,7 +342,7 @@ export class Container extends Control {
         while (this._rebuildLayout && rebuildCount < 3);
 
         if (rebuildCount >= 3) {
-            BABYLON.Tools.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
+            Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 
         context.restore();

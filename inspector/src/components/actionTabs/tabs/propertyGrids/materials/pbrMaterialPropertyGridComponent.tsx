@@ -1,5 +1,9 @@
 import * as React from "react";
-import { Observable, PBRMaterial, BaseTexture } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../lines/color3LineComponent";
@@ -10,10 +14,10 @@ import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponen
 import { LockObject } from "../lockObject";
 
 interface IPBRMaterialPropertyGridComponentProps {
-    material: PBRMaterial,
-    lockObject: LockObject,
-    onSelectionChangedObservable?: Observable<any>,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    material: PBRMaterial;
+    lockObject: LockObject;
+    onSelectionChangedObservable?: Observable<any>;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
@@ -28,7 +32,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             return null;
         }
 
-        const onDebugSelectionChangeObservable = new BABYLON.Observable<BaseTexture>();
+        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
             <LineContainerComponent title="TEXTURES">
@@ -43,7 +47,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 <TextureLinkLineComponent label="Ambient" texture={material.ambientTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Lightmap" texture={material.lightmapTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
             </LineContainerComponent>
-        )
+        );
     }
 
     render() {

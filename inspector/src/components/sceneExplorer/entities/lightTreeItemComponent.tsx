@@ -1,4 +1,6 @@
-import { Light, IExplorerExtensibilityGroup } from "babylonjs";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Light } from "babylonjs/Lights/light";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { faLightbulb as faLightbubRegular } from '@fortawesome/free-regular-svg-icons';

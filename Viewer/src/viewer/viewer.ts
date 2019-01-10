@@ -461,7 +461,7 @@ export abstract class AbstractViewer {
         // Create the screenshot
         return new Promise<string>((resolve, reject) => {
             try {
-                BABYLON.Tools.CreateScreenshot(this.engine, this.sceneManager.camera, { width, height }, (data) => {
+                Tools.CreateScreenshot(this.engine, this.sceneManager.camera, { width, height }, (data) => {
                     if (callback) {
                         callback(data);
                     }

@@ -1,5 +1,9 @@
 import * as React from "react";
-import { Observable, BackgroundMaterial, BaseTexture } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../lines/color3LineComponent";
@@ -10,10 +14,10 @@ import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponen
 import { LockObject } from "../lockObject";
 
 interface IBackgroundMaterialPropertyGridComponentProps {
-    material: BackgroundMaterial,
-    lockObject: LockObject,
-    onSelectionChangedObservable?: Observable<any>,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    material: BackgroundMaterial;
+    lockObject: LockObject;
+    onSelectionChangedObservable?: Observable<any>;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class BackgroundMaterialPropertyGridComponent extends React.Component<IBackgroundMaterialPropertyGridComponentProps> {
@@ -24,7 +28,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
     renderTextures() {
         const material = this.props.material;
 
-        const onDebugSelectionChangeObservable = new BABYLON.Observable<BaseTexture>();
+        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
             <LineContainerComponent title="TEXTURES">
@@ -35,7 +39,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                     <SliderLineComponent label="Reflection blur" target={material} propertyName="reflectionBlur" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
             </LineContainerComponent>
-        )
+        );
     }
 
     render() {

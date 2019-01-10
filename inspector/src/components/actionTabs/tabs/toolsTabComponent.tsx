@@ -2,10 +2,23 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 import { ButtonLineComponent } from "../lines/buttonLineComponent";
-import { VideoRecorder, Nullable, TransformNode, PBRMaterial, StandardMaterial, BackgroundMaterial, EnvironmentTextureTools, CubeTexture } from "babylonjs";
-import { GLTFComponent } from "./tools/gltfComponent";
-import { GLTFData } from "babylonjs-serializers";
 
+import { Nullable } from "babylonjs/types";
+import { VideoRecorder } from "babylonjs/Misc/videoRecorder";
+import { Tools } from "babylonjs/Misc/tools";
+import { EnvironmentTextureTools } from "babylonjs/Misc/environmentTextureTools";
+import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { SceneSerializer } from "babylonjs/Misc/sceneSerializer";
+import { Mesh } from "babylonjs/Meshes/mesh";
+
+import { GLTFComponent } from "./tools/gltfComponent";
+
+import { GLTFData, GLTF2Export } from "babylonjs-serializers/glTF/2.0/index";
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
@@ -18,7 +31,7 @@ export class ToolsTabComponent extends PaneComponent {
 
     componentWillMount() {
         if (!(BABYLON as any).GLTF2Export) {
-            BABYLON.Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {
+            Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {
             });
             return;
         }
@@ -35,7 +48,7 @@ export class ToolsTabComponent extends PaneComponent {
     captureScreenshot() {
         const scene = this.props.scene;
         if (scene.activeCamera) {
-            BABYLON.Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, { precision: 1.0 }, undefined, undefined, 4, true);
+            Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, { precision: 1.0 }, undefined, undefined, 4, true);
         }
     }
 
@@ -47,23 +60,23 @@ export class ToolsTabComponent extends PaneComponent {
 
         const scene = this.props.scene;
         if (!this._videoRecorder) {
-            this._videoRecorder = new BABYLON.VideoRecorder(scene.getEngine());
+            this._videoRecorder = new VideoRecorder(scene.getEngine());
         }
 
         this._videoRecorder.startRecording().then(() => {
-            this.setState({ tag: "Record video" })
+            this.setState({ tag: "Record video" });
         });
-        this.setState({ tag: "Stop recording" })
+        this.setState({ tag: "Stop recording" });
     }
 
     shouldExport(transformNode: TransformNode): boolean {
 
         // No skybox
-        if (transformNode instanceof BABYLON.Mesh) {
+        if (transformNode instanceof Mesh) {
             if (transformNode.material) {
                 const material = transformNode.material as PBRMaterial | StandardMaterial | BackgroundMaterial;
                 const reflectionTexture = material.reflectionTexture;
-                if (reflectionTexture && reflectionTexture.coordinatesMode === BABYLON.Texture.SKYBOX_MODE) {
+                if (reflectionTexture && reflectionTexture.coordinatesMode === Texture.SKYBOX_MODE) {
                     return false;
                 }
             }
@@ -75,7 +88,7 @@ export class ToolsTabComponent extends PaneComponent {
     exportGLTF() {
         const scene = this.props.scene;
 
-        BABYLON.GLTF2Export.GLBAsync(scene, "scene", {
+        GLTF2Export.GLBAsync(scene, "scene", {
             shouldExportTransformNode: (transformNode) => this.shouldExport(transformNode)
         }).then((glb: GLTFData) => {
             glb.downloadFiles();
@@ -85,10 +98,10 @@ export class ToolsTabComponent extends PaneComponent {
     exportBabylon() {
         const scene = this.props.scene;
 
-        var strScene = JSON.stringify(BABYLON.SceneSerializer.Serialize(scene));
+        var strScene = JSON.stringify(SceneSerializer.Serialize(scene));
         var blob = new Blob([strScene], { type: "octet/stream" });
 
-        BABYLON.Tools.Download(blob, "scene.babylon")
+        Tools.Download(blob, "scene.babylon");
     }
 
     createEnvTexture() {
@@ -96,7 +109,7 @@ export class ToolsTabComponent extends PaneComponent {
         EnvironmentTextureTools.CreateEnvTextureAsync(scene.environmentTexture as CubeTexture)
             .then((buffer: ArrayBuffer) => {
                 var blob = new Blob([buffer], { type: "octet/stream" });
-                BABYLON.Tools.Download(blob, "environment.env");
+                Tools.Download(blob, "environment.env");
             })
             .catch((error: any) => {
                 console.error(error);

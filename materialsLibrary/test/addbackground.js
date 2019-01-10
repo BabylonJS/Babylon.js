@@ -1,12 +1,12 @@
 window.prepareBackgroundMaterial = function() {
 	var backSky = new BABYLON.BackgroundMaterial("backSky", scene);
-	var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("/playground/textures/environment.dds", scene);
+	var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("/Playground/textures/environment.dds", scene);
 	hdrTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE
 	backSky.reflectionTexture = hdrTexture;
 	backSky.backFaceCulling = false;
 	
 	var back = new BABYLON.BackgroundMaterial("back", scene);
-	back.diffuseTexture = new BABYLON.Texture("/playground/textures/WhiteTransarentRamp.png", scene);
+	back.diffuseTexture = new BABYLON.Texture("/Playground/textures/WhiteTransarentRamp.png", scene);
 	back.diffuseTexture.hasAlpha = true;
 
     // Skybox

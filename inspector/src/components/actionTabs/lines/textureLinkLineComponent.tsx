@@ -1,15 +1,21 @@
 import * as React from "react";
-import { BaseTexture, Observable, Material, Observer, Nullable } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Material } from "babylonjs/Materials/material";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+
 import { TextLineComponent } from "./textLineComponent";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
 
 export interface ITextureLinkLineComponentProps {
-    label: string,
-    texture: Nullable<BaseTexture>,
-    material?: Material,
-    onSelectionChangedObservable?: Observable<any>,
-    onDebugSelectionChangeObservable?: Observable<BaseTexture>
+    label: string;
+    texture: Nullable<BaseTexture>;
+    material?: Material;
+    onSelectionChangedObservable?: Observable<any>;
+    onDebugSelectionChangeObservable?: Observable<BaseTexture>;
 }
 
 export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, { isDebugSelected: boolean }> {
@@ -23,7 +29,6 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
 
         this.state = { isDebugSelected: material && material.reservedDataStore && material.reservedDataStore.debugTexture === texture };
     }
-
 
     componentWillMount() {
         if (!this.props.onDebugSelectionChangeObservable) {
@@ -74,7 +79,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             needToDisposeCheckMaterial = true;
         }
 
-        var debugMaterial = new BABYLON.StandardMaterial("debugMaterial", scene);
+        var debugMaterial = new StandardMaterial("debugMaterial", scene);
         debugMaterial.disableLighting = true;
         debugMaterial.sideOrientation = material.sideOrientation;
         debugMaterial.emissiveTexture = texture!;

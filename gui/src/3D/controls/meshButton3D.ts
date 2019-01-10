@@ -1,4 +1,8 @@
-import { Scene, TransformNode, AbstractMesh, Mesh } from "babylonjs";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Scene } from "babylonjs/scene";
+
 import { Button3D } from "./button3D";
 
 /**
