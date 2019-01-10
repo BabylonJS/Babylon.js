@@ -171,7 +171,7 @@ import { Scene } from "../../scene";
                     var keyCode = this._keys[index];
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
                       this.camera.rotationOffset += this.rotationSensibility;
-                      this.camera.rotationOffset %= 180;
+                      this.camera.rotationOffset %= 360;
                     } else if (this.keysUp.indexOf(keyCode) !== -1) {
                       if (this._altPressed) {
                         this.camera.radius += this.radiusSensibility;
@@ -180,7 +180,7 @@ import { Scene } from "../../scene";
                       }
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {
                       this.camera.rotationOffset -= this.rotationSensibility;
-                      this.camera.rotationOffset %= 180;
+                      this.camera.rotationOffset %= 360;
                     } else if (this.keysDown.indexOf(keyCode) !== -1) {
                       if (this._altPressed) {
                         this.camera.radius -= this.radiusSensibility;
