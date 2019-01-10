@@ -50,7 +50,7 @@ export class Control {
     /** @hidden */
     public _tempParentMeasure = Measure.Empty();
     /** @hidden */
-    public _tempCurrentMeasure = Measure.Empty();
+    public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
     /** @hidden */
     protected _cachedParentMeasure = Measure.Empty();
     private _paddingLeft = new ValueAndUnit(0);
@@ -66,7 +66,8 @@ export class Control {
     private _rotation = 0;
     private _transformCenterX = 0.5;
     private _transformCenterY = 0.5;
-    private _transformMatrix = Matrix2D.Identity();
+    /** @hidden */
+    public _transformMatrix = Matrix2D.Identity();
     /** @hidden */
     protected _invertTransformMatrix = Matrix2D.Identity();
     /** @hidden */
@@ -309,7 +310,6 @@ export class Control {
         }
 
         this._scaleX = value;
-        this._transform();
         this._markAsDirty();
         this._markMatrixAsDirty();
     }
@@ -327,7 +327,6 @@ export class Control {
         }
 
         this._scaleY = value;
-        this._transform();
         this._markAsDirty();
         this._markMatrixAsDirty();
     }
@@ -1077,19 +1076,21 @@ export class Control {
 
     /** @hidden */
     public _intersectsRect(rect: Measure) {
-        if (this._currentMeasure.left >= rect.left + rect.width) {
+        // Rotate the control's current measure into local space and check if it intersects the passed in rectangle
+        this._currentMeasure.rotateByTransformMatrixToRef(this._transformMatrix, this._tmpMeasureA);
+        if (this._tmpMeasureA.left >= rect.left + rect.width) {
             return false;
         }
 
-        if (this._currentMeasure.top >= rect.top + rect.height) {
+        if (this._tmpMeasureA.top >= rect.top + rect.height) {
             return false;
         }
 
-        if (this._currentMeasure.left + this._currentMeasure.width <= rect.left) {
+        if (this._tmpMeasureA.left + this._tmpMeasureA.width <= rect.left) {
             return false;
         }
 
-        if (this._currentMeasure.top + this._currentMeasure.height <= rect.top) {
+        if (this._tmpMeasureA.top + this._tmpMeasureA.height <= rect.top) {
             return false;
         }
 
@@ -1097,29 +1098,19 @@ export class Control {
     }
 
     /** @hidden */
-    protected invalidateRect(left: number, top: number, right: number, bottom: number) {
+    protected invalidateRect() {
+        this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
-            // Compute AABB of transformed container box (eg. to handle rotation and scaling)
-            var rectanglePoints = BABYLON.Polygon.Rectangle(left, top, right, bottom);
-            var min = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
-            var max = new Vector2(0, 0);
-            for (var i = 0; i < 4; i++) {
-                this._transformMatrix.transformCoordinates(rectanglePoints[i].x, rectanglePoints[i].y, rectanglePoints[i]);
-                min.x = Math.min(min.x, rectanglePoints[i].x);
-                min.y = Math.min(min.y, rectanglePoints[i].y);
-                max.x = Math.max(max.x, rectanglePoints[i].x);
-                max.y = Math.max(max.y, rectanglePoints[i].y);
-            }
-
+            // Rotate by transform to get the measure transformed to global space
+            this._currentMeasure.rotateByTransformMatrixToRef(this._transformMatrix, this._tmpMeasureA);
+            // get the boudning box of the current measure and last frames measure in global space and invalidate it
+            // the previous measure is used to properly clear a control that is scaled down
+            Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
             this.host.invalidateRect(
-                min.x,
-                min.y,
-                max.x,
-                max.y,
-                left,
-                top,
-                right,
-                bottom
+                Math.floor(this._tmpMeasureA.left),
+                Math.floor(this._tmpMeasureA.top),
+                Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width),
+                Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height),
             );
         }
     }
@@ -1236,12 +1227,12 @@ export class Control {
 
     /** @hidden */
     public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
 
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
-            this._tempCurrentMeasure.copyFrom(this._currentMeasure);
+            this._currentMeasure.rotateByTransformMatrixToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
 
             context.save();
 
@@ -1260,12 +1251,7 @@ export class Control {
             }
 
             context.restore();
-            this.invalidateRect(
-                Math.min(this._currentMeasure.left, this._tempCurrentMeasure.left),
-                Math.min(this._currentMeasure.top, this._tempCurrentMeasure.top),
-                Math.max(this._currentMeasure.left + this._currentMeasure.width, this._tempCurrentMeasure.left + this._tempCurrentMeasure.width),
-                Math.max(this._currentMeasure.top + this._currentMeasure.height, this._tempCurrentMeasure.top + this._tempCurrentMeasure.height)
-            );
+            this.invalidateRect();
             this._evaluateClippingState(parentMeasure);
         }
 
@@ -1440,17 +1426,26 @@ export class Control {
     }
 
     private static _ClipMeasure = new Measure(0, 0, 0, 0);
+    private _tmpMeasureA = new Measure(0, 0, 0, 0);
     private _clip(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>) {
         context.beginPath();
-
         Control._ClipMeasure.copyFrom(this._currentMeasure);
         if (invalidatedRectangle) {
-            var right = Math.min(invalidatedRectangle.left + invalidatedRectangle.width, this._currentMeasure.left + this._currentMeasure.width);
-            var bottom = Math.min(invalidatedRectangle.top + invalidatedRectangle.height, this._currentMeasure.top + this._currentMeasure.height);
-            Control._ClipMeasure.left = Math.max(invalidatedRectangle.left, this._currentMeasure.left);
-            Control._ClipMeasure.top = Math.max(invalidatedRectangle.top, this._currentMeasure.top);
-            Control._ClipMeasure.width = right - Control._ClipMeasure.left;
-            Control._ClipMeasure.height = bottom - Control._ClipMeasure.top;
+            // Get the context's current transform into a babylon matrix
+            debugger;
+            // var inverseContextTransform = (context as any).getTransform().inverse();
+            // this._tmpMatrix.fromValues(inverseContextTransform.a, inverseContextTransform.b, inverseContextTransform.c, inverseContextTransform.d, inverseContextTransform.e, inverseContextTransform.f);
+
+            // Rotate the invalidated rect into the control's space
+            invalidatedRectangle.rotateByTransformMatrixToRef(this._invertTransformMatrix, this._tmpMeasureA);
+
+            // Get the intersection of the rect in context space and the current context
+            var intersection = new Measure(0, 0, 0, 0);
+            intersection.left = Math.max(this._tmpMeasureA.left, this._currentMeasure.left);
+            intersection.top = Math.max(this._tmpMeasureA.top, this._currentMeasure.top);
+            intersection.width = Math.min(this._tmpMeasureA.left + this._tmpMeasureA.width, this._currentMeasure.left + this._currentMeasure.width) - intersection.left;
+            intersection.height = Math.min(this._tmpMeasureA.top + this._tmpMeasureA.height, this._currentMeasure.top + this._currentMeasure.height) - intersection.top;
+            Control._ClipMeasure.copyFrom(intersection);
         }
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
