@@ -199,7 +199,7 @@ export class MultiMaterial extends Material {
             return;
         }
 
-        if (forceDisposeChildren === true) {
+        if (forceDisposeChildren) {
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
