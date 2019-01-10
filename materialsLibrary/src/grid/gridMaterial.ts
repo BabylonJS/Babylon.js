@@ -171,7 +171,7 @@ export class GridMaterial extends PushMaterial {
             if (defines.UV1) {
                 attribs.push(VertexBuffer.UVKind);
             }
-             if (defines.UV2) {
+            if (defines.UV2) {
                 attribs.push(VertexBuffer.UV2Kind);
             }
 
@@ -180,7 +180,7 @@ export class GridMaterial extends PushMaterial {
             subMesh.setEffect(scene.getEngine().createEffect("grid",
                 attribs,
                 ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view",
-                "opacityMatrix", "vOpacityInfos"],
+                    "opacityMatrix", "vOpacityInfos"],
                 ["opacitySampler"],
                 join,
                 undefined,
@@ -233,7 +233,7 @@ export class GridMaterial extends PushMaterial {
 
             if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                 this._activeEffect.setTexture("opacitySampler", this._opacityTexture);
-                 this._activeEffect.setFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
+                this._activeEffect.setFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                 this._activeEffect.setMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
             }
         }

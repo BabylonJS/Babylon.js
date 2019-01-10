@@ -31,7 +31,7 @@ interface IGLTFMaterialsCommonExtension {
 }
 
 interface IGLTFRuntimeCommonExtension {
-    lights: {[key: string]: IGLTFLightCommonExtension};
+    lights: { [key: string]: IGLTFLightCommonExtension };
 }
 
 interface IGLTFLightCommonExtension {
@@ -113,9 +113,9 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
                         var spot = light.spot;
                         if (spot) {
                             var spotLight = new SpotLight(light.name, new Vector3(0, 10, 0), new Vector3(0, -1, 0),
-                                                        spot.fallOffAngle || Math.PI,
-                                                        spot.fallOffExponent || 0.0,
-                                                        gltfRuntime.scene);
+                                spot.fallOffAngle || Math.PI,
+                                spot.fallOffExponent || 0.0,
+                                gltfRuntime.scene);
                             spotLight.diffuse = Color3.FromArray(spot.color || [1, 1, 1]);
                         }
                         break;

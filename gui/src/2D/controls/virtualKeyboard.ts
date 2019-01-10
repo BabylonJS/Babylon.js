@@ -265,7 +265,7 @@ export class VirtualKeyboard extends StackPanel {
         }
     }
 
-    private _removeConnectedInputObservables(connectedInputText: ConnectedInputText) : void {
+    private _removeConnectedInputObservables(connectedInputText: ConnectedInputText): void {
         connectedInputText.input._connectedVirtualKeyboard = null;
         connectedInputText.input.onFocusObservable.remove(connectedInputText.onFocusObserver);
         connectedInputText.input.onBlurObservable.remove(connectedInputText.onBlurObserver);

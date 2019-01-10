@@ -50075,6 +50075,10 @@ declare module "babylonjs/Particles/particleSystemComponent" {
             getHierarchyEmittedParticleSystems(): IParticleSystem[];
         }
     }
+    /**
+     * @hidden
+     */
+    export var _IDoNeedToBeInTheBuild: number;
 }
 declare module "babylonjs/Particles/index" {
     export * from "babylonjs/Particles/baseParticleSystem";
