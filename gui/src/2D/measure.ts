@@ -71,7 +71,7 @@ export class Measure {
      * @param transform the matrix to transform the measure before computing the AABB
      * @param result the resulting AABB
      */
-    public rotateByTransformMatrixToRef(transform: Matrix2D, result: Measure) {
+    public transformToRef(transform: Matrix2D, result: Measure) {
         var rectanglePoints = Polygon.Rectangle(this.left, this.top, this.left + this.width, this.top + this.height);
         var min = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
         var max = new Vector2(0, 0);

@@ -1085,7 +1085,7 @@ export class Control {
     /** @hidden */
     public _intersectsRect(rect: Measure) {
         // Rotate the control's current measure into local space and check if it intersects the passed in rectangle
-        this._currentMeasure.rotateByTransformMatrixToRef(this._transformMatrix, this._tmpMeasureA);
+        this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
         if (this._tmpMeasureA.left >= rect.left + rect.width) {
             return false;
         }
@@ -1110,7 +1110,7 @@ export class Control {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
             // Rotate by transform to get the measure transformed to global space
-            this._currentMeasure.rotateByTransformMatrixToRef(this._transformMatrix, this._tmpMeasureA);
+            this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
             // get the boudning box of the current measure and last frames measure in global space and invalidate it
             // the previous measure is used to properly clear a control that is scaled down
             Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
@@ -1241,7 +1241,7 @@ export class Control {
         }
 
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
-            this._currentMeasure.rotateByTransformMatrixToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
+            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
 
             context.save();
 
@@ -1441,7 +1441,7 @@ export class Control {
         Control._ClipMeasure.copyFrom(this._currentMeasure);
         if (invalidatedRectangle) {
             // Rotate the invalidated rect into the control's space
-            invalidatedRectangle.rotateByTransformMatrixToRef(this._invertTransformMatrix, this._tmpMeasureA);
+            invalidatedRectangle.transformToRef(this._invertTransformMatrix, this._tmpMeasureA);
 
             // Get the intersection of the rect in context space and the current context
             var intersection = new Measure(0, 0, 0, 0);

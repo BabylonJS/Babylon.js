@@ -290,7 +290,7 @@ export class Container extends Control {
         }
 
         if (this._isDirty) {
-            this._currentMeasure.rotateByTransformMatrixToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
+            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
         }
 
         let rebuildCount = 0;
