@@ -51,8 +51,8 @@ export class CustomMaterial extends StandardMaterial {
     _newUniformInstances: any[];
     _newSamplerInstances: Texture[];
 
-    public  FragmentShader : string ;
-    public  VertexShader : string ;
+    public FragmentShader: string;
+    public VertexShader: string;
 
     public AttachAfterBind(mesh: Mesh, effect: Effect) {
         for (var el in this._newUniformInstances) {
@@ -129,7 +129,7 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_VERTEX_UPDATE_POSITION', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
             .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""));
 
-            // #define CUSTOM_VERTEX_MAIN_END
+        // #define CUSTOM_VERTEX_MAIN_END
 
         Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
@@ -139,9 +139,9 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
 
-            // #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
+        // #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
 
-            // #define CUSTOM_FRAGMENT_BEFORE_FOG
+        // #define CUSTOM_FRAGMENT_BEFORE_FOG
 
         this._isCreatedShader = true;
         this._createdShaderName = name;
