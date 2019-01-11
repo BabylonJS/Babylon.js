@@ -124,7 +124,7 @@
 - Gizmo scaling not consistent when camera is parented ([TrevorDev](https://github.com/TrevorDev))
 - Context loss causing unexpected results with dynamic textures, geometries with the same name and reflectionTextures ([TrevorDev](https://github.com/TrevorDev))
 - CreateScreenshotUsingRenderTarget stretches mirror textures when setting both width and height ([TrevorDev](https://github.com/TrevorDev))
-- VR helper only updating vr cameras position when entering vr, rotation was missing ([TrevorDev](https://github.com/TrevorDev))
+- VR helper only updating vr cameras position when entering vr, rotation was missing, laser distance stopped working ([TrevorDev](https://github.com/TrevorDev))
 - Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
 - Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
