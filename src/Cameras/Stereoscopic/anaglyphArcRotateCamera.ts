@@ -4,6 +4,9 @@ import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math";
 import { Node } from "../../node";
 
+// Side effect import to define the stereoscopic mode.
+import "../RigModes/stereoscopicAnaglyphRigMode";
+
 Node.AddNodeConstructor("AnaglyphArcRotateCamera", (name, scene, options) => {
     return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, scene);
 });
