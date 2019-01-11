@@ -271,6 +271,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             //TMP also for cylinder - TODO Cannon supports cylinder natively.
             case PhysicsImpostor.CylinderImpostor:
                 let nativeParams = impostor.getParam("nativeOptions");
+                if(!nativeParams){
+                    nativeParams = {};
+                }
                 let radiusTop = nativeParams.radiusTop !== undefined ? nativeParams.radiusTop : this._checkWithEpsilon(extendSize.x) / 2;
                 let radiusBottom = nativeParams.radiusBottom !== undefined ? nativeParams.radiusBottom : this._checkWithEpsilon(extendSize.x) / 2;
                 let height = nativeParams.height !== undefined ? nativeParams.height : this._checkWithEpsilon(extendSize.y) / 2;
