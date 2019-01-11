@@ -2,11 +2,12 @@
 
 ## Major updates
 
+- New [fancy forum](https://forum.babylonjs.com)!! ([Deltakosh](https://github.com/deltakosh))
 - [Inspector v2.0](https://doc.babylonjs.com/features/playground_debuglayer). [Dev log](https://medium.com/@babylonjs/dev-log-creating-the-new-inspector-b15c50900205) ([Deltakosh](https://github.com/deltakosh))
 - Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
-- Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein)) [@NEED DEMO]
 - Added [Object Based Motion Blur](http://doc.babylonjs.com/how_to/using_motionblurpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
-- WebXR ([TrevorDev](https://github.com/TrevorDev)) [@NEED DEMO]
+- Added [support for AmmoJS](https://doc.babylonjs.com/how_to/using_the_physics_engine) as a physics plugin (Composite objects, motors, joints) ([TrevorDev](https://github.com/TrevorDev))
+- Added support for [WebXR](https://doc.babylonjs.com/how_to/webxr) ([TrevorDev](https://github.com/TrevorDev))
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
   - webXR camera which can be updated by a webXRSession ([TrevorDev](https://github.com/TrevorDev))
@@ -16,15 +17,19 @@
   - WebXRInput manage controllers for the XR experience ([TrevorDev](https://github.com/TrevorDev))
   - WebXR camera rotation using parent container ([TrevorDev](https://github.com/TrevorDev))
 - GUI:
+  - Added `control.useBitmapCache` to optimize re-rendering of complex controls by keeping a cached version ([Deltakosh](https://github.com/deltakosh))
   - Added new [ImageBasedSlider](http://doc.babylonjs.com/how_to/gui#imagebasedslider) to let users customize sliders using images ([Deltakosh](https://github.com/deltakosh))
   - Added support for clipboard events to let users perform `cut`, `copy` and `paste` events ([Saket Saurabh](https://github.com/ssaket))
-  - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/))
+  - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/) / [Deltakosh](https://github.com/deltakosh))
   - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
+  - Added support for [nine patch stretch](https://www.babylonjs-playground.com/#G5H9IN#2) mode for images. ([Deltakosh](https://github.com/deltakosh))
+  - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
 
 ### GUI
 
+- Added `inputText.onKeyboardEventProcessedObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added `button.image` and `button.textBlock` to simplify access to button internal parts ([Deltakosh](https://github.com/deltakosh))
 - Added `sldier.displayThumb` to show/hide slider's thumb ([Deltakosh](https://github.com/deltakosh))
 - Added `grid.rowCount`, `grid.columnCount` and `grid.getChildrenAt()` ([Deltakosh](https://github.com/deltakosh))
@@ -33,9 +38,14 @@
 - Added `inputText.onTextCopyObservable`, `inputText.onTextCutObservable` and `inputText.onTextPasteObservable` to inputText ([Saket Saurabh](https://github.com/ssaket))
 - Added `AdvancedDynamicTexture.onClipboardObservable` to observe for clipboard events in AdvancedDynamicTexture([Saket Saurabh](https://github.com/ssaket))
 - Added `inputText.onFocusSelectAll` to allow complete selection of text on focus event.([Saket Saurabh](https://github.com/ssaket))
+- Added mouse drag to highlight text in inputText ([Saket Saurabh](https://github.com/ssaket))
 
 ### Core Engine
 
+- Added `animatable.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
+- Added `animationGroup.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
+- Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein))
+- Added support for Scissor testing ([Deltakosh](https://github.com/deltakosh))
 - Added `Engine.onNewSceneAddedObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added new `PassCubePostProcess` to render cube map content ([Deltakosh](https://github.com/deltakosh))
 - Added support for utility layer for SkeletonViewer ([Deltakosh](https://github.com/deltakosh))
@@ -50,6 +60,7 @@
   - Enabled a removal in O(1) from the `transformNodes` array and `materials` array of the `Scene`. As a consequence, the order of the element within these arrays might change during a removal
   - Enabled a removal in O(1) from the `instances` array of a `Mesh`. As a consequence, the order of the element within this array might change during a removal
   - Stopped calling `Array.splice` on the `scene.meshes` array and on the `engine._uniformBuffer` when removing an element. As a consequence, the order of the element within these arrays might change during a removal
+  - Added an option `useGeometryUniqueIdsMap` in the `Scene` constructor options. When set to true, each `Scene` isntance will have and will keep up-to-date a map of geometry per `uniqueId`. This is to avoid browsing all the geometries of the scene when a new one is being pushed. It also enables a removal of geometry in O(1). Disabled by default
   - Added an option `useMaterialMeshMap` in the `Scene` constructor options. When set to true, each `Material` isntance will have and will keep up-to-date a map of its bound meshes. This is to avoid browsing all the meshes of the scene to retrieve the ones bound to the current material when disposing the Material. Disabled by default
   - Added an option `useClonedMeshhMap` in the `Scene` constructor options. When set to true, each `Mesh` will have and will keep up-to-date a map of cloned meshes. This is to avoid browsing all the meshes of the scene to retrieve the ones that have the current mesh as source mesh. Disabled by default
   - Added `blockfreeActiveMeshesAndRenderingGroups` property in the `Scene`, following the same model as `blockMaterialDirtyMechanism`. This is to avoid calling `Scene.freeActiveMeshes` and `Scene.freeRenderingGroups` for each disposed mesh when we dispose several meshes in a row. One have to set `blockfreeActiveMeshesAndRenderingGroups` to `true` just before disposing the meshes, and set it back to `false` just after
@@ -72,9 +83,18 @@
 - Added support for overriding the mesh used for the world matrix for a mesh with a skeleton ([bghgary](https://github.com/bghgary))
 - Added support for linking a bone to a transform node ([bghgary](https://github.com/bghgary))
 - Factored out `setDirection` function from `lookAt` for transform node ([bghgary](https://github.com/bghgary))
-- Added support for AmmoJS as a physics plugin ([TrevorDev](https://github.com/TrevorDev))
 - Add support for setting renderingGroupId and creating instances to `AxesViewer` ([bghgary](https://github.com/bghgary))
 - Invert vScale of compressed ktx textures as they are inverted in the file and UNPACK_FLIP_Y_WEBGL is not supported by ktx ([TrevorDev](https://github.com/TrevorDev))
+- Enable dragging in boundingBoxGizmo without needing a parent ([TrevorDev](https://github.com/TrevorDev))
+- Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
+- Added InputsManager and keyboard bindings for FollowCamera. ([mrdunk](https://github.com))
+- Fix typo in FollowCamera InputsManager when limiting rotation to 360 degrees. ([mrdunk](https://github.com))
+- Added per solid particle culling possibility : `solidParticle.isInFrustum()`  ([jerome](https://github.com/jbousquie))
+- Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
+- Added option `forceDisposeChildren` to multiMaterial.dispose ([danjpar](https://github.com/danjpar))
+
+### OBJ Loader
+- Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
 
 ### glTF Loader
 
@@ -91,8 +111,12 @@
 ### Viewer
 
 ### Materials Library
+- Added the `cameraOffset` vector property in the `SkyMaterial` to get an offset according to the horizon ([julien-moreau](https://github.com/julien-moreau))
+- Fixed `GradientMaterial` to consider disableLighting working as emissive ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
+- Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
+- Fixed ArcRotateCamera control when upVector was modified ([Deltakosh](https://github.com/deltakosh))
 - Fixed anaglyph mode for Free and Universal cameras ([Deltakosh](https://github.com/deltakosh))
 - Fixed FileLoader's loading of a skybox, & added a parsed value for whether to create with PBR or STDMaterial ([Palmer-JC](https://github.com/Palmer-JC))
 - Removed bones from rootNodes where they should never have been ([Deltakosh](https://github.com/deltakosh))
@@ -109,7 +133,18 @@
 - MakeNotPickableAndWrapInBoundingBox had unexpected behavior when input had scaling of 0 on an axis ([TrevorDev](https://github.com/TrevorDev))
 - Fixed an issue with loading base64 encoded images in the glTF loader ([bghgary](https://github.com/bghgary))
 - In multi-camera scenes the inspector would cause the camera's interaction events to get detached ([TrevorDev](https://github.com/TrevorDev))
+- Fix delete highlighted text after keyboard input, beat delay after double click event in InputText ([Saket Saurabh](https://github.com/ssaket))
 - SixDofDragBehavior will support when the camera is parented ([TrevorDev](https://github.com/TrevorDev))
+- Deactivate webvr lasers when not in vr ([TrevorDev](https://github.com/TrevorDev))
+- Update physics position using absolutePosition instead of pivotPosition ([TrevorDev](https://github.com/TrevorDev))
+- Disable camera arrow key controls when the Command key is selected on Mac OS ([kcoley](https://github.com/kcoley))
+- Viewer should not set receiveShadows on an instanced mesh ([TrevorDev](https://github.com/TrevorDev))
+- Rotation/Scaling snapping not working in the negative direction ([TrevorDev](https://github.com/TrevorDev))
+- Updated comment in TransformNode.rotationQuaternion to include undefined as one of the potential return values ([nathankmiller](https://github.com/nathankmiller))
+- CannonJS ignores connectedPivot joint parameter ([TrevorDev](https://github.com/TrevorDev))
+- Fix case sensitive paths ([mrdunk](https://github.com))
+- Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
+- AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev)))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -126,10 +161,19 @@
 - Fixed inspector dynamic loading ([Sebavan](https://github.com/Sebavan))
 - Fixed infiniteDistance not working anymore ([Sebavan](https://github.com/Sebavan))
 - Fixed bug in SolidParticle BoundingSphere update within the SolidParticleSystem ([barroij](https://github.com/barroij))
+- Update Picking so that when the picked Mesh is a LinesMesh, the index of the picked line is returned in the `faceId` property of the `PickingInfo`, as we do with face index the picked Mesh is made of triangle faces ([barroij](https://github.com/barroij))
+- Do not clone mesh observables ([Sebavan](https://github.com/Sebavan))
+- Fixed Inspector resolution with AMD loader ([Sebavan](https://github.com/Sebavan))
+- Fix a bug when a call to `updateIndices` leads to changing the size of the index buffer by recreating the subMeshes in that case ([barroij](https://github.com/barroij))
+- Add option to disable gazeTracker color changes in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
+- PointerDragBehavior validateDrag predicate to stop dragging to specific points ([TrevorDev](https://github.com/TrevorDev))
+- Auto Update Touch Action [#5674](https://github.com/BabylonJS/Babylon.js/issues/5674)([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 
 ### Loaders
+
+- Added missing `loadedAnimationGroups` to `MeshAssetTask` ([bghgary](https://github.com/bghgary))
 
 ## Breaking changes
 
@@ -162,3 +206,10 @@
   - `TransformNode` objects are excluded from the returned list of meshes when importing mesh
   - `TransformNode` objects do not raise `onMeshLoaded` events
 - `xAxisMesh`, `yAxisMesh`, and `zAxisMesh` of `AxesViewer` was renamed to `xAxis`, `yAxis`, and `zAxis` respectively and now return a `TransformNode` to represent the parent node of the cylinder and line of the arrow ([bghgary](https://github.com/bghgary))
+- `Viewport.toglobal` does not allow passing engine in to prevent circular dependency ([Sebavan](https://github.com/Sebavan))
+- `Vector3.UnprojectRayToRef` has been moved to `Ray.unprojectRayToRef` instance method to decrease class coupling ([Sebavan](https://github.com/Sebavan))
+- `Material.ParseMultiMaterial` has been moved to `MultiMaterial.ParseMultiMaterial` to decrease class coupling ([Sebavan](https://github.com/Sebavan))
+- no more `babylon.no-module.max.js` javascript version has the Webpack UMD bundle covers both ([Sebavan]
+(https://github.com/Sebavan))
+- no more `es6.js` javascript as it is now available as a true es6 npm package ([Sebavan](https://github.com/Sebavan))
+- no more `babylon.worker.js` javascript following the lack of usage from the feature ([Sebavan](https://github.com/Sebavan))

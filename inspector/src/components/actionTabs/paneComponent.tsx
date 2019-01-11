@@ -1,6 +1,7 @@
 import * as React from "react";
 import { IconDefinition } from '@fortawesome/free-solid-svg-icons';
-import { Scene, Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
+import { Scene } from "babylonjs/scene";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { GlobalState } from "components/globalState";
 
@@ -10,7 +11,7 @@ export interface IPaneComponentProps {
     selectedEntity?: any,
     onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
-    globalState?: GlobalState
+    globalState: GlobalState
 }
 
 export class PaneComponent extends React.Component<IPaneComponentProps, { tag: any }> {

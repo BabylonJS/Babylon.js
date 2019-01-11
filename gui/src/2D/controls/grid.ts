@@ -1,8 +1,9 @@
+import { Nullable } from "babylonjs/types";
+
 import { Container } from "./container";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Nullable } from "babylonjs";
 
 /**
  * Class used to create a 2D grid container
@@ -30,6 +31,32 @@ export class Grid extends Container {
     /** Gets the list of children */
     public get children(): Control[] {
         return this._childControls;
+    }
+
+    /**
+     * Gets the definition of a specific row
+     * @param index defines the index of the row
+     * @returns the row definition
+     */
+    public getRowDefinition(index: number): Nullable<ValueAndUnit> {
+        if (index < 0 || index >= this._rowDefinitions.length) {
+            return null;
+        }
+
+        return this._rowDefinitions[index];
+    }
+
+    /**
+     * Gets the definition of a specific column
+     * @param index defines the index of the column
+     * @returns the column definition
+     */
+    public getColumnDefinition(index: number): Nullable<ValueAndUnit> {
+        if (index < 0 || index >= this._columnDefinitions.length) {
+            return null;
+        }
+
+        return this._columnDefinitions[index];
     }
 
     /**
@@ -122,6 +149,15 @@ export class Grid extends Container {
         }
 
         return cell.children;
+    }
+
+    /**
+     * Gets a string representing the child cell info (row x column)
+     * @param child defines the control to get info from
+     * @returns a string containing the child cell info (row x column)
+     */
+    public getChildCellInfo(child: Control): string {
+        return child._tag;
     }
 
     private _removeCell(cell: Container, key: string) {
@@ -256,6 +292,7 @@ export class Grid extends Container {
         goodContainer.addControl(control);
         this._childControls.push(control);
         control._tag = key;
+        control.parent = this;
 
         this._markAsDirty();
 
@@ -432,5 +469,7 @@ export class Grid extends Container {
         for (var control of this._childControls) {
             control.dispose();
         }
+
+        this._childControls = [];
     }
 }

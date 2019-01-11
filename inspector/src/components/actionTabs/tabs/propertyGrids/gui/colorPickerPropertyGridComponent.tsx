@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
@@ -8,9 +8,9 @@ import { Color3LineComponent } from "../../../lines/color3LineComponent";
 import { LockObject } from "../lockObject";
 
 interface IColorPickerPropertyGridComponentProps {
-    colorPicker: ColorPicker,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    colorPicker: ColorPicker;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {

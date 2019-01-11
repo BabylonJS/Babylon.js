@@ -19,6 +19,10 @@
     font: 14px "Arial";    
     overflow: hidden;
 
+    .hoverIcon:hover {
+        opacity: 0.8;
+    }
+
     #header {
         height: 30px;
         font-size: 16px;
@@ -144,6 +148,10 @@
                 -moz-user-select: none;   
                 -ms-user-select: none;    
                 user-select: none;     
+
+                .underline {
+                    border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);
+                }
                 
                 .textureLinkLine {
                     display: grid;
@@ -216,7 +224,7 @@
                         opacity: 0.8;
                         margin:5px;
                         margin-top: 6px;
-                        max-width: 200px;
+                        max-width: 140px;
                         text-decoration: underline;
                         cursor: pointer;
                     }
@@ -231,6 +239,10 @@
                         margin:5px;
                         margin-top: 6px;
                         max-width: 200px;
+                        -webkit-user-select: text; 
+                        -moz-user-select: text;   
+                        -ms-user-select: text;    
+                        user-select: text;                
 
                         &.check {
                             color: green;
@@ -322,7 +334,7 @@
                     padding-left: 5px;
                     height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr 30px;
+                    grid-template-columns: 1fr 24px;
 
                     .label {
                         grid-column: 1;
@@ -677,41 +689,88 @@
                 
                 .color3Line {
                     padding-left: 5px;
-                    height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr auto;
 
+                    .firstLine {
+                        height: 30px;
+                        display: grid;
+                        grid-template-columns: 1fr auto 20px 20px;
 
-                    .label {
-                        grid-column: 1;
-                        display: flex;
-                        align-items: center;
-                    }
+                        .label {
+                            grid-column: 1;
+                            display: flex;
+                            align-items: center;
+                        }
 
-                    .color3 {
-                        grid-column: 2;
-                        
-                        display: flex;
-                        align-items: center;   
+                        .color3 {
+                            grid-column: 2;
+                            
+                            display: flex;
+                            align-items: center;   
 
-                        input[type="color"] {
-                            -webkit-appearance: none;
-                            border: none;
-                            padding: 0;
-                            width: 20px;
-                            height: 20px;
+                            input[type="color"] {
+                                -webkit-appearance: none;
+                                border: 1px solid rgba(255, 255, 255, 0.5);
+                                padding: 0;
+                                width: 30px;
+                                height: 20px;
+                            }
+                            input[type="color"]::-webkit-color-swatch-wrapper {
+                                padding: 0;
+                            }
+                            input[type="color"]::-webkit-color-swatch {
+                                border: none;
+                            }
+                            
+                            input {
+                                margin-right: 5px;
+                            }
                         }
-                        input[type="color"]::-webkit-color-swatch-wrapper {
-                            padding: 0;
+
+                        .copy {
+                            grid-column: 3;
+                            display: grid;
+                            align-items: center;
+                            justify-items: center;
+                            cursor: pointer;
                         }
-                        input[type="color"]::-webkit-color-swatch {
-                            border: none;
+
+                        .expand {
+                            grid-column: 4;
+                            display: grid;
+                            align-items: center;
+                            justify-items: center;
+                            cursor: pointer;
                         }
-                        
-                        input {
-                            margin-right: 5px;
+                    }   
+
+                    .secondLine {
+                        display: grid;
+                        padding-right: 5px;  
+                        border-left: 1px solid rgb(51, 122, 183);
+
+                        .numeric {
+                            display: grid;
+                            grid-template-columns: 1fr auto;
                         }
-                    }                    
+
+                        .numeric-label {
+                            text-align: right;
+                            grid-column: 1;
+                            display: flex;
+                            align-items: center;                            
+                            justify-self: right;
+                            margin-right: 10px;                          
+                        }
+
+                        .numeric-value {
+                            width: 120px;
+                            grid-column: 2;
+                            display: flex;
+                            align-items: center;  
+                            border: 1px solid  rgb(51, 122, 183);
+                        }                        
+                    }                  
                 }     
                 
                 .listLine {

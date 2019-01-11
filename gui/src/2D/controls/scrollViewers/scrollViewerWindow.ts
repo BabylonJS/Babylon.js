@@ -1,6 +1,7 @@
 import { Measure } from "../../measure";
 import { Container } from "../container";
 import { ValueAndUnit } from "../../valueAndUnit";
+import { Control } from "../control";
 
 /**
  * Class used to hold a the container for ScrollViewer
@@ -41,16 +42,16 @@ export class _ScrollViewerWindow extends Container {
                 continue;
             }
 
-            if (child._currentMeasure.left  < 0) {
-                child._currentMeasure.left = this._currentMeasure.left;
+            if (child.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER) {
+                child._offsetLeft(this._currentMeasure.left - child._currentMeasure.left);
             }
 
-            if (child._currentMeasure.top  < 0) {
-                child._currentMeasure.top = this._currentMeasure.top;
+            if (child.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER) {
+                child._offsetTop(this._currentMeasure.top - child._currentMeasure.top);
             }
 
             maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width);
-            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top +  child._currentMeasure.height);
+            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height);
         }
 
         if (this._currentMeasure.width !== maxWidth) {
@@ -58,7 +59,6 @@ export class _ScrollViewerWindow extends Container {
             this._currentMeasure.width = maxWidth;
             this._rebuildLayout = true;
             this._isDirty = true;
-            console.log(maxWidth);
         }
 
         if (this._currentMeasure.height !== maxHeight) {

@@ -1,9 +1,13 @@
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
+
 import { Rectangle } from "../rectangle";
 import { Grid } from "../grid";
 import { Control } from "../control";
 import { Container } from "../container";
-import { PointerInfo, Observer, Nullable } from "babylonjs";
-import { AdvancedDynamicTexture, Measure } from "2D";
+import { Measure } from "../../measure";
+import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 import { _ScrollViewerWindow } from "./scrollViewerWindow";
 import { ScrollBar } from "../sliders/scrollBar";
 
@@ -18,8 +22,7 @@ export class ScrollViewer extends Rectangle {
     private _horizontalBar: ScrollBar;
     private _verticalBar: ScrollBar;
     private _barColor: string;
-    private _barBorderColor: string;
-    private _barBackground: string ;
+    private _barBackground: string;
     private _barSize: number = 20;
     private _endLeft: number;
     private _endTop: number;
@@ -29,6 +32,20 @@ export class ScrollViewer extends Rectangle {
     private _onPointerObserver: Nullable<Observer<PointerInfo>>;
     private _clientWidth: number;
     private _clientHeight: number;
+
+    /**
+     * Gets the horizontal scrollbar
+     */
+    public get horizontalBar(): ScrollBar {
+        return this._horizontalBar;
+    }
+
+    /**
+     * Gets the vertical scrollbar
+     */
+    public get verticalBar(): ScrollBar {
+        return this._verticalBar;
+    }
 
     /**
      * Adds a new control to the current container
@@ -246,21 +263,6 @@ export class ScrollViewer extends Rectangle {
         }
     }
 
-    /** Gets or sets the bar color */
-    public get barBorderColor(): string {
-        return this._barBorderColor;
-    }
-
-    public set barBorderColor(color: string) {
-        if (this._barBorderColor === color) {
-            return;
-        }
-
-        this._barBorderColor = color;
-        this._horizontalBar.borderColor = color;
-        this._verticalBar.borderColor = color;
-    }
-
     /** Gets or sets the bar background */
     public get barBackground(): string {
         return this._barBackground;
@@ -310,6 +312,19 @@ export class ScrollViewer extends Rectangle {
         this._endLeft = this._clientWidth - windowContentsWidth;
         this._endTop = this._clientHeight - windowContentsHeight;
 
+        const newLeft = this._horizontalBar.value * this._endLeft + "px";
+        const newTop = this._verticalBar.value * this._endTop + "px";
+
+        if (newLeft !== this._window.left) {
+            this._window.left = newLeft;
+            this._rebuildLayout = true;
+        }
+
+        if (newTop !== this._window.top) {
+            this._window.top = newTop;
+            this._rebuildLayout = true;
+        }
+
         let horizontalMultiplicator = this._clientWidth / windowContentsWidth;
         let verticalMultiplicator = this._clientHeight / windowContentsHeight;
 
@@ -331,7 +346,7 @@ export class ScrollViewer extends Rectangle {
 
         let scene = this._host.getScene();
         this._onPointerObserver = scene!.onPointerObservable.add((pi, state) => {
-            if (!this._pointerIsOver || pi.type !== BABYLON.PointerEventTypes.POINTERWHEEL) {
+            if (!this._pointerIsOver || pi.type !== PointerEventTypes.POINTERWHEEL) {
                 return;
             }
             if (this._verticalBar.isVisible == true) {
@@ -368,7 +383,7 @@ export class ScrollViewer extends Rectangle {
         let scene = this._host.getScene();
         if (scene && this._onPointerObserver) {
             scene.onPointerObservable.remove(this._onPointerObserver);
-            this._onPointerObserver  = null;
+            this._onPointerObserver = null;
         }
         super.dispose();
     }

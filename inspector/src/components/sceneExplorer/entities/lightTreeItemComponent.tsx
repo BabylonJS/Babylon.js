@@ -1,15 +1,19 @@
-import { Light, IExplorerExtensibilityGroup } from "babylonjs";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Light } from "babylonjs/Lights/light";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { faLightbulb as faLightbubRegular } from '@fortawesome/free-regular-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
+import { GlobalState } from "../../globalState";
 
 interface ILightTreeItemComponentProps {
     light: Light,
     extensibilityGroups?: IExplorerExtensibilityGroup[]
-    onClick: () => void
+    onClick: () => void,
+    globalState: GlobalState
 }
 
 export class LightTreeItemComponent extends React.Component<ILightTreeItemComponentProps, { isEnabled: boolean }> {

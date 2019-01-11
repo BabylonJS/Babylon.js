@@ -1,4 +1,4 @@
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
@@ -231,6 +231,8 @@ export class TextBlock extends Control {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
 
+        super._processMeasures(parentMeasure, context);
+
         // Prepare lines
         this._lines = this._breakLines(this._currentMeasure.width, context);
         this.onLinesReadyObservable.notifyObservers(this);
@@ -250,18 +252,16 @@ export class TextBlock extends Control {
                 let newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
-                    this._isDirty = true;
+                    this._rebuildLayout = true;
                 }
             }
             let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
 
             if (newHeight !== this._height.internalValue) {
                 this._height.updateInPlace(newHeight, ValueAndUnit.UNITMODE_PIXEL);
-                this._isDirty = true;
+                this._rebuildLayout = true;
             }
         }
-
-        super._processMeasures(parentMeasure, context);
     }
 
     private _drawText(text: string, textWidth: number, y: number, context: CanvasRenderingContext2D): void {

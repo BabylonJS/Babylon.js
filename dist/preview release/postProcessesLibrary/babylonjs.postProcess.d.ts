@@ -1,4 +1,10 @@
-
+declare module BABYLON {
+    /** @hidden */
+    export var asciiartPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
 declare module BABYLON {
     /**
      * AsciiArtFontTexture is the helper class used to easily create your ascii art font texture.
@@ -6,7 +12,7 @@ declare module BABYLON {
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    class AsciiArtFontTexture extends BaseTexture {
+    export class AsciiArtFontTexture extends BABYLON.BaseTexture {
         private _font;
         private _text;
         private _charSize;
@@ -21,7 +27,7 @@ declare module BABYLON {
          * @param text the caracter set to use in the rendering.
          * @param scene the scene that owns the texture
          */
-        constructor(name: string, font: string, text: string, scene?: Nullable<Scene>);
+        constructor(name: string, font: string, text: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
         /**
          * Gets the max char width of a font.
          * @param font the font to use, use the W3C CSS notation
@@ -45,12 +51,12 @@ declare module BABYLON {
          * @param scene the scene to create the texture for
          * @return the parsed texture
          */
-        static Parse(source: any, scene: Scene): AsciiArtFontTexture;
+        static Parse(source: any, scene: BABYLON.Scene): AsciiArtFontTexture;
     }
     /**
      * Option available in the Ascii Art Post Process.
      */
-    interface IAsciiArtPostProcessOptions {
+    export interface IAsciiArtPostProcessOptions {
         /**
          * The font to use following the w3c font definition.
          */
@@ -76,7 +82,7 @@ declare module BABYLON {
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
      */
-    class AsciiArtPostProcess extends PostProcess {
+    export class AsciiArtPostProcess extends BABYLON.PostProcess {
         /**
          * The font texture used to render the char in the post process.
          */
@@ -97,11 +103,16 @@ declare module BABYLON {
          * @camera the camera to apply the post process to.
          * @param options can either be the font name or an option object following the IAsciiArtPostProcessOptions format
          */
-        constructor(name: string, camera: Camera, options?: string | IAsciiArtPostProcessOptions);
+        constructor(name: string, camera: BABYLON.Camera, options?: string | IAsciiArtPostProcessOptions);
     }
 }
-
-
+declare module BABYLON {
+    /** @hidden */
+    export var digitalrainPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
 declare module BABYLON {
     /**
      * DigitalRainFontTexture is the helper class used to easily create your digital rain font texture.
@@ -109,7 +120,7 @@ declare module BABYLON {
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    class DigitalRainFontTexture extends BaseTexture {
+    export class DigitalRainFontTexture extends BABYLON.BaseTexture {
         private _font;
         private _text;
         private _charSize;
@@ -124,7 +135,7 @@ declare module BABYLON {
          * @param text the caracter set to use in the rendering.
          * @param scene the scene that owns the texture
          */
-        constructor(name: string, font: string, text: string, scene?: Nullable<Scene>);
+        constructor(name: string, font: string, text: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
         /**
          * Gets the max char width of a font.
          * @param font the font to use, use the W3C CSS notation
@@ -148,12 +159,12 @@ declare module BABYLON {
          * @param scene the scene to create the texture for
          * @return the parsed texture
          */
-        static Parse(source: any, scene: Scene): DigitalRainFontTexture;
+        static Parse(source: any, scene: BABYLON.Scene): DigitalRainFontTexture;
     }
     /**
      * Option available in the Digital Rain Post Process.
      */
-    interface IDigitalRainPostProcessOptions {
+    export interface IDigitalRainPostProcessOptions {
         /**
          * The font to use following the w3c font definition.
          */
@@ -175,7 +186,7 @@ declare module BABYLON {
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
      */
-    class DigitalRainPostProcess extends PostProcess {
+    export class DigitalRainPostProcess extends BABYLON.PostProcess {
         /**
          * The font texture used to render the char in the post process.
          */
@@ -196,6 +207,6 @@ declare module BABYLON {
          * @camera the camera to apply the post process to.
          * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
          */
-        constructor(name: string, camera: Camera, options?: string | IDigitalRainPostProcessOptions);
+        constructor(name: string, camera: BABYLON.Camera, options?: string | IDigitalRainPostProcessOptions);
     }
-}
+}
