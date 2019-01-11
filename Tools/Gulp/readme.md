@@ -22,44 +22,27 @@ npm install
 npm update
 ```
 
-### Update config.json if you want to add your own files:
-```
-"extras" : {
-    "files": [
-        "file1.js", "file2.js"
-    ]
-}
-```
-## From the javascript source
-### Build Babylon.js from the javascript files:
+## Build all the distributed files and tests (release build):
 
 ```
 gulp
 ```
-Will be generated :
-- babylon.js
-- babylon.max.js (unminified)
+Will generate all the files of the dist/preview release folder.
 
-## From the typescript source
-### Build Babylon.js from the typescript files:
+## Build all the distributed files without tests (release build):
 
 ```
-gulp typescript
+gulp typescript-libraries
 ```
-Will be generated :
-- babylon.js
-- babylon.d.ts
-- babylon.noworker.js (minified version without collisions workers)
-- babylon.max.js (unminified)
+Will generate all the files of the dist/preview release folder.
 
-Be aware that all js files content will be overwritten.
+## Run all the tests (release build):
 
-### Build Babylon.js when you save a typescript file:
 ```
-gulp watch
+gulp tests-all
 ```
 
-### Run Integrated Web Server and watch for changes:
+## Run Integrated Web Server and watch for changes (dev build):
 ```
 gulp run
 ```
@@ -70,26 +53,3 @@ you can now freely test in the following URLs:
 - [Postprocess Library](http://localhost:1338/postProcessLibrary/index.html)
 - [Procedural Textures Library](http://localhost:1338/proceduralTexturesLibrary/index.html)
 - [Local Dev Samples](http://localhost:1338/localDev/index.html)
-
-### Compile all the typscript files to their javascript respective files including declaration file
-```
-gulp typescript-compile
-```
-
-Be aware that all js files content will be overwritten.
-
-### Compile all the libraries
-```
-gulp typescript-libraries
-```
-
-Be aware that all js files content will be overwritten.
-
-### Compile all the typscript and the library
-```
-gulp typescript-all
-```
-### Zip individual Blender python files for distribute-able
-```
-gulp zip-blender
-```

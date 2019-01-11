@@ -4,7 +4,7 @@
 <head>
 	<title>Procedural textures Library</title>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
-	<script src="../tools/DevLoader/BabylonLoader.js"></script>
+	<script src="../Tools/DevLoader/BabylonLoader.js"></script>
 
 	<style>
 		html,
@@ -90,7 +90,7 @@
 			var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
 			var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
 			skyboxMaterial.backFaceCulling = false;
-			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/playground/textures/TropicalSunnyDay", scene);
+			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/Playground/textures/TropicalSunnyDay", scene);
 			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
 			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
 			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -102,7 +102,7 @@
 
 			// Rabbit
 			var rabbit;
-			BABYLON.SceneLoader.ImportMesh("Rabbit", "/playground/scenes/", "Rabbit.babylon", scene, function (newMeshes, particleSystems, skeletons) {
+			BABYLON.SceneLoader.ImportMesh("Rabbit", "/Playground/scenes/", "Rabbit.babylon", scene, function (newMeshes, particleSystems, skeletons) {
 				rabbit = newMeshes[1];
 				rabbit.setEnabled(false);
 				rabbit.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
@@ -161,7 +161,7 @@
 				var std = new BABYLON.StandardMaterial("std", scene);
 				std.specularColor = new BABYLON.Color3(0, 0, 0);
 				
-				var diffuseTexture = new BABYLON.Texture("/playground/textures/amiga.jpg", scene);
+				var diffuseTexture = new BABYLON.Texture("/Playground/textures/amiga.jpg", scene);
 				diffuseTexture.uScale = 5;
 				diffuseTexture.vScale = 5;
 

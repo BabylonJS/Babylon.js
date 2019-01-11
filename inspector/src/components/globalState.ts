@@ -1,11 +1,17 @@
-import { Observable, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observer, Nullable } from "babylonjs";
+import { GLTFFileLoader, IGLTFLoaderExtension } from "babylonjs-loaders/glTF/index";
+import { IGLTFValidationResults } from "babylonjs-gltf2interface";
+
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
+import { Scene } from "babylonjs/scene";
+
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { IGLTFLoaderExtension, GLTFFileLoader } from "babylonjs-loaders";
-import { } from "babylonjs-gltf2interface";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<string>;
     public onPropertyChangedObservable: Observable<PropertyChangedEvent>;
+    public onInspectorClosedObservable = new Observable<Scene>();
     public onTabChangedObservable = new Observable<number>();
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
 
@@ -15,6 +21,8 @@ export class GlobalState {
     public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {};
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
+
+    public blockMutationUpdates = false;
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
         var loaderState = this.glTFLoaderDefaults;

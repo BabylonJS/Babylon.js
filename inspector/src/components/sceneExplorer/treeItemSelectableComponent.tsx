@@ -1,18 +1,21 @@
+import { Nullable } from "babylonjs/types";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+
 import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
-import { Observable, Nullable, IExplorerExtensibilityGroup } from "babylonjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Tools } from "../../tools";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
+import { GlobalState } from "../globalState";
 
 export interface ITreeItemSelectableComponentProps {
     entity: any,
     selectedEntity?: any,
     mustExpand?: boolean,
     offset: number,
+    globalState: GlobalState,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onSelectionChangedObservable?: Observable<any>,
     filter: Nullable<string>
 }
 
@@ -73,12 +76,12 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     }
 
     onSelect() {
-        if (!this.props.onSelectionChangedObservable) {
+        if (!this.props.globalState.onSelectionChangedObservable) {
             return;
         }
         this._wasSelected = true;
         const entity = this.props.entity;
-        this.props.onSelectionChangedObservable.notifyObservers(entity);
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
     }
 
     renderChildren() {
@@ -92,7 +95,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             children.map(item => {
 
                 return (
-                    <TreeItemSelectableComponent mustExpand={this.props.mustExpand} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} key={item.uniqueId} offset={this.props.offset + 2} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
+                    <TreeItemSelectableComponent globalState={this.props.globalState} mustExpand={this.props.mustExpand} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} key={item.uniqueId} offset={this.props.offset + 2} entity={item} filter={this.props.filter} />
                 );
             })
         )
@@ -144,7 +147,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                             {chevron}
                         </div>
                     }
-                    <TreeItemSpecializedComponent extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
+                    <TreeItemSpecializedComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} label={entity.name} entity={entity} onClick={() => this.onSelect()} />
                 </div>
                 {
                     this.renderChildren()

@@ -1,5 +1,8 @@
+import { Tools } from "babylonjs/Misc/tools";
+import { Space, Axis, Matrix, Tmp, Vector3 } from "babylonjs/Maths/math";
+import { float } from "babylonjs/types";
+
 import { VolumeBasedPanel } from "./volumeBasedPanel";
-import { float, Tools, Vector3, Matrix, Tmp } from "babylonjs";
 import { Control3D } from "./control3D";
 import { Container3D } from "./container3D";
 
@@ -39,15 +42,15 @@ export class CylinderPanel extends VolumeBasedPanel {
 
         switch (this.orientation) {
             case Container3D.FACEORIGIN_ORIENTATION:
-                mesh.lookAt(new BABYLON.Vector3(-newPos.x, newPos.y, -newPos.z));
+                mesh.lookAt(new Vector3(2 * newPos.x, newPos.y, 2 * newPos.z));
                 break;
             case Container3D.FACEORIGINREVERSED_ORIENTATION:
-                mesh.lookAt(new BABYLON.Vector3(2 * newPos.x, newPos.y, 2 * newPos.z));
+                mesh.lookAt(new Vector3(-newPos.x, newPos.y, -newPos.z));
                 break;
             case Container3D.FACEFORWARD_ORIENTATION:
                 break;
             case Container3D.FACEFORWARDREVERSED_ORIENTATION:
-                mesh.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.LOCAL);
+                mesh.rotate(Axis.Y, Math.PI, Space.LOCAL);
                 break;
         }
     }

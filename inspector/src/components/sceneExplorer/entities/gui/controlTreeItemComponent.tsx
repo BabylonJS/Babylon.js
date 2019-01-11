@@ -1,15 +1,15 @@
 import { faObjectGroup, faHighlighter, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { IExplorerExtensibilityGroup } from "babylonjs";
-import { Control } from "babylonjs-gui";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Control } from "babylonjs-gui/2D/controls/control";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface IControlTreeItemComponentProps {
-    control: Control,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onClick: () => void
+    control: Control;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onClick: () => void;
 }
 
 export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean }> {
@@ -37,7 +37,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         const control = this.props.control;
         const name = (control.name || "No name") + ` [${control.getClassName()}]`;
         const isActiveElement = this.state.isActive ? <FontAwesomeIcon icon={faHighlighter} /> : <FontAwesomeIcon icon={faHighlighter} className="isNotActive" />;
-        const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />
+        const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />;
 
         return (
             <div className="controlTools">
@@ -50,6 +50,6 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                 </div>
                 <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
             </div>
-        )
+        );
     }
 }

@@ -1,6 +1,8 @@
+import { Observable } from "babylonjs/Misc/observable";
+import { Vector2 } from "babylonjs/Maths/math";
+
 import { Control } from "../control";
 import { ValueAndUnit } from "../../valueAndUnit";
-import { Observable, Vector2 } from "babylonjs";
 
 /**
  * Class used to create slider controls

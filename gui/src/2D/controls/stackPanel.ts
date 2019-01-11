@@ -1,3 +1,5 @@
+import { Tools } from "babylonjs/Misc/tools";
+
 import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
@@ -102,9 +104,11 @@ export class StackPanel extends Container {
         this._measureForChildren.left = this._currentMeasure.left;
         this._measureForChildren.top = this._currentMeasure.top;
 
-        if (this.isVertical || this._manualWidth) {
+        if (!this.isVertical || this._manualWidth) {
             this._measureForChildren.width = this._currentMeasure.width;
-        } else if (!this.isVertical || this._manualHeight) {
+        }
+
+        if (this.isVertical || this._manualHeight) {
             this._measureForChildren.height = this._currentMeasure.height;
         }
     }
@@ -118,44 +122,47 @@ export class StackPanel extends Container {
             }
 
             if (this._isVertical) {
-                child.top = stackHeight + "px";
-                if (!child._top.ignoreAdaptiveScaling) {
-                    child._markAsDirty();
+                if (child.top !== stackHeight + "px") {
+                    child.top = stackHeight + "px";
+                    this._rebuildLayout = true;
+                    child._top.ignoreAdaptiveScaling = true;
                 }
-                child._top.ignoreAdaptiveScaling = true;
-                stackHeight += child._currentMeasure.height + child.paddingTopInPixels;
-                if (child._currentMeasure.width > stackWidth) {
-                    stackWidth = child._currentMeasure.width;
+
+                if (child._height.isPercentage) {
+                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
+                } else {
+                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels;
                 }
             } else {
-                child.left = stackWidth + "px";
-                if (!child._left.ignoreAdaptiveScaling) {
-                    child._markAsDirty();
+                if (child.left !== stackWidth + "px") {
+                    child.left = stackWidth + "px";
+                    this._rebuildLayout = true;
+                    child._left.ignoreAdaptiveScaling = true;
                 }
-                child._left.ignoreAdaptiveScaling = true;
-                stackWidth += child._currentMeasure.width + child.paddingLeftInPixels;
-                if (child._currentMeasure.height > stackHeight) {
-                    stackHeight = child._currentMeasure.height;
+
+                if (child._width.isPercentage) {
+                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
+                } else {
+                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels;
                 }
             }
         }
 
         this._doNotTrackManualChanges = true;
 
-        // Let stack panel width and height default to stackHeight and stackWidth if dimensions are not specified.
+        // Let stack panel width or height default to stackHeight and stackWidth if dimensions are not specified.
         // User can now define their own height and width for stack panel.
 
         let panelWidthChanged = false;
         let panelHeightChanged = false;
 
-
-        if (!this._manualHeight) { // do not specify height if strictly defined by user
+        if (!this._manualHeight && this._isVertical) { // do not specify height if strictly defined by user
             let previousHeight = this.height;
             this.height = stackHeight + "px";
             panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
         }
-        if (!this._manualWidth) { // do not specify width if strictly defined by user
-            let previousWidth = this.width;           
+        if (!this._manualWidth && !this._isVertical) { // do not specify width if strictly defined by user
+            let previousWidth = this.width;
             this.width = stackWidth + "px";
             panelWidthChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
         }

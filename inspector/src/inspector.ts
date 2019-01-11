@@ -1,13 +1,19 @@
-
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+
+import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { EngineStore } from "babylonjs/Engines/engineStore";
+import { Scene } from "babylonjs/scene";
+import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+
 import { ActionTabsComponent } from "./components/actionTabs/actionTabsComponent";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-import { Scene, Observable, Observer, Nullable, IInspectorOptions } from "babylonjs";
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
-import { GLTFFileLoader } from "babylonjs-loaders";
+import { GLTFFileLoader } from "babylonjs-loaders/glTF/index";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -31,8 +37,8 @@ export class Inspector {
     private static _OpenedPane = 0;
     private static _OnBeforeRenderObserver: Nullable<Observer<Scene>>;
 
-    public static OnSelectionChangeObservable = new BABYLON.Observable<string>();
-    public static OnPropertyChangedObservable = new BABYLON.Observable<PropertyChangedEvent>();
+    public static OnSelectionChangeObservable = new Observable<string>();
+    public static OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
     private static _GlobalState = new GlobalState();
 
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
@@ -69,7 +75,7 @@ export class Inspector {
                 embedMode: options.embedMode,
                 handleResize: options.handleResize,
                 enablePopup: options.enablePopup,
-                enableClose: options.enablePopup,
+                enableClose: options.enableClose,
                 explorerExtensibility: options.explorerExtensibility
             };
         }
@@ -88,7 +94,6 @@ export class Inspector {
             }
 
             if (!options.overlay) {
-                this._SceneExplorerHost.style.gridColumn = "1";
                 this._SceneExplorerHost.style.position = "relative";
             }
         }
@@ -146,7 +151,6 @@ export class Inspector {
             this._ActionTabsHost = host;
 
             if (!options.overlay) {
-                this._ActionTabsHost.style.gridColumn = "3";
                 this._ActionTabsHost.style.position = "relative";
             }
         }
@@ -201,7 +205,6 @@ export class Inspector {
             this._EmbedHost = host;
 
             if (!options.overlay) {
-                this._EmbedHost.style.gridColumn = "2";
                 this._EmbedHost.style.position = "relative";
             }
         }
@@ -210,9 +213,9 @@ export class Inspector {
             this._OpenedPane++;
             const embedHostElement = React.createElement(EmbedHostComponent, {
                 globalState: this._GlobalState, scene: scene,
-                    noExpand: !options.enablePopup,
-                    noClose: !options.enableClose,
-                    popupMode: options.popup, onPopup: () => {
+                noExpand: !options.enablePopup,
+                noClose: !options.enableClose,
+                popupMode: options.popup, onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._EmbedHost!);
 
                     if (options.popup) {
@@ -291,7 +294,8 @@ export class Inspector {
 
     public static EarlyAttachToLoader() {
         if (!this._GlobalState.onPluginActivatedObserver) {
-            this._GlobalState.onPluginActivatedObserver = BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
+            this._GlobalState.onPluginActivatedObserver = SceneLoader.OnPluginActivatedObservable.add((rawLoader) => {
+                const loader = rawLoader as GLTFFileLoader;
                 if (loader.name === "gltf") {
                     this._GlobalState.prepareGLTFPlugin(loader);
                 }
@@ -327,12 +331,12 @@ export class Inspector {
         }
 
         if (!scene) {
-            scene = BABYLON.Engine.LastCreatedScene!;
+            scene = EngineStore.LastCreatedScene!;
         }
 
         this._Scene = scene;
 
-        var canvas = scene ? scene.getEngine().getRenderingCanvas() : BABYLON.Engine.LastCreatedEngine!.getRenderingCanvas();
+        var canvas = scene ? scene.getEngine().getRenderingCanvas() : EngineStore.LastCreatedEngine!.getRenderingCanvas();
 
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
@@ -342,11 +346,7 @@ export class Inspector {
                 let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
 
                 if (!options.overlay && !this._NewCanvasContainer) {
-
                     this._CreateCanvasContainer(parentControl);
-                    parentControl.style.gridTemplateColumns = "1fr auto";
-                    this._NewCanvasContainer!.style.gridColumn = "1";
-
                 } else if (!options.overlay && this._NewCanvasContainer && this._NewCanvasContainer.parentElement) {
                     // the root is now the parent of the canvas container
                     parentControl = this._NewCanvasContainer.parentElement;
@@ -381,9 +381,7 @@ export class Inspector {
             let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
 
             if (!options.overlay && !this._NewCanvasContainer) {
-
                 this._CreateCanvasContainer(parentControl);
-
             } else if (!options.overlay && this._NewCanvasContainer && this._NewCanvasContainer.parentElement) {
                 // the root is now the parent of the canvas container
                 parentControl = this._NewCanvasContainer.parentElement;
@@ -410,11 +408,9 @@ export class Inspector {
 
     private static _CreateCanvasContainer(parentControl: HTMLElement) {
         // Create a container for previous elements
-        parentControl.style.display = "grid";
-        parentControl.style.gridTemplateColumns = "auto 1fr auto";
-        parentControl.style.gridTemplateRows = "100%";
-
         this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
+        this._NewCanvasContainer.style.display = parentControl.style.display;
+        parentControl.style.display = "flex";
 
         while (parentControl.childElementCount > 0) {
             var child = parentControl.childNodes[0];
@@ -424,19 +420,41 @@ export class Inspector {
 
         parentControl.appendChild(this._NewCanvasContainer);
 
-        this._NewCanvasContainer.style.gridRow = "1";
-        this._NewCanvasContainer.style.gridColumn = "2";
         this._NewCanvasContainer.style.width = "100%";
         this._NewCanvasContainer.style.height = "100%";
     }
 
+    private static _DestroyCanvasContainer() {
+        const parentControl = this._NewCanvasContainer.parentElement!;
+
+        while (this._NewCanvasContainer.childElementCount > 0) {
+            const child = this._NewCanvasContainer.childNodes[0];
+            this._NewCanvasContainer.removeChild(child);
+            parentControl.appendChild(child);
+        }
+
+        parentControl.removeChild(this._NewCanvasContainer);
+        parentControl.style.display = this._NewCanvasContainer.style.display;
+        delete this._NewCanvasContainer;
+    }
+
     private static _Cleanup() {
-        if (Inspector._OpenedPane === 0 && this._OnBeforeRenderObserver && this._Scene) {
+        if (Inspector._OpenedPane !== 0) {
+            return;
+        }
+
+        if (this._NewCanvasContainer) {
+            this._DestroyCanvasContainer();
+        }
+
+        if (this._OnBeforeRenderObserver && this._Scene) {
             this._Scene.onBeforeRenderObservable.remove(this._OnBeforeRenderObserver);
             this._OnBeforeRenderObserver = null;
 
             this._Scene.getEngine().resize();
         }
+
+        this._GlobalState.onInspectorClosedObservable.notifyObservers(this._Scene);
     }
 
     private static _RemoveElementFromDOM(element: Nullable<HTMLElement>) {
@@ -477,7 +495,7 @@ export class Inspector {
         this._Cleanup();
 
         if (!this._GlobalState.onPluginActivatedObserver) {
-            BABYLON.SceneLoader.OnPluginActivatedObservable.remove(this._GlobalState.onPluginActivatedObserver);
+            SceneLoader.OnPluginActivatedObservable.remove(this._GlobalState.onPluginActivatedObserver);
             this._GlobalState.onPluginActivatedObserver = null;
         }
     }

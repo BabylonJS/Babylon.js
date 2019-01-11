@@ -1,9 +1,13 @@
 import * as React from "react";
-import { Nullable, Observable, IExplorerExtensibilityGroup } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faBan, faExpandArrowsAlt, faCompress } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
+import { GlobalState } from "../globalState";
 
 interface ITreeItemExpandableHeaderComponentProps {
     isExpanded: boolean,
@@ -73,12 +77,11 @@ export interface ITreeItemComponentProps {
     label: string,
     offset: number,
     filter: Nullable<string>,
-    onSelectionChangedObservable?: Observable<any>,
+    globalState: GlobalState,
     entity?: any,
     selectedEntity: any,
     extensibilityGroups?: IExplorerExtensibilityGroup[]
 }
-
 
 export class TreeItemComponent extends React.Component<ITreeItemComponentProps, { isExpanded: boolean, mustExpand: boolean }> {
     constructor(props: ITreeItemComponentProps) {
@@ -159,7 +162,9 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
                 {
                     sortedItems.map(item => {
                         return (
-                            <TreeItemSelectableComponent mustExpand={this.state.mustExpand} extensibilityGroups={this.props.extensibilityGroups} key={item.uniqueId} offset={this.props.offset + 1} selectedEntity={this.props.selectedEntity} entity={item} onSelectionChangedObservable={this.props.onSelectionChangedObservable} filter={this.props.filter} />
+                            <TreeItemSelectableComponent mustExpand={this.state.mustExpand} extensibilityGroups={this.props.extensibilityGroups} key={item.uniqueId}
+                                offset={this.props.offset + 1} selectedEntity={this.props.selectedEntity} entity={item}
+                                globalState={this.props.globalState} filter={this.props.filter} />
                         );
                     })
                 }

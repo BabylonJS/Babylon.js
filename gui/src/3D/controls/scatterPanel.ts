@@ -1,5 +1,8 @@
+import { Tools } from "babylonjs/Misc/tools";
+import { Tmp, Vector3 } from "babylonjs/Maths/math";
+import { float } from "babylonjs/types";
+
 import { VolumeBasedPanel } from "./volumeBasedPanel";
-import { float, Tools, Vector3, Tmp } from "babylonjs";
 import { Control3D } from "./control3D";
 import { Container3D } from "./container3D";
 
@@ -39,11 +42,11 @@ export class ScatterPanel extends VolumeBasedPanel {
         switch (this.orientation) {
             case Container3D.FACEORIGIN_ORIENTATION:
             case Container3D.FACEFORWARD_ORIENTATION:
-                mesh.lookAt(new Vector3(0, 0, -1));
+                mesh.lookAt(new Vector3(0, 0, 1));
                 break;
             case Container3D.FACEFORWARDREVERSED_ORIENTATION:
             case Container3D.FACEORIGINREVERSED_ORIENTATION:
-                mesh.lookAt(new Vector3(0, 0, 1));
+                mesh.lookAt(new Vector3(0, 0, -1));
                 break;
         }
 

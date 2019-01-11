@@ -1,8 +1,10 @@
+import { Nullable } from "babylonjs/types";
+import { Vector2 } from "babylonjs/Maths/math";
+
 import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
-import { Vector2, Nullable } from "babylonjs";
 
 /**
  * Class used to create 2D buttons

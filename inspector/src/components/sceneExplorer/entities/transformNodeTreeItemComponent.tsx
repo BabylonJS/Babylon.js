@@ -1,4 +1,5 @@
-import { TransformNode, IExplorerExtensibilityGroup } from "babylonjs";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { faCodeBranch } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";

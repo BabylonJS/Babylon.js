@@ -1,6 +1,8 @@
+import { Nullable } from "babylonjs/types";
+import { Logger } from "babylonjs/Misc/logger";
+
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Nullable } from "babylonjs";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
@@ -18,8 +20,6 @@ export class Container extends Control {
     protected _adaptWidthToChildren = false;
     /** @hidden */
     protected _adaptHeightToChildren = false;
-    /** @hidden */
-    protected _rebuildLayout = false;
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
     public get adaptHeightToChildren(): boolean {
@@ -218,6 +218,24 @@ export class Container extends Control {
     }
 
     /** @hidden */
+    public _offsetLeft(offset: number) {
+        super._offsetLeft(offset);
+
+        for (var child of this._children) {
+            child._offsetLeft(offset);
+        }
+    }
+
+    /** @hidden */
+    public _offsetTop(offset: number) {
+        super._offsetTop(offset);
+
+        for (var child of this._children) {
+            child._offsetTop(offset);
+        }
+    }
+
+    /** @hidden */
     public _markAllAsDirty(): void {
         super._markAllAsDirty();
 
@@ -229,6 +247,7 @@ export class Container extends Control {
     /** @hidden */
     protected _localDraw(context: CanvasRenderingContext2D): void {
         if (this._background) {
+            context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
                 context.shadowBlur = this.shadowBlur;
@@ -238,12 +257,7 @@ export class Container extends Control {
 
             context.fillStyle = this._background;
             context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
-            }
+            context.restore();
         }
     }
 
@@ -262,9 +276,21 @@ export class Container extends Control {
     }
 
     /** @hidden */
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            super._processMeasures(parentMeasure, context);
+            this._evaluateClippingState(parentMeasure);
+        }
+    }
+
+    /** @hidden */
     public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
+        }
+
+        if (this._isDirty) {
+            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
         }
 
         let rebuildCount = 0;
@@ -275,8 +301,7 @@ export class Container extends Control {
 
         this._beforeLayout();
 
-        do
-        {
+        do {
             let computedWidth = -1;
             let computedHeight = -1;
             this._rebuildLayout = false;
@@ -317,12 +342,16 @@ export class Container extends Control {
         while (this._rebuildLayout && rebuildCount < 3);
 
         if (rebuildCount >= 3) {
-            BABYLON.Tools.Error(`Layout cycle detected in GUI (Container uniqueId=${this.uniqueId})`);
+            Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 
         context.restore();
 
-        this._isDirty = false;
+        if (this._isDirty) {
+            this.invalidateRect();
+
+            this._isDirty = false;
+        }
 
         return true;
     }
@@ -332,16 +361,22 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
 
         this._localDraw(context);
-       
+
         if (this.clipChildren) {
             this._clipForChildren(context);
         }
 
         for (var child of this._children) {
-            child._render(context);
+            // Only redraw parts of the screen that are invalidated
+            if (invalidatedRectangle) {
+                if (!child._intersectsRect(invalidatedRectangle)) {
+                    continue;
+                }
+            }
+            child._render(context, invalidatedRectangle);
         }
     }
 
@@ -403,8 +438,8 @@ export class Container extends Control {
     public dispose() {
         super.dispose();
 
-        for (var control of this._children) {
-            control.dispose();
+        for (var index = this.children.length - 1; index >= 0; index--) {
+            this.children[index].dispose();
         }
     }
 }

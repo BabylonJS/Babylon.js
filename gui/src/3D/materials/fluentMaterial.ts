@@ -1,9 +1,20 @@
-import { MaterialDefines, PushMaterial, serialize, expandToProperty, serializeAsColor3, Color3, serializeAsColor4, Color4, serializeAsVector3, Vector3, Scene, Nullable, BaseTexture, AbstractMesh, SubMesh, VertexBuffer, MaterialHelper, EffectCreationOptions, Matrix, Mesh, Tmp, SerializationHelper, serializeAsTexture } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { serializeAsColor4, serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
+import { Color3, Vector3, Color4, Matrix, Tmp } from "babylonjs/Maths/math";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
+import { EffectCreationOptions } from "babylonjs/Materials/effect";
+import { MaterialHelper } from "babylonjs/Materials/materialHelper";
+import { PushMaterial } from "babylonjs/Materials/pushMaterial";
+import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { SubMesh } from "babylonjs/Meshes/subMesh";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Scene } from "babylonjs/scene";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
-import { registerShader } from "./shaders/fluent";
-
-// register shaders
-registerShader();
+import "./shaders/fluent.vertex";
+import "./shaders/fluent.fragment";
 
 /** @hidden */
 export class FluentMaterialDefines extends MaterialDefines {
@@ -300,3 +311,5 @@ export class FluentMaterial extends PushMaterial {
         return SerializationHelper.Parse(() => new FluentMaterial(source.name, scene), source, scene, rootUrl);
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.GUI.FluentMaterial"] = FluentMaterial;
