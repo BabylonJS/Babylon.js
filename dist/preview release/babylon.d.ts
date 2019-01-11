@@ -48582,6 +48582,8 @@ declare module BABYLON {
          * @param impostors array of imposters to update before/after the step
          */
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        private _tmpVector;
+        private _tmpMatrix;
         /**
          * Applies an implulse on the imposter
          * @param impostor imposter to apply impulse
