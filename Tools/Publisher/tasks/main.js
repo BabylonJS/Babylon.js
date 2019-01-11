@@ -34,8 +34,7 @@ const createVersion = function(version, options) {
     }
 
     if (options.es6) {
-        // Do not publish es6 yet.
-        process.env.BABYLONJSREALPUBLISH = false;
+        // Create the packages and publish if needed.
         processEs6Packages(version);
         // Prepare es6 Dev Folder.
         prepareEs6DevPackages();
