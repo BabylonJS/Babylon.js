@@ -11,16 +11,12 @@ import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Ray } from "../Culling/ray";
 import { ICullable } from "../Culling/boundingInfo";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { PostProcess } from "../PostProcesses/postProcess";
-import { PassPostProcess } from "../PostProcesses/passPostProcess";
-import { AnaglyphPostProcess } from "../PostProcesses/anaglyphPostProcess";
-import { StereoscopicInterlacePostProcess } from "../PostProcesses/stereoscopicInterlacePostProcess";
-import { VRDistortionCorrectionPostProcess } from "../PostProcesses/vrDistortionCorrectionPostProcess";
-import { Animation } from "../Animations/animation";
-import { VRCameraMetrics } from "../Cameras/VR/vrCameraMetrics";
 import { Logger } from "../Misc/logger";
 
+import { Animation } from "../Animations/animation";
+
+declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
+declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type FreeCamera = import("./freeCamera").FreeCamera;
 declare type TargetCamera = import("./targetCamera").TargetCamera;
 
@@ -563,7 +559,7 @@ export class Camera extends Node {
 
             // for VR rig, there does not have to be a post process
             if (rigPostProcess) {
-                var isPass = rigPostProcess instanceof PassPostProcess;
+                var isPass = rigPostProcess.getEffectName() === "pass";
                 if (isPass) {
                     // any rig which has a PassPostProcess for rig[0], cannot be isIntermediate when there are also user postProcesses
                     cam.isIntermediate = this._postProcesses.length === 0;
@@ -629,7 +625,7 @@ export class Camera extends Node {
     }
 
     /** @hidden */
-    protected _getViewMatrix(): Matrix {
+    public _getViewMatrix(): Matrix {
         return Matrix.Identity();
     }
 
@@ -968,84 +964,47 @@ export class Camera extends Node {
 
         switch (this.cameraRigMode) {
             case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
-                this._rigCameras[0]._rigPostProcess = new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]);
-                this._rigCameras[1]._rigPostProcess = new AnaglyphPostProcess(this.name + "_anaglyph", 1.0, this._rigCameras);
+                Camera._setStereoscopicAnaglyphRigMode(this);
                 break;
-
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-                var isStereoscopicHoriz = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
-
-                this._rigCameras[0]._rigPostProcess = new PassPostProcess(this.name + "_passthru", 1.0, this._rigCameras[0]);
-                this._rigCameras[1]._rigPostProcess = new StereoscopicInterlacePostProcess(this.name + "_stereoInterlace", this._rigCameras, isStereoscopicHoriz);
+                Camera._setStereoscopicRigMode(this);
                 break;
-
             case Camera.RIG_MODE_VR:
-                var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
-
-                this._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
-                this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
-                this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
-                this._rigCameras[0]._cameraRigParams.vrHMatrix = metrics.leftHMatrix;
-                this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = metrics.leftPreViewMatrix;
-                this._rigCameras[0].getProjectionMatrix = this._rigCameras[0]._getVRProjectionMatrix;
-
-                this._rigCameras[1]._cameraRigParams.vrMetrics = metrics;
-                this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
-                this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
-                this._rigCameras[1]._cameraRigParams.vrHMatrix = metrics.rightHMatrix;
-                this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
-                this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
-
-                if (metrics.compensateDistortion) {
-                    this._rigCameras[0]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics);
-                    this._rigCameras[1]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics);
-                }
+                Camera._setVRRigMode(this, rigParams);
                 break;
             case Camera.RIG_MODE_WEBVR:
-                if (rigParams.vrDisplay) {
-                    var leftEye = rigParams.vrDisplay.getEyeParameters('left');
-                    var rightEye = rigParams.vrDisplay.getEyeParameters('right');
-
-                    //Left eye
-                    this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
-                    this._rigCameras[0].setCameraRigParameter("left", true);
-                    //leaving this for future reference
-                    this._rigCameras[0].setCameraRigParameter("specs", rigParams.specs);
-                    this._rigCameras[0].setCameraRigParameter("eyeParameters", leftEye);
-                    this._rigCameras[0].setCameraRigParameter("frameData", rigParams.frameData);
-                    this._rigCameras[0].setCameraRigParameter("parentCamera", rigParams.parentCamera);
-                    this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new Matrix();
-                    this._rigCameras[0].getProjectionMatrix = this._getWebVRProjectionMatrix;
-                    this._rigCameras[0].parent = this;
-                    this._rigCameras[0]._getViewMatrix = this._getWebVRViewMatrix;
-
-                    //Right eye
-                    this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
-                    this._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
-                    this._rigCameras[1].setCameraRigParameter("specs", rigParams.specs);
-                    this._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
-                    this._rigCameras[1].setCameraRigParameter("parentCamera", rigParams.parentCamera);
-                    this._rigCameras[1]._cameraRigParams.vrWorkMatrix = new Matrix();
-                    this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
-                    this._rigCameras[1].parent = this;
-                    this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
-
-                    if (Camera.UseAlternateWebVRRendering) {
-                        this._rigCameras[1]._skipRendering = true;
-                        this._rigCameras[0]._alternateCamera = this._rigCameras[1];
-                    }
-                }
+                Camera._setWebVRRigMode(this, rigParams);
                 break;
-
         }
 
         this._cascadePostProcessesToRigCams();
         this.update();
     }
 
-    private _getVRProjectionMatrix(): Matrix {
+    /** @hidden */
+    public static _setStereoscopicRigMode(camera: Camera) {
+        throw "Import Cameras/RigModes/stereoscopicRigMode before using stereoscopic rig mode";
+    }
+
+    /** @hidden */
+    public static _setStereoscopicAnaglyphRigMode(camera: Camera) {
+        throw "Import Cameras/RigModes/stereoscopicAnaglyphRigMode before using stereoscopic anaglyph rig mode";
+    }
+
+    /** @hidden */
+    public static _setVRRigMode(camera: Camera, rigParams: any) {
+        throw "Import Cameras/RigModes/vrRigMode before using VR rig mode";
+    }
+
+    /** @hidden */
+    public static _setWebVRRigMode(camera: Camera, rigParams: any) {
+        throw "Import Cameras/RigModes/WebVRRigMode before using Web VR rig mode";
+    }
+
+    /** @hidden */
+    public _getVRProjectionMatrix(): Matrix {
         Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
         this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
         return this._projectionMatrix;
@@ -1062,16 +1021,18 @@ export class Camera extends Node {
     /**
      * This function MUST be overwritten by the different WebVR cameras available.
      * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
+     * @hidden
      */
-    protected _getWebVRProjectionMatrix(): Matrix {
+    public _getWebVRProjectionMatrix(): Matrix {
         return Matrix.Identity();
     }
 
     /**
      * This function MUST be overwritten by the different WebVR cameras available.
      * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
+     * @hidden
      */
-    protected _getWebVRViewMatrix(): Matrix {
+    public _getWebVRViewMatrix(): Matrix {
         return Matrix.Identity();
     }
 

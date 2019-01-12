@@ -8219,59 +8219,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
-     * Screen rotation is taken into account.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
-        private _camera;
-        private _screenOrientationAngle;
-        private _constantTranform;
-        private _screenQuaternion;
-        private _alpha;
-        private _beta;
-        private _gamma;
-        /**
-         * Instantiates a new input
-         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-         */
-        constructor();
-        /**
-         * Define the camera controlled by the input.
-         */
-        camera: FreeCamera;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        private _orientationChanged;
-        private _deviceOrientation;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-declare module BABYLON {
-    /**
      * Manage the touch inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
@@ -8326,154 +8273,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines the potential axis of a Joystick
-     */
-    export enum JoystickAxis {
-        /** X axis */
-        X = 0,
-        /** Y axis */
-        Y = 1,
-        /** Z axis */
-        Z = 2
-    }
-    /**
-     * Class used to define virtual joystick (used in touch mode)
-     */
-    export class VirtualJoystick {
-        /**
-         * Gets or sets a boolean indicating that left and right values must be inverted
-         */
-        reverseLeftRight: boolean;
-        /**
-         * Gets or sets a boolean indicating that up and down values must be inverted
-         */
-        reverseUpDown: boolean;
-        /**
-         * Gets the offset value for the position (ie. the change of the position value)
-         */
-        deltaPosition: Vector3;
-        /**
-         * Gets a boolean indicating if the virtual joystick was pressed
-         */
-        pressed: boolean;
-        /**
-         * Canvas the virtual joystick will render onto, default z-index of this is 5
-         */
-        static Canvas: Nullable<HTMLCanvasElement>;
-        private static _globalJoystickIndex;
-        private static vjCanvasContext;
-        private static vjCanvasWidth;
-        private static vjCanvasHeight;
-        private static halfWidth;
-        private _action;
-        private _axisTargetedByLeftAndRight;
-        private _axisTargetedByUpAndDown;
-        private _joystickSensibility;
-        private _inversedSensibility;
-        private _joystickPointerID;
-        private _joystickColor;
-        private _joystickPointerPos;
-        private _joystickPreviousPointerPos;
-        private _joystickPointerStartPos;
-        private _deltaJoystickVector;
-        private _leftJoystick;
-        private _touches;
-        private _onPointerDownHandlerRef;
-        private _onPointerMoveHandlerRef;
-        private _onPointerUpHandlerRef;
-        private _onResize;
-        /**
-         * Creates a new virtual joystick
-         * @param leftJoystick defines that the joystick is for left hand (false by default)
-         */
-        constructor(leftJoystick?: boolean);
-        /**
-         * Defines joystick sensibility (ie. the ratio beteen a physical move and virtual joystick position change)
-         * @param newJoystickSensibility defines the new sensibility
-         */
-        setJoystickSensibility(newJoystickSensibility: number): void;
-        private _onPointerDown;
-        private _onPointerMove;
-        private _onPointerUp;
-        /**
-        * Change the color of the virtual joystick
-        * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
-        */
-        setJoystickColor(newColor: string): void;
-        /**
-         * Defines a callback to call when the joystick is touched
-         * @param action defines the callback
-         */
-        setActionOnTouch(action: () => any): void;
-        /**
-         * Defines which axis you'd like to control for left & right
-         * @param axis defines the axis to use
-         */
-        setAxisForLeftRight(axis: JoystickAxis): void;
-        /**
-         * Defines which axis you'd like to control for up & down
-         * @param axis defines the axis to use
-         */
-        setAxisForUpDown(axis: JoystickAxis): void;
-        private _drawVirtualJoystick;
-        /**
-         * Release internal HTML canvas
-         */
-        releaseCanvas(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Manage the Virtual Joystick inputs to control the movement of a free camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FreeCamera;
-        private _leftjoystick;
-        private _rightjoystick;
-        /**
-         * Gets the left stick of the virtual joystick.
-         * @returns The virtual Joystick
-         */
-        getLeftJoystick(): VirtualJoystick;
-        /**
-         * Gets the right stick of the virtual joystick.
-         * @returns The virtual Joystick
-         */
-        getRightJoystick(): VirtualJoystick;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-declare module BABYLON {
-    /**
      * Default Inputs manager for the FreeCamera.
      * It groups all the default supported inputs for ease of use.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -8496,20 +8295,10 @@ declare module BABYLON {
          */
         addMouse(touchEnabled?: boolean): FreeCameraInputsManager;
         /**
-         * Add orientation input support to the input manager.
-         * @returns the current input manager
-         */
-        addDeviceOrientation(): FreeCameraInputsManager;
-        /**
          * Add touch input support to the input manager.
          * @returns the current input manager
          */
         addTouch(): FreeCameraInputsManager;
-        /**
-         * Add virtual joystick input support to the input manager.
-         * @returns the current input manager
-         */
-        addVirtualJoystick(): FreeCameraInputsManager;
     }
 }
 declare module BABYLON {
@@ -10686,6 +10475,31 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the options associated with the creation of a custom shader for a shadow generator.
+     */
+    export interface ICustomShaderOptions {
+        /**
+         * Gets or sets the custom shader name to use
+         */
+        shaderName: string;
+        /**
+         * The list of attribute names used in the shader
+         */
+        attributes?: string[];
+        /**
+         * The list of unifrom names used in the shader
+         */
+        uniforms?: string[];
+        /**
+         * The list of sampler names used in the shader
+         */
+        samplers?: string[];
+        /**
+         * The list of defines used in the shader
+         */
+        defines?: string[];
+    }
+    /**
      * Interface to implement to create a shadow generator compatible with BJS.
      */
     export interface IShadowGenerator {
@@ -10833,6 +10647,12 @@ declare module BABYLON {
          * Execute PCSS with 16 taps blocker search and 16 taps PCF.
          */
         static readonly QUALITY_LOW: number;
+        /** Gets or sets the custom shader name to use */
+        customShaderOptions: ICustomShaderOptions;
+        /**
+         * Observable triggered before the shadow is rendered. Can be used to update internal effect state
+         */
+        onBeforeShadowMapRenderObservable: Observable<Effect>;
         private _bias;
         /**
          * Gets the bias: offset applied on the depth preventing acnea (in light direction).
@@ -11856,9 +11676,9 @@ declare module BABYLON {
         /**
          * This function is called by the two RIG cameras.
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
-         */
-        protected _getWebVRViewMatrix(): Matrix;
-        protected _getWebVRProjectionMatrix(): Matrix;
+         * @hidden
+         */getWebVRViewMatrix(): Matrix;
+        /** @hidden */getWebVRProjectionMatrix(): Matrix;
         private _onGamepadConnectedObserver;
         private _onGamepadDisconnectedObserver;
         private _updateCacheWhenTrackingDisabledObserver;
@@ -11978,6 +11798,11 @@ declare module BABYLON {
         private _shareOutputWithPostProcess;
         private _texelSize;
         private _forcedOutputTexture;
+        /**
+         * Returns the fragment url or shader name used in the post process.
+         * @returns the fragment url or name in the shader store.
+         */
+        getEffectName(): string;
         /**
         * An event triggered when the postprocess is activated.
         */
@@ -30112,238 +29937,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export var passPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var passCubePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * PassPostProcess which produces an output the same as it's input
-     */
-    export class PassPostProcess extends PostProcess {
-        /**
-         * Creates the PassPostProcess
-         * @param name The name of the effect.
-         * @param options The required width/height ratio to downsize to before computing the render pass.
-         * @param camera The camera to apply the render pass to.
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         * @param textureType The type of texture to be used when performing the post processing.
-         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
-         */
-        constructor(name: string, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
-    }
-    /**
-     * PassCubePostProcess which produces an output the same as it's input (which must be a cube texture)
-     */
-    export class PassCubePostProcess extends PostProcess {
-        private _face;
-        /**
-         * Gets or sets the cube face to display.
-         *  * 0 is +X
-         *  * 1 is -X
-         *  * 2 is +Y
-         *  * 3 is -Y
-         *  * 4 is +Z
-         *  * 5 is -Z
-         */
-        face: number;
-        /**
-         * Creates the PassCubePostProcess
-         * @param name The name of the effect.
-         * @param options The required width/height ratio to downsize to before computing the render pass.
-         * @param camera The camera to apply the render pass to.
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         * @param textureType The type of texture to be used when performing the post processing.
-         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
-         */
-        constructor(name: string, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var anaglyphPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Postprocess used to generate anaglyphic rendering
-     */
-    export class AnaglyphPostProcess extends PostProcess {
-        private _passedProcess;
-        /**
-         * Creates a new AnaglyphPostProcess
-         * @param name defines postprocess name
-         * @param options defines creation options or target ratio scale
-         * @param rigCameras defines cameras using this postprocess
-         * @param samplingMode defines required sampling mode (BABYLON.Texture.NEAREST_SAMPLINGMODE by default)
-         * @param engine defines hosting engine
-         * @param reusable defines if the postprocess will be reused multiple times per frame
-         */
-        constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean);
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var stereoscopicInterlacePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
-     */
-    export class StereoscopicInterlacePostProcess extends PostProcess {
-        private _stepSize;
-        private _passedProcess;
-        /**
-         * Initializes a StereoscopicInterlacePostProcess
-         * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         */
-        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
-    }
-}
-declare module BABYLON {
-    /**
-     * This represents all the required metrics to create a VR camera.
-     * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
-     */
-    export class VRCameraMetrics {
-        /**
-         * Define the horizontal resolution off the screen.
-         */
-        hResolution: number;
-        /**
-         * Define the vertical resolution off the screen.
-         */
-        vResolution: number;
-        /**
-         * Define the horizontal screen size.
-         */
-        hScreenSize: number;
-        /**
-         * Define the vertical screen size.
-         */
-        vScreenSize: number;
-        /**
-         * Define the vertical screen center position.
-         */
-        vScreenCenter: number;
-        /**
-         * Define the distance of the eyes to the screen.
-         */
-        eyeToScreenDistance: number;
-        /**
-         * Define the distance between both lenses
-         */
-        lensSeparationDistance: number;
-        /**
-         * Define the distance between both viewer's eyes.
-         */
-        interpupillaryDistance: number;
-        /**
-         * Define the distortion factor of the VR postprocess.
-         * Please, touch with care.
-         */
-        distortionK: number[];
-        /**
-         * Define the chromatic aberration correction factors for the VR post process.
-         */
-        chromaAbCorrection: number[];
-        /**
-         * Define the scale factor of the post process.
-         * The smaller the better but the slower.
-         */
-        postProcessScaleFactor: number;
-        /**
-         * Define an offset for the lens center.
-         */
-        lensCenterOffset: number;
-        /**
-         * Define if the current vr camera should compensate the distortion of the lense or not.
-         */
-        compensateDistortion: boolean;
-        /**
-         * Gets the rendering aspect ratio based on the provided resolutions.
-         */
-        readonly aspectRatio: number;
-        /**
-         * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
-         */
-        readonly aspectRatioFov: number;
-        /**
-         * @hidden
-         */
-        readonly leftHMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly rightHMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly leftPreViewMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly rightPreViewMatrix: Matrix;
-        /**
-         * Get the default VRMetrics based on the most generic setup.
-         * @returns the default vr metrics
-         */
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var vrDistortionCorrectionPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * VRDistortionCorrectionPostProcess used for mobile VR
-     */
-    export class VRDistortionCorrectionPostProcess extends PostProcess {
-        private _isRightEye;
-        private _distortionFactors;
-        private _postProcessScaleFactor;
-        private _lensCenterOffset;
-        private _scaleIn;
-        private _scaleFactor;
-        private _lensCenter;
-        /**
-         * Initializes the VRDistortionCorrectionPostProcess
-         * @param name The name of the effect.
-         * @param camera The camera to apply the render pass to.
-         * @param isRightEye If this is for the right eye distortion
-         * @param vrMetrics All the required metrics for the VR camera
-         */
-        constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-declare module BABYLON {
     /**
      * This is the base class of all the camera used in the application.
      * @see http://doc.babylonjs.com/features/cameras
@@ -30654,8 +30247,7 @@ declare module BABYLON {
          * Gets the current world matrix of the camera
          */
         getWorldMatrix(): Matrix;
-        /** @hidden */
-        protected _getViewMatrix(): Matrix;
+        /** @hidden */getViewMatrix(): Matrix;
         /**
          * Gets the current view matrix of the camera.
          * @param force forces the camera to recompute the matrix without looking at the cached state
@@ -30735,19 +30327,23 @@ declare module BABYLON {
          * @hidden
          */
         setCameraRigMode(mode: number, rigParams: any): void;
-        private _getVRProjectionMatrix;
+        /** @hidden */private static _setStereoscopicRigMode(camera: Camera): void;
+        /** @hidden */private static _setStereoscopicAnaglyphRigMode(camera: Camera): void;
+        /** @hidden */private static _setVRRigMode(camera: Camera, rigParams: any): void;
+        /** @hidden */private static _setWebVRRigMode(camera: Camera, rigParams: any): void;
+        /** @hidden */getVRProjectionMatrix(): Matrix;
         protected _updateCameraRotationMatrix(): void;
         protected _updateWebVRCameraRotationMatrix(): void;
         /**
          * This function MUST be overwritten by the different WebVR cameras available.
          * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-         */
-        protected _getWebVRProjectionMatrix(): Matrix;
+         * @hidden
+         */getWebVRProjectionMatrix(): Matrix;
         /**
          * This function MUST be overwritten by the different WebVR cameras available.
          * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-         */
-        protected _getWebVRViewMatrix(): Matrix;
+         * @hidden
+         */getWebVRViewMatrix(): Matrix;
         /** @hidden */
         setCameraRigParameter(name: string, value: any): void;
         /**
@@ -34997,61 +34593,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: ArcRotateCamera;
-        /**
-         * Defines a correction factor applied on the alpha value retrieved from the orientation events.
-         */
-        alphaCorrection: number;
-        /**
-         * Defines a correction factor applied on the gamma value retrieved from the orientation events.
-         */
-        gammaCorrection: number;
-        private _alpha;
-        private _gamma;
-        private _dirty;
-        private _deviceOrientationHandler;
-        /**
-         * Instantiate a new ArcRotateCameraVRDeviceOrientationInput.
-         */
-        constructor();
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /** @hidden */onOrientationEvent(evt: DeviceOrientationEvent): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-declare module BABYLON {
-    /**
      * Default Inputs manager for the ArcRotateCamera.
      * It groups all the default supported inputs for ease of use.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -35077,11 +34618,6 @@ declare module BABYLON {
          * @returns the current input manager
          */
         addKeyboard(): ArcRotateCameraInputsManager;
-        /**
-         * Add orientation input support to the input manager.
-         * @returns the current input manager
-         */
-        addVRDeviceOrientation(): ArcRotateCameraInputsManager;
     }
 }
 declare module BABYLON {
@@ -36130,6 +35666,68 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface ArcRotateCameraInputsManager {
+            /**
+             * Add orientation input support to the input manager.
+             * @returns the current input manager
+             */
+            addVRDeviceOrientation(): ArcRotateCameraInputsManager;
+        }
+    /**
+     * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: ArcRotateCamera;
+        /**
+         * Defines a correction factor applied on the alpha value retrieved from the orientation events.
+         */
+        alphaCorrection: number;
+        /**
+         * Defines a correction factor applied on the gamma value retrieved from the orientation events.
+         */
+        gammaCorrection: number;
+        private _alpha;
+        private _gamma;
+        private _dirty;
+        private _deviceOrientationHandler;
+        /**
+         * Instantiate a new ArcRotateCameraVRDeviceOrientationInput.
+         */
+        constructor();
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /** @hidden */onOrientationEvent(evt: DeviceOrientationEvent): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+declare module BABYLON {
     /**
      * Listen to mouse events to control the camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -36479,6 +36077,66 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface FreeCameraInputsManager {
+            /**
+             * Add orientation input support to the input manager.
+             * @returns the current input manager
+             */
+            addDeviceOrientation(): FreeCameraInputsManager;
+        }
+    /**
+     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
+     * Screen rotation is taken into account.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        private _camera;
+        private _screenOrientationAngle;
+        private _constantTranform;
+        private _screenQuaternion;
+        private _alpha;
+        private _beta;
+        private _gamma;
+        /**
+         * Instantiates a new input
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+         */
+        constructor();
+        /**
+         * Define the camera controlled by the input.
+         */
+        camera: FreeCamera;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        private _orientationChanged;
+        private _deviceOrientation;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+declare module BABYLON {
     /**
      * Manage the gamepad inputs to control a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -36524,6 +36182,161 @@ declare module BABYLON {
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
          */
         checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the potential axis of a Joystick
+     */
+    export enum JoystickAxis {
+        /** X axis */
+        X = 0,
+        /** Y axis */
+        Y = 1,
+        /** Z axis */
+        Z = 2
+    }
+    /**
+     * Class used to define virtual joystick (used in touch mode)
+     */
+    export class VirtualJoystick {
+        /**
+         * Gets or sets a boolean indicating that left and right values must be inverted
+         */
+        reverseLeftRight: boolean;
+        /**
+         * Gets or sets a boolean indicating that up and down values must be inverted
+         */
+        reverseUpDown: boolean;
+        /**
+         * Gets the offset value for the position (ie. the change of the position value)
+         */
+        deltaPosition: Vector3;
+        /**
+         * Gets a boolean indicating if the virtual joystick was pressed
+         */
+        pressed: boolean;
+        /**
+         * Canvas the virtual joystick will render onto, default z-index of this is 5
+         */
+        static Canvas: Nullable<HTMLCanvasElement>;
+        private static _globalJoystickIndex;
+        private static vjCanvasContext;
+        private static vjCanvasWidth;
+        private static vjCanvasHeight;
+        private static halfWidth;
+        private _action;
+        private _axisTargetedByLeftAndRight;
+        private _axisTargetedByUpAndDown;
+        private _joystickSensibility;
+        private _inversedSensibility;
+        private _joystickPointerID;
+        private _joystickColor;
+        private _joystickPointerPos;
+        private _joystickPreviousPointerPos;
+        private _joystickPointerStartPos;
+        private _deltaJoystickVector;
+        private _leftJoystick;
+        private _touches;
+        private _onPointerDownHandlerRef;
+        private _onPointerMoveHandlerRef;
+        private _onPointerUpHandlerRef;
+        private _onResize;
+        /**
+         * Creates a new virtual joystick
+         * @param leftJoystick defines that the joystick is for left hand (false by default)
+         */
+        constructor(leftJoystick?: boolean);
+        /**
+         * Defines joystick sensibility (ie. the ratio beteen a physical move and virtual joystick position change)
+         * @param newJoystickSensibility defines the new sensibility
+         */
+        setJoystickSensibility(newJoystickSensibility: number): void;
+        private _onPointerDown;
+        private _onPointerMove;
+        private _onPointerUp;
+        /**
+        * Change the color of the virtual joystick
+        * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
+        */
+        setJoystickColor(newColor: string): void;
+        /**
+         * Defines a callback to call when the joystick is touched
+         * @param action defines the callback
+         */
+        setActionOnTouch(action: () => any): void;
+        /**
+         * Defines which axis you'd like to control for left & right
+         * @param axis defines the axis to use
+         */
+        setAxisForLeftRight(axis: JoystickAxis): void;
+        /**
+         * Defines which axis you'd like to control for up & down
+         * @param axis defines the axis to use
+         */
+        setAxisForUpDown(axis: JoystickAxis): void;
+        private _drawVirtualJoystick;
+        /**
+         * Release internal HTML canvas
+         */
+        releaseCanvas(): void;
+    }
+}
+declare module BABYLON {
+        interface FreeCameraInputsManager {
+            /**
+             * Add virtual joystick input support to the input manager.
+             * @returns the current input manager
+             */
+            addVirtualJoystick(): FreeCameraInputsManager;
+        }
+    /**
+     * Manage the Virtual Joystick inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        private _leftjoystick;
+        private _rightjoystick;
+        /**
+         * Gets the left stick of the virtual joystick.
+         * @returns The virtual Joystick
+         */
+        getLeftJoystick(): VirtualJoystick;
+        /**
+         * Gets the right stick of the virtual joystick.
+         * @returns The virtual Joystick
+         */
+        getRightJoystick(): VirtualJoystick;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -36883,6 +36696,92 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var passPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var passCubePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * PassPostProcess which produces an output the same as it's input
+     */
+    export class PassPostProcess extends PostProcess {
+        /**
+         * Creates the PassPostProcess
+         * @param name The name of the effect.
+         * @param options The required width/height ratio to downsize to before computing the render pass.
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType The type of texture to be used when performing the post processing.
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         */
+        constructor(name: string, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+    }
+    /**
+     * PassCubePostProcess which produces an output the same as it's input (which must be a cube texture)
+     */
+    export class PassCubePostProcess extends PostProcess {
+        private _face;
+        /**
+         * Gets or sets the cube face to display.
+         *  * 0 is +X
+         *  * 1 is -X
+         *  * 2 is +Y
+         *  * 3 is -Y
+         *  * 4 is +Z
+         *  * 5 is -Z
+         */
+        face: number;
+        /**
+         * Creates the PassCubePostProcess
+         * @param name The name of the effect.
+         * @param options The required width/height ratio to downsize to before computing the render pass.
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType The type of texture to be used when performing the post processing.
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         */
+        constructor(name: string, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var anaglyphPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Postprocess used to generate anaglyphic rendering
+     */
+    export class AnaglyphPostProcess extends PostProcess {
+        private _passedProcess;
+        /**
+         * Creates a new AnaglyphPostProcess
+         * @param name defines postprocess name
+         * @param options defines creation options or target ratio scale
+         * @param rigCameras defines cameras using this postprocess
+         * @param samplingMode defines required sampling mode (BABYLON.Texture.NEAREST_SAMPLINGMODE by default)
+         * @param engine defines hosting engine
+         * @param reusable defines if the postprocess will be reused multiple times per frame
+         */
+        constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+}
+declare module BABYLON {
     /**
      * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
      * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
@@ -36967,6 +36866,32 @@ declare module BABYLON {
          * @returns AnaglyphUniversalCamera
          */
         getClassName(): string;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var stereoscopicInterlacePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
+     */
+    export class StereoscopicInterlacePostProcess extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Initializes a StereoscopicInterlacePostProcess
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
     }
 }
 declare module BABYLON {
@@ -37083,6 +37008,126 @@ declare module BABYLON {
          * @return the class name
          */
         getClassName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * This represents all the required metrics to create a VR camera.
+     * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
+     */
+    export class VRCameraMetrics {
+        /**
+         * Define the horizontal resolution off the screen.
+         */
+        hResolution: number;
+        /**
+         * Define the vertical resolution off the screen.
+         */
+        vResolution: number;
+        /**
+         * Define the horizontal screen size.
+         */
+        hScreenSize: number;
+        /**
+         * Define the vertical screen size.
+         */
+        vScreenSize: number;
+        /**
+         * Define the vertical screen center position.
+         */
+        vScreenCenter: number;
+        /**
+         * Define the distance of the eyes to the screen.
+         */
+        eyeToScreenDistance: number;
+        /**
+         * Define the distance between both lenses
+         */
+        lensSeparationDistance: number;
+        /**
+         * Define the distance between both viewer's eyes.
+         */
+        interpupillaryDistance: number;
+        /**
+         * Define the distortion factor of the VR postprocess.
+         * Please, touch with care.
+         */
+        distortionK: number[];
+        /**
+         * Define the chromatic aberration correction factors for the VR post process.
+         */
+        chromaAbCorrection: number[];
+        /**
+         * Define the scale factor of the post process.
+         * The smaller the better but the slower.
+         */
+        postProcessScaleFactor: number;
+        /**
+         * Define an offset for the lens center.
+         */
+        lensCenterOffset: number;
+        /**
+         * Define if the current vr camera should compensate the distortion of the lense or not.
+         */
+        compensateDistortion: boolean;
+        /**
+         * Gets the rendering aspect ratio based on the provided resolutions.
+         */
+        readonly aspectRatio: number;
+        /**
+         * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
+         */
+        readonly aspectRatioFov: number;
+        /**
+         * @hidden
+         */
+        readonly leftHMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly rightHMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly leftPreViewMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly rightPreViewMatrix: Matrix;
+        /**
+         * Get the default VRMetrics based on the most generic setup.
+         * @returns the default vr metrics
+         */
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var vrDistortionCorrectionPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * VRDistortionCorrectionPostProcess used for mobile VR
+     */
+    export class VRDistortionCorrectionPostProcess extends PostProcess {
+        private _isRightEye;
+        private _distortionFactors;
+        private _postProcessScaleFactor;
+        private _lensCenterOffset;
+        private _scaleIn;
+        private _scaleFactor;
+        private _lensCenter;
+        /**
+         * Initializes the VRDistortionCorrectionPostProcess
+         * @param name The name of the effect.
+         * @param camera The camera to apply the render pass to.
+         * @param isRightEye If this is for the right eye distortion
+         * @param vrMetrics All the required metrics for the VR camera
+         */
+        constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
     }
 }
 declare module BABYLON {
@@ -47943,6 +47988,8 @@ declare module BABYLON {
          * @param impostors array of imposters to update before/after the step
          */
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        private _tmpVector;
+        private _tmpMatrix;
         /**
          * Applies an implulse on the imposter
          * @param impostor imposter to apply impulse
@@ -52708,6 +52755,118 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Class used to transport BABYLON.Vector2 information for pointer events
+     */
+    export class Vector2WithInfo extends BABYLON.Vector2 {
+        /** defines the current mouse button index */
+        buttonIndex: number;
+        /**
+         * Creates a new Vector2WithInfo
+         * @param source defines the vector2 data to transport
+         * @param buttonIndex defines the current mouse button index
+         */
+        constructor(source: BABYLON.Vector2, 
+        /** defines the current mouse button index */
+        buttonIndex?: number);
+    }
+    /** Class used to provide 2D matrix features */
+    export class Matrix2D {
+        /** Gets the internal array of 6 floats used to store matrix data */
+        m: Float32Array;
+        /**
+         * Creates a new matrix
+         * @param m00 defines value for (0, 0)
+         * @param m01 defines value for (0, 1)
+         * @param m10 defines value for (1, 0)
+         * @param m11 defines value for (1, 1)
+         * @param m20 defines value for (2, 0)
+         * @param m21 defines value for (2, 1)
+         */
+        constructor(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number);
+        /**
+         * Fills the matrix from direct values
+         * @param m00 defines value for (0, 0)
+         * @param m01 defines value for (0, 1)
+         * @param m10 defines value for (1, 0)
+         * @param m11 defines value for (1, 1)
+         * @param m20 defines value for (2, 0)
+         * @param m21 defines value for (2, 1)
+         * @returns the current modified matrix
+         */
+        fromValues(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number): Matrix2D;
+        /**
+         * Gets matrix determinant
+         * @returns the determinant
+         */
+        determinant(): number;
+        /**
+         * Inverses the matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
+        invertToRef(result: Matrix2D): Matrix2D;
+        /**
+         * Multiplies the current matrix with another one
+         * @param other defines the second operand
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
+        multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D;
+        /**
+         * Applies the current matrix to a set of 2 floats and stores the result in a vector2
+         * @param x defines the x coordinate to transform
+         * @param y defines the x coordinate to transform
+         * @param result defines the target vector2
+         * @returns the current matrix
+         */
+        transformCoordinates(x: number, y: number, result: BABYLON.Vector2): Matrix2D;
+        /**
+         * Creates an identity matrix
+         * @returns a new matrix
+         */
+        static Identity(): Matrix2D;
+        /**
+         * Creates a translation matrix and stores it in a target matrix
+         * @param x defines the x coordinate of the translation
+         * @param y defines the y coordinate of the translation
+         * @param result defines the target matrix
+         */
+        static TranslationToRef(x: number, y: number, result: Matrix2D): void;
+        /**
+         * Creates a scaling matrix and stores it in a target matrix
+         * @param x defines the x coordinate of the scaling
+         * @param y defines the y coordinate of the scaling
+         * @param result defines the target matrix
+         */
+        static ScalingToRef(x: number, y: number, result: Matrix2D): void;
+        /**
+         * Creates a rotation matrix and stores it in a target matrix
+         * @param angle defines the rotation angle
+         * @param result defines the target matrix
+         */
+        static RotationToRef(angle: number, result: Matrix2D): void;
+        private static _TempPreTranslationMatrix;
+        private static _TempPostTranslationMatrix;
+        private static _TempRotationMatrix;
+        private static _TempScalingMatrix;
+        private static _TempCompose0;
+        private static _TempCompose1;
+        private static _TempCompose2;
+        /**
+         * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
+         * @param tx defines the x coordinate of the translation
+         * @param ty defines the y coordinate of the translation
+         * @param angle defines the rotation angle
+         * @param scaleX defines the x coordinate of the scaling
+         * @param scaleY defines the y coordinate of the scaling
+         * @param parentMatrix defines the parent matrix to multiply by (can be null)
+         * @param result defines the target matrix
+         */
+        static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: BABYLON.Nullable<Matrix2D>, result: Matrix2D): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to store 2D control sizes
      */
     export class Measure {
@@ -52748,6 +52907,19 @@ declare module BABYLON.GUI {
          * @param height defines height dimension
          */
         copyFromFloats(left: number, top: number, width: number, height: number): void;
+        /**
+         * Computes the axis aligned bounding box measure for two given measures
+         * @param a Input measure
+         * @param b Input measure
+         * @param result the resulting bounding measure
+         */
+        static CombineToRef(a: Measure, b: Measure, result: Measure): void;
+        /**
+         * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+         * @param transform the matrix to transform the measure before computing the AABB
+         * @param result the resulting AABB
+         */
+        transformToRef(transform: Matrix2D, result: Measure): void;
         /**
          * Check equality between this measure and another one
          * @param other defines the other measures
@@ -52943,20 +53115,15 @@ declare module BABYLON.GUI {
          * Gets or sets a boolean indicating if the InvalidateRect optimization should be turned on
          */
         useInvalidateRectOptimization: boolean;
-        private _clearRectangle;
         private _invalidatedRectangle;
         /**
          * Invalidates a rectangle area on the gui texture
-         * @param clearMinX left most position of the rectangle to clear in the texture
-         * @param clearMinY top most position of the rectangle to clear in the texture
-         * @param clearMaxX right most position of the rectangle to clear in the texture
-         * @param clearMaxY bottom most position of the rectangle to clear in the texture
-         * @param minX left most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-         * @param minY top most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-         * @param maxX right most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-         * @param maxY bottom most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+         * @param invalidMinX left most position of the rectangle to invalidate in the texture
+         * @param invalidMinY top most position of the rectangle to invalidate in the texture
+         * @param invalidMaxX right most position of the rectangle to invalidate in the texture
+         * @param invalidMaxY bottom most position of the rectangle to invalidate in the texture
          */
-        invalidateRect(clearMinX: number, clearMinY: number, clearMaxX: number, clearMaxY: number, minX: number, minY: number, maxX: number, maxY: number): void;
+        invalidateRect(invalidMinX: number, invalidMinY: number, invalidMaxX: number, invalidMaxY: number): void;
         /**
         * Marks the texture as dirty forcing a complete update
         */
@@ -53058,118 +53225,6 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
-     * Class used to transport BABYLON.Vector2 information for pointer events
-     */
-    export class Vector2WithInfo extends BABYLON.Vector2 {
-        /** defines the current mouse button index */
-        buttonIndex: number;
-        /**
-         * Creates a new Vector2WithInfo
-         * @param source defines the vector2 data to transport
-         * @param buttonIndex defines the current mouse button index
-         */
-        constructor(source: BABYLON.Vector2, 
-        /** defines the current mouse button index */
-        buttonIndex?: number);
-    }
-    /** Class used to provide 2D matrix features */
-    export class Matrix2D {
-        /** Gets the internal array of 6 floats used to store matrix data */
-        m: Float32Array;
-        /**
-         * Creates a new matrix
-         * @param m00 defines value for (0, 0)
-         * @param m01 defines value for (0, 1)
-         * @param m10 defines value for (1, 0)
-         * @param m11 defines value for (1, 1)
-         * @param m20 defines value for (2, 0)
-         * @param m21 defines value for (2, 1)
-         */
-        constructor(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number);
-        /**
-         * Fills the matrix from direct values
-         * @param m00 defines value for (0, 0)
-         * @param m01 defines value for (0, 1)
-         * @param m10 defines value for (1, 0)
-         * @param m11 defines value for (1, 1)
-         * @param m20 defines value for (2, 0)
-         * @param m21 defines value for (2, 1)
-         * @returns the current modified matrix
-         */
-        fromValues(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number): Matrix2D;
-        /**
-         * Gets matrix determinant
-         * @returns the determinant
-         */
-        determinant(): number;
-        /**
-         * Inverses the matrix and stores it in a target matrix
-         * @param result defines the target matrix
-         * @returns the current matrix
-         */
-        invertToRef(result: Matrix2D): Matrix2D;
-        /**
-         * Multiplies the current matrix with another one
-         * @param other defines the second operand
-         * @param result defines the target matrix
-         * @returns the current matrix
-         */
-        multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D;
-        /**
-         * Applies the current matrix to a set of 2 floats and stores the result in a vector2
-         * @param x defines the x coordinate to transform
-         * @param y defines the x coordinate to transform
-         * @param result defines the target vector2
-         * @returns the current matrix
-         */
-        transformCoordinates(x: number, y: number, result: BABYLON.Vector2): Matrix2D;
-        /**
-         * Creates an identity matrix
-         * @returns a new matrix
-         */
-        static Identity(): Matrix2D;
-        /**
-         * Creates a translation matrix and stores it in a target matrix
-         * @param x defines the x coordinate of the translation
-         * @param y defines the y coordinate of the translation
-         * @param result defines the target matrix
-         */
-        static TranslationToRef(x: number, y: number, result: Matrix2D): void;
-        /**
-         * Creates a scaling matrix and stores it in a target matrix
-         * @param x defines the x coordinate of the scaling
-         * @param y defines the y coordinate of the scaling
-         * @param result defines the target matrix
-         */
-        static ScalingToRef(x: number, y: number, result: Matrix2D): void;
-        /**
-         * Creates a rotation matrix and stores it in a target matrix
-         * @param angle defines the rotation angle
-         * @param result defines the target matrix
-         */
-        static RotationToRef(angle: number, result: Matrix2D): void;
-        private static _TempPreTranslationMatrix;
-        private static _TempPostTranslationMatrix;
-        private static _TempRotationMatrix;
-        private static _TempScalingMatrix;
-        private static _TempCompose0;
-        private static _TempCompose1;
-        private static _TempCompose2;
-        /**
-         * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
-         * @param tx defines the x coordinate of the translation
-         * @param ty defines the y coordinate of the translation
-         * @param angle defines the rotation angle
-         * @param scaleX defines the x coordinate of the scaling
-         * @param scaleY defines the y coordinate of the scaling
-         * @param parentMatrix defines the parent matrix to multiply by (can be null)
-         * @param result defines the target matrix
-         */
-        static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: BABYLON.Nullable<Matrix2D>, result: Matrix2D): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
      * Root class used for all 2D controls
      * @see http://doc.babylonjs.com/how_to/gui#controls
      */
@@ -53212,7 +53267,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         protected _wasDirty: boolean;
         /** @hidden */tempParentMeasure: Measure;
-        /** @hidden */tempCurrentMeasure: Measure;
+        /** @hidden */prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
         private _paddingLeft;
@@ -53226,7 +53281,7 @@ declare module BABYLON.GUI {
         private _rotation;
         private _transformCenterX;
         private _transformCenterY;
-        private _transformMatrix;
+        /** @hidden */transformMatrix: Matrix2D;
         /** @hidden */
         protected _invertTransformMatrix: Matrix2D;
         /** @hidden */
@@ -53583,7 +53638,7 @@ declare module BABYLON.GUI {
         /** @hidden */flagDescendantsAsMatrixDirty(): void;
         /** @hidden */intersectsRect(rect: Measure): boolean;
         /** @hidden */
-        protected invalidateRect(left: number, top: number, right: number, bottom: number): void;
+        protected invalidateRect(): void;
         /** @hidden */markAsDirty(force?: boolean): void;
         /** @hidden */markAllAsDirty(): void;
         /** @hidden */link(host: AdvancedDynamicTexture): void;
@@ -53607,6 +53662,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
         private static _ClipMeasure;
+        private _tmpMeasureA;
         private _clip;
         /** @hidden */render(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): boolean;
         /** @hidden */draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;

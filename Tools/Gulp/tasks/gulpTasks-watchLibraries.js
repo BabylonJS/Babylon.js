@@ -68,11 +68,6 @@ gulp.task("watchLibraries", function startWatch() {
                         .pipe(uncommentShaders())
                         .pipe(processShaders(false));
                 });
-                watch.on("unlink", (event) => {
-                    return gulp.src(event)
-                        .pipe(uncommentShaders())
-                        .pipe(processShaders(false));
-                });
 
                 tasks.push(watch);
             }
