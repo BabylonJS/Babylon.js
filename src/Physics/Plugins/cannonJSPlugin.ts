@@ -276,9 +276,15 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 }
                 let radiusTop = nativeParams.radiusTop !== undefined ? nativeParams.radiusTop : this._checkWithEpsilon(extendSize.x) / 2;
                 let radiusBottom = nativeParams.radiusBottom !== undefined ? nativeParams.radiusBottom : this._checkWithEpsilon(extendSize.x) / 2;
-                let height = nativeParams.height !== undefined ? nativeParams.height : this._checkWithEpsilon(extendSize.y) / 2;
+                let height = nativeParams.height !== undefined ? nativeParams.height : this._checkWithEpsilon(extendSize.y);
                 let numSegments = nativeParams.numSegments !== undefined ? nativeParams.numSegments : 16;
                 returnValue = new this.BJSCANNON.Cylinder(radiusTop, radiusBottom, height, numSegments);
+                
+                // Rotate 90 degrees as this shape is horizontal in cannon                
+                var quat = new this.BJSCANNON.Quaternion();
+                quat.setFromAxisAngle(new this.BJSCANNON.Vec3(1,0,0),-Math.PI/2);
+                var translation = new this.BJSCANNON.Vec3(0,0,0);
+                returnValue.transformAllPoints(translation,quat);
                 break;
             case PhysicsImpostor.BoxImpostor:
                 var box = extendSize.scale(0.5);
@@ -433,7 +439,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         }
 
         //is shape is a plane or a heightmap, it must be rotated 90 degs in the X axis.
-        if (impostor.type === PhysicsImpostor.PlaneImpostor || impostor.type === PhysicsImpostor.HeightmapImpostor || impostor.type === PhysicsImpostor.CylinderImpostor) {
+        //ideally these would be rotated at time of creation like cylinder but they dont extend ConvexPolyhedron
+        if (impostor.type === PhysicsImpostor.PlaneImpostor || impostor.type === PhysicsImpostor.HeightmapImpostor) {
             //-90 DEG in X, precalculated
             quaternion = quaternion.multiply(this._minus90X);
             //Invert! (Precalculated, 90 deg in X)
