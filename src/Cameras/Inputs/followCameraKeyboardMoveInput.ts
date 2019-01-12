@@ -8,10 +8,31 @@ import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Scene } from "../../scene";
 
 /**
+ * Track which combination of modifier keys are pressed.
+ */
+export enum ModifierKey {
+    None,
+    Alt,
+    Ctrl,
+    Shift,
+    AltCtrl,
+    AltCtrlShift,
+    AltShift,
+    CtrlShift
+}
+
+/**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
  * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera> {
+    /**
+     * Possible combinations of modifierKeys.
+     * Used to assign values to keysHeightOffsetModifier, keysRotateOffsetModifier
+     * and keysRadiusModifier.
+     */
+    public readonly modifierKey = ModifierKey;
+
     /**
      * Defines the camera the input is attached to.
      */
@@ -21,25 +42,55 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      * Defines the list of key codes associated with the up action (increase heightOffset)
      */
     @serialize()
-    public keysUp = [38];
+    public keysHeightOffsetIncr = [38];
 
     /**
      * Defines the list of key codes associated with the down action (decrease heightOffset)
      */
     @serialize()
-    public keysDown = [40];
+    public keysHeightOffsetDecr = [40];
 
     /**
-     * Defines the list of key codes associated with the left action (increase rotation)
+     * Defines whether any modifier key is required to move up/down (alter heightOffset)
      */
     @serialize()
-    public keysLeft = [37];
+    public keysHeightOffsetModifier: ModifierKey = this.modifierKey.None;
 
     /**
-     * Defines the list of key codes associated with the right action (decrease rotation)
+     * Defines the list of key codes associated with the left action (increase rotationOffset)
      */
     @serialize()
-    public keysRight = [39];
+    public keysRotateOffsetIncr = [37];
+
+    /**
+     * Defines the list of key codes associated with the right action (decrease rotationOffset)
+     */
+    @serialize()
+    public keysRotateOffsetDecr = [39];
+
+    /**
+     * Defines whether any modifier key is required to move up/down (alter heightOffset)
+     */
+    @serialize()
+    public keysRotateOffsetModifier: ModifierKey = this.modifierKey.None;
+
+    /**
+     * Defines the list of key codes associated with the zoom-in action (decrease radius)
+     */
+    @serialize()
+    public keysRadiusIncr = [40];
+
+    /**
+     * Defines the list of key codes associated with the zoom-out action (increase radius)
+     */
+    @serialize()
+    public keysRadiusDecr = [38];
+
+    /**
+     * Defines whether any modifier key is required to zoom in/out (alter radius value)
+     */
+    @serialize()
+    public keysRadiusModifier: ModifierKey = this.modifierKey.Alt;
 
     /**
      * Defines the rate of change of heightOffset.
@@ -66,14 +117,39 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     public minHeightOffset: number = 0;
 
     /**
+     * Defines the maximum heightOffset value.
+     */
+    @serialize()
+    public maxHeightOffset: number = 1000;
+
+    /**
      * Defines the minimum radius value.
      */
     @serialize()
     public minRadius: number = 0;
 
+    /**
+     * Defines the maximum radius value.
+     */
+    @serialize()
+    public maxRadius: number = 1000;
+
+    /**
+     * Defines the minimum rotationOffset value.
+     */
+    @serialize()
+    public minRotationOffset: number = -360;
+
+    /**
+     * Defines the maximum rotationOffset value.
+     */
+    @serialize()
+    public maxRotationOffset: number = 360;
+
     private _keys = new Array<number>();
-    // private _ctrlPressed: boolean;
+    private _ctrlPressed: boolean;
     private _altPressed: boolean;
+    private _shiftPressed: boolean;
     private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
     private _engine: Engine;
@@ -100,13 +176,16 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
             let evt = info.event;
             if (!evt.metaKey) {
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
-                    // this._ctrlPressed = evt.ctrlKey;
+                    this._ctrlPressed = evt.ctrlKey;
                     this._altPressed = evt.altKey;
+                    this._shiftPressed = evt.shiftKey;
 
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    if (this.keysHeightOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysHeightOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRadiusDecr.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
@@ -121,10 +200,12 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                     }
                 }
                 else {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    if (this.keysHeightOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysHeightOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRadiusDecr.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
@@ -169,28 +250,36 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
         if (this._onKeyboardObserver) {
             for (var index = 0; index < this._keys.length; index++) {
                 var keyCode = this._keys[index];
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
+                var modifierHeightOffset = this._checkModifierKey(this.keysHeightOffsetModifier);
+                var modifierRotationOffset = this._checkModifierKey(this.keysRotateOffsetModifier);
+                var modifierRaduis = this._checkModifierKey(this.keysRadiusModifier);
+
+                if (this.keysHeightOffsetIncr.indexOf(keyCode) !== -1 && modifierHeightOffset) {
+                    this.camera.heightOffset += this.heightSensibility;
+                    this.camera.heightOffset =
+                        Math.min(this.maxHeightOffset, this.camera.heightOffset);
+                } else if (this.keysHeightOffsetDecr.indexOf(keyCode) !== -1 && modifierHeightOffset) {
+                    this.camera.heightOffset -= this.heightSensibility;
+                    this.camera.heightOffset =
+                        Math.max(this.minHeightOffset, this.camera.heightOffset);
+                } else if (this.keysRotateOffsetIncr.indexOf(keyCode) !== -1 && modifierRotationOffset) {
                     this.camera.rotationOffset += this.rotationSensibility;
                     this.camera.rotationOffset %= 360;
-                } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    if (this._altPressed) {
-                        this.camera.radius += this.radiusSensibility;
-                    } else {
-                        this.camera.heightOffset += this.heightSensibility;
-                    }
-                } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                    this.camera.rotationOffset =
+                        Math.min(this.maxRotationOffset, this.camera.rotationOffset);
+                } else if (this.keysRotateOffsetDecr.indexOf(keyCode) !== -1 && modifierRotationOffset) {
                     this.camera.rotationOffset -= this.rotationSensibility;
                     this.camera.rotationOffset %= 360;
-                } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    if (this._altPressed) {
-                        this.camera.radius -= this.radiusSensibility;
-                        this.camera.radius =
-                            Math.max(this.minRadius, this.camera.radius);
-                    } else {
-                        this.camera.heightOffset -= this.heightSensibility;
-                        this.camera.heightOffset =
-                            Math.max(this.minHeightOffset, this.camera.heightOffset);
-                    }
+                    this.camera.rotationOffset =
+                        Math.max(this.minRotationOffset, this.camera.rotationOffset);
+                } else if (this.keysRadiusIncr.indexOf(keyCode) !== -1 && modifierRaduis) {
+                    this.camera.radius += this.radiusSensibility;
+                    this.camera.radius =
+                        Math.min(this.maxRadius, this.camera.radius);
+                } else if (this.keysRadiusDecr.indexOf(keyCode) !== -1 && modifierRaduis) {
+                    this.camera.radius -= this.radiusSensibility;
+                    this.camera.radius =
+                        Math.max(this.minRadius, this.camera.radius);
                 }
             }
         }
@@ -210,6 +299,37 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      */
     public getSimpleName(): string {
         return "keyboard";
+    }
+
+    private _checkModifierKey(expected: ModifierKey) : boolean {
+        let returnVal = false;
+        switch(expected) {
+            case ModifierKey.None:
+              returnVal = !this._altPressed && !this._ctrlPressed && !this._shiftPressed;
+              break;
+            case ModifierKey.Alt:
+              returnVal = this._altPressed && !this._ctrlPressed && !this._shiftPressed;
+              break;
+            case ModifierKey.Ctrl:
+              returnVal = !this._altPressed && this._ctrlPressed && !this._shiftPressed;
+              break;
+            case ModifierKey.Shift:
+              returnVal = !this._altPressed && !this._ctrlPressed && this._shiftPressed;
+              break;
+            case ModifierKey.AltCtrl:
+              returnVal = this._altPressed && this._ctrlPressed && !this._shiftPressed;
+              break;
+            case ModifierKey.AltShift:
+              returnVal = this._altPressed && !this._ctrlPressed && this._shiftPressed;
+              break;
+            case ModifierKey.CtrlShift:
+              returnVal = !this._altPressed && this._ctrlPressed && this._shiftPressed;
+              break;
+            case ModifierKey.AltCtrlShift:
+              returnVal = this._altPressed && this._ctrlPressed && this._shiftPressed;
+              break;
+        }
+        return returnVal;
     }
 }
 
