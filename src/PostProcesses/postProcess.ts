@@ -144,6 +144,14 @@ export class PostProcess {
     private _texelSize = Vector2.Zero();
     private _forcedOutputTexture: InternalTexture;
 
+    /**
+     * Returns the fragment url or shader name used in the post process.
+     * @returns the fragment url or name in the shader store.
+     */
+    public getEffectName(): string {
+        return this._fragmentUrl;
+    }
+
     // Events
 
     /**

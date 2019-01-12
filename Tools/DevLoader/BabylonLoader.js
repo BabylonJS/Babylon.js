@@ -192,7 +192,7 @@ var BABYLONDEVTOOLS;
 
         Loader.prototype.loadCoreDev = function() {
             // Es6 core import
-            this.loadESMScript(babylonJSPath + "/.temp/" + localDevES6FolderName + "/core/legacy/legacy.js");
+            this.loadESMScript(babylonJSPath + "/.temp/" + localDevES6FolderName + "/core/Legacy/legacy.js");
         }
 
         Loader.prototype.loadModule = function(moduleName, module) {

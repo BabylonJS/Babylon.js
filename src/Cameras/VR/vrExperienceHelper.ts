@@ -151,7 +151,7 @@ class VRExperienceHelperGazer implements IDisposable {
     }
 
     /** @hidden */
-    public _updatePointerDistance() {
+    public _updatePointerDistance(distance: number = 100) {
     }
 
     public dispose() {
@@ -1841,7 +1841,7 @@ export class VRExperienceHelper {
             }
 
             // Changing the size of the laser pointer based on the distance from the targetted point
-            gazer._updatePointerDistance();
+            gazer._updatePointerDistance(hit.distance);
         }
         else {
             gazer._updatePointerDistance();

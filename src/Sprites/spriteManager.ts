@@ -303,7 +303,8 @@ export class SpriteManager implements ISpriteManager {
      */
     public render(): void {
         // Check
-        if (!this._effectBase.isReady() || !this._effectFog.isReady() || !this._spriteTexture || !this._spriteTexture.isReady()) {
+        if (!this._effectBase.isReady() || !this._effectFog.isReady() || !this._spriteTexture
+            || !this._spriteTexture.isReady() || !this.sprites.length) {
             return;
         }
 
