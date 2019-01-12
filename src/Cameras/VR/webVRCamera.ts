@@ -13,6 +13,10 @@ import { Node } from "../../node";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { HemisphericLight } from "../../Lights/hemisphericLight";
+
+// Side effect import to define the stereoscopic mode.
+import "../RigModes/webVRRigMode";
+
 Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
     return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
 });
@@ -634,8 +638,9 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     /**
      * This function is called by the two RIG cameras.
      * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
+     * @hidden
      */
-    protected _getWebVRViewMatrix(): Matrix {
+    public _getWebVRViewMatrix(): Matrix {
         // Update the parent camera prior to using a child camera to avoid desynchronization
         let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
         parentCamera._updateCache();
@@ -684,7 +689,8 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         return this._webvrViewMatrix;
     }
 
-    protected _getWebVRProjectionMatrix(): Matrix {
+    /** @hidden */
+    public _getWebVRProjectionMatrix(): Matrix {
 
         let parentCamera = <WebVRFreeCamera>this.parent;
 
