@@ -31,7 +31,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      * Used to assign values to keysHeightOffsetModifier, keysRotateOffsetModifier
      * and keysRadiusModifier.
      */
-    public readonly modifierKey = ModifierKey;
+    public readonly modifierKeyChoices = ModifierKey;
 
     /**
      * Defines the camera the input is attached to.
@@ -54,7 +54,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      * Defines whether any modifier key is required to move up/down (alter heightOffset)
      */
     @serialize()
-    public keysHeightOffsetModifier: ModifierKey = this.modifierKey.None;
+    public keysHeightOffsetModifier: ModifierKey = this.modifierKeyChoices.None;
 
     /**
      * Defines the list of key codes associated with the left action (increase rotationOffset)
@@ -72,7 +72,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      * Defines whether any modifier key is required to move up/down (alter heightOffset)
      */
     @serialize()
-    public keysRotateOffsetModifier: ModifierKey = this.modifierKey.None;
+    public keysRotateOffsetModifier: ModifierKey = this.modifierKeyChoices.None;
 
     /**
      * Defines the list of key codes associated with the zoom-in action (decrease radius)
@@ -90,7 +90,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      * Defines whether any modifier key is required to zoom in/out (alter radius value)
      */
     @serialize()
-    public keysRadiusModifier: ModifierKey = this.modifierKey.Alt;
+    public keysRadiusModifier: ModifierKey = this.modifierKeyChoices.Alt;
 
     /**
      * Defines the rate of change of heightOffset.
@@ -114,7 +114,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      * Defines the minimum heightOffset value.
      */
     @serialize()
-    public minHeightOffset: number = 0;
+    public minHeightOffset: number = -1000;
 
     /**
      * Defines the maximum heightOffset value.
@@ -249,6 +249,16 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
             for (var index = 0; index < this._keys.length; index++) {
+                console.assert(this.maxHeightOffset > this.minHeightOffset,
+                  "FollowCameraKeyboardMoveInput.maxHeightOffset must be greater " +
+                  "than FollowCameraKeyboardMoveInput.minHeightOffset.");
+                console.assert(this.maxRotationOffset > this.minRotationOffset,
+                  "FollowCameraKeyboardMoveInput.maxRotationOffset must be greater " +
+                  "than FollowCameraKeyboardMoveInput.minRotationOffset.");
+                console.assert(this.maxRadius > this.minRadius,
+                  "FollowCameraKeyboardMoveInput.maxRadius must be greater " +
+                  "than FollowCameraKeyboardMoveInput.minRadius.");
+
                 var keyCode = this._keys[index];
                 var modifierHeightOffset = this._checkModifierKey(this.keysHeightOffsetModifier);
                 var modifierRotationOffset = this._checkModifierKey(this.keysRotateOffsetModifier);
