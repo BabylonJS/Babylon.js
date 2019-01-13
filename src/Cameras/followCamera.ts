@@ -200,7 +200,7 @@ export class FollowCamera extends TargetCamera {
             this._follow(this.lockedTarget);
         }
     }
-  
+
     private _checkLimits() {
         if (this.lowerRadiusLimit !== null && this.radius < this.lowerRadiusLimit) {
             this.radius = this.lowerRadiusLimit;
