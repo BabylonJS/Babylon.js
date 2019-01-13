@@ -16,14 +16,14 @@
     },
     "main": "babylon.js",
     "files": [
-        "babylon.d.ts",
+        "babylon.module.d.ts",
         "babylon.js",
         "babylon.max.js",
         "babylon.max.js.map",
         "Oimo.js",
         "readme.md"
     ],
-    "typings": "babylon.d.ts",
+    "typings": "babylon.module.d.ts",
     "keywords": [
         "3D",
         "javascript",
