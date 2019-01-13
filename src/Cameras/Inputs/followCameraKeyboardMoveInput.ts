@@ -110,42 +110,6 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     @serialize()
     public radiusSensibility: number = 1;
 
-    /**
-     * Defines the minimum heightOffset value.
-     */
-    @serialize()
-    public minHeightOffset: number = -1000;
-
-    /**
-     * Defines the maximum heightOffset value.
-     */
-    @serialize()
-    public maxHeightOffset: number = 1000;
-
-    /**
-     * Defines the minimum radius value.
-     */
-    @serialize()
-    public minRadius: number = 0;
-
-    /**
-     * Defines the maximum radius value.
-     */
-    @serialize()
-    public maxRadius: number = 1000;
-
-    /**
-     * Defines the minimum rotationOffset value.
-     */
-    @serialize()
-    public minRotationOffset: number = -360;
-
-    /**
-     * Defines the maximum rotationOffset value.
-     */
-    @serialize()
-    public maxRotationOffset: number = 360;
-
     private _keys = new Array<number>();
     private _ctrlPressed: boolean;
     private _altPressed: boolean;
@@ -249,16 +213,6 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
             for (var index = 0; index < this._keys.length; index++) {
-                console.assert(this.maxHeightOffset > this.minHeightOffset,
-                  "FollowCameraKeyboardMoveInput.maxHeightOffset must be greater " +
-                  "than FollowCameraKeyboardMoveInput.minHeightOffset.");
-                console.assert(this.maxRotationOffset > this.minRotationOffset,
-                  "FollowCameraKeyboardMoveInput.maxRotationOffset must be greater " +
-                  "than FollowCameraKeyboardMoveInput.minRotationOffset.");
-                console.assert(this.maxRadius > this.minRadius,
-                  "FollowCameraKeyboardMoveInput.maxRadius must be greater " +
-                  "than FollowCameraKeyboardMoveInput.minRadius.");
-
                 var keyCode = this._keys[index];
                 var modifierHeightOffset = this._checkModifierKey(this.keysHeightOffsetModifier);
                 var modifierRotationOffset = this._checkModifierKey(this.keysRotateOffsetModifier);
@@ -266,37 +220,25 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
 
                 if (this.keysHeightOffsetIncr.indexOf(keyCode) !== -1 && modifierHeightOffset) {
                     this.camera.heightOffset += this.heightSensibility;
-                    this.camera.heightOffset =
-                        Math.min(this.maxHeightOffset, this.camera.heightOffset);
                 } else if (this.keysHeightOffsetDecr.indexOf(keyCode) !== -1 && modifierHeightOffset) {
                     this.camera.heightOffset -= this.heightSensibility;
-                    this.camera.heightOffset =
-                        Math.max(this.minHeightOffset, this.camera.heightOffset);
                 } else if (this.keysRotateOffsetIncr.indexOf(keyCode) !== -1 && modifierRotationOffset) {
                     this.camera.rotationOffset += this.rotationSensibility;
                     this.camera.rotationOffset %= 360;
-                    this.camera.rotationOffset =
-                        Math.min(this.maxRotationOffset, this.camera.rotationOffset);
                 } else if (this.keysRotateOffsetDecr.indexOf(keyCode) !== -1 && modifierRotationOffset) {
                     this.camera.rotationOffset -= this.rotationSensibility;
                     this.camera.rotationOffset %= 360;
-                    this.camera.rotationOffset =
-                        Math.max(this.minRotationOffset, this.camera.rotationOffset);
                 } else if (this.keysRadiusIncr.indexOf(keyCode) !== -1 && modifierRaduis) {
                     this.camera.radius += this.radiusSensibility;
-                    this.camera.radius =
-                        Math.min(this.maxRadius, this.camera.radius);
                 } else if (this.keysRadiusDecr.indexOf(keyCode) !== -1 && modifierRaduis) {
                     this.camera.radius -= this.radiusSensibility;
-                    this.camera.radius =
-                        Math.max(this.minRadius, this.camera.radius);
                 }
             }
         }
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {
