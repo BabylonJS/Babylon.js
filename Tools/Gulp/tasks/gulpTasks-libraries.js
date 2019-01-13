@@ -17,7 +17,8 @@ var del = require("del");
 // Parse Command Line.
 var commandLineOptions = minimist(process.argv.slice(2), {
     boolean: ["noNamespace"],
-    string: ["moduleName"]
+    string: ["moduleName"],
+    string: ["tscPath"]
 });
 
 // Import Build Config
@@ -95,7 +96,7 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
     let library = libraries[0];
     if (!library.preventLoadLibrary) {
         // Generate DTS the old way...
-        cp.execSync(`tsc --module amd --outFile "${config.computed.tempTypingsAMDFilePath}" --emitDeclarationOnly true`, {
+        cp.execSync(`node "${commandLineOptions.tscPath || config.computed.tscPath}" --module amd --outFile "${config.computed.tempTypingsAMDFilePath}" --emitDeclarationOnly true`, {
             cwd: settings.computed.srcDirectory
         });
     }
