@@ -102,19 +102,17 @@
                             "path": "babylonjs/Debug/skeletonViewer",
                             "namespace": "BABYLON.Debug"
                         }
-                    ],
-                    "doNotAppendNamespace": true,
-                    "prependToNamespaceText": "declare module 'babylonjs' { export = BABYLON; }"
+                    ]
                 },
                 "packagesFiles": [
-                    "babylon.d.ts",
+                    "babylon.module.d.ts",
                     "babylon.js",
                     "babylon.max.js",
                     "babylon.max.js.map",
                     "Oimo.js",
                     "readme.md"
                 ],
-                "typings": "babylon.d.ts",
+                "typings": "babylon.module.d.ts",
                 "index": "babylon.js",
                 "dependencies": [],
                 "devDependencies": []
