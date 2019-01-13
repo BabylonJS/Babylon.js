@@ -26,6 +26,37 @@ import { Constants } from "../../Engines/constants";
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
+import { Observable } from '../../Misc/observable';
+
+/**
+ * Defines the options associated with the creation of a custom shader for a shadow generator.
+ */
+export interface ICustomShaderOptions {
+    /**
+     * Gets or sets the custom shader name to use
+     */
+    shaderName: string;
+
+    /**
+     * The list of attribute names used in the shader
+     */
+    attributes?: string[];
+
+    /**
+     * The list of unifrom names used in the shader
+     */
+    uniforms?: string[];
+
+    /**
+     * The list of sampler names used in the shader
+     */
+    samplers?: string[];
+
+    /**
+     * The list of defines used in the shader
+     */
+    defines?: string[];
+}
 
 /**
  * Interface to implement to create a shadow generator compatible with BJS.
@@ -180,6 +211,14 @@ export class ShadowGenerator implements IShadowGenerator {
      * Execute PCSS with 16 taps blocker search and 16 taps PCF.
      */
     public static readonly QUALITY_LOW = 2;
+
+    /** Gets or sets the custom shader name to use */
+    public customShaderOptions: ICustomShaderOptions;
+
+    /**
+     * Observable triggered before the shadow is rendered. Can be used to update internal effect state
+     */
+    public onBeforeShadowMapRenderObservable = new Observable<Effect>();
 
     private _bias = 0.00005;
     /**
@@ -926,6 +965,9 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setState(true, 0, false, true);
             }
 
+            // Observable
+            this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
+
             // Draw
             mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                 (isInstance, world) => this._effect.setMatrix("world", world));
@@ -1123,14 +1165,57 @@ export class ShadowGenerator implements IShadowGenerator {
             attribs.push("world3");
         }
 
+        if (this.customShaderOptions) {
+            if (this.customShaderOptions.defines) {
+                for (var define of this.customShaderOptions.defines) {
+                    if (defines.indexOf(define) === -1) {
+                        defines.push(define);
+                    }
+                }
+            }
+        }
+
         // Get correct effect
         var join = defines.join("\n");
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
-            this._effect = this._scene.getEngine().createEffect("shadowMap",
-                attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences", "boneTextureWidth"],
-                ["diffuseSampler", "boneSampler"], join,
+
+            let shaderName = "shadowMap";
+            let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences", "boneTextureWidth"];
+            let samplers = ["diffuseSampler", "boneSampler"];
+
+            // Custom shader?
+            if (this.customShaderOptions) {
+                shaderName = this.customShaderOptions.shaderName;
+
+                if (this.customShaderOptions.attributes) {
+                    for (var attrib of this.customShaderOptions.attributes) {
+                        if (attribs.indexOf(attrib) === -1) {
+                            attribs.push(attrib);
+                        }
+                    }
+                }
+
+                if (this.customShaderOptions.uniforms) {
+                    for (var uniform of this.customShaderOptions.uniforms) {
+                        if (uniforms.indexOf(uniform) === -1) {
+                            uniforms.push(uniform);
+                        }
+                    }
+                }
+
+                if (this.customShaderOptions.samplers) {
+                    for (var sampler of this.customShaderOptions.samplers) {
+                        if (samplers.indexOf(sampler) === -1) {
+                            samplers.push(sampler);
+                        }
+                    }
+                }
+            }
+
+            this._effect = this._scene.getEngine().createEffect(shaderName,
+                attribs, uniforms,
+                samplers, join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
