@@ -94,7 +94,6 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
             } else {
                 delta = wheelDelta * this.wheelPrecision;
             }
-            
 
             if (delta) {
                 if (this.axisControlRadius) {
