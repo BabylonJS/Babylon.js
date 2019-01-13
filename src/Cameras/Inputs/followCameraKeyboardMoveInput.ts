@@ -22,7 +22,7 @@ export enum ModifierKey {
 }
 
 /**
- * Manage the keyboard inputs to control the movement of an arc rotate camera.
+ * Manage the keyboard inputs to control the movement of a follow camera.
  * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera> {
@@ -311,6 +311,9 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
         return "keyboard";
     }
 
+    /**
+     * Compare provided value to actual stare of Alt, Ctrl and Shift keys.
+     */
     private _checkModifierKey(expected: ModifierKey) : boolean {
         let returnVal = false;
         switch(expected) {
