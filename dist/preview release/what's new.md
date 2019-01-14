@@ -89,6 +89,7 @@
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 - Added InputsManager and keyboard bindings for FollowCamera. ([mrdunk](https://github.com))
 - Fix typo in FollowCamera InputsManager when limiting rotation to 360 degrees. ([mrdunk](https://github.com))
+- Added MouseWheel bindings for FollowCamera. ([mrdunk](https://github.com))
 - Added per solid particle culling possibility : `solidParticle.isInFrustum()`  ([jerome](https://github.com/jbousquie))
 - Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
 - Added option `forceDisposeChildren` to multiMaterial.dispose ([danjpar](https://github.com/danjpar))
