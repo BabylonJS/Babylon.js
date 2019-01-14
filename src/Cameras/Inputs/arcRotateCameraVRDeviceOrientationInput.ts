@@ -1,6 +1,27 @@
 import { Nullable } from "../../types";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
+
+// Module augmentation to abstract orientation inputs from camera.
+declare module "../../Cameras/arcRotateCameraInputsManager" {
+    export interface ArcRotateCameraInputsManager {
+        /**
+         * Add orientation input support to the input manager.
+         * @returns the current input manager
+         */
+        addVRDeviceOrientation(): ArcRotateCameraInputsManager;
+    }
+}
+
+/**
+ * Add orientation input support to the input manager.
+ * @returns the current input manager
+ */
+ArcRotateCameraInputsManager.prototype.addVRDeviceOrientation = function(): ArcRotateCameraInputsManager {
+    this.add(new ArcRotateCameraVRDeviceOrientationInput());
+    return this;
+};
 
 /**
  * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.

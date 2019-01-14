@@ -1,5 +1,4 @@
 import { ArcRotateCamera } from "./arcRotateCamera";
-import { ArcRotateCameraVRDeviceOrientationInput } from "../Cameras/Inputs/arcRotateCameraVRDeviceOrientationInput";
 import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
 import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
 import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
@@ -43,15 +42,6 @@ export class ArcRotateCameraInputsManager extends CameraInputsManager<ArcRotateC
      */
     public addKeyboard(): ArcRotateCameraInputsManager {
         this.add(new ArcRotateCameraKeyboardMoveInput());
-        return this;
-    }
-
-    /**
-     * Add orientation input support to the input manager.
-     * @returns the current input manager
-     */
-    public addVRDeviceOrientation(): ArcRotateCameraInputsManager {
-        this.add(new ArcRotateCameraVRDeviceOrientationInput());
         return this;
     }
 }
