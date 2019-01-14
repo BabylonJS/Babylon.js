@@ -76,7 +76,7 @@ export class FollowCamera extends TargetCamera {
 
         this.lockedTarget = lockedTarget;
         this.inputs = new FollowCameraInputsManager(this);
-        this.inputs.addKeyboard();
+        this.inputs.addKeyboard().addMouseWheel();
         // Uncomment the following line when the relevant handlers have been implemented.
         // this.inputs.addKeyboard().addMouseWheel().addPointers().addVRDeviceOrientation();
     }
