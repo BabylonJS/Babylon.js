@@ -117,7 +117,122 @@ declare module "babylonjs-gui/2D/style" {
         dispose(): void;
     }
 }
+declare module "babylonjs-gui/2D/math2D" {
+    import { Nullable } from "babylonjs/types";
+    import { Vector2 } from "babylonjs/Maths/math";
+    /**
+     * Class used to transport Vector2 information for pointer events
+     */
+    export class Vector2WithInfo extends Vector2 {
+        /** defines the current mouse button index */
+        buttonIndex: number;
+        /**
+         * Creates a new Vector2WithInfo
+         * @param source defines the vector2 data to transport
+         * @param buttonIndex defines the current mouse button index
+         */
+        constructor(source: Vector2, 
+        /** defines the current mouse button index */
+        buttonIndex?: number);
+    }
+    /** Class used to provide 2D matrix features */
+    export class Matrix2D {
+        /** Gets the internal array of 6 floats used to store matrix data */
+        m: Float32Array;
+        /**
+         * Creates a new matrix
+         * @param m00 defines value for (0, 0)
+         * @param m01 defines value for (0, 1)
+         * @param m10 defines value for (1, 0)
+         * @param m11 defines value for (1, 1)
+         * @param m20 defines value for (2, 0)
+         * @param m21 defines value for (2, 1)
+         */
+        constructor(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number);
+        /**
+         * Fills the matrix from direct values
+         * @param m00 defines value for (0, 0)
+         * @param m01 defines value for (0, 1)
+         * @param m10 defines value for (1, 0)
+         * @param m11 defines value for (1, 1)
+         * @param m20 defines value for (2, 0)
+         * @param m21 defines value for (2, 1)
+         * @returns the current modified matrix
+         */
+        fromValues(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number): Matrix2D;
+        /**
+         * Gets matrix determinant
+         * @returns the determinant
+         */
+        determinant(): number;
+        /**
+         * Inverses the matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
+        invertToRef(result: Matrix2D): Matrix2D;
+        /**
+         * Multiplies the current matrix with another one
+         * @param other defines the second operand
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
+        multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D;
+        /**
+         * Applies the current matrix to a set of 2 floats and stores the result in a vector2
+         * @param x defines the x coordinate to transform
+         * @param y defines the x coordinate to transform
+         * @param result defines the target vector2
+         * @returns the current matrix
+         */
+        transformCoordinates(x: number, y: number, result: Vector2): Matrix2D;
+        /**
+         * Creates an identity matrix
+         * @returns a new matrix
+         */
+        static Identity(): Matrix2D;
+        /**
+         * Creates a translation matrix and stores it in a target matrix
+         * @param x defines the x coordinate of the translation
+         * @param y defines the y coordinate of the translation
+         * @param result defines the target matrix
+         */
+        static TranslationToRef(x: number, y: number, result: Matrix2D): void;
+        /**
+         * Creates a scaling matrix and stores it in a target matrix
+         * @param x defines the x coordinate of the scaling
+         * @param y defines the y coordinate of the scaling
+         * @param result defines the target matrix
+         */
+        static ScalingToRef(x: number, y: number, result: Matrix2D): void;
+        /**
+         * Creates a rotation matrix and stores it in a target matrix
+         * @param angle defines the rotation angle
+         * @param result defines the target matrix
+         */
+        static RotationToRef(angle: number, result: Matrix2D): void;
+        private static _TempPreTranslationMatrix;
+        private static _TempPostTranslationMatrix;
+        private static _TempRotationMatrix;
+        private static _TempScalingMatrix;
+        private static _TempCompose0;
+        private static _TempCompose1;
+        private static _TempCompose2;
+        /**
+         * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
+         * @param tx defines the x coordinate of the translation
+         * @param ty defines the y coordinate of the translation
+         * @param angle defines the rotation angle
+         * @param scaleX defines the x coordinate of the scaling
+         * @param scaleY defines the y coordinate of the scaling
+         * @param parentMatrix defines the parent matrix to multiply by (can be null)
+         * @param result defines the target matrix
+         */
+        static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: Nullable<Matrix2D>, result: Matrix2D): void;
+    }
+}
 declare module "babylonjs-gui/2D/measure" {
+    import { Matrix2D } from "babylonjs-gui/2D/math2D";
     /**
      * Class used to store 2D control sizes
      */
@@ -159,6 +274,19 @@ declare module "babylonjs-gui/2D/measure" {
          * @param height defines height dimension
          */
         copyFromFloats(left: number, top: number, width: number, height: number): void;
+        /**
+         * Computes the axis aligned bounding box measure for two given measures
+         * @param a Input measure
+         * @param b Input measure
+         * @param result the resulting bounding measure
+         */
+        static CombineToRef(a: Measure, b: Measure, result: Measure): void;
+        /**
+         * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+         * @param transform the matrix to transform the measure before computing the AABB
+         * @param result the resulting AABB
+         */
+        transformToRef(transform: Matrix2D, result: Measure): void;
         /**
          * Check equality between this measure and another one
          * @param other defines the other measures
@@ -373,20 +501,15 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          * Gets or sets a boolean indicating if the InvalidateRect optimization should be turned on
          */
         useInvalidateRectOptimization: boolean;
-        private _clearRectangle;
         private _invalidatedRectangle;
         /**
          * Invalidates a rectangle area on the gui texture
-         * @param clearMinX left most position of the rectangle to clear in the texture
-         * @param clearMinY top most position of the rectangle to clear in the texture
-         * @param clearMaxX right most position of the rectangle to clear in the texture
-         * @param clearMaxY bottom most position of the rectangle to clear in the texture
-         * @param minX left most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-         * @param minY top most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-         * @param maxX right most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-         * @param maxY bottom most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+         * @param invalidMinX left most position of the rectangle to invalidate in the texture
+         * @param invalidMinY top most position of the rectangle to invalidate in the texture
+         * @param invalidMaxX right most position of the rectangle to invalidate in the texture
+         * @param invalidMaxY bottom most position of the rectangle to invalidate in the texture
          */
-        invalidateRect(clearMinX: number, clearMinY: number, clearMaxX: number, clearMaxY: number, minX: number, minY: number, maxX: number, maxY: number): void;
+        invalidateRect(invalidMinX: number, invalidMinY: number, invalidMaxX: number, invalidMaxY: number): void;
         /**
         * Marks the texture as dirty forcing a complete update
         */
@@ -491,120 +614,6 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number): AdvancedDynamicTexture;
     }
 }
-declare module "babylonjs-gui/2D/math2D" {
-    import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math";
-    /**
-     * Class used to transport Vector2 information for pointer events
-     */
-    export class Vector2WithInfo extends Vector2 {
-        /** defines the current mouse button index */
-        buttonIndex: number;
-        /**
-         * Creates a new Vector2WithInfo
-         * @param source defines the vector2 data to transport
-         * @param buttonIndex defines the current mouse button index
-         */
-        constructor(source: Vector2, 
-        /** defines the current mouse button index */
-        buttonIndex?: number);
-    }
-    /** Class used to provide 2D matrix features */
-    export class Matrix2D {
-        /** Gets the internal array of 6 floats used to store matrix data */
-        m: Float32Array;
-        /**
-         * Creates a new matrix
-         * @param m00 defines value for (0, 0)
-         * @param m01 defines value for (0, 1)
-         * @param m10 defines value for (1, 0)
-         * @param m11 defines value for (1, 1)
-         * @param m20 defines value for (2, 0)
-         * @param m21 defines value for (2, 1)
-         */
-        constructor(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number);
-        /**
-         * Fills the matrix from direct values
-         * @param m00 defines value for (0, 0)
-         * @param m01 defines value for (0, 1)
-         * @param m10 defines value for (1, 0)
-         * @param m11 defines value for (1, 1)
-         * @param m20 defines value for (2, 0)
-         * @param m21 defines value for (2, 1)
-         * @returns the current modified matrix
-         */
-        fromValues(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number): Matrix2D;
-        /**
-         * Gets matrix determinant
-         * @returns the determinant
-         */
-        determinant(): number;
-        /**
-         * Inverses the matrix and stores it in a target matrix
-         * @param result defines the target matrix
-         * @returns the current matrix
-         */
-        invertToRef(result: Matrix2D): Matrix2D;
-        /**
-         * Multiplies the current matrix with another one
-         * @param other defines the second operand
-         * @param result defines the target matrix
-         * @returns the current matrix
-         */
-        multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D;
-        /**
-         * Applies the current matrix to a set of 2 floats and stores the result in a vector2
-         * @param x defines the x coordinate to transform
-         * @param y defines the x coordinate to transform
-         * @param result defines the target vector2
-         * @returns the current matrix
-         */
-        transformCoordinates(x: number, y: number, result: Vector2): Matrix2D;
-        /**
-         * Creates an identity matrix
-         * @returns a new matrix
-         */
-        static Identity(): Matrix2D;
-        /**
-         * Creates a translation matrix and stores it in a target matrix
-         * @param x defines the x coordinate of the translation
-         * @param y defines the y coordinate of the translation
-         * @param result defines the target matrix
-         */
-        static TranslationToRef(x: number, y: number, result: Matrix2D): void;
-        /**
-         * Creates a scaling matrix and stores it in a target matrix
-         * @param x defines the x coordinate of the scaling
-         * @param y defines the y coordinate of the scaling
-         * @param result defines the target matrix
-         */
-        static ScalingToRef(x: number, y: number, result: Matrix2D): void;
-        /**
-         * Creates a rotation matrix and stores it in a target matrix
-         * @param angle defines the rotation angle
-         * @param result defines the target matrix
-         */
-        static RotationToRef(angle: number, result: Matrix2D): void;
-        private static _TempPreTranslationMatrix;
-        private static _TempPostTranslationMatrix;
-        private static _TempRotationMatrix;
-        private static _TempScalingMatrix;
-        private static _TempCompose0;
-        private static _TempCompose1;
-        private static _TempCompose2;
-        /**
-         * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
-         * @param tx defines the x coordinate of the translation
-         * @param ty defines the y coordinate of the translation
-         * @param angle defines the rotation angle
-         * @param scaleX defines the x coordinate of the scaling
-         * @param scaleY defines the y coordinate of the scaling
-         * @param parentMatrix defines the parent matrix to multiply by (can be null)
-         * @param result defines the target matrix
-         */
-        static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: Nullable<Matrix2D>, result: Matrix2D): void;
-    }
-}
 declare module "babylonjs-gui/2D/controls/control" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
@@ -666,7 +675,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _tempParentMeasure: Measure;
         /** @hidden */
-        _tempCurrentMeasure: Measure;
+        _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
         private _paddingLeft;
@@ -682,7 +691,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _rotation;
         private _transformCenterX;
         private _transformCenterY;
-        private _transformMatrix;
+        /** @hidden */
+        _transformMatrix: Matrix2D;
         /** @hidden */
         protected _invertTransformMatrix: Matrix2D;
         /** @hidden */
@@ -722,7 +732,10 @@ declare module "babylonjs-gui/2D/controls/control" {
         isPointerBlocker: boolean;
         /** Gets or sets a boolean indicating if the control can be focusable */
         isFocusInvisible: boolean;
-        /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+        /**
+         * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
         clipChildren: boolean;
         /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
@@ -1051,7 +1064,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _intersectsRect(rect: Measure): boolean;
         /** @hidden */
-        protected invalidateRect(left: number, top: number, right: number, bottom: number): void;
+        protected invalidateRect(): void;
         /** @hidden */
         _markAsDirty(force?: boolean): void;
         /** @hidden */
@@ -1082,6 +1095,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
         private static _ClipMeasure;
+        private _tmpMeasureA;
         private _clip;
         /** @hidden */
         _render(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean;
@@ -3940,6 +3954,118 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+     * Class used to transport BABYLON.Vector2 information for pointer events
+     */
+    export class Vector2WithInfo extends BABYLON.Vector2 {
+        /** defines the current mouse button index */
+        buttonIndex: number;
+        /**
+         * Creates a new Vector2WithInfo
+         * @param source defines the vector2 data to transport
+         * @param buttonIndex defines the current mouse button index
+         */
+        constructor(source: BABYLON.Vector2, 
+        /** defines the current mouse button index */
+        buttonIndex?: number);
+    }
+    /** Class used to provide 2D matrix features */
+    export class Matrix2D {
+        /** Gets the internal array of 6 floats used to store matrix data */
+        m: Float32Array;
+        /**
+         * Creates a new matrix
+         * @param m00 defines value for (0, 0)
+         * @param m01 defines value for (0, 1)
+         * @param m10 defines value for (1, 0)
+         * @param m11 defines value for (1, 1)
+         * @param m20 defines value for (2, 0)
+         * @param m21 defines value for (2, 1)
+         */
+        constructor(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number);
+        /**
+         * Fills the matrix from direct values
+         * @param m00 defines value for (0, 0)
+         * @param m01 defines value for (0, 1)
+         * @param m10 defines value for (1, 0)
+         * @param m11 defines value for (1, 1)
+         * @param m20 defines value for (2, 0)
+         * @param m21 defines value for (2, 1)
+         * @returns the current modified matrix
+         */
+        fromValues(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number): Matrix2D;
+        /**
+         * Gets matrix determinant
+         * @returns the determinant
+         */
+        determinant(): number;
+        /**
+         * Inverses the matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
+        invertToRef(result: Matrix2D): Matrix2D;
+        /**
+         * Multiplies the current matrix with another one
+         * @param other defines the second operand
+         * @param result defines the target matrix
+         * @returns the current matrix
+         */
+        multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D;
+        /**
+         * Applies the current matrix to a set of 2 floats and stores the result in a vector2
+         * @param x defines the x coordinate to transform
+         * @param y defines the x coordinate to transform
+         * @param result defines the target vector2
+         * @returns the current matrix
+         */
+        transformCoordinates(x: number, y: number, result: BABYLON.Vector2): Matrix2D;
+        /**
+         * Creates an identity matrix
+         * @returns a new matrix
+         */
+        static Identity(): Matrix2D;
+        /**
+         * Creates a translation matrix and stores it in a target matrix
+         * @param x defines the x coordinate of the translation
+         * @param y defines the y coordinate of the translation
+         * @param result defines the target matrix
+         */
+        static TranslationToRef(x: number, y: number, result: Matrix2D): void;
+        /**
+         * Creates a scaling matrix and stores it in a target matrix
+         * @param x defines the x coordinate of the scaling
+         * @param y defines the y coordinate of the scaling
+         * @param result defines the target matrix
+         */
+        static ScalingToRef(x: number, y: number, result: Matrix2D): void;
+        /**
+         * Creates a rotation matrix and stores it in a target matrix
+         * @param angle defines the rotation angle
+         * @param result defines the target matrix
+         */
+        static RotationToRef(angle: number, result: Matrix2D): void;
+        private static _TempPreTranslationMatrix;
+        private static _TempPostTranslationMatrix;
+        private static _TempRotationMatrix;
+        private static _TempScalingMatrix;
+        private static _TempCompose0;
+        private static _TempCompose1;
+        private static _TempCompose2;
+        /**
+         * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
+         * @param tx defines the x coordinate of the translation
+         * @param ty defines the y coordinate of the translation
+         * @param angle defines the rotation angle
+         * @param scaleX defines the x coordinate of the scaling
+         * @param scaleY defines the y coordinate of the scaling
+         * @param parentMatrix defines the parent matrix to multiply by (can be null)
+         * @param result defines the target matrix
+         */
+        static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: BABYLON.Nullable<Matrix2D>, result: Matrix2D): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to store 2D control sizes
      */
     export class Measure {
@@ -3980,6 +4106,19 @@ declare module BABYLON.GUI {
          * @param height defines height dimension
          */
         copyFromFloats(left: number, top: number, width: number, height: number): void;
+        /**
+         * Computes the axis aligned bounding box measure for two given measures
+         * @param a Input measure
+         * @param b Input measure
+         * @param result the resulting bounding measure
+         */
+        static CombineToRef(a: Measure, b: Measure, result: Measure): void;
+        /**
+         * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+         * @param transform the matrix to transform the measure before computing the AABB
+         * @param result the resulting AABB
+         */
+        transformToRef(transform: Matrix2D, result: Measure): void;
         /**
          * Check equality between this measure and another one
          * @param other defines the other measures
@@ -4183,20 +4322,15 @@ declare module BABYLON.GUI {
          * Gets or sets a boolean indicating if the InvalidateRect optimization should be turned on
          */
         useInvalidateRectOptimization: boolean;
-        private _clearRectangle;
         private _invalidatedRectangle;
         /**
          * Invalidates a rectangle area on the gui texture
-         * @param clearMinX left most position of the rectangle to clear in the texture
-         * @param clearMinY top most position of the rectangle to clear in the texture
-         * @param clearMaxX right most position of the rectangle to clear in the texture
-         * @param clearMaxY bottom most position of the rectangle to clear in the texture
-         * @param minX left most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-         * @param minY top most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-         * @param maxX right most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-         * @param maxY bottom most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+         * @param invalidMinX left most position of the rectangle to invalidate in the texture
+         * @param invalidMinY top most position of the rectangle to invalidate in the texture
+         * @param invalidMaxX right most position of the rectangle to invalidate in the texture
+         * @param invalidMaxY bottom most position of the rectangle to invalidate in the texture
          */
-        invalidateRect(clearMinX: number, clearMinY: number, clearMaxX: number, clearMaxY: number, minX: number, minY: number, maxX: number, maxY: number): void;
+        invalidateRect(invalidMinX: number, invalidMinY: number, invalidMaxX: number, invalidMaxY: number): void;
         /**
         * Marks the texture as dirty forcing a complete update
         */
@@ -4303,118 +4437,6 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
-     * Class used to transport BABYLON.Vector2 information for pointer events
-     */
-    export class Vector2WithInfo extends BABYLON.Vector2 {
-        /** defines the current mouse button index */
-        buttonIndex: number;
-        /**
-         * Creates a new Vector2WithInfo
-         * @param source defines the vector2 data to transport
-         * @param buttonIndex defines the current mouse button index
-         */
-        constructor(source: BABYLON.Vector2, 
-        /** defines the current mouse button index */
-        buttonIndex?: number);
-    }
-    /** Class used to provide 2D matrix features */
-    export class Matrix2D {
-        /** Gets the internal array of 6 floats used to store matrix data */
-        m: Float32Array;
-        /**
-         * Creates a new matrix
-         * @param m00 defines value for (0, 0)
-         * @param m01 defines value for (0, 1)
-         * @param m10 defines value for (1, 0)
-         * @param m11 defines value for (1, 1)
-         * @param m20 defines value for (2, 0)
-         * @param m21 defines value for (2, 1)
-         */
-        constructor(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number);
-        /**
-         * Fills the matrix from direct values
-         * @param m00 defines value for (0, 0)
-         * @param m01 defines value for (0, 1)
-         * @param m10 defines value for (1, 0)
-         * @param m11 defines value for (1, 1)
-         * @param m20 defines value for (2, 0)
-         * @param m21 defines value for (2, 1)
-         * @returns the current modified matrix
-         */
-        fromValues(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number): Matrix2D;
-        /**
-         * Gets matrix determinant
-         * @returns the determinant
-         */
-        determinant(): number;
-        /**
-         * Inverses the matrix and stores it in a target matrix
-         * @param result defines the target matrix
-         * @returns the current matrix
-         */
-        invertToRef(result: Matrix2D): Matrix2D;
-        /**
-         * Multiplies the current matrix with another one
-         * @param other defines the second operand
-         * @param result defines the target matrix
-         * @returns the current matrix
-         */
-        multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D;
-        /**
-         * Applies the current matrix to a set of 2 floats and stores the result in a vector2
-         * @param x defines the x coordinate to transform
-         * @param y defines the x coordinate to transform
-         * @param result defines the target vector2
-         * @returns the current matrix
-         */
-        transformCoordinates(x: number, y: number, result: BABYLON.Vector2): Matrix2D;
-        /**
-         * Creates an identity matrix
-         * @returns a new matrix
-         */
-        static Identity(): Matrix2D;
-        /**
-         * Creates a translation matrix and stores it in a target matrix
-         * @param x defines the x coordinate of the translation
-         * @param y defines the y coordinate of the translation
-         * @param result defines the target matrix
-         */
-        static TranslationToRef(x: number, y: number, result: Matrix2D): void;
-        /**
-         * Creates a scaling matrix and stores it in a target matrix
-         * @param x defines the x coordinate of the scaling
-         * @param y defines the y coordinate of the scaling
-         * @param result defines the target matrix
-         */
-        static ScalingToRef(x: number, y: number, result: Matrix2D): void;
-        /**
-         * Creates a rotation matrix and stores it in a target matrix
-         * @param angle defines the rotation angle
-         * @param result defines the target matrix
-         */
-        static RotationToRef(angle: number, result: Matrix2D): void;
-        private static _TempPreTranslationMatrix;
-        private static _TempPostTranslationMatrix;
-        private static _TempRotationMatrix;
-        private static _TempScalingMatrix;
-        private static _TempCompose0;
-        private static _TempCompose1;
-        private static _TempCompose2;
-        /**
-         * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
-         * @param tx defines the x coordinate of the translation
-         * @param ty defines the y coordinate of the translation
-         * @param angle defines the rotation angle
-         * @param scaleX defines the x coordinate of the scaling
-         * @param scaleY defines the y coordinate of the scaling
-         * @param parentMatrix defines the parent matrix to multiply by (can be null)
-         * @param result defines the target matrix
-         */
-        static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: BABYLON.Nullable<Matrix2D>, result: Matrix2D): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
      * Root class used for all 2D controls
      * @see http://doc.babylonjs.com/how_to/gui#controls
      */
@@ -4463,7 +4485,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _tempParentMeasure: Measure;
         /** @hidden */
-        _tempCurrentMeasure: Measure;
+        _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
         private _paddingLeft;
@@ -4479,7 +4501,8 @@ declare module BABYLON.GUI {
         private _rotation;
         private _transformCenterX;
         private _transformCenterY;
-        private _transformMatrix;
+        /** @hidden */
+        _transformMatrix: Matrix2D;
         /** @hidden */
         protected _invertTransformMatrix: Matrix2D;
         /** @hidden */
@@ -4519,7 +4542,10 @@ declare module BABYLON.GUI {
         isPointerBlocker: boolean;
         /** Gets or sets a boolean indicating if the control can be focusable */
         isFocusInvisible: boolean;
-        /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+        /**
+         * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
         clipChildren: boolean;
         /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
@@ -4848,7 +4874,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _intersectsRect(rect: Measure): boolean;
         /** @hidden */
-        protected invalidateRect(left: number, top: number, right: number, bottom: number): void;
+        protected invalidateRect(): void;
         /** @hidden */
         _markAsDirty(force?: boolean): void;
         /** @hidden */
@@ -4879,6 +4905,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         protected _clipForChildren(context: CanvasRenderingContext2D): void;
         private static _ClipMeasure;
+        private _tmpMeasureA;
         private _clip;
         /** @hidden */
         _render(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): boolean;

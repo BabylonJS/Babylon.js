@@ -592,7 +592,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         */
         _this.premulAlpha = false;
         _this._useInvalidateRectOptimization = true;
-        _this._clearRectangle = null;
+        // Invalidated rectangle which is the combination of all invalidated controls after they have been rotated into absolute position
         _this._invalidatedRectangle = null;
         _this._clearMeasure = new _measure__WEBPACK_IMPORTED_MODULE_4__["Measure"](0, 0, 0, 0);
         /** @hidden */
@@ -885,35 +885,24 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     });
     /**
      * Invalidates a rectangle area on the gui texture
-     * @param clearMinX left most position of the rectangle to clear in the texture
-     * @param clearMinY top most position of the rectangle to clear in the texture
-     * @param clearMaxX right most position of the rectangle to clear in the texture
-     * @param clearMaxY bottom most position of the rectangle to clear in the texture
-     * @param minX left most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-     * @param minY top most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-     * @param maxX right most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
-     * @param maxY bottom most position of the rectangle to invalidate in absolute coordinates (not taking in account local transformation)
+     * @param invalidMinX left most position of the rectangle to invalidate in the texture
+     * @param invalidMinY top most position of the rectangle to invalidate in the texture
+     * @param invalidMaxX right most position of the rectangle to invalidate in the texture
+     * @param invalidMaxY bottom most position of the rectangle to invalidate in the texture
      */
-    AdvancedDynamicTexture.prototype.invalidateRect = function (clearMinX, clearMinY, clearMaxX, clearMaxY, minX, minY, maxX, maxY) {
+    AdvancedDynamicTexture.prototype.invalidateRect = function (invalidMinX, invalidMinY, invalidMaxX, invalidMaxY) {
         if (!this._useInvalidateRectOptimization) {
             return;
         }
-        if (!this._clearRectangle || !this._invalidatedRectangle) {
-            this._clearRectangle = new _measure__WEBPACK_IMPORTED_MODULE_4__["Measure"](clearMinX, clearMinY, clearMaxX - clearMinX + 1, clearMaxY - clearMinY + 1);
-            this._invalidatedRectangle = new _measure__WEBPACK_IMPORTED_MODULE_4__["Measure"](minX, minY, maxX - minX + 1, maxY - minY + 1);
+        if (!this._invalidatedRectangle) {
+            this._invalidatedRectangle = new _measure__WEBPACK_IMPORTED_MODULE_4__["Measure"](invalidMinX, invalidMinY, invalidMaxX - invalidMinX + 1, invalidMaxY - invalidMinY + 1);
         }
         else {
             // Compute intersection
-            var maxX = Math.ceil(Math.max(this._clearRectangle.left + this._clearRectangle.width - 1, clearMaxX));
-            var maxY = Math.ceil(Math.max(this._clearRectangle.top + this._clearRectangle.height - 1, clearMaxY));
-            this._clearRectangle.left = Math.floor(Math.min(this._clearRectangle.left, clearMinX));
-            this._clearRectangle.top = Math.floor(Math.min(this._clearRectangle.top, clearMinY));
-            this._clearRectangle.width = maxX - this._clearRectangle.left + 1;
-            this._clearRectangle.height = maxY - this._clearRectangle.top + 1;
-            maxX = Math.max(this._invalidatedRectangle.left + this._invalidatedRectangle.width - 1, maxX);
-            maxY = Math.max(this._invalidatedRectangle.top + this._invalidatedRectangle.height - 1, maxY);
-            this._invalidatedRectangle.left = Math.min(this._invalidatedRectangle.left, minX);
-            this._invalidatedRectangle.top = Math.min(this._invalidatedRectangle.top, minY);
+            var maxX = Math.ceil(Math.max(this._invalidatedRectangle.left + this._invalidatedRectangle.width - 1, invalidMaxX));
+            var maxY = Math.ceil(Math.max(this._invalidatedRectangle.top + this._invalidatedRectangle.height - 1, invalidMaxY));
+            this._invalidatedRectangle.left = Math.floor(Math.min(this._invalidatedRectangle.left, invalidMinX));
+            this._invalidatedRectangle.top = Math.floor(Math.min(this._invalidatedRectangle.top, invalidMinY));
             this._invalidatedRectangle.width = maxX - this._invalidatedRectangle.left + 1;
             this._invalidatedRectangle.height = maxY - this._invalidatedRectangle.top + 1;
         }
@@ -1016,7 +1005,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 this._rootContainer._markAllAsDirty();
             }
         }
-        this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1, 0, 0, textureSize.width - 1, textureSize.height - 1);
+        this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
     };
     /** @hidden */
     AdvancedDynamicTexture.prototype._getGlobalViewport = function (scene) {
@@ -1096,8 +1085,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         this.onEndLayoutObservable.notifyObservers(this);
         this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
         // Clear
-        if (this._clearRectangle) {
-            this._clearMeasure.copyFrom(this._clearRectangle);
+        if (this._invalidatedRectangle) {
+            this._clearMeasure.copyFrom(this._invalidatedRectangle);
         }
         else {
             this._clearMeasure.copyFromFloats(0, 0, renderWidth, renderHeight);
@@ -1113,7 +1102,6 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         this.onBeginRenderObservable.notifyObservers(this);
         this._rootContainer._render(context, this._invalidatedRectangle);
         this.onEndRenderObservable.notifyObservers(this);
-        this._clearRectangle = null;
         this._invalidatedRectangle = null;
     };
     /** @hidden */
@@ -3442,13 +3430,17 @@ var Container = /** @class */ (function (_super) {
     /** @hidden */
     Container.prototype._reOrderControl = function (control) {
         this.removeControl(control);
+        var wasAdded = false;
         for (var index = 0; index < this._children.length; index++) {
             if (this._children[index].zIndex > control.zIndex) {
                 this._children.splice(index, 0, control);
-                return;
+                wasAdded = true;
+                break;
             }
         }
-        this._children.push(control);
+        if (!wasAdded) {
+            this._children.push(control);
+        }
         control.parent = this;
         this._markAsDirty();
     };
@@ -3511,11 +3503,11 @@ var Container = /** @class */ (function (_super) {
     };
     /** @hidden */
     Container.prototype._layout = function (parentMeasure, context) {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
         if (this._isDirty) {
-            this._tempCurrentMeasure.copyFrom(this._currentMeasure);
+            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
         }
         var rebuildCount = 0;
         context.save();
@@ -3560,7 +3552,7 @@ var Container = /** @class */ (function (_super) {
         }
         context.restore();
         if (this._isDirty) {
-            this.invalidateRect(Math.min(this._currentMeasure.left, this._tempCurrentMeasure.left), Math.min(this._currentMeasure.top, this._tempCurrentMeasure.top), Math.max(this._currentMeasure.left + this._currentMeasure.width, this._tempCurrentMeasure.left + this._tempCurrentMeasure.width) - 1, Math.max(this._currentMeasure.top + this._currentMeasure.height, this._tempCurrentMeasure.top + this._tempCurrentMeasure.height) - 1);
+            this.invalidateRect();
             this._isDirty = false;
         }
         return true;
@@ -3579,7 +3571,7 @@ var Container = /** @class */ (function (_super) {
             // Only redraw parts of the screen that are invalidated
             if (invalidatedRectangle) {
                 if (!child._intersectsRect(invalidatedRectangle)) {
-                    // continue;
+                    continue;
                 }
             }
             child._render(context, invalidatedRectangle);
@@ -3666,7 +3658,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * Root class used for all 2D controls
  * @see http://doc.babylonjs.com/how_to/gui#controls
@@ -3707,7 +3698,7 @@ var Control = /** @class */ (function () {
         /** @hidden */
         this._tempParentMeasure = _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].Empty();
         /** @hidden */
-        this._tempCurrentMeasure = _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].Empty();
+        this._prevCurrentMeasureTransformedIntoGlobalSpace = _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].Empty();
         /** @hidden */
         this._cachedParentMeasure = _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].Empty();
         this._paddingLeft = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"](0);
@@ -3723,6 +3714,7 @@ var Control = /** @class */ (function () {
         this._rotation = 0;
         this._transformCenterX = 0.5;
         this._transformCenterY = 0.5;
+        /** @hidden */
         this._transformMatrix = _math2D__WEBPACK_IMPORTED_MODULE_3__["Matrix2D"].Identity();
         /** @hidden */
         this._invertTransformMatrix = _math2D__WEBPACK_IMPORTED_MODULE_3__["Matrix2D"].Identity();
@@ -3753,7 +3745,10 @@ var Control = /** @class */ (function () {
         this.isPointerBlocker = false;
         /** Gets or sets a boolean indicating if the control can be focusable */
         this.isFocusInvisible = false;
-        /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+        /**
+         * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
         this.clipChildren = true;
         /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
@@ -3805,6 +3800,7 @@ var Control = /** @class */ (function () {
          * An event triggered after the control was drawn
          */
         this.onAfterDrawObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this._tmpMeasureA = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
     }
     Object.defineProperty(Control.prototype, "shadowOffsetX", {
         /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
@@ -3948,7 +3944,6 @@ var Control = /** @class */ (function () {
                 return;
             }
             this._scaleX = value;
-            this._transform();
             this._markAsDirty();
             this._markMatrixAsDirty();
         },
@@ -3967,7 +3962,6 @@ var Control = /** @class */ (function () {
                 return;
             }
             this._scaleY = value;
-            this._transform();
             this._markAsDirty();
             this._markMatrixAsDirty();
         },
@@ -4753,35 +4747,32 @@ var Control = /** @class */ (function () {
     };
     /** @hidden */
     Control.prototype._intersectsRect = function (rect) {
-        if (this._currentMeasure.left >= rect.left + rect.width) {
+        // Rotate the control's current measure into local space and check if it intersects the passed in rectangle
+        this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
+        if (this._tmpMeasureA.left >= rect.left + rect.width) {
             return false;
         }
-        if (this._currentMeasure.top >= rect.top + rect.height) {
+        if (this._tmpMeasureA.top >= rect.top + rect.height) {
             return false;
         }
-        if (this._currentMeasure.left + this._currentMeasure.width <= rect.left) {
+        if (this._tmpMeasureA.left + this._tmpMeasureA.width <= rect.left) {
             return false;
         }
-        if (this._currentMeasure.top + this._currentMeasure.height <= rect.top) {
+        if (this._tmpMeasureA.top + this._tmpMeasureA.height <= rect.top) {
             return false;
         }
         return true;
     };
     /** @hidden */
-    Control.prototype.invalidateRect = function (left, top, right, bottom) {
+    Control.prototype.invalidateRect = function () {
+        this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
-            // Compute AABB of transformed container box (eg. to handle rotation and scaling)
-            var rectanglePoints = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Polygon"].Rectangle(left, top, right, bottom);
-            var min = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector2"](Number.MAX_VALUE, Number.MAX_VALUE);
-            var max = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0);
-            for (var i = 0; i < 4; i++) {
-                this._transformMatrix.transformCoordinates(rectanglePoints[i].x, rectanglePoints[i].y, rectanglePoints[i]);
-                min.x = Math.min(min.x, rectanglePoints[i].x);
-                min.y = Math.min(min.y, rectanglePoints[i].y);
-                max.x = Math.max(max.x, rectanglePoints[i].x);
-                max.y = Math.max(max.y, rectanglePoints[i].y);
-            }
-            this.host.invalidateRect(min.x, min.y, max.x, max.y, left, top, right, bottom);
+            // Rotate by transform to get the measure transformed to global space
+            this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
+            // get the boudning box of the current measure and last frames measure in global space and invalidate it
+            // the previous measure is used to properly clear a control that is scaled down
+            _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
+            this.host.invalidateRect(Math.floor(this._tmpMeasureA.left), Math.floor(this._tmpMeasureA.top), Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width), Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height));
         }
     };
     /** @hidden */
@@ -4876,11 +4867,11 @@ var Control = /** @class */ (function () {
     };
     /** @hidden */
     Control.prototype._layout = function (parentMeasure, context) {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
-            this._tempCurrentMeasure.copyFrom(this._currentMeasure);
+            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
             context.save();
             this._applyStates(context);
             var rebuildCount = 0;
@@ -4893,7 +4884,7 @@ var Control = /** @class */ (function () {
                 babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Logger"].Error("Layout cycle detected in GUI (Control name=" + this.name + ", uniqueId=" + this.uniqueId + ")");
             }
             context.restore();
-            this.invalidateRect(Math.min(this._currentMeasure.left, this._tempCurrentMeasure.left), Math.min(this._currentMeasure.top, this._tempCurrentMeasure.top), Math.max(this._currentMeasure.left + this._currentMeasure.width, this._tempCurrentMeasure.left + this._tempCurrentMeasure.width), Math.max(this._currentMeasure.top + this._currentMeasure.height, this._tempCurrentMeasure.top + this._tempCurrentMeasure.height));
+            this.invalidateRect();
             this._evaluateClippingState(parentMeasure);
         }
         this._wasDirty = this._isDirty;
@@ -5047,12 +5038,15 @@ var Control = /** @class */ (function () {
         context.beginPath();
         Control._ClipMeasure.copyFrom(this._currentMeasure);
         if (invalidatedRectangle) {
-            var right = Math.min(invalidatedRectangle.left + invalidatedRectangle.width, this._currentMeasure.left + this._currentMeasure.width);
-            var bottom = Math.min(invalidatedRectangle.top + invalidatedRectangle.height, this._currentMeasure.top + this._currentMeasure.height);
-            Control._ClipMeasure.left = Math.max(invalidatedRectangle.left, this._currentMeasure.left);
-            Control._ClipMeasure.top = Math.max(invalidatedRectangle.top, this._currentMeasure.top);
-            Control._ClipMeasure.width = right - Control._ClipMeasure.left;
-            Control._ClipMeasure.height = bottom - Control._ClipMeasure.top;
+            // Rotate the invalidated rect into the control's space
+            invalidatedRectangle.transformToRef(this._invertTransformMatrix, this._tmpMeasureA);
+            // Get the intersection of the rect in context space and the current context
+            var intersection = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
+            intersection.left = Math.max(this._tmpMeasureA.left, this._currentMeasure.left);
+            intersection.top = Math.max(this._tmpMeasureA.top, this._currentMeasure.top);
+            intersection.width = Math.min(this._tmpMeasureA.left + this._tmpMeasureA.width, this._currentMeasure.left + this._currentMeasure.width) - intersection.left;
+            intersection.height = Math.min(this._tmpMeasureA.top + this._tmpMeasureA.height, this._currentMeasure.top + this._currentMeasure.height) - intersection.top;
+            Control._ClipMeasure.copyFrom(intersection);
         }
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             var shadowOffsetX = this.shadowOffsetX;
@@ -12115,6 +12109,9 @@ var Matrix2D = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return Measure; });
+/* harmony import */ var babylonjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs__WEBPACK_IMPORTED_MODULE_0__);
+
 /**
  * Class used to store 2D control sizes
  */
@@ -12162,6 +12159,43 @@ var Measure = /** @class */ (function () {
         this.top = top;
         this.width = width;
         this.height = height;
+    };
+    /**
+     * Computes the axis aligned bounding box measure for two given measures
+     * @param a Input measure
+     * @param b Input measure
+     * @param result the resulting bounding measure
+     */
+    Measure.CombineToRef = function (a, b, result) {
+        var left = Math.min(a.left, b.left);
+        var top = Math.min(a.top, b.top);
+        var right = Math.max(a.left + a.width, b.left + b.width);
+        var bottom = Math.max(a.top + a.height, b.top + b.height);
+        result.left = left;
+        result.top = top;
+        result.width = right - left;
+        result.height = bottom - top;
+    };
+    /**
+     * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+     * @param transform the matrix to transform the measure before computing the AABB
+     * @param result the resulting AABB
+     */
+    Measure.prototype.transformToRef = function (transform, result) {
+        var rectanglePoints = babylonjs__WEBPACK_IMPORTED_MODULE_0__["Polygon"].Rectangle(this.left, this.top, this.left + this.width, this.top + this.height);
+        var min = new babylonjs__WEBPACK_IMPORTED_MODULE_0__["Vector2"](Number.MAX_VALUE, Number.MAX_VALUE);
+        var max = new babylonjs__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0);
+        for (var i = 0; i < 4; i++) {
+            transform.transformCoordinates(rectanglePoints[i].x, rectanglePoints[i].y, rectanglePoints[i]);
+            min.x = Math.floor(Math.min(min.x, rectanglePoints[i].x));
+            min.y = Math.floor(Math.min(min.y, rectanglePoints[i].y));
+            max.x = Math.ceil(Math.max(max.x, rectanglePoints[i].x));
+            max.y = Math.ceil(Math.max(max.y, rectanglePoints[i].y));
+        }
+        result.left = min.x;
+        result.top = min.y;
+        result.width = max.x - min.x;
+        result.height = max.y - min.y;
     };
     /**
      * Check equality between this measure and another one

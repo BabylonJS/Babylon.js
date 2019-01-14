@@ -102,29 +102,28 @@
                             "path": "babylonjs/Debug/skeletonViewer",
                             "namespace": "BABYLON.Debug"
                         }
-                    ],
-                    "doNotAppendNamespace": true,
-                    "prependToNamespaceText": "declare module 'babylonjs' { export = BABYLON; }"
+                    ]
                 },
+                "requiredFiles": [
+                    "readme.md"
+                ],
                 "packagesFiles": [
-                    "babylon.d.ts",
+                    "babylon.module.d.ts",
                     "babylon.js",
                     "babylon.max.js",
                     "babylon.max.js.map",
                     "Oimo.js",
                     "readme.md"
                 ],
-                "typings": "babylon.d.ts",
+                "typings": "babylon.module.d.ts",
                 "index": "babylon.js",
                 "dependencies": [],
                 "devDependencies": []
             },
             "es6": {
-                "packageName": "@babylonjs/core"
-            },
-            "requiredFiles": [
-                "readme.md"
-            ]
+                "packageName": "@babylonjs/core",
+                "readme": "readme-es6.md"
+            }
         }
     },
     "materialsLibrary": {
@@ -225,9 +224,7 @@
             },
             "es6": {
                 "packageName": "@babylonjs/materials",
-                "requiredFiles": [
-                    "dist/preview release/materialsLibrary/readme.md"
-                ]
+                "readme": "dist/preview release/materialsLibrary/readme-es6.md"
             }
         }
     },
@@ -264,9 +261,7 @@
             },
             "es6": {
                 "packageName": "@babylonjs/post-processes",
-                "requiredFiles": [
-                    "dist/preview release/postProcessesLibrary/readme.md"
-                ]
+                "readme": "dist/preview release/postProcessesLibrary/readme-es6.md"
             }
         }
     },
@@ -343,9 +338,7 @@
             },
             "es6": {
                 "packageName": "@babylonjs/procedural-textures",
-                "requiredFiles": [
-                    "dist/preview release/proceduralTexturesLibrary/readme.md"
-                ]
+                "readme": "dist/preview release/proceduralTexturesLibrary/readme-es6.md"
             }
         }
     },
@@ -416,9 +409,7 @@
             },
             "es6": {
                 "packageName": "@babylonjs/loaders",
-                "requiredFiles": [
-                    "dist/preview release/loaders/readme.md"
-                ]
+                "readme": "dist/preview release/loaders/readme-es6.md"
             }
         }
     },
@@ -476,9 +467,7 @@
             },
             "es6": {
                 "packageName": "@babylonjs/serializers",
-                "requiredFiles": [
-                    "dist/preview release/serializers/readme.md"
-                ]
+                "readme": "dist/preview release/serializers/readme-es6.md"
             }
         }
     },
@@ -507,9 +496,7 @@
             },
             "es6": {
                 "packageName": "@babylonjs/gui",
-                "requiredFiles": [
-                    "dist/preview release/gui/readme.md"
-                ]
+                "readme": "dist/preview release/gui/readme-es6.md"
             }
         }
     },
@@ -553,9 +540,7 @@
                     ]
                 },
                 "packageName": "@babylonjs/inspector",
-                "requiredFiles": [
-                    "dist/preview release/inspector/readme.md"
-                ],
+                "readme": "dist/preview release/inspector/readme-es6.md",
                 "packagesFiles": [
                     "babylon.inspector.bundle.max.js",
                     "babylon.inspector.bundle.max.js.map",
@@ -591,7 +576,7 @@
                 "processDeclaration": {
                     "moduleName": "BabylonViewer",
                     "doNotAppendNamespace": true,
-                    "prependText": "/// <reference path=\"./babylon.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n",
+                    "prependText": "/// <reference path=\"./babylon.module.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n",
                     "importsToRemove": [
                         "pep",
                         "babylonjs-loaders"
@@ -600,7 +585,13 @@
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON"
                     }
-                }
+                },
+                "requiredFiles": [
+                    "dist/preview release/viewer/readme.md",
+                    "dist/preview release/viewer/package.json",
+                    "dist/preview release/viewer/babylon.viewer.js",
+                    "dist/preview release/viewer/babylon.viewer.max.js"
+                ]
             },
             "outputs": [
                 {
@@ -613,7 +604,7 @@
                             "filename": "babylon.viewer.js",
                             "outputDirectory": "/viewer/",
                             "addBabylonDeclaration": [
-                                "babylon.d.ts",
+                                "babylon.module.d.ts",
                                 "loaders/babylonjs.loaders.d.ts",
                                 "glTF2Interface/babylon.glTF2Interface.d.ts"
                             ]
@@ -634,13 +625,7 @@
                     ]
                 }
             ],
-            "legacyPackageOutputDirectory": "../../../Viewer/build/src/",
-            "requiredFiles": [
-                "dist/preview release/viewer/readme.md",
-                "dist/preview release/viewer/package.json",
-                "dist/preview release/viewer/babylon.viewer.js",
-                "dist/preview release/viewer/babylon.viewer.max.js"
-            ]
+            "legacyPackageOutputDirectory": "../../../Viewer/build/src/"
         }
     },
     "viewer-assets": {
@@ -658,7 +643,11 @@
             "webpack": "../../../Viewer/webpack.assets.config.js",
             "distOutputDirectory": "/viewer/",
             "umd": {
-                "packageName": "babylonjs-viewer-assets"
+                "packageName": "babylonjs-viewer-assets",
+                "requiredFiles": [
+                    "Viewer/assets/readme.md",
+                    "Viewer/assets/package.json"
+                ]
             },
             "dtsBundle": {
                 "name": "babylonjs-viewer-assets",
@@ -676,11 +665,7 @@
                     "minified": true
                 }
             ],
-            "legacyPackageOutputDirectory": "../../../Viewer/build/assets/",
-            "requiredFiles": [
-                "Viewer/assets/readme.md",
-                "Viewer/assets/package.json"
-            ]
+            "legacyPackageOutputDirectory": "../../../Viewer/build/assets/"
         }
     }
 }

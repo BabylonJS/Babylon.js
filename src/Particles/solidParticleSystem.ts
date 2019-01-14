@@ -607,7 +607,7 @@ export class SolidParticleSystem implements IDisposable {
         }
 
         // custom beforeUpdate
-        this.beforeUpdateParticles();
+        this.beforeUpdateParticles(start, end, update);
 
         const rotMatrix = Tmp.Matrix[0];
         const invertedMatrix = Tmp.Matrix[1];
@@ -793,7 +793,7 @@ export class SolidParticleSystem implements IDisposable {
                     const tmpVertex = tempVectors[0];
                     tmpVertex.copyFrom(shape[pt]);
                     if (this._computeParticleVertex) {
-                        this.updateParticleVertex(tmpVertex);
+                        this.updateParticleVertex(particle, tmpVertex, pt);
                     }
 
                     // positions
@@ -968,7 +968,7 @@ export class SolidParticleSystem implements IDisposable {
                 mesh._boundingInfo = new BoundingInfo(minimum, maximum, mesh._worldMatrix);
             }
         }
-        this.afterUpdateParticles();
+        this.afterUpdateParticles(start, end, update);
         return this;
     }
 
@@ -1188,7 +1188,7 @@ export class SolidParticleSystem implements IDisposable {
      * @example : just set a vertex particle position
      * @returns the updated vertex
      */
-    public updateParticleVertex(vertex: Vector3): Vector3 {
+    public updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3 {
         return vertex;
     }
 
@@ -1199,7 +1199,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
-    public beforeUpdateParticles(): void {
+    public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {
     }
     /**
      * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
@@ -1209,6 +1209,6 @@ export class SolidParticleSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
-    public afterUpdateParticles(): void {
+    public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {
     }
 }

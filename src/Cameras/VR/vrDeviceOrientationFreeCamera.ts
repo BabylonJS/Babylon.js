@@ -5,6 +5,9 @@ import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math";
 import { Node } from "../../node";
 
+// Side effect import to define the stereoscopic mode.
+import "../RigModes/vrRigMode";
+
 Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
     return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
 });

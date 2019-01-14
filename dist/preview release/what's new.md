@@ -89,6 +89,8 @@
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 - Added InputsManager and keyboard bindings for FollowCamera. ([mrdunk](https://github.com))
 - Fix typo in FollowCamera InputsManager when limiting rotation to 360 degrees. ([mrdunk](https://github.com))
+- Added MouseWheel bindings for FollowCamera. ([mrdunk](https://github.com))
+- Added maximum and minimum limits for FollowCamera parameters. ([mrdunk](https://github.com))
 - Added per solid particle culling possibility : `solidParticle.isInFrustum()`  ([jerome](https://github.com/jbousquie))
 - Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
 - Added option `forceDisposeChildren` to multiMaterial.dispose ([danjpar](https://github.com/danjpar))
@@ -113,6 +115,7 @@
 ### Materials Library
 - Added the `cameraOffset` vector property in the `SkyMaterial` to get an offset according to the horizon ([julien-moreau](https://github.com/julien-moreau))
 - Fixed `GradientMaterial` to consider disableLighting working as emissive ([julien-moreau](https://github.com/julien-moreau))
+- Fixed fresnel term computation in `WaterMaterial` ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
 - Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
@@ -124,7 +127,7 @@
 - Gizmo scaling not consistent when camera is parented ([TrevorDev](https://github.com/TrevorDev))
 - Context loss causing unexpected results with dynamic textures, geometries with the same name and reflectionTextures ([TrevorDev](https://github.com/TrevorDev))
 - CreateScreenshotUsingRenderTarget stretches mirror textures when setting both width and height ([TrevorDev](https://github.com/TrevorDev))
-- VR helper only updating vr cameras position when entering vr, rotation was missing ([TrevorDev](https://github.com/TrevorDev))
+- VR helper only updating vr cameras position when entering vr, rotation was missing, laser distance stopped working ([TrevorDev](https://github.com/TrevorDev))
 - Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
 - Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
@@ -143,9 +146,11 @@
 - Updated comment in TransformNode.rotationQuaternion to include undefined as one of the potential return values ([nathankmiller](https://github.com/nathankmiller))
 - CannonJS ignores connectedPivot joint parameter ([TrevorDev](https://github.com/TrevorDev))
 - Fix case sensitive paths ([mrdunk](https://github.com))
+- Fix more case sensitive paths ([mrdunk](https://github.com))
 - Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev)))
 - Oimo disable motor maxForce, cannonJS support no impostor, cannonJS cylinder axis ([TrevorDev](https://github.com/TrevorDev)))
+- Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))

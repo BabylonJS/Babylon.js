@@ -32,8 +32,8 @@ function processUMDPackages(version) {
                 outputDirectory = module.computed.distDirectory;
             }
 
-            if (module.build.requiredFiles) {
-                module.build.requiredFiles.forEach(file => {
+            if (module.build.umd.requiredFiles) {
+                module.build.umd.requiredFiles.forEach(file => {
                     let source = path.join(config.computed.rootFolder, file);
                     let destination = path.join(outputDirectory, path.basename(file));
                     colorConsole.log("    Copy required file: ", source.cyan, destination.cyan);

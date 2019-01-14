@@ -32,14 +32,6 @@ function processEs6Packages(version) {
         colorConsole.log("    Copy Dist folder " + distPath.cyan + " to " + packagePath.cyan);
         fs.copySync(distPath, packagePath);
 
-        if (module.build.requiredFiles) {
-            module.build.requiredFiles.forEach(file => {
-                let source = path.join(config.computed.rootFolder, file);
-                let destination = path.join(packagePath, path.basename(file));
-                colorConsole.log("    Copy required file: ", source.cyan, destination.cyan);
-                fs.copySync(source, destination);
-            });
-        }
         if (es6Config.requiredFiles) {
             es6Config.requiredFiles.forEach(file => {
                 let source = path.join(config.computed.rootFolder, file);
@@ -47,6 +39,13 @@ function processEs6Packages(version) {
                 colorConsole.log("    Copy es6 required file: ", source.cyan, destination.cyan);
                 fs.copySync(source, destination);
             });
+        }
+
+        if (es6Config.readme) {
+            let source = path.join(config.computed.rootFolder, es6Config.readme);
+            let destination = path.join(packagePath, "readme.md");
+            colorConsole.log("    Copy es6 readme file: ", source.cyan, destination.cyan);
+            fs.copySync(source, destination);
         }
 
         umdPackageJson.name = es6Config.packageName;
