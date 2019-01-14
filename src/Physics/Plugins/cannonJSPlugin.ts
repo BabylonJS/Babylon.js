@@ -343,6 +343,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             case PhysicsImpostor.ParticleImpostor:
                 returnValue = new this.BJSCANNON.Particle();
                 break;
+            case PhysicsImpostor.NoImpostor:
+                returnValue = new this.BJSCANNON.Box(new this.BJSCANNON.Vec3(0,0,0));
+                break;
         }
 
         return returnValue;
