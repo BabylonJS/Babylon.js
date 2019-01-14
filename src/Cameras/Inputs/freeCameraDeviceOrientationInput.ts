@@ -3,6 +3,28 @@ import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManage
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { Quaternion } from "../../Maths/math";
 import { Tools } from "../../Misc/tools";
+import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
+
+// Module augmentation to abstract orientation inputs from camera.
+declare module "../../Cameras/freeCameraInputsManager" {
+    export interface FreeCameraInputsManager {
+        /**
+         * Add orientation input support to the input manager.
+         * @returns the current input manager
+         */
+        addDeviceOrientation(): FreeCameraInputsManager;
+    }
+}
+
+/**
+ * Add orientation input support to the input manager.
+ * @returns the current input manager
+ */
+FreeCameraInputsManager.prototype.addDeviceOrientation = function(): FreeCameraInputsManager {
+    this.add(new FreeCameraDeviceOrientationInput());
+    return this;
+};
+
 /**
  * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
  * Screen rotation is taken into account.

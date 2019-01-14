@@ -68,7 +68,7 @@ var buildViewerLibrary = function(library, settings) {
             if (dest.addBabylonDeclaration) {
                 // include the babylon declaration
                 if (dest.addBabylonDeclaration === true) {
-                    dest.addBabylonDeclaration = ["babylon.d.ts"];
+                    dest.addBabylonDeclaration = ["babylon.module.d.ts"];
                 }
                 var decsToAdd = dest.addBabylonDeclaration.map(function(dec) {
                     return config.build.outputDirectory + '/' + dec;

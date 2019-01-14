@@ -123,8 +123,6 @@ void main(void) {
 #ifdef FRESNELSEPARATE
     #ifdef REFLECTION
         // Water
-        vec3 eyeVector = normalize(vEyePosition - vPosition);
-
         vec2 projectedRefractionTexCoords = clamp(vRefractionMapTexCoord.xy / vRefractionMapTexCoord.z + perturbation*0.5, 0.0, 1.0);
         vec4 refractiveColor = texture2D(refractionSampler, projectedRefractionTexCoords);
 
@@ -137,7 +135,7 @@ void main(void) {
 
         vec3 upVector = vec3(0.0, 1.0, 0.0);
 
-        float fresnelTerm = clamp(abs(pow(dot(eyeVector, upVector),3.0)),0.05,0.65);
+        float fresnelTerm = clamp(abs(pow(dot(viewDirectionW, upVector),3.0)),0.05,0.65);
         float IfresnelTerm = 1.0 - fresnelTerm;
 
         refractiveColor = colorBlendFactor*waterColor + (1.0-colorBlendFactor)*refractiveColor;
@@ -178,8 +176,6 @@ void main(void) {
 #else // !FRESNELSEPARATE
     #ifdef REFLECTION
         // Water
-        vec3 eyeVector = normalize(vEyePosition - vPosition);
-
         vec2 projectedRefractionTexCoords = clamp(vRefractionMapTexCoord.xy / vRefractionMapTexCoord.z + perturbation, 0.0, 1.0);
         vec4 refractiveColor = texture2D(refractionSampler, projectedRefractionTexCoords);
 
@@ -188,7 +184,7 @@ void main(void) {
 
         vec3 upVector = vec3(0.0, 1.0, 0.0);
 
-        float fresnelTerm = max(dot(eyeVector, upVector), 0.0);
+        float fresnelTerm = max(dot(viewDirectionW, upVector), 0.0);
 
         vec4 combinedColor = refractiveColor * fresnelTerm + reflectiveColor * (1.0 - fresnelTerm);
 

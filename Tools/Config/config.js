@@ -21,6 +21,8 @@ const tempTypingsFileName = tempTypingsAMDFileName.replace(".js", ".d.ts");
 const tempTypingsAMDFilePath = path.join(tempFolder, tempTypingsAMDFileName);
 const tempTypingsFilePath = path.join(tempFolder, tempTypingsFileName);
 
+const tscPath = path.resolve(rootFolder, "node_modules/typescript/bin/tsc");
+
 config.computed = {
     rootFolder,
     tempFolder,
@@ -36,7 +38,8 @@ config.computed = {
     tempTypingsAMDFileName,
     tempTypingsFileName,
     tempTypingsAMDFilePath,
-    tempTypingsFilePath
+    tempTypingsFilePath,
+    tscPath
 }
 
 config.additionalNpmPackages.forEach(package => {
