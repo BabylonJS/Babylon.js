@@ -130,6 +130,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Events
     private _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
+    private _onBeforeBindObservable: Nullable<Observable<Mesh>>;
     private _onAfterRenderObservable: Nullable<Observable<Mesh>>;
     private _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
 
@@ -142,6 +143,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         return this._onBeforeRenderObservable;
+    }
+
+    /**
+     * An event triggered before binding the mesh
+     */
+    public get onBeforeBindObservable(): Observable<Mesh> {
+        if (!this._onBeforeBindObservable) {
+            this._onBeforeBindObservable = new Observable<Mesh>();
+        }
+
+        return this._onBeforeBindObservable;
     }
 
     /**
@@ -1578,6 +1590,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Bind
         var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : this._effectiveMaterial.fillMode);
 
+        if (this._onBeforeBindObservable) {
+            this._onBeforeBindObservable.notifyObservers(this);
+        }
+
         if (!hardwareInstancedRendering) { // Binding will be done later because we need to add more info to the VB
             this._bind(subMesh, effect, fillMode);
         }
@@ -2003,6 +2019,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (this._onBeforeDrawObservable) {
             this._onBeforeDrawObservable.clear();
+        }
+
+        if (this._onBeforeBindObservable) {
+            this._onBeforeBindObservable.clear();
         }
 
         if (this._onBeforeRenderObservable) {

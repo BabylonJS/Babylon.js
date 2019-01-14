@@ -265,7 +265,7 @@ export class UtilityLayerRenderer implements IDisposable {
 
     private _updateCamera() {
         if (this.originalScene.activeCameras.length > 1) {
-            this.utilityLayerScene.activeCamera = this.originalScene.activeCameras[0];
+            this.utilityLayerScene.activeCamera = this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
         } else {
             this.utilityLayerScene.activeCamera = this.originalScene.activeCamera;
         }

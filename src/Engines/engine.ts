@@ -490,7 +490,7 @@ export class Engine {
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.18";
+        return "4.0.0-alpha.19";
     }
 
     /**
