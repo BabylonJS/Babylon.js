@@ -1286,6 +1286,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /**
      * Creates a new Scene
      * @param engine defines the engine to use to render this scene
+     * @param options defines the scene options
      */
     constructor(engine: Engine, options?: SceneOptions) {
         super();
