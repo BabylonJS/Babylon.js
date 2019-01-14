@@ -149,7 +149,7 @@
 - Fix more case sensitive paths ([mrdunk](https://github.com))
 - Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev)))
-- Oimo disable motor maxForce, cannonJS support no impostor, cannonJS cylinder axis ([TrevorDev](https://github.com/TrevorDev)))
+- Oimo disable motor maxForce, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine

@@ -208,6 +208,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param contactPoint the location to apply the impulse on the imposter
      */
     public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
+        impostor.physicsBody.activate();
         var worldPoint = this._tmpAmmoVectorA;
         var impulse = this._tmpAmmoVectorB;
 
@@ -231,6 +232,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param contactPoint the location to apply the force on the imposter
      */
     public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
+        impostor.physicsBody.activate();
         var worldPoint = this._tmpAmmoVectorA;
         var impulse = this._tmpAmmoVectorB;
 
