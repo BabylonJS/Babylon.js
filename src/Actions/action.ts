@@ -11,11 +11,40 @@ declare type Light = import("../Lights/light").Light;
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Node = import("../node").Node;
 
+export interface IAction {
+    /**
+   * Trigger for the action
+   */
+    trigger: number;
+
+    /** the trigger, with or without parameters, for the action */
+    triggerOptions: any
+
+    /**
+     * Gets the trigger parameters
+     * @returns the trigger parameters
+     */
+    getTriggerParameter(): any;
+
+    /**
+     * Internal only - executes current action event
+     * @hidden
+     */
+    _executeCurrent(evt?: ActionEvent): void
+
+    /**
+     * Serialize placeholder for child classes
+     * @param parent of child
+     * @returns the serialized object
+     */
+    serialize(parent: any): any;
+}
+
 /**
  * The action to be carried out following a trigger
  * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
  */
-export class Action {
+export class Action implements IAction {
     /**
      * Trigger for the action
      */

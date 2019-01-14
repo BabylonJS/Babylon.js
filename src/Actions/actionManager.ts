@@ -7,129 +7,20 @@ import { Condition, ValueCondition } from "./condition";
 import { Action } from "./action";
 import { DoNothingAction } from "./directActions";
 
-import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import { ActionEvent } from "../Actions/actionEvent";
+import { IActionEvent } from "../Actions/actionEvent";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { _TypeStore } from "../Misc/typeStore";
+import { AbstractActionManager } from './abstractActionManager';
 
 /**
  * Action Manager manages all events to be triggered on a given mesh or the global scene.
  * A single scene can have many Action Managers to handle predefined actions on specific meshes.
  * @see http://doc.babylonjs.com/how_to/how_to_use_actions
  */
-export class ActionManager {
-    /**
-     * Nothing
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly NothingTrigger = Constants.ACTION_NothingTrigger;
-
-    /**
-     * On pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnPickTrigger = Constants.ACTION_OnPickTrigger;
-
-    /**
-     * On left pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnLeftPickTrigger = Constants.ACTION_OnLeftPickTrigger;
-
-    /**
-     * On right pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnRightPickTrigger = Constants.ACTION_OnRightPickTrigger;
-
-    /**
-     * On center pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnCenterPickTrigger = Constants.ACTION_OnCenterPickTrigger;
-
-    /**
-     * On pick down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnPickDownTrigger = Constants.ACTION_OnPickDownTrigger;
-
-    /**
-     * On double pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnDoublePickTrigger = Constants.ACTION_OnDoublePickTrigger;
-
-    /**
-     * On pick up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnPickUpTrigger = Constants.ACTION_OnPickUpTrigger;
-    /**
-     * On pick out.
-     * This trigger will only be raised if you also declared a OnPickDown
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnPickOutTrigger = Constants.ACTION_OnPickOutTrigger;
-
-    /**
-     * On long press
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnLongPressTrigger = Constants.ACTION_OnLongPressTrigger;
-
-    /**
-     * On pointer over
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnPointerOverTrigger = Constants.ACTION_OnPointerOverTrigger;
-
-    /**
-     * On pointer out
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnPointerOutTrigger = Constants.ACTION_OnPointerOutTrigger;
-
-    /**
-     * On every frame
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnEveryFrameTrigger = Constants.ACTION_OnEveryFrameTrigger;
-    /**
-     * On intersection enter
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnIntersectionEnterTrigger = Constants.ACTION_OnIntersectionEnterTrigger;
-
-    /**
-     * On intersection exit
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnIntersectionExitTrigger = Constants.ACTION_OnIntersectionExitTrigger;
-
-    /**
-     * On key down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnKeyDownTrigger = Constants.ACTION_OnKeyDownTrigger;
-
-    /**
-     * On key up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-     */
-    public static readonly OnKeyUpTrigger = 15;
-
-    /** Gets the list of active triggers */
-    public static Triggers: { [key: string]: number } = {};
-
+export class ActionManager extends AbstractActionManager {
     // Members
-    /** Gets the list of actions */
-    public actions = new Array<Action>();
-
-    /** Gets the cursor to use when hovering items */
-    public hoverCursor: string = '';
 
     private _scene: Scene;
 
@@ -138,6 +29,7 @@ export class ActionManager {
      * @param scene defines the hosting scene
      */
     constructor(scene: Scene) {
+        super();
         this._scene = scene || EngineStore.LastCreatedScene;
 
         scene.actionManagers.push(this);
@@ -263,50 +155,6 @@ export class ActionManager {
     }
 
     /**
-     * Does exist one action manager with at least one trigger
-     **/
-    public static get HasTriggers(): boolean {
-        for (var t in ActionManager.Triggers) {
-            if (ActionManager.Triggers.hasOwnProperty(t)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Does exist one action manager with at least one pick trigger
-     **/
-    public static get HasPickTriggers(): boolean {
-        for (var t in ActionManager.Triggers) {
-            if (ActionManager.Triggers.hasOwnProperty(t)) {
-                let t_int = parseInt(t);
-                if (t_int >= ActionManager.OnPickTrigger && t_int <= ActionManager.OnPickUpTrigger) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Does exist one action manager that handles actions of a given trigger
-     * @param trigger defines the trigger to be tested
-     * @return a boolean indicating whether the trigger is handeled by at least one action manager
-    **/
-    public static HasSpecificTrigger(trigger: number): boolean {
-        for (var t in ActionManager.Triggers) {
-            if (ActionManager.Triggers.hasOwnProperty(t)) {
-                let t_int = parseInt(t);
-                if (t_int === trigger) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Registers an action to this action manager
      * @param action defines the action to be registered
      * @return the action amended (prepared) after registration
@@ -358,7 +206,7 @@ export class ActionManager {
      * @param trigger defines the trigger to process
      * @param evt defines the event details to be processed
      */
-    public processTrigger(trigger: number, evt?: ActionEvent): void {
+    public processTrigger(trigger: number, evt?: IActionEvent): void {
         for (var index = 0; index < this.actions.length; index++) {
             var action = this.actions[index];
 
