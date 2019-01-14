@@ -19,8 +19,8 @@ function processUMDViewer(module, version) {
     let projectPath = '../../../Viewer';
     let buildPath = path.resolve(__dirname, projectPath + "/build/src/");
 
-    if (module.build.requiredFiles) {
-        module.build.requiredFiles.forEach(file => {
+    if (module.build.umd.requiredFiles) {
+        module.build.umd.requiredFiles.forEach(file => {
             let source = path.join(config.computed.rootFolder, file);
             let destination = path.join(buildPath, path.basename(file));
             colorConsole.log("    Copy required file: ", source.cyan, destination.cyan);
