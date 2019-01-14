@@ -118,12 +118,13 @@ export class SolidParticleSystem implements IDisposable {
      * Creates a SPS (Solid Particle System) object.
      * @param name (String) is the SPS name, this will be the underlying mesh name.
      * @param scene (Scene) is the scene in which the SPS is added.
-     * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
-     * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.
-     * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
-     * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
-     * @param boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
-     * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
+     * @param options defines the options of the sps e.g.
+     * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
+     * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
+     * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+     * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
+     * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
+     * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
      * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
      */
     constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number }) {
