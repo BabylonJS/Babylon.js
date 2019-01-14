@@ -271,7 +271,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             //TMP also for cylinder - TODO Cannon supports cylinder natively.
             case PhysicsImpostor.CylinderImpostor:
                 let nativeParams = impostor.getParam("nativeOptions");
-                if(!nativeParams){
+                if (!nativeParams) {
                     nativeParams = {};
                 }
                 let radiusTop = nativeParams.radiusTop !== undefined ? nativeParams.radiusTop : this._checkWithEpsilon(extendSize.x) / 2;
@@ -279,12 +279,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 let height = nativeParams.height !== undefined ? nativeParams.height : this._checkWithEpsilon(extendSize.y);
                 let numSegments = nativeParams.numSegments !== undefined ? nativeParams.numSegments : 16;
                 returnValue = new this.BJSCANNON.Cylinder(radiusTop, radiusBottom, height, numSegments);
-                
-                // Rotate 90 degrees as this shape is horizontal in cannon                
+
+                // Rotate 90 degrees as this shape is horizontal in cannon
                 var quat = new this.BJSCANNON.Quaternion();
-                quat.setFromAxisAngle(new this.BJSCANNON.Vec3(1,0,0),-Math.PI/2);
-                var translation = new this.BJSCANNON.Vec3(0,0,0);
-                returnValue.transformAllPoints(translation,quat);
+                quat.setFromAxisAngle(new this.BJSCANNON.Vec3(1, 0, 0), -Math.PI / 2);
+                var translation = new this.BJSCANNON.Vec3(0, 0, 0);
+                returnValue.transformAllPoints(translation, quat);
                 break;
             case PhysicsImpostor.BoxImpostor:
                 var box = extendSize.scale(0.5);
@@ -344,7 +344,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 returnValue = new this.BJSCANNON.Particle();
                 break;
             case PhysicsImpostor.NoImpostor:
-                returnValue = new this.BJSCANNON.Box(new this.BJSCANNON.Vec3(0,0,0));
+                returnValue = new this.BJSCANNON.Box(new this.BJSCANNON.Vec3(0, 0, 0));
                 break;
         }
 

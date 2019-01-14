@@ -424,12 +424,12 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
     public setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number) {
         // Keep defaults consistant with other physics plugins
-        if(maxForce !== undefined){
+        if (maxForce !== undefined) {
             Logger.Warn("OimoJS plugin does not support setMotor with maxForce");
         }
         maxForce = 1e6;
         speed *= -1;
-        
+
         //TODO separate rotational and transational motors.
         var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
         if (motor) {
