@@ -732,7 +732,10 @@ declare module "babylonjs-gui/2D/controls/control" {
         isPointerBlocker: boolean;
         /** Gets or sets a boolean indicating if the control can be focusable */
         isFocusInvisible: boolean;
-        /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+        /**
+         * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
         clipChildren: boolean;
         /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
@@ -4539,7 +4542,10 @@ declare module BABYLON.GUI {
         isPointerBlocker: boolean;
         /** Gets or sets a boolean indicating if the control can be focusable */
         isFocusInvisible: boolean;
-        /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+        /**
+         * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
         clipChildren: boolean;
         /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)

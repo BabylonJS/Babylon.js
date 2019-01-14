@@ -3430,13 +3430,17 @@ var Container = /** @class */ (function (_super) {
     /** @hidden */
     Container.prototype._reOrderControl = function (control) {
         this.removeControl(control);
+        var wasAdded = false;
         for (var index = 0; index < this._children.length; index++) {
             if (this._children[index].zIndex > control.zIndex) {
                 this._children.splice(index, 0, control);
-                return;
+                wasAdded = true;
+                break;
             }
         }
-        this._children.push(control);
+        if (!wasAdded) {
+            this._children.push(control);
+        }
         control.parent = this;
         this._markAsDirty();
     };
@@ -3741,7 +3745,10 @@ var Control = /** @class */ (function () {
         this.isPointerBlocker = false;
         /** Gets or sets a boolean indicating if the control can be focusable */
         this.isFocusInvisible = false;
-        /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+        /**
+         * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
         this.clipChildren = true;
         /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
