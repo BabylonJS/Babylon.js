@@ -22,8 +22,8 @@ export class ClipboardEventTypes {
 export class ClipboardInfo {
     /**
      *Creates an instance of ClipboardInfo.
-     * @param {number} type
-     * @param {ClipboardEvent} event
+     * @param type Defines the type of event (BABYLON.ClipboardEventTypes)
+     * @param event Defines the related dom event
      */
     constructor(
         /**

@@ -305,22 +305,25 @@ Validate.prototype.validateTypedocNamespace = function (namespace) {
                                         "Unrecognized tag " + tags + " at " + signatureNode.name + " (id: " + signatureNode.id + ") in " + containerNode.name + " (id: " + containerNode.id + ")", Validate.position(childNode));
                                 }
 
-                                if (signatureNode.type.name !== "void" && signatureNode.comment && !signatureNode.comment.returns) {
-                                    this.errorCallback(containerNode.name,
-                                        signatureNode.name,
-                                        childNode.kindString,
-                                        "Comments",
-                                        "MissingReturn",
-                                        "No Return Comment at " + signatureNode.name + " (id: " + signatureNode.id + ") in " + containerNode.name + " (id: " + containerNode.id + ")", Validate.position(childNode));
-                                }
-
-                                if (signatureNode.type.name === "void" && signatureNode.comment && signatureNode.comment.returns) {
-                                    this.errorCallback(containerNode.name,
-                                        signatureNode.name,
-                                        childNode.kindString,
-                                        "Comments",
-                                        "UselessReturn",
-                                        "No Return Comment Needed at " + signatureNode.name + " (id: " + signatureNode.id + ") in " + containerNode.name + " (id: " + containerNode.id + ")", Validate.position(childNode));
+                                if (signatureNode.kindString !== "Constructor" && 
+                                    signatureNode.kindString !== "Constructor signature") {
+                                    if (signatureNode.type.name !== "void" && signatureNode.comment && !signatureNode.comment.returns) {
+                                        this.errorCallback(containerNode.name,
+                                            signatureNode.name,
+                                            childNode.kindString,
+                                            "Comments",
+                                            "MissingReturn",
+                                            "No Return Comment at " + signatureNode.name + " (id: " + signatureNode.id + ") in " + containerNode.name + " (id: " + containerNode.id + ")", Validate.position(childNode));
+                                    }
+    
+                                    if (signatureNode.type.name === "void" && signatureNode.comment && signatureNode.comment.returns) {
+                                        this.errorCallback(containerNode.name,
+                                            signatureNode.name,
+                                            childNode.kindString,
+                                            "Comments",
+                                            "UselessReturn",
+                                            "No Return Comment Needed at " + signatureNode.name + " (id: " + signatureNode.id + ") in " + containerNode.name + " (id: " + containerNode.id + ")", Validate.position(childNode));
+                                    }
                                 }
                             }
 
@@ -371,7 +374,6 @@ Validate.prototype.validateTags = function (node) {
  * Validate that a JSON node has the correct TypeDoc comments
  */
 Validate.prototype.validateComment = function (node) {
-
     // Return-only methods are allowed to just have a @return tag
     if ((node.kindString === "Call signature" || node.kindString === "Accessor") && !node.parameters && node.comment && node.comment.returns) {
         return true;
@@ -395,7 +397,7 @@ Validate.prototype.validateComment = function (node) {
     // Check comments.
     if (node.comment) {
         if (node.comment.text || node.comment.shortText) {
-            return true;
+            return node.kindString !== "Constructor";
         }
 
         return false;
@@ -428,6 +430,12 @@ Validate.prototype.validateParameters = function (containerNode, method, signatu
         }
 
         if (this.validateNamingConvention && !Validate.camelCase.test(parametersNode.name)) {
+            if (containerNode.kindString === "Constructor" ||
+                containerNode.kindString !== "Constructor signature") {
+                    if (Validate.underscoreCamelCase.test(parametersNode.name)) {
+                        continue;
+                    }
+                }
             this.errorCallback([containerNode.name, method.kindString, signature.name],
                 parametersNode.name,
                 parametersNode.kindString,

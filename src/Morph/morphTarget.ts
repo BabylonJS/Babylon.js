@@ -79,6 +79,7 @@ export class MorphTarget implements IAnimatable {
      * Creates a new MorphTarget
      * @param name defines the name of the target
      * @param influence defines the influence to use
+     * @param scene defines the scene the morphtarget belongs to
      */
     public constructor(
         /** defines the name of the target */
