@@ -5,7 +5,7 @@ import { Bone } from "../Bones/bone";
 import { Skeleton } from "../Bones/skeleton";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { LinesMesh } from "../Meshes/linesMesh";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 
 /**
@@ -161,10 +161,10 @@ export class SkeletonViewer {
         const targetScene = this._utilityLayer.utilityLayerScene;
 
         if (!this._debugMesh) {
-            this._debugMesh = MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
+            this._debugMesh = LinesBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
             this._debugMesh.renderingGroupId = this.renderingGroupId;
         } else {
-            MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
+            LinesBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
         }
         this._debugMesh.position.copyFrom(this.mesh.position);
         this._debugMesh.color = this.color;

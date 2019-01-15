@@ -218,4 +218,6 @@
 - no more `babylon.no-module.max.js` javascript version has the Webpack UMD bundle covers both ([Sebavan]
 (https://github.com/Sebavan))
 - no more `es6.js` javascript as it is now available as a true es6 npm package ([Sebavan](https://github.com/Sebavan))
-- no more `babylon.worker.js` javascript following the lack of usage from the feature ([Sebavan](https://github.com/Sebavan))
+- no more `babylon.worker.js` javascript following the lack of usage from the feature ([Sebavan]
+(https://github.com/Sebavan))
+- no more `Primitive Geometries` as they were not in use since 2.0 ([Sebavan](https://github.com/Sebavan))

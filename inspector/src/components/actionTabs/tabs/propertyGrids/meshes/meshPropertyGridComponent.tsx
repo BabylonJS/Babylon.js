@@ -5,7 +5,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import { Color3, Vector3 } from "babylonjs/Maths/math";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
-import { MeshBuilder } from "babylonjs/Meshes/meshBuilder";
+import { LinesBuilder } from "babylonjs/Meshes/Builders/linesBuilder";
 import { PhysicsImpostor } from "babylonjs/Physics/physicsImpostor";
 import { Scene } from "babylonjs/scene";
 
@@ -60,7 +60,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             lines.push([v1, v2]);
         }
 
-        var normalLines = MeshBuilder.CreateLineSystem("normalLines", { lines: lines }, scene);
+        var normalLines = LinesBuilder.CreateLineSystem("normalLines", { lines: lines }, scene);
         normalLines.color = color;
         normalLines.parent = mesh;
 

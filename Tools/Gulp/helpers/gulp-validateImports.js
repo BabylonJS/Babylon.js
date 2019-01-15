@@ -8,6 +8,7 @@ var colorConsole = require("../../NodeHelpers/colorConsole");
 var config = require("../../Config/config");
 
 const indexExlclusion = ["States", "EmitterTypes"];
+const forbiddenImports = ["Meshes/meshBuilder"];
 
 const mapping = { };
 config.modules.forEach(moduleName => {
@@ -46,6 +47,12 @@ var validatePath = function(fileLocation, directory, module, lineNumber, errors)
             if (!excluded) {
                 errors.push(`Line ${lineNumber} Imports ${module} should not be from index for tree shaking.`);
             }
+        }
+    }
+
+    for (let forbiddenImport of forbiddenImports) {
+        if (module.endsWith(forbiddenImport)) {
+            errors.push(`Line ${lineNumber} Imports ${module} is forbidden for tree shaking.`);
         }
     }
 }
