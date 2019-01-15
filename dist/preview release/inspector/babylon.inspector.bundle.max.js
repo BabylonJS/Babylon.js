@@ -37960,7 +37960,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             var v2 = v1.add(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].FromArray(normals, i).scaleInPlace(size));
             lines.push([v1, v2]);
         }
-        var normalLines = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["MeshBuilder"].CreateLineSystem("normalLines", { lines: lines }, scene);
+        var normalLines = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["LinesBuilder"].CreateLineSystem("normalLines", { lines: lines }, scene);
         normalLines.color = color;
         normalLines.parent = mesh;
         if (!mesh.reservedDataStore) {
