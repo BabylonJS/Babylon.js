@@ -12,7 +12,7 @@ import { AnimationGroup } from "./Animations/animationGroup";
 import { BaseTexture } from "./Materials/Textures/baseTexture";
 import { Material } from "./Materials/material";
 import { MultiMaterial } from "./Materials/multiMaterial";
-import { ActionManager } from "./Actions/actionManager";
+import { AbstractActionManager } from "./Actions/abstractActionManager";
 import { Camera } from "./Cameras/camera";
 import { Light } from "./Lights/light";
 import { Node } from "./node";
@@ -186,7 +186,7 @@ export abstract class AbstractScene {
     /**
      * ActionManagers available on the scene.
      */
-    public actionManagers = new Array<ActionManager>();
+    public actionManagers = new Array<AbstractActionManager>();
 
     /**
      * Textures to keep.

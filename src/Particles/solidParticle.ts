@@ -131,6 +131,7 @@ export class SolidParticle {
      * @param model (ModelShape) is a reference to the model shape on what the particle is designed.
      * @param shapeId (integer) is the model shape identifier in the SPS.
      * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
+     * @param sps defines the sps it is associated to
      * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
      */
     constructor(particleIndex: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo: Nullable<BoundingInfo> = null) {

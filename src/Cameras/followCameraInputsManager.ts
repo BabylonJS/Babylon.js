@@ -1,6 +1,7 @@
 import { CameraInputsManager } from "./cameraInputsManager";
 import { FollowCamera } from "./followCamera";
 import { FollowCameraKeyboardMoveInput } from './Inputs/followCameraKeyboardMoveInput';
+import { FollowCameraMouseWheelInput } from './Inputs/followCameraMouseWheelInput';
 
 /**
  * Default Inputs manager for the FollowCamera.
@@ -30,7 +31,7 @@ export class FollowCameraInputsManager extends CameraInputsManager<FollowCamera>
      * @returns the current input manager
      */
     public addMouseWheel(): FollowCameraInputsManager {
-        console.warn("MouseWheel support not yet implemented for FollowCamera.");
+        this.add(new FollowCameraMouseWheelInput());
         return this;
     }
 

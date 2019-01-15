@@ -37,7 +37,6 @@ import { ICollisionCoordinator, CollisionCoordinatorLegacy } from "./Collisions/
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
 import { KeyboardInfoPre, KeyboardInfo, KeyboardEventTypes } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
-import { ActionManager } from "./Actions/actionManager";
 import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
@@ -51,6 +50,7 @@ import { Constants } from "./Engines/constants";
 import { DomManagement } from "./Misc/domManagement";
 import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
+import { AbstractActionManager } from './Actions/abstractActionManager';
 
 /**
  * Define an interface for all classes that will hold resources
@@ -639,7 +639,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     public static ExclusiveDoubleClickMode = false;
 
     private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
-    private _initActionManager: (act: Nullable<ActionManager>, clickInfo: ClickInfo) => Nullable<ActionManager>;
+    private _initActionManager: (act: Nullable<AbstractActionManager>, clickInfo: ClickInfo) => Nullable<AbstractActionManager>;
     private _delayedSimpleClick: (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
     private _delayedSimpleClickTimeout: number;
     private _previousDelayedSimpleClickTimeout: number;
@@ -989,7 +989,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Gets or sets the action manager associated with the scene
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions
     */
-    public actionManager: ActionManager;
+    public actionManager: AbstractActionManager;
 
     private _meshesForIntersections = new SmartArrayNoDuplicate<AbstractMesh>(256);
 
@@ -1286,6 +1286,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /**
      * Creates a new Scene
      * @param engine defines the engine to use to render this scene
+     * @param options defines the scene options
      */
     constructor(engine: Engine, options?: SceneOptions) {
         super();
@@ -1873,7 +1874,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     * @param attachMove defines if you want to attach events to pointermove
     */
     public attachControl(attachUp = true, attachDown = true, attachMove = true): void {
-        this._initActionManager = (act: Nullable<ActionManager>, clickInfo: ClickInfo): Nullable<ActionManager> => {
+        this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 let pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
@@ -1899,12 +1900,12 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void): void => {
             let clickInfo = new ClickInfo();
             this._currentPickResult = null;
-            let act: Nullable<ActionManager> = null;
+            let act: Nullable<AbstractActionManager> = null;
 
             let checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
                 || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
                 || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-            if (!checkPicking && ActionManager) {
+            if (!checkPicking && AbstractActionManager) {
                 act = this._initActionManager(act, clickInfo);
                 if (act) {
                     checkPicking = act.hasPickTriggers;
@@ -1924,7 +1925,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                         checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
                             !obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
 
-                        if (checkSingleClickImmediately && !ActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
+                        if (checkSingleClickImmediately && !AbstractActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
                             act = this._initActionManager(act, clickInfo);
                             if (act) {
                                 checkSingleClickImmediately = !act.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger);
@@ -1950,7 +1951,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
                     let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) ||
                         obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-                    if (!checkDoubleClick && ActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
+                    if (!checkDoubleClick && AbstractActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
                         act = this._initActionManager(act, clickInfo);
                         if (act) {
                             checkDoubleClick = act.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger);
@@ -2127,7 +2128,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 }
 
                 // Meshes
-                if (!this._meshPickProceed && (ActionManager && ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
+                if (!this._meshPickProceed && (AbstractActionManager && AbstractActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
                     this._initActionManager(null, clickInfo);
                 }
                 if (!pickResult) {
@@ -3292,7 +3293,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param toRemove The action manager to remove
      * @returns The index of the removed action manager
      */
-    public removeActionManager(toRemove: ActionManager): number {
+    public removeActionManager(toRemove: AbstractActionManager): number {
         var index = this.actionManagers.indexOf(toRemove);
         if (index !== -1) {
             this.actionManagers.splice(index, 1);
@@ -3426,7 +3427,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Adds the given action manager to this scene
      * @param newActionManager The action manager to add
      */
-    public addActionManager(newActionManager: ActionManager): void {
+    public addActionManager(newActionManager: AbstractActionManager): void {
         this.actionManagers.push(newActionManager);
     }
 

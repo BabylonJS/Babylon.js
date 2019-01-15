@@ -3,7 +3,7 @@ import { Color4, Vector3, Matrix, Tmp, Quaternion, Axis } from "../Maths/math";
 import { VertexBuffer } from "../Meshes/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { DiscBuilder } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
 import { DepthSortedParticle, SolidParticle, ModelShape } from "./solidParticle";
@@ -118,12 +118,13 @@ export class SolidParticleSystem implements IDisposable {
      * Creates a SPS (Solid Particle System) object.
      * @param name (String) is the SPS name, this will be the underlying mesh name.
      * @param scene (Scene) is the scene in which the SPS is added.
-     * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
-     * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.
-     * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
-     * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
-     * @param boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
-     * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
+     * @param options defines the options of the sps e.g.
+     * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
+     * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
+     * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+     * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
+     * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
+     * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
      * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
      */
     constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number }) {
@@ -155,7 +156,7 @@ export class SolidParticleSystem implements IDisposable {
      */
     public buildMesh(): Mesh {
         if (this.nbParticles === 0) {
-            var triangle = MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
+            var triangle = DiscBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
             this.addShape(triangle, 1);
             triangle.dispose();
         }
@@ -607,7 +608,7 @@ export class SolidParticleSystem implements IDisposable {
         }
 
         // custom beforeUpdate
-        this.beforeUpdateParticles();
+        this.beforeUpdateParticles(start, end, update);
 
         const rotMatrix = Tmp.Matrix[0];
         const invertedMatrix = Tmp.Matrix[1];
@@ -793,7 +794,7 @@ export class SolidParticleSystem implements IDisposable {
                     const tmpVertex = tempVectors[0];
                     tmpVertex.copyFrom(shape[pt]);
                     if (this._computeParticleVertex) {
-                        this.updateParticleVertex(tmpVertex);
+                        this.updateParticleVertex(particle, tmpVertex, pt);
                     }
 
                     // positions
@@ -968,7 +969,7 @@ export class SolidParticleSystem implements IDisposable {
                 mesh._boundingInfo = new BoundingInfo(minimum, maximum, mesh._worldMatrix);
             }
         }
-        this.afterUpdateParticles();
+        this.afterUpdateParticles(start, end, update);
         return this;
     }
 
@@ -1188,7 +1189,7 @@ export class SolidParticleSystem implements IDisposable {
      * @example : just set a vertex particle position
      * @returns the updated vertex
      */
-    public updateParticleVertex(vertex: Vector3): Vector3 {
+    public updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3 {
         return vertex;
     }
 
@@ -1199,7 +1200,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
-    public beforeUpdateParticles(): void {
+    public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {
     }
     /**
      * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
@@ -1209,6 +1210,6 @@ export class SolidParticleSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
-    public afterUpdateParticles(): void {
+    public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {
     }
 }

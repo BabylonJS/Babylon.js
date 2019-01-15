@@ -54,7 +54,7 @@ gulp.task("watchCore", gulp.series("watchCore-buildShaders", function watch() {
         async: true,
         verbose: true
     };
-    shelljs.exec(`tsc --importHelpers false --isolatedModules true --declaration false --target es5 --module es2015 --outDir "${outputDirectory}" -w`, options, function(code, stdout, stderr) {
+    shelljs.exec(`node "${config.computed.tscPath}" --importHelpers false --isolatedModules true --declaration false --target es5 --module es2015 --outDir "${outputDirectory}" -w`, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);
         }

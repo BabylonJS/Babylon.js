@@ -5,7 +5,7 @@ import { Scene } from "../../scene";
 import { Vector3, Color3, Color4 } from "../../Maths/math";
 import { Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, PlaneGeometry, TorusKnotGeometry } from "../../Meshes/geometry";
+import { Geometry } from "../../Meshes/geometry";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Material } from "../../Materials/material";
 import { MultiMaterial } from "../../Materials/multiMaterial";
@@ -155,68 +155,6 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         var geometries = parsedData.geometries;
         if (geometries !== undefined && geometries !== null) {
             var addedGeometry = new Array<Nullable<Geometry>>();
-            // Boxes
-            var boxes = geometries.boxes;
-            if (boxes !== undefined && boxes !== null) {
-                for (index = 0, cache = boxes.length; index < cache; index++) {
-                    var parsedBox = boxes[index];
-                    addedGeometry.push(BoxGeometry.Parse(parsedBox, scene));
-                }
-            }
-
-            // Spheres
-            var spheres = geometries.spheres;
-            if (spheres !== undefined && spheres !== null) {
-                for (index = 0, cache = spheres.length; index < cache; index++) {
-                    var parsedSphere = spheres[index];
-                    addedGeometry.push(SphereGeometry.Parse(parsedSphere, scene));
-                }
-            }
-
-            // Cylinders
-            var cylinders = geometries.cylinders;
-            if (cylinders !== undefined && cylinders !== null) {
-                for (index = 0, cache = cylinders.length; index < cache; index++) {
-                    var parsedCylinder = cylinders[index];
-                    addedGeometry.push(CylinderGeometry.Parse(parsedCylinder, scene));
-                }
-            }
-
-            // Toruses
-            var toruses = geometries.toruses;
-            if (toruses !== undefined && toruses !== null) {
-                for (index = 0, cache = toruses.length; index < cache; index++) {
-                    var parsedTorus = toruses[index];
-                    addedGeometry.push(TorusGeometry.Parse(parsedTorus, scene));
-                }
-            }
-
-            // Grounds
-            var grounds = geometries.grounds;
-            if (grounds !== undefined && grounds !== null) {
-                for (index = 0, cache = grounds.length; index < cache; index++) {
-                    var parsedGround = grounds[index];
-                    addedGeometry.push(GroundGeometry.Parse(parsedGround, scene));
-                }
-            }
-
-            // Planes
-            var planes = geometries.planes;
-            if (planes !== undefined && planes !== null) {
-                for (index = 0, cache = planes.length; index < cache; index++) {
-                    var parsedPlane = planes[index];
-                    addedGeometry.push(PlaneGeometry.Parse(parsedPlane, scene));
-                }
-            }
-
-            // TorusKnots
-            var torusKnots = geometries.torusKnots;
-            if (torusKnots !== undefined && torusKnots !== null) {
-                for (index = 0, cache = torusKnots.length; index < cache; index++) {
-                    var parsedTorusKnot = torusKnots[index];
-                    addedGeometry.push(TorusKnotGeometry.Parse(parsedTorusKnot, scene));
-                }
-            }
 
             // VertexData
             var vertexData = geometries.vertexData;
@@ -438,28 +376,7 @@ SceneLoader.RegisterPlugin({
                                         parsedData.geometries[geometryType].forEach((parsedGeometryData: any) => {
                                             if (parsedGeometryData.id === parsedMesh.geometryId) {
                                                 switch (geometryType) {
-                                                    case "boxes":
-                                                        BoxGeometry.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "spheres":
-                                                        SphereGeometry.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "cylinders":
-                                                        CylinderGeometry.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "toruses":
-                                                        TorusGeometry.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "grounds":
-                                                        GroundGeometry.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "planes":
-                                                        PlaneGeometry.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "torusKnots":
-                                                        TorusKnotGeometry.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "vertexData":
+                                                       case "vertexData":
                                                         Geometry.Parse(parsedGeometryData, scene, rootUrl);
                                                         break;
                                                 }

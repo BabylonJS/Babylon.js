@@ -5,9 +5,27 @@ import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math";
 
 /**
+ * Interface used to define ActionEvent
+ */
+export interface IActionEvent {
+    /** The mesh or sprite that triggered the action */
+    source: any;
+    /** The X mouse cursor position at the time of the event */
+    pointerX: number;
+    /** The Y mouse cursor position at the time of the event */
+    pointerY: number;
+    /** The mesh that is currently pointed at (can be null) */
+    meshUnderPointer: Nullable<AbstractMesh>;
+    /** the original (browser) event that triggered the ActionEvent */
+    sourceEvent?: any;
+    /** additional data for the event */
+    additionalData?: any;
+}
+
+/**
  * ActionEvent is the event being sent when an action is triggered.
  */
-export class ActionEvent {
+export class ActionEvent implements IActionEvent {
     /**
      * Creates a new ActionEvent
      * @param source The mesh or sprite that triggered the action
@@ -30,7 +48,6 @@ export class ActionEvent {
         public sourceEvent?: any,
         /** additional data for the event */
         public additionalData?: any) {
-
     }
 
     /**

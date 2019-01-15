@@ -3430,13 +3430,17 @@ var Container = /** @class */ (function (_super) {
     /** @hidden */
     Container.prototype._reOrderControl = function (control) {
         this.removeControl(control);
+        var wasAdded = false;
         for (var index = 0; index < this._children.length; index++) {
             if (this._children[index].zIndex > control.zIndex) {
                 this._children.splice(index, 0, control);
-                return;
+                wasAdded = true;
+                break;
             }
         }
-        this._children.push(control);
+        if (!wasAdded) {
+            this._children.push(control);
+        }
         control.parent = this;
         this._markAsDirty();
     };
@@ -3741,7 +3745,10 @@ var Control = /** @class */ (function () {
         this.isPointerBlocker = false;
         /** Gets or sets a boolean indicating if the control can be focusable */
         this.isFocusInvisible = false;
-        /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+        /**
+         * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
         this.clipChildren = true;
         /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
@@ -12858,7 +12865,7 @@ var Button3D = /** @class */ (function (_super) {
             faceUV[i] = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 0, 0);
         }
         faceUV[1] = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 1, 1);
-        var mesh = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["MeshBuilder"].CreateBox(this.name + "_rootMesh", {
+        var mesh = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["BoxBuilder"].CreateBox(this.name + "_rootMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08,
@@ -13556,6 +13563,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Class used to create a holographic button in 3D
  */
@@ -13617,8 +13625,8 @@ var HolographicButton = /** @class */ (function (_super) {
             }
             if (!this._tooltipFade) {
                 // Create tooltip with mesh and text
-                this._tooltipMesh = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["MeshBuilder"].CreatePlane("", { size: 1 }, this._backPlate._scene);
-                var tooltipBackground = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["MeshBuilder"].CreatePlane("", { size: 1, sideOrientation: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
+                this._tooltipMesh = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["PlaneBuilder"].CreatePlane("", { size: 1 }, this._backPlate._scene);
+                var tooltipBackground = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["PlaneBuilder"].CreatePlane("", { size: 1, sideOrientation: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
                 var mat = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("", this._backPlate._scene);
                 mat.diffuseColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString("#212121");
                 tooltipBackground.material = mat;
@@ -13763,12 +13771,12 @@ var HolographicButton = /** @class */ (function (_super) {
     };
     // Mesh association
     HolographicButton.prototype._createNode = function (scene) {
-        this._backPlate = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["MeshBuilder"].CreateBox(this.name + "BackMesh", {
+        this._backPlate = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox(this.name + "BackMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08
         }, scene);
-        this._frontPlate = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["MeshBuilder"].CreateBox(this.name + "FrontMesh", {
+        this._frontPlate = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["BoxBuilder"].CreateBox(this.name + "FrontMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08
