@@ -481,7 +481,7 @@ export class Animation {
      * @param framePerSecond The frames per second of the animation
      * @param dataType The data type of the animation
      * @param loopMode The loop mode of the animation
-     * @param enableBlendings Specifies if blending should be enabled
+     * @param enableBlending Specifies if blending should be enabled
      */
     constructor(
         /**Name of the animation */

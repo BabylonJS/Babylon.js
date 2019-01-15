@@ -169,7 +169,7 @@ export class EdgesRenderer implements IEdgesRenderer {
      * Beware when you use this class with complex objects as the adjacencies computation can be really long
      * @param  source Mesh used to create edges
      * @param  epsilon sum of angles in adjacency to check for edge
-     * @param  checkVerticesInsteadOfIndices
+     * @param  checkVerticesInsteadOfIndices bases the edges detection on vertices vs indices
      * @param  generateEdgesLines - should generate Lines or only prepare resources.
      */
     constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false, generateEdgesLines = true) {

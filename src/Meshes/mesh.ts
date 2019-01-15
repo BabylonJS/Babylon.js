@@ -31,6 +31,8 @@ declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
 declare type GroundMesh = import("./groundMesh").GroundMesh;
 
+declare var earcut: any;
+
 /**
  * Class used to represent a specific level of detail of a mesh
  * @see http://doc.babylonjs.com/how_to/how_to_use_lod
@@ -130,6 +132,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Events
     private _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
+    private _onBeforeBindObservable: Nullable<Observable<Mesh>>;
     private _onAfterRenderObservable: Nullable<Observable<Mesh>>;
     private _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
 
@@ -142,6 +145,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         return this._onBeforeRenderObservable;
+    }
+
+    /**
+     * An event triggered before binding the mesh
+     */
+    public get onBeforeBindObservable(): Observable<Mesh> {
+        if (!this._onBeforeBindObservable) {
+            this._onBeforeBindObservable = new Observable<Mesh>();
+        }
+
+        return this._onBeforeBindObservable;
     }
 
     /**
@@ -1578,6 +1592,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Bind
         var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : this._effectiveMaterial.fillMode);
 
+        if (this._onBeforeBindObservable) {
+            this._onBeforeBindObservable.notifyObservers(this);
+        }
+
         if (!hardwareInstancedRendering) { // Binding will be done later because we need to add more info to the VB
             this._bind(subMesh, effect, fillMode);
         }
@@ -2003,6 +2021,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (this._onBeforeDrawObservable) {
             this._onBeforeDrawObservable.clear();
+        }
+
+        if (this._onBeforeBindObservable) {
+            this._onBeforeBindObservable.clear();
         }
 
         if (this._onBeforeRenderObservable) {
@@ -3099,9 +3121,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
      * @param updatable defines if the mesh must be flagged as updatable
      * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param earcutInjection can be used to inject your own earcut reference
      * @returns a new Mesh
      */
-    public static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
+    public static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh {
         throw "Import MeshBuilder before creating meshes.";
     }
 
@@ -3115,9 +3138,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
      * @param updatable defines if the mesh must be flagged as updatable
      * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param earcutInjection can be used to inject your own earcut reference
      * @returns a new Mesh
      */
-    public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh {
+    public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh {
         throw "Import MeshBuilder before creating meshes.";
     }
 
