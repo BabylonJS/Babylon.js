@@ -23,10 +23,10 @@ import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { DeepCopier } from "../Misc/deepCopier";
+import { _TypeStore } from '../Misc/typeStore';
 
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
-import { _TypeStore } from 'Misc';
 
 /**
  * This represents a particle system in Babylon.

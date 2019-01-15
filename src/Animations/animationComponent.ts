@@ -5,7 +5,7 @@ import { Matrix, Tmp, Quaternion, Vector3 } from '../Maths/math';
 import { Nullable } from '../types';
 import { Animation } from './animation';
 import { Animatable } from './animatable';
-import { PrecisionDate } from 'Misc';
+import { PrecisionDate } from '../Misc/precisionDate';
 import { Bone } from '../Bones/bone';
 
 declare module "../scene" {

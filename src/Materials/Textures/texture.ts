@@ -7,7 +7,7 @@ import { Matrix, Vector3, Plane } from "../../Maths/math";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { _AlphaState } from "../../States/index";
-import { _TypeStore } from 'Misc';
+import { _TypeStore } from '../../Misc/typeStore';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;

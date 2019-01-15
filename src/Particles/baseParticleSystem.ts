@@ -8,7 +8,9 @@ import { Scene } from "../scene";
 import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/tools";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Constants } from "../Engines/constants";
-import { Texture } from '../Materials/Textures';
+import { Texture } from '../Materials/Textures/texture';
+
+declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * This represents the base class for particle system in Babylon.

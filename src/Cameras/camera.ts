@@ -12,7 +12,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Ray } from "../Culling/ray";
 import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
-import { _TypeStore } from '../Misc';
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;

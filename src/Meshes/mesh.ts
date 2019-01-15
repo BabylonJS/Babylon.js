@@ -25,7 +25,7 @@ import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
-import { _TypeStore } from 'Misc/typeStore';
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
