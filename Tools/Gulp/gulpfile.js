@@ -18,6 +18,7 @@ require("./tasks/gulpTasks-tests");
 require("./tasks/gulpTasks-remapPaths");
 require("./tasks/gulpTasks-npmPackages");
 require("./tasks/gulpTasks-dependencies");
+require("./tasks/gulpTasks-testsES6");
 
 /**
  * Temp cleanup after upgrade.
@@ -79,7 +80,7 @@ gulp.task("typescript-all", gulp.series("typescript-libraries", "typescript-es6"
 /**
  * Do it all (tests).
  */
-gulp.task("tests-all", gulp.series("tests-unit", "tests-modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
+gulp.task("tests-all", gulp.series("tests-unit", "tests-modules", "deployAndTests-es6Modules", "tests-validation-virtualscreen", "tests-validation-browserstack"));
 
 /**
  * Get Ready to test Npm Packages.
