@@ -284,7 +284,7 @@
                         if (data) {
                             if (vertexBuffer.type === VertexBuffer.FLOAT && ArrayBuffer.isView(data)) {
                                 if (!buffer._nativeVertexBuffer) {
-                                    const length = vertexBuffer.byteLength / Float32Array.BYTES_PER_ELEMENT;
+                                    const length = data.byteLength / Float32Array.BYTES_PER_ELEMENT;
                                     buffer._nativeVertexBuffer = this._native.createVertexBuffer(new Float32Array(data.buffer, data.byteOffset, length));
                                 }
                                 this._native.bindVertexBuffer(buffer._nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride);
