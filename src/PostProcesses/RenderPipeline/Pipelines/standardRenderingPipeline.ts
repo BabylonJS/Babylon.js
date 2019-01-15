@@ -17,9 +17,10 @@ import { SpotLight } from "../../../Lights/spotLight";
 import { DirectionalLight } from "../../../Lights/directionalLight";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Scene } from "../../../scene";
-import { Animation } from "../../../Animations/animation";
 import { Constants } from "../../../Engines/constants";
 import { _TypeStore } from '../../../Misc/typeStore';
+
+declare type Animation = import("../../../Animations/animation").Animation;
 
 import "../../../Shaders/standard.fragment";
 /**
