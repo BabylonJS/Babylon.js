@@ -12,7 +12,6 @@ import { TransformNode } from "../Meshes/transformNode";
 import { SubMesh } from "../Meshes/subMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import { Collider } from "../Collisions/collider";
 import { Ray } from "../Culling/ray";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Material } from "../Materials/material";
@@ -23,6 +22,8 @@ import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
+
+declare type Collider = import("../Collisions/collider").Collider;
 
 /** @hidden */
 class _FacetDataStorage {
@@ -1324,14 +1325,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         var globalPosition = this.getAbsolutePosition();
 
         globalPosition.addToRef(this.ellipsoidOffset, this._oldPositionForCollisions);
+        let coordinator = this.getScene().collisionCoordinator;
 
         if (!this._collider) {
-            this._collider = new Collider();
+            this._collider = coordinator.createCollider();
         }
 
         this._collider._radius = this.ellipsoid;
 
-        this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+        coordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
         return this;
     }
 
