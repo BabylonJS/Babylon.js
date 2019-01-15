@@ -187,7 +187,7 @@ var build = function(settings, cb) {
         verbose: true
     };
 
-    let command = `tsc --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.distES6Directory}"`;
+    let command = `node "${config.computed.tscPath}" --skipLibCheck false --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.distES6Directory}"`;
     shelljs.exec(command, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);
@@ -216,7 +216,8 @@ var buildWebpack = function(settings, module, cb) {
         verbose: true
     };
 
-    let command = `gulp ${module} --noNamespace --moduleName ${settings.build.es6.packageName}`;
+    let command = `gulp ${module} --noNamespace --moduleName ${settings.build.es6.packageName} --tscPath "${config.computed.tscPath}"`;
+    console.log(command)
     shelljs.exec(command, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);

@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from "../../Maths/math";
+import { Quaternion, Vector3, Matrix } from "../../Maths/math";
 import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
 import { Logger } from "../../Misc/logger";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
@@ -18,7 +18,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     /**
      * Reference to the Ammo library
      */
-    public bjsAMMO: any;
+    public bjsAMMO: any = {};
     /**
      * Created ammoJS world which physics bodies are added to
      */
@@ -55,9 +55,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public constructor(private _useDeltaForWorldStep: boolean = true, ammoInjection: any = Ammo) {
         if (typeof ammoInjection === "function") {
-            ammoInjection();
+            ammoInjection(this.bjsAMMO);
+        }else {
+            this.bjsAMMO = ammoInjection;
         }
-        this.bjsAMMO = ammoInjection;
+
         if (!this.isSupported()) {
             Logger.Error("AmmoJS is not available. Please make sure you included the js file.");
             return;
@@ -197,6 +199,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         }
     }
 
+    private _tmpVector = new Vector3();
+    private _tmpMatrix = new Matrix();
     /**
      * Applies an implulse on the imposter
      * @param impostor imposter to apply impulse
@@ -204,8 +208,17 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param contactPoint the location to apply the impulse on the imposter
      */
     public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
+        impostor.physicsBody.activate();
         var worldPoint = this._tmpAmmoVectorA;
         var impulse = this._tmpAmmoVectorB;
+
+        // Convert contactPoint into world space
+        if (impostor.object && impostor.object.getWorldMatrix) {
+            impostor.object.getWorldMatrix().invertToRef(this._tmpMatrix);
+            Vector3.TransformCoordinatesToRef(contactPoint, this._tmpMatrix, this._tmpVector);
+            contactPoint = this._tmpVector;
+        }
+
         worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z);
         impulse.setValue(force.x, force.y, force.z);
 
@@ -219,8 +232,17 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param contactPoint the location to apply the force on the imposter
      */
     public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
+        impostor.physicsBody.activate();
         var worldPoint = this._tmpAmmoVectorA;
         var impulse = this._tmpAmmoVectorB;
+
+        // Convert contactPoint into world space
+        if (impostor.object && impostor.object.getWorldMatrix) {
+            impostor.object.getWorldMatrix().invertToRef(this._tmpMatrix);
+            Vector3.TransformCoordinatesToRef(contactPoint, this._tmpMatrix, this._tmpVector);
+            contactPoint = this._tmpVector;
+        }
+
         worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z);
         impulse.setValue(force.x, force.y, force.z);
 

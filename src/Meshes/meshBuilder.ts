@@ -12,6 +12,8 @@ import { GroundMesh } from "./groundMesh";
 import { PolygonMeshBuilder } from "./polygonMesh";
 import { BoundingInfo } from "../Culling/boundingInfo";
 
+declare var earcut: any;
+
 Mesh.CreateRibbon = (name: string, pathArray: Vector3[][], closeArray: boolean = false, closePath: boolean, offset: number, scene?: Scene, updatable: boolean = false, sideOrientation?: number, instance?: Mesh) => {
     return MeshBuilder.CreateRibbon(name, {
         pathArray: pathArray,
@@ -129,17 +131,17 @@ Mesh.CreateDashedLines = (name: string, points: Vector3[], dashSize: number, gap
     return MeshBuilder.CreateDashedLines(name, options, scene);
 };
 
-Mesh.CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh => {
+Mesh.CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh => {
     var options = {
         shape: shape,
         holes: holes,
         updatable: updatable,
         sideOrientation: sideOrientation
     };
-    return MeshBuilder.CreatePolygon(name, options, scene);
+    return MeshBuilder.CreatePolygon(name, options, scene, earcutInjection);
 };
 
-Mesh.ExtrudePolygon = (name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh => {
+Mesh.ExtrudePolygon = (name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh => {
     var options = {
         shape: shape,
         holes: holes,
@@ -147,7 +149,7 @@ Mesh.ExtrudePolygon = (name: string, shape: Vector3[], depth: number, scene: Sce
         updatable: updatable,
         sideOrientation: sideOrientation
     };
-    return MeshBuilder.ExtrudePolygon(name, options, scene);
+    return MeshBuilder.ExtrudePolygon(name, options, scene, earcutInjection);
 };
 
 Mesh.ExtrudeShape = (name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
@@ -1135,9 +1137,10 @@ export class MeshBuilder {
      * @param name defines the name of the mesh
      * @param options defines the options used to create the mesh
      * @param scene defines the hosting scene
+     * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
+    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, }, scene: Scene, earcutInjection = earcut): Mesh {
         options.sideOrientation = MeshBuilder._UpdateSideOrientation(options.sideOrientation);
         var shape = options.shape;
         var holes = options.holes || [];
@@ -1153,7 +1156,7 @@ export class MeshBuilder {
             contours.pop();
         }
 
-        var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene);
+        var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene, earcutInjection);
         for (var hNb = 0; hNb < holes.length; hNb++) {
             hole = [];
             for (var hPoint = 0; hPoint < holes[hNb].length; hPoint++) {
@@ -1176,10 +1179,12 @@ export class MeshBuilder {
      * @param name defines the name of the mesh
      * @param options defines the options used to create the mesh
      * @param scene defines the hosting scene
+     * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
-        return MeshBuilder.CreatePolygon(name, options, scene);
+    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene
+        , earcutInjection = earcut): Mesh {
+        return MeshBuilder.CreatePolygon(name, options, scene, earcutInjection);
     }
 
     /**
