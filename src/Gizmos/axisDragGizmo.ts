@@ -6,7 +6,8 @@ import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
+import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
@@ -36,8 +37,8 @@ export class AxisDragGizmo extends Gizmo {
     /** @hidden */
     public static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode {
         var arrow = new TransformNode("arrow", scene);
-        var cylinder = MeshBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96 }, scene);
-        var line = MeshBuilder.CreateLines("line", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, scene);
+        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96 }, scene);
+        var line = LinesBuilder.CreateLines("line", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, scene);
         line.color = material.emissiveColor;
         cylinder.parent = arrow;
         line.parent = arrow;

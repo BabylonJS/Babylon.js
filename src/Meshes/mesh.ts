@@ -130,6 +130,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public static readonly CAP_ALL = 3;
 
+    /**
+     * Gets the default side orientation.
+     * @param orientation the orientation to value to attempt to get
+     * @returns the default orientation
+     * @hidden
+     */
+    public static _GetDefaultSideOrientation(orientation?: number): number {
+        if (orientation == Mesh.DOUBLESIDE) {
+            return Mesh.DOUBLESIDE;
+        }
+
+        if (orientation === undefined || orientation === null) {
+            return Mesh.FRONTSIDE;
+        }
+
+        return orientation;
+    }
+
     // Events
     private _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
     private _onBeforeBindObservable: Nullable<Observable<Mesh>>;
@@ -3671,5 +3689,3 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 }
-
-//import { MeshBuilder } from "./meshBuilder";
