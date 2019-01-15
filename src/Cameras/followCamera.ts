@@ -28,10 +28,40 @@ export class FollowCamera extends TargetCamera {
     public radius: number = 12;
 
     /**
+     * Minimum allowed distance of the camera to the axis of rotation
+     * (The camera can not get closer).
+     * This can help limiting how the Camera is able to move in the scene.
+     */
+    @serialize()
+    public lowerRadiusLimit: Nullable<number> = null;
+
+    /**
+     * Maximum allowed distance of the camera to the axis of rotation
+     * (The camera can not get further).
+     * This can help limiting how the Camera is able to move in the scene.
+     */
+    @serialize()
+    public upperRadiusLimit: Nullable<number> = null;
+
+    /**
      * Define a rotation offset between the camera and the object it follows
      */
     @serialize()
     public rotationOffset: number = 0;
+
+    /**
+     * Minimum allowed angle to camera position relative to target object.
+     * This can help limiting how the Camera is able to move in the scene.
+     */
+    @serialize()
+    public lowerRotationOffsetLimit: Nullable<number> = null;
+
+    /**
+     * Maximum allowed angle to camera position relative to target object.
+     * This can help limiting how the Camera is able to move in the scene.
+     */
+    @serialize()
+    public upperRotationOffsetLimit: Nullable<number> = null;
 
     /**
      * Define a height offset between the camera and the object it follows.
@@ -39,6 +69,20 @@ export class FollowCamera extends TargetCamera {
      */
     @serialize()
     public heightOffset: number = 4;
+
+    /**
+     * Minimum allowed height of camera position relative to target object.
+     * This can help limiting how the Camera is able to move in the scene.
+     */
+    @serialize()
+    public lowerHeightOffsetLimit: Nullable<number> = null;
+
+    /**
+     * Maximum allowed height of camera position relative to target object.
+     * This can help limiting how the Camera is able to move in the scene.
+     */
+    @serialize()
+    public upperHeightOffsetLimit: Nullable<number> = null;
 
     /**
      * Define how fast the camera can accelerate to follow it s target.
@@ -150,9 +194,37 @@ export class FollowCamera extends TargetCamera {
     /** @hidden */
     public _checkInputs(): void {
         this.inputs.checkInputs();
+        this._checkLimits();
         super._checkInputs();
         if (this.lockedTarget) {
             this._follow(this.lockedTarget);
+        }
+    }
+
+    private _checkLimits() {
+        if (this.lowerRadiusLimit !== null && this.radius < this.lowerRadiusLimit) {
+            this.radius = this.lowerRadiusLimit;
+        }
+        if (this.upperRadiusLimit !== null && this.radius > this.upperRadiusLimit) {
+            this.radius = this.upperRadiusLimit;
+        }
+
+        if (this.lowerHeightOffsetLimit !== null &&
+            this.heightOffset < this.lowerHeightOffsetLimit) {
+            this.heightOffset = this.lowerHeightOffsetLimit;
+        }
+        if (this.upperHeightOffsetLimit !== null &&
+            this.heightOffset > this.upperHeightOffsetLimit) {
+            this.heightOffset = this.upperHeightOffsetLimit;
+        }
+
+        if (this.lowerRotationOffsetLimit !== null &&
+            this.rotationOffset < this.lowerRotationOffsetLimit) {
+            this.rotationOffset = this.lowerRotationOffsetLimit;
+        }
+        if (this.upperRotationOffsetLimit !== null &&
+            this.rotationOffset > this.upperRotationOffsetLimit) {
+            this.rotationOffset = this.upperRotationOffsetLimit;
         }
     }
 
