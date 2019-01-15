@@ -3,7 +3,7 @@ import { Color4, Vector3, Matrix, Tmp, Quaternion, Axis } from "../Maths/math";
 import { VertexBuffer } from "../Meshes/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { DiscBuilder } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
 import { DepthSortedParticle, SolidParticle, ModelShape } from "./solidParticle";
@@ -156,7 +156,7 @@ export class SolidParticleSystem implements IDisposable {
      */
     public buildMesh(): Mesh {
         if (this.nbParticles === 0) {
-            var triangle = MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
+            var triangle = DiscBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
             this.addShape(triangle, 1);
             triangle.dispose();
         }
