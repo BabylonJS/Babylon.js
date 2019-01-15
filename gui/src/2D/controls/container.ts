@@ -203,14 +203,18 @@ export class Container extends Control {
     public _reOrderControl(control: Control): void {
         this.removeControl(control);
 
+        let wasAdded = false;
         for (var index = 0; index < this._children.length; index++) {
             if (this._children[index].zIndex > control.zIndex) {
                 this._children.splice(index, 0, control);
-                return;
+                wasAdded = true;
+                break;
             }
         }
 
-        this._children.push(control);
+        if (!wasAdded) {
+            this._children.push(control);
+        }
 
         control.parent = this;
 

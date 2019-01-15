@@ -65,7 +65,7 @@ export class ConeParticleEmitter implements IParticleEmitterType {
     /**
      * Creates a new instance ConeParticleEmitter
      * @param radius the radius of the emission cone (1 by default)
-     * @param angles the cone base angle (PI by default)
+     * @param angle the cone base angle (PI by default)
      * @param directionRandomizer defines how much to randomize the particle direction [0-1] (default is 0)
      */
     constructor(radius = 1, angle = Math.PI,

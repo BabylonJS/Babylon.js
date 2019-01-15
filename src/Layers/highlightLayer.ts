@@ -157,7 +157,7 @@ interface IHighlightLayerExcludedMesh {
     /**
      * The mesh render callback use to prevent stencil use
      */
-    beforeRender: Nullable<Observer<Mesh>>;
+    beforeBind: Nullable<Observer<Mesh>>;
     /**
      * The mesh render callback use to restore previous stencil use
      */
@@ -572,7 +572,7 @@ export class HighlightLayer extends EffectLayer {
         if (!meshExcluded) {
             this._excludedMeshes[mesh.uniqueId] = {
                 mesh: mesh,
-                beforeRender: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
+                beforeBind: mesh.onBeforeBindObservable.add((mesh: Mesh) => {
                     mesh.getEngine().setStencilBuffer(false);
                 }),
                 afterRender: mesh.onAfterRenderObservable.add((mesh: Mesh) => {
@@ -593,8 +593,8 @@ export class HighlightLayer extends EffectLayer {
 
         var meshExcluded = this._excludedMeshes[mesh.uniqueId];
         if (meshExcluded) {
-            if (meshExcluded.beforeRender) {
-                mesh.onBeforeRenderObservable.remove(meshExcluded.beforeRender);
+            if (meshExcluded.beforeBind) {
+                mesh.onBeforeBindObservable.remove(meshExcluded.beforeBind);
             }
 
             if (meshExcluded.afterRender) {
@@ -642,7 +642,7 @@ export class HighlightLayer extends EffectLayer {
                 mesh: mesh,
                 color: color,
                 // Lambda required for capture due to Observable this context
-                observerHighlight: mesh.onBeforeRenderObservable.add((mesh: Mesh) => {
+                observerHighlight: mesh.onBeforeBindObservable.add((mesh: Mesh) => {
                     if (this._excludedMeshes && this._excludedMeshes[mesh.uniqueId]) {
                         this._defaultStencilReference(mesh);
                     }
@@ -675,7 +675,7 @@ export class HighlightLayer extends EffectLayer {
         if (meshHighlight) {
 
             if (meshHighlight.observerHighlight) {
-                mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
+                mesh.onBeforeBindObservable.remove(meshHighlight.observerHighlight);
             }
 
             if (meshHighlight.observerDefault) {
@@ -722,7 +722,7 @@ export class HighlightLayer extends EffectLayer {
                 if (meshHighlight && meshHighlight.mesh) {
 
                     if (meshHighlight.observerHighlight) {
-                        meshHighlight.mesh.onBeforeRenderObservable.remove(meshHighlight.observerHighlight);
+                        meshHighlight.mesh.onBeforeBindObservable.remove(meshHighlight.observerHighlight);
                     }
 
                     if (meshHighlight.observerDefault) {
@@ -738,8 +738,8 @@ export class HighlightLayer extends EffectLayer {
                 let meshHighlight = this._excludedMeshes[id];
                 if (meshHighlight) {
 
-                    if (meshHighlight.beforeRender) {
-                        meshHighlight.mesh.onBeforeRenderObservable.remove(meshHighlight.beforeRender);
+                    if (meshHighlight.beforeBind) {
+                        meshHighlight.mesh.onBeforeBindObservable.remove(meshHighlight.beforeBind);
                     }
 
                     if (meshHighlight.afterRender) {
