@@ -17,3 +17,4 @@ export * from "./universalCamera";
 export * from "./virtualJoysticksCamera";
 export * from "./VR/index";
 export * from "./XR/index";
+export * from "./RigModes/index";

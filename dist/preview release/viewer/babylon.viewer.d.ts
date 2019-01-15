@@ -1,4 +1,8 @@
-/// <reference path="./babylon.d.ts"/>
+/// <reference path="./babylon.module.d.ts"/>
+/// <reference path="./babylon.glTF2Interface.d.ts"/>
+/// <reference path="./babylonjs.loaders.d.ts"/>
+declare module "babylonjs-loaders"{ export=BABYLON;}
+/// <reference path="./babylon.module.d.ts"/>
 /// <reference path="./babylon.glTF2Interface.d.ts"/>
 /// <reference path="./babylonjs.loaders.d.ts"/>
 declare module "babylonjs-loaders"{ export=BABYLON;}
