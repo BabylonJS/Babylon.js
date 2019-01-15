@@ -8,31 +8,10 @@ import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Scene } from "../../scene";
 
 /**
- * Track which combination of modifier keys are pressed.
- */
-export enum ModifierKey {
-    None,
-    Alt,
-    Ctrl,
-    Shift,
-    AltCtrl,
-    AltCtrlShift,
-    AltShift,
-    CtrlShift
-}
-
-/**
  * Manage the keyboard inputs to control the movement of a follow camera.
  * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera> {
-    /**
-     * Possible combinations of modifierKeys.
-     * Used to assign values to keysHeightOffsetModifier, keysRotateOffsetModifier
-     * and keysRadiusModifier.
-     */
-    public readonly modifierKeyChoices = ModifierKey;
-
     /**
      * Defines the camera the input is attached to.
      */
@@ -51,28 +30,52 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     public keysHeightOffsetDecr = [40];
 
     /**
-     * Defines whether any modifier key is required to move up/down (alter heightOffset)
+     * Defines whether the Alt modifier key is required to move up/down (alter heightOffset)
      */
     @serialize()
-    public keysHeightOffsetModifier: ModifierKey = this.modifierKeyChoices.None;
+    public keysHeightOffsetModifierAlt: boolean = false;
+
+    /**
+     * Defines whether the Ctrl modifier key is required to move up/down (alter heightOffset)
+     */
+    @serialize()
+    public keysHeightOffsetModifierCtrl: boolean = false;
+
+    /**
+     * Defines whether the Shift modifier key is required to move up/down (alter heightOffset)
+     */
+    @serialize()
+    public keysHeightOffsetModifierShift: boolean = false;
 
     /**
      * Defines the list of key codes associated with the left action (increase rotationOffset)
      */
     @serialize()
-    public keysRotateOffsetIncr = [37];
+    public keysRotationOffsetIncr = [37];
 
     /**
      * Defines the list of key codes associated with the right action (decrease rotationOffset)
      */
     @serialize()
-    public keysRotateOffsetDecr = [39];
+    public keysRotationOffsetDecr = [39];
 
     /**
-     * Defines whether any modifier key is required to move up/down (alter heightOffset)
+     * Defines whether the Alt modifier key is required to move left/right (alter rotationOffset)
      */
     @serialize()
-    public keysRotateOffsetModifier: ModifierKey = this.modifierKeyChoices.None;
+    public keysRotationOffsetModifierAlt: boolean = false;
+
+    /**
+     * Defines whether the Ctrl modifier key is required to move left/right (alter rotationOffset)
+     */
+    @serialize()
+    public keysRotationOffsetModifierCtrl: boolean = false;
+
+    /**
+     * Defines whether the Shift modifier key is required to move left/right (alter rotationOffset)
+     */
+    @serialize()
+    public keysRotationOffsetModifierShift: boolean = false;
 
     /**
      * Defines the list of key codes associated with the zoom-in action (decrease radius)
@@ -87,10 +90,22 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     public keysRadiusDecr = [38];
 
     /**
-     * Defines whether any modifier key is required to zoom in/out (alter radius value)
+     * Defines whether the Alt modifier key is required to zoom in/out (alter radius value)
      */
     @serialize()
-    public keysRadiusModifier: ModifierKey = this.modifierKeyChoices.Alt;
+    public keysRadiusModifierAlt: boolean = true;
+
+    /**
+     * Defines whether the Ctrl modifier key is required to zoom in/out (alter radius value)
+     */
+    @serialize()
+    public keysRadiusModifierCtrl: boolean = false;
+
+    /**
+     * Defines whether the Shift modifier key is required to zoom in/out (alter radius value)
+     */
+    @serialize()
+    public keysRadiusModifierShift: boolean = false;
 
     /**
      * Defines the rate of change of heightOffset.
@@ -146,8 +161,8 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
 
                     if (this.keysHeightOffsetIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysHeightOffsetDecr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateOffsetIncr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotationOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotationOffsetDecr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusDecr.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
@@ -162,12 +177,11 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     if (this.keysHeightOffsetIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysHeightOffsetDecr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateOffsetIncr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotationOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotationOffsetDecr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusDecr.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
@@ -212,28 +226,29 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      */
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                var modifierHeightOffset = this._checkModifierKey(this.keysHeightOffsetModifier);
-                var modifierRotationOffset = this._checkModifierKey(this.keysRotateOffsetModifier);
-                var modifierRaduis = this._checkModifierKey(this.keysRadiusModifier);
-
-                if (this.keysHeightOffsetIncr.indexOf(keyCode) !== -1 && modifierHeightOffset) {
+            this._keys.forEach((keyCode) => {
+                if (this.keysHeightOffsetIncr.indexOf(keyCode) !== -1 &&
+                           this._modifierHeightOffset()) {
                     this.camera.heightOffset += this.heightSensibility;
-                } else if (this.keysHeightOffsetDecr.indexOf(keyCode) !== -1 && modifierHeightOffset) {
+                } else if (this.keysHeightOffsetDecr.indexOf(keyCode) !== -1 &&
+                           this._modifierHeightOffset()) {
                     this.camera.heightOffset -= this.heightSensibility;
-                } else if (this.keysRotateOffsetIncr.indexOf(keyCode) !== -1 && modifierRotationOffset) {
+                } else if (this.keysRotationOffsetIncr.indexOf(keyCode) !== -1 &&
+                           this._modifierRotationOffset()) {
                     this.camera.rotationOffset += this.rotationSensibility;
                     this.camera.rotationOffset %= 360;
-                } else if (this.keysRotateOffsetDecr.indexOf(keyCode) !== -1 && modifierRotationOffset) {
+                } else if (this.keysRotationOffsetDecr.indexOf(keyCode) !== -1 &&
+                           this._modifierRotationOffset()) {
                     this.camera.rotationOffset -= this.rotationSensibility;
                     this.camera.rotationOffset %= 360;
-                } else if (this.keysRadiusIncr.indexOf(keyCode) !== -1 && modifierRaduis) {
+                } else if (this.keysRadiusIncr.indexOf(keyCode) !== -1 &&
+                           this._modifierRadius()) {
                     this.camera.radius += this.radiusSensibility;
-                } else if (this.keysRadiusDecr.indexOf(keyCode) !== -1 && modifierRaduis) {
+                } else if (this.keysRadiusDecr.indexOf(keyCode) !== -1 &&
+                           this._modifierRadius()) {
                     this.camera.radius -= this.radiusSensibility;
                 }
-            }
+            });
         }
     }
 
@@ -254,37 +269,33 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     }
 
     /**
-     * Compare provided value to actual stare of Alt, Ctrl and Shift keys.
+     * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
+     * allow modification of the heightOffset value.
      */
-    private _checkModifierKey(expected: ModifierKey) : boolean {
-        let returnVal = false;
-        switch(expected) {
-            case ModifierKey.None:
-              returnVal = !this._altPressed && !this._ctrlPressed && !this._shiftPressed;
-              break;
-            case ModifierKey.Alt:
-              returnVal = this._altPressed && !this._ctrlPressed && !this._shiftPressed;
-              break;
-            case ModifierKey.Ctrl:
-              returnVal = !this._altPressed && this._ctrlPressed && !this._shiftPressed;
-              break;
-            case ModifierKey.Shift:
-              returnVal = !this._altPressed && !this._ctrlPressed && this._shiftPressed;
-              break;
-            case ModifierKey.AltCtrl:
-              returnVal = this._altPressed && this._ctrlPressed && !this._shiftPressed;
-              break;
-            case ModifierKey.AltShift:
-              returnVal = this._altPressed && !this._ctrlPressed && this._shiftPressed;
-              break;
-            case ModifierKey.CtrlShift:
-              returnVal = !this._altPressed && this._ctrlPressed && this._shiftPressed;
-              break;
-            case ModifierKey.AltCtrlShift:
-              returnVal = this._altPressed && this._ctrlPressed && this._shiftPressed;
-              break;
-        }
-        return returnVal;
+    private _modifierHeightOffset(): boolean {
+        return (this.keysHeightOffsetModifierAlt === this._altPressed &&
+                this.keysHeightOffsetModifierCtrl === this._ctrlPressed &&
+                this.keysHeightOffsetModifierShift === this._shiftPressed);
+    }
+
+    /**
+     * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
+     * allow modification of the rotationOffset value.
+     */
+    private _modifierRotationOffset(): boolean {
+        return (this.keysRotationOffsetModifierAlt === this._altPressed &&
+                this.keysRotationOffsetModifierCtrl === this._ctrlPressed &&
+                this.keysRotationOffsetModifierShift === this._shiftPressed);
+    }
+
+    /**
+     * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
+     * allow modification of the radius value.
+     */
+    private _modifierRadius(): boolean {
+        return (this.keysRadiusModifierAlt === this._altPressed &&
+                this.keysRadiusModifierCtrl === this._ctrlPressed &&
+                this.keysRadiusModifierShift === this._shiftPressed);
     }
 }
 
