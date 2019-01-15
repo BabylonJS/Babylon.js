@@ -27,6 +27,10 @@ import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingP
 import { SineEase, EasingFunction, CircleEase } from "../../Animations/easing";
 import { Animation } from "../../Animations/animation";
 
+import "../../Meshes/Builders/groundBuilder";
+import "../../Meshes/Builders/torusBuilder";
+import "../../Meshes/Builders/cylinderBuilder";
+
 /**
  * Options to modify the vr teleportation behavior.
  */

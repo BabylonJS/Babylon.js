@@ -7,19 +7,20 @@ import { Condition, ValueCondition } from "./condition";
 import { Action } from "./action";
 import { DoNothingAction } from "./directActions";
 
-import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import { ActionEvent } from "../Actions/actionEvent";
+import { IActionEvent } from "../Actions/actionEvent";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { _TypeStore } from "../Misc/typeStore";
+import { AbstractActionManager } from './abstractActionManager';
+import { Constants } from "../Engines/constants";
 
 /**
  * Action Manager manages all events to be triggered on a given mesh or the global scene.
  * A single scene can have many Action Managers to handle predefined actions on specific meshes.
  * @see http://doc.babylonjs.com/how_to/how_to_use_actions
  */
-export class ActionManager {
+export class ActionManager extends AbstractActionManager {
     /**
      * Nothing
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
@@ -121,16 +122,7 @@ export class ActionManager {
      */
     public static readonly OnKeyUpTrigger = 15;
 
-    /** Gets the list of active triggers */
-    public static Triggers: { [key: string]: number } = {};
-
     // Members
-    /** Gets the list of actions */
-    public actions = new Array<Action>();
-
-    /** Gets the cursor to use when hovering items */
-    public hoverCursor: string = '';
-
     private _scene: Scene;
 
     /**
@@ -138,6 +130,7 @@ export class ActionManager {
      * @param scene defines the hosting scene
      */
     constructor(scene: Scene) {
+        super();
         this._scene = scene || EngineStore.LastCreatedScene;
 
         scene.actionManagers.push(this);
@@ -263,50 +256,6 @@ export class ActionManager {
     }
 
     /**
-     * Does exist one action manager with at least one trigger
-     **/
-    public static get HasTriggers(): boolean {
-        for (var t in ActionManager.Triggers) {
-            if (ActionManager.Triggers.hasOwnProperty(t)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Does exist one action manager with at least one pick trigger
-     **/
-    public static get HasPickTriggers(): boolean {
-        for (var t in ActionManager.Triggers) {
-            if (ActionManager.Triggers.hasOwnProperty(t)) {
-                let t_int = parseInt(t);
-                if (t_int >= ActionManager.OnPickTrigger && t_int <= ActionManager.OnPickUpTrigger) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Does exist one action manager that handles actions of a given trigger
-     * @param trigger defines the trigger to be tested
-     * @return a boolean indicating whether the trigger is handeled by at least one action manager
-    **/
-    public static HasSpecificTrigger(trigger: number): boolean {
-        for (var t in ActionManager.Triggers) {
-            if (ActionManager.Triggers.hasOwnProperty(t)) {
-                let t_int = parseInt(t);
-                if (t_int === trigger) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Registers an action to this action manager
      * @param action defines the action to be registered
      * @return the action amended (prepared) after registration
@@ -358,7 +307,7 @@ export class ActionManager {
      * @param trigger defines the trigger to process
      * @param evt defines the event details to be processed
      */
-    public processTrigger(trigger: number, evt?: ActionEvent): void {
+    public processTrigger(trigger: number, evt?: IActionEvent): void {
         for (var index = 0; index < this.actions.length; index++) {
             var action = this.actions[index];
 

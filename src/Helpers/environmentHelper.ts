@@ -13,6 +13,10 @@ import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Constants } from "../Engines/constants";
+
+import "../Meshes/Builders/planeBuilder";
+import "../Meshes/Builders/boxBuilder";
+
 /**
  * Represents the different options available during the creation of
  * a Environment helper.
@@ -331,7 +335,7 @@ export class EnvironmentHelper {
 
     /**
      * constructor
-     * @param options
+     * @param options Defines the options we want to customize the helper
      * @param scene The scene to add the material to
      */
     constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene) {

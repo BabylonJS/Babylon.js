@@ -5,7 +5,8 @@ import { Vector3, Color3 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
+import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -55,8 +56,8 @@ export class AxisScaleGizmo extends Gizmo {
 
         // Build mesh on root node
         var arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
-        var arrowMesh = MeshBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
-        var arrowTail = MeshBuilder.CreateLines("yPosMesh", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, gizmoLayer.utilityLayerScene);
+        var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
+        var arrowTail = LinesBuilder.CreateLines("yPosMesh", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, gizmoLayer.utilityLayerScene);
         arrowTail.color = this._coloredMaterial.emissiveColor;
         arrow.addChild(arrowMesh);
         arrow.addChild(arrowTail);
