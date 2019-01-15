@@ -6,7 +6,9 @@ import { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Color3, Epsilon } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
+import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
+import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
@@ -14,6 +16,9 @@ import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
+
+import "../Meshes/Builders/boxBuilder";
+
 /**
  * Bounding box gizmo
  */
@@ -110,18 +115,18 @@ export class BoundingBoxGizmo extends Gizmo {
         this._lineBoundingBox = new AbstractMesh("", gizmoLayer.utilityLayerScene);
         this._lineBoundingBox.rotationQuaternion = new Quaternion();
         var lines = [];
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(this._boundingDimensions.x, 0, 0)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(0, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(0, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-        lines.push(MeshBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(this._boundingDimensions.x, 0, 0)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(0, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(0, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
+        lines.push(LinesBuilder.CreateLines("lines", { points: [new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
         lines.forEach((l) => {
             l.color = color;
             l.position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
@@ -134,7 +139,7 @@ export class BoundingBoxGizmo extends Gizmo {
         this._rotateSpheresParent = new AbstractMesh("", gizmoLayer.utilityLayerScene);
         this._rotateSpheresParent.rotationQuaternion = new Quaternion();
         for (let i = 0; i < 12; i++) {
-            let sphere = MeshBuilder.CreateSphere("", { diameter: 1 }, gizmoLayer.utilityLayerScene);
+            let sphere = SphereBuilder.CreateSphere("", { diameter: 1 }, gizmoLayer.utilityLayerScene);
             sphere.rotationQuaternion = new Quaternion();
             sphere.material = coloredMaterial;
 
@@ -224,7 +229,7 @@ export class BoundingBoxGizmo extends Gizmo {
         for (var i = 0; i < 2; i++) {
             for (var j = 0; j < 2; j++) {
                 for (var k = 0; k < 2; k++) {
-                    let box = MeshBuilder.CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
+                    let box = BoxBuilder.CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
                     box.material = coloredMaterial;
 
                     // Dragging logic
@@ -544,7 +549,7 @@ export class BoundingBoxGizmo extends Gizmo {
         mesh.position.set(0, 0, 0);
 
         // Update bounding dimensions/positions
-        var box = MeshBuilder.CreateBox("box", { size: 1 }, mesh.getScene());
+        var box = BoxBuilder.CreateBox("box", { size: 1 }, mesh.getScene());
         var boundingMinMax = mesh.getHierarchyBoundingVectors();
         boundingMinMax.max.subtractToRef(boundingMinMax.min, box.scaling);
 
