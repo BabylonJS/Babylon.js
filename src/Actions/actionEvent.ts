@@ -4,6 +4,9 @@ import { Sprite } from "../Sprites/sprite";
 import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math";
 
+/**
+ * Interface used to define ActionEvent
+ */
 export interface IActionEvent {
     /** The mesh or sprite that triggered the action */
     source: any;
