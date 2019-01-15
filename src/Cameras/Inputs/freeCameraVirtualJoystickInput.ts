@@ -3,6 +3,28 @@ import { Nullable } from "../../types";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { Matrix, Vector3 } from "../../Maths/math";
+import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
+
+// Module augmentation to abstract virtual joystick from camera.
+declare module "../../Cameras/freeCameraInputsManager" {
+    export interface FreeCameraInputsManager {
+        /**
+         * Add virtual joystick input support to the input manager.
+         * @returns the current input manager
+         */
+        addVirtualJoystick(): FreeCameraInputsManager;
+    }
+}
+
+/**
+* Add virtual joystick input support to the input manager.
+* @returns the current input manager
+*/
+FreeCameraInputsManager.prototype.addVirtualJoystick = function(): FreeCameraInputsManager {
+   this.add(new FreeCameraVirtualJoystickInput());
+   return this;
+};
+
 /**
  * Manage the Virtual Joystick inputs to control the movement of a free camera.
  * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs

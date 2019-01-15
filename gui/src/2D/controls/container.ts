@@ -203,14 +203,18 @@ export class Container extends Control {
     public _reOrderControl(control: Control): void {
         this.removeControl(control);
 
+        let wasAdded = false;
         for (var index = 0; index < this._children.length; index++) {
             if (this._children[index].zIndex > control.zIndex) {
                 this._children.splice(index, 0, control);
-                return;
+                wasAdded = true;
+                break;
             }
         }
 
-        this._children.push(control);
+        if (!wasAdded) {
+            this._children.push(control);
+        }
 
         control.parent = this;
 
@@ -285,12 +289,12 @@ export class Container extends Control {
 
     /** @hidden */
     public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
 
         if (this._isDirty) {
-            this._tempCurrentMeasure.copyFrom(this._currentMeasure);
+            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
         }
 
         let rebuildCount = 0;
@@ -348,12 +352,7 @@ export class Container extends Control {
         context.restore();
 
         if (this._isDirty) {
-            this.invalidateRect(
-                Math.min(this._currentMeasure.left, this._tempCurrentMeasure.left),
-                Math.min(this._currentMeasure.top, this._tempCurrentMeasure.top),
-                Math.max(this._currentMeasure.left + this._currentMeasure.width, this._tempCurrentMeasure.left + this._tempCurrentMeasure.width) - 1,
-                Math.max(this._currentMeasure.top + this._currentMeasure.height, this._tempCurrentMeasure.top + this._tempCurrentMeasure.height) - 1
-            );
+            this.invalidateRect();
 
             this._isDirty = false;
         }
@@ -378,7 +377,7 @@ export class Container extends Control {
             // Only redraw parts of the screen that are invalidated
             if (invalidatedRectangle) {
                 if (!child._intersectsRect(invalidatedRectangle)) {
-                    // continue;
+                    continue;
                 }
             }
             child._render(context, invalidatedRectangle);

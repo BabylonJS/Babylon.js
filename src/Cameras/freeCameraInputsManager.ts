@@ -2,9 +2,7 @@ import { FreeCamera } from "./freeCamera";
 import { CameraInputsManager } from "./cameraInputsManager";
 import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
-import { FreeCameraDeviceOrientationInput } from "../Cameras/Inputs/freeCameraDeviceOrientationInput";
 import { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
-import { FreeCameraVirtualJoystickInput } from "../Cameras/Inputs/freeCameraVirtualJoystickInput";
 
 /**
  * Default Inputs manager for the FreeCamera.
@@ -40,29 +38,11 @@ export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
     }
 
     /**
-     * Add orientation input support to the input manager.
-     * @returns the current input manager
-     */
-    addDeviceOrientation(): FreeCameraInputsManager {
-        this.add(new FreeCameraDeviceOrientationInput());
-        return this;
-    }
-
-    /**
      * Add touch input support to the input manager.
      * @returns the current input manager
      */
     addTouch(): FreeCameraInputsManager {
         this.add(new FreeCameraTouchInput());
-        return this;
-    }
-
-    /**
-     * Add virtual joystick input support to the input manager.
-     * @returns the current input manager
-     */
-    addVirtualJoystick(): FreeCameraInputsManager {
-        this.add(new FreeCameraVirtualJoystickInput());
         return this;
     }
 }

@@ -331,7 +331,7 @@ export class EnvironmentHelper {
 
     /**
      * constructor
-     * @param options
+     * @param options Defines the options we want to customize the helper
      * @param scene The scene to add the material to
      */
     constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene) {
