@@ -8,7 +8,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from '../../Misc';
+import { _TypeStore } from '../../Misc/typeStore';
 
 /**
  * Class for creating a cube texture

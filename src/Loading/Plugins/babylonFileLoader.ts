@@ -26,7 +26,7 @@ import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { CannonJSPlugin } from "../../Physics/Plugins/cannonJSPlugin";
 import { OimoJSPlugin } from "../../Physics/Plugins/oimoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
-import { _TypeStore } from 'Misc';
+import { _TypeStore } from '../../Misc/typeStore';
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;

@@ -7,7 +7,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { _TypeStore } from 'Misc';
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type Animation = import("../Animations/animation").Animation;
 
