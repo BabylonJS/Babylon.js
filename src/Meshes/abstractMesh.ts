@@ -22,7 +22,7 @@ import { Skeleton } from "../Bones/skeleton";
 import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
-import { AbstractActionManager } from 'Actions/abstractActionManager';
+import { AbstractActionManager } from '../Actions/abstractActionManager';
 
 /** @hidden */
 class _FacetDataStorage {

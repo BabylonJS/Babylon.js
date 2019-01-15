@@ -11,6 +11,9 @@ declare type Light = import("../Lights/light").Light;
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Node = import("../node").Node;
 
+/**
+ * Interface used to define Action
+ */
 export interface IAction {
     /**
    * Trigger for the action
@@ -18,7 +21,7 @@ export interface IAction {
     trigger: number;
 
     /** the trigger, with or without parameters, for the action */
-    triggerOptions: any
+    triggerOptions: any;
 
     /**
      * Gets the trigger parameters
@@ -30,7 +33,7 @@ export interface IAction {
      * Internal only - executes current action event
      * @hidden
      */
-    _executeCurrent(evt?: ActionEvent): void
+    _executeCurrent(evt?: ActionEvent): void;
 
     /**
      * Serialize placeholder for child classes
