@@ -6,8 +6,8 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { IAnimatable } from "../Misc/tools";
 import { Node } from "../node";
-import { Texture } from "../Materials/Textures/texture";
 import { SerializationHelper } from "../Misc/decorators";
+import { _TypeStore } from 'Misc';
 
 declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
@@ -1238,5 +1238,6 @@ export class Animation {
     }
 }
 
-Texture._AnimationParser = Animation.Parse;
+
+_TypeStore.RegisteredTypes["BABYLON.Animation"] = Animation;
 Node._AnimationRangeFactory = (name: string, from: number, to: number) => new AnimationRange(name, from, to);

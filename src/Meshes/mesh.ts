@@ -18,7 +18,6 @@ import { BoundingInfo } from "../Culling/boundingInfo";
 import { BoundingSphere } from "../Culling/boundingSphere";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { Animation } from "../Animations/animation";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { Skeleton } from "../Bones/skeleton";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
@@ -26,6 +25,7 @@ import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
+import { _TypeStore } from 'Misc/typeStore';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -2884,8 +2884,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (parsedMesh.animations) {
             for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                 var parsedAnimation = parsedMesh.animations[animationIndex];
-
-                mesh.animations.push(Animation.Parse(parsedAnimation));
+                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    mesh.animations.push(internalClass.Parse(parsedAnimation));
+                }
             }
             Node.ParseAnimationRanges(mesh, parsedMesh, scene);
         }
@@ -2971,8 +2973,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (parsedInstance.animations) {
                     for (animationIndex = 0; animationIndex < parsedInstance.animations.length; animationIndex++) {
                         parsedAnimation = parsedInstance.animations[animationIndex];
-
-                        instance.animations.push(Animation.Parse(parsedAnimation));
+                        const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                        if (internalClass) {
+                            instance.animations.push(internalClass.Parse(parsedAnimation));
+                        }
                     }
                     Node.ParseAnimationRanges(instance, parsedInstance, scene);
 
