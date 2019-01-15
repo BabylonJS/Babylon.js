@@ -7,7 +7,7 @@ import { Scene } from "../scene";
 import { IAnimatable } from "../Misc/tools";
 import { Node } from "../node";
 import { SerializationHelper } from "../Misc/decorators";
-import { _TypeStore } from 'Misc';
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
@@ -1237,7 +1237,6 @@ export class Animation {
         SerializationHelper.AppendSerializedAnimations(source, destination);
     }
 }
-
 
 _TypeStore.RegisteredTypes["BABYLON.Animation"] = Animation;
 Node._AnimationRangeFactory = (name: string, from: number, to: number) => new AnimationRange(name, from, to);

@@ -1,8 +1,8 @@
 import { Scene } from "../scene";
 import { Node } from "../node";
 import { RuntimeAnimation } from './runtimeAnimation';
-import { Matrix, Tmp, Quaternion, Vector3 } from '../Maths';
-import { Nullable } from 'types';
+import { Matrix, Tmp, Quaternion, Vector3 } from '../Maths/math';
+import { Nullable } from '../types';
 import { Animation } from './animation';
 import { Animatable } from './animatable';
 import { PrecisionDate } from 'Misc';
@@ -48,8 +48,7 @@ declare module "../scene" {
          * @returns the animatable object created for this animation
          */
         beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number,
-            onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable
-
+            onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
 
         /**
          * Will start the animation sequence of a given target
@@ -69,7 +68,6 @@ declare module "../scene" {
             onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean,
             targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
 
-
         /**
          * Will start the animation sequence of a given target and its hierarchy
          * @param target defines the target
@@ -88,7 +86,6 @@ declare module "../scene" {
         beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number,
             onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean,
             targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[];
-
 
         /**
          * Begin a new animation on a given node
@@ -170,7 +167,7 @@ Scene.prototype._animate = function(): void {
 
     // Late animation bindings
     this._processLateAnimationBindings();
-}
+};
 
 Scene.prototype.beginWeightedAnimation = function(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0,
     onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable {
@@ -179,7 +176,7 @@ Scene.prototype.beginWeightedAnimation = function(target: any, from: number, to:
     returnedAnimatable.weight = weight;
 
     return returnedAnimatable;
-}
+};
 
 Scene.prototype.beginAnimation = function(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
     onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
@@ -214,7 +211,7 @@ Scene.prototype.beginAnimation = function(target: any, from: number, to: number,
     animatable.reset();
 
     return animatable;
-}
+};
 
 Scene.prototype.beginHierarchyAnimation = function(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
     onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
@@ -229,7 +226,7 @@ Scene.prototype.beginHierarchyAnimation = function(target: any, directDescendant
     }
 
     return result;
-}
+};
 
 Scene.prototype.beginDirectAnimation = function(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable {
     if (speedRatio === undefined) {
@@ -239,8 +236,7 @@ Scene.prototype.beginDirectAnimation = function(target: any, animations: Animati
     var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop);
 
     return animatable;
-}
-
+};
 
 Scene.prototype.beginDirectHierarchyAnimation = function(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[] {
     let children = target.getDescendants(directDescendantsOnly);
@@ -252,7 +248,7 @@ Scene.prototype.beginDirectHierarchyAnimation = function(target: Node, directDes
     }
 
     return result;
-}
+};
 
 Scene.prototype.getAnimatableByTarget = function(target: any): Nullable<Animatable> {
     for (var index = 0; index < this._activeAnimatables.length; index++) {
@@ -262,7 +258,7 @@ Scene.prototype.getAnimatableByTarget = function(target: any): Nullable<Animatab
     }
 
     return null;
-}
+};
 
 Scene.prototype.getAllAnimatablesByTarget = function(target: any): Array<Animatable> {
     let result = [];
@@ -273,7 +269,7 @@ Scene.prototype.getAllAnimatablesByTarget = function(target: any): Array<Animata
     }
 
     return result;
-}
+};
 
 /**
  * Will stop the animation of the given target
@@ -287,7 +283,7 @@ Scene.prototype.stopAnimation = function(target: any, animationName?: string, ta
     for (var animatable of animatables) {
         animatable.stop(animationName, targetMask);
     }
-}
+};
 
 /**
  * Stops and removes all animations that have been applied to the scene
@@ -303,8 +299,7 @@ Scene.prototype.stopAllAnimations = function(): void {
     for (var group of this.animationGroups) {
         group.stop();
     }
-}
-
+};
 
 Scene.prototype._registerTargetForLateAnimationBinding = function(runtimeAnimation: RuntimeAnimation, originalValue: any): void {
     let target = runtimeAnimation.target;
@@ -324,7 +319,7 @@ Scene.prototype._registerTargetForLateAnimationBinding = function(runtimeAnimati
 
     target._lateAnimationHolders[runtimeAnimation.targetPath].animations.push(runtimeAnimation);
     target._lateAnimationHolders[runtimeAnimation.targetPath].totalWeight += runtimeAnimation.weight;
-}
+};
 
 Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     totalWeight: number,
@@ -374,7 +369,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
 
     Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, originalAnimation._workValue);
     return originalAnimation._workValue;
-}
+};
 
 Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
     totalWeight: number,
@@ -435,7 +430,7 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
     }
 
     return cumulativeQuaternion!;
-}
+};
 
 Scene.prototype._processLateAnimationBindings = function(): void {
     if (!this._registeredForLateAnimationBindings.length) {
@@ -504,7 +499,7 @@ Scene.prototype._processLateAnimationBindings = function(): void {
         target._lateAnimationHolders = {};
     }
     this._registeredForLateAnimationBindings.reset();
-}
+};
 
 declare module "../Bones/bone" {
     export interface Bone {
@@ -581,4 +576,4 @@ Bone.prototype.copyAnimationRange = function(source: Bone, rangeName: string, fr
     }
     this.animations[0].createRange(rangeName, from + frameOffset, to + frameOffset);
     return true;
-}
+};
