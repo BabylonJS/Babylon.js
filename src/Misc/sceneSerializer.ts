@@ -1,6 +1,5 @@
-import { Geometry, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, GroundGeometry, TorusKnotGeometry, _PrimitiveGeometry } from "../Meshes/geometry";
+import { Geometry } from "../Meshes/geometry";
 import { Mesh } from "../Meshes/mesh";
-import { Plane } from "../Maths/math";
 import { Constants } from "../Engines/constants";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import { Material } from "../Materials/material";
@@ -18,33 +17,7 @@ var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any 
         return;
     }
 
-    if (geometry instanceof BoxGeometry) {
-        serializationGeometries.boxes.push(geometry.serialize());
-    }
-    else if (geometry instanceof SphereGeometry) {
-        serializationGeometries.spheres.push(geometry.serialize());
-    }
-    else if (geometry instanceof CylinderGeometry) {
-        serializationGeometries.cylinders.push(geometry.serialize());
-    }
-    else if (geometry instanceof TorusGeometry) {
-        serializationGeometries.toruses.push(geometry.serialize());
-    }
-    else if (geometry instanceof GroundGeometry) {
-        serializationGeometries.grounds.push(geometry.serialize());
-    }
-    else if (geometry instanceof Plane) {
-        serializationGeometries.planes.push(geometry.serialize());
-    }
-    else if (geometry instanceof TorusKnotGeometry) {
-        serializationGeometries.torusKnots.push(geometry.serialize());
-    }
-    else if (geometry instanceof _PrimitiveGeometry) {
-        throw new Error("Unknown primitive type");
-    }
-    else {
-        serializationGeometries.vertexData.push(geometry.serializeVerticeData());
-    }
+    serializationGeometries.vertexData.push(geometry.serializeVerticeData());
 
     (<any>serializedGeometries)[geometry.id] = true;
 };
