@@ -3817,6 +3817,7 @@ declare module BABYLON {
         private _radians;
         /**
          * Creates an Angle object of "radians" radians (float).
+         * @param radians the angle in radians
          */
         constructor(radians: number);
         /**
@@ -3974,7 +3975,7 @@ declare module BABYLON {
         * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
         * please read the description in the tutorial : https://doc.babylonjs.com/how_to/how_to_use_path3d
         * @param path an array of Vector3, the curve axis of the Path3D
-        * @param normal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
         */
         constructor(
@@ -14581,7 +14582,7 @@ declare module BABYLON {
         /**
          * Creates a new instance ConeParticleEmitter
          * @param radius the radius of the emission cone (1 by default)
-         * @param angles the cone base angle (PI by default)
+         * @param angle the cone base angle (PI by default)
          * @param directionRandomizer defines how much to randomize the particle direction [0-1] (default is 0)
          */
         constructor(radius?: number, angle?: number, 
@@ -16299,7 +16300,7 @@ declare module BABYLON {
          * Beware when you use this class with complex objects as the adjacencies computation can be really long
          * @param  source Mesh used to create edges
          * @param  epsilon sum of angles in adjacency to check for edge
-         * @param  checkVerticesInsteadOfIndices
+         * @param  checkVerticesInsteadOfIndices bases the edges detection on vertices vs indices
          * @param  generateEdgesLines - should generate Lines or only prepare resources.
          */
         constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean, generateEdgesLines?: boolean);
@@ -17553,6 +17554,7 @@ declare module BABYLON {
          * Creates a new MorphTarget
          * @param name defines the name of the target
          * @param influence defines the influence to use
+         * @param scene defines the scene the morphtarget belongs to
          */
         constructor(
         /** defines the name of the target */
@@ -19530,9 +19532,10 @@ declare module BABYLON {
          * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
          * @param updatable defines if the mesh must be flagged as updatable
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+         * @param earcutInjection can be used to inject your own earcut reference
          * @returns a new Mesh
          */
-        static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection?: any): Mesh;
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction. Please consider using the same method from the MeshBuilder class instead.
          * @see http://doc.babylonjs.com/how_to/parametric_shapes#extruded-non-regular-polygon
@@ -19543,9 +19546,10 @@ declare module BABYLON {
          * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
          * @param updatable defines if the mesh must be flagged as updatable
          * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+         * @param earcutInjection can be used to inject your own earcut reference
          * @returns a new Mesh
          */
-        static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number): Mesh;
+        static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection?: any): Mesh;
         /**
          * Creates an extruded shape mesh.
          * The extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters. Please consider using the same method from the MeshBuilder class instead
@@ -22715,6 +22719,7 @@ declare module BABYLON {
          * @param name name of the builder
          * @param contours Path of the polygon
          * @param scene scene to add to
+         * @param earcutInjection can be used to inject your own earcut reference
          */
         constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene, earcutInjection?: any);
         /**
@@ -23279,6 +23284,7 @@ declare module BABYLON {
          * @param name defines the name of the mesh
          * @param options defines the options used to create the mesh
          * @param scene defines the hosting scene
+         * @param earcutInjection can be used to inject your own earcut reference
          * @returns the polygon mesh
          */
         static CreatePolygon(name: string, options: {
@@ -23291,7 +23297,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene): Mesh;
+        }, scene: Scene, earcutInjection?: any): Mesh;
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction.
          * * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements)
@@ -23299,6 +23305,7 @@ declare module BABYLON {
          * @param name defines the name of the mesh
          * @param options defines the options used to create the mesh
          * @param scene defines the hosting scene
+         * @param earcutInjection can be used to inject your own earcut reference
          * @returns the polygon mesh
          */
         static ExtrudePolygon(name: string, options: {
@@ -23311,7 +23318,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene): Mesh;
+        }, scene: Scene, earcutInjection?: any): Mesh;
         /**
          * Creates a tube mesh.
          * The tube is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters
@@ -23511,12 +23518,13 @@ declare module BABYLON {
          * Creates a SPS (Solid Particle System) object.
          * @param name (String) is the SPS name, this will be the underlying mesh name.
          * @param scene (Scene) is the scene in which the SPS is added.
-         * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
-         * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.
-         * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
-         * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
-         * @param boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
-         * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
+         * @param options defines the options of the sps e.g.
+         * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
+         * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
+         * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
+         * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
+         * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
          * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
          */
         constructor(name: string, scene: Scene, options?: {
@@ -23844,6 +23852,7 @@ declare module BABYLON {
          * @param model (ModelShape) is a reference to the model shape on what the particle is designed.
          * @param shapeId (integer) is the model shape identifier in the SPS.
          * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
+         * @param sps defines the sps it is associated to
          * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
          */
         constructor(particleIndex: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>);
@@ -25230,7 +25239,7 @@ declare module BABYLON {
          * @param framePerSecond The frames per second of the animation
          * @param dataType The data type of the animation
          * @param loopMode The loop mode of the animation
-         * @param enableBlendings Specifies if blending should be enabled
+         * @param enableBlending Specifies if blending should be enabled
          */
         constructor(
         /**Name of the animation */
@@ -32262,6 +32271,7 @@ declare module BABYLON {
         /**
          * Creates a new Scene
          * @param engine defines the engine to use to render this scene
+         * @param options defines the scene options
          */
         constructor(engine: Engine, options?: SceneOptions);
         private _defaultMeshCandidates;
@@ -33587,6 +33597,7 @@ declare module BABYLON {
         * Create a sound and attach it to a scene
         * @param name Name of your sound
         * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
+        * @param scene defines the scene the sound belongs to
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
         * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
         */
@@ -35578,7 +35589,7 @@ declare module BABYLON {
          * @param mesh the mesh that the bone belongs to
          * @param bone the bone that will be looking to the target
          * @param target the target Vector3 to look at
-         * @param settings optional settings:
+         * @param options optional settings:
          * * maxYaw: the maximum angle the bone will yaw to
          * * minYaw: the minimum angle the bone will yaw to
          * * maxPitch: the maximum angle the bone will pitch to
@@ -36603,14 +36614,46 @@ declare module BABYLON {
          */
         radius: number;
         /**
+         * Minimum allowed distance of the camera to the axis of rotation
+         * (The camera can not get closer).
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        lowerRadiusLimit: Nullable<number>;
+        /**
+         * Maximum allowed distance of the camera to the axis of rotation
+         * (The camera can not get further).
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        upperRadiusLimit: Nullable<number>;
+        /**
          * Define a rotation offset between the camera and the object it follows
          */
         rotationOffset: number;
+        /**
+         * Minimum allowed angle to camera position relative to target object.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        lowerRotationOffsetLimit: Nullable<number>;
+        /**
+         * Maximum allowed angle to camera position relative to target object.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        upperRotationOffsetLimit: Nullable<number>;
         /**
          * Define a height offset between the camera and the object it follows.
          * It can help following an object from the top (like a car chaing a plane)
          */
         heightOffset: number;
+        /**
+         * Minimum allowed height of camera position relative to target object.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        lowerHeightOffsetLimit: Nullable<number>;
+        /**
+         * Maximum allowed height of camera position relative to target object.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        upperHeightOffsetLimit: Nullable<number>;
         /**
          * Define how fast the camera can accelerate to follow it s target.
          */
@@ -36650,6 +36693,7 @@ declare module BABYLON {
          */
         detachControl(element: HTMLElement): void;
         /** @hidden */checkInputs(): void;
+        private _checkLimits;
         /**
          * Gets the camera class name.
          * @returns the class name
@@ -40365,8 +40409,8 @@ declare module BABYLON {
         event: ClipboardEvent;
         /**
          *Creates an instance of ClipboardInfo.
-         * @param {number} type
-         * @param {ClipboardEvent} event
+         * @param type Defines the type of event (BABYLON.ClipboardEventTypes)
+         * @param event Defines the related dom event
          */
         constructor(
         /**
@@ -42168,7 +42212,7 @@ declare module BABYLON {
         }>;
         /**
          * constructor
-         * @param options
+         * @param options Defines the options we want to customize the helper
          * @param scene The scene to add the material to
          */
         constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene);
