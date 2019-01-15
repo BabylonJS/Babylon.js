@@ -18,11 +18,11 @@ import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Material } from "../Materials/material";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { Light } from "../Lights/light";
-import { ActionManager } from "../Actions/actionManager";
 import { Skeleton } from "../Bones/skeleton";
 import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
+import { AbstractActionManager } from '../Actions/abstractActionManager';
 
 /** @hidden */
 class _FacetDataStorage {
@@ -488,7 +488,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets or sets the current action manager
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions
      */
-    public actionManager: Nullable<ActionManager> = null;
+    public actionManager: Nullable<AbstractActionManager> = null;
 
     // Collisions
     private _checkCollisions = false;
