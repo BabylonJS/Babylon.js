@@ -35,7 +35,11 @@ jobs:
     - gulp tests-babylon-unit
     - travis_retry gulp tests-validation-virtualscreen
     - travis_retry gulp tests-validation-browserstack
+  - env: JOB=ModuleTests
+    script:
+    - gulp typescript-all
     - gulp tests-modules
+    - gulp deployAndTests-es6Modules
   - env: JOB=ViewerTests
     script:
     - export DISPLAY=:99.0
