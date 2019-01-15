@@ -1,4 +1,3 @@
-declare module 'babylonjs' { export = BABYLON; }
 declare module BABYLON {
     /** Alias type for value that can be null */
     export type Nullable<T> = T | null;
@@ -18805,12 +18804,17 @@ declare module BABYLON {
          */
         static readonly CAP_ALL: number;
         private _onBeforeRenderObservable;
+        private _onBeforeBindObservable;
         private _onAfterRenderObservable;
         private _onBeforeDrawObservable;
         /**
          * An event triggered before rendering the mesh
          */
         readonly onBeforeRenderObservable: Observable<Mesh>;
+        /**
+         * An event triggered before binding the mesh
+         */
+        readonly onBeforeBindObservable: Observable<Mesh>;
         /**
         * An event triggered after rendering the mesh
         */
@@ -23704,7 +23708,7 @@ declare module BABYLON {
          * @example : just set a vertex particle position
          * @returns the updated vertex
          */
-        updateParticleVertex(vertex: Vector3): Vector3;
+        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
         /**
          * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
          * This does nothing and may be overwritten by the user.
@@ -23712,7 +23716,7 @@ declare module BABYLON {
          * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
          * @param update the boolean update value actually passed to setParticles()
          */
-        beforeUpdateParticles(): void;
+        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
         /**
          * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
          * This will be passed three parameters.
@@ -23721,7 +23725,7 @@ declare module BABYLON {
          * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
          * @param update the boolean update value actually passed to setParticles()
          */
-        afterUpdateParticles(): void;
+        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
     }
 }
 declare module BABYLON {
@@ -36484,6 +36488,63 @@ declare module BABYLON {
          * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
          */
         checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Manage the mouse wheel inputs to control a follow camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FollowCamera;
+        /**
+         * Moue wheel controls zoom. (Moue wheel modifies camera.radius value.)
+         */
+        axisControlRadius: boolean;
+        /**
+         * Moue wheel controls height. (Moue wheel modifies camera.heightOffset value.)
+         */
+        axisControlHeight: boolean;
+        /**
+         * Moue wheel controls angle. (Moue wheel modifies camera.rotationOffset value.)
+         */
+        axisControlRotation: boolean;
+        /**
+         * Gets or Set the mouse wheel precision or how fast is the camera moves in
+         * relation to mouseWheel events.
+         */
+        wheelPrecision: number;
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        wheelDeltaPercentage: number;
+        private _wheel;
+        private _observer;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
         /**
          * Gets the class name of the current intput.
          * @returns the class name
@@ -53318,7 +53379,10 @@ declare module BABYLON.GUI {
         isPointerBlocker: boolean;
         /** Gets or sets a boolean indicating if the control can be focusable */
         isFocusInvisible: boolean;
-        /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+        /**
+         * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
         clipChildren: boolean;
         /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)

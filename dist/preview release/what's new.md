@@ -89,6 +89,9 @@
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 - Added InputsManager and keyboard bindings for FollowCamera. ([mrdunk](https://github.com))
 - Fix typo in FollowCamera InputsManager when limiting rotation to 360 degrees. ([mrdunk](https://github.com))
+- In FollowCamera InputsManager, allow choice of modifier key (Alt, Ctrl and/or Shift) for each camera movement axis. ([mrdunk](https://github.com))
+- Added MouseWheel bindings for FollowCamera. ([mrdunk](https://github.com))
+- Added maximum and minimum limits for FollowCamera parameters. ([mrdunk](https://github.com))
 - Added per solid particle culling possibility : `solidParticle.isInFrustum()`  ([jerome](https://github.com/jbousquie))
 - Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
 - Added option `forceDisposeChildren` to multiMaterial.dispose ([danjpar](https://github.com/danjpar))
@@ -113,6 +116,7 @@
 ### Materials Library
 - Added the `cameraOffset` vector property in the `SkyMaterial` to get an offset according to the horizon ([julien-moreau](https://github.com/julien-moreau))
 - Fixed `GradientMaterial` to consider disableLighting working as emissive ([julien-moreau](https://github.com/julien-moreau))
+- Fixed fresnel term computation in `WaterMaterial` ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
 - Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
@@ -146,6 +150,8 @@
 - Fix more case sensitive paths ([mrdunk](https://github.com))
 - Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev)))
+- Oimo disable motor maxForce, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
+- Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
