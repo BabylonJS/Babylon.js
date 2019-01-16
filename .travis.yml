@@ -10,6 +10,8 @@ cache:
   - node_modules
   - Playground/node_modules
 install:
+- rm node_modules/@babylonjs/core -f
+- rm node_modules/@babylonjs/materials -f
 - travis_retry npm install -g gulp@4.0.0
 - travis_retry npm install -g typescript
 - cd ./Tools/Gulp
