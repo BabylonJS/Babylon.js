@@ -12,6 +12,7 @@ cache:
 install:
 - chmod 777 -R node_modules/
 - rm node_modules/@babylonjs/core
+- rm node_modules/@babylonjs/materials
 - travis_retry npm install -g gulp@4.0.0
 - travis_retry npm install -g typescript
 - cd ./Tools/Gulp
