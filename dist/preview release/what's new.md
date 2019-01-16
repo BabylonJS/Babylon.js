@@ -91,6 +91,7 @@
 - Fix typo in FollowCamera InputsManager when limiting rotation to 360 degrees. ([mrdunk](https://github.com))
 - In FollowCamera InputsManager, allow choice of modifier key (Alt, Ctrl and/or Shift) for each camera movement axis. ([mrdunk](https://github.com))
 - Added MouseWheel bindings for FollowCamera. ([mrdunk](https://github.com))
+- Tweak MouseWheel bindings for FollowCamera orientations. ([mrdunk](https://github.com))
 - Added maximum and minimum limits for FollowCamera parameters. ([mrdunk](https://github.com))
 - Added per solid particle culling possibility : `solidParticle.isInFrustum()`  ([jerome](https://github.com/jbousquie))
 - Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))

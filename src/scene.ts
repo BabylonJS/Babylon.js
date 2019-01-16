@@ -32,8 +32,7 @@ import { Animatable } from "./Animations/animatable";
 import { AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
 import { Light } from "./Lights/light";
 import { PickingInfo } from "./Collisions/pickingInfo";
-import { Collider } from "./Collisions/collider";
-import { ICollisionCoordinator, CollisionCoordinatorLegacy } from "./Collisions/collisionCoordinator";
+import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
 import { KeyboardInfoPre, KeyboardInfo, KeyboardEventTypes } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
@@ -51,6 +50,8 @@ import { DomManagement } from "./Misc/domManagement";
 import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
 import { AbstractActionManager } from './Actions/abstractActionManager';
+
+declare type Collider = import("./Collisions/collider").Collider;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -152,7 +153,15 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns The default material
      */
     public static DefaultMaterialFactory(scene: Scene): Material {
-        throw "Import StandardMaterial or Fill DefaultMaterialFactory static property on scene before relying on default material creation.";
+        throw "Import StandardMaterial or set DefaultMaterialFactory static property on scene before relying on default material creation.";
+    }
+
+    /**
+     * Factory used to create the a collision coordinator.
+     * @returns The collision coordinator
+     */
+    public static CollisionCoordinatorFactory(): ICollisionCoordinator {
+        throw "Import DefaultCollisionCoordinator or set CollisionCoordinatorFactory static property on scene to enable collisions.";
     }
 
     // Members
@@ -924,8 +933,18 @@ export class Scene extends AbstractScene implements IAnimatable {
     */
     public collisionsEnabled = true;
 
+    private _collisionCoordinator: ICollisionCoordinator;
+
     /** @hidden */
-    public collisionCoordinator: ICollisionCoordinator;
+    public get collisionCoordinator(): ICollisionCoordinator {
+        if (!this._collisionCoordinator) {
+            this._collisionCoordinator = Scene.CollisionCoordinatorFactory();
+            this._collisionCoordinator.init(this);
+        }
+
+        return this._collisionCoordinator;
+    }
+
     /**
      * Defines the gravity applied to this scene (used only for collisions)
      * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
@@ -1305,9 +1324,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             this.attachControl();
         }
 
-        //collision coordinator initialization. For now legacy per default.
-        this.workerCollisions = false; //(!!Worker && (!!CollisionWorker || WorkerIncluded));
-
         // Uniform Buffer
         this._createUbo();
 
@@ -1367,30 +1383,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.getActiveSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
         this.getIntersectingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
         this.getCollidingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
-    }
-
-    public set workerCollisions(enabled: boolean) {
-        if (!CollisionCoordinatorLegacy) {
-            return;
-        }
-
-        if (this.collisionCoordinator) {
-            this.collisionCoordinator.destroy();
-        }
-
-        this.collisionCoordinator = new CollisionCoordinatorLegacy();
-
-        this.collisionCoordinator.init(this);
-    }
-
-    /**
-     * Gets a boolean indicating if collisions are processed on a web worker
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#web-worker-based-collision-system-since-21
-     */
-    public get workerCollisions(): boolean {
-        // Worker has been deprecated.
-        // Keep for back compat.
-        return false;
     }
 
     /**
@@ -3061,10 +3053,6 @@ export class Scene extends AbstractScene implements IAnimatable {
     public addMesh(newMesh: AbstractMesh, recursive = false) {
         this.meshes.push(newMesh);
 
-        //notify the collision coordinator
-        if (this.collisionCoordinator) {
-            this.collisionCoordinator.onMeshAdded(newMesh);
-        }
         newMesh._resyncLightSources();
 
         this.onNewMeshAddedObservable.notifyObservers(newMesh);
@@ -3725,11 +3713,6 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.addGeometry(geometry);
 
-        //notify the collision coordinator
-        if (this.collisionCoordinator) {
-            this.collisionCoordinator.onGeometryAdded(geometry);
-        }
-
         this.onNewGeometryAddedObservable.notifyObservers(geometry);
 
         return true;
@@ -3765,11 +3748,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         this.geometries.pop();
-
-        //notify the collision coordinator
-        if (this.collisionCoordinator) {
-            this.collisionCoordinator.onGeometryDeleted(geometry);
-        }
 
         this.onGeometryRemovedObservable.notifyObservers(geometry);
         return true;

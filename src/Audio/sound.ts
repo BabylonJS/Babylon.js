@@ -655,30 +655,57 @@ export class Sound {
                                 // In browsers that don’t yet support this functionality,
                                 // playPromise won’t be defined.
                                 if (playPromise !== undefined) {
-                                    playPromise.catch(function(error) {
+                                    playPromise.catch((error) => {
                                         // Automatic playback failed.
                                         // Waiting for the audio engine to be unlocked by user click on unmute
                                         Engine.audioEngine.lock();
-                                        Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                        if (this.loop || this.autoplay) {
+                                            Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                        }
                                     });
                                 }
                             }
                             else {
-                                Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                if (this.loop || this.autoplay) {
+                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                }
                             }
                         };
                         tryToPlay();
                     }
                 }
                 else {
-                    this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
-                    this._soundSource.buffer = this._audioBuffer;
-                    this._soundSource.connect(this._inputAudioNode);
-                    this._soundSource.loop = this.loop;
-                    this._soundSource.playbackRate.value = this._playbackRate;
-                    this._soundSource.onended = () => { this._onended(); };
-                    if (this._soundSource.buffer) {
-                        this._soundSource.start(startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : offset ? offset : 0);
+                    var tryToPlay = () => {
+                        if (Engine.audioEngine.audioContext) {
+                            this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
+                            this._soundSource.buffer = this._audioBuffer;
+                            this._soundSource.connect(this._inputAudioNode);
+                            this._soundSource.loop = this.loop;
+                            this._soundSource.playbackRate.value = this._playbackRate;
+                            this._soundSource.onended = () => { this._onended(); };
+                            startTime = time ? Engine.audioEngine.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
+                            this._soundSource!.start(startTime, this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0);
+                        }
+                    };
+
+                    if (Engine.audioEngine.audioContext.state === "suspended") {
+                        // Wait a bit for FF as context seems late to be ready.
+                        setTimeout(() => {
+                            if (Engine.audioEngine.audioContext!.state === "suspended") {
+                                // Automatic playback failed.
+                                // Waiting for the audio engine to be unlocked by user click on unmute
+                                Engine.audioEngine.lock();
+                                if (this.loop || this.autoplay) {
+                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                }
+                            }
+                            else {
+                                tryToPlay();
+                            }
+                        }, 500);
+                    }
+                    else {
+                        tryToPlay();
                     }
                 }
                 this._startTime = startTime;

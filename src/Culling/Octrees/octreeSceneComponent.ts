@@ -3,11 +3,12 @@ import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Collider } from "../../Collisions/collider";
 import { Ray } from "../../Culling/ray";
 import { SceneComponentConstants } from "../../sceneComponent";
 
 import { Octree } from "./octree";
+
+declare type Collider = import("../../Collisions/collider").Collider;
 
 declare module "../../scene" {
     export interface Scene {

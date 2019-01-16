@@ -99,9 +99,9 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
                 if (this.axisControlRadius) {
                     this.camera.radius += delta;
                 } else if (this.axisControlHeight) {
-                    this.camera.heightOffset += delta;
+                    this.camera.heightOffset -= delta;
                 } else if (this.axisControlRotation) {
-                    this.camera.rotationOffset += delta;
+                    this.camera.rotationOffset -= delta;
                 }
             }
 
