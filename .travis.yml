@@ -10,6 +10,7 @@ cache:
   - node_modules
   - Playground/node_modules
 install:
+- chmod 755 -R node_modules/
 - travis_retry npm install -g gulp@4.0.0
 - travis_retry npm install -g typescript
 - cd ./Tools/Gulp
