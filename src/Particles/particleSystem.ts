@@ -15,7 +15,6 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
-import { Animation } from "../Animations/animation";
 import { BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
@@ -24,6 +23,7 @@ import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { DeepCopier } from "../Misc/deepCopier";
+import { _TypeStore } from '../Misc/typeStore';
 
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
@@ -2349,7 +2349,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (parsedParticleSystem.animations) {
             for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
                 var parsedAnimation = parsedParticleSystem.animations[animationIndex];
-                particleSystem.animations.push(Animation.Parse(parsedAnimation));
+                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    particleSystem.animations.push(internalClass.Parse(parsedAnimation));
+                }
             }
             particleSystem.beginAnimationOnStart = parsedParticleSystem.beginAnimationOnStart;
             particleSystem.beginAnimationFrom = parsedParticleSystem.beginAnimationFrom;

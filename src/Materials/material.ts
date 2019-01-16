@@ -14,10 +14,11 @@ import { UniformBuffer } from "./uniformBuffer";
 import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Animation } from "../Animations/animation";
 import { MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
+
+declare type Animation = import("../Animations/animation").Animation;
 
 declare var BABYLON: any;
 

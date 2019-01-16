@@ -7,7 +7,6 @@ import { Skeleton } from "./Bones/skeleton";
 import { MorphTargetManager } from "./Morph/morphTargetManager";
 import { AssetContainer } from "./assetContainer";
 import { IParticleSystem } from "./Particles/IParticleSystem";
-import { Animation } from "./Animations/animation";
 import { AnimationGroup } from "./Animations/animationGroup";
 import { BaseTexture } from "./Materials/Textures/baseTexture";
 import { Material } from "./Materials/material";
@@ -16,6 +15,8 @@ import { AbstractActionManager } from "./Actions/abstractActionManager";
 import { Camera } from "./Cameras/camera";
 import { Light } from "./Lights/light";
 import { Node } from "./node";
+
+declare type Animation = import("./Animations/animation").Animation;
 
 /**
  * Defines how the parser contract is defined.

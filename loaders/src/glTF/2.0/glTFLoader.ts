@@ -5,7 +5,7 @@ import { LoadFileError, IFileRequest, Tools } from "babylonjs/Misc/tools";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-import { Animation, IAnimationKey, AnimationKeyInterpolation } from "babylonjs/Animations/animation";
+import { Animation } from "babylonjs/Animations/animation";
 import { Bone } from "babylonjs/Bones/bone";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
@@ -22,11 +22,11 @@ import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { MorphTargetManager } from "babylonjs/Morph/morphTargetManager";
 import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
-
 import { IProperty, AccessorType, CameraType, AnimationChannelTargetPath, AnimationSamplerInterpolation, AccessorComponentType, MaterialAlphaMode, TextureMinFilter, TextureWrapMode, TextureMagFilter, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem, _ISamplerData } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
+import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
