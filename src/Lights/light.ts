@@ -6,8 +6,9 @@ import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
 import { UniformBuffer } from "../Materials/uniformBuffer";
-import { Animation } from "../Animations/animation";
 import { IShadowGenerator } from "./Shadows/shadowGenerator";
+import { _TypeStore } from '../Misc/typeStore';
+
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
  * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
@@ -610,8 +611,10 @@ export abstract class Light extends Node {
         if (parsedLight.animations) {
             for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
                 var parsedAnimation = parsedLight.animations[animationIndex];
-
-                light.animations.push(Animation.Parse(parsedAnimation));
+                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    light.animations.push(internalClass.Parse(parsedAnimation));
+                }
             }
             Node.ParseAnimationRanges(light, parsedLight, scene);
         }

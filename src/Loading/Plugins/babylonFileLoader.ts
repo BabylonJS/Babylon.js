@@ -11,7 +11,6 @@ import { Material } from "../../Materials/material";
 import { MultiMaterial } from "../../Materials/multiMaterial";
 import { CubeTexture } from "../../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture";
-import { Animation } from "../../Animations/animation";
 import { AnimationGroup } from "../../Animations/animationGroup";
 import { Light } from "../../Lights/light";
 import { SceneComponentConstants } from "../../sceneComponent";
@@ -27,6 +26,7 @@ import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { CannonJSPlugin } from "../../Physics/Plugins/cannonJSPlugin";
 import { OimoJSPlugin } from "../../Physics/Plugins/oimoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
+import { _TypeStore } from '../../Misc/typeStore';
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
@@ -104,11 +104,14 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         if (parsedData.animations !== undefined && parsedData.animations !== null) {
             for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
                 var parsedAnimation = parsedData.animations[index];
-                var animation = Animation.Parse(parsedAnimation);
-                scene.animations.push(animation);
-                container.animations.push(animation);
-                log += (index === 0 ? "\n\tAnimations:" : "");
-                log += "\n\t\t" + animation.toString(fullDetails);
+                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    let animation = internalClass.Parse(parsedAnimation);
+                    scene.animations.push(animation);
+                    container.animations.push(animation);
+                    log += (index === 0 ? "\n\tAnimations:" : "");
+                    log += "\n\t\t" + animation.toString(fullDetails);
+                }
             }
         }
 
@@ -376,7 +379,7 @@ SceneLoader.RegisterPlugin({
                                         parsedData.geometries[geometryType].forEach((parsedGeometryData: any) => {
                                             if (parsedGeometryData.id === parsedMesh.geometryId) {
                                                 switch (geometryType) {
-                                                       case "vertexData":
+                                                    case "vertexData":
                                                         Geometry.Parse(parsedGeometryData, scene, rootUrl);
                                                         break;
                                                 }

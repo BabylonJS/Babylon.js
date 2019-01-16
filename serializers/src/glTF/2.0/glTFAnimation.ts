@@ -3,13 +3,14 @@ import { AnimationSamplerInterpolation, AnimationChannelTargetPath, AccessorType
 import { Nullable } from "babylonjs/types";
 import { Vector3, Quaternion } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
-import { Animation, IAnimationKey, AnimationKeyInterpolation } from "babylonjs/Animations/animation";
+import { Animation } from "babylonjs/Animations/animation";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 
 import { _BinaryWriter } from "./glTFExporter";
 import { _GLTFUtilities } from "./glTFUtilities";
+import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 
 /**
  * @hidden

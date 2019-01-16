@@ -3,11 +3,12 @@ import { Skeleton } from "./skeleton";
 import { Vector3, Quaternion, Matrix, Space } from "../Maths/math";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Nullable } from "../types";
-import { Animation } from "../Animations/animation";
-import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
+
+declare type Animation = import("../Animations/animation").Animation;
+declare type AnimationPropertiesOverride = import("../Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 
 /**
  * Class used to store bone information
@@ -360,77 +361,6 @@ export class Bone extends Node {
     private _markAsDirtyAndDecompose() {
         this.markAsDirty();
         this._needToDecompose = true;
-    }
-
-    /**
-     * Copy an animation range from another bone
-     * @param source defines the source bone
-     * @param rangeName defines the range name to copy
-     * @param frameOffset defines the frame offset
-     * @param rescaleAsRequired defines if rescaling must be applied if required
-     * @param skelDimensionsRatio defines the scaling ratio
-     * @returns true if operation was successful
-     */
-    public copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired = false, skelDimensionsRatio: Nullable<Vector3> = null): boolean {
-        // all animation may be coming from a library skeleton, so may need to create animation
-        if (this.animations.length === 0) {
-            this.animations.push(new Animation(this.name, "_matrix", source.animations[0].framePerSecond, Animation.ANIMATIONTYPE_MATRIX, 0));
-            this.animations[0].setKeys([]);
-        }
-
-        // get animation info / verify there is such a range from the source bone
-        var sourceRange = source.animations[0].getRange(rangeName);
-        if (!sourceRange) {
-            return false;
-        }
-        var from = sourceRange.from;
-        var to = sourceRange.to;
-        var sourceKeys = source.animations[0].getKeys();
-
-        // rescaling prep
-        var sourceBoneLength = source.length;
-        var sourceParent = source.getParent();
-        var parent = this.getParent();
-        var parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
-        var parentRatio = parentScalingReqd && parent && sourceParent ? parent.length / sourceParent.length : 1;
-
-        var dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
-
-        var destKeys = this.animations[0].getKeys();
-
-        // loop vars declaration
-        var orig: { frame: number, value: Matrix };
-        var origTranslation: Vector3;
-        var mat: Matrix;
-
-        for (var key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
-            orig = sourceKeys[key];
-            if (orig.frame >= from && orig.frame <= to) {
-                if (rescaleAsRequired) {
-                    mat = orig.value.clone();
-
-                    // scale based on parent ratio, when bone has parent
-                    if (parentScalingReqd) {
-                        origTranslation = mat.getTranslation();
-                        mat.setTranslation(origTranslation.scaleInPlace(parentRatio));
-
-                        // scale based on skeleton dimension ratio when root bone, and value is passed
-                    } else if (dimensionsScalingReqd && skelDimensionsRatio) {
-                        origTranslation = mat.getTranslation();
-                        mat.setTranslation(origTranslation.multiplyInPlace(skelDimensionsRatio));
-
-                        // use original when root bone, and no data for skelDimensionsRatio
-                    } else {
-                        mat = orig.value;
-                    }
-                } else {
-                    mat = orig.value;
-                }
-                destKeys.push({ frame: orig.frame + frameOffset, value: mat });
-            }
-        }
-        this.animations[0].createRange(rangeName, from + frameOffset, to + frameOffset);
-        return true;
     }
 
     /**
