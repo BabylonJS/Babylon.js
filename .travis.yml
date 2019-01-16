@@ -37,6 +37,7 @@ jobs:
     - travis_retry gulp tests-validation-browserstack
   - env: JOB=ModuleTests
     script:
+    - npm install -g webpack webpack-cli
     - gulp typescript-all
     - gulp tests-modules
     - gulp deployAndTests-es6Modules
@@ -48,7 +49,6 @@ jobs:
     - set -e
     - gulp typescript-all
     - gulp tests-viewer-unit
-    - npm install -g webpack webpack-cli
     - travis_retry gulp tests-viewer-validation-virtualscreen
     - travis_retry gulp tests-viewer-validation-browserstack
 notifications:
