@@ -294,7 +294,7 @@
                                 // Convert to float as WebGL auto converts types but DirectX native implementations do not.
                                 let nativeBuffer = vertexBuffer._nativeBuffer;
                                 if (!nativeBuffer) {
-                                    const floatData = new Float32Array(vertexBuffer.byteLength / Float32Array.BYTES_PER_ELEMENT);
+                                    const floatData = new Float32Array(vertexBuffer.byteLength / vertexBuffer.byteStride * vertexBuffer.getSize());
                                     vertexBuffer.forEach(floatData.length, (value, index) => floatData[index] = value);
                                     nativeBuffer = this._native.createVertexBuffer(floatData);
                                     vertexBuffer._nativeBuffer = nativeBuffer;
