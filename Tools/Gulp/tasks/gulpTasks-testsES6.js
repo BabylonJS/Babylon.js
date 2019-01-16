@@ -11,7 +11,7 @@ const colorConsole = require("../../NodeHelpers/colorConsole");
 var config = require("../../Config/config.js");
 
 // Base Line Path.
-var baseLinePath = path.resolve(config.computed.rootFolder, "tests/es6Modules/packagesSizeBaseLine.json");
+var baseLinePath = path.resolve(config.computed.rootFolder, "dist/preview release/packagesSizeBaseLine.json");
 var es6TestsFolder = path.resolve(config.computed.rootFolder, "tests/es6Modules");
 var es6TestsWebpackFile = path.resolve(es6TestsFolder, "webpack.config.js");
 
@@ -31,7 +31,7 @@ gulp.task("tests-es6Modules", function(done) {
     });
 
     colorConsole.log("Bundle test app");
-    var result = shelljs.exec("webpack", {
+    var result = shelljs.exec("npx webpack", {
         async: false,
         cwd: es6TestsFolder
     });
