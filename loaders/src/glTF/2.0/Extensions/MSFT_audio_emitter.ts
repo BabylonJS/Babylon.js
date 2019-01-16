@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { Vector3 } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-import { AnimationEvent } from "babylonjs/Animations/animation";
+import { AnimationEvent } from "babylonjs/Animations/animationEvent";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Sound } from "babylonjs/Audio/sound";
 import { WeightedSound } from "babylonjs/Audio/weightedsound";

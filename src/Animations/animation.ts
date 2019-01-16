@@ -1,223 +1,19 @@
 import { IEasingFunction, EasingFunction } from "./easing";
-import { Path2, Vector3, Quaternion, Vector2, Color3, Size, Matrix } from "../Maths/math";
+import { Vector3, Quaternion, Vector2, Color3, Size, Matrix } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
 
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { IAnimatable } from "../Misc/tools";
-import { Node } from "../node";
-import { Texture } from "../Materials/Textures/texture";
 import { SerializationHelper } from "../Misc/decorators";
+import { _TypeStore } from '../Misc/typeStore';
+import { IAnimationKey, AnimationKeyInterpolation } from './animationKey';
+import { AnimationRange } from './animationRange';
+import { AnimationEvent } from './animationEvent';
+import { Node } from "../node";
 
 declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
-
-/**
- * Represents the range of an animation
- */
-export class AnimationRange {
-    /**
-     * Initializes the range of an animation
-     * @param name The name of the animation range
-     * @param from The starting frame of the animation
-     * @param to The ending frame of the animation
-     */
-    constructor(
-        /**The name of the animation range**/
-        public name: string,
-        /**The starting frame of the animation */
-        public from: number,
-        /**The ending frame of the animation*/
-        public to: number) {
-    }
-
-    /**
-     * Makes a copy of the animation range
-     * @returns A copy of the animation range
-     */
-    public clone(): AnimationRange {
-        return new AnimationRange(this.name, this.from, this.to);
-    }
-}
-
-/**
- * Composed of a frame, and an action function
- */
-export class AnimationEvent {
-    /**
-     * Specifies if the animation event is done
-     */
-    public isDone: boolean = false;
-
-    /**
-     * Initializes the animation event
-     * @param frame The frame for which the event is triggered
-     * @param action The event to perform when triggered
-     * @param onlyOnce Specifies if the event should be triggered only once
-     */
-    constructor(
-        /** The frame for which the event is triggered **/
-        public frame: number,
-        /** The event to perform when triggered **/
-        public action: (currentFrame: number) => void,
-        /** Specifies if the event should be triggered only once**/
-        public onlyOnce?: boolean) {
-    }
-
-    /** @hidden */
-    public _clone(): AnimationEvent {
-        return new AnimationEvent(this.frame, this.action, this.onlyOnce);
-    }
-}
-
-/**
- * A cursor which tracks a point on a path
- */
-export class PathCursor {
-    /**
-     * Stores path cursor callbacks for when an onchange event is triggered
-     */
-    private _onchange = new Array<(cursor: PathCursor) => void>();
-
-    /**
-     * The value of the path cursor
-     */
-    value: number = 0;
-
-    /**
-     * The animation array of the path cursor
-     */
-    animations = new Array<Animation>();
-
-    /**
-     * Initializes the path cursor
-     * @param path The path to track
-     */
-    constructor(private path: Path2) {
-    }
-
-    /**
-     * Gets the cursor point on the path
-     * @returns A point on the path cursor at the cursor location
-     */
-    public getPoint(): Vector3 {
-        var point = this.path.getPointAtLengthPosition(this.value);
-        return new Vector3(point.x, 0, point.y);
-    }
-
-    /**
-     * Moves the cursor ahead by the step amount
-     * @param step The amount to move the cursor forward
-     * @returns This path cursor
-     */
-    public moveAhead(step: number = 0.002): PathCursor {
-        this.move(step);
-
-        return this;
-    }
-
-    /**
-     * Moves the cursor behind by the step amount
-     * @param step The amount to move the cursor back
-     * @returns This path cursor
-     */
-    public moveBack(step: number = 0.002): PathCursor {
-        this.move(-step);
-
-        return this;
-    }
-
-    /**
-     * Moves the cursor by the step amount
-     * If the step amount is greater than one, an exception is thrown
-     * @param step The amount to move the cursor
-     * @returns This path cursor
-     */
-    public move(step: number): PathCursor {
-
-        if (Math.abs(step) > 1) {
-            throw "step size should be less than 1.";
-        }
-
-        this.value += step;
-        this.ensureLimits();
-        this.raiseOnChange();
-
-        return this;
-    }
-
-    /**
-     * Ensures that the value is limited between zero and one
-     * @returns This path cursor
-     */
-    private ensureLimits(): PathCursor {
-        while (this.value > 1) {
-            this.value -= 1;
-        }
-        while (this.value < 0) {
-            this.value += 1;
-        }
-
-        return this;
-    }
-
-    /**
-     * Runs onchange callbacks on change (used by the animation engine)
-     * @returns This path cursor
-     */
-    private raiseOnChange(): PathCursor {
-        this._onchange.forEach((f) => f(this));
-
-        return this;
-    }
-
-    /**
-     * Executes a function on change
-     * @param f A path cursor onchange callback
-     * @returns This path cursor
-     */
-    public onchange(f: (cursor: PathCursor) => void): PathCursor {
-        this._onchange.push(f);
-
-        return this;
-    }
-}
-
-/**
- * Defines an interface which represents an animation key frame
- */
-export interface IAnimationKey {
-    /**
-     * Frame of the key frame
-     */
-    frame: number;
-    /**
-     * Value at the specifies key frame
-     */
-    value: any;
-    /**
-     * The input tangent for the cubic hermite spline
-     */
-    inTangent?: any;
-    /**
-     * The output tangent for the cubic hermite spline
-     */
-    outTangent?: any;
-    /**
-     * The animation interpolation type
-     */
-    interpolation?: AnimationKeyInterpolation;
-}
-
-/**
- * Enum for the animation key frame interpolation type
- */
-export enum AnimationKeyInterpolation {
-    /**
-     * Do not interpolate between keys and use the start key value only. Tangents are ignored
-     */
-    STEP = 1
-}
 
 /**
  * Class used to store any kind of animation
@@ -1238,5 +1034,5 @@ export class Animation {
     }
 }
 
-Texture._AnimationParser = Animation.Parse;
+_TypeStore.RegisteredTypes["BABYLON.Animation"] = Animation;
 Node._AnimationRangeFactory = (name: string, from: number, to: number) => new AnimationRange(name, from, to);
