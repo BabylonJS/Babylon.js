@@ -11,6 +11,7 @@ cache:
   - Playground/node_modules
 install:
 - chmod 777 -R node_modules/
+- rm node_modules/@babylonjs/core
 - travis_retry npm install -g gulp@4.0.0
 - travis_retry npm install -g typescript
 - cd ./Tools/Gulp
