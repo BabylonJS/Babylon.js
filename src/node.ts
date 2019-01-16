@@ -10,8 +10,7 @@ import { EngineStore } from "./Engines/engineStore";
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Animation = import("./Animations/animation").Animation;
-declare type AnimationRange = import("./Animations/animation").AnimationRange;
-
+declare type AnimationRange = import("./Animations/animationRange").AnimationRange;
 declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
 
 /**
