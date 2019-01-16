@@ -21,7 +21,6 @@ import { Material } from "../Materials/material";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { Skeleton } from "../Bones/skeleton";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
-import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
@@ -30,6 +29,8 @@ import { _TypeStore } from '../Misc/typeStore';
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
 declare type GroundMesh = import("./groundMesh").GroundMesh;
+declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysicsEnabledObject;
+declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
 
 declare var earcut: any;
 
@@ -2402,8 +2403,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Instances
     /** @hidden */
-    public static _instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
+    public static _instancedMeshFactory(name: string, mesh: Mesh): InstancedMesh {
         throw "Import InstancedMesh before creating instances.";
+    }
+
+    /** @hidden */
+    public static _PhysicsImpostorParser(scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
+        throw "Import PhysicsImpostor before parsing physics objects.";
     }
 
     /**
@@ -2905,11 +2911,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Physics
         if (parsedMesh.physicsImpostor) {
-            mesh.physicsImpostor = new PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
-                mass: parsedMesh.physicsMass,
-                friction: parsedMesh.physicsFriction,
-                restitution: parsedMesh.physicsRestitution
-            }, scene);
+            Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
         }
 
         // Instances
@@ -2962,11 +2964,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 // Physics
                 if (parsedInstance.physicsImpostor) {
-                    instance.physicsImpostor = new PhysicsImpostor(instance, parsedInstance.physicsImpostor, {
-                        mass: parsedInstance.physicsMass,
-                        friction: parsedInstance.physicsFriction,
-                        restitution: parsedInstance.physicsRestitution
-                    }, scene);
+                    Mesh._PhysicsImpostorParser(scene, instance, parsedInstance);
                 }
 
                 // Animation
