@@ -12,8 +12,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Ray } from "../Culling/ray";
 import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
-
-import { Animation } from "../Animations/animation";
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -1211,8 +1210,10 @@ export class Camera extends Node {
         if (parsedCamera.animations) {
             for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
                 var parsedAnimation = parsedCamera.animations[animationIndex];
-
-                camera.animations.push(Animation.Parse(parsedAnimation));
+                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    camera.animations.push(internalClass.Parse(parsedAnimation));
+                }
             }
             Node.ParseAnimationRanges(camera, parsedCamera, scene);
         }
