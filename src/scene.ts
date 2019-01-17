@@ -37,7 +37,6 @@ import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
-import { Ray } from "./Culling/ray";
 import { Node } from "./node";
 import { MorphTarget } from "./Morph/morphTarget";
 import { Constants } from "./Engines/constants";
@@ -45,7 +44,9 @@ import { DomManagement } from "./Misc/domManagement";
 import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
 import { AbstractActionManager } from './Actions/abstractActionManager';
+import { _DevTools } from './Misc/devTools';
 
+declare type Ray = import("./Culling/ray").Ray;
 declare type Animation = import("./Animations/animation").Animation;
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
@@ -152,7 +153,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns The default material
      */
     public static DefaultMaterialFactory(scene: Scene): Material {
-        throw "Import StandardMaterial or set DefaultMaterialFactory static property on scene before relying on default material creation.";
+        throw _DevTools.WarnImport("StandardMaterial");
     }
 
     /**
@@ -160,7 +161,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns The collision coordinator
      */
     public static CollisionCoordinatorFactory(): ICollisionCoordinator {
-        throw "Import DefaultCollisionCoordinator or set CollisionCoordinatorFactory static property on scene to enable collisions.";
+        throw _DevTools.WarnImport("DefaultCollisionCoordinator");
     }
 
     // Members
@@ -1091,8 +1092,6 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
     private _alternateSceneUbo: UniformBuffer;
-
-    private _pickWithRayInverseMatrix: Matrix;
 
     private _viewMatrix: Matrix;
     private _projectionMatrix: Matrix;
@@ -4690,11 +4689,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a Ray
      */
     public createPickingRay(x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
-        let result = Ray.Zero();
-
-        this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
-
-        return result;
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -4708,25 +4703,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public createPickingRayToRef(x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
-        var engine = this._engine;
-
-        if (!camera) {
-            if (!this.activeCamera) {
-                throw new Error("Active camera not set");
-            }
-
-            camera = this.activeCamera;
-        }
-
-        var cameraViewport = camera.viewport;
-        var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-
-        // Moving coordinates to local viewport world
-        x = x / this._engine.getHardwareScalingLevel() - viewport.x;
-        y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-
-        result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
-        return this;
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -4737,11 +4714,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a Ray
      */
     public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray {
-        let result = Ray.Zero();
-
-        this.createPickingRayInCameraSpaceToRef(x, y, result, camera);
-
-        return result;
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -4753,103 +4726,8 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
-        if (!PickingInfo) {
-            return this;
-        }
-
-        var engine = this._engine;
-
-        if (!camera) {
-            if (!this.activeCamera) {
-                throw new Error("Active camera not set");
-            }
-
-            camera = this.activeCamera;
-        }
-
-        var cameraViewport = camera.viewport;
-        var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-        var identity = Matrix.Identity();
-
-        // Moving coordinates to local viewport world
-        x = x / this._engine.getHardwareScalingLevel() - viewport.x;
-        y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-        result.update(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
-        return this;
+        throw _DevTools.WarnImport("Ray");
     }
-
-    private _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
-        if (!PickingInfo) {
-            return null;
-        }
-
-        var pickingInfo = null;
-
-        for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-            var mesh = this.meshes[meshIndex];
-
-            if (predicate) {
-                if (!predicate(mesh)) {
-                    continue;
-                }
-            } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
-                continue;
-            }
-
-            var world = mesh.getWorldMatrix();
-            var ray = rayFunction(world);
-
-            var result = mesh.intersects(ray, fastCheck);
-            if (!result || !result.hit) {
-                continue;
-            }
-
-            if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance) {
-                continue;
-            }
-
-            pickingInfo = result;
-
-            if (fastCheck) {
-                break;
-            }
-        }
-
-        return pickingInfo || new PickingInfo();
-    }
-
-    private _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
-        if (!PickingInfo) {
-            return null;
-        }
-        var pickingInfos = new Array<PickingInfo>();
-
-        for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-            var mesh = this.meshes[meshIndex];
-
-            if (predicate) {
-                if (!predicate(mesh)) {
-                    continue;
-                }
-            } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
-                continue;
-            }
-
-            var world = mesh.getWorldMatrix();
-            var ray = rayFunction(world);
-
-            var result = mesh.intersects(ray, false);
-            if (!result || !result.hit) {
-                continue;
-            }
-
-            pickingInfos.push(result);
-        }
-
-        return pickingInfos;
-    }
-
-    private _tempPickingRay: Nullable<Ray> = Ray ? Ray.Zero() : null;
 
     /** Launch a ray to try to pick a mesh in the scene
      * @param x position on screen
@@ -4860,20 +4738,8 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a PickingInfo
      */
     public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
-        if (!PickingInfo) {
-            return null;
-        }
-        var result = this._internalPick((world) => {
-            this.createPickingRayToRef(x, y, world, this._tempPickingRay!, camera || null);
-            return this._tempPickingRay!;
-        }, predicate, fastCheck);
-        if (result) {
-            result.ray = this.createPickingRay(x, y, Matrix.Identity(), camera || null);
-        }
-        return result;
+        throw _DevTools.WarnImport("Ray");
     }
-
-    private _cachedRayForTransform: Ray;
 
     /** Use the given ray to pick a mesh in the scene
      * @param ray The ray to use to pick meshes
@@ -4882,23 +4748,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a PickingInfo
      */
     public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
-        var result = this._internalPick((world) => {
-            if (!this._pickWithRayInverseMatrix) {
-                this._pickWithRayInverseMatrix = Matrix.Identity();
-            }
-            world.invertToRef(this._pickWithRayInverseMatrix);
-
-            if (!this._cachedRayForTransform) {
-                this._cachedRayForTransform = Ray.Zero();
-            }
-
-            Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
-            return this._cachedRayForTransform;
-        }, predicate, fastCheck);
-        if (result) {
-            result.ray = ray;
-        }
-        return result;
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -4910,7 +4760,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns an array of PickingInfo
      */
     public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
-        return this._internalMultiPick((world) => this.createPickingRay(x, y, world, camera || null), predicate);
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -4920,19 +4770,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns an array of PickingInfo
      */
     public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
-        return this._internalMultiPick((world) => {
-            if (!this._pickWithRayInverseMatrix) {
-                this._pickWithRayInverseMatrix = Matrix.Identity();
-            }
-            world.invertToRef(this._pickWithRayInverseMatrix);
-
-            if (!this._cachedRayForTransform) {
-                this._cachedRayForTransform = Ray.Zero();
-            }
-
-            Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
-            return this._cachedRayForTransform;
-        }, predicate);
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**

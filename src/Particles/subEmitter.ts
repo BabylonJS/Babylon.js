@@ -1,6 +1,7 @@
 import { Vector3 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
+import { _DevTools } from '../Misc/devTools';
 
 declare type Scene = import("../scene").Scene;
 declare type ParticleSystem = import("../Particles/particleSystem").ParticleSystem;
@@ -102,7 +103,7 @@ export class SubEmitter {
 
     /** @hidden */
     public static _ParseParticleSystem(system: any, scene: Scene, rootUrl: string): ParticleSystem {
-        throw "Import ParseParticle before parsing SubEmitter.";
+        throw _DevTools.WarnImport("ParseParticle");
     }
 
     /**

@@ -6,7 +6,6 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { Vector3 } from "../Maths/math";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";
-import { Ray } from "../Culling/ray";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
@@ -17,6 +16,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
+declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * Defines the minimum interface to fullfil in order to be a sprite manager.

@@ -1,6 +1,7 @@
 import { Tags } from "../Misc/tags";
 import { Nullable } from "../types";
 import { Color4, Quaternion, Color3, Vector2, Vector3 } from "../Maths/math";
+import { _DevTools } from './devTools';
 
 declare type Scene = import("../scene").Scene;
 declare type Camera = import("../Cameras/camera").Camera;
@@ -209,22 +210,22 @@ export function serializeAsCameraReference(sourceName?: string) {
 export class SerializationHelper {
     /** hidden */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
-        throw "ImageProcessingConfiguration needs to be imported before being deserialized.";
+        throw _DevTools.WarnImport("ImageProcessingConfiguration");
     }
 
     /** hidden */
     public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
-        throw "FresnelParameters needs to be imported before being deserialized.";
+        throw _DevTools.WarnImport("FresnelParameters");
     }
 
     /** hidden */
     public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
-        throw "ColorCurves needs to be imported before being deserialized.";
+        throw _DevTools.WarnImport("ColorCurves");
     }
 
     /** hidden */
     public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
-        throw "Texture needs to be imported before being deserialized.";
+        throw _DevTools.WarnImport("Texture");
     }
 
     /**
