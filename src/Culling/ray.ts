@@ -6,6 +6,8 @@ import { PickingInfo } from "../Collisions/pickingInfo";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
+import { Scene } from '../scene';
+import { Camera } from '../Cameras/camera';
 /**
  * Class representing a ray with position and direction
  */
@@ -530,3 +532,234 @@ export class Ray {
         this.direction.normalize();
     }
 }
+
+// Picking
+
+declare module "../scene" {
+    export interface Scene {
+        /** @hidden */
+        _tempPickingRay: Nullable<Ray>;
+
+        /** @hidden */
+        _cachedRayForTransform: Ray;
+
+        /** @hidden */
+        _pickWithRayInverseMatrix: Matrix;
+
+        /** @hidden */
+        _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+
+        /** @hidden */
+        _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]>;
+
+    }
+}
+
+Scene.prototype.createPickingRay = function(x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
+    let result = Ray.Zero();
+
+    this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
+
+    return result;
+};
+
+Scene.prototype.createPickingRayToRef = function(x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
+    var engine = this.getEngine();
+
+    if (!camera) {
+        if (!this.activeCamera) {
+            throw new Error("Active camera not set");
+        }
+
+        camera = this.activeCamera;
+    }
+
+    var cameraViewport = camera.viewport;
+    var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+
+    // Moving coordinates to local viewport world
+    x = x / engine.getHardwareScalingLevel() - viewport.x;
+    y = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
+
+    result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
+    return this;
+};
+
+Scene.prototype.createPickingRayInCameraSpace = function(x: number, y: number, camera?: Camera): Ray {
+    let result = Ray.Zero();
+
+    this.createPickingRayInCameraSpaceToRef(x, y, result, camera);
+
+    return result;
+};
+
+Scene.prototype.createPickingRayInCameraSpaceToRef = function(x: number, y: number, result: Ray, camera?: Camera): Scene {
+    if (!PickingInfo) {
+        return this;
+    }
+
+    var engine = this.getEngine();
+
+    if (!camera) {
+        if (!this.activeCamera) {
+            throw new Error("Active camera not set");
+        }
+
+        camera = this.activeCamera;
+    }
+
+    var cameraViewport = camera.viewport;
+    var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    var identity = Matrix.Identity();
+
+    // Moving coordinates to local viewport world
+    x = x / engine.getHardwareScalingLevel() - viewport.x;
+    y = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
+    result.update(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+    return this;
+};
+
+Scene.prototype._internalPick = function(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
+    if (!PickingInfo) {
+        return null;
+    }
+
+    var pickingInfo = null;
+
+    for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
+        var mesh = this.meshes[meshIndex];
+
+        if (predicate) {
+            if (!predicate(mesh)) {
+                continue;
+            }
+        } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
+            continue;
+        }
+
+        var world = mesh.getWorldMatrix();
+        var ray = rayFunction(world);
+
+        var result = mesh.intersects(ray, fastCheck);
+        if (!result || !result.hit) {
+            continue;
+        }
+
+        if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance) {
+            continue;
+        }
+
+        pickingInfo = result;
+
+        if (fastCheck) {
+            break;
+        }
+    }
+
+    return pickingInfo || new PickingInfo();
+};
+
+Scene.prototype._internalMultiPick = function(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
+    if (!PickingInfo) {
+        return null;
+    }
+    var pickingInfos = new Array<PickingInfo>();
+
+    for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
+        var mesh = this.meshes[meshIndex];
+
+        if (predicate) {
+            if (!predicate(mesh)) {
+                continue;
+            }
+        } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
+            continue;
+        }
+
+        var world = mesh.getWorldMatrix();
+        var ray = rayFunction(world);
+
+        var result = mesh.intersects(ray, false);
+        if (!result || !result.hit) {
+            continue;
+        }
+
+        pickingInfos.push(result);
+    }
+
+    return pickingInfos;
+};
+
+Scene.prototype.pick = function(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+    if (!PickingInfo) {
+        return null;
+    }
+    var result = this._internalPick((world) => {
+        if (!this._tempPickingRay) {
+            this._tempPickingRay = Ray.Zero();
+        }
+
+        this.createPickingRayToRef(x, y, world, this._tempPickingRay, camera || null);
+        return this._tempPickingRay;
+    }, predicate, fastCheck);
+    if (result) {
+        result.ray = this.createPickingRay(x, y, Matrix.Identity(), camera || null);
+    }
+    return result;
+};
+
+Scene.prototype.pickWithRay = function(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
+    var result = this._internalPick((world) => {
+        if (!this._pickWithRayInverseMatrix) {
+            this._pickWithRayInverseMatrix = Matrix.Identity();
+        }
+        world.invertToRef(this._pickWithRayInverseMatrix);
+
+        if (!this._cachedRayForTransform) {
+            this._cachedRayForTransform = Ray.Zero();
+        }
+
+        Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
+        return this._cachedRayForTransform;
+    }, predicate, fastCheck);
+    if (result) {
+        result.ray = ray;
+    }
+    return result;
+};
+
+Scene.prototype.multiPick = function(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
+    return this._internalMultiPick((world) => this.createPickingRay(x, y, world, camera || null), predicate);
+};
+
+Scene.prototype.multiPickWithRay = function(ray: Ray, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
+    return this._internalMultiPick((world) => {
+        if (!this._pickWithRayInverseMatrix) {
+            this._pickWithRayInverseMatrix = Matrix.Identity();
+        }
+        world.invertToRef(this._pickWithRayInverseMatrix);
+
+        if (!this._cachedRayForTransform) {
+            this._cachedRayForTransform = Ray.Zero();
+        }
+
+        Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
+        return this._cachedRayForTransform;
+    }, predicate);
+};
+
+Camera.prototype.getForwardRay = function(length = 100, transform?: Matrix, origin?: Vector3): Ray {
+    if (!transform) {
+        transform = this.getWorldMatrix();
+    }
+
+    if (!origin) {
+        origin = this.position;
+    }
+    var forward = this._scene.useRightHandedSystem ? new Vector3(0, 0, -1) : new Vector3(0, 0, 1);
+    var forwardWorld = Vector3.TransformNormal(forward, transform);
+
+    var direction = Vector3.Normalize(forwardWorld);
+
+    return new Ray(origin, direction, length);
+};

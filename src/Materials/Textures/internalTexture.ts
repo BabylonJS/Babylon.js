@@ -6,6 +6,7 @@ import { IInternalTextureTracker } from "../../Materials/Textures/internalTextur
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
+import { _DevTools } from '../../Misc/devTools';
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
@@ -18,7 +19,7 @@ export class InternalTexture implements IInternalTextureTracker {
 
     /** hidden */
     public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> => {
-        throw "environmentTextureTools needs to be imported before rebuilding RGBD textures.";
+        throw _DevTools.WarnImport("environmentTextureTools");
     }
 
     /**
