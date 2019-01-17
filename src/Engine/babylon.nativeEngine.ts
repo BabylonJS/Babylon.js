@@ -2,12 +2,18 @@
     interface INativeEngine {
         requestAnimationFrame(callback: () => void): void;
 
+        createVertexArray(): any;
+        deleteVertexArray(vertexArray: any): void;
+        bindVertexArray(vertexArray: any): void;
+
         createIndexBuffer(data: ArrayBufferView): any;
-        bindIndexBuffer(buffer: any): void;
         deleteIndexBuffer(buffer: any): void;
+        recordIndexBuffer(vertexArray: any, buffer: any): void;
+
         createVertexBuffer(data: Float32Array): any;
-        bindVertexBuffer(buffer: any, location: number, byteOffset: number, byteStride: number): void;
         deleteVertexBuffer(buffer: any): void;
+        recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number): void;
+
         createProgram(vertexShader: string, fragmentShader: string): WebGLProgram;
         getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
         getAttributes(shaderProgram: WebGLProgram, attributeNames: string[]): number[];
@@ -68,7 +74,7 @@
         _nativeIndexBuffer?: any;
         _nativeVertexBuffer?: any;
 
-        // Vertex buffers that are holding native vertex buffers that required conversion to float
+        // Vertex buffers that required conversion to float
         _vertexBuffers?: VertexBufferInfo[];
     }
 
@@ -216,7 +222,7 @@
             this._caps.drawBuffersExtension = false;
 
             this._caps.depthTextureExtension = false;
-            this._caps.vertexArrayObject = false;
+            this._caps.vertexArrayObject = true;
             this._caps.instancedArrays = false;
 
             Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
@@ -262,10 +268,12 @@
             } as WebGLBufferInfo;
         }
 
-        public bindBuffers(vertexBuffers: { [key: string]: VertexBufferInfo }, indexBuffer: WebGLBufferInfo, effect: Effect): void {
+        public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBufferInfo; }, indexBuffer: Nullable<WebGLBufferInfo>, effect: Effect): WebGLVertexArrayObject {
+            var vertexArray = this._native.createVertexArray();
+
             // Index
             if (indexBuffer) {
-                this._native.bindIndexBuffer(indexBuffer._nativeIndexBuffer);
+                this._native.recordIndexBuffer(vertexArray, indexBuffer._nativeIndexBuffer);
             }
 
             // Vertex
@@ -287,7 +295,7 @@
                                     const length = data.byteLength / Float32Array.BYTES_PER_ELEMENT;
                                     buffer._nativeVertexBuffer = this._native.createVertexBuffer(new Float32Array(data.buffer, data.byteOffset, length));
                                 }
-                                this._native.bindVertexBuffer(buffer._nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride);
+                                this._native.recordVertexBuffer(vertexArray, buffer._nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride);
                             }
                             else {
                                 // TODO: do this only for implementations that require it.
@@ -301,12 +309,22 @@
                                     buffer._vertexBuffers = buffer._vertexBuffers || [];
                                     buffer._vertexBuffers.push(vertexBuffer);
                                 }
-                                this._native.bindVertexBuffer(nativeBuffer, location, 0, vertexBuffer.getSize() * Float32Array.BYTES_PER_ELEMENT);
+                                this._native.recordVertexBuffer(vertexArray, nativeBuffer, location, 0, vertexBuffer.getSize() * Float32Array.BYTES_PER_ELEMENT);
                             }
                         }
                     }
                 }
             }
+
+            return vertexArray;
+        }
+
+        public bindVertexArrayObject(vertexArray: WebGLVertexArrayObject, indexBuffer: Nullable<WebGLBuffer>): void {
+            this._native.bindVertexArray(vertexArray);
+        }
+
+        public releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject) {
+            this._native.deleteVertexArray(vertexArray);
         }
 
         public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[] {
