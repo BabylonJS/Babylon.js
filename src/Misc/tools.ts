@@ -10,6 +10,7 @@ import { Logger } from "./logger";
 import { _TypeStore } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from './precisionDate';
+import { _DevTools } from './devTools';
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -1346,7 +1347,7 @@ export class Tools {
      * Check your browser for supported MIME types
      */
     public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
-        throw "Import ScreenshotTools before creating screenshot.";
+        throw _DevTools.WarnImport("ScreenshotTools");
     }
 
     /**
@@ -1369,7 +1370,7 @@ export class Tools {
      * @param fileName A name for for the downloaded file.
      */
     public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
-        throw "Import ScreenshotTools before creating screenshot.";
+        throw _DevTools.WarnImport("ScreenshotTools");
     }
 
     /**

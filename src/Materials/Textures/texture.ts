@@ -8,6 +8,7 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { _AlphaState } from "../../States/index";
 import { _TypeStore } from '../../Misc/typeStore';
+import { _DevTools } from '../../Misc/devTools';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -20,15 +21,15 @@ declare type RenderTargetTexture = import("../../Materials/Textures/renderTarget
 export class Texture extends BaseTexture {
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
-        throw "CubeTexture needs to be imported before being deserialized.";
+        throw _DevTools.WarnImport("CubeTexture");
     }
     /** @hidden */
     public static _CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
-        throw "MirrorTexture needs to be imported before being deserialized.";
+        throw _DevTools.WarnImport("MirrorTexture");
     }
     /** @hidden */
     public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): RenderTargetTexture => {
-        throw "RenderTargetTexture needs to be imported before being deserialized.";
+        throw _DevTools.WarnImport("RenderTargetTexture");
     }
 
     /** nearest is mag = nearest and min = nearest and mip = linear */

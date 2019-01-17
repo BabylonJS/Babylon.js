@@ -21,15 +21,17 @@ import { Material } from "../Materials/material";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { Skeleton } from "../Bones/skeleton";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
-import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
+import { _DevTools } from '../Misc/devTools';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
 declare type GroundMesh = import("./groundMesh").GroundMesh;
+declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysicsEnabledObject;
+declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
 
 declare var earcut: any;
 
@@ -2402,8 +2404,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Instances
     /** @hidden */
-    public static _instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
-        throw "Import InstancedMesh before creating instances.";
+    public static _instancedMeshFactory(name: string, mesh: Mesh): InstancedMesh {
+        throw _DevTools.WarnImport("InstancedMesh");
+    }
+
+    /** @hidden */
+    public static _PhysicsImpostorParser(scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
+        throw _DevTools.WarnImport("PhysicsImpostor");
     }
 
     /**
@@ -2693,7 +2700,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Statics
     /** @hidden */
     public static _GroundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
-        throw "Import GroundMesh before trying to parse it.";
+        throw _DevTools.WarnImport("GroundMesh");
     }
 
     /**
@@ -2905,11 +2912,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Physics
         if (parsedMesh.physicsImpostor) {
-            mesh.physicsImpostor = new PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
-                mass: parsedMesh.physicsMass,
-                friction: parsedMesh.physicsFriction,
-                restitution: parsedMesh.physicsRestitution
-            }, scene);
+            Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
         }
 
         // Instances
@@ -2962,11 +2965,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 // Physics
                 if (parsedInstance.physicsImpostor) {
-                    instance.physicsImpostor = new PhysicsImpostor(instance, parsedInstance.physicsImpostor, {
-                        mass: parsedInstance.physicsMass,
-                        friction: parsedInstance.physicsFriction,
-                        restitution: parsedInstance.physicsRestitution
-                    }, scene);
+                    Mesh._PhysicsImpostorParser(scene, instance, parsedInstance);
                 }
 
                 // Animation
@@ -3005,7 +3004,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3019,7 +3018,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
       * @returns a new Mesh
       */
     public static CreateDisc(name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3032,7 +3031,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateBox(name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3046,7 +3045,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
       * @returns a new Mesh
       */
     public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3063,7 +3062,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene?: Scene, updatable?: any, sideOrientation?: number): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     // Torus  (Code from SharpDX.org)
@@ -3079,7 +3078,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3097,7 +3096,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3110,7 +3109,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateLines(name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3126,7 +3125,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3147,7 +3146,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3164,7 +3163,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static ExtrudePolygon(name: string, shape: Vector3[], depth: number, scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3185,7 +3184,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3209,7 +3208,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3226,7 +3225,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3239,7 +3238,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3254,7 +3253,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3272,7 +3271,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3293,7 +3292,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void, alphaFilter?: number): GroundMesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3315,7 +3314,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3338,7 +3337,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
       * @returns a new Mesh
       */
     public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3357,7 +3356,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see http://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
      */
     public static CreateIcoSphere(name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     /**
@@ -3373,7 +3372,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new Mesh
      */
     public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh {
-        throw "Import MeshBuilder before creating meshes.";
+        throw _DevTools.WarnImport("MeshBuilder");
     }
 
     // Skeletons

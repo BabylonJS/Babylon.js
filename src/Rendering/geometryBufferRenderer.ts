@@ -12,6 +12,7 @@ import { Scene } from "../scene";
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
+import { _DevTools } from '../Misc/devTools';
 
 /**
  * This renderer is helpfull to fill one of the render target with a geometry buffer.
@@ -124,7 +125,7 @@ export class GeometryBufferRenderer {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw "Import GeometryBufferRendererSceneComponent before creating GeometryBufferRenderer.";
+        throw _DevTools.WarnImport("GeometryBufferRendererSceneComponent");
     }
 
     /**
