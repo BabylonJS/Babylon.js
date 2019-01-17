@@ -3641,16 +3641,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         var material = meshes[index].material;
                         if (material instanceof MultiMaterial) {
                             for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
-                                materialArray.push(<Material>material.subMaterials[matIndex]);
+                                if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
+                                    materialArray.push(<Material>material.subMaterials[matIndex]);
+                                }
                             }
                             for (subIndex = 0; subIndex < meshes[index].subMeshes.length; subIndex++) {
-                                materialIndexArray.push(meshes[index].subMeshes[subIndex].materialIndex + maxValue);
+                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[meshes[index].subMeshes[subIndex].materialIndex]));
                                 indiceArray.push(meshes[index].subMeshes[subIndex].indexCount);
                             }
                         } else {
-                            materialArray.push(<Material>material);
+                            if (materialArray.indexOf(<Material>material) < 0) {
+                                materialArray.push(<Material>material);
+                            }
                             for (subIndex = 0; subIndex < meshes[index].subMeshes.length; subIndex++) {
-                                materialIndexArray.push(0 + maxValue);
+                                materialIndexArray.push(materialArray.indexOf(<Material>material));
                                 indiceArray.push(meshes[index].subMeshes[subIndex].indexCount);
                             }
                         }
