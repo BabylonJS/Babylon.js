@@ -26,6 +26,7 @@ import { DynamicTexture } from "../../Materials/Textures/dynamicTexture";
 import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingPostProcess";
 import { SineEase, EasingFunction, CircleEase } from "../../Animations/easing";
 import { Animation } from "../../Animations/animation";
+import { VRCameraMetrics } from '../../Cameras/VR/vrCameraMetrics';
 
 import "../../Meshes/Builders/groundBuilder";
 import "../../Meshes/Builders/torusBuilder";
@@ -65,6 +66,10 @@ export interface VRExperienceHelperOptions extends WebVROptions {
      * A list of meshes to be used as the teleportation floor. If specified, teleportation will be enabled (default: undefined)
      */
     floorMeshes?: Mesh[];
+    /**
+     * Distortion metrics for the fallback vrDeviceOrientationCamera (default: VRCameraMetrics.Default)
+     */
+    vrDeviceOrientationCameraMetrics?: VRCameraMetrics;
 }
 
 class VRExperienceHelperGazer implements IDisposable {
@@ -678,7 +683,7 @@ export class VRExperienceHelper {
 
         // Create VR cameras
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
-            this._vrDeviceOrientationCamera = new VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene);
+            this._vrDeviceOrientationCamera = new VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene, true, webVROptions.vrDeviceOrientationCameraMetrics);
             this._vrDeviceOrientationCamera.angularSensibility = Number.MAX_VALUE;
         }
         this._webVRCamera = new WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
