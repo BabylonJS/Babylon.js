@@ -4,7 +4,6 @@ import { Matrix, Vector3, Plane } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "./buffer";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import { Ray } from "../Culling/ray";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
@@ -15,6 +14,7 @@ declare type MaterialDefines = import("../Materials/materialDefines").MaterialDe
 declare type MultiMaterial = import("../Materials/multiMaterial").MultiMaterial;
 declare type AbstractMesh = import("./abstractMesh").AbstractMesh;
 declare type Mesh = import("./mesh").Mesh;
+declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * Base class for submeshes

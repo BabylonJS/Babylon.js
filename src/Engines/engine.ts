@@ -28,6 +28,7 @@ import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
 import { EngineStore } from "./engineStore";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { _DevTools } from '../Misc/devTools';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
@@ -530,7 +531,7 @@ export class Engine {
      * @returns The loading screen
      */
     public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
-        throw "Import LoadingScreen or set DefaultLoadingScreenFactory on engine before using the loading screen";
+        throw _DevTools.WarnImport("LoadingScreen");
     }
 
     /**
