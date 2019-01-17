@@ -1592,7 +1592,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     // Pointers handling
     private _setRayOnPointerInfo(pointerInfo: PointerInfo) {
-        if (pointerInfo.pickInfo) {
+        if (pointerInfo.pickInfo && !pointerInfo.pickInfo._pickingUnavailable) {
             if (!pointerInfo.pickInfo.ray) {
                 pointerInfo.pickInfo.ray = this.createPickingRay(pointerInfo.event.offsetX, pointerInfo.event.offsetY, Matrix.Identity(), this.activeCamera);
             }
@@ -4178,6 +4178,11 @@ export class Scene extends AbstractScene implements IAnimatable {
         return 1000.0 / 60.0; // frame time in ms
     }
 
+    /** @hidden */
+    public _animate(): void {
+        // Nothing to do as long as Animatable have not been imported.
+    }
+
     /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -4738,7 +4743,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a PickingInfo
      */
     public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
-        throw _DevTools.WarnImport("Ray");
+        // Dummy info if picking as not been imported
+        const pi = new PickingInfo();
+        pi._pickingUnavailable = true;
+        return pi;
     }
 
     /** Use the given ray to pick a mesh in the scene
