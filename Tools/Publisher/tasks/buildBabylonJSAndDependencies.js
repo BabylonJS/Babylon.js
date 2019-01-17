@@ -8,7 +8,7 @@ const colorConsole = require("../../NodeHelpers/colorConsole");
  */
 function buildBabylonJSAndDependencies() {
     colorConsole.log("Running gulp compilation");
-    let exec = shelljs.exec("gulp typescript-libraries typescript-es6", {
+    let exec = shelljs.exec("gulp typescript-all", {
         cwd: path.resolve(__dirname, "../../Gulp/")
     });
     if (exec.code) {
