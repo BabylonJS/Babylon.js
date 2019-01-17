@@ -16,6 +16,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/lensFlare.fragment";
 import "../Shaders/lensFlare.vertex";
+import { _DevTools } from '../Misc/devTools';
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -65,7 +66,7 @@ export class LensFlareSystem {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw "Import LensFlareSystemSceneComponent before creating LensFlareSystem.";
+        throw _DevTools.WarnImport("LensFlareSystemSceneComponent");
     }
 
     /**
