@@ -3613,7 +3613,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var matIndex: number;
             subdivideWithSubMeshes = false;
         }
-        var maxValue = 0;
         var materialArray: Array<Material> = new Array<Material>();
         var materialIndexArray: Array<number> = new Array<number>();
         // Merge
@@ -3623,48 +3622,48 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var source: Nullable<Mesh> = null;
         for (index = 0; index < meshes.length; index++) {
             if (meshes[index]) {
-                const wm = meshes[index].computeWorldMatrix(true);
-                otherVertexData = VertexData.ExtractFromMesh(meshes[index], true, true);
+                var mesh = meshes[index];
+                const wm = mesh.computeWorldMatrix(true);
+                otherVertexData = VertexData.ExtractFromMesh(mesh, true, true);
                 otherVertexData.transform(wm);
 
                 if (vertexData) {
                     vertexData.merge(otherVertexData, allow32BitsIndices);
                 } else {
                     vertexData = otherVertexData;
-                    source = meshes[index];
+                    source = mesh;
                 }
                 if (subdivideWithSubMeshes) {
-                    indiceArray.push(meshes[index].getTotalIndices());
+                    indiceArray.push(mesh.getTotalIndices());
                 }
                 if (multiMultiMaterials) {
-                    if (meshes[index].material) {
-                        var material = meshes[index].material;
+                    if (mesh.material) {
+                        var material = mesh.material;
                         if (material instanceof MultiMaterial) {
                             for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
                                 if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
                                     materialArray.push(<Material>material.subMaterials[matIndex]);
                                 }
                             }
-                            for (subIndex = 0; subIndex < meshes[index].subMeshes.length; subIndex++) {
-                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[meshes[index].subMeshes[subIndex].materialIndex]));
-                                indiceArray.push(meshes[index].subMeshes[subIndex].indexCount);
+                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
+                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                             }
                         } else {
                             if (materialArray.indexOf(<Material>material) < 0) {
                                 materialArray.push(<Material>material);
                             }
-                            for (subIndex = 0; subIndex < meshes[index].subMeshes.length; subIndex++) {
+                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                                 materialIndexArray.push(materialArray.indexOf(<Material>material));
-                                indiceArray.push(meshes[index].subMeshes[subIndex].indexCount);
+                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                             }
                         }
                     } else {
-                        for (subIndex = 0; subIndex < meshes[index].subMeshes.length; subIndex++) {
+                        for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             materialIndexArray.push(0);
-                            indiceArray.push(meshes[index].subMeshes[subIndex].indexCount);
+                            indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                         }
                     }
-                    maxValue = materialArray.length;
                 }
             }
         }
