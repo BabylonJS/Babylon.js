@@ -32,6 +32,9 @@ import "../../Meshes/Builders/groundBuilder";
 import "../../Meshes/Builders/torusBuilder";
 import "../../Meshes/Builders/cylinderBuilder";
 
+import "../../Gamepads/gamepadSceneComponent";
+import "../../Animations/animatable";
+
 /**
  * Options to modify the vr teleportation behavior.
  */
