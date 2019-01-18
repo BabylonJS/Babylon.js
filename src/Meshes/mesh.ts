@@ -18,6 +18,7 @@ import { BoundingInfo } from "../Culling/boundingInfo";
 import { BoundingSphere } from "../Culling/boundingSphere";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
+import { MultiMaterial } from "../Materials/multiMaterial";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { Skeleton } from "../Bones/skeleton";
 import { MorphTargetManager } from "../Morph/morphTargetManager";
@@ -3586,9 +3587,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
      * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
      * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
+     * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
-    public static MergeMeshes(meshes: Array<Mesh>, disposeSource = true, allow32BitsIndices?: boolean, meshSubclass?: Mesh, subdivideWithSubMeshes?: boolean): Nullable<Mesh> {
+    public static MergeMeshes(meshes: Array<Mesh>, disposeSource = true, allow32BitsIndices?: boolean, meshSubclass?: Mesh, subdivideWithSubMeshes?: boolean, multiMultiMaterials?: boolean): Nullable<Mesh> {
         var index: number;
         if (!allow32BitsIndices) {
             var totalVertices = 0;
@@ -3605,7 +3607,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
         }
-
+        if (multiMultiMaterials) {
+            var newMultiMaterial: Nullable<MultiMaterial> = null;
+            var subIndex: number;
+            var matIndex: number;
+            subdivideWithSubMeshes = false;
+        }
+        var materialArray: Array<Material> = new Array<Material>();
+        var materialIndexArray: Array<number> = new Array<number>();
         // Merge
         var vertexData: Nullable<VertexData> = null;
         var otherVertexData: VertexData;
@@ -3613,19 +3622,48 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var source: Nullable<Mesh> = null;
         for (index = 0; index < meshes.length; index++) {
             if (meshes[index]) {
-                const wm = meshes[index].computeWorldMatrix(true);
-                otherVertexData = VertexData.ExtractFromMesh(meshes[index], true, true);
+                var mesh = meshes[index];
+                const wm = mesh.computeWorldMatrix(true);
+                otherVertexData = VertexData.ExtractFromMesh(mesh, true, true);
                 otherVertexData.transform(wm);
 
                 if (vertexData) {
                     vertexData.merge(otherVertexData, allow32BitsIndices);
                 } else {
                     vertexData = otherVertexData;
-                    source = meshes[index];
+                    source = mesh;
                 }
-
                 if (subdivideWithSubMeshes) {
-                    indiceArray.push(meshes[index].getTotalIndices());
+                    indiceArray.push(mesh.getTotalIndices());
+                }
+                if (multiMultiMaterials) {
+                    if (mesh.material) {
+                        var material = mesh.material;
+                        if (material instanceof MultiMaterial) {
+                            for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
+                                if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
+                                    materialArray.push(<Material>material.subMaterials[matIndex]);
+                                }
+                            }
+                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
+                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                            }
+                        } else {
+                            if (materialArray.indexOf(<Material>material) < 0) {
+                                materialArray.push(<Material>material);
+                            }
+                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(<Material>material));
+                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                            }
+                        }
+                    } else {
+                        for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            materialIndexArray.push(0);
+                            indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                        }
+                    }
                 }
             }
         }
@@ -3639,7 +3677,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         (<VertexData>vertexData).applyToMesh(meshSubclass);
 
         // Setting properties
-        meshSubclass.material = source.material;
         meshSubclass.checkCollisions = source.checkCollisions;
 
         // Cleaning
@@ -3652,7 +3689,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Subdivide
-        if (subdivideWithSubMeshes) {
+        if (subdivideWithSubMeshes || multiMultiMaterials) {
 
             //-- removal of global submesh
             meshSubclass.releaseSubMeshes();
@@ -3665,6 +3702,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 offset += indiceArray[index];
                 index++;
             }
+        }
+
+        if (multiMultiMaterials) {
+            newMultiMaterial = new MultiMaterial(source.name + "_merged", source.getScene());
+            newMultiMaterial.subMaterials = materialArray;
+            for (subIndex = 0; subIndex < meshSubclass.subMeshes.length; subIndex++) {
+                meshSubclass.subMeshes[subIndex].materialIndex = materialIndexArray[subIndex];
+            }
+            meshSubclass.material = newMultiMaterial;
+        } else {
+            meshSubclass.material = source.material;
         }
 
         return meshSubclass;
