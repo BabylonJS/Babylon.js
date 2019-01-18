@@ -1,5 +1,6 @@
 import { Animatable } from "./animatable";
-import { IAnimationKey, Animation } from "./animation";
+import { Animation } from "./animation";
+import { IAnimationKey } from "./animationKey";
 
 import { Scene, IDisposable } from "../scene";
 import { Observable } from "../Misc/observable";

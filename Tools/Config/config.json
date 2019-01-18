@@ -60,7 +60,7 @@
     "additionalNpmPackages": [
         {
             "name": "gltf2interface",
-            "path": "dist/preview release/gltf2interface"
+            "path": "dist/preview release/glTF2Interface"
         }
     ],
     "core": {

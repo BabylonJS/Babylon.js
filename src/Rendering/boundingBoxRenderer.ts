@@ -12,6 +12,8 @@ import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 
+import "../Meshes/Builders/boxBuilder";
+
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
 

@@ -9,13 +9,14 @@ import { Mesh } from "../Meshes/mesh";
 import { AutoRotationBehavior } from "../Behaviors/Cameras/autoRotationBehavior";
 import { BouncingBehavior } from "../Behaviors/Cameras/bouncingBehavior";
 import { FramingBehavior } from "../Behaviors/Cameras/framingBehavior";
-import { Collider } from "../Collisions/collider";
 import { Camera } from "./camera";
 import { TargetCamera } from "./targetCamera";
 import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
 import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
 import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
+
+declare type Collider = import("../Collisions/collider").Collider;
 
 Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
     return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
@@ -949,13 +950,14 @@ export class ArcRotateCamera extends TargetCamera {
 
         target.addToRef(this._computationVector, this._newPosition);
         if (this.getScene().collisionsEnabled && this.checkCollisions) {
+            const coordinator = this.getScene().collisionCoordinator;
             if (!this._collider) {
-                this._collider = new Collider();
+                this._collider = coordinator.createCollider();
             }
             this._collider._radius = this.collisionRadius;
             this._newPosition.subtractToRef(this.position, this._collisionVelocity);
             this._collisionTriggered = true;
-            this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            coordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         } else {
             this.position.copyFrom(this._newPosition);
 

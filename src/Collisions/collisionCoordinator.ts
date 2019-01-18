@@ -3,26 +3,17 @@ import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { Collider } from "./collider";
-import { Geometry } from "../Meshes/geometry";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 
 /** @hidden */
 export interface ICollisionCoordinator {
+    createCollider(): Collider;
     getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
     init(scene: Scene): void;
-    destroy(): void;
-
-    //Update meshes and geometries
-    onMeshAdded(mesh: AbstractMesh): void;
-    onMeshUpdated(mesh: AbstractMesh): void;
-    onMeshRemoved(mesh: AbstractMesh): void;
-    onGeometryAdded(geometry: Geometry): void;
-    onGeometryUpdated(geometry: Geometry): void;
-    onGeometryDeleted(geometry: Geometry): void;
 }
 
 /** @hidden */
-export class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+export class DefaultCollisionCoordinator implements ICollisionCoordinator {
 
     private _scene: Scene;
 
@@ -45,21 +36,13 @@ export class CollisionCoordinatorLegacy implements ICollisionCoordinator {
         onNewPosition(collisionIndex, this._finalPosition, collider.collidedMesh);
     }
 
+    public createCollider(): Collider {
+        return new Collider();
+    }
+
     public init(scene: Scene): void {
         this._scene = scene;
     }
-
-    public destroy(): void {
-        //Legacy need no destruction method.
-    }
-
-    //No update in legacy mode
-    public onMeshAdded(mesh: AbstractMesh) { }
-    public onMeshUpdated(mesh: AbstractMesh) { }
-    public onMeshRemoved(mesh: AbstractMesh) { }
-    public onGeometryAdded(geometry: Geometry) { }
-    public onGeometryUpdated(geometry: Geometry) { }
-    public onGeometryDeleted(geometry: Geometry) { }
 
     private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: Nullable<AbstractMesh> = null): void {
         var closeDistance = Engine.CollisionsEpsilon * 10.0;
@@ -100,3 +83,7 @@ export class CollisionCoordinatorLegacy implements ICollisionCoordinator {
         this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
     }
 }
+
+Scene.CollisionCoordinatorFactory = () => {
+    return new DefaultCollisionCoordinator();
+};

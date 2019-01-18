@@ -7,7 +7,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
-import "../Meshes/meshBuilder";
+import "../Meshes/Builders/sphereBuilder";
 
 /**
  * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.

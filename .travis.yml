@@ -10,6 +10,8 @@ cache:
   - node_modules
   - Playground/node_modules
 install:
+- rm node_modules/@babylonjs/core -f
+- rm node_modules/@babylonjs/materials -f
 - travis_retry npm install -g gulp@4.0.0
 - travis_retry npm install -g typescript
 - cd ./Tools/Gulp
@@ -35,7 +37,11 @@ jobs:
     - gulp tests-babylon-unit
     - travis_retry gulp tests-validation-virtualscreen
     - travis_retry gulp tests-validation-browserstack
+  - env: JOB=ModuleTests
+    script:
+    - gulp typescript-all
     - gulp tests-modules
+    - gulp deployAndTests-es6Modules
   - env: JOB=ViewerTests
     script:
     - export DISPLAY=:99.0
