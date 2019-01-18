@@ -11,6 +11,9 @@ declare type Ray = import("../Culling/ray").Ray;
      * @see https://doc.babylonjs.com/babylon101/picking_collisions
      */
 export class PickingInfo {
+    /** @hidden */
+    public _pickingUnavailable = false;
+
     /**
      * If the pick collided with an object
      */

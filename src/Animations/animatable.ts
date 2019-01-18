@@ -448,9 +448,6 @@ declare module "../scene" {
         /** @hidden */
         _processLateAnimationBindings(): void;
 
-        /** @hidden */
-        _animate(): void;
-
         /**
          * Will start the animation sequence of a given target
          * @param target defines the target
