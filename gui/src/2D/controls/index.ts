@@ -21,5 +21,6 @@ export * from "./displayGrid";
 export * from "./sliders/baseSlider";
 export * from "./sliders/slider";
 export * from "./sliders/imageBasedSlider";
+export * from "./sliders/scrollBar";
 
 export * from "./statics";

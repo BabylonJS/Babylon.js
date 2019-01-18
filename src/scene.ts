@@ -5,7 +5,7 @@ import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Tmp, Quaternion, Frustum } from "./Maths/math";
+import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Tmp, Frustum } from "./Maths/math";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -25,32 +25,33 @@ import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfigu
 import { Effect } from "./Materials/effect";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { MultiMaterial } from "./Materials/multiMaterial";
-import { Animation } from "./Animations/animation";
-import { RuntimeAnimation } from "./Animations/runtimeAnimation";
-import { AnimationGroup } from "./Animations/animationGroup";
-import { Animatable } from "./Animations/animatable";
-import { AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
 import { Light } from "./Lights/light";
 import { PickingInfo } from "./Collisions/pickingInfo";
-import { Collider } from "./Collisions/collider";
-import { ICollisionCoordinator, CollisionCoordinatorLegacy } from "./Collisions/collisionCoordinator";
+import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
 import { KeyboardInfoPre, KeyboardInfo, KeyboardEventTypes } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
-import { ActionManager } from "./Actions/actionManager";
 import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
-import { Ray } from "./Culling/ray";
 import { Node } from "./node";
 import { MorphTarget } from "./Morph/morphTarget";
 import { Constants } from "./Engines/constants";
 import { DomManagement } from "./Misc/domManagement";
 import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
+import { AbstractActionManager } from './Actions/abstractActionManager';
+import { _DevTools } from './Misc/devTools';
+
+declare type Ray = import("./Culling/ray").Ray;
+declare type Animation = import("./Animations/animation").Animation;
+declare type Animatable = import("./Animations/animatable").Animatable;
+declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
+declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
+declare type Collider = import("./Collisions/collider").Collider;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -152,7 +153,15 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns The default material
      */
     public static DefaultMaterialFactory(scene: Scene): Material {
-        throw "Import StandardMaterial or Fill DefaultMaterialFactory static property on scene before relying on default material creation.";
+        throw _DevTools.WarnImport("StandardMaterial");
+    }
+
+    /**
+     * Factory used to create the a collision coordinator.
+     * @returns The collision coordinator
+     */
+    public static CollisionCoordinatorFactory(): ICollisionCoordinator {
+        throw _DevTools.WarnImport("DefaultCollisionCoordinator");
     }
 
     // Members
@@ -583,7 +592,9 @@ export class Scene extends AbstractScene implements IAnimatable {
     public onMeshImportedObservable = new Observable<AbstractMesh>();
 
     // Animations
-    private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
+
+    /** @hidden */
+    public _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
     // Pointers
     /**
@@ -639,7 +650,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     public static ExclusiveDoubleClickMode = false;
 
     private _initClickEvent: (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
-    private _initActionManager: (act: Nullable<ActionManager>, clickInfo: ClickInfo) => Nullable<ActionManager>;
+    private _initActionManager: (act: Nullable<AbstractActionManager>, clickInfo: ClickInfo) => Nullable<AbstractActionManager>;
     private _delayedSimpleClick: (btn: number, clickInfo: ClickInfo, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
     private _delayedSimpleClickTimeout: number;
     private _previousDelayedSimpleClickTimeout: number;
@@ -924,8 +935,18 @@ export class Scene extends AbstractScene implements IAnimatable {
     */
     public collisionsEnabled = true;
 
+    private _collisionCoordinator: ICollisionCoordinator;
+
     /** @hidden */
-    public collisionCoordinator: ICollisionCoordinator;
+    public get collisionCoordinator(): ICollisionCoordinator {
+        if (!this._collisionCoordinator) {
+            this._collisionCoordinator = Scene.CollisionCoordinatorFactory();
+            this._collisionCoordinator.init(this);
+        }
+
+        return this._collisionCoordinator;
+    }
+
     /**
      * Defines the gravity applied to this scene (used only for collisions)
      * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
@@ -989,7 +1010,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Gets or sets the action manager associated with the scene
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions
     */
-    public actionManager: ActionManager;
+    public actionManager: AbstractActionManager;
 
     private _meshesForIntersections = new SmartArrayNoDuplicate<AbstractMesh>(256);
 
@@ -1013,8 +1034,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     private _animationRatio: number;
 
-    private _animationTimeLast: number;
-    private _animationTime: number = 0;
+    /** @hidden */
+    public _animationTimeLast: number;
+
+    /** @hidden */
+    public _animationTime: number = 0;
+
     /**
      * Gets or sets a general scale for animation speed
      * @see https://www.babylonjs-playground.com/#IBU2W7#3
@@ -1041,7 +1066,9 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** @hidden */
     public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
     private _activeRequests = new Array<IFileRequest>();
-    private _pendingData = new Array();
+
+    /** @hidden */
+    public _pendingData = new Array();
     private _isDisposed = false;
 
     /**
@@ -1065,8 +1092,6 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
     private _alternateSceneUbo: UniformBuffer;
-
-    private _pickWithRayInverseMatrix: Matrix;
 
     private _viewMatrix: Matrix;
     private _projectionMatrix: Matrix;
@@ -1305,9 +1330,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             this.attachControl();
         }
 
-        //collision coordinator initialization. For now legacy per default.
-        this.workerCollisions = false; //(!!Worker && (!!CollisionWorker || WorkerIncluded));
-
         // Uniform Buffer
         this._createUbo();
 
@@ -1367,30 +1389,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.getActiveSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
         this.getIntersectingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
         this.getCollidingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
-    }
-
-    public set workerCollisions(enabled: boolean) {
-        if (!CollisionCoordinatorLegacy) {
-            return;
-        }
-
-        if (this.collisionCoordinator) {
-            this.collisionCoordinator.destroy();
-        }
-
-        this.collisionCoordinator = new CollisionCoordinatorLegacy();
-
-        this.collisionCoordinator.init(this);
-    }
-
-    /**
-     * Gets a boolean indicating if collisions are processed on a web worker
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#web-worker-based-collision-system-since-21
-     */
-    public get workerCollisions(): boolean {
-        // Worker has been deprecated.
-        // Keep for back compat.
-        return false;
     }
 
     /**
@@ -1594,7 +1592,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     // Pointers handling
     private _setRayOnPointerInfo(pointerInfo: PointerInfo) {
-        if (pointerInfo.pickInfo) {
+        if (pointerInfo.pickInfo && !pointerInfo.pickInfo._pickingUnavailable) {
             if (!pointerInfo.pickInfo.ray) {
                 pointerInfo.pickInfo.ray = this.createPickingRay(pointerInfo.event.offsetX, pointerInfo.event.offsetY, Matrix.Identity(), this.activeCamera);
             }
@@ -1874,7 +1872,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     * @param attachMove defines if you want to attach events to pointermove
     */
     public attachControl(attachUp = true, attachDown = true, attachMove = true): void {
-        this._initActionManager = (act: Nullable<ActionManager>, clickInfo: ClickInfo): Nullable<ActionManager> => {
+        this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 let pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
@@ -1900,12 +1898,12 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._initClickEvent = (obs1: Observable<PointerInfoPre>, obs2: Observable<PointerInfo>, evt: PointerEvent, cb: (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => void): void => {
             let clickInfo = new ClickInfo();
             this._currentPickResult = null;
-            let act: Nullable<ActionManager> = null;
+            let act: Nullable<AbstractActionManager> = null;
 
             let checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
                 || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
                 || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-            if (!checkPicking && ActionManager) {
+            if (!checkPicking && AbstractActionManager) {
                 act = this._initActionManager(act, clickInfo);
                 if (act) {
                     checkPicking = act.hasPickTriggers;
@@ -1925,7 +1923,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                         checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
                             !obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
 
-                        if (checkSingleClickImmediately && !ActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
+                        if (checkSingleClickImmediately && !AbstractActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
                             act = this._initActionManager(act, clickInfo);
                             if (act) {
                                 checkSingleClickImmediately = !act.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger);
@@ -1951,7 +1949,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
                     let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) ||
                         obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-                    if (!checkDoubleClick && ActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
+                    if (!checkDoubleClick && AbstractActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
                         act = this._initActionManager(act, clickInfo);
                         if (act) {
                             checkDoubleClick = act.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger);
@@ -2128,7 +2126,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 }
 
                 // Meshes
-                if (!this._meshPickProceed && (ActionManager && ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
+                if (!this._meshPickProceed && (AbstractActionManager && AbstractActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
                     this._initActionManager(null, clickInfo);
                 }
                 if (!pickResult) {
@@ -2488,188 +2486,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         }, 150);
     }
 
-    // Animations
-
-    /**
-     * Will start the animation sequence of a given target
-     * @param target defines the target
-     * @param from defines from which frame should animation start
-     * @param to defines until which frame should animation run.
-     * @param weight defines the weight to apply to the animation (1.0 by default)
-     * @param loop defines if the animation loops
-     * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-     * @param onAnimationEnd defines the function to be executed when the animation ends
-     * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-     * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
-     * @param onAnimationLoop defines the callback to call when an animation loops
-     * @returns the animatable object created for this animation
-     */
-    public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0,
-        onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable {
-
-        let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask, onAnimationLoop);
-        returnedAnimatable.weight = weight;
-
-        return returnedAnimatable;
-    }
-
-    /**
-     * Will start the animation sequence of a given target
-     * @param target defines the target
-     * @param from defines from which frame should animation start
-     * @param to defines until which frame should animation run.
-     * @param loop defines if the animation loops
-     * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-     * @param onAnimationEnd defines the function to be executed when the animation ends
-     * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-     * @param stopCurrent defines if the current animations must be stopped first (true by default)
-     * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
-     * @param onAnimationLoop defines the callback to call when an animation loops
-     * @returns the animatable object created for this animation
-     */
-    public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
-        onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
-        targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable {
-
-        if (from > to && speedRatio > 0) {
-            speedRatio *= -1;
-        }
-
-        if (stopCurrent) {
-            this.stopAnimation(target, undefined, targetMask);
-        }
-
-        if (!animatable) {
-            animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, undefined, onAnimationLoop);
-        }
-
-        const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
-        // Local animations
-        if (target.animations && shouldRunTargetAnimations) {
-            animatable.appendAnimations(target, target.animations);
-        }
-
-        // Children animations
-        if (target.getAnimatables) {
-            var animatables = target.getAnimatables();
-            for (var index = 0; index < animatables.length; index++) {
-                this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, onAnimationLoop);
-            }
-        }
-
-        animatable.reset();
-
-        return animatable;
-    }
-
-    /**
-     * Will start the animation sequence of a given target and its hierarchy
-     * @param target defines the target
-     * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-     * @param from defines from which frame should animation start
-     * @param to defines until which frame should animation run.
-     * @param loop defines if the animation loops
-     * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-     * @param onAnimationEnd defines the function to be executed when the animation ends
-     * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-     * @param stopCurrent defines if the current animations must be stopped first (true by default)
-     * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
-     * @param onAnimationLoop defines the callback to call when an animation loops
-     * @returns the list of created animatables
-     */
-    public beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
-        onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
-        targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[] {
-
-        let children = target.getDescendants(directDescendantsOnly);
-
-        let result = [];
-        result.push(this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask));
-        for (var child of children) {
-            result.push(this.beginAnimation(child, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask));
-        }
-
-        return result;
-    }
-
-    /**
-     * Begin a new animation on a given node
-     * @param target defines the target where the animation will take place
-     * @param animations defines the list of animations to start
-     * @param from defines the initial value
-     * @param to defines the final value
-     * @param loop defines if you want animation to loop (off by default)
-     * @param speedRatio defines the speed ratio to apply to all animations
-     * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-     * @param onAnimationLoop defines the callback to call when an animation loops
-     * @returns the list of created animatables
-     */
-    public beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable {
-        if (speedRatio === undefined) {
-            speedRatio = 1.0;
-        }
-
-        var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop);
-
-        return animatable;
-    }
-
-    /**
-     * Begin a new animation on a given node and its hierarchy
-     * @param target defines the root node where the animation will take place
-     * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-     * @param animations defines the list of animations to start
-     * @param from defines the initial value
-     * @param to defines the final value
-     * @param loop defines if you want animation to loop (off by default)
-     * @param speedRatio defines the speed ratio to apply to all animations
-     * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-     * @param onAnimationLoop defines the callback to call when an animation loops
-     * @returns the list of animatables created for all nodes
-     */
-    public beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[] {
-        let children = target.getDescendants(directDescendantsOnly);
-
-        let result = [];
-        result.push(this.beginDirectAnimation(target, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop));
-        for (var child of children) {
-            result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop));
-        }
-
-        return result;
-    }
-
-    /**
-     * Gets the animatable associated with a specific target
-     * @param target defines the target of the animatable
-     * @returns the required animatable if found
-     */
-    public getAnimatableByTarget(target: any): Nullable<Animatable> {
-        for (var index = 0; index < this._activeAnimatables.length; index++) {
-            if (this._activeAnimatables[index].target === target) {
-                return this._activeAnimatables[index];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets all animatables associated with a given target
-     * @param target defines the target to look animatables for
-     * @returns an array of Animatables
-     */
-    public getAllAnimatablesByTarget(target: any): Array<Animatable> {
-        let result = [];
-        for (var index = 0; index < this._activeAnimatables.length; index++) {
-            if (this._activeAnimatables[index].target === target) {
-                result.push(this._activeAnimatables[index]);
-            }
-        }
-
-        return result;
-    }
-
     /**
      * Gets all animatable attached to the scene
      */
@@ -2678,266 +2494,11 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
-     * Will stop the animation of the given target
-     * @param target - the target
-     * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
-     * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-     */
-    public stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
-        var animatables = this.getAllAnimatablesByTarget(target);
-
-        for (var animatable of animatables) {
-            animatable.stop(animationName, targetMask);
-        }
-    }
-
-    /**
-     * Stops and removes all animations that have been applied to the scene
-     */
-    public stopAllAnimations(): void {
-        if (this._activeAnimatables) {
-            for (let i = 0; i < this._activeAnimatables.length; i++) {
-                this._activeAnimatables[i].stop();
-            }
-            this._activeAnimatables = [];
-        }
-
-        for (var group of this.animationGroups) {
-            group.stop();
-        }
-    }
-
-    /**
      * Resets the last animation time frame.
      * Useful to override when animations start running when loading a scene for the first time.
      */
     public resetLastAnimationTimeFrame(): void {
         this._animationTimeLast = PrecisionDate.Now;
-    }
-
-    private _animate(): void {
-        if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
-            return;
-        }
-
-        // Getting time
-        var now = PrecisionDate.Now;
-        if (!this._animationTimeLast) {
-            if (this._pendingData.length > 0) {
-                return;
-            }
-            this._animationTimeLast = now;
-        }
-        var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
-        this._animationTime += deltaTime;
-        this._animationTimeLast = now;
-        for (var index = 0; index < this._activeAnimatables.length; index++) {
-            this._activeAnimatables[index]._animate(this._animationTime);
-        }
-
-        // Late animation bindings
-        this._processLateAnimationBindings();
-    }
-
-    /** @hidden */
-    public _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void {
-        let target = runtimeAnimation.target;
-        this._registeredForLateAnimationBindings.pushNoDuplicate(target);
-
-        if (!target._lateAnimationHolders) {
-            target._lateAnimationHolders = {};
-        }
-
-        if (!target._lateAnimationHolders[runtimeAnimation.targetPath]) {
-            target._lateAnimationHolders[runtimeAnimation.targetPath] = {
-                totalWeight: 0,
-                animations: [],
-                originalValue: originalValue
-            };
-        }
-
-        target._lateAnimationHolders[runtimeAnimation.targetPath].animations.push(runtimeAnimation);
-        target._lateAnimationHolders[runtimeAnimation.targetPath].totalWeight += runtimeAnimation.weight;
-    }
-
-    private _processLateAnimationBindingsForMatrices(holder: {
-        totalWeight: number,
-        animations: RuntimeAnimation[],
-        originalValue: Matrix
-    }): any {
-        let normalizer = 1.0;
-        let finalPosition = Tmp.Vector3[0];
-        let finalScaling = Tmp.Vector3[1];
-        let finalQuaternion = Tmp.Quaternion[0];
-        let startIndex = 0;
-        let originalAnimation = holder.animations[0];
-        let originalValue = holder.originalValue;
-
-        var scale = 1;
-        if (holder.totalWeight < 1.0) {
-            // We need to mix the original value in
-            originalValue.decompose(finalScaling, finalQuaternion, finalPosition);
-            scale = 1.0 - holder.totalWeight;
-        } else {
-            startIndex = 1;
-            // We need to normalize the weights
-            normalizer = holder.totalWeight;
-            originalAnimation.currentValue.decompose(finalScaling, finalQuaternion, finalPosition);
-            scale = originalAnimation.weight / normalizer;
-            if (scale == 1) {
-                return originalAnimation.currentValue;
-            }
-        }
-
-        finalScaling.scaleInPlace(scale);
-        finalPosition.scaleInPlace(scale);
-        finalQuaternion.scaleInPlace(scale);
-
-        for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
-            var runtimeAnimation = holder.animations[animIndex];
-            var scale = runtimeAnimation.weight / normalizer;
-            let currentPosition = Tmp.Vector3[2];
-            let currentScaling = Tmp.Vector3[3];
-            let currentQuaternion = Tmp.Quaternion[1];
-
-            runtimeAnimation.currentValue.decompose(currentScaling, currentQuaternion, currentPosition);
-            currentScaling.scaleAndAddToRef(scale, finalScaling);
-            currentQuaternion.scaleAndAddToRef(scale, finalQuaternion);
-            currentPosition.scaleAndAddToRef(scale, finalPosition);
-        }
-
-        Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, originalAnimation._workValue);
-        return originalAnimation._workValue;
-    }
-
-    private _processLateAnimationBindingsForQuaternions(holder: {
-        totalWeight: number,
-        animations: RuntimeAnimation[],
-        originalValue: Quaternion
-    }, refQuaternion: Quaternion): Quaternion {
-        let originalAnimation = holder.animations[0];
-        let originalValue = holder.originalValue;
-
-        if (holder.animations.length === 1) {
-            Quaternion.SlerpToRef(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight), refQuaternion);
-            return refQuaternion;
-        }
-
-        let normalizer = 1.0;
-        let quaternions: Array<Quaternion>;
-        let weights: Array<number>;
-
-        if (holder.totalWeight < 1.0) {
-            let scale = 1.0 - holder.totalWeight;
-
-            quaternions = [];
-            weights = [];
-
-            quaternions.push(originalValue);
-            weights.push(scale);
-        } else {
-            if (holder.animations.length === 2) { // Slerp as soon as we can
-                Quaternion.SlerpToRef(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight, refQuaternion);
-                return refQuaternion;
-            }
-            quaternions = [];
-            weights = [];
-
-            normalizer = holder.totalWeight;
-        }
-        for (var animIndex = 0; animIndex < holder.animations.length; animIndex++) {
-            let runtimeAnimation = holder.animations[animIndex];
-            quaternions.push(runtimeAnimation.currentValue);
-            weights.push(runtimeAnimation.weight / normalizer);
-        }
-
-        // https://gamedev.stackexchange.com/questions/62354/method-for-interpolation-between-3-quaternions
-
-        let cumulativeAmount = 0;
-        let cumulativeQuaternion: Nullable<Quaternion> = null;
-        for (var index = 0; index < quaternions.length;) {
-            if (!cumulativeQuaternion) {
-                Quaternion.SlerpToRef(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]), refQuaternion);
-                cumulativeQuaternion = refQuaternion;
-                cumulativeAmount = weights[index] + weights[index + 1];
-                index += 2;
-                continue;
-            }
-            cumulativeAmount += weights[index];
-            Quaternion.SlerpToRef(cumulativeQuaternion, quaternions[index], weights[index] / cumulativeAmount, cumulativeQuaternion);
-            index++;
-        }
-
-        return cumulativeQuaternion!;
-    }
-
-    private _processLateAnimationBindings(): void {
-        if (!this._registeredForLateAnimationBindings.length) {
-            return;
-        }
-        for (var index = 0; index < this._registeredForLateAnimationBindings.length; index++) {
-            var target = this._registeredForLateAnimationBindings.data[index];
-
-            for (var path in target._lateAnimationHolders) {
-                var holder = target._lateAnimationHolders[path];
-                let originalAnimation: RuntimeAnimation = holder.animations[0];
-                let originalValue = holder.originalValue;
-
-                let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
-
-                let finalValue: any = target[path];
-                if (matrixDecomposeMode) {
-                    finalValue = this._processLateAnimationBindingsForMatrices(holder);
-                } else {
-                    let quaternionMode = originalValue.w !== undefined;
-                    if (quaternionMode) {
-                        finalValue = this._processLateAnimationBindingsForQuaternions(holder, finalValue || Quaternion.Identity());
-                    } else {
-
-                        let startIndex = 0;
-                        let normalizer = 1.0;
-
-                        if (holder.totalWeight < 1.0) {
-                            // We need to mix the original value in
-                            if (originalValue.scale) {
-                                finalValue = originalValue.scale(1.0 - holder.totalWeight);
-                            } else {
-                                finalValue = originalValue * (1.0 - holder.totalWeight);
-                            }
-                        } else {
-                            // We need to normalize the weights
-                            normalizer = holder.totalWeight;
-                            let scale = originalAnimation.weight / normalizer;
-                            if (scale !== 1) {
-                                if (originalAnimation.currentValue.scale) {
-                                    finalValue = originalAnimation.currentValue.scale(scale);
-                                } else {
-                                    finalValue = originalAnimation.currentValue * scale;
-                                }
-                            } else {
-                                finalValue = originalAnimation.currentValue;
-                            }
-
-                            startIndex = 1;
-                        }
-
-                        for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
-                            var runtimeAnimation = holder.animations[animIndex];
-                            var scale = runtimeAnimation.weight / normalizer;
-                            if (runtimeAnimation.currentValue.scaleAndAddToRef) {
-                                runtimeAnimation.currentValue.scaleAndAddToRef(scale, finalValue);
-                            } else {
-                                finalValue += runtimeAnimation.currentValue * scale;
-                            }
-                        }
-                    }
-                }
-                target[path] = finalValue;
-            }
-
-            target._lateAnimationHolders = {};
-        }
-        this._registeredForLateAnimationBindings.reset();
     }
 
     // Matrix
@@ -3061,10 +2622,6 @@ export class Scene extends AbstractScene implements IAnimatable {
     public addMesh(newMesh: AbstractMesh, recursive = false) {
         this.meshes.push(newMesh);
 
-        //notify the collision coordinator
-        if (this.collisionCoordinator) {
-            this.collisionCoordinator.onMeshAdded(newMesh);
-        }
         newMesh._resyncLightSources();
 
         this.onNewMeshAddedObservable.notifyObservers(newMesh);
@@ -3293,7 +2850,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param toRemove The action manager to remove
      * @returns The index of the removed action manager
      */
-    public removeActionManager(toRemove: ActionManager): number {
+    public removeActionManager(toRemove: AbstractActionManager): number {
         var index = this.actionManagers.indexOf(toRemove);
         if (index !== -1) {
             this.actionManagers.splice(index, 1);
@@ -3427,7 +2984,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Adds the given action manager to this scene
      * @param newActionManager The action manager to add
      */
-    public addActionManager(newActionManager: ActionManager): void {
+    public addActionManager(newActionManager: AbstractActionManager): void {
         this.actionManagers.push(newActionManager);
     }
 
@@ -3725,11 +3282,6 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.addGeometry(geometry);
 
-        //notify the collision coordinator
-        if (this.collisionCoordinator) {
-            this.collisionCoordinator.onGeometryAdded(geometry);
-        }
-
         this.onNewGeometryAddedObservable.notifyObservers(geometry);
 
         return true;
@@ -3765,11 +3317,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         this.geometries.pop();
-
-        //notify the collision coordinator
-        if (this.collisionCoordinator) {
-            this.collisionCoordinator.onGeometryDeleted(geometry);
-        }
 
         this.onGeometryRemovedObservable.notifyObservers(geometry);
         return true;
@@ -4631,6 +4178,11 @@ export class Scene extends AbstractScene implements IAnimatable {
         return 1000.0 / 60.0; // frame time in ms
     }
 
+    /** @hidden */
+    public _animate(): void {
+        // Nothing to do as long as Animatable have not been imported.
+    }
+
     /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -5142,11 +4694,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a Ray
      */
     public createPickingRay(x: number, y: number, world: Matrix, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
-        let result = Ray.Zero();
-
-        this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
-
-        return result;
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -5160,25 +4708,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public createPickingRayToRef(x: number, y: number, world: Matrix, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
-        var engine = this._engine;
-
-        if (!camera) {
-            if (!this.activeCamera) {
-                throw new Error("Active camera not set");
-            }
-
-            camera = this.activeCamera;
-        }
-
-        var cameraViewport = camera.viewport;
-        var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-
-        // Moving coordinates to local viewport world
-        x = x / this._engine.getHardwareScalingLevel() - viewport.x;
-        y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-
-        result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
-        return this;
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -5189,11 +4719,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a Ray
      */
     public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray {
-        let result = Ray.Zero();
-
-        this.createPickingRayInCameraSpaceToRef(x, y, result, camera);
-
-        return result;
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -5205,103 +4731,8 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
-        if (!PickingInfo) {
-            return this;
-        }
-
-        var engine = this._engine;
-
-        if (!camera) {
-            if (!this.activeCamera) {
-                throw new Error("Active camera not set");
-            }
-
-            camera = this.activeCamera;
-        }
-
-        var cameraViewport = camera.viewport;
-        var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-        var identity = Matrix.Identity();
-
-        // Moving coordinates to local viewport world
-        x = x / this._engine.getHardwareScalingLevel() - viewport.x;
-        y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-        result.update(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
-        return this;
+        throw _DevTools.WarnImport("Ray");
     }
-
-    private _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
-        if (!PickingInfo) {
-            return null;
-        }
-
-        var pickingInfo = null;
-
-        for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-            var mesh = this.meshes[meshIndex];
-
-            if (predicate) {
-                if (!predicate(mesh)) {
-                    continue;
-                }
-            } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
-                continue;
-            }
-
-            var world = mesh.getWorldMatrix();
-            var ray = rayFunction(world);
-
-            var result = mesh.intersects(ray, fastCheck);
-            if (!result || !result.hit) {
-                continue;
-            }
-
-            if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance) {
-                continue;
-            }
-
-            pickingInfo = result;
-
-            if (fastCheck) {
-                break;
-            }
-        }
-
-        return pickingInfo || new PickingInfo();
-    }
-
-    private _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
-        if (!PickingInfo) {
-            return null;
-        }
-        var pickingInfos = new Array<PickingInfo>();
-
-        for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-            var mesh = this.meshes[meshIndex];
-
-            if (predicate) {
-                if (!predicate(mesh)) {
-                    continue;
-                }
-            } else if (!mesh.isEnabled() || !mesh.isVisible || !mesh.isPickable) {
-                continue;
-            }
-
-            var world = mesh.getWorldMatrix();
-            var ray = rayFunction(world);
-
-            var result = mesh.intersects(ray, false);
-            if (!result || !result.hit) {
-                continue;
-            }
-
-            pickingInfos.push(result);
-        }
-
-        return pickingInfos;
-    }
-
-    private _tempPickingRay: Nullable<Ray> = Ray ? Ray.Zero() : null;
 
     /** Launch a ray to try to pick a mesh in the scene
      * @param x position on screen
@@ -5312,20 +4743,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a PickingInfo
      */
     public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
-        if (!PickingInfo) {
-            return null;
-        }
-        var result = this._internalPick((world) => {
-            this.createPickingRayToRef(x, y, world, this._tempPickingRay!, camera || null);
-            return this._tempPickingRay!;
-        }, predicate, fastCheck);
-        if (result) {
-            result.ray = this.createPickingRay(x, y, Matrix.Identity(), camera || null);
-        }
-        return result;
+        // Dummy info if picking as not been imported
+        const pi = new PickingInfo();
+        pi._pickingUnavailable = true;
+        return pi;
     }
-
-    private _cachedRayForTransform: Ray;
 
     /** Use the given ray to pick a mesh in the scene
      * @param ray The ray to use to pick meshes
@@ -5334,23 +4756,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a PickingInfo
      */
     public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
-        var result = this._internalPick((world) => {
-            if (!this._pickWithRayInverseMatrix) {
-                this._pickWithRayInverseMatrix = Matrix.Identity();
-            }
-            world.invertToRef(this._pickWithRayInverseMatrix);
-
-            if (!this._cachedRayForTransform) {
-                this._cachedRayForTransform = Ray.Zero();
-            }
-
-            Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
-            return this._cachedRayForTransform;
-        }, predicate, fastCheck);
-        if (result) {
-            result.ray = ray;
-        }
-        return result;
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -5362,7 +4768,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns an array of PickingInfo
      */
     public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
-        return this._internalMultiPick((world) => this.createPickingRay(x, y, world, camera || null), predicate);
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -5372,19 +4778,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns an array of PickingInfo
      */
     public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
-        return this._internalMultiPick((world) => {
-            if (!this._pickWithRayInverseMatrix) {
-                this._pickWithRayInverseMatrix = Matrix.Identity();
-            }
-            world.invertToRef(this._pickWithRayInverseMatrix);
-
-            if (!this._cachedRayForTransform) {
-                this._cachedRayForTransform = Ray.Zero();
-            }
-
-            Ray.TransformToRef(ray, this._pickWithRayInverseMatrix, this._cachedRayForTransform);
-            return this._cachedRayForTransform;
-        }, predicate);
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
