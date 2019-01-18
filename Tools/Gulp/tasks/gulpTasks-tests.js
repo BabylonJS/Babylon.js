@@ -1,7 +1,6 @@
 // Import Dependencies.
 var gulp = require("gulp");
 var typescript = require("gulp-typescript");
-var fs = require("fs");
 var karmaServer = require('karma').Server;
 var webpack = require('webpack');
 var webpackStream = require("webpack-stream");

@@ -2,14 +2,18 @@ import { Nullable, FloatArray } from "../types";
 import { Vector3, Vector2, Tmp } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
-import { Ray } from "../Culling/ray";
 import { Sprite } from "../Sprites/sprite";
+
+declare type Ray = import("../Culling/ray").Ray;
 
 /**
      * Information about the result of picking within a scene
      * @see https://doc.babylonjs.com/babylon101/picking_collisions
      */
 export class PickingInfo {
+    /** @hidden */
+    public _pickingUnavailable = false;
+
     /**
      * If the pick collided with an object
      */

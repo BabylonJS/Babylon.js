@@ -2994,6 +2994,7 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/sliders/baseSlider";
     export * from "babylonjs-gui/2D/controls/sliders/slider";
     export * from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
+    export * from "babylonjs-gui/2D/controls/sliders/scrollBar";
     export * from "babylonjs-gui/2D/controls/statics";
 }
 declare module "babylonjs-gui/2D/adtInstrumentation" {

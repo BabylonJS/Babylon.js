@@ -37960,7 +37960,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             var v2 = v1.add(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].FromArray(normals, i).scaleInPlace(size));
             lines.push([v1, v2]);
         }
-        var normalLines = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["MeshBuilder"].CreateLineSystem("normalLines", { lines: lines }, scene);
+        var normalLines = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["LinesBuilder"].CreateLineSystem("normalLines", { lines: lines }, scene);
         normalLines.color = color;
         normalLines.parent = mesh;
         if (!mesh.reservedDataStore) {
@@ -38918,7 +38918,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var Split = __webpack_require__(/*! split.js */ "../node_modules/split.js/dist/split.js");
+var Split = __webpack_require__(/*! split.js */ "../node_modules/split.js/dist/split.js").default;
 __webpack_require__(/*! ./embedHost.scss */ "./components/embedHost/embedHost.scss");
 var EmbedHostComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](EmbedHostComponent, _super);

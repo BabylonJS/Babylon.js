@@ -6,6 +6,8 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 
+import "../Meshes/Builders/linesBuilder";
+
 /**
  * As raycast might be hard to debug, the RayHelper can help rendering the different rays
  * in order to better appreciate the issue one might have.

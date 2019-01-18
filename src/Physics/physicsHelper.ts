@@ -3,12 +3,14 @@ import { Logger } from "../Misc/logger";
 import { Vector3 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
+import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { Ray } from "../Culling/ray";
 import { Scene } from "../scene";
 import { IPhysicsEngine } from "./IPhysicsEngine";
 import { PhysicsEngine } from "./physicsEngine";
 import { PhysicsImpostor } from "./physicsImpostor";
+
 /**
  * A helper for physics simulations
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -281,7 +283,7 @@ export class PhysicsRadialExplosionEvent {
 
     private _prepareSphere(): void {
         if (!this._sphere) {
-            this._sphere = MeshBuilder.CreateSphere("radialExplosionEventSphere", this._sphereOptions, this._scene);
+            this._sphere = SphereBuilder.CreateSphere("radialExplosionEventSphere", this._sphereOptions, this._scene);
             this._sphere.isVisible = false;
         }
     }
@@ -516,7 +518,7 @@ export class PhysicsUpdraftEvent {
 
     private _prepareCylinder(): void {
         if (!this._cylinder) {
-            this._cylinder = MeshBuilder.CreateCylinder("updraftEventCylinder", {
+            this._cylinder = CylinderBuilder.CreateCylinder("updraftEventCylinder", {
                 height: this._height,
                 diameter: this._radius * 2,
             }, this._scene);
@@ -674,7 +676,7 @@ export class PhysicsVortexEvent {
 
     private _prepareCylinder(): void {
         if (!this._cylinder) {
-            this._cylinder = MeshBuilder.CreateCylinder("vortexEventCylinder", {
+            this._cylinder = CylinderBuilder.CreateCylinder("vortexEventCylinder", {
                 height: this._height,
                 diameter: this._radius * 2,
             }, this._scene);

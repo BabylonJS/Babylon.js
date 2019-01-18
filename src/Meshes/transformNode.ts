@@ -1,6 +1,5 @@
 import { DeepImmutable } from "../types";
 import { serialize, serializeAsVector3, serializeAsQuaternion, SerializationHelper } from "../Misc/decorators";
-import { Tags } from "../Misc/tags";
 import { Observable } from "../Misc/observable";
 
 import { Nullable } from "../types";
@@ -1120,10 +1119,6 @@ export class TransformNode extends Node {
             serializationObject.parentId = this.parent.id;
         }
 
-        if (Tags && Tags.HasTags(this)) {
-            serializationObject.tags = Tags.GetTags(this);
-        }
-
         serializationObject.localMatrix = this.getPivotMatrix().asArray();
 
         serializationObject.isEnabled = this.isEnabled();
@@ -1146,10 +1141,6 @@ export class TransformNode extends Node {
      */
     public static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode {
         var transformNode = SerializationHelper.Parse(() => new TransformNode(parsedTransformNode.name, scene), parsedTransformNode, scene, rootUrl);
-
-        if (Tags) {
-            Tags.AddTagsTo(transformNode, parsedTransformNode.tags);
-        }
 
         if (parsedTransformNode.localMatrix) {
             transformNode.setPreTransformMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));

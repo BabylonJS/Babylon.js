@@ -3,6 +3,7 @@ import { Vector3 } from "../Maths/math";
 import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IPhysicsEngine";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
+import { _DevTools } from '../Misc/devTools';
 
 /**
  * Class used to control physics engine
@@ -27,7 +28,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @returns The default physics plugin
      */
     public static DefaultPluginFactory(): IPhysicsEnginePlugin {
-        throw "Import CannonJSPlugin or Fill DefaultPluginFactory static property on PhysicsEngine before relying on default physics plugin.";
+        throw _DevTools.WarnImport("CannonJSPlugin");
     }
 
     /**

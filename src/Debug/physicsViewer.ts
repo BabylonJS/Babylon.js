@@ -2,7 +2,8 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
+import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
 import { Quaternion, Color3 } from "../Maths/math";
 import { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
@@ -164,7 +165,7 @@ export class PhysicsViewer {
 
     private _getDebugBoxMesh(scene: Scene): AbstractMesh {
         if (!this._debugBoxMesh) {
-            this._debugBoxMesh = MeshBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
+            this._debugBoxMesh = BoxBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
             this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
             this._debugBoxMesh.material = this._getDebugMaterial(scene);
         }
@@ -174,7 +175,7 @@ export class PhysicsViewer {
 
     private _getDebugSphereMesh(scene: Scene): AbstractMesh {
         if (!this._debugSphereMesh) {
-            this._debugSphereMesh = MeshBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
+            this._debugSphereMesh = SphereBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
             this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
             this._debugSphereMesh.material = this._getDebugMaterial(scene);
         }

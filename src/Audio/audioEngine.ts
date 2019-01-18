@@ -267,7 +267,7 @@ export class AudioEngine implements IAudioEngine {
     }
 
     private _displayMuteButton() {
-        if (this.useCustomUnlockedButton) {
+        if (this.useCustomUnlockedButton || this._muteButton) {
             return;
         }
 
