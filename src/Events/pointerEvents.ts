@@ -113,3 +113,13 @@ export class PointerInfo extends PointerInfoBase {
         super(type, event);
     }
 }
+
+/**
+ * Data relating to a touch event on the screen.
+ */
+export interface PointerTouch {
+  x: number;
+  y: number;
+  pointerId: number;
+  type: any;
+}
