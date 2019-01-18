@@ -199,7 +199,8 @@ export class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
             pointA = pointB = null;
         };
 
-        element.addEventListener("contextmenu", this.onContextMenu.bind(this), false);
+        element.addEventListener("contextmenu",
+            <EventListener>this.onContextMenu.bind(this), false);
         element.addEventListener("MSPointerDown",
             <EventListener>this.onGestureStart.bind(this), false);
         element.addEventListener("MSGestureChange",
@@ -325,4 +326,3 @@ export class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
         }
     }
 }
-
