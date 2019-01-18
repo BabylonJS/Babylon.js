@@ -2,10 +2,10 @@ import { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3, Plane } from "../Maths/math";
 import { Constants } from "../Engines/constants";
-import { Collider } from "../Collisions/collider";
-
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
+
+declare type Collider = import("../Collisions/collider").Collider;
 
 const _result0 = { min: 0, max: 0 };
 const _result1 = { min: 0, max: 0 };

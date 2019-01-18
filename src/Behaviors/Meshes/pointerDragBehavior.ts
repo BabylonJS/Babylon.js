@@ -9,6 +9,8 @@ import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from '../../Misc/pivotTools';
 
+import "../../Meshes/Builders/planeBuilder";
+
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
  */
@@ -400,6 +402,9 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._dragPlane.position.copyFrom(this._pointA);
             this._dragPlane.lookAt(ray.origin);
         }
+        // Update the position of the drag plane so it doesn't get out of sync with the node (eg. when moving back and forth quickly)
+        this._dragPlane.position.copyFrom(this._attachedNode.absolutePosition);
+
         this._dragPlane.computeWorldMatrix(true);
     }
 

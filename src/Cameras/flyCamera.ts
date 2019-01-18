@@ -4,11 +4,13 @@ import { Scene } from "../scene";
 import { Vector3, Quaternion } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Collider } from "../Collisions/collider";
 import { TargetCamera } from "./targetCamera";
 import { FlyCameraInputsManager } from "./flyCameraInputsManager";
 import { FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput";
 import { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
+
+declare type Collider = import("../Collisions/collider").Collider;
+
 /**
  * This is a flying camera, designed for 3D movement and rotation in all directions,
  * such as in a 3D Space Shooter or a Flight Simulator.
@@ -318,9 +320,10 @@ export class FlyCamera extends TargetCamera {
 
         globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
         this._oldPosition.addInPlace(this.ellipsoidOffset);
+        let coordinator = this.getScene().collisionCoordinator;
 
         if (!this._collider) {
-            this._collider = new Collider();
+            this._collider = coordinator.createCollider();
         }
 
         this._collider._radius = this.ellipsoid;
@@ -335,7 +338,7 @@ export class FlyCamera extends TargetCamera {
             actualDisplacement = displacement.add(this.getScene().gravity);
         }
 
-        this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+        coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
     }
 
     /** @hidden */
