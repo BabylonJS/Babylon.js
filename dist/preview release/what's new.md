@@ -96,6 +96,7 @@
 - Added per solid particle culling possibility : `solidParticle.isInFrustum()`  ([jerome](https://github.com/jbousquie))
 - Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
 - Added option `forceDisposeChildren` to multiMaterial.dispose ([danjpar](https://github.com/danjpar))
+- Inspector light gizmo ([TrevorDev](https://github.com/TrevorDev))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))

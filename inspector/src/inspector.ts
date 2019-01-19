@@ -404,6 +404,12 @@ export class Inspector {
                 this._CreateActionTabs(scene, options, parentControl);
             }
         }
+
+        // Light gizmos
+        scene.lights.forEach((l)=>{
+            debugger;
+            this._GlobalState.enableLightGizmo(l, true);
+        })
     }
 
     private static _CreateCanvasContainer(parentControl: HTMLElement) {
@@ -441,6 +447,17 @@ export class Inspector {
     private static _Cleanup() {
         if (Inspector._OpenedPane !== 0) {
             return;
+        }
+
+        // Gizmo disposal
+        this._GlobalState.lightGizmos.forEach((g)=>{
+            if(g.light){
+                this._GlobalState.enableLightGizmo(g.light, false);
+            }
+        })
+        if(this._GlobalState.gizmoManager){
+            this._GlobalState.gizmoManager.dispose();
+            this._GlobalState.gizmoManager = null;
         }
 
         if (this._NewCanvasContainer) {
@@ -489,7 +506,7 @@ export class Inspector {
                 this._EmbedHost.parentElement.removeChild(this._EmbedHost);
             }
             this._EmbedHost = null;
-        }
+        }        
 
         Inspector._OpenedPane = 0;
         this._Cleanup();
