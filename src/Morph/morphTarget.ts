@@ -5,9 +5,11 @@ import { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
-import { Animation } from "../Animations/animation";
 import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize, SerializationHelper } from "../Misc/decorators";
+import { _TypeStore } from '../Misc/typeStore';
+
+declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * Defines a target to use with MorphTargetManager
@@ -236,8 +238,10 @@ export class MorphTarget implements IAnimatable {
         if (serializationObject.animations) {
             for (var animationIndex = 0; animationIndex < serializationObject.animations.length; animationIndex++) {
                 var parsedAnimation = serializationObject.animations[animationIndex];
-
-                result.animations.push(Animation.Parse(parsedAnimation));
+                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    result.animations.push(internalClass.Parse(parsedAnimation));
+                }
             }
         }
 

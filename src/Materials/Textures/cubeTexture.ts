@@ -5,10 +5,11 @@ import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { Animation } from "../../Animations/animation";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
+import { _TypeStore } from '../../Misc/typeStore';
+
 /**
  * Class for creating a cube texture
  */
@@ -318,8 +319,10 @@ export class CubeTexture extends BaseTexture {
         if (parsedTexture.animations) {
             for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                 var parsedAnimation = parsedTexture.animations[animationIndex];
-
-                texture.animations.push(Animation.Parse(parsedAnimation));
+                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    texture.animations.push(internalClass.Parse(parsedAnimation));
+                }
             }
         }
 

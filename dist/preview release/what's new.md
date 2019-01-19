@@ -97,6 +97,8 @@
 - Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
 - Added option `forceDisposeChildren` to multiMaterial.dispose ([danjpar](https://github.com/danjpar))
 - Inspector light gizmo ([TrevorDev](https://github.com/TrevorDev))
+- Added option `multiMultiMaterials` to mesh.mergeMeshes ([danjpar](https://github.com/danjpar))
+- Expose fallback camera distortion metrics option in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
@@ -152,8 +154,9 @@
 - Fix more case sensitive paths ([mrdunk](https://github.com))
 - Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev)))
-- Oimo disable motor maxForce, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
+- Warn of motor with maxForce in Oimo, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
+- PointerDragBehavior should not let the drag plane get out of sync when rotating the object during dragging ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))

@@ -1,6 +1,7 @@
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math";
 import { VertexBuffer } from "../Meshes/buffer";
+import { _DevTools } from '../Misc/devTools';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -768,7 +769,7 @@ export class VertexData {
      * @returns the VertexData of the ribbon
      */
     public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
-        throw "Import Meshes/Builders/ribbonBuilder before trying to create ribbons.";
+        throw _DevTools.WarnImport("ribbonBuilder");
     }
 
     /**
@@ -786,7 +787,7 @@ export class VertexData {
      * @returns the VertexData of the box
      */
     public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-        throw "Import Meshes/Builders/boxBuilder before trying to create boxes.";
+        throw _DevTools.WarnImport("boxBuilder");
     }
 
     /**
@@ -805,7 +806,7 @@ export class VertexData {
      * @returns the VertexData of the ellipsoid
      */
     public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-        throw "Import Meshes/Builders/sphereBuilder before trying to create spheres.";
+        throw _DevTools.WarnImport("sphereBuilder");
     }
 
     /**
@@ -828,7 +829,7 @@ export class VertexData {
      * @returns the VertexData of the cylinder, cone or prism
      */
     public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-        throw "Import Meshes/Builders/cylinderBuilder before trying to create cylinders.";
+        throw _DevTools.WarnImport("cylinderBuilder");
     }
 
     /**
@@ -843,7 +844,7 @@ export class VertexData {
      * @returns the VertexData of the torus
      */
     public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-        throw "Import Meshes/Builders/torusBuilder before trying to create torus.";
+        throw _DevTools.WarnImport("torusBuilder");
     }
 
     /**
@@ -854,7 +855,7 @@ export class VertexData {
      * @returns the VertexData of the LineSystem
      */
     public static CreateLineSystem(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
-        throw "Import Meshes/Builders/linesBuilder before trying to create lines.";
+        throw _DevTools.WarnImport("linesBuilder");
     }
 
     /**
@@ -867,7 +868,7 @@ export class VertexData {
      * @returns the VertexData for the DashedLines
      */
     public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
-        throw "Import Meshes/Builders/linesBuilder before trying to create dashed lines.";
+        throw _DevTools.WarnImport("linesBuilder");
     }
 
     /**
@@ -879,7 +880,7 @@ export class VertexData {
      * @returns the VertexData of the Ground
      */
     public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
-        throw "Import Meshes/Builders/groundBuilder before trying to create grounds.";
+        throw _DevTools.WarnImport("groundBuilder");
     }
 
     /**
@@ -894,7 +895,7 @@ export class VertexData {
      * @returns the VertexData of the TiledGround
      */
     public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
-        throw "Import Meshes/Builders/groundBuilder before trying to create grounds.";
+        throw _DevTools.WarnImport("groundBuilder");
     }
 
     /**
@@ -913,7 +914,7 @@ export class VertexData {
      * @returns the VertexData of the Ground designed from a heightmap
      */
     public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number, alphaFilter: number }): VertexData {
-        throw "Import Meshes/Builders/groundBuilder before trying to create grounds.";
+        throw _DevTools.WarnImport("groundBuilder");
     }
 
     /**
@@ -928,7 +929,7 @@ export class VertexData {
      * @returns the VertexData of the box
      */
     public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-        throw "Import Meshes/Builders/planeBuilder before trying to create planes.";
+        throw _DevTools.WarnImport("planeBuilder");
     }
 
     /**
@@ -943,7 +944,7 @@ export class VertexData {
      * @returns the VertexData of the box
      */
     public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-        throw "Import Meshes/Builders/discBuilder before trying to create discs.";
+        throw _DevTools.WarnImport("discBuilder");
     }
 
     /**
@@ -958,7 +959,7 @@ export class VertexData {
      * @returns the VertexData of the Polygon
      */
     public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4): VertexData {
-        throw "Import Meshes/Builders/polygonBuilder before trying to create polygons.";
+        throw _DevTools.WarnImport("polygonBuilder");
     }
 
     /**
@@ -976,7 +977,7 @@ export class VertexData {
      * @returns the VertexData of the IcoSphere
      */
     public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-        throw "Import Meshes/Builders/icoSphereBuilder before trying to create icoSpheres.";
+        throw _DevTools.WarnImport("icoSphereBuilder");
     }
 
     // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
@@ -1001,7 +1002,7 @@ export class VertexData {
      * @returns the VertexData of the Polyhedron
      */
     public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-        throw "Import Meshes/Builders/polyhedronBuilder before trying to create polyhedrons.";
+        throw _DevTools.WarnImport("polyhedronBuilder");
     }
 
     // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
@@ -1020,7 +1021,7 @@ export class VertexData {
      * @returns the VertexData of the Torus Knot
      */
     public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-        throw "Import Meshes/Builders/torusKnotBuilder before trying to create torusKnots.";
+        throw _DevTools.WarnImport("torusKnotBuilder");
     }
 
     // Tools
