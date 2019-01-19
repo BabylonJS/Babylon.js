@@ -6,7 +6,8 @@ import { Texture } from "../Materials/Textures/texture";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Scene } from "../scene";
 import { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/tools";
-import { Animation } from "../Animations/animation";
+
+declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * Interface representing a particle system in Babylon.js.

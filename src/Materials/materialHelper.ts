@@ -329,11 +329,18 @@ export class MaterialHelper {
         for (var index = lightIndex; index < maxSimultaneousLights; index++) {
             if (defines["LIGHT" + index] !== undefined) {
                 defines["LIGHT" + index] = false;
-                defines["HEMILIGHT" + lightIndex] = false;
-                defines["POINTLIGHT" + lightIndex] = false;
-                defines["DIRLIGHT" + lightIndex] = false;
-                defines["SPOTLIGHT" + lightIndex] = false;
-                defines["SHADOW" + lightIndex] = false;
+                defines["HEMILIGHT" + index] = false;
+                defines["POINTLIGHT" + index] = false;
+                defines["DIRLIGHT" + index] = false;
+                defines["SPOTLIGHT" + index] = false;
+                defines["SHADOW" + index] = false;
+                defines["SHADOWPCF" + index] = false;
+                defines["SHADOWPCSS" + index] = false;
+                defines["SHADOWPOISSON" + index] = false;
+                defines["SHADOWESM" + index] = false;
+                defines["SHADOWCUBE" + index] = false;
+                defines["SHADOWLOWQUALITY" + index] = false;
+                defines["SHADOWMEDIUMQUALITY" + index] = false;
             }
         }
 

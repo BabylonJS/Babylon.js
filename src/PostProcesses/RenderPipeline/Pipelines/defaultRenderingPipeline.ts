@@ -11,7 +11,6 @@ import { Constants } from "../../../Engines/constants";
 import { IDisposable } from "../../../scene";
 import { GlowLayer } from "../../../Layers/glowLayer";
 import { Scene } from "../../../scene";
-import { Animation } from "../../../Animations/animation";
 import { PostProcess } from "../../../PostProcesses/postProcess";
 import { SharpenPostProcess } from "../../../PostProcesses/sharpenPostProcess";
 import { ImageProcessingPostProcess } from "../../../PostProcesses/imageProcessingPostProcess";
@@ -24,6 +23,8 @@ import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "../../../PostPr
 import { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from "../../../Engines/engineStore";
+
+declare type Animation = import("../../../Animations/animation").Animation;
 
 /**
  * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.

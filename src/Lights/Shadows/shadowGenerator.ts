@@ -27,6 +27,7 @@ import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import { Observable } from '../../Misc/observable';
+import { _DevTools } from '../../Misc/devTools';
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -709,7 +710,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw "Import ShadowGeneratorSceneComponent before creating ShadowGenerator.";
+        throw _DevTools.WarnImport("ShadowGeneratorSceneComponent");
     }
 
     /**

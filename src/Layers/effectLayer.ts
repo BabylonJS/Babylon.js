@@ -25,6 +25,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
+import { _DevTools } from '../Misc/devTools';
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -146,7 +147,7 @@ export abstract class EffectLayer {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw "Import EffectLayerSceneComponent before creating EffectLayer.";
+        throw _DevTools.WarnImport("EffectLayerSceneComponent");
     }
 
     /**

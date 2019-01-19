@@ -7,6 +7,7 @@ import { Engine } from "../Engines/engine";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
+import { _DevTools } from '../Misc/devTools';
 
 /**
  * Defines a sound that can be played in the application.
@@ -115,7 +116,7 @@ export class Sound {
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw "Import AudioSceneComponent before creating sound.";
+        throw _DevTools.WarnImport("AudioSceneComponent");
     }
 
     /**

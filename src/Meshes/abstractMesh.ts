@@ -12,7 +12,6 @@ import { TransformNode } from "../Meshes/transformNode";
 import { SubMesh } from "../Meshes/subMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import { Ray } from "../Culling/ray";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Material } from "../Materials/material";
 import { MaterialDefines } from "../Materials/materialDefines";
@@ -23,6 +22,7 @@ import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 
+declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
 
 /** @hidden */
