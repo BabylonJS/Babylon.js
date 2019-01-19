@@ -10,26 +10,29 @@ import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } 
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
+import { GlobalState } from "../../globalState";
+import { UtilityLayerRenderer } from 'babylonjs';
+
 interface ISceneTreeItemComponentProps {
     scene: Scene;
     onRefresh: () => void;
     selectedEntity?: any;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     onSelectionChangedObservable?: Observable<any>;
+    globalState: GlobalState;
 }
 
 export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean, isInPickingMode: boolean, gizmoMode: number }> {
+    private _gizmoLayerOnPointerObserver: Nullable<Observer<PointerInfo>>;
     private _onPointerObserver: Nullable<Observer<PointerInfo>>;
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _selectedEntity: any;
 
     constructor(props: ISceneTreeItemComponentProps) {
         super(props);
-
-        const scene = this.props.scene;
         let gizmoMode = 0;
-        if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
-            const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
+        if (props.globalState.gizmoManager) {
+            const manager: GizmoManager = props.globalState.gizmoManager;
             if (manager.positionGizmoEnabled) {
                 gizmoMode = 1;
             } else if (manager.rotationGizmoEnabled) {
@@ -63,13 +66,15 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         const scene = this.props.scene;
         this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add((entity) => {
             this._selectedEntity = entity;
-            if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
-                const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
+            if (scene.reservedDataStore && this.props.globalState.gizmoManager) {
+                const manager: GizmoManager = this.props.globalState.gizmoManager;
 
                 const className = entity.getClassName();
-
+                
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(entity);
+                }else if(className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo){
+                    manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
             }
         });
@@ -81,6 +86,11 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         if (this._onPointerObserver) {
             scene.onPointerObservable.remove(this._onPointerObserver);
             this._onPointerObserver = null;
+        }
+
+        if (this._gizmoLayerOnPointerObserver) {
+            scene.onPointerObservable.remove(this._gizmoLayerOnPointerObserver);
+            this._gizmoLayerOnPointerObserver = null;
         }
 
         if (this._onSelectionChangeObserver && this.props.onSelectionChangedObservable) {
@@ -108,10 +118,27 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             this._onPointerObserver = scene.onPointerObservable.add(() => {
                 const pickPosition = scene.unTranslatedPointer;
                 const pickInfo = scene.pick(pickPosition.x, pickPosition.y, (mesh) => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0);
-
+                
+                // Pick light gizmos first
+                if(this.props.globalState.lightGizmos.length > 0){
+                    var gizmoScene = this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
+                    let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m:any)=>{
+                        for(var g of (this.props.globalState.lightGizmos as any)){
+                            if(g.attachedMesh == m){
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
+                    if (pickInfo && pickInfo.hit && this.props.onSelectionChangedObservable) {
+                        this.props.onSelectionChangedObservable.notifyObservers(pickInfo.pickedMesh);
+                        return;
+                    }
+                }
                 if (pickInfo && pickInfo.hit && this.props.onSelectionChangedObservable) {
                     this.props.onSelectionChangedObservable.notifyObservers(pickInfo.pickedMesh);
                 }
+
             }, PointerEventTypes.POINTERTAP);
         }
 
@@ -125,11 +152,33 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             scene.reservedDataStore = {};
         }
 
-        if (!scene.reservedDataStore.gizmoManager) {
-            scene.reservedDataStore.gizmoManager = new GizmoManager(scene);
+        if (this._gizmoLayerOnPointerObserver) {
+            scene.onPointerObservable.remove(this._gizmoLayerOnPointerObserver);
+            this._gizmoLayerOnPointerObserver = null;
         }
 
-        const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
+        if (!this.props.globalState.gizmoManager) {
+            this.props.globalState.gizmoManager = new GizmoManager(scene);
+        }
+
+        const manager: GizmoManager = this.props.globalState.gizmoManager;
+        // Allow picking of light gizmo when a gizmo mode is selected
+        this._gizmoLayerOnPointerObserver = UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene.onPointerObservable.add((pointerInfo)=>{
+            if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
+                if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh) {
+                    var node: Nullable<any> = pointerInfo.pickInfo.pickedMesh;
+                    // Attach to the most parent node
+                    while (node && node.parent != null) {
+                        node = node.parent;
+                    }
+                    for(var gizmo of this.props.globalState.lightGizmos){
+                        if(gizmo._rootMesh == node){
+                            manager.attachToMesh(gizmo.attachedMesh);
+                        }
+                    }
+                }
+            }
+        })
 
         manager.positionGizmoEnabled = false;
         manager.rotationGizmoEnabled = false;
@@ -138,7 +187,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         if (this.state.gizmoMode === mode) {
             mode = 0;
             manager.dispose();
-            scene.reservedDataStore.gizmoManager = null;
+            this.props.globalState.gizmoManager = null;
         } else {
             switch (mode) {
                 case 1:
@@ -157,6 +206,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(this._selectedEntity);
+                } else if(className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo){
+                    manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
             }
         }
