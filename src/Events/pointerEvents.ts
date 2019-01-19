@@ -125,15 +125,15 @@ export interface PointerTouch {
      */
     x: number;
     /**
-     * @param y Y coordinate of touch.
+     * Y coordinate of touch.
      */
     y: number;
     /**
-     * @param pointerId Id of touch. Unique for each finger.
+     * Id of touch. Unique for each finger.
      */
     pointerId: number;
     /**
-     * @param type Event type passed from DOM.
+     * Event type passed from DOM.
      */
     type: any;
 }
