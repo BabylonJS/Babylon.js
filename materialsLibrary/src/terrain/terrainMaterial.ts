@@ -144,16 +144,37 @@ export class TerrainMaterial extends PushMaterial {
 
         // Textures
         if (scene.texturesEnabled) {
-            if (this.mixTexture && MaterialFlags.DiffuseTextureEnabled) {
-                if (!this.mixTexture.isReady()) {
-                    return false;
-                } else {
-                    defines._needUVs = true;
-                    defines.DIFFUSE = true;
-                }
+            if (!this.mixTexture || !this.mixTexture.isReady()) {
+                return false;
             }
-            if ((this.bumpTexture1 || this.bumpTexture2 || this.bumpTexture3) && MaterialFlags.BumpTextureEnabled) {
-                defines._needUVs = true;
+
+            defines._needUVs = true;
+
+            if (MaterialFlags.DiffuseTextureEnabled) {
+                if (!this.diffuseTexture1 || !this.diffuseTexture1.isReady()) {
+                    return false;
+                }
+                if (!this.diffuseTexture2 || !this.diffuseTexture2.isReady()) {
+                    return false;
+                }
+                if (!this.diffuseTexture3 || !this.diffuseTexture3.isReady()) {
+                    return false;
+                }
+
+                defines.DIFFUSE = true;
+            }
+
+            if (this.bumpTexture1 && this.bumpTexture2 && this.bumpTexture3 && MaterialFlags.BumpTextureEnabled) {
+                if (!this.bumpTexture1.isReady()) {
+                    return false;
+                }
+                if (!this.bumpTexture2.isReady()) {
+                    return false;
+                }
+                if (!this.bumpTexture3.isReady()) {
+                    return false;
+                }
+
                 defines._needNormals = true;
                 defines.BUMP = true;
             }
