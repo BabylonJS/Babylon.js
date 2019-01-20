@@ -186,8 +186,8 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
             return;
         }
         let warn = "It probably only makes sense to control ONE camera " +
-                   "property with each pointer axis. Set 'warningEnable' if you are sure. " +
-                   "Currently enabled: ";
+                   "property with each pointer axis. Set 'warningEnable = false' " +
+                   "if you are sure. Currently enabled: ";
 
         console.assert((<number>(<unknown>this.axisXControlRotation) +
                         <number>(<unknown>this.axisXControlHeight) +
