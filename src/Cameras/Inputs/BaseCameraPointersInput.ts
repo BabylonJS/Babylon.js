@@ -2,7 +2,7 @@ import { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
 import { EventState, Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
-import { TargetCamera } from "../../Cameras/targetCamera";
+import { Camera } from "../../Cameras/camera";
 import { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes, PointerTouch } from "../../Events/pointerEvents";
 
@@ -11,11 +11,11 @@ import { PointerInfo, PointerEventTypes, PointerTouch } from "../../Events/point
  * See FollowCameraPointersInput in src/Cameras/Inputs/followCameraPointersInput.ts
  * for example usage.
  */
-export abstract class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
+export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     /**
      * Defines the camera the input is attached to.
      */
-    abstract camera: TargetCamera;
+    public abstract camera: Camera;
 
     /**
      * The class name of the current input. Used by getClassName().
@@ -125,16 +125,19 @@ export abstract class BaseCameraPointersInput implements ICameraInput<TargetCame
                 }
 
                 if (previousPinchSquaredDistance !== 0 || previousMultiTouchPanPosition) {
+                    // Previous pinch data is populated but a button has been lifted
+                    // so pinch has ended.
                     this.doMultiTouch(
                       pointA,
                       pointB,
                       previousPinchSquaredDistance,
-                      0,
+                      0,  // pinchSquaredDistance
                       previousMultiTouchPanPosition,
-                      null);
+                      null  // multiTouchPanPosition
+                    );
+                  previousPinchSquaredDistance = 0;
+                  previousMultiTouchPanPosition = null;
                 }
-                previousPinchSquaredDistance = 0;
-                previousMultiTouchPanPosition = null;
 
                 if (!noPreventDefault) {
                     evt.preventDefault();
@@ -213,7 +216,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<TargetCame
             this._observer = null;
 
             if (this.onContextMenu) {
-              element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
+                element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
             }
 
             this._onLostFocus = null;
