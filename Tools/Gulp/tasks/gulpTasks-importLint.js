@@ -27,7 +27,8 @@ var importLintLibrary = function(settings) {
     return gulp.src(settings.computed.tsGlob)
         .pipe(fxFilter)
         .pipe(validateImports({
-            externals: settings.build.umd.processDeclaration.classMap
+            externals: settings.build.umd.processDeclaration.classMap,
+            isCore: settings.isCore
         }));
 }
 

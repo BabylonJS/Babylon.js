@@ -6,12 +6,12 @@ import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
 import { Observable, Observer } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
+import { _DevTools } from './Misc/devTools';
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Animation = import("./Animations/animation").Animation;
-declare type AnimationRange = import("./Animations/animation").AnimationRange;
-
+declare type AnimationRange = import("./Animations/animationRange").AnimationRange;
 declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
 
 /**
@@ -25,7 +25,7 @@ export type NodeConstructor = (name: string, scene: Scene, options?: any) => () 
 export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
-        throw "AnimationRange needs to be imported from animation before being created.";
+        throw _DevTools.WarnImport("AnimationRange");
     }
 
     private static _NodeConstructors: { [key: string]: any } = {};

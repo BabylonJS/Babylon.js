@@ -368,6 +368,10 @@ export class SceneLoader {
             plugin = <any>registeredPlugin.plugin;
         }
 
+        if (!plugin) {
+            throw "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before.";
+        }
+
         let useArrayBuffer = registeredPlugin.isBinary;
         let offlineProvider: IOfflineProvider;
 

@@ -4,6 +4,7 @@ import { ArrayTools } from "../Misc/arrayTools";
 import { Vector3, Matrix, Quaternion, Space } from "../Maths/math";
 import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";
 import { Bone } from "../Bones/bone";
 import { BoundingInfo } from "../Culling/boundingInfo";
@@ -141,6 +142,14 @@ export interface IPhysicsEnabledObject {
      */
     getClassName(): string;
 }
+
+Mesh._PhysicsImpostorParser = function(scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
+    return new PhysicsImpostor(physicObject, jsonObject.physicsImpostor, {
+        mass: jsonObject.physicsMass,
+        friction: jsonObject.physicsFriction,
+        restitution: jsonObject.physicsRestitution
+    }, scene);
+};
 
 /**
  * Represents a physics imposter

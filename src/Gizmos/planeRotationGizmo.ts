@@ -11,6 +11,9 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
+
+import "../Meshes/Builders/linesBuilder";
+
 /**
  * Single plane rotation gizmo
  */
