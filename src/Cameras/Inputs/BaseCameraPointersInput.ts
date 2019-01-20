@@ -213,7 +213,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<TargetCame
             this._observer = null;
 
             if (this.onContextMenu) {
-                element.removeEventListener("contextmenu", this.onContextMenu);
+              element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
             }
 
             this._onLostFocus = null;
