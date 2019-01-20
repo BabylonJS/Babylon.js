@@ -139,15 +139,15 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
                            previousMultiTouchPanPosition: Nullable<PointerTouch>,
                            multiTouchPanPosition: Nullable<PointerTouch>): void
     {
-        if(previousPinchSquaredDistance === 0 && previousMultiTouchPanPosition === null) {
+        if (previousPinchSquaredDistance === 0 && previousMultiTouchPanPosition === null) {
             // First time this method is called for new pinch.
             // Next time this is called there will be a
             // previousPinchSquaredDistance and pinchSquaredDistance to compare.
             return;
         }
-        if(pinchSquaredDistance === 0 && multiTouchPanPosition === null) {
+        if (pinchSquaredDistance === 0 && multiTouchPanPosition === null) {
             // Last time this method is called at the end of a pinch.
-            return
+            return;
         }
         var pinchDelta =
             (pinchSquaredDistance - previousPinchSquaredDistance) /
