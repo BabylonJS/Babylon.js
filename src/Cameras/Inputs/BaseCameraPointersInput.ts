@@ -11,11 +11,16 @@ import { PointerInfo, PointerEventTypes, PointerTouch } from "../../Events/point
  * See FollowCameraPointersInput in src/Cameras/Inputs/followCameraPointersInput.ts
  * for example usage.
  */
-export class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
+export abstract class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
     /**
      * Defines the camera the input is attached to.
      */
-    public camera: TargetCamera;
+    abstract camera: TargetCamera;
+
+    /**
+     * The class name of the current input. Used by getClassName().
+     */
+    protected abstract _className: string;
 
     /**
      * Defines the buttons associated with the input to handle camera move.
@@ -23,26 +28,12 @@ export class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
     @serialize()
     public buttons = [0, 1, 2];
 
-    /** @hidden
-     * Log debug messages from un-implemented methods.
-     */
-    public debug: boolean = false;
-
-    private _pointerInput: (p: PointerInfo, s: EventState) => void;
-    private _observer: Nullable<Observer<PointerInfo>>;
-    private _MSGestureHandler: Nullable<MSGesture>;
-    private _onLostFocus: Nullable<(e: FocusEvent) => any>;
-    private _element: HTMLElement;
-    private _noPreventDefault: boolean;
-
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-      this._element = element;
-      this._noPreventDefault = noPreventDefault || false;
         var engine = this.camera.getEngine();
         var pointA: Nullable<PointerTouch> = null;
         var pointB: Nullable<PointerTouch> = null;
@@ -195,16 +186,11 @@ export class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
             PointerEventTypes.POINTERMOVE);
 
         this._onLostFocus = () => {
-            this.log("FollowCameraPointersInput._onLostFocus");
             pointA = pointB = null;
         };
 
         element.addEventListener("contextmenu",
             <EventListener>this.onContextMenu.bind(this), false);
-        element.addEventListener("MSPointerDown",
-            <EventListener>this.onGestureStart.bind(this), false);
-        element.addEventListener("MSGestureChange",
-            <EventListener>this.onGesture.bind(this), false);
 
         Tools.RegisterTopRootEvents([
             { name: "blur", handler: this._onLostFocus }
@@ -230,15 +216,6 @@ export class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
                 element.removeEventListener("contextmenu", this.onContextMenu);
             }
 
-            if (this.onGestureStart) {
-                element.removeEventListener("MSPointerDown", <EventListener>this.onGestureStart);
-            }
-
-            if (this.onGesture) {
-                element.removeEventListener("MSGestureChange", <EventListener>this.onGesture);
-            }
-
-            this._MSGestureHandler = null;
             this._onLostFocus = null;
         }
     }
@@ -248,7 +225,7 @@ export class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
      * @returns the class name
      */
     public getClassName(): string {
-        return "ArcRotateCameraPointersInput";
+        return this._className;
     }
 
     /**
@@ -259,70 +236,43 @@ export class BaseCameraPointersInput implements ICameraInput<TargetCamera> {
         return "pointers";
     }
 
+    /**
+     * Called on pointer POINTERDOUBLETAP event.
+     * Override this method to provide functionality on POINTERDOUBLETAP event.
+     */
     protected doDoubleTouch(type: string) {
-        this.log("FollowCameraPointersBase.doDoubleTouch(", type, ")");
     }
 
+    /**
+     * Called on pointer POINTERMOVE event if only a single touch is active.
+     * Override this method to provide functionality.
+     */
     protected doTouch(pointA: Nullable<PointerTouch>,
                       offsetX: number,
-                      offsetY: number): void
-    {
-        this.log("FollowCameraPointersBase.doTouch(",
-                 pointA,
-                 offsetX,
-                 offsetY,
-                 ")");
+                      offsetY: number): void {
     }
 
+    /**
+     * Called on pointer POINTERMOVE event if multiple touches are active.
+     * Override this method to provide functionality.
+     */
     protected doMultiTouch(pointA: Nullable<PointerTouch>,
                            pointB: Nullable<PointerTouch>,
                            previousPinchSquaredDistance: number,
                            pinchSquaredDistance: number,
                            previousMultiTouchPanPosition: Nullable<PointerTouch>,
                            multiTouchPanPosition: Nullable<PointerTouch>): void {
-      this.log("FollowCameraPointersBase.doMultiTouch(",
-               pointA,
-               pointB,
-               previousPinchSquaredDistance,
-               pinchSquaredDistance,
-               previousMultiTouchPanPosition,
-               multiTouchPanPosition,
-               ")");
     }
 
+    /**
+     * Called on JS contextmenu event.
+     * Override this method to provide functionality.
+     */
     protected onContextMenu(evt: PointerEvent): void {
-        this.log("FollowCameraPointersInput.onContextMenu");
         evt.preventDefault();
     }
 
-    protected onGestureStart(e: PointerEvent): void {
-        this.log("FollowCameraPointersInput.onGestureStart");
-        if (window.MSGesture === undefined) {
-            return;
-        }
-
-        if (!this._MSGestureHandler) {
-            this._MSGestureHandler = new MSGesture();
-            this._MSGestureHandler.target = this._element;
-        }
-
-        this._MSGestureHandler.addPointer(e.pointerId);
-    }
-
-    protected onGesture(e: PointerEvent): void {
-        this.log("FollowCameraPointersInput.onGesture");
-
-        if (e.preventDefault) {
-            if (!this._noPreventDefault) {
-                e.stopPropagation();
-                e.preventDefault();
-            }
-        }
-    }
-
-    protected log(...args: any[]) {
-        if (this.debug) {
-            console.log.apply(console, arguments);
-        }
-    }
+    private _pointerInput: (p: PointerInfo, s: EventState) => void;
+    private _observer: Nullable<Observer<PointerInfo>>;
+    private _onLostFocus: Nullable<(e: FocusEvent) => any>;
 }

@@ -102,6 +102,11 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
      */
     public warningEnable: boolean = true;
 
+    /**
+     * The class name of the current input.
+     */
+    protected _className = "FollowCameraPointersInput";
+
     protected doTouch(pointA: Nullable<PointerTouch>,
                       offsetX: number,
                       offsetY: number): void
@@ -196,6 +201,5 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
                        ", axisPinchControlHeight: " + this.axisPinchControlHeight +
                        ", axisPinchControlRadius: " + this.axisPinchControlRadius);
     }
-
 }
 (<any>CameraInputTypes)["FollowCameraPointersInput"] = FollowCameraPointersInput;
