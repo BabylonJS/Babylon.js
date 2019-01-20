@@ -114,15 +114,15 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         this._warning();
 
         if (this.axisXControlRotation) {
-            this.camera.rotationOffset -= offsetX / this.angularSensibilityX;
+            this.camera.rotationOffset += offsetX / this.angularSensibilityX;
         } else if (this.axisYControlRotation) {
-            this.camera.rotationOffset -= offsetY / this.angularSensibilityX;
+            this.camera.rotationOffset += offsetY / this.angularSensibilityX;
         }
 
         if (this.axisXControlHeight) {
-            this.camera.heightOffset -= offsetX / this.angularSensibilityY;
+            this.camera.heightOffset += offsetX / this.angularSensibilityY;
         } else if (this.axisYControlHeight) {
-            this.camera.heightOffset -= offsetY / this.angularSensibilityY;
+            this.camera.heightOffset += offsetY / this.angularSensibilityY;
         }
 
         if (this.axisXControlRadius) {
@@ -139,6 +139,16 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
                            previousMultiTouchPanPosition: Nullable<PointerTouch>,
                            multiTouchPanPosition: Nullable<PointerTouch>): void
     {
+        if(previousPinchSquaredDistance === 0 && previousMultiTouchPanPosition === null) {
+            // First time this method is called for new pinch.
+            // Next time this is called there will be a
+            // previousPinchSquaredDistance and pinchSquaredDistance to compare.
+            return;
+        }
+        if(pinchSquaredDistance === 0 && multiTouchPanPosition === null) {
+            // Last time this method is called at the end of a pinch.
+            return
+        }
         var pinchDelta =
             (pinchSquaredDistance - previousPinchSquaredDistance) /
             (this.pinchPrecision * (this.angularSensibilityX + this.angularSensibilityY) / 2);
@@ -152,7 +162,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
                 this.camera.heightOffset += pinchDelta * this.camera.heightOffset;
             }
             if (this.axisPinchControlRadius) {
-                this.camera.radius += pinchDelta * this.camera.radius;
+                this.camera.radius -= pinchDelta * this.camera.radius;
             }
         } else {
             if (this.axisPinchControlRotation) {
@@ -164,7 +174,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
             }
 
             if (this.axisPinchControlRadius) {
-                this.camera.radius += pinchDelta;
+                this.camera.radius -= pinchDelta;
             }
         }
     }

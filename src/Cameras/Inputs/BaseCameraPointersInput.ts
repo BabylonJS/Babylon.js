@@ -124,6 +124,18 @@ export abstract class BaseCameraPointersInput implements ICameraInput<TargetCame
                     }
                 }
 
+                if(previousPinchSquaredDistance !== 0 || previousMultiTouchPanPosition) {
+                    this.doMultiTouch(
+                      pointA,
+                      pointB,
+                      previousPinchSquaredDistance,
+                      0,
+                      previousMultiTouchPanPosition,
+                      null);
+                }
+                previousPinchSquaredDistance = 0;
+                previousMultiTouchPanPosition = null:
+
                 if (!noPreventDefault) {
                     evt.preventDefault();
                 }
@@ -154,15 +166,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<TargetCame
                                                  pointerId: evt.pointerId,
                                                  type: p.type};
 
-                    if (previousPinchSquaredDistance === 0) {
-                        previousPinchSquaredDistance = pinchSquaredDistance;
-                        previousMultiTouchPanPosition = {x: (pointA.x + pointB.x) / 2,
-                                                         y: (pointA.y + pointB.y) / 2,
-                                                         pointerId: evt.pointerId,
-                                                         type: p.type};
-                        return;
-                    }
-
                     this.doMultiTouch(
                       pointA,
                       pointB,
@@ -171,10 +174,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<TargetCame
                       previousMultiTouchPanPosition,
                       multiTouchPanPosition);
 
-                    previousMultiTouchPanPosition = {x: (pointA.x + pointB.x) / 2,
-                                                     y: (pointA.y + pointB.y) / 2,
-                                                     pointerId: evt.pointerId,
-                                                     type: p.type};
+                    previousMultiTouchPanPosition = multiTouchPanPosition;
                     previousPinchSquaredDistance = pinchSquaredDistance;
                 }
             }
@@ -262,6 +262,16 @@ export abstract class BaseCameraPointersInput implements ICameraInput<TargetCame
                            pinchSquaredDistance: number,
                            previousMultiTouchPanPosition: Nullable<PointerTouch>,
                            multiTouchPanPosition: Nullable<PointerTouch>): void {
+        /* if (previousPinchSquaredDistance === 0 && previousMultiTouchPanPosition === null) {
+         *     // First time this method is called when a user starts pinching.
+         *     // pinchSquaredDistance and multiTouchPanPosition are valid.
+         * }
+         * if (pinchSquaredDistance === 0 && multiTouchPanPosition === null) {
+         *     // Last time this method is called at the end of a pinch.
+         *     // previousPinchSquaredDistance and previousMultiTouchPanPosition
+         *     // are still valid.
+         * }
+         */
     }
 
     /**
