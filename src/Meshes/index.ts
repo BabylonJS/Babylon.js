@@ -14,3 +14,4 @@ export * from "./meshSimplificationSceneComponent";
 export * from "./polygonMesh";
 export * from "./subMesh";
 export * from "./transformNode";
+export * from "./Builders/index";

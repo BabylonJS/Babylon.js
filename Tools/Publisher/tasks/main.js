@@ -58,8 +58,8 @@ module.exports = function(production, options) {
                 return;
             }
 
-            buildBabylonJSAndDependencies();
             versionNumberManager.updateEngineVersion(version);
+            buildBabylonJSAndDependencies();
             versionNumberManager.updateRootPackageVersion(version);
 
             process.env.BABYLONJSREALPUBLISH = true;

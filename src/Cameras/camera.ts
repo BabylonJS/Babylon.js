@@ -9,16 +9,16 @@ import { Matrix, Vector3, Viewport, Plane, Frustum } from "../Maths/math";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Ray } from "../Culling/ray";
 import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
-
-import { Animation } from "../Animations/animation";
+import { _TypeStore } from '../Misc/typeStore';
+import { _DevTools } from '../Misc/devTools';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type FreeCamera = import("./freeCamera").FreeCamera;
 declare type TargetCamera = import("./targetCamera").TargetCamera;
+declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * This is the base class of all the camera used in the application.
@@ -27,7 +27,7 @@ declare type TargetCamera = import("./targetCamera").TargetCamera;
 export class Camera extends Node {
     /** @hidden */
     public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
-        throw "UniversalCamera needs to be imported before deserialization can create a default camera.";
+        throw _DevTools.WarnImport("UniversalCamera");
     }
 
     /**
@@ -812,19 +812,7 @@ export class Camera extends Node {
      * @returns the forward ray
      */
     public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
-        if (!transform) {
-            transform = this.getWorldMatrix();
-        }
-
-        if (!origin) {
-            origin = this.position;
-        }
-        var forward = this._scene.useRightHandedSystem ? new Vector3(0, 0, -1) : new Vector3(0, 0, 1);
-        var forwardWorld = Vector3.TransformNormal(forward, transform);
-
-        var direction = Vector3.Normalize(forwardWorld);
-
-        return new Ray(origin, direction, length);
+        throw _DevTools.WarnImport("Ray");
     }
 
     /**
@@ -1211,8 +1199,10 @@ export class Camera extends Node {
         if (parsedCamera.animations) {
             for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
                 var parsedAnimation = parsedCamera.animations[animationIndex];
-
-                camera.animations.push(Animation.Parse(parsedAnimation));
+                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    camera.animations.push(internalClass.Parse(parsedAnimation));
+                }
             }
             Node.ParseAnimationRanges(camera, parsedCamera, scene);
         }
