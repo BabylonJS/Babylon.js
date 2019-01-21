@@ -402,6 +402,9 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._dragPlane.position.copyFrom(this._pointA);
             this._dragPlane.lookAt(ray.origin);
         }
+        // Update the position of the drag plane so it doesn't get out of sync with the node (eg. when moving back and forth quickly)
+        this._dragPlane.position.copyFrom(this._attachedNode.absolutePosition);
+
         this._dragPlane.computeWorldMatrix(true);
     }
 
