@@ -7,7 +7,6 @@ import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/s
 import { Scene } from "babylonjs/scene";
 import { Light } from "babylonjs/Lights/light";
 import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
-import { GizmoManager } from 'babylonjs';
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 
 export class GlobalState {
@@ -53,9 +52,6 @@ export class GlobalState {
             }
         });
     }
-
-    // Gizmos
-    public gizmoManager:Nullable<GizmoManager> = null;
 
     // Light gizmos
     public lightGizmos:Array<LightGizmo> = [];
