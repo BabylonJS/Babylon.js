@@ -113,6 +113,7 @@
 ### glTF Serializer
 
 - Added support for exporting `KHR_lights_punctual`
+- change `shouldExportTransformNode` callback to `shouldExportNode`
 
 ### Viewer
 
