@@ -1,4 +1,5 @@
-import { ImageMimeType, IMeshPrimitive } from "babylonjs-gltf2interface";
+import { ImageMimeType, IMeshPrimitive, INode } from "babylonjs-gltf2interface";
+import { Node } from "babylonjs/node";
 
 import { Nullable } from "babylonjs/types";
 import { Texture } from "babylonjs/Materials/Textures/texture";
@@ -33,4 +34,17 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param binaryWriter glTF serializer binary writer instance
      */
     postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
+
+    /**
+     * Define this method to modify the default behavior when exporting a node
+     * @param context The context when exporting the node
+     * @param node glTF node
+     * @param babylonNode BabylonJS node
+     */
+    postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+
+    /**
+     * Called after the exporter state changes to EXPORTING
+     */
+    onExporting?(): void;
 }
