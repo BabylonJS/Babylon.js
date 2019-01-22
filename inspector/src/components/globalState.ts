@@ -54,21 +54,21 @@ export class GlobalState {
     }
 
     // Light gizmos
-    public lightGizmos:Array<LightGizmo> = [];
-    public enableLightGizmo(light:Light, enable = true){
-        if(enable){
-            if(!light.reservedDataStore){
+    public lightGizmos: Array<LightGizmo> = [];
+    public enableLightGizmo(light: Light, enable = true) {
+        if (enable) {
+            if (!light.reservedDataStore) {
                 light.reservedDataStore = {}
             }
-            if(!light.reservedDataStore.lightGizmo){
+            if (!light.reservedDataStore.lightGizmo) {
                 light.reservedDataStore.lightGizmo = new LightGizmo();
                 this.lightGizmos.push(light.reservedDataStore.lightGizmo)
                 light.reservedDataStore.lightGizmo.light = light;
             }
-        }else if(light.reservedDataStore && light.reservedDataStore.lightGizmo){
-            this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo),1);
+        } else if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
+            this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo), 1);
             light.reservedDataStore.lightGizmo.dispose();
-            light.reservedDataStore.lightGizmo=null;
+            light.reservedDataStore.lightGizmo = null;
         }
     }
 }

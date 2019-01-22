@@ -8775,7 +8775,7 @@ declare module BABYLON {
         getAbsolutePosition(): Vector3;
         /**
          * Sets the ShadowLight direction toward the passed target.
-         * @param target The point tot target in local space
+         * @param target The point to target in local space
          * @returns the updated ShadowLight direction
          */
         setDirectionToTarget(target: Vector3): Vector3;
@@ -39421,7 +39421,7 @@ declare module BABYLON {
         /**
          * The root mesh of the gizmo
          */
-        protected _rootMesh: Mesh;
+        _rootMesh: Mesh;
         private _attachedMesh;
         /**
          * Ratio for the scale of the gizmo (Default: 1)
@@ -41451,6 +41451,29 @@ declare module BABYLON {
          * Disposes of the gizmo manager
          */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Gizmo that enables viewing a light
+     */
+    export class LightGizmo extends Gizmo {
+        private _box;
+        /**
+         * Creates a LightGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        private _light;
+        /**
+         * The light that the gizmo is attached to
+         */
+        light: Nullable<Light>;
+        /**
+         * @hidden
+         * Updates the gizmo to match the attached mesh's position/rotation
+         */
+        protected _update(): void;
     }
 }
 declare module BABYLON {
