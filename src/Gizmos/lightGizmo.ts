@@ -24,7 +24,7 @@ export class LightGizmo extends Gizmo {
         this._box.rotation.x = -Math.PI / 2;
         this._box.bakeCurrentTransformIntoVertices();
         this._box.material = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
-        (this._box.material as StandardMaterial).emissiveColor = new Color3(1, 1, 1);
+        (this._box.material as StandardMaterial).emissiveColor = Color3.Yellow();
         this._rootMesh.addChild(this._box);
         this.attachedMesh = new AbstractMesh("", this.gizmoLayer.utilityLayerScene);
     }
@@ -36,7 +36,7 @@ export class LightGizmo extends Gizmo {
     public set light(light: Nullable<Light>) {
         this._light = light;
         if ((light as any).position) {
-        this.attachedMesh!.position.copyFrom((light as any).position);
+            this.attachedMesh!.position.copyFrom((light as any).position);
         }
         if ((light as any).direction) {
             this._box.setDirection((light as any).direction);
@@ -63,7 +63,7 @@ export class LightGizmo extends Gizmo {
         }
         if (!this._light.isEnabled()) {
             (this._box.material as StandardMaterial).emissiveColor.set(0, 0, 0);
-        }else {
+        } else {
             (this._box.material as StandardMaterial).emissiveColor.set(1, 1, 1);
         }
     }
