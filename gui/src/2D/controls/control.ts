@@ -1609,8 +1609,8 @@ export class Control {
     }
 
     /** @hidden */
-    public _onPointerOut(target: Control): void {
-        if (!this._isEnabled || target === this) {
+    public _onPointerOut(target: Control, force = false): void {
+        if (!force && (!this._isEnabled || target === this)) {
             return;
         }
         this._enterCount = 0;
@@ -1621,7 +1621,9 @@ export class Control {
             canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
         }
 
-        if (canNotify && this.parent != null) { this.parent._onPointerOut(target); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerOut(target, force);
+        }
     }
 
     /** @hidden */

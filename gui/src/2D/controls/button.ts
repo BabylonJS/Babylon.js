@@ -111,12 +111,12 @@ export class Button extends Rectangle {
     }
 
     /** @hidden */
-    public _onPointerOut(target: Control): void {
+    public _onPointerOut(target: Control, force = false): void {
         if (this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
 
-        super._onPointerOut(target);
+        super._onPointerOut(target, force);
     }
 
     /** @hidden */

@@ -1275,7 +1275,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
                 if (_this._lastControlOver[pointerId]) {
-                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId]);
+                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId], true);
                 }
                 delete _this._lastControlOver[pointerId];
             }
@@ -1487,11 +1487,12 @@ var Button = /** @class */ (function (_super) {
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerOut = function (target) {
+    Button.prototype._onPointerOut = function (target, force) {
+        if (force === void 0) { force = false; }
         if (this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
-        _super.prototype._onPointerOut.call(this, target);
+        _super.prototype._onPointerOut.call(this, target, force);
     };
     /** @hidden */
     Button.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
@@ -5169,8 +5170,9 @@ var Control = /** @class */ (function () {
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerOut = function (target) {
-        if (!this._isEnabled || target === this) {
+    Control.prototype._onPointerOut = function (target, force) {
+        if (force === void 0) { force = false; }
+        if (!force && (!this._isEnabled || target === this)) {
             return;
         }
         this._enterCount = 0;
@@ -5179,7 +5181,7 @@ var Control = /** @class */ (function () {
             canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
         }
         if (canNotify && this.parent != null) {
-            this.parent._onPointerOut(target);
+            this.parent._onPointerOut(target, force);
         }
     };
     /** @hidden */

@@ -553,17 +553,32 @@ var TerrainMaterial = /** @class */ (function (_super) {
         var engine = scene.getEngine();
         // Textures
         if (scene.texturesEnabled) {
-            if (this.mixTexture && babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialFlags"].DiffuseTextureEnabled) {
-                if (!this.mixTexture.isReady()) {
+            if (!this.mixTexture || !this.mixTexture.isReady()) {
+                return false;
+            }
+            defines._needUVs = true;
+            if (babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialFlags"].DiffuseTextureEnabled) {
+                if (!this.diffuseTexture1 || !this.diffuseTexture1.isReady()) {
                     return false;
                 }
-                else {
-                    defines._needUVs = true;
-                    defines.DIFFUSE = true;
+                if (!this.diffuseTexture2 || !this.diffuseTexture2.isReady()) {
+                    return false;
                 }
+                if (!this.diffuseTexture3 || !this.diffuseTexture3.isReady()) {
+                    return false;
+                }
+                defines.DIFFUSE = true;
             }
-            if ((this.bumpTexture1 || this.bumpTexture2 || this.bumpTexture3) && babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialFlags"].BumpTextureEnabled) {
-                defines._needUVs = true;
+            if (this.bumpTexture1 && this.bumpTexture2 && this.bumpTexture3 && babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialFlags"].BumpTextureEnabled) {
+                if (!this.bumpTexture1.isReady()) {
+                    return false;
+                }
+                if (!this.bumpTexture2.isReady()) {
+                    return false;
+                }
+                if (!this.bumpTexture3.isReady()) {
+                    return false;
+                }
                 defines._needNormals = true;
                 defines.BUMP = true;
             }
