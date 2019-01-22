@@ -407,9 +407,8 @@ export class Inspector {
 
         // Light gizmos
         scene.lights.forEach((l)=>{
-            debugger;
             this._GlobalState.enableLightGizmo(l, true);
-        })
+        });
     }
 
     private static _CreateCanvasContainer(parentControl: HTMLElement) {
