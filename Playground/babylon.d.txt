@@ -54160,7 +54160,7 @@ declare module BABYLON.GUI {
         /** @hidden */processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
         /** @hidden */onPointerEnter(target: Control): boolean;
-        /** @hidden */onPointerOut(target: Control): void;
+        /** @hidden */onPointerOut(target: Control, force?: boolean): void;
         /** @hidden */onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         /** @hidden */forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
@@ -54634,7 +54634,7 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         /** @hidden */processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */onPointerEnter(target: Control): boolean;
-        /** @hidden */onPointerOut(target: Control): void;
+        /** @hidden */onPointerOut(target: Control, force?: boolean): void;
         /** @hidden */onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         /**
