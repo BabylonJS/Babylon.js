@@ -15,7 +15,7 @@ export class Gizmo implements IDisposable {
     /**
      * The root mesh of the gizmo
      */
-    protected _rootMesh: Mesh;
+    public _rootMesh: Mesh;
     private _attachedMesh: Nullable<AbstractMesh>;
     /**
      * Ratio for the scale of the gizmo (Default: 1)
