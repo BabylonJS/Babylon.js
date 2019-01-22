@@ -112,6 +112,8 @@
 
 ### glTF Serializer
 
+- Added support for exporting `KHR_lights_punctual`
+
 ### Viewer
 
 ### Materials Library
