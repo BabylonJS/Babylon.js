@@ -30,9 +30,11 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
     constructor(props: ISceneTreeItemComponentProps) {
         super(props);
+
+        const scene = this.props.scene;
         let gizmoMode = 0;
-        if (props.globalState.gizmoManager) {
-            const manager: GizmoManager = props.globalState.gizmoManager;
+        if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
+            const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
             if (manager.positionGizmoEnabled) {
                 gizmoMode = 1;
             } else if (manager.rotationGizmoEnabled) {
@@ -66,8 +68,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         const scene = this.props.scene;
         this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add((entity) => {
             this._selectedEntity = entity;
-            if (scene.reservedDataStore && this.props.globalState.gizmoManager) {
-                const manager: GizmoManager = this.props.globalState.gizmoManager;
+            if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
+                const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
 
                 const className = entity.getClassName();
                 
@@ -157,11 +159,11 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             this._gizmoLayerOnPointerObserver = null;
         }
 
-        if (!this.props.globalState.gizmoManager) {
-            this.props.globalState.gizmoManager = new GizmoManager(scene);
+        if (!scene.reservedDataStore.gizmoManager) {
+            scene.reservedDataStore.gizmoManager = new GizmoManager(scene);
         }
 
-        const manager: GizmoManager = this.props.globalState.gizmoManager;
+        const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
         // Allow picking of light gizmo when a gizmo mode is selected
         this._gizmoLayerOnPointerObserver = UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene.onPointerObservable.add((pointerInfo)=>{
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
@@ -187,7 +189,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         if (this.state.gizmoMode === mode) {
             mode = 0;
             manager.dispose();
-            this.props.globalState.gizmoManager = null;
+            scene.reservedDataStore.gizmoManager = null;
         } else {
             switch (mode) {
                 case 1:

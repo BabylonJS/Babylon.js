@@ -454,9 +454,9 @@ export class Inspector {
                 this._GlobalState.enableLightGizmo(g.light, false);
             }
         })
-        if(this._GlobalState.gizmoManager){
-            this._GlobalState.gizmoManager.dispose();
-            this._GlobalState.gizmoManager = null;
+        if(this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager){
+            this._Scene.reservedDataStore.gizmoManager.dispose();
+            this._Scene.reservedDataStore.gizmoManager = null;
         }
 
         if (this._NewCanvasContainer) {
