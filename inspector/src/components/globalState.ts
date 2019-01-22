@@ -5,7 +5,8 @@ import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
-
+import { Light } from "babylonjs/Lights/light";
+import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 
 export class GlobalState {
@@ -50,5 +51,24 @@ export class GlobalState {
                 this.onTabChangedObservable.notifyObservers(3);
             }
         });
+    }
+
+    // Light gizmos
+    public lightGizmos:Array<LightGizmo> = [];
+    public enableLightGizmo(light:Light, enable = true){
+        if(enable){
+            if(!light.reservedDataStore){
+                light.reservedDataStore = {}
+            }
+            if(!light.reservedDataStore.lightGizmo){
+                light.reservedDataStore.lightGizmo = new LightGizmo();
+                this.lightGizmos.push(light.reservedDataStore.lightGizmo)
+                light.reservedDataStore.lightGizmo.light = light;
+            }
+        }else if(light.reservedDataStore && light.reservedDataStore.lightGizmo){
+            this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo),1);
+            light.reservedDataStore.lightGizmo.dispose();
+            light.reservedDataStore.lightGizmo=null;
+        }
     }
 }
