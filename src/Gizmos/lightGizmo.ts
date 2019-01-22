@@ -21,7 +21,7 @@ export class LightGizmo extends Gizmo {
     constructor(gizmoLayer?: UtilityLayerRenderer) {
         super(gizmoLayer);
         this._box = Mesh.CreateCylinder("light", 0.02, 0, 0.02, 16, 1, this.gizmoLayer.utilityLayerScene);
-        this._box.rotation.x = Math.PI / 2;
+        this._box.rotation.x = -Math.PI / 2;
         this._box.bakeCurrentTransformIntoVertices();
         this._box.material = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
         (this._box.material as StandardMaterial).emissiveColor = new Color3(1, 1, 1);
