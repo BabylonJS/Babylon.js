@@ -366,5 +366,39 @@ describe('Babylon glTF Serializer', () => {
                 jsonData.scene.should.be.equal(0);
             });
         });
+        it('should serialize point light to glTF', () => {
+            const scene = new BABYLON.Scene(subject);
+            const pointLight = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(4, 4, 0), scene);
+            const intensity = 0.2;
+            pointLight.intensity = intensity;
+
+            return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
+                const jsonString = glTFData.glTFFiles['test.gltf'] as string;
+                const jsonData = JSON.parse(jsonString);
+                console.log(jsonString);
+                // assets, extensionsUsed, extensions, nodes, scenes, scene
+                Object.keys(jsonData).length.should.be.equal(6);
+                jsonData.extensions['KHR_lights_punctual'].lights.length.should.be.equal(1);
+                jsonData.extensions['KHR_lights_punctual'].lights[0].intensity.should.be.equal(intensity);
+                jsonData.nodes.length.should.be.equal(1);
+                jsonData.nodes[0].extensions['KHR_lights_punctual']['light'].should.be.equal(0);
+            });
+        });
+        it('should serialize multiple lights to glTF', () => {
+            const scene = new BABYLON.Scene(subject);
+            const pointLight = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(4, 4, 0), scene);
+            const spotLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(-4, 4, 0), new BABYLON.Vector3(0, Math.PI/4, 0), Math.PI/4, 2, scene);
+            const directionalLight = new BABYLON.DirectionalLight("directionalLight", BABYLON.Vector3.Forward(), scene);
+
+            return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
+                const jsonString = glTFData.glTFFiles['test.gltf'] as string;
+                const jsonData = JSON.parse(jsonString);
+                console.log(jsonString);
+                // assets, extensionsUsed, extensions, nodes, scenes, scene
+                Object.keys(jsonData).length.should.be.equal(6);
+                jsonData.extensions['KHR_lights_punctual'].lights.length.should.be.equal(3);
+                jsonData.nodes.length.should.be.equal(3);
+            });
+        });
     });
 });
