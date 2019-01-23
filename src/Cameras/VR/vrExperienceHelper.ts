@@ -607,6 +607,12 @@ export class VRExperienceHelper {
     }
 
     /**
+     * Defines wether or not Pointer lock should be requested when switching to
+     * full screen.
+     */
+    public requestPointerLockOnFullScreen = true;
+
+    /**
      * Instantiates a VRExperienceHelper.
      * Helps to quickly add VR support to an existing scene.
      * @param scene The scene the VRExperienceHelper belongs to.
@@ -756,7 +762,7 @@ export class VRExperienceHelper {
             if (this.isInVRMode) {
                 this.exitVR();
                 if (this._fullscreenVRpresenting) {
-                    this._scene.getEngine().switchFullscreen(true);
+                    this._scene.getEngine().exitFullscreen();
                 }
             }
         }, PointerEventTypes.POINTERDOUBLETAP, false);
@@ -970,7 +976,7 @@ export class VRExperienceHelper {
                 this._vrDeviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
             }
             this._scene.activeCamera = this._vrDeviceOrientationCamera;
-            this._scene.getEngine().switchFullscreen(true);
+            this._scene.getEngine().enterFullscreen(this.requestPointerLockOnFullScreen);
             this.updateButtonVisibility();
         }
 
