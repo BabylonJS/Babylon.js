@@ -1268,7 +1268,7 @@ export class _Exporter {
                 // Build Hierarchy with the node map.
                 for (let babylonNode of nodes) {
                     glTFNodeIndex = this._nodeMap[babylonNode.uniqueId];
-                    if (glTFNodeIndex !== undefined) { 
+                    if (glTFNodeIndex !== undefined) {
                         glTFNode = this._nodes[glTFNodeIndex];
                         if (!babylonNode.parent) {
                             if (!this._shouldExportNode(babylonNode)) {
@@ -1341,7 +1341,6 @@ export class _Exporter {
                                 const directDescendents = babylonNode.getDescendants(true, (node: Node) => { return (node instanceof Node); });
                                 if (directDescendents.length || node.mesh != null || (node.extensions)) {
                                     this._nodes.push(node);
-                                    
                                     nodeIndex = this._nodes.length - 1;
                                     nodeMap[babylonNode.uniqueId] = nodeIndex;
                                 }

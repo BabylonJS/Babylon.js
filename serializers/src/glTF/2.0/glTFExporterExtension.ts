@@ -32,6 +32,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param meshPrimitive glTF mesh primitive
      * @param babylonSubMesh Babylon submesh
      * @param binaryWriter glTF serializer binary writer instance
+     * @returns nullable IMeshPrimitive promise
      */
     postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
 
@@ -40,6 +41,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param context The context when exporting the node
      * @param node glTF node
      * @param babylonNode BabylonJS node
+     * @returns nullable INode promise
      */
     postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
 

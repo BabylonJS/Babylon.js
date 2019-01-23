@@ -40,7 +40,7 @@ interface ILights {
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
  */
-export class KHR_lights implements IGLTFExporterExtensionV2 {
+export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
     /** The name of this extension. */
     public readonly name = NAME;
 
@@ -94,6 +94,7 @@ export class KHR_lights implements IGLTFExporterExtensionV2 {
      * @param context The context when exporting the node
      * @param node glTF node
      * @param babylonNode BabylonJS node
+     * @returns nullable INode promise
      */
     public postExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>> {
         return new Promise((resolve, reject) => {
@@ -183,4 +184,4 @@ export class KHR_lights implements IGLTFExporterExtensionV2 {
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_lights(exporter));
+_Exporter.RegisterExtension(NAME, (exporter) => new KHR_lights_punctual(exporter));
