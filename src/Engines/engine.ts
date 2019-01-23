@@ -491,7 +491,7 @@ export class Engine {
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.21";
+        return "4.0.0-alpha.22";
     }
 
     /**
@@ -1983,12 +1983,31 @@ export class Engine {
      */
     public switchFullscreen(requestPointerLock: boolean): void {
         if (this.isFullscreen) {
-            Tools.ExitFullscreen();
+            this.exitFullscreen();
         } else {
+            this.enterFullscreen(requestPointerLock);
+        }
+    }
+
+    /**
+     * Enters full screen mode
+     * @param requestPointerLock defines if a pointer lock should be requested from the user
+     */
+    public enterFullscreen(requestPointerLock: boolean): void {
+        if (!this.isFullscreen) {
             this._pointerLockRequested = requestPointerLock;
             if (this._renderingCanvas) {
                 Tools.RequestFullscreen(this._renderingCanvas);
             }
+        }
+    }
+
+    /**
+     * Exits full screen mode
+     */
+    public exitFullscreen(): void {
+        if (this.isFullscreen) {
+            Tools.ExitFullscreen();
         }
     }
 
