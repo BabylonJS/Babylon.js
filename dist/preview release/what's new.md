@@ -113,7 +113,6 @@
 ### glTF Serializer
 
 - Added support for exporting `KHR_lights_punctual`
-- change `shouldExportTransformNode` callback to `shouldExportNode`
 
 ### Viewer
 
@@ -226,3 +225,4 @@
 - No more `babylon.worker.js` javascript following the lack of usage from the feature ([Sebavan]
 (https://github.com/Sebavan))
 - No more `Primitive Geometries` as they were not in use since 2.0 ([Sebavan](https://github.com/Sebavan))
+- change `shouldExportTransformNode` callback in glTF serializer options to `shouldExportNode`([kcoley](https://github.com/kcoley))
