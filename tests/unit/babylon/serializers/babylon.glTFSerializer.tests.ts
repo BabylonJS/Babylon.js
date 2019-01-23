@@ -375,7 +375,6 @@ describe('Babylon glTF Serializer', () => {
             return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
-                console.log(jsonString);
                 // assets, extensionsUsed, extensions, nodes, scenes, scene
                 Object.keys(jsonData).length.should.be.equal(6);
                 jsonData.extensions['KHR_lights_punctual'].lights.length.should.be.equal(1);
@@ -393,7 +392,6 @@ describe('Babylon glTF Serializer', () => {
             return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
-                console.log(jsonString);
                 // assets, extensionsUsed, extensions, nodes, scenes, scene
                 Object.keys(jsonData).length.should.be.equal(6);
                 jsonData.extensions['KHR_lights_punctual'].lights.length.should.be.equal(3);
