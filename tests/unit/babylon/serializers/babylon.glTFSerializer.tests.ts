@@ -371,6 +371,8 @@ describe('Babylon glTF Serializer', () => {
             const pointLight = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(4, 4, 0), scene);
             const intensity = 0.2;
             pointLight.intensity = intensity;
+            const diffuseColor = BABYLON.Color3.Red();
+            pointLight.diffuse = diffuseColor;
 
             return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
@@ -379,8 +381,53 @@ describe('Babylon glTF Serializer', () => {
                 Object.keys(jsonData).length.should.be.equal(6);
                 jsonData.extensions['KHR_lights_punctual'].lights.length.should.be.equal(1);
                 jsonData.extensions['KHR_lights_punctual'].lights[0].intensity.should.be.equal(intensity);
+                expect(jsonData.extensions['KHR_lights_punctual'].lights[0].color).to.deep.equal(diffuseColor.asArray());
                 jsonData.nodes.length.should.be.equal(1);
                 jsonData.nodes[0].extensions['KHR_lights_punctual']['light'].should.be.equal(0);
+            });
+        });
+        it('should serialize spot light to glTF', () => {
+            const scene = new BABYLON.Scene(subject);
+            const spotLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(-4, 4, 0), new BABYLON.Vector3(0, Math.PI/4, 0), Math.PI/4, 2, scene);
+            const intensity = 0.2;
+            spotLight.intensity = intensity;
+            spotLight.innerAngle = Math.PI/8;
+            const diffuseColor = BABYLON.Color3.Red();
+            spotLight.diffuse = diffuseColor;
+
+            return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
+                const jsonString = glTFData.glTFFiles['test.gltf'] as string;
+                const jsonData = JSON.parse(jsonString);
+                // assets, extensionsUsed, extensions, nodes, scenes, scene
+                Object.keys(jsonData).length.should.be.equal(6);
+                jsonData.extensions['KHR_lights_punctual'].lights.length.should.be.equal(1);
+                jsonData.extensions['KHR_lights_punctual'].lights[0].intensity.should.be.equal(intensity);
+                jsonData.extensions['KHR_lights_punctual'].lights[0].spot.outerConeAngle.should.be.equal(spotLight.angle/2);
+                jsonData.extensions['KHR_lights_punctual'].lights[0].spot.innerConeAngle.should.be.equal(spotLight.innerAngle/2);
+                expect(jsonData.extensions['KHR_lights_punctual'].lights[0].color).to.deep.equal(diffuseColor.asArray());
+                jsonData.nodes.length.should.be.equal(1);
+                jsonData.nodes[0].extensions['KHR_lights_punctual']['light'].should.be.equal(0);
+            });
+        });
+        it('should serialize directional light to glTF', () => {
+            const scene = new BABYLON.Scene(subject);
+            const directionalLight = new BABYLON.DirectionalLight("directionalLight", BABYLON.Vector3.Forward(), scene);
+            const diffuseColor = BABYLON.Color3.Red();
+            directionalLight.diffuse = diffuseColor;
+            const intensity = 0.2;
+            directionalLight.intensity = intensity;
+
+            return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {
+                const jsonString = glTFData.glTFFiles['test.gltf'] as string;
+                const jsonData = JSON.parse(jsonString);
+                // assets, extensionsUsed, extensions, nodes, scenes, scene
+                Object.keys(jsonData).length.should.be.equal(6);
+                jsonData.extensions['KHR_lights_punctual'].lights.length.should.be.equal(1);
+                jsonData.extensions['KHR_lights_punctual'].lights[0].intensity.should.be.equal(intensity);
+                expect(jsonData.extensions['KHR_lights_punctual'].lights[0].color).to.deep.equal(diffuseColor.asArray());
+                jsonData.nodes.length.should.be.equal(1);
+                jsonData.nodes[0].extensions['KHR_lights_punctual']['light'].should.be.equal(0);
+                
             });
         });
         it('should serialize multiple lights to glTF', () => {
