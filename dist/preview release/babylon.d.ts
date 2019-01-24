@@ -7446,6 +7446,87 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A multi-material is used to apply different materials to different parts of the same object without the need of
+     * separate meshes. This can be use to improve performances.
+     * @see http://doc.babylonjs.com/how_to/multi_materials
+     */
+    export class MultiMaterial extends Material {
+        private _subMaterials;
+        /**
+         * Gets or Sets the list of Materials used within the multi material.
+         * They need to be ordered according to the submeshes order in the associated mesh
+         */
+        subMaterials: Nullable<Material>[];
+        /**
+         * Function used to align with Node.getChildren()
+         * @returns the list of Materials used within the multi material
+         */
+        getChildren(): Nullable<Material>[];
+        /**
+         * Instantiates a new Multi Material
+         * A multi-material is used to apply different materials to different parts of the same object without the need of
+         * separate meshes. This can be use to improve performances.
+         * @see http://doc.babylonjs.com/how_to/multi_materials
+         * @param name Define the name in the scene
+         * @param scene Define the scene the material belongs to
+         */
+        constructor(name: string, scene: Scene);
+        private _hookArray;
+        /**
+         * Get one of the submaterial by its index in the submaterials array
+         * @param index The index to look the sub material at
+         * @returns The Material if the index has been defined
+         */
+        getSubMaterial(index: number): Nullable<Material>;
+        /**
+         * Get the list of active textures for the whole sub materials list.
+         * @returns All the textures that will be used during the rendering
+         */
+        getActiveTextures(): BaseTexture[];
+        /**
+         * Gets the current class name of the material e.g. "MultiMaterial"
+         * Mainly use in serialization.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Checks if the material is ready to render the requested sub mesh
+         * @param mesh Define the mesh the submesh belongs to
+         * @param subMesh Define the sub mesh to look readyness for
+         * @param useInstances Define whether or not the material is used with instances
+         * @returns true if ready, otherwise false
+         */
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        /**
+         * Clones the current material and its related sub materials
+         * @param name Define the name of the newly cloned material
+         * @param cloneChildren Define if submaterial will be cloned or shared with the parent instance
+         * @returns the cloned material
+         */
+        clone(name: string, cloneChildren?: boolean): MultiMaterial;
+        /**
+         * Serializes the materials into a JSON representation.
+         * @returns the JSON representation
+         */
+        serialize(): any;
+        /**
+         * Dispose the material and release its associated resources
+         * @param forceDisposeEffect Define if we want to force disposing the associated effect (if false the shader is not released and could be reuse later on)
+         * @param forceDisposeTextures Define if we want to force disposing the associated textures (if false, they will not be disposed and can still be use elsewhere in the app)
+         * @param forceDisposeChildren Define if we want to force disposing the associated submaterials (if false, they will not be disposed and can still be use elsewhere in the app)
+         */
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, forceDisposeChildren?: boolean): void;
+        /**
+         * Creates a MultiMaterial from parsed MultiMaterial data.
+         * @param parsedMultiMaterial defines parsed MultiMaterial data.
+         * @param scene defines the hosting scene
+         * @returns a new MultiMaterial
+         */
+        static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to represent data loading progression
      */
     export class SceneLoaderFlags {
@@ -8694,7 +8775,7 @@ declare module BABYLON {
         getAbsolutePosition(): Vector3;
         /**
          * Sets the ShadowLight direction toward the passed target.
-         * @param target The point tot target in local space
+         * @param target The point to target in local space
          * @returns the updated ShadowLight direction
          */
         setDirectionToTarget(target: Vector3): Vector3;
@@ -20104,9 +20185,10 @@ declare module BABYLON {
          * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
          * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
          * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
+         * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
          * @returns a new mesh
          */
-        static MergeMeshes(meshes: Array<Mesh>, disposeSource?: boolean, allow32BitsIndices?: boolean, meshSubclass?: Mesh, subdivideWithSubMeshes?: boolean): Nullable<Mesh>;
+        static MergeMeshes(meshes: Array<Mesh>, disposeSource?: boolean, allow32BitsIndices?: boolean, meshSubclass?: Mesh, subdivideWithSubMeshes?: boolean, multiMultiMaterials?: boolean): Nullable<Mesh>;
         /** @hidden */
         addInstance(instance: InstancedMesh): void;
         /** @hidden */
@@ -20671,87 +20753,6 @@ declare module BABYLON {
          * @returns a new material
          */
         static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): any;
-    }
-}
-declare module BABYLON {
-    /**
-     * A multi-material is used to apply different materials to different parts of the same object without the need of
-     * separate meshes. This can be use to improve performances.
-     * @see http://doc.babylonjs.com/how_to/multi_materials
-     */
-    export class MultiMaterial extends Material {
-        private _subMaterials;
-        /**
-         * Gets or Sets the list of Materials used within the multi material.
-         * They need to be ordered according to the submeshes order in the associated mesh
-         */
-        subMaterials: Nullable<Material>[];
-        /**
-         * Function used to align with Node.getChildren()
-         * @returns the list of Materials used within the multi material
-         */
-        getChildren(): Nullable<Material>[];
-        /**
-         * Instantiates a new Multi Material
-         * A multi-material is used to apply different materials to different parts of the same object without the need of
-         * separate meshes. This can be use to improve performances.
-         * @see http://doc.babylonjs.com/how_to/multi_materials
-         * @param name Define the name in the scene
-         * @param scene Define the scene the material belongs to
-         */
-        constructor(name: string, scene: Scene);
-        private _hookArray;
-        /**
-         * Get one of the submaterial by its index in the submaterials array
-         * @param index The index to look the sub material at
-         * @returns The Material if the index has been defined
-         */
-        getSubMaterial(index: number): Nullable<Material>;
-        /**
-         * Get the list of active textures for the whole sub materials list.
-         * @returns All the textures that will be used during the rendering
-         */
-        getActiveTextures(): BaseTexture[];
-        /**
-         * Gets the current class name of the material e.g. "MultiMaterial"
-         * Mainly use in serialization.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Checks if the material is ready to render the requested sub mesh
-         * @param mesh Define the mesh the submesh belongs to
-         * @param subMesh Define the sub mesh to look readyness for
-         * @param useInstances Define whether or not the material is used with instances
-         * @returns true if ready, otherwise false
-         */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
-        /**
-         * Clones the current material and its related sub materials
-         * @param name Define the name of the newly cloned material
-         * @param cloneChildren Define if submaterial will be cloned or shared with the parent instance
-         * @returns the cloned material
-         */
-        clone(name: string, cloneChildren?: boolean): MultiMaterial;
-        /**
-         * Serializes the materials into a JSON representation.
-         * @returns the JSON representation
-         */
-        serialize(): any;
-        /**
-         * Dispose the material and release its associated resources
-         * @param forceDisposeEffect Define if we want to force disposing the associated effect (if false the shader is not released and could be reuse later on)
-         * @param forceDisposeTextures Define if we want to force disposing the associated textures (if false, they will not be disposed and can still be use elsewhere in the app)
-         * @param forceDisposeChildren Define if we want to force disposing the associated submaterials (if false, they will not be disposed and can still be use elsewhere in the app)
-         */
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, forceDisposeChildren?: boolean): void;
-        /**
-         * Creates a MultiMaterial from parsed MultiMaterial data.
-         * @param parsedMultiMaterial defines parsed MultiMaterial data.
-         * @param scene defines the hosting scene
-         * @returns a new MultiMaterial
-         */
-        static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial;
     }
 }
 declare module BABYLON {
@@ -26944,6 +26945,15 @@ declare module BABYLON {
          * @param requestPointerLock defines if a pointer lock should be requested from the user
          */
         switchFullscreen(requestPointerLock: boolean): void;
+        /**
+         * Enters full screen mode
+         * @param requestPointerLock defines if a pointer lock should be requested from the user
+         */
+        enterFullscreen(requestPointerLock: boolean): void;
+        /**
+         * Exits full screen mode
+         */
+        exitFullscreen(): void;
         /**
          * Clear the current render buffer or the current render target (if any is set up)
          * @param color defines the color to use
@@ -38526,6 +38536,11 @@ declare module BABYLON {
         readonly vrDeviceOrientationCamera: Nullable<VRDeviceOrientationFreeCamera>;
         private readonly _teleportationRequestInitiated;
         /**
+         * Defines wether or not Pointer lock should be requested when switching to
+         * full screen.
+         */
+        requestPointerLockOnFullScreen: boolean;
+        /**
          * Instantiates a VRExperienceHelper.
          * Helps to quickly add VR support to an existing scene.
          * @param scene The scene the VRExperienceHelper belongs to.
@@ -39406,7 +39421,7 @@ declare module BABYLON {
         /**
          * The root mesh of the gizmo
          */
-        protected _rootMesh: Mesh;
+        _rootMesh: Mesh;
         private _attachedMesh;
         /**
          * Ratio for the scale of the gizmo (Default: 1)
@@ -41436,6 +41451,29 @@ declare module BABYLON {
          * Disposes of the gizmo manager
          */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Gizmo that enables viewing a light
+     */
+    export class LightGizmo extends Gizmo {
+        private _box;
+        /**
+         * Creates a LightGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        private _light;
+        /**
+         * The light that the gizmo is attached to
+         */
+        light: Nullable<Light>;
+        /**
+         * @hidden
+         * Updates the gizmo to match the attached mesh's position/rotation
+         */
+        protected _update(): void;
     }
 }
 declare module BABYLON {

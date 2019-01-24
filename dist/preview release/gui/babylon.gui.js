@@ -1275,7 +1275,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
                 if (_this._lastControlOver[pointerId]) {
-                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId]);
+                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId], true);
                 }
                 delete _this._lastControlOver[pointerId];
             }
@@ -1487,11 +1487,12 @@ var Button = /** @class */ (function (_super) {
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerOut = function (target) {
+    Button.prototype._onPointerOut = function (target, force) {
+        if (force === void 0) { force = false; }
         if (this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
-        _super.prototype._onPointerOut.call(this, target);
+        _super.prototype._onPointerOut.call(this, target, force);
     };
     /** @hidden */
     Button.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
@@ -4772,7 +4773,20 @@ var Control = /** @class */ (function () {
             // get the boudning box of the current measure and last frames measure in global space and invalidate it
             // the previous measure is used to properly clear a control that is scaled down
             _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"].CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
-            this.host.invalidateRect(Math.floor(this._tmpMeasureA.left), Math.floor(this._tmpMeasureA.top), Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width), Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height));
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                // Expand rect based on shadows
+                var shadowOffsetX = this.shadowOffsetX;
+                var shadowOffsetY = this.shadowOffsetY;
+                var shadowBlur = this.shadowBlur;
+                var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+                var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+                var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+                var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+                this.host.invalidateRect(Math.floor(this._tmpMeasureA.left + leftShadowOffset), Math.floor(this._tmpMeasureA.top + topShadowOffset), Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset), Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset));
+            }
+            else {
+                this.host.invalidateRect(Math.floor(this._tmpMeasureA.left), Math.floor(this._tmpMeasureA.top), Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width), Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height));
+            }
         }
     };
     /** @hidden */
@@ -5169,8 +5183,9 @@ var Control = /** @class */ (function () {
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerOut = function (target) {
-        if (!this._isEnabled || target === this) {
+    Control.prototype._onPointerOut = function (target, force) {
+        if (force === void 0) { force = false; }
+        if (!force && (!this._isEnabled || target === this)) {
             return;
         }
         this._enterCount = 0;
@@ -5179,7 +5194,7 @@ var Control = /** @class */ (function () {
             canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
         }
         if (canNotify && this.parent != null) {
-            this.parent._onPointerOut(target);
+            this.parent._onPointerOut(target, force);
         }
     };
     /** @hidden */

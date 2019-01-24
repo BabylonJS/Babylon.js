@@ -1085,7 +1085,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
-        _onPointerOut(target: Control): void;
+        _onPointerOut(target: Control, force?: boolean): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
@@ -1579,7 +1579,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
-        _onPointerOut(target: Control): void;
+        _onPointerOut(target: Control, force?: boolean): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */

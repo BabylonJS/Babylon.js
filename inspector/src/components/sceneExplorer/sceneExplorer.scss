@@ -373,7 +373,7 @@
         .lightTools {
             grid-column: 2;
             display: grid;
-            grid-template-columns: 1fr 20px auto 5px;
+            grid-template-columns: 1fr 20px 20px auto 5px;
             align-items: center;
 
             .enableLight {

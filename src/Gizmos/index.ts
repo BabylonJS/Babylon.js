@@ -7,3 +7,4 @@ export * from "./planeRotationGizmo";
 export * from "./positionGizmo";
 export * from "./rotationGizmo";
 export * from "./scaleGizmo";
+export * from "./lightGizmo";
