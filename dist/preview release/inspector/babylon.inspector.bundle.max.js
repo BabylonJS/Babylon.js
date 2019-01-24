@@ -36649,11 +36649,11 @@ var ToolsTabComponent = /** @class */ (function (_super) {
         });
         this.setState({ tag: "Stop recording" });
     };
-    ToolsTabComponent.prototype.shouldExport = function (transformNode) {
+    ToolsTabComponent.prototype.shouldExport = function (node) {
         // No skybox
-        if (transformNode instanceof babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Mesh"]) {
-            if (transformNode.material) {
-                var material = transformNode.material;
+        if (node instanceof babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Mesh"]) {
+            if (node.material) {
+                var material = node.material;
                 var reflectionTexture = material.reflectionTexture;
                 if (reflectionTexture && reflectionTexture.coordinatesMode === babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Texture"].SKYBOX_MODE) {
                     return false;
@@ -36666,7 +36666,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
         var _this = this;
         var scene = this.props.scene;
         babylonjs_serializers_glTF_2_0_index__WEBPACK_IMPORTED_MODULE_7__["GLTF2Export"].GLBAsync(scene, "scene", {
-            shouldExportTransformNode: function (transformNode) { return _this.shouldExport(transformNode); }
+            shouldExportNode: function (node) { return _this.shouldExport(node); }
         }).then(function (glb) {
             glb.downloadFiles();
         });

@@ -1004,7 +1004,7 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         captureScreenshot(): void;
         recordVideo(): void;
-        shouldExport(transformNode: BABYLON.TransformNode): boolean;
+        shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;

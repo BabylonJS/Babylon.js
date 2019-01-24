@@ -47,7 +47,8 @@ declare module "babylonjs-serializers/glTF/glTFFileExporter" {
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/glTFExporterExtension" {
-    import { ImageMimeType, IMeshPrimitive } from "babylonjs-gltf2interface";
+    import { ImageMimeType, IMeshPrimitive, INode } from "babylonjs-gltf2interface";
+    import { Node } from "babylonjs/node";
     import { Nullable } from "babylonjs/types";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
@@ -75,8 +76,21 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporterExtension" {
          * @param meshPrimitive glTF mesh primitive
          * @param babylonSubMesh Babylon submesh
          * @param binaryWriter glTF serializer binary writer instance
+         * @returns nullable IMeshPrimitive promise
          */
         postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
+        /**
+         * Define this method to modify the default behavior when exporting a node
+         * @param context The context when exporting the node
+         * @param node glTF node
+         * @param babylonNode BabylonJS node
+         * @returns nullable INode promise
+         */
+        postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+        /**
+         * Called after the exporter state changes to EXPORTING
+         */
+        onExporting?(): void;
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/glTFMaterialExporter" {
@@ -330,7 +344,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFData" {
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/glTFSerializer" {
-    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Node } from "babylonjs/node";
     import { Scene } from "babylonjs/scene";
     import { GLTFData } from "babylonjs-serializers/glTF/2.0/glTFData";
     /**
@@ -338,11 +352,11 @@ declare module "babylonjs-serializers/glTF/2.0/glTFSerializer" {
      */
     export interface IExportOptions {
         /**
-         * Function which indicates whether a babylon mesh should be exported or not
-         * @param transformNode source Babylon transform node. It is used to check whether it should be exported to glTF or not
-         * @returns boolean, which indicates whether the mesh should be exported (true) or not (false)
+         * Function which indicates whether a babylon node should be exported or not
+         * @param node source Babylon node. It is used to check whether it should be exported to glTF or not
+         * @returns boolean, which indicates whether the node should be exported (true) or not (false)
          */
-        shouldExportTransformNode?(transformNode: TransformNode): boolean;
+        shouldExportNode?(node: Node): boolean;
         /**
          * The sample rate to bake animation curves
          */
@@ -475,9 +489,10 @@ declare module "babylonjs-serializers/glTF/2.0/glTFUtilities" {
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
-    import { IBufferView, IAccessor, IMaterial, ITexture, IImage, ISampler, ImageMimeType, IMeshPrimitive } from "babylonjs-gltf2interface";
+    import { IBufferView, IAccessor, INode, IMaterial, ITexture, IImage, ISampler, ImageMimeType, IMeshPrimitive, IGLTF } from "babylonjs-gltf2interface";
     import { FloatArray, Nullable } from "babylonjs/types";
     import { Vector3, Vector4 } from "babylonjs/Maths/math";
+    import { Node } from "babylonjs/node";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
@@ -493,6 +508,10 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
      */
     export class _Exporter {
         /**
+         * Stores the glTF to export
+         */
+        _glTF: IGLTF;
+        /**
          * Stores all generated buffer views, which represents views into the main glTF buffer data
          */
         _bufferViews: IBufferView[];
@@ -504,10 +523,6 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          * Stores all the generated nodes, which contains transform and/or mesh information per node
          */
         private _nodes;
-        /**
-         * Stores the glTF asset information, which represents the glTF version and this file generator
-         */
-        private _asset;
         /**
          * Stores all the generated glTF scenes, which stores multiple node hierarchies
          */
@@ -549,7 +564,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
         /**
          * Stores a reference to the Babylon scene containing the source geometry and material information
          */
-        private _babylonScene;
+        _babylonScene: Scene;
         /**
          * Stores a map of the image data, where the key is the file name and the value
          * is the image data
@@ -567,25 +582,26 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
         /**
          * Specifies if the Babylon scene should be converted to right-handed on export
          */
-        private _convertToRightHandedSystem;
+        _convertToRightHandedSystem: boolean;
         /**
          * Baked animation sample rate
          */
         private _animationSampleRate;
         /**
-         * Callback which specifies if a transform node should be exported or not
+         * Callback which specifies if a node should be exported or not
          */
-        private _shouldExportTransformNode;
+        private _shouldExportNode;
         private _localEngine;
         _glTFMaterialExporter: _GLTFMaterialExporter;
         private _extensions;
-        private _extensionsUsed;
-        private _extensionsRequired;
         private static _ExtensionNames;
         private static _ExtensionFactories;
         private _applyExtensions;
         _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<BaseTexture>>;
         _extensionsPostExportMeshPrimitiveAsync(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
+        _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+        private _forEachExtensions;
+        private _extensionsOnExporting;
         /**
          * Load glTF serializer extensions
          */
@@ -761,7 +777,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene
          * @param nodes Babylon transform nodes
-         * @param shouldExportTransformNode Callback specifying if a transform node should be exported
+         * @param shouldExportNode Callback specifying if a transform node should be exported
          * @param binaryWriter Buffer to write binary data to
          * @returns Node mapping of unique id to index
          */
@@ -843,6 +859,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
 }
 declare module "babylonjs-serializers/glTF/2.0/glTFAnimation" {
     import { AnimationSamplerInterpolation, AnimationChannelTargetPath, AccessorType, IAnimation, INode, IBufferView, IAccessor } from "babylonjs-gltf2interface";
+    import { Node } from "babylonjs/node";
     import { Nullable } from "babylonjs/types";
     import { Animation } from "babylonjs/Animations/animation";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -912,7 +929,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFAnimation" {
         /**
          * @ignore
          * Create node animations from the transform node animations
-         * @param babylonTransformNode
+         * @param babylonNode
          * @param runtimeGLTFAnimation
          * @param idleGLTFAnimations
          * @param nodeMap
@@ -922,7 +939,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFAnimation" {
          * @param accessors
          * @param convertToRightHandedSystem
          */
-        static _CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode: TransformNode, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
+        static _CreateNodeAnimationFromNodeAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
         /**
@@ -1064,8 +1081,44 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform"
         textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
     }
 }
+declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual" {
+    import { Node } from "babylonjs/node";
+    import { INode } from "babylonjs-gltf2interface";
+    import { IGLTFExporterExtensionV2 } from "babylonjs-serializers/glTF/2.0/glTFExporterExtension";
+    import { _Exporter } from "babylonjs-serializers/glTF/2.0/glTFExporter";
+    import { Nullable } from 'babylonjs';
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
+     */
+    export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        /** Defines whether this extension is required */
+        required: boolean;
+        /** Reference to the glTF exporter */
+        private _exporter;
+        private _lights;
+        /** @hidden */
+        constructor(exporter: _Exporter);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        onExporting(): void;
+        /**
+         * Define this method to modify the default behavior when exporting a node
+         * @param context The context when exporting the node
+         * @param node glTF node
+         * @param babylonNode BabylonJS node
+         * @returns nullable INode promise
+         */
+        postExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+    }
+}
 declare module "babylonjs-serializers/glTF/2.0/Extensions/index" {
     export * from "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform";
+    export * from "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual";
 }
 declare module "babylonjs-serializers/glTF/2.0/index" {
     export * from "babylonjs-serializers/glTF/2.0/glTFAnimation";
@@ -1166,8 +1219,21 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshPrimitive glTF mesh primitive
          * @param babylonSubMesh Babylon submesh
          * @param binaryWriter glTF serializer binary writer instance
+         * @returns nullable IMeshPrimitive promise
          */
         postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
+        /**
+         * Define this method to modify the default behavior when exporting a node
+         * @param context The context when exporting the node
+         * @param node glTF node
+         * @param babylonNode BabylonJS node
+         * @returns nullable INode promise
+         */
+        postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+        /**
+         * Called after the exporter state changes to EXPORTING
+         */
+        onExporting?(): void;
     }
 }
 declare module BABYLON.GLTF2.Exporter {
@@ -1418,11 +1484,11 @@ declare module BABYLON {
      */
     export interface IExportOptions {
         /**
-         * Function which indicates whether a babylon mesh should be exported or not
-         * @param transformNode source Babylon transform node. It is used to check whether it should be exported to glTF or not
-         * @returns boolean, which indicates whether the mesh should be exported (true) or not (false)
+         * Function which indicates whether a babylon node should be exported or not
+         * @param node source Babylon node. It is used to check whether it should be exported to glTF or not
+         * @returns boolean, which indicates whether the node should be exported (true) or not (false)
          */
-        shouldExportTransformNode?(transformNode: TransformNode): boolean;
+        shouldExportNode?(node: Node): boolean;
         /**
          * The sample rate to bake animation curves
          */
@@ -1558,6 +1624,10 @@ declare module BABYLON.GLTF2.Exporter {
      */
     export class _Exporter {
         /**
+         * Stores the glTF to export
+         */
+        _glTF: IGLTF;
+        /**
          * Stores all generated buffer views, which represents views into the main glTF buffer data
          */
         _bufferViews: IBufferView[];
@@ -1569,10 +1639,6 @@ declare module BABYLON.GLTF2.Exporter {
          * Stores all the generated nodes, which contains transform and/or mesh information per node
          */
         private _nodes;
-        /**
-         * Stores the glTF asset information, which represents the glTF version and this file generator
-         */
-        private _asset;
         /**
          * Stores all the generated glTF scenes, which stores multiple node hierarchies
          */
@@ -1614,7 +1680,7 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * Stores a reference to the Babylon scene containing the source geometry and material information
          */
-        private _babylonScene;
+        _babylonScene: Scene;
         /**
          * Stores a map of the image data, where the key is the file name and the value
          * is the image data
@@ -1632,25 +1698,26 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * Specifies if the Babylon scene should be converted to right-handed on export
          */
-        private _convertToRightHandedSystem;
+        _convertToRightHandedSystem: boolean;
         /**
          * Baked animation sample rate
          */
         private _animationSampleRate;
         /**
-         * Callback which specifies if a transform node should be exported or not
+         * Callback which specifies if a node should be exported or not
          */
-        private _shouldExportTransformNode;
+        private _shouldExportNode;
         private _localEngine;
         _glTFMaterialExporter: _GLTFMaterialExporter;
         private _extensions;
-        private _extensionsUsed;
-        private _extensionsRequired;
         private static _ExtensionNames;
         private static _ExtensionFactories;
         private _applyExtensions;
         _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<BaseTexture>>;
         _extensionsPostExportMeshPrimitiveAsync(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
+        _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+        private _forEachExtensions;
+        private _extensionsOnExporting;
         /**
          * Load glTF serializer extensions
          */
@@ -1826,7 +1893,7 @@ declare module BABYLON.GLTF2.Exporter {
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene
          * @param nodes Babylon transform nodes
-         * @param shouldExportTransformNode Callback specifying if a transform node should be exported
+         * @param shouldExportNode Callback specifying if a transform node should be exported
          * @param binaryWriter Buffer to write binary data to
          * @returns Node mapping of unique id to index
          */
@@ -1971,7 +2038,7 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * @ignore
          * Create node animations from the transform node animations
-         * @param babylonTransformNode
+         * @param babylonNode
          * @param runtimeGLTFAnimation
          * @param idleGLTFAnimations
          * @param nodeMap
@@ -1981,7 +2048,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param accessors
          * @param convertToRightHandedSystem
          */
-        static _CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode: TransformNode, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
+        static _CreateNodeAnimationFromNodeAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
         /**
@@ -2112,5 +2179,35 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @param scene
          */
         textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
+    }
+}
+declare module BABYLON.GLTF2.Exporter.Extensions {
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
+     */
+    export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        /** Defines whether this extension is required */
+        required: boolean;
+        /** Reference to the glTF exporter */
+        private _exporter;
+        private _lights;
+        /** @hidden */
+        constructor(exporter: _Exporter);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        onExporting(): void;
+        /**
+         * Define this method to modify the default behavior when exporting a node
+         * @param context The context when exporting the node
+         * @param node glTF node
+         * @param babylonNode BabylonJS node
+         * @returns nullable INode promise
+         */
+        postExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
     }
 }

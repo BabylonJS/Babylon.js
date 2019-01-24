@@ -1256,7 +1256,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/tools/gltfCompone
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
-    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Node } from "babylonjs/node";
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
         constructor(props: IPaneComponentProps);
@@ -1264,7 +1264,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         componentWillUnmount(): void;
         captureScreenshot(): void;
         recordVideo(): void;
-        shouldExport(transformNode: TransformNode): boolean;
+        shouldExport(node: Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
@@ -2763,7 +2763,7 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         captureScreenshot(): void;
         recordVideo(): void;
-        shouldExport(transformNode: BABYLON.TransformNode): boolean;
+        shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
