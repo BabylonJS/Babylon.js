@@ -33969,6 +33969,7 @@ declare module BABYLON {
         private _pointerObserver;
         private _beforeRenderObserver;
         private static _planeScene;
+        private _useAlternatePickedPointAboveMaxDragAngleDragSpeed;
         /**
          * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
          */
