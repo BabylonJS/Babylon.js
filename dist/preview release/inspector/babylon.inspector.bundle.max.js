@@ -5609,7 +5609,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 5;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 6;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 7; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 8; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .gizmo {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .gizmo.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 5;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 6;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 7; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 8; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .gizmo {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .gizmo.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 
 // exports
 
@@ -36649,11 +36649,11 @@ var ToolsTabComponent = /** @class */ (function (_super) {
         });
         this.setState({ tag: "Stop recording" });
     };
-    ToolsTabComponent.prototype.shouldExport = function (transformNode) {
+    ToolsTabComponent.prototype.shouldExport = function (node) {
         // No skybox
-        if (transformNode instanceof babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Mesh"]) {
-            if (transformNode.material) {
-                var material = transformNode.material;
+        if (node instanceof babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Mesh"]) {
+            if (node.material) {
+                var material = node.material;
                 var reflectionTexture = material.reflectionTexture;
                 if (reflectionTexture && reflectionTexture.coordinatesMode === babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Texture"].SKYBOX_MODE) {
                     return false;
@@ -36666,7 +36666,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
         var _this = this;
         var scene = this.props.scene;
         babylonjs_serializers_glTF_2_0_index__WEBPACK_IMPORTED_MODULE_7__["GLTF2Export"].GLBAsync(scene, "scene", {
-            shouldExportTransformNode: function (transformNode) { return _this.shouldExport(transformNode); }
+            shouldExportNode: function (node) { return _this.shouldExport(node); }
         }).then(function (glb) {
             glb.downloadFiles();
         });
@@ -36892,6 +36892,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 
+
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
         this.onInspectorClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -36900,6 +36901,8 @@ var GlobalState = /** @class */ (function () {
         this.glTFLoaderExtensionDefaults = {};
         this.glTFLoaderDefaults = { "validate": true };
         this.blockMutationUpdates = false;
+        // Light gizmos
+        this.lightGizmos = [];
     }
     GlobalState.prototype.prepareGLTFPlugin = function (loader) {
         var _this = this;
@@ -36924,6 +36927,24 @@ var GlobalState = /** @class */ (function () {
                 _this.onTabChangedObservable.notifyObservers(3);
             }
         });
+    };
+    GlobalState.prototype.enableLightGizmo = function (light, enable) {
+        if (enable === void 0) { enable = true; }
+        if (enable) {
+            if (!light.reservedDataStore) {
+                light.reservedDataStore = {};
+            }
+            if (!light.reservedDataStore.lightGizmo) {
+                light.reservedDataStore.lightGizmo = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["LightGizmo"]();
+                this.lightGizmos.push(light.reservedDataStore.lightGizmo);
+                light.reservedDataStore.lightGizmo.light = light;
+            }
+        }
+        else if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
+            this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo), 1);
+            light.reservedDataStore.lightGizmo.dispose();
+            light.reservedDataStore.lightGizmo = null;
+        }
     };
     return GlobalState;
 }());
@@ -37295,7 +37316,7 @@ var LightTreeItemComponent = /** @class */ (function (_super) {
     function LightTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         var light = _this.props.light;
-        _this.state = { isEnabled: light.isEnabled() };
+        _this.state = { isEnabled: light.isEnabled(), isGizmoEnabled: (light.reservedDataStore && light.reservedDataStore.lightGizmo) };
         return _this;
     }
     LightTreeItemComponent.prototype.switchIsEnabled = function () {
@@ -37303,12 +37324,25 @@ var LightTreeItemComponent = /** @class */ (function (_super) {
         light.setEnabled(!light.isEnabled());
         this.setState({ isEnabled: light.isEnabled() });
     };
+    LightTreeItemComponent.prototype.toggleGizmo = function () {
+        var light = this.props.light;
+        if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
+            this.props.globalState.enableLightGizmo(light, false);
+            this.setState({ isGizmoEnabled: false });
+        }
+        else {
+            this.props.globalState.enableLightGizmo(light, true);
+            this.setState({ isGizmoEnabled: true });
+        }
+    };
     LightTreeItemComponent.prototype.render = function () {
         var _this = this;
         var isEnabledElement = this.state.isEnabled ? react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLightbulb"] }) : react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLightbulb"], className: "isNotActive" });
+        var isGizmoEnabled = this.state.isGizmoEnabled ? react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faEye"] }) : react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faEye"], className: "isNotActive" });
         return (react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: "lightTools" },
             react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_4__["TreeItemLabelComponent"], { label: this.props.light.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faLightbulb"], color: "yellow" }),
-            react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: "enableLight icon", onClick: function () { return _this.switchIsEnabled(); }, title: "Turn on/off the light" }, isEnabledElement),
+            react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchIsEnabled(); }, title: "Turn on/off the light" }, isEnabledElement),
+            react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: "enableGizmo icon", onClick: function () { return _this.toggleGizmo(); }, title: "Turn on/off the light's gizmo" }, isGizmoEnabled),
             react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_5__["ExtensionsComponent"], { target: this.props.light, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return LightTreeItemComponent;
@@ -37479,6 +37513,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var SceneTreeItemComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneTreeItemComponent, _super);
     function SceneTreeItemComponent(props) {
@@ -37526,6 +37561,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(entity);
                 }
+                else if (className.indexOf("Light") !== -1 && _this._selectedEntity.reservedDataStore && _this._selectedEntity.reservedDataStore.lightGizmo) {
+                    manager.attachToMesh(_this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
+                }
             }
         });
     };
@@ -37534,6 +37572,10 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         if (this._onPointerObserver) {
             scene.onPointerObservable.remove(this._onPointerObserver);
             this._onPointerObserver = null;
+        }
+        if (this._gizmoLayerOnPointerObserver) {
+            scene.onPointerObservable.remove(this._gizmoLayerOnPointerObserver);
+            this._gizmoLayerOnPointerObserver = null;
         }
         if (this._onSelectionChangeObserver && this.props.onSelectionChangedObservable) {
             this.props.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
@@ -37557,6 +37599,23 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
             this._onPointerObserver = scene.onPointerObservable.add(function () {
                 var pickPosition = scene.unTranslatedPointer;
                 var pickInfo = scene.pick(pickPosition.x, pickPosition.y, function (mesh) { return mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0; });
+                // Pick light gizmos first
+                if (_this.props.globalState.lightGizmos.length > 0) {
+                    var gizmoScene = _this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
+                    var pickInfo_1 = gizmoScene.pick(pickPosition.x, pickPosition.y, function (m) {
+                        for (var _i = 0, _a = _this.props.globalState.lightGizmos; _i < _a.length; _i++) {
+                            var g = _a[_i];
+                            if (g.attachedMesh == m) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
+                    if (pickInfo_1 && pickInfo_1.hit && _this.props.onSelectionChangedObservable) {
+                        _this.props.onSelectionChangedObservable.notifyObservers(pickInfo_1.pickedMesh);
+                        return;
+                    }
+                }
                 if (pickInfo && pickInfo.hit && _this.props.onSelectionChangedObservable) {
                     _this.props.onSelectionChangedObservable.notifyObservers(pickInfo.pickedMesh);
                 }
@@ -37565,14 +37624,37 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         this.setState({ isInPickingMode: !this.state.isInPickingMode });
     };
     SceneTreeItemComponent.prototype.setGizmoMode = function (mode) {
+        var _this = this;
         var scene = this.props.scene;
         if (!scene.reservedDataStore) {
             scene.reservedDataStore = {};
+        }
+        if (this._gizmoLayerOnPointerObserver) {
+            scene.onPointerObservable.remove(this._gizmoLayerOnPointerObserver);
+            this._gizmoLayerOnPointerObserver = null;
         }
         if (!scene.reservedDataStore.gizmoManager) {
             scene.reservedDataStore.gizmoManager = new babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["GizmoManager"](scene);
         }
         var manager = scene.reservedDataStore.gizmoManager;
+        // Allow picking of light gizmo when a gizmo mode is selected
+        this._gizmoLayerOnPointerObserver = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["UtilityLayerRenderer"].DefaultUtilityLayer.utilityLayerScene.onPointerObservable.add(function (pointerInfo) {
+            if (pointerInfo.type == babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN) {
+                if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh) {
+                    var node = pointerInfo.pickInfo.pickedMesh;
+                    // Attach to the most parent node
+                    while (node && node.parent != null) {
+                        node = node.parent;
+                    }
+                    for (var _i = 0, _a = _this.props.globalState.lightGizmos; _i < _a.length; _i++) {
+                        var gizmo = _a[_i];
+                        if (gizmo._rootMesh == node) {
+                            manager.attachToMesh(gizmo.attachedMesh);
+                        }
+                    }
+                }
+            }
+        });
         manager.positionGizmoEnabled = false;
         manager.rotationGizmoEnabled = false;
         manager.scaleGizmoEnabled = false;
@@ -37597,6 +37679,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                 var className = this._selectedEntity.getClassName();
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(this._selectedEntity);
+                }
+                else if (className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo) {
+                    manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
             }
         }
@@ -37985,7 +38070,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         var textures = scene.textures.filter(function (t) { return t.getClassName() !== "AdvancedDynamicTexture"; });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.materials, label: "Materials", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: textures, label: "Textures", offset: 1, filter: this.state.filter }),
@@ -38749,6 +38834,7 @@ var Inspector = /** @class */ (function () {
         }
     };
     Inspector.Show = function (scene, userOptions) {
+        var _this = this;
         var options = tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({ original: true, popup: false, overlay: false, showExplorer: true, showInspector: true, embedMode: false, enableClose: true, handleResize: true, enablePopup: true }, userOptions);
         // Prepare state
         if (!this._GlobalState.onPropertyChangedObservable) {
@@ -38828,6 +38914,10 @@ var Inspector = /** @class */ (function () {
                 this._CreateActionTabs(scene, options, parentControl);
             }
         }
+        // Light gizmos
+        scene.lights.forEach(function (l) {
+            _this._GlobalState.enableLightGizmo(l, true);
+        });
     };
     Inspector._CreateCanvasContainer = function (parentControl) {
         // Create a container for previous elements
@@ -38855,8 +38945,19 @@ var Inspector = /** @class */ (function () {
         delete this._NewCanvasContainer;
     };
     Inspector._Cleanup = function () {
+        var _this = this;
         if (Inspector._OpenedPane !== 0) {
             return;
+        }
+        // Gizmo disposal
+        this._GlobalState.lightGizmos.forEach(function (g) {
+            if (g.light) {
+                _this._GlobalState.enableLightGizmo(g.light, false);
+            }
+        });
+        if (this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {
+            this._Scene.reservedDataStore.gizmoManager.dispose();
+            this._Scene.reservedDataStore.gizmoManager = null;
         }
         if (this._NewCanvasContainer) {
             this._DestroyCanvasContainer();

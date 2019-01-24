@@ -14,6 +14,8 @@ declare module "babylonjs-inspector/components/globalState" {
     import { Observable, Observer } from "babylonjs/Misc/observable";
     import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
     import { Scene } from "babylonjs/scene";
+    import { Light } from "babylonjs/Lights/light";
+    import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     export class GlobalState {
         onSelectionChangedObservable: Observable<string>;
@@ -34,6 +36,8 @@ declare module "babylonjs-inspector/components/globalState" {
         };
         blockMutationUpdates: boolean;
         prepareGLTFPlugin(loader: GLTFFileLoader): void;
+        lightGizmos: Array<LightGizmo>;
+        enableLightGizmo(light: Light, enable?: boolean): void;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/paneComponent" {
@@ -1252,7 +1256,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/tools/gltfCompone
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
-    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Node } from "babylonjs/node";
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
         constructor(props: IPaneComponentProps);
@@ -1260,7 +1264,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         componentWillUnmount(): void;
         captureScreenshot(): void;
         recordVideo(): void;
-        shouldExport(transformNode: TransformNode): boolean;
+        shouldExport(node: Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
@@ -1382,9 +1386,11 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/lightTreeI
     }
     export class LightTreeItemComponent extends React.Component<ILightTreeItemComponentProps, {
         isEnabled: boolean;
+        isGizmoEnabled: boolean;
     }> {
         constructor(props: ILightTreeItemComponentProps);
         switchIsEnabled(): void;
+        toggleGizmo(): void;
         render(): JSX.Element;
     }
 }
@@ -1574,18 +1580,21 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/sceneTreeI
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Scene } from "babylonjs/scene";
     import * as React from "react";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ISceneTreeItemComponentProps {
         scene: Scene;
         onRefresh: () => void;
         selectedEntity?: any;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
         onSelectionChangedObservable?: Observable<any>;
+        globalState: GlobalState;
     }
     export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, {
         isSelected: boolean;
         isInPickingMode: boolean;
         gizmoMode: number;
     }> {
+        private _gizmoLayerOnPointerObserver;
         private _onPointerObserver;
         private _onSelectionChangeObserver;
         private _selectedEntity;
@@ -1777,6 +1786,8 @@ declare module INSPECTOR {
         };
         blockMutationUpdates: boolean;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
+        lightGizmos: Array<BABYLON.LightGizmo>;
+        enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
     }
 }
 declare module INSPECTOR {
@@ -2752,7 +2763,7 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         captureScreenshot(): void;
         recordVideo(): void;
-        shouldExport(transformNode: BABYLON.TransformNode): boolean;
+        shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
@@ -2858,9 +2869,11 @@ declare module INSPECTOR {
     }
     export class LightTreeItemComponent extends React.Component<ILightTreeItemComponentProps, {
         isEnabled: boolean;
+        isGizmoEnabled: boolean;
     }> {
         constructor(props: ILightTreeItemComponentProps);
         switchIsEnabled(): void;
+        toggleGizmo(): void;
         render(): JSX.Element;
     }
 }
@@ -3022,12 +3035,14 @@ declare module INSPECTOR {
         selectedEntity?: any;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onSelectionChangedObservable?: BABYLON.Observable<any>;
+        globalState: GlobalState;
     }
     export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, {
         isSelected: boolean;
         isInPickingMode: boolean;
         gizmoMode: number;
     }> {
+        private _gizmoLayerOnPointerObserver;
         private _onPointerObserver;
         private _onSelectionChangeObserver;
         private _selectedEntity;
