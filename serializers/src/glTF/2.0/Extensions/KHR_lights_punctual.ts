@@ -119,8 +119,11 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                         node.translation = lightPosition.asArray();
                     }
                     if (lightType !== LightType.POINT) {
-                        const lightRotation = babylonLight.getRotation();
-                        let lightRotationQuaternion = Quaternion.RotationYawPitchRoll(lightRotation.y, lightRotation.x, lightRotation.z);
+                        const localAxis = babylonLight.direction;
+                        const yaw = -Math.atan2(localAxis.z, localAxis.x) + Math.PI / 2;
+                        const len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
+                        const pitch = -Math.atan2(localAxis.y, len);
+                        const lightRotationQuaternion = Quaternion.RotationYawPitchRoll(yaw, pitch, 0);
                         if (this._exporter._convertToRightHandedSystem) {
                             _GLTFUtilities._GetRightHandedQuaternionFromRef(lightRotationQuaternion);
                         }
