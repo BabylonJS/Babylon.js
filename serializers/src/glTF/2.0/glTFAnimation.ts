@@ -1,5 +1,5 @@
 import { AnimationSamplerInterpolation, AnimationChannelTargetPath, AccessorType, IAnimation, INode, IBufferView, IAccessor, IAnimationSampler, IAnimationChannel, AccessorComponentType } from "babylonjs-gltf2interface";
-
+import { Node } from "babylonjs/node";
 import { Nullable } from "babylonjs/types";
 import { Vector3, Quaternion } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
@@ -170,7 +170,7 @@ export class _GLTFAnimation {
     /**
      * @ignore
      * Create node animations from the transform node animations
-     * @param babylonTransformNode
+     * @param babylonNode
      * @param runtimeGLTFAnimation
      * @param idleGLTFAnimations
      * @param nodeMap
@@ -180,33 +180,35 @@ export class _GLTFAnimation {
      * @param accessors
      * @param convertToRightHandedSystem
      */
-    public static _CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode: TransformNode, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
+    public static _CreateNodeAnimationFromNodeAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
         let glTFAnimation: IAnimation;
-        if (babylonTransformNode.animations) {
-            for (let animation of babylonTransformNode.animations) {
-                let animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
-                if (animationInfo) {
-                    glTFAnimation = {
-                        name: animation.name,
-                        samplers: [],
-                        channels: []
-                    };
-                    _GLTFAnimation.AddAnimation(`${animation.name}`,
-                        animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation,
-                        babylonTransformNode,
-                        animation,
-                        animationInfo.dataAccessorType,
-                        animationInfo.animationChannelTargetPath,
-                        nodeMap,
-                        binaryWriter,
-                        bufferViews,
-                        accessors,
-                        convertToRightHandedSystem,
-                        animationInfo.useQuaternion,
-                        animationSampleRate
-                    );
-                    if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
-                        idleGLTFAnimations.push(glTFAnimation);
+        if (babylonNode instanceof TransformNode) {
+            if (babylonNode.animations) {
+                for (let animation of babylonNode.animations) {
+                    let animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
+                    if (animationInfo) {
+                        glTFAnimation = {
+                            name: animation.name,
+                            samplers: [],
+                            channels: []
+                        };
+                        _GLTFAnimation.AddAnimation(`${animation.name}`,
+                            animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation,
+                            babylonNode,
+                            animation,
+                            animationInfo.dataAccessorType,
+                            animationInfo.animationChannelTargetPath,
+                            nodeMap,
+                            binaryWriter,
+                            bufferViews,
+                            accessors,
+                            convertToRightHandedSystem,
+                            animationInfo.useQuaternion,
+                            animationSampleRate
+                        );
+                        if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
+                            idleGLTFAnimations.push(glTFAnimation);
+                        }
                     }
                 }
             }
@@ -284,7 +286,6 @@ export class _GLTFAnimation {
             let byteLength = animationData.inputs.length * 4;
             bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  keyframe data view`);
             bufferViews.push(bufferView);
-
             animationData.inputs.forEach(function(input) {
                 binaryWriter.setFloat32(input);
             });
