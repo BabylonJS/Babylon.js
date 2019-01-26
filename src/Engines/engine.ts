@@ -2146,7 +2146,11 @@ export class Engine {
         // Submit frame to the vr device, if enabled
         if (this._vrDisplay && this._vrDisplay.isPresenting) {
             // TODO: We should only submit the frame if we read frameData successfully.
-            this._vrDisplay.submitFrame();
+            try {
+                this._vrDisplay.submitFrame();
+            }catch (e) {
+                Tools.Warn("webVR submitFrame has had an unexpected failure: " + e);
+            }
         }
 
         this.onEndFrameObservable.notifyObservers(this);

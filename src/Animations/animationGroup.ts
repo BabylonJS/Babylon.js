@@ -441,6 +441,22 @@ export class AnimationGroup implements IDisposable {
         }
     }
 
+    /**
+     * Clone the current animation group and returns a copy
+     * @param newName defines the name of the new group
+     * @param targetConverter defines an optional function used to convert current animation targets to new ones
+     * @returns the new aniamtion group
+     */
+    public clone(newName: string, targetConverter?: (oldTarget: any) => any): AnimationGroup {
+        let newGroup = new AnimationGroup(newName || this.name, this._scene);
+
+        for (var targetAnimation of this._targetedAnimations) {
+            newGroup.addTargetedAnimation(targetAnimation.animation.clone(), targetConverter ? targetConverter(targetAnimation.target) : targetAnimation.target);
+        }
+
+        return newGroup;
+    }
+
     // Statics
     /**
      * Returns a new AnimationGroup object parsed from the source provided.

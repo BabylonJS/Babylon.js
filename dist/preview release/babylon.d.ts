@@ -30810,6 +30810,13 @@ declare module BABYLON {
         dispose(): void;
         private _checkAnimationGroupEnded;
         /**
+         * Clone the current animation group and returns a copy
+         * @param newName defines the name of the new group
+         * @param targetConverter defines an optional function used to convert current animation targets to new ones
+         * @returns the new aniamtion group
+         */
+        clone(newName: string, targetConverter?: (oldTarget: any) => any): AnimationGroup;
+        /**
          * Returns a new AnimationGroup object parsed from the source provided.
          * @param parsedAnimationGroup defines the source
          * @param scene defines the scene that will receive the animationGroup
@@ -34545,6 +34552,7 @@ declare module BABYLON {
         private _pointerObserver;
         private _beforeRenderObserver;
         private static _planeScene;
+        private _useAlternatePickedPointAboveMaxDragAngleDragSpeed;
         /**
          * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
          */

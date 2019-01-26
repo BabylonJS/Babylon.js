@@ -115,6 +115,8 @@
 
 ### glTF Serializer
 
+- Added support for exporting `KHR_lights_punctual`
+
 ### Viewer
 
 ### Materials Library
@@ -155,9 +157,10 @@
 - Fix more case sensitive paths ([mrdunk](https://github.com))
 - Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev)))
-- Warn of motor with maxForce in Oimo, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
+- Warn of motor with maxForce in Oimo and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBehavior should not let the drag plane get out of sync when rotating the object during dragging ([TrevorDev](https://github.com/TrevorDev))
+- Do not crash the application if webVR submitFrame fails ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -228,3 +231,4 @@
 - No more `babylon.worker.js` javascript following the lack of usage from the feature ([Sebavan]
 (https://github.com/Sebavan))
 - No more `Primitive Geometries` as they were not in use since 2.0 ([Sebavan](https://github.com/Sebavan))
+- Change `shouldExportTransformNode` callback in glTF serializer options to `shouldExportNode`([kcoley](https://github.com/kcoley))
