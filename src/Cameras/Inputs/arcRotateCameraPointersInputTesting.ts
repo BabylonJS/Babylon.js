@@ -213,4 +213,156 @@ export class ArcRotateCameraPointersInputTesting extends BaseCameraPointersInput
     }
 }
 (<any>CameraInputTypes)["ArcRotateCameraPointersInputTesting"] =
-    ArcRotateCameraPointersInputTesting;
+  ArcRotateCameraPointersInputTesting;
+
+/**
+ * Below this point is all temporary code to verify that
+ * ArcRotateCameraPointersInputTesting functionality matches
+ * ArcRotateCameraPointersInput exactly.
+ * TODO(mrdunk) Delete Test_ArcRotateCameraPointersInput and associated code
+ * once testing is complete.
+ */
+import { ArcRotateCameraPointersInput } from "../../Cameras/Inputs/arcRotateCameraPointersInput";
+import { Vector3 } from "../../Maths/math";
+import { Scene } from "../../scene";
+import { NullEngine } from "../../Engines/nullEngine";
+import { PointerEventTypes } from "../../Events/pointerEvents";
+
+class MockCamera extends ArcRotateCamera {
+  constructor(name: string) {
+    super(name, 0, 0, 0, new Vector3(0, 0, 0), new Scene(new NullEngine()));
+  }
+
+  display(): void {
+    console.log(this.alpha, this.beta, this.radius,
+                this.inertialPanningX, this.inertialPanningY,
+                this.inertialAlphaOffset, this.inertialBetaOffset);
+  }
+}
+
+interface MockMouseEvent {
+  target: HTMLElement;
+  button?: number;
+  pointerId?: number;
+  pointerType?: string;
+  clientX?: number;
+  clientY?: number;
+  movementX?: number;
+  movementY?: number;
+  altKey?: boolean;
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+  buttons?: number[];
+  [propName: string]: any;
+}
+
+export class Test_ArcRotateCameraPointersInput {
+  private _canvas: Nullable<HTMLCanvasElement>;
+
+  public arcOriginal: MockCamera;
+  public arcTesting: MockCamera;
+  public arcInputOriginal: ArcRotateCameraPointersInput;
+  public arcInputTesting: ArcRotateCameraPointersInputTesting;
+
+  constructor() {
+    this._canvas = document.createElement("canvas");;
+
+    // Set up an instance of a Camera with the original ArcRotateCameraPointersInput.
+    this.arcOriginal = new MockCamera("MockCameraOriginal");
+    this.arcInputOriginal = new ArcRotateCameraPointersInput();
+    this.arcInputOriginal.camera = this.arcOriginal;
+    this.arcInputOriginal.attachControl(this._canvas);
+
+    // Set up an instance of a Camera with the experimental ArcRotateCameraPointersInput.
+    this.arcTesting = new MockCamera("MockCameraTesting");
+    this.arcInputTesting = new ArcRotateCameraPointersInputTesting();
+    this.arcInputTesting.camera = this.arcTesting;
+    this.arcInputTesting.attachControl(this._canvas);
+  }
+
+  simulateEvent(event: MouseEvent | MockMouseEvent) {
+    let pointerInfo = {};
+    switch(event.type) {
+      case "pointerdown":
+        pointerInfo = {type: PointerEventTypes.POINTERDOWN, event};
+        (<any>this.arcInputOriginal)._pointerInput(pointerInfo, undefined);
+        (<any>this.arcInputTesting)._pointerInput(pointerInfo, undefined);
+        break;
+      case "pointerup":
+        pointerInfo = {type: PointerEventTypes.POINTERUP, event};
+        (<any>this.arcInputOriginal)._pointerInput(pointerInfo, undefined);
+        (<any>this.arcInputTesting)._pointerInput(pointerInfo, undefined);
+        break;
+      case "pointermove":
+        pointerInfo = {type: PointerEventTypes.POINTERMOVE, event};
+        (<any>this.arcInputOriginal)._pointerInput(pointerInfo, undefined);
+        (<any>this.arcInputTesting)._pointerInput(pointerInfo, undefined);
+        break;
+      case "blur":
+        (<any>this.arcInputOriginal)._onLostFocus();
+        (<any>this.arcInputTesting)._onLostFocus();
+        break;
+      default:
+        console.error("Invalid pointer event: " + event.type);
+    }
+  }
+
+  eventTemplate(): MockMouseEvent {
+    return {
+      target: <HTMLElement>this._canvas,
+      button: 0,
+      preventDefault: () => {},
+    }
+  }
+
+  compareCameras(): boolean {
+    console.assert(this.arcOriginal.alpha === this.arcTesting.alpha);
+    console.assert(this.arcOriginal.beta === this.arcTesting.beta);
+    console.assert(this.arcOriginal.radius === this.arcTesting.radius);
+    console.assert(this.arcOriginal.inertialPanningX === this.arcTesting.inertialPanningX);
+    console.assert(this.arcOriginal.inertialPanningY === this.arcTesting.inertialPanningY);
+    console.assert(this.arcOriginal.inertialAlphaOffset === this.arcTesting.inertialAlphaOffset);
+    console.assert(this.arcOriginal.inertialBetaOffset === this.arcTesting.inertialBetaOffset);
+    console.assert(this.arcOriginal.inertialRadiusOffset ===
+      this.arcTesting.inertialRadiusOffset);
+    return (
+      this.arcOriginal.alpha === this.arcTesting.alpha &&
+      this.arcOriginal.beta === this.arcTesting.beta &&
+      this.arcOriginal.radius === this.arcTesting.radius &&
+      this.arcOriginal.inertialPanningX === this.arcTesting.inertialPanningX &&
+      this.arcOriginal.inertialPanningY === this.arcTesting.inertialPanningY &&
+      this.arcOriginal.inertialAlphaOffset === this.arcTesting.inertialAlphaOffset &&
+      this.arcOriginal.inertialBetaOffset === this.arcTesting.inertialBetaOffset &&
+      this.arcOriginal.inertialRadiusOffset === this.arcTesting.inertialRadiusOffset
+    );
+  }
+
+  test_oneButtonDownDrag(): boolean {
+    var result = this.compareCameras();
+
+    var event: MockMouseEvent = this.eventTemplate();
+    event.type = "pointerdown";
+    event.clientX = 100;
+    event.clientY = 200;
+    this.simulateEvent(event);
+
+    result = result && this.compareCameras();
+
+    event.type = "pointermove";
+    this.simulateEvent(event);
+
+    result = result && this.compareCameras();
+
+    event.type = "pointermove";
+    event.clientX = 1000;
+    this.simulateEvent(event);
+
+    result = result && this.compareCameras();
+
+    if(result) {
+      console.log("test passed");
+    }
+    return result;
+  }
+}
