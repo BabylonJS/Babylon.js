@@ -22,6 +22,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
     private static _planeScene: Scene;
+    private _useAlternatePickedPointAboveMaxDragAngleDragSpeed = -1.1;
     /**
      * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
      */
@@ -342,7 +343,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 this._tmpVector.copyFrom(ray.direction);
                 (this._attachedNode).absolutePosition.subtractToRef(ray.origin, this._alternatePickedPoint);
                 this._alternatePickedPoint.normalize();
-                this._alternatePickedPoint.scaleInPlace(-2 * Vector3.Dot(this._alternatePickedPoint, this._tmpVector));
+                this._alternatePickedPoint.scaleInPlace(this._useAlternatePickedPointAboveMaxDragAngleDragSpeed * Vector3.Dot(this._alternatePickedPoint, this._tmpVector));
                 this._tmpVector.addInPlace(this._alternatePickedPoint);
 
                 // Project resulting vector onto the drag plane and add it to the attached nodes absolute position to get a picked point
