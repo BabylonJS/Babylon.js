@@ -107,7 +107,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
      */
     protected _className = "FollowCameraPointersInput";
 
-    protected doTouch(pointA: Nullable<PointerTouch>,
+    protected onTouch(pointA: Nullable<PointerTouch>,
                       offsetX: number,
                       offsetY: number): void
     {
