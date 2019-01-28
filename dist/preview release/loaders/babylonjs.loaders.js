@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/tslib/tslib.es6.js ***!
-  \******************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -7789,6 +7789,9 @@ var GLTFFileLoader = /** @class */ (function () {
         return 0;
     };
     GLTFFileLoader._decodeBufferToText = function (buffer) {
+        if (typeof TextDecoder !== "undefined") {
+            return new TextDecoder().decode(buffer);
+        }
         var result = "";
         var length = buffer.byteLength;
         for (var i = 0; i < length; i++) {
