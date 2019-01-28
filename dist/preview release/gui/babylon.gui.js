@@ -5088,9 +5088,9 @@ var Control = /** @class */ (function () {
         // Transform
         this._transform(context);
         // Clip
-        if (this.clipChildren) {
-            this._clip(context, invalidatedRectangle);
-        }
+        //     if (this.clipChildren) {
+        this._clip(context, invalidatedRectangle);
+        //   }
         if (this.onBeforeDrawObservable.hasObservers()) {
             this.onBeforeDrawObservable.notifyObservers(this);
         }
@@ -9985,6 +9985,7 @@ var BaseSlider = /** @class */ (function (_super) {
         _this._barOffset = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"](5, _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"].UNITMODE_PIXEL, false);
         _this._isThumbClamped = false;
         _this._displayThumb = true;
+        _this._step = 0;
         // Shared rendering info
         _this._effectiveBarOffset = 0;
         /** Observable raised when the sldier value changes */
@@ -10004,6 +10005,21 @@ var BaseSlider = /** @class */ (function (_super) {
                 return;
             }
             this._displayThumb = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BaseSlider.prototype, "step", {
+        /** Gets or sets a step to apply to values (0 by default) */
+        get: function () {
+            return this._step;
+        },
+        set: function (value) {
+            if (this._step === value) {
+                return;
+            }
+            this._step = value;
             this._markAsDirty();
         },
         enumerable: true,
@@ -10215,12 +10231,15 @@ var BaseSlider = /** @class */ (function (_super) {
             x = this._transformedPosition.x;
             y = this._transformedPosition.y;
         }
+        var value;
         if (this._isVertical) {
-            this.value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
+            value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
         }
         else {
-            this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
+            value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
+        var mult = (1 / this._step) | 0;
+        this.value = this._step ? ((value * mult) | 0) / mult : value;
     };
     BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
         if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
