@@ -2372,6 +2372,7 @@ declare module BABYLON.GUI {
         protected _barOffset: ValueAndUnit;
         private _isThumbClamped;
         protected _displayThumb: boolean;
+        private _step;
         protected _effectiveBarOffset: number;
         protected _renderLeft: number;
         protected _renderTop: number;
@@ -2384,6 +2385,8 @@ declare module BABYLON.GUI {
         onValueChangedObservable: BABYLON.Observable<number>;
         /** Gets or sets a boolean indicating if the thumb must be rendered */
         displayThumb: boolean;
+        /** Gets or sets a step to apply to values (0 by default) */
+        step: number;
         /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
         barOffset: string | number;
         /** Gets main bar offset in pixels*/

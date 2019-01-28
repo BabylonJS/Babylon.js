@@ -16,6 +16,7 @@ export class BaseSlider extends Control {
     protected _barOffset = new ValueAndUnit(5, ValueAndUnit.UNITMODE_PIXEL, false);
     private _isThumbClamped = false;
     protected _displayThumb = true;
+    private _step = 0;
 
     // Shared rendering info
     protected _effectiveBarOffset = 0;
@@ -41,6 +42,20 @@ export class BaseSlider extends Control {
         }
 
         this._displayThumb = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets a step to apply to values (0 by default) */
+    public get step(): number {
+        return this._step;
+    }
+
+    public set step(value: number) {
+        if (this._step === value) {
+            return;
+        }
+
+        this._step = value;
         this._markAsDirty();
     }
 
@@ -265,12 +280,16 @@ export class BaseSlider extends Control {
             y = this._transformedPosition.y;
         }
 
+        let value: number;
         if (this._isVertical) {
-            this.value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
+            value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
         }
         else {
-            this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
+            value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
+
+        const mult = (1 / this._step) | 0;
+        this.value = this._step ? ((value * mult) | 0) / mult : value;
     }
 
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
