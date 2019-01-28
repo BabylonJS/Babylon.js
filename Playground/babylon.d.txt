@@ -18100,13 +18100,13 @@ declare module BABYLON {
          */
         constructor(jointData: PhysicsJointData);
         /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        * Set the motor values.
+        * Attention, this function is plugin specific. Engines won't react 100% the same.
+        * @param {number} targetSpeed the speed the motor is to reach
+        * @param {number} maxForce max force for this motor.
+        * @param {motorIndex} the motor's index, 0 or 1.
+        */
+        setMotor(targetSpeed?: number, maxForce?: number, motorIndex?: number): void;
         /**
          * Set the motor limits.
          * Attention, this function is plugin specific. Engines won't react 100% the same.
