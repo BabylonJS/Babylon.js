@@ -11,7 +11,7 @@ import Resizable from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
 import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../components/globalState";
 
 require("./sceneExplorer.scss");
 

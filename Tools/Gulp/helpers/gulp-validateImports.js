@@ -79,6 +79,7 @@ var validateImports = function(data, fileLocation, options) {
 
     // Let's go line by line and check if we have special folder replacements
     // Replaces declare module '...'; by declare module 'babylonjs/...'; for instance
+    mainSearch:
     for (let index = 0; index < lines.length; index++) {
         let line = lines[index];
         let module = null, externalModule = null;
@@ -111,13 +112,24 @@ var validateImports = function(data, fileLocation, options) {
                 }
             }
 
+            if (options.uncheckedLintImports) {
+                for (let ext of options.uncheckedLintImports) {
+                    if (line.indexOf(ext) > -1) {
+                        continue mainSearch;
+                    }
+                }
+            }
+
             // Check if path is correct internal.
             if (externalModule) {
                 const splitter = module.indexOf("/");
+                if (splitter === -1 && module !== "babylonjs-gltf2interface") {
+                    errors.push(`Line ${index + 1} Import ${module} needs to be relative.`);
+                }
+
                 const baseModule = module.substring(0, splitter);
                 if (mapping[baseModule]) {
                     const configName = mapping[baseModule];
-
                     const directory = config[configName].computed.srcDirectory;
                     module = module.substring(splitter);
                     validatePath(fileLocation, directory, module, index + 1, errors, false);
