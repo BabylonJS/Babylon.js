@@ -63,6 +63,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._pointerInput = (p, s) => {
             var evt = <PointerEvent>p.event;
             let isTouch = evt.pointerType === "touch";
+            //console.log(evt.type, evt.button, evt.pointerId);
 
             if (engine.isInVRExclusivePointerMode) {
                 return;
