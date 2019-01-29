@@ -125,18 +125,24 @@ export class TrailMesh extends Mesh {
         }
     }
 
-    public start() {
+    /**
+     * Start trailing mesh.
+     */
+    public start(): void {
         this._beforeRenderObserver = this.getScene().onBeforeRenderObservable.add(this.update);
     }
 
-    public stop() {
+    /**
+     * Stop trailing mesh.
+     */
+    public stop(): void {
         this.getScene().onBeforeRenderObservable.remove(this._beforeRenderObserver);
     }
 
     /**
      * Update trailing mesh geometry.
      */
-    public update() {
+    public update(): void {
         let positions = this.getVerticesData(VertexBuffer.PositionKind);
         let normals = this.getVerticesData(VertexBuffer.NormalKind);
         if (positions && normals) {
