@@ -7,7 +7,7 @@ import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTe
 import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 import { PassPostProcess, PassCubePostProcess } from "babylonjs/PostProcesses/passPostProcess";
 
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../../components/globalState";
 
 interface ITextureLineComponentProps {
     texture: BaseTexture,

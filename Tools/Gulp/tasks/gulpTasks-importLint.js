@@ -28,7 +28,8 @@ var importLintLibrary = function(settings) {
         .pipe(fxFilter)
         .pipe(validateImports({
             externals: settings.build.umd.processDeclaration.classMap,
-            isCore: settings.isCore
+            isCore: settings.isCore,
+            uncheckedLintImports: settings.build.uncheckedLintImports
         }));
 }
 
@@ -49,7 +50,7 @@ var lintLibrary = function(settings) {
 /**
  * Dynamic module linting for library (mat, post processes, ...).
  */
-config.lintModules.map(function(module) {
+config.modules.map(function(module) {
     const settings = config[module];
     gulp.task(module + "-importLint", lintLibrary(settings));
 });
@@ -59,7 +60,7 @@ config.lintModules.map(function(module) {
  * Full Librairies importLint.
  */
 gulp.task("typescript-libraries-importLint",
-    gulp.series(config.lintModules.map((module) => {
+    gulp.series(config.modules.map((module) => {
         return module + "-importLint";
     })
 ));

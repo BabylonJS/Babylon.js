@@ -510,6 +510,12 @@
         "build": {
             "ignoreInTestMode": true,
             "mainFolder": "./inspector/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom",
+                "re-resizable",
+                "glTF"
+            ],
             "umd": {
                 "packageName": "babylonjs-inspector",
                 "webpackRoot": "INSPECTOR",

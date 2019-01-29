@@ -3,7 +3,7 @@ import { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { Observable } from "babylonjs/Misc/observable";
 import { Scene } from "babylonjs/scene";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../components/globalState";
 
 export interface IPaneComponentProps {
     title: string,

@@ -10,7 +10,7 @@ import Resizable from "re-resizable";
 import { PropertyGridTabComponent } from "./tabs/propertyGridTabComponent";
 import { HeaderComponent } from "../headerComponent";
 import { ToolsTabComponent } from "./tabs/toolsTabComponent";
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../components/globalState";
 
 require("./actionTabs.scss");
 

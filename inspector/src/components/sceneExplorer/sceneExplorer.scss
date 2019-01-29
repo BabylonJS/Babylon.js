@@ -398,6 +398,18 @@
             }
         }
 
+        .postProcessTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }
+
         .textureTools {
             grid-column: 2;
             display: grid;
