@@ -136,7 +136,9 @@ export class TrailMesh extends Mesh {
      * Stop trailing mesh.
      */
     public stop(): void {
-        this.getScene().onBeforeRenderObservable.remove(this._beforeRenderObserver);
+        if (this._beforeRenderObserver) {
+            this.getScene().onBeforeRenderObservable.remove(this._beforeRenderObserver);
+        }
     }
 
     /**
