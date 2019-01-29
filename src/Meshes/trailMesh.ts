@@ -33,7 +33,7 @@ export class TrailMesh extends Mesh {
      */
     constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, material?: Material, autoStart: boolean = true) {
         super(name, scene);
-        
+
         this._autoStart = autoStart;
         this._generator = generator;
         this._diameter = diameter;
@@ -210,5 +210,4 @@ export class TrailMesh extends Mesh {
     public static Parse(parsedMesh: any, scene: Scene): TrailMesh {
         return new TrailMesh(parsedMesh.name, parsedMesh._generator, scene, parsedMesh._diameter, parsedMesh._length, parsedMesh.material, parsedMesh._autoStart);
     }
-
 }
