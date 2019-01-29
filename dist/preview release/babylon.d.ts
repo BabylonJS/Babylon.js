@@ -13347,6 +13347,10 @@ declare module BABYLON {
         /** Name of the PostProcess. */
         name: string;
         /**
+         * Gets or sets the unique id of the post process
+         */
+        uniqueId: number;
+        /**
         * Width of the texture to apply the post process on
         */
         width: number;
@@ -13529,6 +13533,11 @@ declare module BABYLON {
         constructor(
         /** Name of the PostProcess. */
         name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean);
+        /**
+         * Gets a string idenfifying the name of the class
+         * @returns "PostProcess" string
+         */
+        getClassName(): string;
         /**
          * Gets the engine which this post process belongs to.
          * @returns The engine the post process was enabled with.

@@ -1189,6 +1189,38 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/gui
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
+    interface ICommonPostProcessPropertyGridComponentProps {
+        postProcess: PostProcess;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class CommonPostProcessPropertyGridComponent extends React.Component<ICommonPostProcessPropertyGridComponentProps> {
+        constructor(props: ICommonPostProcessPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/postProcessPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PostProcess } from "babylonjs/PostProcesses/postProcess";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    interface IPostProcessPropertyGridComponentProps {
+        postProcess: PostProcess;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
+        constructor(props: IPostProcessPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -1487,6 +1519,20 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/animationG
     }
     export class AnimationGroupItemComponent extends React.Component<IAnimationGroupItemComponentProps> {
         constructor(props: IAnimationGroupItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/sceneExplorer/entities/postProcessTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
+    import * as React from 'react';
+    interface IPostProcessItemComponentProps {
+        postProcess: PostProcess;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class PostProcessItemComponent extends React.Component<IPostProcessItemComponentProps> {
+        constructor(props: IPostProcessItemComponentProps);
         render(): JSX.Element;
     }
 }
@@ -2698,6 +2744,28 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ICommonPostProcessPropertyGridComponentProps {
+        postProcess: BABYLON.PostProcess;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonPostProcessPropertyGridComponent extends React.Component<ICommonPostProcessPropertyGridComponentProps> {
+        constructor(props: ICommonPostProcessPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPostProcessPropertyGridComponentProps {
+        postProcess: BABYLON.PostProcess;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
+        constructor(props: IPostProcessPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -2951,6 +3019,17 @@ declare module INSPECTOR {
     }
     export class AnimationGroupItemComponent extends React.Component<IAnimationGroupItemComponentProps> {
         constructor(props: IAnimationGroupItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPostProcessItemComponentProps {
+        postProcess: BABYLON.PostProcess;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class PostProcessItemComponent extends React.Component<IPostProcessItemComponentProps> {
+        constructor(props: IPostProcessItemComponentProps);
         render(): JSX.Element;
     }
 }
