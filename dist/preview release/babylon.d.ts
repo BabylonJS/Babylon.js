@@ -50278,7 +50278,7 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * If all the render effects in the pipeline are support
+         * If all the render effects in the pipeline are supported
          */
         readonly isSupported: boolean;
         /**
@@ -51253,6 +51253,10 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
          */
         constructor();
+        /**
+         * Gets the list of supported render pipelines
+         */
+        readonly supportedPipelines: PostProcessRenderPipeline[];
         /**
          * Adds a pipeline to the manager
          * @param renderPipeline The pipeline to add

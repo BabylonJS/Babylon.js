@@ -45,7 +45,7 @@ export class PostProcessRenderPipeline {
     }
 
     /**
-     * If all the render effects in the pipeline are support
+     * If all the render effects in the pipeline are supported
      */
     public get isSupported(): boolean {
         for (var renderEffectName in this._renderEffects) {

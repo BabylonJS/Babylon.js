@@ -26,6 +26,11 @@ export type PostProcessOptions = { width: number, height: number };
  */
 export class PostProcess {
     /**
+     * Gets or sets the unique id of the post process
+     */
+    public uniqueId: number;
+
+    /**
     * Width of the texture to apply the post process on
     */
     public width = -1;
@@ -301,12 +306,12 @@ export class PostProcess {
             this._engine = this._scene.getEngine();
 
             this._scene.postProcesses.push(this);
+            this.uniqueId = this._scene.getUniqueId();
         }
         else if (engine) {
             this._engine = engine;
             this._engine.postProcesses.push(this);
         }
-
         this._options = options;
         this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         this._reusable = reusable || false;
@@ -326,6 +331,14 @@ export class PostProcess {
         if (!blockCompilation) {
             this.updateEffect(defines);
         }
+    }
+
+    /**
+     * Gets a string idenfifying the name of the class
+     * @returns "PostProcess" string
+     */
+    public getClassName(): string {
+        return "PostProcess";
     }
 
     /**
