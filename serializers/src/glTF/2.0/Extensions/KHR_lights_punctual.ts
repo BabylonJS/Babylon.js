@@ -1,5 +1,6 @@
 import { SpotLight } from "babylonjs/Lights/spotLight";
-import { Vector3, Color3 } from "babylonjs/Maths/math";
+import { Vector3, Color3, Quaternion } from "babylonjs/Maths/math";
+import { Nullable } from "babylonjs/types";
 import { Light } from "babylonjs/Lights/light";
 import { Node } from "babylonjs/node";
 import { ShadowLight } from "babylonjs/Lights/shadowLight";
@@ -7,7 +8,7 @@ import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { INode } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { Tools, Nullable, Quaternion } from 'babylonjs';
+import { Logger } from "babylonjs/Misc/logger";
 import { _GLTFUtilities } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
@@ -108,7 +109,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                             babylonLight.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT ? LightType.SPOT : null
                         )));
                 if (lightType == null) {
-                    Tools.Warn(`${context}: Light ${babylonLight.name} is not supported in ${NAME}`);
+                    Logger.Warn(`${context}: Light ${babylonLight.name} is not supported in ${NAME}`);
                 }
                 else {
                     const lightPosition = babylonLight.position.clone();
@@ -133,7 +134,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     }
 
                     if (babylonLight.falloffType !== Light.FALLOFF_GLTF) {
-                        Tools.Warn(`${context}: Light falloff for ${babylonLight.name} does not match the ${NAME} specification!`);
+                        Logger.Warn(`${context}: Light falloff for ${babylonLight.name} does not match the ${NAME} specification!`);
                     }
                     light = {
                         type: lightType

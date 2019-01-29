@@ -1,5 +1,6 @@
 import { Matrix2D } from "./math2D";
-import { Vector2, Polygon } from "babylonjs";
+import { Vector2 } from "babylonjs/Maths/math";
+import { Polygon } from "babylonjs/Meshes/polygonMesh";
 
 /**
  * Class used to store 2D control sizes
