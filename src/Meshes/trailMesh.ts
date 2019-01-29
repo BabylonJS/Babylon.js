@@ -7,6 +7,9 @@ import { VertexData } from "./mesh.vertexData";
 import { Vector3 } from "../Maths/math";
 import { Scene } from "../scene";
 
+/**
+ * Class used to create a trail following a mesh
+ */
 export class TrailMesh extends Mesh {
 	private _generator: AbstractMesh;
 	private _diameter: number;
@@ -15,7 +18,15 @@ export class TrailMesh extends Mesh {
 	private _sectionVectors: Array<Vector3>;
 	private _sectionNormalVectors: Array<Vector3>;
 
-
+    /**
+     * @constructor
+     * @param name The value used by scene.getMeshByName() to do a lookup.
+     * @param generator The mesh to generate a trail.
+     * @param scene The scene to add this mesh to.
+     * @param diameter Diameter of trailing mesh. Default is 1.
+     * @param length Length of trailing mesh. Default is 60.
+     * @param material Material to apply to trailing mesh. Defaults to scene default.
+     */
 	constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, material: Material) {
 		super(name, scene);
 		scene = this.getScene();
@@ -101,7 +112,10 @@ export class TrailMesh extends Mesh {
 		data.applyToMesh(this, true);
 	}
 
-	public update = () => {
+    /**
+     * Update trailing mesh geometry.
+     */
+	public update() {
 		let positions = this.getVerticesData(VertexBuffer.PositionKind);
 		let normals = this.getVerticesData(VertexBuffer.NormalKind);
 		if (positions && normals) {
