@@ -11,7 +11,7 @@ import Resizable from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
 import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../components/globalState";
 
 require("./sceneExplorer.scss");
 
@@ -201,8 +201,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return null;
         }
 
-        var guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
-        var textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
+        let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
+        let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
+        let postProcessses = scene.postProcesses;
 
         return (
             <div id="tree">
@@ -211,6 +212,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.rootNodes} label="Nodes" offset={1} filter={this.state.filter} />
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.materials} label="Materials" offset={1} filter={this.state.filter} />
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={textures} label="Textures" offset={1} filter={this.state.filter} />
+                {
+                    postProcessses.length > 0 &&
+                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={postProcessses} label="Post-processes" offset={1} filter={this.state.filter} />
+                }
                 {
                     guiElements && guiElements.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />

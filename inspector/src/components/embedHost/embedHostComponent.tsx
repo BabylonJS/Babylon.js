@@ -4,7 +4,7 @@ import Resizable from "re-resizable";
 import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene } from "babylonjs/scene";
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../components/globalState";
 
 const Split = require('split.js').default;
 

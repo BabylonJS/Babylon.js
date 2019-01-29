@@ -16,6 +16,24 @@ export class PostProcessRenderPipelineManager {
     }
 
     /**
+     * Gets the list of supported render pipelines
+     */
+    public get supportedPipelines(): PostProcessRenderPipeline[] {
+        let result = [];
+
+        for (var renderPipelineName in this._renderPipelines) {
+            if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
+                var pipeline = this._renderPipelines[renderPipelineName];
+                if (pipeline.isSupported) {
+                    result.push(pipeline);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Adds a pipeline to the manager
      * @param renderPipeline The pipeline to add
      */

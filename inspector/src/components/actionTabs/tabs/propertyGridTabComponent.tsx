@@ -65,6 +65,8 @@ import { GridPropertyGridComponent } from "./propertyGrids/gui/gridPropertyGridC
 import { PBRMetallicRoughnessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent";
 import { PBRSpecularGlossinessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent";
 import { StackPanelPropertyGridComponent } from "./propertyGrids/gui/stackPanelPropertyGridComponent";
+import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
+import { PostProcessPropertyGridComponent } from './propertyGrids/postProcesses/postProcessPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -210,6 +212,13 @@ export class PropertyGridTabComponent extends PaneComponent {
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
+            if (className.indexOf("PostProcess") !== -1) {
+                const postProcess = entity as PostProcess;
+                return (<PostProcessPropertyGridComponent postProcess={postProcess}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
             if (className.indexOf("Texture") !== -1) {
                 const texture = entity as Texture;
                 return (<TexturePropertyGridComponent texture={texture}
@@ -272,7 +281,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 return (<StackPanelPropertyGridComponent stackPanel={stackPanel}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
-            }            
+            }
 
             if (className === "Grid") {
                 const grid = entity as Grid;

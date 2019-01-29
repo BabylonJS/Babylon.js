@@ -18,7 +18,7 @@ import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
 import { LockObject } from "../lockObject";
 import { ValueLineComponent } from "../../../lines/valueLineComponent";
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../../../../components/globalState";
 
 import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
