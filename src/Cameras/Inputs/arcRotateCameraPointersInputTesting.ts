@@ -85,11 +85,12 @@ export class ArcRotateCameraPointersInputTesting extends BaseCameraPointersInput
 
     private _isPanClick: boolean = false;
     private _twoFingerActivityCount: number = 0;
+    private _isPinching: boolean = false;
 
     /**
      * Called on pointer POINTERMOVE event if only a single touch is active.
      */
-    protected doTouch(point: Nullable<PointerTouch>,
+    protected onTouch(point: Nullable<PointerTouch>,
                       offsetX: number,
                       offsetY: number): void {
         if (this.panningSensibility !== 0 &&
@@ -105,7 +106,7 @@ export class ArcRotateCameraPointersInputTesting extends BaseCameraPointersInput
     /**
      * Called on pointer POINTERDOUBLETAP event.
      */
-    protected doDoubleTap(type: string) {
+    protected onDoubleTap(type: string) {
         if (this.camera.useInputToRestoreState) {
             this.camera.restoreState();
         }
@@ -114,7 +115,7 @@ export class ArcRotateCameraPointersInputTesting extends BaseCameraPointersInput
     /**
      * Called on pointer POINTERMOVE event if multiple touches are active.
      */
-    protected doMultiTouch(pointA: Nullable<PointerTouch>,
+    protected onMultiTouch(pointA: Nullable<PointerTouch>,
                            pointB: Nullable<PointerTouch>,
                            previousPinchSquaredDistance: number,
                            pinchSquaredDistance: number,
@@ -157,9 +158,10 @@ export class ArcRotateCameraPointersInputTesting extends BaseCameraPointersInput
             this._twoFingerActivityCount++;
             var previousPinchDistance = Math.sqrt(previousPinchSquaredDistance);
             var pinchDistance = Math.sqrt(pinchSquaredDistance);
-            if (this._twoFingerActivityCount < 20 &&
-              Math.abs(pinchDistance - previousPinchDistance) >
-              this.camera.pinchToPanMaxDistance) {
+            if (this._isPinching ||
+              (this._twoFingerActivityCount < 20 &&
+               Math.abs(pinchDistance - previousPinchDistance) >
+               this.camera.pinchToPanMaxDistance)) {
                 // Since pinch has not been active long, assume we intend to zoom.
                 if (this.pinchDeltaPercentage) {
                     this.camera.inertialRadiusOffset +=
@@ -173,7 +175,7 @@ export class ArcRotateCameraPointersInputTesting extends BaseCameraPointersInput
                 }
                       
                 // Since we are pinching, remain pinching on next iteration.
-                this._twoFingerActivityCount = 0;
+                this._isPinching = true;
             } else {
                 // Pause between pinch starting and moving implies not a zoom event.
                 // Pan instead.
@@ -202,6 +204,7 @@ export class ArcRotateCameraPointersInputTesting extends BaseCameraPointersInput
      */
     protected onButtonUp(evt: PointerEvent): void {
         this._twoFingerActivityCount = 0;
+        this._isPinching = false;
     }
 
     /**
@@ -210,6 +213,7 @@ export class ArcRotateCameraPointersInputTesting extends BaseCameraPointersInput
     protected onLostFocus(): void {
         this._isPanClick = false;
         this._twoFingerActivityCount = 0;
+        this._isPinching = false;
     }
 }
 (<any>CameraInputTypes)["ArcRotateCameraPointersInputTesting"] =
@@ -392,6 +396,8 @@ export class Test_ArcRotateCameraPointersInput {
     this.arcTesting.reset();
     this.arcOriginal.setTestPosition();
     this.arcTesting.setTestPosition();
+    this.arcOriginal.verifyPrepare();
+    this.arcTesting.verifyPrepare();
 
     // _onLostFocus() method of Inputs clears current pointer state.
     (<any>this.arcInputOriginal)._onLostFocus();
@@ -448,7 +454,6 @@ export class Test_ArcRotateCameraPointersInput {
    */
   test_oneButtonDownDragPan(): boolean {
     this.resetEnviroment();
-    this.arcOriginal.verifyPrepare();
     var result = this.compareCameras();
 
     // Enable panning on pointer drag.
@@ -464,52 +469,66 @@ export class Test_ArcRotateCameraPointersInput {
     event.type = "pointerdown";
     event.clientX = 100;
     event.clientY = 200;
+    event.button = 0;
     this.simulateEvent(event);
 
     result = result && this.compareCameras();
 
     // Start moving.
     event.type = "pointermove";
+    event.button = 0;
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
 
     // Move X coordinate. Not panning yet.
     event.type = "pointermove";
     event.clientX = 1000;
+    event.button = 0;
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges({inertialAlphaOffset: true}) && result;
     result = result && this.compareCameras();
 
     // Move Y coordinate. Panning due to event.ctrlKey.
     event.type = "pointermove";
     event.clientY = 1000;
+    event.button = 0;
     event.ctrlKey = true;  // Will cause pan motion.
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges({inertialPanningY: true}) && result;
     result = result && this.compareCameras();
 
     // Button up. Primary button.
-    event.button = 0;
     event.type = "pointerup";
+    event.button = 0;
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
 
     // Button down. camera._panningMouseButton will cause pan motion to start.
     event.type = "pointerdown";
+    event.clientY = 0;
+    event.clientX = 0;
     event.button = 2;  // camera._panningMouseButton. Will cause pan motion.
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
 
     // Move X and Y coordinate. Panning due to camera._panningMouseButton.
     event.type = "pointermove";
-    event.clientY = 500;
     event.clientX = 500;
+    event.clientY = 500;
+    event.button = 2;
     event.ctrlKey = false;
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges(
+      {inertialPanningX: true, inertialPanningY: true}) && result;
     result = result && this.compareCameras();
 
     // Button up. camera._panningMouseButton.
@@ -522,8 +541,10 @@ export class Test_ArcRotateCameraPointersInput {
     // Move X coordinate. (Should have no affect now pointer is up.)
     event.type = "pointermove";
     event.clientX = 1000;
+    event.button = 2;
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
 
     return result;
@@ -538,7 +559,6 @@ export class Test_ArcRotateCameraPointersInput {
    */
   test_oneButtonDownDragDirection(): boolean {
     this.resetEnviroment();
-    this.arcOriginal.verifyPrepare();
     var result = this.compareCameras();
 
     // Disable panning on pointer drag.
@@ -551,31 +571,68 @@ export class Test_ArcRotateCameraPointersInput {
     event.type = "pointerdown";
     event.clientX = 100;
     event.clientY = 200;
+    event.button = 1;
     this.simulateEvent(event);
 
     result = result && this.compareCameras();
 
     // Start moving.
     event.type = "pointermove";
+    event.button = 1;
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
 
     // Move X coordinate.
     event.type = "pointermove";
     event.clientX = 1000;
+    event.button = 1;
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges({inertialAlphaOffset: true}) && result;
     result = result && this.compareCameras();
 
     // Move Y coordinate.
     event.type = "pointermove";
     event.clientY = 1000;
     event.ctrlKey = true;  // Will have no affect since panningSensibility === 0.
+    event.button = 1;
+    this.simulateEvent(event);
+
+    result = this.arcOriginal.verifyChanges({inertialBetaOffset: true}) && result;
+    result = result && this.compareCameras();
+
+    // Button up.
+    event.type = "pointerup";
+    event.button = 1;
     this.simulateEvent(event);
 
     result = result && this.compareCameras();
 
+    // Move X coordinate. (Should have no affect now pointer is up.)
+    event.type = "pointermove";
+    event.clientX = 1000;
+    event.button = 1;
+    this.simulateEvent(event);
+
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
+    // Button down. Button matches _panningMouseButton so it would pan if
+    // panningSensibility was > 0.
+    event.type = "pointerdown";
+    event.clientX = 100;
+    event.clientY = 200;
+    event.button = 2;
+    this.simulateEvent(event);
+
+    // Start moving.
+    event.type = "pointermove";
+    event.button = 2;
+    this.simulateEvent(event);
+
+    result = result && this.compareCameras();
     // Move X and Y coordinate.
     event.type = "pointermove";
     event.clientY = 500;
@@ -584,18 +641,16 @@ export class Test_ArcRotateCameraPointersInput {
     event.button = 2;  // camera._panningMouseButton. No affect since panningSensibility === 0.
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges(
+      {inertialAlphaOffset: true, inertialBetaOffset: true}) && result;
     result = result && this.compareCameras();
 
     // Button up.
     event.type = "pointerup";
-
-    result = result && this.compareCameras();
-
-    // Move X coordinate. (Should have no affect now pointer is up.)
-    event.type = "pointermove";
-    event.clientX = 1000;
+    event.button = 1;
     this.simulateEvent(event);
 
+    result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
 
     return result;
@@ -625,9 +680,15 @@ export class Test_ArcRotateCameraPointersInput {
     this.arcOriginal.useInputToRestoreState = false;
     this.arcTesting.useInputToRestoreState = false;
 
+    // Set the values expected on this camera to be the current ones.
+    this.arcOriginal.verifyPrepare();
+
     var event: MockPointerEvent = this.eventTemplate();
     event.type = "POINTERDOUBLETAP";
     this.simulateEvent(event);
+
+    // No change in camera values after POINTERDOUBLETAP.
+    result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
 
     // Enable POINTERDOUBLETAP restore.
@@ -637,6 +698,9 @@ export class Test_ArcRotateCameraPointersInput {
     var event: MockPointerEvent = this.eventTemplate();
     event.type = "POINTERDOUBLETAP";
     this.simulateEvent(event);
+
+    // Change in camera values after POINTERDOUBLETAP.
+    result = this.arcOriginal.verifyChanges({alpha: true, beta: true, radius: true}) && result;
     result = result && this.compareCameras();
 
     return result;
@@ -644,7 +708,6 @@ export class Test_ArcRotateCameraPointersInput {
 
   test_twoButtonsDownPinchZoomPercentage(): boolean {
     this.resetEnviroment();
-    this.arcOriginal.verifyPrepare();
     var result = this.compareCameras();
 
     // Multiple button presses interpreted as "pinch" and "swipe".
@@ -661,116 +724,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // 1st button down.
     event.type = "pointerdown";
-    event.clientX = 1000;
-    event.clientY = 200;
-    event.button = 0;
-    event.pointerId = 1;
-    this.simulateEvent(event);
-
-    // Start moving before 2nd button has been pressed.
-    event.type = "pointermove";
-    event.button = -1;
-    event.pointerId = 1;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-
-    // Move X coordinate.
-    event.type = "pointermove";
-    event.clientX = 1500;
-    event.clientY = 200;
-    event.button = -1;
-    event.pointerId = 1;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-
-    // 2nd button down. (Enter zoom mode.)
-    event.type = "pointerdown";
-    event.button = 1;
-    event.pointerId = 2;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-
-    // Start move of 2nd pointer.
-    event.type = "pointermove";
-    event.clientX = 2000;
-    event.clientY = 2000;
-    event.button = -1;
-    event.pointerId = 2;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-
-    // Move Y coordinate. 2nd point is the one moving.
-    event.type = "pointermove";
-    event.clientX = 2000;
-    event.clientY = 2500;
-    event.button = -1;
-    event.pointerId = 2;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-
-    // Move X and Y coordinate. 1st point is the one moving.
-    event.type = "pointermove";
-    event.clientX = 1700;
-    event.clientY = 1700;
-    event.button = -1;
-    event.pointerId = 1;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-
-    // One of the buttons button up. (Leave zoom mode.)
-    event.type = "pointerup";
-    event.button = 0;
-    event.pointerId = 1;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-
-    // Move X and Y coordinate of remaining pressed point.
-    event.type = "pointermove";
-    event.clientX = 2000;
-    event.clientY = 2700;
-    event.button = -1;
-    event.pointerId = 2;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-
-    // Other button button up. (Now moves should have no affect.)
-    event.type = "pointerup";
-    event.button = 1;
-    event.pointerId = 2;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-
-    // Move X and Y coordinate.
-    event.type = "pointermove";
-    event.clientX = 3000;
-    event.clientY = 4000;
-    event.button = -1;
-    event.pointerId = 1;
-    this.simulateEvent(event);
-    result = result && this.compareCameras();
-    
-    return result;
-  }
-
-  test_twoButtonsDownPinchZoomLinear(): boolean {
-    this.resetEnviroment();
-    this.arcOriginal.verifyPrepare();
-    var result = this.compareCameras();
-
-    // Multiple button presses interpreted as "pinch" and "swipe".
-    this.arcInputOriginal.multiTouchPanAndZoom = true;
-    this.arcInputTesting.multiTouchPanAndZoom = true;
-    // Zoom changes are a set value.
-    this.arcInputOriginal.pinchDeltaPercentage = 0;
-    this.arcInputTesting.pinchDeltaPercentage = 0;
-    // Panning not enabled.
-    this.arcInputOriginal.panningSensibility = 0;
-    this.arcInputTesting.panningSensibility = 0;
-
-    var event: MockPointerEvent = this.eventTemplate();
-
-    // 1st button down.
-    event.type = "pointerdown";
+    event.pointerType = "touch";
     event.clientX = 1000;
     event.clientY = 200;
     event.button = 0;
@@ -797,6 +751,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // 2nd button down. (Enter zoom mode.)
     event.type = "pointerdown";
+    event.pointerType = "touch";
     event.button = 1;
     event.pointerId = 2;
     this.simulateEvent(event);
@@ -819,8 +774,127 @@ export class Test_ArcRotateCameraPointersInput {
     event.button = -1;
     event.pointerId = 2;
     this.simulateEvent(event);
-    result = this.arcOriginal.verifyChanges(
-      {inertialRadiusOffset: true}) && result;
+    result = this.arcOriginal.verifyChanges({inertialRadiusOffset: true}) && result;
+    result = result && this.compareCameras();
+
+    // Move X and Y coordinate. 1st point is the one moving.
+    event.type = "pointermove";
+    event.clientX = 1700;
+    event.clientY = 1700;
+    event.button = -1;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({inertialRadiusOffset: true}) && result;
+    result = result && this.compareCameras();
+
+    // One of the buttons button up. (Leave zoom mode.)
+    event.type = "pointerup";
+    event.pointerType = "touch";
+    event.button = 0;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = result && this.compareCameras();
+
+    // Move X and Y coordinate of remaining pressed point.
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.clientY = 2700;
+    event.button = -1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({inertialBetaOffset: true}) && result;
+    result = result && this.compareCameras();
+
+    // Other button button up. (Now moves should have no affect.)
+    event.type = "pointerup";
+    event.pointerType = "touch";
+    event.button = 1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = result && this.compareCameras();
+
+    // Move X and Y coordinate.
+    event.type = "pointermove";
+    event.clientX = 3000;
+    event.clientY = 4000;
+    event.button = -1;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+    
+    return result;
+  }
+
+  test_twoButtonsDownPinchZoomLinear(): boolean {
+    this.resetEnviroment();
+    var result = this.compareCameras();
+
+    // Multiple button presses interpreted as "pinch" and "swipe".
+    this.arcInputOriginal.multiTouchPanAndZoom = true;
+    this.arcInputTesting.multiTouchPanAndZoom = true;
+    // Zoom changes are a set value.
+    this.arcInputOriginal.pinchDeltaPercentage = 0;
+    this.arcInputTesting.pinchDeltaPercentage = 0;
+    // Panning not enabled.
+    this.arcInputOriginal.panningSensibility = 0;
+    this.arcInputTesting.panningSensibility = 0;
+
+    var event: MockPointerEvent = this.eventTemplate();
+
+    // 1st button down.
+    event.type = "pointerdown";
+    event.pointerType = "touch";
+    event.clientX = 1000;
+    event.clientY = 200;
+    event.button = 0;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+
+    // Start moving before 2nd button has been pressed.
+    event.type = "pointermove";
+    event.button = -1;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
+    // Move X coordinate.
+    event.type = "pointermove";
+    event.clientX = 1500;
+    event.clientY = 200;
+    event.button = -1;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({inertialAlphaOffset: true}) && result;
+    result = result && this.compareCameras();
+
+    // 2nd button down. (Enter zoom mode.)
+    event.type = "pointerdown";
+    event.pointerType = "touch";
+    event.button = 1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = result && this.compareCameras();
+
+    // Start move of 2nd pointer.
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.clientY = 2000;
+    event.button = -1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
+    // Move Y coordinate. 2nd point is the one moving.
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.clientY = 2500;
+    event.button = -1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({inertialRadiusOffset: true}) && result;
     result = result && this.compareCameras();
 
     // Move X + Y coordinate. 1st point is the one moving.
@@ -835,6 +909,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // One of the buttons button up. (Leave zoom mode.)
     event.type = "pointerup";
+    event.pointerType = "touch";
     event.button = 0;
     event.pointerId = 1;
     this.simulateEvent(event);
@@ -847,11 +922,12 @@ export class Test_ArcRotateCameraPointersInput {
     event.button = -1;
     event.pointerId = 2;
     this.simulateEvent(event);
-    result = this.arcOriginal.verifyChanges({}) && result;  // TODO. Should trigger.
+    result = this.arcOriginal.verifyChanges({inertialBetaOffset: true}) && result;
     result = result && this.compareCameras();
 
     // Other button button up. (Now moves should have no affect.)
     event.type = "pointerup";
+    event.pointerType = "touch";
     event.button = 1;
     event.pointerId = 2;
     this.simulateEvent(event);
@@ -872,7 +948,6 @@ export class Test_ArcRotateCameraPointersInput {
 
   test_twoButtonsDownPan(): boolean {
     this.resetEnviroment();
-    this.arcOriginal.verifyPrepare();
     var result = this.compareCameras();
 
     // Multiple button presses interpreted as "pinch" and "swipe".
@@ -889,6 +964,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // 1st button down.
     event.type = "pointerdown";
+    event.pointerType = "touch";
     event.clientX = 1000;
     event.clientY = 200;
     event.button = 0;
@@ -915,6 +991,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // 2nd button down. (Enter zoom mode.)
     event.type = "pointerdown";
+    event.pointerType = "touch";
     event.button = 1;
     event.pointerId = 2;
     this.simulateEvent(event);
@@ -955,6 +1032,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // One of the buttons button up. (Leave zoom mode.)
     event.type = "pointerup";
+    event.pointerType = "touch";
     event.button = 0;
     event.pointerId = 1;
     this.simulateEvent(event);
@@ -968,11 +1046,12 @@ export class Test_ArcRotateCameraPointersInput {
     event.button = -1;
     event.pointerId = 2;
     this.simulateEvent(event);
-    result = this.arcOriginal.verifyChanges({}) && result;
+    result = this.arcOriginal.verifyChanges({inertialBetaOffset: true}) && result;
     result = result && this.compareCameras();
 
     // Other button button up. (Now moves should have no affect.)
     event.type = "pointerup";
+    event.pointerType = "touch";
     event.button = 1;
     event.pointerId = 2;
     this.simulateEvent(event);
@@ -993,7 +1072,6 @@ export class Test_ArcRotateCameraPointersInput {
 
   test_MutiTouchPinchZoomPercentage(): boolean {
     this.resetEnviroment();
-    this.arcOriginal.verifyPrepare();
     var result = this.compareCameras();
 
     // Multiple button presses not interpreted as multitouch.
@@ -1004,7 +1082,7 @@ export class Test_ArcRotateCameraPointersInput {
     this.arcInputTesting.pinchDeltaPercentage = 10;
     // Panning enabled.
     this.arcInputOriginal.panningSensibility = 3;
-      this.arcInputTesting.panningSensibility = 3;
+    this.arcInputTesting.panningSensibility = 3;
 
     var event: MockPointerEvent = this.eventTemplate();
 
@@ -1089,10 +1167,25 @@ export class Test_ArcRotateCameraPointersInput {
     event.clientY = 1000;
     event.button = -1;
     event.pointerId = 1;
+    
+    let debugExplination = 
+      "Camera position is not exactly the same after panning. " +
+      "This is due to arcRotateCamera using different methods to calculate " +
+      "distance between pointers in different parts of the code. " +
+      "The trends between cameras are the same though.";
+    let debugInternalPanningXOriginal = [];
+    let debugInternalPanningXTesting = [];
+
     for(let i = 0; i < 21; i++) {
       event.clientX++;
       this.simulateEvent(event);
+
+      debugInternalPanningXOriginal.push(this.arcOriginal.inertialPanningX);
+      debugInternalPanningXTesting.push(this.arcTesting.inertialPanningX);
     }
+    console.warn(debugExplination);
+    console.table({debugInternalPanningXOriginal, debugInternalPanningXTesting});
+
     result = this.arcOriginal.verifyChanges({inertialPanningX: true}) && result;
     result = result && this.compareCameras();
 
@@ -1118,14 +1211,148 @@ export class Test_ArcRotateCameraPointersInput {
     return result;
   }
 
-    /*test_MutiTouchPinchZoomLinear(): boolean {
+  test_MutiTouchPinchZoomLinear(): boolean {
     this.resetEnviroment();
     var result = this.compareCameras();
-    // TODO
+
+    // Multiple button presses not interpreted as multitouch.
+    this.arcInputOriginal.multiTouchPanAndZoom = false;
+    this.arcInputTesting.multiTouchPanAndZoom = false;
+    // Zoom changes are a percentage of current value.
+    this.arcInputOriginal.pinchDeltaPercentage = 0;
+    this.arcInputTesting.pinchDeltaPercentage = 0;
+    // Panning enabled.
+    this.arcInputOriginal.panningSensibility = 3;
+    this.arcInputTesting.panningSensibility = 3;
+
+    var event: MockPointerEvent = this.eventTemplate();
+
+    // 1st button down.
+    event.type = "pointerdown";
+    event.pointerType = "touch";
+    event.clientX = 1000;
+    event.clientY = 1000;
+    event.button = 0;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+
+    // Start move of 1st button.
+    event.type = "pointermove";
+    event.button = -1;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = result && this.compareCameras();
+
+    // 2nd button down. (Enter zoom mode.)
+    event.type = "pointerdown";
+    event.pointerType = "touch";
+    event.clientX = 2000;
+    event.clientY = 2000;
+    event.button = 1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = result && this.compareCameras();
+
+    // Start move of 2nd pointer.
+    event.type = "pointermove";
+    event.button = -1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
+    // Move 2nd pointer.
+    event.type = "pointermove";
+    event.clientX = 3000;
+    event.clientY = 2000;
+    event.button = -1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({inertialRadiusOffset: true}) && result;
+    result = result && this.compareCameras();
+
+    // 2nd button up. (Leave zoom mode.)
+    event.type = "pointerup";
+    event.pointerType = "touch";
+    event.button = 1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
+    // Move 1st pointer now it is the only one. Will result in change in alpha or beta.
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.clientY = 3000;
+    event.button = -1;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges(
+      {inertialAlphaOffset: true, inertialBetaOffset: true}) && result;
+    result = result && this.compareCameras();
+
+    // 1st button down again.
+    event.type = "pointerdown";
+    event.pointerType = "touch";
+    event.clientX = 1000;
+    event.clientY = 1000;
+    event.button = 0;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+
+    // Start move of 1st button.
+    // This time trigger more than 20 pointermove events without moving more
+    // than pinchToPanMaxDistance to lock into "pan" mode.
+    event.type = "pointermove";
+    event.clientX = 1000;
+    event.clientY = 1000;
+    event.button = -1;
+    event.pointerId = 1;
+
+    let debugExplination = 
+      "Camera position is not exactly the same after panning. " +
+      "This is due to arcRotateCamera using different methods to calculate " +
+      "distance between pointers in different parts of the code. " +
+      "The trends between cameras are the same though.";
+    let debugInternalPanningXOriginal = [];
+    let debugInternalPanningXTesting = [];
+
+    for(let i = 0; i < 21; i++) {
+      event.clientX++;
+      this.simulateEvent(event);
+
+      debugInternalPanningXOriginal.push(this.arcOriginal.inertialPanningX);
+      debugInternalPanningXTesting.push(this.arcTesting.inertialPanningX);
+    }
+    console.warn(debugExplination);
+    console.table({debugInternalPanningXOriginal, debugInternalPanningXTesting});
+
+    result = this.arcOriginal.verifyChanges({inertialPanningX: true}) && result;
+    result = result && this.compareCameras();
+
+    // Now we are in "pan" mode, we can move 1st pointer larger distances.
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.clientY = 1000;
+    event.button = -1;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({inertialPanningX: true}) && result;
+    result = result && this.compareCameras();
+
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.clientY = 2000;
+    event.button = -1;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({inertialPanningY: true}) && result;
+    result = result && this.compareCameras();
+
     return result;
   }
 
-  test_MutiTouchSwipePan(): boolean {
+    /*test_MutiTouchSwipePan(): boolean {
     this.resetEnviroment();
     var result = this.compareCameras();
     // TODO
