@@ -13,6 +13,7 @@ import { VertexData } from "./mesh.vertexData";
  */
 export class TrailMesh extends Mesh {
     private _generator: AbstractMesh;
+    private _autoStart: boolean;
     private _diameter: number;
     private _length: number;
     private _sectionPolygonPointsCount: number = 4;
@@ -30,9 +31,10 @@ export class TrailMesh extends Mesh {
      * @param material Material to apply to trailing mesh. Defaults to scene default.
      * @param autoStart Automatically start trailing mesh. Default true.
      */
-    constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, material: Material, autoStart: boolean = true) {
+    constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, material?: Material, autoStart: boolean = true) {
         super(name, scene);
-
+        
+        this._autoStart = autoStart;
         this._generator = generator;
         this._diameter = diameter;
         this._length = length;
@@ -48,9 +50,6 @@ export class TrailMesh extends Mesh {
             this.material = scene.defaultMaterial;
         }
         this._createMesh();
-        if (autoStart) {
-            this.start();
-        }
     }
 
     /**
@@ -121,6 +120,9 @@ export class TrailMesh extends Mesh {
         data.normals = normals;
         data.indices = indices;
         data.applyToMesh(this, true);
+        if (this._autoStart) {
+            this.start();
+        }
     }
 
     public start() {
@@ -172,4 +174,33 @@ export class TrailMesh extends Mesh {
             this.updateVerticesData(VertexBuffer.NormalKind, normals, true, false);
         }
     }
+
+    /**
+     * Returns a new TrailMesh object.
+     * @param name is a string, the name given to the new mesh
+     * @param newGenerator use new generator object for cloned trail mesh
+     * @returns a new mesh
+     */
+    public clone(name: string = "", newGenerator: AbstractMesh): TrailMesh {
+        return new TrailMesh(name, (newGenerator === undefined ? this._generator : newGenerator), this.getScene(), this._diameter, this._length, (this.material === null ? this.getScene().defaultMaterial : this.material), this._autoStart);
+    }
+
+    /**
+     * Serializes this trail mesh
+     * @param serializationObject object to write serialization to
+     */
+    public serialize(serializationObject: any): void {
+        super.serialize(serializationObject);
+    }
+
+    /**
+     * Parses a serialized trail mesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the trail mesh in
+     * @returns the created trail mesh
+     */
+    public static Parse(parsedMesh: any, scene: Scene): TrailMesh {
+        return new TrailMesh(parsedMesh.name, parsedMesh._generator, scene, parsedMesh._diameter, parsedMesh._length, parsedMesh.material, parsedMesh._autoStart);
+    }
+
 }
