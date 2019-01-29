@@ -28,8 +28,9 @@ export class TrailMesh extends Mesh {
      * @param diameter Diameter of trailing mesh. Default is 1.
      * @param length Length of trailing mesh. Default is 60.
      * @param material Material to apply to trailing mesh. Defaults to scene default.
+     * @param autoStart Automatically start trailing mesh. Default true.
      */
-    constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, material: Material) {
+    constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, material: Material, autoStart: boolean = true) {
         super(name, scene);
 
         this._generator = generator;
@@ -47,7 +48,9 @@ export class TrailMesh extends Mesh {
             this.material = scene.defaultMaterial;
         }
         this._createMesh();
-        this.start();
+        if (autoStart) {
+            this.start();
+        }
     }
 
     /**
@@ -114,7 +117,6 @@ export class TrailMesh extends Mesh {
                 l
             );
         }
-
         data.positions = positions;
         data.normals = normals;
         data.indices = indices;
