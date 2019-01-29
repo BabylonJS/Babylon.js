@@ -42,6 +42,7 @@ describe('Babylon Animation', function() {
         it('one key', () => {
             const scene = new BABYLON.Scene(subject);
             const box = BABYLON.Mesh.CreateBox("box", 1, scene);
+            scene.createDefaultCamera();
             const animation = new BABYLON.Animation("anim", "position.x", 1, BABYLON.Animation.ANIMATIONTYPE_FLOAT);
             animation.setKeys([{ frame: 0, value: 1 }]);
             box.animations.push(animation);
