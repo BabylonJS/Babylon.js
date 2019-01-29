@@ -576,7 +576,10 @@ export class Animation {
             return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
         }
 
-        let keys = this.getKeys();
+        const keys = this.getKeys();
+        if (keys.length === 1) {
+            return this._getKeyValue(keys[0].value);
+        }
 
         // Try to get a hash to find the right key
         var startKeyIndex = Math.max(0, Math.min(keys.length - 1, Math.floor(keys.length * (currentFrame - keys[0].frame) / (keys[keys.length - 1].frame - keys[0].frame)) - 1));
@@ -591,7 +594,6 @@ export class Animation {
             var endKey = keys[key + 1];
 
             if (endKey.frame >= currentFrame) {
-
                 var startKey = keys[key];
                 var startValue = this._getKeyValue(startKey.value);
                 if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
@@ -691,6 +693,7 @@ export class Animation {
                 break;
             }
         }
+
         return this._getKeyValue(keys[keys.length - 1].value);
     }
 
