@@ -23,9 +23,9 @@ if (typeof globalObject !== "undefined") {
     }
     for (var key in Babylon) {
         // Prevent Reassignment.
-        if (keys.indexOf(key) > -1) {
-            continue;
-        }
+        // if (keys.indexOf(key) > -1) {
+        // continue;
+        // }
 
         BABYLON[key] = (<any>Babylon)[key];
     }

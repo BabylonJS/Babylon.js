@@ -86,7 +86,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     public grain: GrainPostProcess;
     private _grainEffect: PostProcessRenderEffect;
     /**
-     * Glow post process which adds a glow to emmisive areas of the image
+     * Glow post process which adds a glow to emissive areas of the image
      */
     private _glowLayer: Nullable<GlowLayer> = null;
 
@@ -109,6 +109,13 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     private _grainEnabled: boolean = false;
 
     private _buildAllowed = true;
+
+    /**
+     * Gets active scene
+     */
+    public get scene(): Scene {
+        return this._scene;
+    }
 
     /**
      * Enable or disable the sharpen process from the pipeline
@@ -349,7 +356,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
     @serialize()
     public get glowLayerEnabled(): boolean {
-        return this._glowLayer == null;
+        return this._glowLayer != null;
     }
 
     /**
@@ -447,6 +454,14 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         });
 
         this._buildPipeline();
+    }
+
+    /**
+     * Get the class name
+     * @returns "DefaultRenderingPipeline"
+     */
+    public getClassName(): string {
+        return "DefaultRenderingPipeline";
     }
 
     /**
