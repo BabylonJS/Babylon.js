@@ -20,7 +20,7 @@ export class RenderingPipelineItemComponent extends React.Component<IRenderPipel
     render() {
         return (
             <div className="postProcessTools">
-                <TreeItemLabelComponent label={this.props.renderPipeline.name} onClick={() => this.props.onClick()} icon={faMagic} color="red" />
+                <TreeItemLabelComponent label={this.props.renderPipeline.name} onClick={() => this.props.onClick()} icon={faMagic} color="orangered" />
                 {
                     <ExtensionsComponent target={this.props.renderPipeline} extensibilityGroups={this.props.extensibilityGroups} />
                 }

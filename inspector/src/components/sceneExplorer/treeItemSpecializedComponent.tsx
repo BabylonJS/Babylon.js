@@ -25,7 +25,7 @@ import { AnimationGroupItemComponent } from "./entities/animationGroupTreeItemCo
 import { GlobalState } from "../globalState";
 import { PostProcessItemComponent } from './entities/postProcessTreeItemComponent';
 import { RenderingPipelineItemComponent } from './entities/renderingPipelineTreeItemComponent';
-import { PostProcessRenderPipeline } from 'babylonjs';
+import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
 
 
 interface ITreeItemSpecializedComponentProps {
