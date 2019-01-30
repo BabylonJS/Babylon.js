@@ -67,6 +67,10 @@ import { PBRSpecularGlossinessMaterialPropertyGridComponent } from "./propertyGr
 import { StackPanelPropertyGridComponent } from "./propertyGrids/gui/stackPanelPropertyGridComponent";
 import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
 import { PostProcessPropertyGridComponent } from './propertyGrids/postProcesses/postProcessPropertyGridComponent';
+import { RenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/renderingPipelinePropertyGridComponent';
+import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+import { DefaultRenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent';
+import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -208,6 +212,20 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("Material") !== -1) {
                 const material = entity as Material;
                 return (<MaterialPropertyGridComponent material={material}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("DefaultRenderingPipeline") !== -1) {
+                const renderPipeline = entity as DefaultRenderingPipeline;
+                return (<DefaultRenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("RenderingPipeline") !== -1) {
+                const renderPipeline = entity as PostProcessRenderPipeline;
+                return (<RenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
