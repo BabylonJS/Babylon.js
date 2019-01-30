@@ -246,6 +246,11 @@
                 "output": "babylon.digitalRainPostProcess.min.js",
                 "entry": "./legacy/legacy-digitalRain.ts",
                 "preventLoadLibrary": true
+            },
+            {
+                "output": "babylon.oceanPostProcess.min.js",
+                "entry": "./legacy/legacy-ocean.ts",
+                "preventLoadLibrary": true
             }
         ],
         "build": {
