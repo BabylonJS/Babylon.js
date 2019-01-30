@@ -13,6 +13,19 @@
     display: none;
 }
 
+.context-menu {
+    background: #222222;
+
+    .react-contextmenu-item {
+        padding: 10px;
+        cursor: pointer;
+
+        &:hover {
+            background: #555555;
+        }
+    }
+}
+
 #sceneExplorer {
     background: #333333;
     height: 100%;
@@ -399,6 +412,18 @@
         }
 
         .postProcessTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }
+
+        .renderingPipelineTools {
             grid-column: 2;
             display: grid;
             grid-template-columns: 1fr auto 5px;

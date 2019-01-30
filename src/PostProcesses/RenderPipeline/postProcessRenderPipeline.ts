@@ -23,6 +23,13 @@ export class PostProcessRenderPipeline {
     public _name: string;
 
     /**
+     * Gets pipeline name
+     */
+    public get name(): string {
+        return this._name;
+    }
+
+    /**
      * Initializes a PostProcessRenderPipeline
      * @param engine engine to add the pipeline to
      * @param name name of the pipeline
@@ -37,7 +44,7 @@ export class PostProcessRenderPipeline {
     }
 
     /**
-     * "PostProcessRenderPipeline"
+     * Gets the class name
      * @returns "PostProcessRenderPipeline"
      */
     public getClassName(): string {
