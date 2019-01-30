@@ -1,12 +1,12 @@
-import { AbstractMesh } from "./abstractMesh";
+import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Material } from "../Materials/material";
-import { Mesh } from "./mesh";
+import { Mesh } from "../Meshes/mesh";
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
 import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math";
-import { VertexBuffer } from "./buffer";
-import { VertexData } from "./mesh.vertexData";
+import { VertexBuffer } from "../Meshes/buffer";
+import { VertexData } from "../Meshes/mesh.vertexData";
 
 /**
  * Class used to create a trail following a mesh
@@ -128,8 +128,8 @@ export class TrailMesh extends Mesh {
     /**
      * Start trailing mesh.
      */
-    public start(): void {
-        this._beforeRenderObserver = this.getScene().onBeforeRenderObservable.add(this.update);
+    public start(mesh: TrailMesh = this): void {
+        this._beforeRenderObserver = this.getScene().onBeforeRenderObservable.add(function() { mesh.update(); });
     }
 
     /**
