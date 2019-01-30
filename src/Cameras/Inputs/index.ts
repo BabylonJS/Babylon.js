@@ -2,6 +2,7 @@ export * from "./arcRotateCameraGamepadInput";
 export * from "./arcRotateCameraKeyboardMoveInput";
 export * from "./arcRotateCameraMouseWheelInput";
 export * from "./arcRotateCameraPointersInput";
+export * from "./arcRotateCameraPointersInputExperimental";
 export * from "./arcRotateCameraPointersInputTesting";
 export * from "./arcRotateCameraVRDeviceOrientationInput";
 export * from "./flyCameraKeyboardInput";

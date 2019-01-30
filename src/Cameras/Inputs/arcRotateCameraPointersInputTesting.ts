@@ -1,232 +1,14 @@
-import { Nullable } from "../../types";
-import { serialize } from "../../Misc/decorators";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { BaseCameraPointersInput } from "../../Cameras/Inputs/BaseCameraPointersInput";
-import { PointerTouch } from "../../Events/pointerEvents";
-
 /**
- * Manage the pointers inputs to control an ArcRotate camera.
- * 
- * TODO(mrdunk) This class is an experimental replacement for
- * ArcRotateCameraPointersInput in src/Cameras/Inputs/arcRotateCameraPointersInput.ts.
- * If successful this file will replace arcRotateCameraPointersInput.ts
- * and this class renamed ArcRotateCameraPointersInput.
- */
-export class ArcRotateCameraPointersInputTesting extends BaseCameraPointersInput {
-    /**
-     * Defines the camera the input is attached to.
-     */
-    public camera: ArcRotateCamera;
-
-    /**
-     * The class name of the current input.
-     */
-    protected _className = "ArcRotateCameraPointersInputTesting";
-
-    /**
-     * Defines the buttons associated with the input to handle camera move.
-     */
-    @serialize()
-    public buttons = [0, 1, 2];
-
-    /**
-     * Defines the pointer angular sensibility  along the X axis or how fast is
-     * the camera rotating.
-     */
-    @serialize()
-    public angularSensibilityX = 1000.0;
-
-    /**
-     * Defines the pointer angular sensibility along the Y axis or how fast is
-     * the camera rotating.
-     */
-    @serialize()
-    public angularSensibilityY = 1000.0;
-
-    /**
-     * Defines the pointer pinch precision or how fast is the camera zooming.
-     */
-    @serialize()
-    public pinchPrecision = 12.0;
-
-    /**
-     * pinchDeltaPercentage will be used instead of pinchPrecision if different
-     * from 0.
-     * It defines the percentage of current camera.radius to use as delta when
-     * pinch zoom is used.
-     */
-    @serialize()
-    public pinchDeltaPercentage = 0;
-
-    /**
-     * Defines the pointer panning sensibility or how fast is the camera moving.
-     */
-    @serialize()
-    public panningSensibility: number = 1000.0;
-
-    /**
-     * Defines whether panning (2 fingers swipe) is enabled through multitouch.
-     */
-    @serialize()
-    public multiTouchPanning: boolean = true;
-
-    /**
-     * Defines whether panning is enabled for both pan (2 fingers swipe) and
-     * zoom (pinch) through multitouch.
-     */
-    @serialize()
-    public multiTouchPanAndZoom: boolean = true;
-
-    /**
-     * Revers pinch action direction.
-     */
-    public pinchInwards = true;
-
-    private _isPanClick: boolean = false;
-    private _twoFingerActivityCount: number = 0;
-    private _isPinching: boolean = false;
-
-    /**
-     * Called on pointer POINTERMOVE event if only a single touch is active.
-     */
-    protected onTouch(point: Nullable<PointerTouch>,
-                      offsetX: number,
-                      offsetY: number): void {
-        if (this.panningSensibility !== 0 &&
-          ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
-            this.camera.inertialPanningX += -offsetX / this.panningSensibility;
-            this.camera.inertialPanningY += offsetY / this.panningSensibility;
-        } else {
-            this.camera.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
-            this.camera.inertialBetaOffset -= offsetY / this.angularSensibilityY;
-        }
-    }
-
-    /**
-     * Called on pointer POINTERDOUBLETAP event.
-     */
-    protected onDoubleTap(type: string) {
-        if (this.camera.useInputToRestoreState) {
-            this.camera.restoreState();
-        }
-    }
-
-    /**
-     * Called on pointer POINTERMOVE event if multiple touches are active.
-     */
-    protected onMultiTouch(pointA: Nullable<PointerTouch>,
-                           pointB: Nullable<PointerTouch>,
-                           previousPinchSquaredDistance: number,
-                           pinchSquaredDistance: number,
-                           previousMultiTouchPanPosition: Nullable<PointerTouch>,
-                           multiTouchPanPosition: Nullable<PointerTouch>): void
-    {
-        if (previousPinchSquaredDistance === 0 && previousMultiTouchPanPosition === null) {
-            // First time this method is called for new pinch.
-            // Next time this is called there will be a
-            // previousPinchSquaredDistance and pinchSquaredDistance to compare.
-            return;
-        }
-        if (pinchSquaredDistance === 0 && multiTouchPanPosition === null) {
-            // Last time this method is called at the end of a pinch.
-            return;
-        }
-
-        var direction = this.pinchInwards ? 1 : -1;
-
-        if (this.multiTouchPanAndZoom) {
-            if (this.pinchDeltaPercentage) {
-                this.camera.inertialRadiusOffset +=
-                    (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
-                    this.camera.radius * this.pinchDeltaPercentage;
-            } else {
-                this.camera.inertialRadiusOffset += 
-                    (pinchSquaredDistance - previousPinchSquaredDistance) /
-                    (this.pinchPrecision * direction *
-                    (this.angularSensibilityX + this.angularSensibilityY) / 2);
-            }
-
-            if (this.panningSensibility !== 0 &&
-              previousMultiTouchPanPosition && multiTouchPanPosition) {
-                var moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
-                var moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-                this.camera.inertialPanningX += -moveDeltaX / this.panningSensibility;
-                this.camera.inertialPanningY += moveDeltaY / this.panningSensibility;
-            }
-        } else {
-            this._twoFingerActivityCount++;
-            var previousPinchDistance = Math.sqrt(previousPinchSquaredDistance);
-            var pinchDistance = Math.sqrt(pinchSquaredDistance);
-            if (this._isPinching ||
-              (this._twoFingerActivityCount < 20 &&
-               Math.abs(pinchDistance - previousPinchDistance) >
-               this.camera.pinchToPanMaxDistance)) {
-                // Since pinch has not been active long, assume we intend to zoom.
-                if (this.pinchDeltaPercentage) {
-                    this.camera.inertialRadiusOffset +=
-                      (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
-                      this.camera.radius * this.pinchDeltaPercentage;
-                } else {
-                    this.camera.inertialRadiusOffset += 
-                        (pinchSquaredDistance - previousPinchSquaredDistance) /
-                        (this.pinchPrecision * direction *
-                        (this.angularSensibilityX + this.angularSensibilityY) / 2);
-                }
-                      
-                // Since we are pinching, remain pinching on next iteration.
-                this._isPinching = true;
-            } else {
-                // Pause between pinch starting and moving implies not a zoom event.
-                // Pan instead.
-                if (this.panningSensibility !== 0 && this.multiTouchPanning &&
-                  multiTouchPanPosition && previousMultiTouchPanPosition) {
-                    var moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
-                    var moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-                    this.camera.inertialPanningX += -moveDeltaX / this.panningSensibility;
-                    this.camera.inertialPanningY += moveDeltaY / this.panningSensibility;
-                }
-            }
-        }
-    }
-
-    /**
-     * Called each time a new POINTERDOWN event occurs. Ie, for each button
-     * press.
-     */
-    protected onButtonDown(evt: PointerEvent, buttonCount: number): void {
-        this._isPanClick = evt.button === this.camera._panningMouseButton;
-    }
-
-    /**
-     * Called each time a new POINTERUP event occurs. Ie, for each button
-     * release.
-     */
-    protected onButtonUp(evt: PointerEvent): void {
-        this._twoFingerActivityCount = 0;
-        this._isPinching = false;
-    }
-
-    /**
-     * Called when window becomes inactive.
-     */
-    protected onLostFocus(): void {
-        this._isPanClick = false;
-        this._twoFingerActivityCount = 0;
-        this._isPinching = false;
-    }
-}
-(<any>CameraInputTypes)["ArcRotateCameraPointersInputTesting"] =
-  ArcRotateCameraPointersInputTesting;
-
-/**
- * Below this point is all temporary code to verify that
- * ArcRotateCameraPointersInputTesting functionality matches
+ * This file contains temporary code to verify that
+ * ArcRotateCameraPointersInputExperimental functionality matches
  * ArcRotateCameraPointersInput exactly.
  * TODO(mrdunk) Delete Test_ArcRotateCameraPointersInput and associated code
  * once testing is complete.
  */
+import { Nullable } from "../../types";
+import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ArcRotateCameraPointersInput } from "../../Cameras/Inputs/arcRotateCameraPointersInput";
+import { ArcRotateCameraPointersInputExperimental } from "../../Cameras/Inputs/arcRotateCameraPointersInputExperimental";
 import { Vector3 } from "../../Maths/math";
 import { Scene } from "../../scene";
 import { NullEngine } from "../../Engines/nullEngine";
@@ -354,11 +136,12 @@ interface MockPointerEvent {
  */
 export class Test_ArcRotateCameraPointersInput {
   private _canvas: Nullable<HTMLCanvasElement>;
+  private _testSummary: {[key: string]: string} = {};
 
   public arcOriginal: MockCamera;
-  public arcTesting: MockCamera;
+  public arcExperimental: MockCamera;
   public arcInputOriginal: ArcRotateCameraPointersInput;
-  public arcInputTesting: ArcRotateCameraPointersInputTesting;
+  public arcInputExperimental: ArcRotateCameraPointersInputExperimental;
 
   constructor() {
     this._canvas = document.createElement("canvas");;
@@ -370,10 +153,13 @@ export class Test_ArcRotateCameraPointersInput {
     this.arcInputOriginal.attachControl(this._canvas);
 
     // Set up an instance of a Camera with the experimental ArcRotateCameraPointersInput.
-    this.arcTesting = new MockCamera("MockCameraTesting");
-    this.arcInputTesting = new ArcRotateCameraPointersInputTesting();
-    this.arcInputTesting.camera = this.arcTesting;
-    this.arcInputTesting.attachControl(this._canvas);
+    this.arcExperimental = new MockCamera("MockCameraTesting");
+    this.arcInputExperimental = new ArcRotateCameraPointersInputExperimental();
+    this.arcInputExperimental.camera = this.arcExperimental;
+    this.arcInputExperimental.attachControl(this._canvas);
+
+    // Run the tests.
+    this.runTests();
   }
 
   /**
@@ -385,28 +171,28 @@ export class Test_ArcRotateCameraPointersInput {
       case "pointerdown":
         pointerInfo = {type: PointerEventTypes.POINTERDOWN, event};
         (<any>this.arcInputOriginal)._pointerInput(pointerInfo, undefined);
-        (<any>this.arcInputTesting)._pointerInput(pointerInfo, undefined);
+        (<any>this.arcInputExperimental)._pointerInput(pointerInfo, undefined);
         break;
       case "pointerup":
         pointerInfo = {type: PointerEventTypes.POINTERUP, event};
         (<any>this.arcInputOriginal)._pointerInput(pointerInfo, undefined);
-        (<any>this.arcInputTesting)._pointerInput(pointerInfo, undefined);
+        (<any>this.arcInputExperimental)._pointerInput(pointerInfo, undefined);
         break;
       case "pointermove":
         pointerInfo = {type: PointerEventTypes.POINTERMOVE, event};
         (<any>this.arcInputOriginal)._pointerInput(pointerInfo, undefined);
-        (<any>this.arcInputTesting)._pointerInput(pointerInfo, undefined);
+        (<any>this.arcInputExperimental)._pointerInput(pointerInfo, undefined);
         break;
       case "blur":
         (<any>this.arcInputOriginal)._onLostFocus();
-        (<any>this.arcInputTesting)._onLostFocus();
+        (<any>this.arcInputExperimental)._onLostFocus();
         break;
       case "POINTERDOUBLETAP":
         // Not a real DOM event. Just a shortcut to trigger
         // PointerEventTypes.POINTERMOVE on the Input class.
         pointerInfo = {type: PointerEventTypes.POINTERDOUBLETAP, event};
         (<any>this.arcInputOriginal)._pointerInput(pointerInfo, undefined);
-        (<any>this.arcInputTesting)._pointerInput(pointerInfo, undefined);
+        (<any>this.arcInputExperimental)._pointerInput(pointerInfo, undefined);
         break;
       default:
         console.error("Invalid pointer event: " + event.type);
@@ -431,15 +217,15 @@ export class Test_ArcRotateCameraPointersInput {
    */
   resetEnviroment(): void {
     this.arcOriginal.reset();
-    this.arcTesting.reset();
+    this.arcExperimental.reset();
     this.arcOriginal.setTestPosition();
-    this.arcTesting.setTestPosition();
+    this.arcExperimental.setTestPosition();
     this.arcOriginal.verifyPrepare();
-    this.arcTesting.verifyPrepare();
+    this.arcExperimental.verifyPrepare();
 
     // _onLostFocus() method of Inputs clears current pointer state.
     (<any>this.arcInputOriginal)._onLostFocus();
-    (<any>this.arcInputTesting)._onLostFocus();
+    (<any>this.arcInputExperimental)._onLostFocus();
   }
 
   /**
@@ -448,14 +234,14 @@ export class Test_ArcRotateCameraPointersInput {
    */
   compareCameras(quiet?: boolean): boolean {
     let returnVal = (
-      this.arcOriginal.alpha === this.arcTesting.alpha &&
-      this.arcOriginal.beta === this.arcTesting.beta &&
-      this.arcOriginal.radius === this.arcTesting.radius &&
-      this.arcOriginal.inertialPanningX === this.arcTesting.inertialPanningX &&
-      this.arcOriginal.inertialPanningY === this.arcTesting.inertialPanningY &&
-      this.arcOriginal.inertialAlphaOffset === this.arcTesting.inertialAlphaOffset &&
-      this.arcOriginal.inertialBetaOffset === this.arcTesting.inertialBetaOffset &&
-      this.arcOriginal.inertialRadiusOffset === this.arcTesting.inertialRadiusOffset
+      this.arcOriginal.alpha === this.arcExperimental.alpha &&
+      this.arcOriginal.beta === this.arcExperimental.beta &&
+      this.arcOriginal.radius === this.arcExperimental.radius &&
+      this.arcOriginal.inertialPanningX === this.arcExperimental.inertialPanningX &&
+      this.arcOriginal.inertialPanningY === this.arcExperimental.inertialPanningY &&
+      this.arcOriginal.inertialAlphaOffset === this.arcExperimental.inertialAlphaOffset &&
+      this.arcOriginal.inertialBetaOffset === this.arcExperimental.inertialBetaOffset &&
+      this.arcOriginal.inertialRadiusOffset === this.arcExperimental.inertialRadiusOffset
     );
     if(!quiet) {
       console.assert(returnVal, "Cammera values differ.");
@@ -470,7 +256,7 @@ export class Test_ArcRotateCameraPointersInput {
   displayCameras(): void {
     let output: {[key: string]: {[key: string]: number}} = {};
     output[this.arcOriginal.name] = this.arcOriginal.summaryForDisplay();
-    output[this.arcTesting.name] = this.arcTesting.summaryForDisplay();
+    output[this.arcExperimental.name] = this.arcExperimental.summaryForDisplay();
     if(!this.compareCameras(true)) {
       console.error("Camera settings differ:");
     }
@@ -482,17 +268,21 @@ export class Test_ArcRotateCameraPointersInput {
    */
   runTests(): void {
     var name: string;
+    // Note this method of getting test names will not survive minification.
     for(name in this) {
       if(name.split("_")[0] === "test") {
-        console.log(`testing: ${name}`);
-        let result = (<any>this)[name]();
+        console.group(`${name}`);
+        var result = (<any>this)[name]();
         console.log(`%c${name} ${result ? "passed" : "failed"}`,
                     `color: ${result ? "green" : "red"};`);
         if(!result) {
           this.displayCameras();
         }
+        console.groupEnd();
+        this._testSummary[name] = `${result ? "passed" : "** failed **"}`;
       }
     }
+    console.table(this._testSummary);
   }
 
   /**
@@ -508,9 +298,9 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Enable panning on pointer drag.
     this.arcInputOriginal.panningSensibility = 3;
-    this.arcInputTesting.panningSensibility = 3;
+    this.arcInputExperimental.panningSensibility = 3;
     this.arcOriginal._useCtrlForPanning = true;
-    this.arcTesting._useCtrlForPanning = true;
+    this.arcExperimental._useCtrlForPanning = true;
 
 
     var event: MockPointerEvent = this.eventTemplate();
@@ -614,7 +404,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Disable panning on pointer drag.
     this.arcInputOriginal.panningSensibility = 0;
-    this.arcInputTesting.panningSensibility = 0;
+    this.arcInputExperimental.panningSensibility = 0;
 
     var event: MockPointerEvent = this.eventTemplate();
 
@@ -717,20 +507,20 @@ export class Test_ArcRotateCameraPointersInput {
     var result = this.compareCameras();
 
     this.arcOriginal.setTestPosition();
-    this.arcTesting.setTestPosition();
+    this.arcExperimental.setTestPosition();
     result = result && this.compareCameras();
 
     this.arcOriginal.storeState();
-    this.arcTesting.storeState();
+    this.arcExperimental.storeState();
     result = result && this.compareCameras();
 
     this.arcOriginal.reset();
-    this.arcTesting.reset();
+    this.arcExperimental.reset();
     result = result && this.compareCameras();
 
     // Disable POINTERDOUBLETAP restore.
     this.arcOriginal.useInputToRestoreState = false;
-    this.arcTesting.useInputToRestoreState = false;
+    this.arcExperimental.useInputToRestoreState = false;
 
     // Set the values expected on this camera to be the current ones.
     this.arcOriginal.verifyPrepare();
@@ -745,7 +535,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Enable POINTERDOUBLETAP restore.
     this.arcOriginal.useInputToRestoreState = true;
-    this.arcTesting.useInputToRestoreState = true;
+    this.arcExperimental.useInputToRestoreState = true;
 
     var event: MockPointerEvent = this.eventTemplate();
     event.type = "POINTERDOUBLETAP";
@@ -769,13 +559,13 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Multiple button presses interpreted as "pinch" and "swipe".
     this.arcInputOriginal.multiTouchPanAndZoom = true;
-    this.arcInputTesting.multiTouchPanAndZoom = true;
+    this.arcInputExperimental.multiTouchPanAndZoom = true;
     // Zoom changes are a percentage of current value.
     this.arcInputOriginal.pinchDeltaPercentage = 10;
-    this.arcInputTesting.pinchDeltaPercentage = 10;
+    this.arcInputExperimental.pinchDeltaPercentage = 10;
     // Panning not enabled.
     this.arcInputOriginal.panningSensibility = 0;
-    this.arcInputTesting.panningSensibility = 0;
+    this.arcInputExperimental.panningSensibility = 0;
 
     var event: MockPointerEvent = this.eventTemplate();
 
@@ -894,13 +684,13 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Multiple button presses interpreted as "pinch" and "swipe".
     this.arcInputOriginal.multiTouchPanAndZoom = true;
-    this.arcInputTesting.multiTouchPanAndZoom = true;
+    this.arcInputExperimental.multiTouchPanAndZoom = true;
     // Zoom changes are a set value.
     this.arcInputOriginal.pinchDeltaPercentage = 0;
-    this.arcInputTesting.pinchDeltaPercentage = 0;
+    this.arcInputExperimental.pinchDeltaPercentage = 0;
     // Panning not enabled.
     this.arcInputOriginal.panningSensibility = 0;
-    this.arcInputTesting.panningSensibility = 0;
+    this.arcInputExperimental.panningSensibility = 0;
 
     var event: MockPointerEvent = this.eventTemplate();
 
@@ -1018,13 +808,13 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Multiple button presses interpreted as "pinch" and "swipe".
     this.arcInputOriginal.multiTouchPanAndZoom = true;
-    this.arcInputTesting.multiTouchPanAndZoom = true;
+    this.arcInputExperimental.multiTouchPanAndZoom = true;
     // Zoom changes are a set value.
     this.arcInputOriginal.pinchDeltaPercentage = 0;
-    this.arcInputTesting.pinchDeltaPercentage = 0;
+    this.arcInputExperimental.pinchDeltaPercentage = 0;
     // Panning enabled.
     this.arcInputOriginal.panningSensibility = 3;
-    this.arcInputTesting.panningSensibility = 3;
+    this.arcInputExperimental.panningSensibility = 3;
 
     var event: MockPointerEvent = this.eventTemplate();
 
@@ -1148,13 +938,13 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Multiple button presses not interpreted as multitouch.
     this.arcInputOriginal.multiTouchPanAndZoom = false;
-    this.arcInputTesting.multiTouchPanAndZoom = false;
+    this.arcInputExperimental.multiTouchPanAndZoom = false;
     // Zoom changes are a percentage of current value.
     this.arcInputOriginal.pinchDeltaPercentage = 10;
-    this.arcInputTesting.pinchDeltaPercentage = 10;
+    this.arcInputExperimental.pinchDeltaPercentage = 10;
     // Panning enabled.
     this.arcInputOriginal.panningSensibility = 3;
-    this.arcInputTesting.panningSensibility = 3;
+    this.arcInputExperimental.panningSensibility = 3;
 
     var event: MockPointerEvent = this.eventTemplate();
 
@@ -1253,7 +1043,7 @@ export class Test_ArcRotateCameraPointersInput {
       this.simulateEvent(event);
 
       debugInternalPanningXOriginal.push(this.arcOriginal.inertialPanningX);
-      debugInternalPanningXTesting.push(this.arcTesting.inertialPanningX);
+      debugInternalPanningXTesting.push(this.arcExperimental.inertialPanningX);
     }
     console.warn(debugExplination);
     console.table({debugInternalPanningXOriginal, debugInternalPanningXTesting});
@@ -1295,13 +1085,13 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Multiple button presses not interpreted as multitouch.
     this.arcInputOriginal.multiTouchPanAndZoom = false;
-    this.arcInputTesting.multiTouchPanAndZoom = false;
+    this.arcInputExperimental.multiTouchPanAndZoom = false;
     // Zoom changes are a percentage of current value.
     this.arcInputOriginal.pinchDeltaPercentage = 0;
-    this.arcInputTesting.pinchDeltaPercentage = 0;
+    this.arcInputExperimental.pinchDeltaPercentage = 0;
     // Panning enabled.
     this.arcInputOriginal.panningSensibility = 3;
-    this.arcInputTesting.panningSensibility = 3;
+    this.arcInputExperimental.panningSensibility = 3;
 
     var event: MockPointerEvent = this.eventTemplate();
 
@@ -1400,7 +1190,7 @@ export class Test_ArcRotateCameraPointersInput {
       this.simulateEvent(event);
 
       debugInternalPanningXOriginal.push(this.arcOriginal.inertialPanningX);
-      debugInternalPanningXTesting.push(this.arcTesting.inertialPanningX);
+      debugInternalPanningXTesting.push(this.arcExperimental.inertialPanningX);
     }
     console.warn(debugExplination);
     console.table({debugInternalPanningXOriginal, debugInternalPanningXTesting});
@@ -1469,7 +1259,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Lose window focus.
     (<any>this.arcInputOriginal)._onLostFocus();
-    (<any>this.arcInputTesting)._onLostFocus();
+    (<any>this.arcInputExperimental)._onLostFocus();
 
     // Move X coordinate some more, this time with no affect.
     event.type = "pointermove";
@@ -1494,13 +1284,13 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Multiple button presses interpreted as "pinch" and "swipe".
     this.arcInputOriginal.multiTouchPanAndZoom = true;
-    this.arcInputTesting.multiTouchPanAndZoom = true;
+    this.arcInputExperimental.multiTouchPanAndZoom = true;
     // Zoom changes are a percentage of current value.
     this.arcInputOriginal.pinchDeltaPercentage = 10;
-    this.arcInputTesting.pinchDeltaPercentage = 10;
+    this.arcInputExperimental.pinchDeltaPercentage = 10;
     // Panning not enabled.
     this.arcInputOriginal.panningSensibility = 0;
-    this.arcInputTesting.panningSensibility = 0;
+    this.arcInputExperimental.panningSensibility = 0;
 
     var event: MockPointerEvent = this.eventTemplate();
 
@@ -1551,7 +1341,7 @@ export class Test_ArcRotateCameraPointersInput {
 
     // Lose window focus.
     (<any>this.arcInputOriginal)._onLostFocus();
-    (<any>this.arcInputTesting)._onLostFocus();
+    (<any>this.arcInputExperimental)._onLostFocus();
 
     // Move Y coordinate some more, this time with no affect.
     event.type = "pointermove";
