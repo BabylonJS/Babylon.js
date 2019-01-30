@@ -49136,7 +49136,7 @@ declare module BABYLON {
          */
         focalLength: number;
         /**
-         * F-Stop of the effect's camera. The diamater of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
+         * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
          */
         fStop: number;
         /**
@@ -49597,13 +49597,17 @@ declare module BABYLON {
         protected _cameras: Camera[];
         /** @hidden */name: string;
         /**
+         * Gets pipeline name
+         */
+        readonly name: string;
+        /**
          * Initializes a PostProcessRenderPipeline
          * @param engine engine to add the pipeline to
          * @param name name of the pipeline
          */
         constructor(engine: Engine, name: string);
         /**
-         * "PostProcessRenderPipeline"
+         * Gets the class name
          * @returns "PostProcessRenderPipeline"
          */
         getClassName(): string;
@@ -49693,7 +49697,7 @@ declare module BABYLON {
         grain: GrainPostProcess;
         private _grainEffect;
         /**
-         * Glow post process which adds a glow to emmisive areas of the image
+         * Glow post process which adds a glow to emissive areas of the image
          */
         private _glowLayer;
         /**
@@ -49712,6 +49716,10 @@ declare module BABYLON {
         private _chromaticAberrationEnabled;
         private _grainEnabled;
         private _buildAllowed;
+        /**
+         * Gets active scene
+         */
+        readonly scene: Scene;
         /**
          * Enable or disable the sharpen process from the pipeline
          */
@@ -49791,6 +49799,11 @@ declare module BABYLON {
          * @param automaticBuild - if false, you will have to manually call prepare() to update the pipeline (default: true)
          */
         constructor(name?: string, hdr?: boolean, scene?: Scene, cameras?: Camera[], automaticBuild?: boolean);
+        /**
+         * Get the class name
+         * @returns "DefaultRenderingPipeline"
+         */
+        getClassName(): string;
         /**
          * Force the compilation of the entire pipeline.
          */
