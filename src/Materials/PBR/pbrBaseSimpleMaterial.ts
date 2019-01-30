@@ -125,47 +125,6 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
     public useLightmapAsShadowmap = false;
 
     /**
-     * Return the active textures of the material.
-     */
-    public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
-
-        if (this.environmentTexture) {
-            activeTextures.push(this.environmentTexture);
-        }
-
-        if (this.normalTexture) {
-            activeTextures.push(this.normalTexture);
-        }
-
-        if (this.emissiveTexture) {
-            activeTextures.push(this.emissiveTexture);
-        }
-
-        if (this.occlusionTexture) {
-            activeTextures.push(this.occlusionTexture);
-        }
-
-        if (this.lightmapTexture) {
-            activeTextures.push(this.lightmapTexture);
-        }
-
-        return activeTextures;
-    }
-
-    public hasTexture(texture: BaseTexture): boolean {
-        if (super.hasTexture(texture)) {
-            return true;
-        }
-
-        if (this.lightmapTexture === texture) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Instantiates a new PBRMaterial instance.
      *
      * @param name The material name

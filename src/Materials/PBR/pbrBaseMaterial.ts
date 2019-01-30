@@ -14,6 +14,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
+import { IMaterialClearCoatDefines, PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
@@ -37,7 +38,7 @@ import "../../Shaders/pbr.vertex";
  * Manages the defines for the PBR Material.
  * @hiddenChildren
  */
-class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines {
     public PBR = true;
 
     public MAINUV1 = false;
@@ -176,6 +177,12 @@ class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConf
     public FORCENORMALFORWARD = false;
 
     public SPECULARAA = false;
+
+    public CLEARCOAT = false;
+    public CLEARCOAT_TEXTURE = false;
+    public CLEARCOAT_TEXTUREDIRECTUV = 0;
+    public CLEARCOAT_BUMP = false;
+    public CLEARCOAT_BUMPDIRECTUV = 0;
 
     public UNLIT = false;
 
@@ -643,6 +650,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     private _unlit = false;
 
     /**
+     * Defines the clear coat layer parameters for the material.
+     */
+    public readonly clearCoat = new PBRClearCoatConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+
+    /**
      * Instantiates a new PBRMaterial instance.
      *
      * @param name The material name
@@ -909,6 +921,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
+        if (!this.clearCoat.isReadyForSubMesh(defines, scene, engine, this._disableBumpMap)) {
+            return false;
+        }
+
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             if (!this._imageProcessingConfiguration.isReady()) {
                 return false;
@@ -993,6 +1009,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (defines.PARALLAXOCCLUSION) {
             fallbacks.addFallback(fallbackRank++, "PARALLAXOCCLUSION");
         }
+
+        fallbackRank = PBRClearCoatConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
 
         if (defines.ENVIRONMENTBRDF) {
             fallbacks.addFallback(fallbackRank++, "ENVIRONMENTBRDF");
@@ -1091,7 +1109,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh",
             "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh",
             "microSurfaceSampler", "environmentBrdfSampler", "boneSampler"];
+
         var uniformBuffers = ["Material", "Scene"];
+
+        PBRClearCoatConfiguration.AddUniforms(uniforms);
+        PBRClearCoatConfiguration.AddSamplers(samplers);
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1369,6 +1391,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             defines.SPECULARAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
 
+        this.clearCoat.prepareDefines(defines, scene);
+
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.prepareDefines(defines);
         }
@@ -1456,6 +1480,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("vEmissiveColor", 3);
 
         this._uniformBuffer.addUniform("pointSize", 1);
+
+        PBRClearCoatConfiguration.PrepareUniformBuffer(this._uniformBuffer);
+
         this._uniformBuffer.create();
     }
 
@@ -1512,6 +1539,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         let reflectionTexture: Nullable<BaseTexture> = null;
         if (mustRebind) {
+            var engine = scene.getEngine();
             this._uniformBuffer.bindToEffect(effect, "Material");
 
             this.bindViewProjection(effect);
@@ -1597,7 +1625,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         }
                     }
 
-                    if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
+                    if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                         this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level, this._parallaxScaleBias);
                         MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
 
@@ -1714,10 +1742,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     }
                 }
 
-                if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
+                if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                     this._uniformBuffer.setTexture("bumpSampler", this._bumpTexture);
                 }
             }
+
+            this.clearCoat.bindForSubMesh(this._uniformBuffer, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
@@ -1812,6 +1842,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             results.push(this._refractionTexture);
         }
 
+        this.clearCoat.getAnimatables(results);
+
         return results;
     }
 
@@ -1842,6 +1874,111 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         return null;
+    }
+
+    /**
+     * Returns an array of the actively used textures.
+     * @returns - Array of BaseTextures
+     */
+    public getActiveTextures(): BaseTexture[] {
+        var activeTextures = super.getActiveTextures();
+
+        if (this._albedoTexture) {
+            activeTextures.push(this._albedoTexture);
+        }
+
+        if (this._ambientTexture) {
+            activeTextures.push(this._ambientTexture);
+        }
+
+        if (this._opacityTexture) {
+            activeTextures.push(this._opacityTexture);
+        }
+
+        if (this._reflectionTexture) {
+            activeTextures.push(this._reflectionTexture);
+        }
+
+        if (this._emissiveTexture) {
+            activeTextures.push(this._emissiveTexture);
+        }
+
+        if (this._reflectivityTexture) {
+            activeTextures.push(this._reflectivityTexture);
+        }
+
+        if (this._metallicTexture) {
+            activeTextures.push(this._metallicTexture);
+        }
+
+        if (this._microSurfaceTexture) {
+            activeTextures.push(this._microSurfaceTexture);
+        }
+
+        if (this._bumpTexture) {
+            activeTextures.push(this._bumpTexture);
+        }
+
+        if (this._lightmapTexture) {
+            activeTextures.push(this._lightmapTexture);
+        }
+
+        if (this._refractionTexture) {
+            activeTextures.push(this._refractionTexture);
+        }
+
+        this.clearCoat.getActiveTextures(activeTextures);
+
+        return activeTextures;
+    }
+
+    /**
+     * Checks to see if a texture is used in the material.
+     * @param texture - Base texture to use.
+     * @returns - Boolean specifying if a texture is used in the material.
+     */
+    public hasTexture(texture: BaseTexture): boolean {
+        if (super.hasTexture(texture)) {
+            return true;
+        }
+
+        if (this._albedoTexture === texture) {
+            return true;
+        }
+
+        if (this._ambientTexture === texture) {
+            return true;
+        }
+
+        if (this._opacityTexture === texture) {
+            return true;
+        }
+
+        if (this._reflectionTexture === texture) {
+            return true;
+        }
+
+        if (this._reflectivityTexture === texture) {
+            return true;
+        }
+
+        if (this._metallicTexture === texture) {
+            return true;
+        }
+
+        if (this._microSurfaceTexture === texture) {
+            return true;
+        }
+
+        if (this._bumpTexture === texture) {
+            return true;
+        }
+
+        if (this._lightmapTexture === texture) {
+            return true;
+        }
+
+        return this.clearCoat.hasTexture(texture);
     }
 
     /**
@@ -1895,6 +2032,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._refractionTexture.dispose();
             }
         }
+
+        this.clearCoat.dispose(forceDisposeTextures);
 
         this._renderTargets.dispose();
 
