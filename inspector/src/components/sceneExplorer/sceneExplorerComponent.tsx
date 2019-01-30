@@ -12,6 +12,7 @@ import { HeaderComponent } from "../headerComponent";
 import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../components/globalState";
+import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
 
 require("./sceneExplorer.scss");
 
@@ -206,6 +207,20 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let postProcessses = scene.postProcesses;
         let pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
 
+        let pipelineContextMenus: { label: string, action: () => void }[] = [];
+
+        if (scene.activeCamera) {
+            if (!pipelines.some(p => p.getClassName() === "DefaultRenderingPipeline")) {
+                pipelineContextMenus.push({
+                    label: "Add new DefaultRenderingPipeline",
+                    action: () => {
+                        let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, [scene.activeCamera!]);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    }
+                })
+            }
+        }
+
         return (
             <div id="tree">
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
@@ -217,10 +232,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     postProcessses.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={postProcessses} label="Post-processes" offset={1} filter={this.state.filter} />
                 }
-                {
-                    pipelines.length > 0 &&
-                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />
-                }
+                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups}
+                    contextMenuItems={pipelineContextMenus}
+                    selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />
                 {
                     guiElements && guiElements.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />
