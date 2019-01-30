@@ -85,7 +85,7 @@ class MockCamera extends ArcRotateCamera {
       console.assert(
         tmpResult,
         `Value of "${key}" was "${(<any>this)[key]}". ` +
-        `Expected ${tc ? "it to have changed" : "\"" + pv +"\""}.`
+        `Expected ${tc ? "it to have changed" : "\"" + pv + "\""}.`
       );
       result = result && tmpResult;
       this._previousValues[key] = (<any>this)[key];
@@ -144,7 +144,7 @@ export class Test_ArcRotateCameraPointersInput {
   public arcInputExperimental: ArcRotateCameraPointersInputExperimental;
 
   constructor() {
-    this._canvas = document.createElement("canvas");;
+    this._canvas = document.createElement("canvas");
 
     // Set up an instance of a Camera with the original ArcRotateCameraPointersInput.
     this.arcOriginal = new MockCamera("MockCameraOriginal");
@@ -167,7 +167,7 @@ export class Test_ArcRotateCameraPointersInput {
    */
   simulateEvent(event: MockPointerEvent) {
     let pointerInfo = {};
-    switch(event.type) {
+    switch (event.type) {
       case "pointerdown":
         pointerInfo = {type: PointerEventTypes.POINTERDOWN, event};
         (<any>this.arcInputOriginal)._pointerInput(pointerInfo, undefined);
@@ -203,13 +203,13 @@ export class Test_ArcRotateCameraPointersInput {
    * Make a mock Event.
    * Many PointerEvent properties are read-only so using real "new PointerEvent()"
    * is unpractical.
-   */ 
+   */
   eventTemplate(): MockPointerEvent {
     return {
       target: <HTMLElement>this._canvas,
       button: 0,
       preventDefault: () => {},
-    }
+    };
   }
 
   /**
@@ -243,7 +243,7 @@ export class Test_ArcRotateCameraPointersInput {
       this.arcOriginal.inertialBetaOffset === this.arcExperimental.inertialBetaOffset &&
       this.arcOriginal.inertialRadiusOffset === this.arcExperimental.inertialRadiusOffset
     );
-    if(!quiet) {
+    if (!quiet) {
       console.assert(returnVal, "Cammera values differ.");
     }
     return returnVal;
@@ -257,7 +257,7 @@ export class Test_ArcRotateCameraPointersInput {
     let output: {[key: string]: {[key: string]: number}} = {};
     output[this.arcOriginal.name] = this.arcOriginal.summaryForDisplay();
     output[this.arcExperimental.name] = this.arcExperimental.summaryForDisplay();
-    if(!this.compareCameras(true)) {
+    if (!this.compareCameras(true)) {
       console.error("Camera settings differ:");
     }
     console.table(output);
@@ -269,13 +269,13 @@ export class Test_ArcRotateCameraPointersInput {
   runTests(): void {
     var name: string;
     // Note this method of getting test names will not survive minification.
-    for(name in this) {
-      if(name.split("_")[0] === "test") {
+    for (name in this) {
+      if (name.split("_")[0] === "test") {
         console.group(`${name}`);
         var result = (<any>this)[name]();
         console.log(`%c${name} ${result ? "passed" : "failed"}`,
                     `color: ${result ? "green" : "red"};`);
-        if(!result) {
+        if (!result) {
           this.displayCameras();
         }
         console.groupEnd();
@@ -301,7 +301,6 @@ export class Test_ArcRotateCameraPointersInput {
     this.arcInputExperimental.panningSensibility = 3;
     this.arcOriginal._useCtrlForPanning = true;
     this.arcExperimental._useCtrlForPanning = true;
-
 
     var event: MockPointerEvent = this.eventTemplate();
 
@@ -393,7 +392,7 @@ export class Test_ArcRotateCameraPointersInput {
   /**
    * Test case.
    * One button down with pointer moving.
-   * panningSensibility === 0 will mean ctrlKey or camera._panningMouseButton 
+   * panningSensibility === 0 will mean ctrlKey or camera._panningMouseButton
    * will have no affect.
    * Will cause camera.inertialAlphaOffset and camera.inertialBetaOffset to
    * change.
@@ -669,7 +668,7 @@ export class Test_ArcRotateCameraPointersInput {
     this.simulateEvent(event);
     result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
-    
+
     return result;
   }
 
@@ -794,7 +793,7 @@ export class Test_ArcRotateCameraPointersInput {
     this.simulateEvent(event);
     result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
-    
+
     return result;
   }
 
@@ -922,7 +921,7 @@ export class Test_ArcRotateCameraPointersInput {
     this.simulateEvent(event);
     result = this.arcOriginal.verifyChanges({}) && result;
     result = result && this.compareCameras();
-    
+
     return result;
   }
 
@@ -1029,8 +1028,8 @@ export class Test_ArcRotateCameraPointersInput {
     event.clientY = 1000;
     event.button = -1;
     event.pointerId = 1;
-    
-    let debugExplination = 
+
+    let debugExplination =
       "Camera position is not exactly the same after panning. " +
       "This is due to arcRotateCamera using different methods to calculate " +
       "distance between pointers in different parts of the code. " +
@@ -1038,7 +1037,7 @@ export class Test_ArcRotateCameraPointersInput {
     let debugInternalPanningXOriginal = [];
     let debugInternalPanningXTesting = [];
 
-    for(let i = 0; i < 21; i++) {
+    for (let i = 0; i < 21; i++) {
       event.clientX++;
       this.simulateEvent(event);
 
@@ -1177,7 +1176,7 @@ export class Test_ArcRotateCameraPointersInput {
     event.button = -1;
     event.pointerId = 1;
 
-    let debugExplination = 
+    let debugExplination =
       "Camera position is not exactly the same after panning. " +
       "This is due to arcRotateCamera using different methods to calculate " +
       "distance between pointers in different parts of the code. " +
@@ -1185,7 +1184,7 @@ export class Test_ArcRotateCameraPointersInput {
     let debugInternalPanningXOriginal = [];
     let debugInternalPanningXTesting = [];
 
-    for(let i = 0; i < 21; i++) {
+    for (let i = 0; i < 21; i++) {
       event.clientX++;
       this.simulateEvent(event);
 

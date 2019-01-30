@@ -7,7 +7,7 @@ import { PointerTouch } from "../../Events/pointerEvents";
 
 /**
  * Manage the pointers inputs to control an ArcRotate camera.
- * 
+ *
  * TODO(mrdunk) This class is an experimental replacement for
  * ArcRotateCameraPointersInput in src/Cameras/Inputs/arcRotateCameraPointersInput.ts.
  * If successful this file will replace arcRotateCameraPointersInput.ts
@@ -141,7 +141,7 @@ export class ArcRotateCameraPointersInputExperimental extends BaseCameraPointers
                     (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
                     this.camera.radius * this.pinchDeltaPercentage;
             } else {
-                this.camera.inertialRadiusOffset += 
+                this.camera.inertialRadiusOffset +=
                     (pinchSquaredDistance - previousPinchSquaredDistance) /
                     (this.pinchPrecision * direction *
                     (this.angularSensibilityX + this.angularSensibilityY) / 2);
@@ -168,12 +168,12 @@ export class ArcRotateCameraPointersInputExperimental extends BaseCameraPointers
                       (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
                       this.camera.radius * this.pinchDeltaPercentage;
                 } else {
-                    this.camera.inertialRadiusOffset += 
+                    this.camera.inertialRadiusOffset +=
                         (pinchSquaredDistance - previousPinchSquaredDistance) /
                         (this.pinchPrecision * direction *
                         (this.angularSensibilityX + this.angularSensibilityY) / 2);
                 }
-                      
+
                 // Since we are pinching, remain pinching on next iteration.
                 this._isPinching = true;
             } else {
@@ -218,5 +218,3 @@ export class ArcRotateCameraPointersInputExperimental extends BaseCameraPointers
 }
 (<any>CameraInputTypes)["ArcRotateCameraPointersInputExperimental"] =
   ArcRotateCameraPointersInputExperimental;
-
-
