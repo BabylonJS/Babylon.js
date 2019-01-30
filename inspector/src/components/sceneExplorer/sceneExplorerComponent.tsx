@@ -204,6 +204,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
         let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
         let postProcessses = scene.postProcesses;
+        let pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
 
         return (
             <div id="tree">
@@ -215,6 +216,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 {
                     postProcessses.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={postProcessses} label="Post-processes" offset={1} filter={this.state.filter} />
+                }
+                {
+                    pipelines.length > 0 &&
+                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />
                 }
                 {
                     guiElements && guiElements.length > 0 &&

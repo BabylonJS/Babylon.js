@@ -24,6 +24,8 @@ import { AdvancedDynamicTextureTreeItemComponent } from "./entities/gui/advanced
 import { AnimationGroupItemComponent } from "./entities/animationGroupTreeItemComponent";
 import { GlobalState } from "../globalState";
 import { PostProcessItemComponent } from './entities/postProcessTreeItemComponent';
+import { RenderingPipelineItemComponent } from './entities/renderingPipelineTreeItemComponent';
+import { PostProcessRenderPipeline } from 'babylonjs';
 
 
 interface ITreeItemSpecializedComponentProps {
@@ -88,6 +90,10 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
 
             if (className.indexOf("Texture") !== -1) {
                 return (<TextureTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} texture={entity as Texture} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("RenderingPipeline") !== -1) {
+                return (<RenderingPipelineItemComponent extensibilityGroups={this.props.extensibilityGroups} renderPipeline={entity as PostProcessRenderPipeline} onClick={() => this.onClick()} />);
             }
 
             if (className.indexOf("PostProcess") !== -1) {
