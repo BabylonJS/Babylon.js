@@ -52,7 +52,7 @@ export class PBRClearCoatConfiguration {
     /**
      * Stores the clear coat values in a texture.
      */
-    @expandToProperty("markAllSubMeshesAsTexturesDirty")
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
     @serializeAsTexture()
@@ -60,22 +60,23 @@ export class PBRClearCoatConfiguration {
     /**
      * Define the clear coat specific bump texture.
      */
-    @expandToProperty("markAllSubMeshesAsTexturesDirty")
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public bumpTexture: Nullable<BaseTexture> = null;
 
     /** @hidden */
-    public _markAllSubMeshesAsTexturesDirty: () => void;
+    private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
-    public markAllSubMeshesAsTexturesDirty(): void {
-        this._markAllSubMeshesAsTexturesDirty();
-    };
+    /** @hidden */
+    public _markAllSubMeshesAsTexturesDirty(): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty();
+    }
 
     /**
      * Instantiate a new istance of clear coat configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
     constructor(markAllSubMeshesAsTexturesDirty: () => void) {
-        this._markAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
+        this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
     }
 
     /**
