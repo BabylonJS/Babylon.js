@@ -232,13 +232,22 @@ import { Scene } from "../../scene";
 import { NullEngine } from "../../Engines/nullEngine";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 
+/**
+ * Camera to be used in testing.
+ */
 class MockCamera extends ArcRotateCamera {
   constructor(name: string) {
     super(name, 0, 0, 0, new Vector3(0, 0, 0), new Scene(new NullEngine()));
   }
 
+  /**
+   * Allow comparison of Camera's position between calls of verifyChanges()
+   */
   private _previousValues: {[key: string]: number} = {};
 
+  /**
+   * Properties to display in debug output.
+   */
   summaryForDisplay(): {[key: string]: number} {
     return {
       alpha: this.alpha,
@@ -252,6 +261,9 @@ class MockCamera extends ArcRotateCamera {
     };
   }
 
+  /**
+   * Reset camera between tests.
+   */
   reset(): void {
     this.alpha = 0;
     this.beta = 0;
@@ -266,6 +278,9 @@ class MockCamera extends ArcRotateCamera {
     this._useCtrlForPanning = true;
   }
 
+  /**
+   * Set camera to some known position.
+   */
   setTestPosition(): void {
     this.alpha = 10;
     this.beta = 20;
@@ -297,6 +312,10 @@ class MockCamera extends ArcRotateCamera {
     return result;
   }
 
+  /**
+   * Reset values to be compared by verifyChanges().
+   * Run this at the start of any test where verifyChanges() will be used.
+   */
   verifyPrepare(): void {
     const checkValues = ["alpha", "beta", "radius", "inertialPanningX", "inertialPanningY",
       "inertialAlphaOffset", "inertialBetaOffset", "inertialRadiusOffset"];
@@ -307,6 +326,10 @@ class MockCamera extends ArcRotateCamera {
   }
 }
 
+/**
+ * Many PointerEvent properties are read-only so using real "new PointerEvent()"
+ * is unpractical.
+ */
 interface MockPointerEvent {
   target: HTMLElement;
   type?: string;
@@ -325,6 +348,10 @@ interface MockPointerEvent {
   [propName: string]: any;
 }
 
+/**
+ * Tests 2 instances of ArcRotateCameraPointersInput and ensures functionality is
+ * the same.
+ */
 export class Test_ArcRotateCameraPointersInput {
   private _canvas: Nullable<HTMLCanvasElement>;
 
@@ -349,6 +376,9 @@ export class Test_ArcRotateCameraPointersInput {
     this.arcInputTesting.attachControl(this._canvas);
   }
 
+  /**
+   * Simulate PointerEvent in ArcRotateCameraPointersInput instance.
+   */
   simulateEvent(event: MockPointerEvent) {
     let pointerInfo = {};
     switch(event.type) {
@@ -383,6 +413,11 @@ export class Test_ArcRotateCameraPointersInput {
     }
   }
 
+  /**
+   * Make a mock Event.
+   * Many PointerEvent properties are read-only so using real "new PointerEvent()"
+   * is unpractical.
+   */ 
   eventTemplate(): MockPointerEvent {
     return {
       target: <HTMLElement>this._canvas,
@@ -391,6 +426,9 @@ export class Test_ArcRotateCameraPointersInput {
     }
   }
 
+  /**
+   * Helper method to be used before each test.
+   */
   resetEnviroment(): void {
     this.arcOriginal.reset();
     this.arcTesting.reset();
@@ -404,6 +442,10 @@ export class Test_ArcRotateCameraPointersInput {
     (<any>this.arcInputTesting)._onLostFocus();
   }
 
+  /**
+   * Determine if the cameras controlled by each instance of
+   * ArcRotateCameraPointersInput have identical position information.
+   */
   compareCameras(quiet?: boolean): boolean {
     let returnVal = (
       this.arcOriginal.alpha === this.arcTesting.alpha &&
@@ -421,6 +463,10 @@ export class Test_ArcRotateCameraPointersInput {
     return returnVal;
   }
 
+  /**
+   * Display position information of cameras controlled by each instance of
+   * ArcRotateCameraPointersInput.
+   */
   displayCameras(): void {
     let output: {[key: string]: {[key: string]: number}} = {};
     output[this.arcOriginal.name] = this.arcOriginal.summaryForDisplay();
@@ -431,6 +477,9 @@ export class Test_ArcRotateCameraPointersInput {
     console.table(output);
   }
 
+  /**
+   * Test all the tings.
+   */
   runTests(): void {
     var name: string;
     for(name in this) {
@@ -439,14 +488,15 @@ export class Test_ArcRotateCameraPointersInput {
         let result = (<any>this)[name]();
         console.log(`%c${name} ${result ? "passed" : "failed"}`,
                     `color: ${result ? "green" : "red"};`);
-        //if(!result) {
+        if(!result) {
           this.displayCameras();
-        //}
+        }
       }
     }
   }
 
   /**
+   * Test case.
    * One button down with pointer moving.
    * panningSensibility !== 0 will make ctrlKey or camera._panningMouseButton
    * pan the camera instead of changing direction.
@@ -551,6 +601,7 @@ export class Test_ArcRotateCameraPointersInput {
   }
 
   /**
+   * Test case.
    * One button down with pointer moving.
    * panningSensibility === 0 will mean ctrlKey or camera._panningMouseButton 
    * will have no affect.
@@ -657,6 +708,7 @@ export class Test_ArcRotateCameraPointersInput {
   }
 
   /**
+   * Test case.
    * Double mouse clicks restore camera saved position.
    * useInputToRestoreState is used to enable/disable this feature.
    */
@@ -706,6 +758,11 @@ export class Test_ArcRotateCameraPointersInput {
     return result;
   }
 
+  /**
+   * Test case.
+   * 2 pointers can be configured to Zoom when pinching.
+   * This tests Zooming when pinchDeltaPercentage > 0.
+   */
   test_twoButtonsDownPinchZoomPercentage(): boolean {
     this.resetEnviroment();
     var result = this.compareCameras();
@@ -826,6 +883,11 @@ export class Test_ArcRotateCameraPointersInput {
     return result;
   }
 
+  /**
+   * Test case.
+   * 2 pointers can be configured to Zoom when pinching.
+   * This tests Zooming when pinchDeltaPercentage = 0.
+   */
   test_twoButtonsDownPinchZoomLinear(): boolean {
     this.resetEnviroment();
     var result = this.compareCameras();
@@ -946,6 +1008,10 @@ export class Test_ArcRotateCameraPointersInput {
     return result;
   }
 
+  /**
+   * Test case.
+   * 2 pointers can be configured to pan when dragging pointers.
+   */
   test_twoButtonsDownPan(): boolean {
     this.resetEnviroment();
     var result = this.compareCameras();
@@ -1070,6 +1136,12 @@ export class Test_ArcRotateCameraPointersInput {
     return result;
   }
 
+  /**
+   * Test case.
+   * An alternative pinch/swipe method.
+   * Enabled when multiTouchPanAndZoom = false.
+   * This tests zoom on pinch when pinchDeltaPercentage > 0.
+   */
   test_MutiTouchPinchZoomPercentage(): boolean {
     this.resetEnviroment();
     var result = this.compareCameras();
@@ -1211,6 +1283,12 @@ export class Test_ArcRotateCameraPointersInput {
     return result;
   }
 
+  /**
+   * Test case.
+   * An alternative pinch/swipe method.
+   * Enabled when multiTouchPanAndZoom = false.
+   * This tests zoom on pinch when pinchDeltaPercentage === 0.
+   */
   test_MutiTouchPinchZoomLinear(): boolean {
     this.resetEnviroment();
     var result = this.compareCameras();
@@ -1352,24 +1430,139 @@ export class Test_ArcRotateCameraPointersInput {
     return result;
   }
 
-    /*test_MutiTouchSwipePan(): boolean {
-    this.resetEnviroment();
-    var result = this.compareCameras();
-    // TODO
-    return result;
-  }
-
+  /**
+   * Test case.
+   * Loosing window focus should reset everything.
+   * This test checks a single mouse down is reset.
+   */
   test_LooseFocusCancelsDrag(): boolean {
     this.resetEnviroment();
     var result = this.compareCameras();
-    // TODO
+
+    var event: MockPointerEvent = this.eventTemplate();
+
+    // Button down.
+    event.type = "pointerdown";
+    event.clientX = 100;
+    event.clientY = 200;
+    event.button = 0;
+    this.simulateEvent(event);
+
+    result = result && this.compareCameras();
+
+    // Start moving.
+    event.type = "pointermove";
+    event.button = 0;
+    this.simulateEvent(event);
+
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
+    // Move X coordinate.
+    event.type = "pointermove";
+    event.clientX = 1000;
+    event.button = 0;
+    this.simulateEvent(event);
+
+    result = this.arcOriginal.verifyChanges({inertialAlphaOffset: true}) && result;
+    result = result && this.compareCameras();
+
+    // Lose window focus.
+    (<any>this.arcInputOriginal)._onLostFocus();
+    (<any>this.arcInputTesting)._onLostFocus();
+
+    // Move X coordinate some more, this time with no affect.
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.button = 0;
+    this.simulateEvent(event);
+
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
     return result;
   }
 
+  /**
+   * Test case.
+   * Loosing window focus should reset everything.
+   * This test checks a double pointer down is reset.
+   */
   test_LooseFocusCancelsDoubleDrag(): boolean {
     this.resetEnviroment();
     var result = this.compareCameras();
-    // TODO
+
+    // Multiple button presses interpreted as "pinch" and "swipe".
+    this.arcInputOriginal.multiTouchPanAndZoom = true;
+    this.arcInputTesting.multiTouchPanAndZoom = true;
+    // Zoom changes are a percentage of current value.
+    this.arcInputOriginal.pinchDeltaPercentage = 10;
+    this.arcInputTesting.pinchDeltaPercentage = 10;
+    // Panning not enabled.
+    this.arcInputOriginal.panningSensibility = 0;
+    this.arcInputTesting.panningSensibility = 0;
+
+    var event: MockPointerEvent = this.eventTemplate();
+
+    // 1st button down.
+    event.type = "pointerdown";
+    event.pointerType = "touch";
+    event.clientX = 1000;
+    event.clientY = 200;
+    event.button = 0;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+
+    // Start moving pointer.
+    event.type = "pointermove";
+    event.button = -1;
+    event.pointerId = 1;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
+    // 2nd button down. (Enter zoom mode.)
+    event.type = "pointerdown";
+    event.pointerType = "touch";
+    event.button = 1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = result && this.compareCameras();
+
+    // Start move of 2nd pointer.
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.clientY = 2000;
+    event.button = -1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
+    // Move Y coordinate. 2nd point is the one moving.
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.clientY = 2500;
+    event.button = -1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({inertialRadiusOffset: true}) && result;
+    result = result && this.compareCameras();
+
+    // Lose window focus.
+    (<any>this.arcInputOriginal)._onLostFocus();
+    (<any>this.arcInputTesting)._onLostFocus();
+
+    // Move Y coordinate some more, this time with no affect.
+    event.type = "pointermove";
+    event.clientX = 2000;
+    event.clientY = 2500;
+    event.button = -1;
+    event.pointerId = 2;
+    this.simulateEvent(event);
+    result = this.arcOriginal.verifyChanges({}) && result;
+    result = result && this.compareCameras();
+
     return result;
-  }*/
+  }
 }
