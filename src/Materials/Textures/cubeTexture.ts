@@ -358,3 +358,5 @@ export class CubeTexture extends BaseTexture {
 }
 
 Texture._CubeTextureParser = CubeTexture.Parse;
+// Some exporters relies on Tools.Instantiate
+_TypeStore.RegisteredTypes["BABYLON.CubeTexture"] = CubeTexture;
