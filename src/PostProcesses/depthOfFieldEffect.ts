@@ -54,7 +54,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         return this._circleOfConfusion.focalLength;
     }
     /**
-     * F-Stop of the effect's camera. The diamater of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
+     * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
      */
     public set fStop(value: number) {
         this._circleOfConfusion.fStop = value;

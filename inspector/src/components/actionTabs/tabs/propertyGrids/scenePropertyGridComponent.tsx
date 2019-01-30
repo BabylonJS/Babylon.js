@@ -121,6 +121,11 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
             { label: "ACES", value: ImageProcessingConfiguration.TONEMAPPING_ACES }
         ];
 
+        var vignetteModeOptions = [
+            { label: "Multiply", value: ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY },
+            { label: "Opaque", value: ImageProcessingConfiguration.VIGNETTEMODE_OPAQUE }
+        ];
+
         return (
             <div className="pane">
                 <LineContainerComponent title="RENDERING MODE">
@@ -145,6 +150,14 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                     <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Exposure" target={imageProcessing} propertyName="exposure" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Tone mapping" target={imageProcessing} propertyName="toneMappingEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Tone mapping type" options={toneMappingOptions} target={imageProcessing} propertyName="toneMappingType" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
+                    <CheckBoxLineComponent label="Vignette" target={imageProcessing} propertyName="vignetteEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Vignette weight" target={imageProcessing} propertyName="vignetteWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent minimum={0} maximum={1} step={0.1} label="Vignette stretch" target={imageProcessing} propertyName="vignetteStretch" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent minimum={0} maximum={Math.PI} step={0.1} label="Vignette FOV" target={imageProcessing} propertyName="vignetteCameraFov" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent minimum={0} maximum={1} step={0.1} label="Vignette center X" target={imageProcessing} propertyName="vignetteCentreX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent minimum={0} maximum={1} step={0.1} label="Vignette center Y" target={imageProcessing} propertyName="vignetteCentreY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent label="Vignette color" target={imageProcessing} propertyName="vignetteColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Vignette blend mode" options={vignetteModeOptions} target={imageProcessing} propertyName="vignetteBlendMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
                 </LineContainerComponent>
                 {
                     dummy !== null &&
