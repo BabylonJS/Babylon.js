@@ -173,6 +173,13 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     private _firstUpdate: boolean = true;
 
     /**
+     * Gets active scene
+     */
+    public get scene(): Scene {
+        return this._scene;
+    }
+
+    /**
      * @constructor
      * @param name The rendering pipeline name
      * @param scene The scene linked to this pipeline
@@ -221,6 +228,14 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     // Public Methods
+
+    /**
+     * Get the class name
+     * @returns "SSAO2RenderingPipeline"
+     */
+    public getClassName(): string {
+        return "SSAO2RenderingPipeline";
+    }
 
     /**
      * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
