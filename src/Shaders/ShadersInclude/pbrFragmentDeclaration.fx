@@ -64,3 +64,19 @@ uniform mat4 view;
 	    uniform vec3 vReflectionSize; 
     #endif
 #endif
+
+// Clear Coat
+#ifdef CLEARCOAT
+    uniform vec2 vClearCoatParams;
+
+    #ifdef CLEARCOAT_TEXTURE
+        uniform vec2 vClearCoatInfos;
+        uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_BUMP
+        uniform vec2 vClearCoatBumpInfos;
+        uniform vec2 vClearCoatTangentSpaceParams;
+        uniform mat4 clearCoatBumpMatrix;
+    #endif
+#endif

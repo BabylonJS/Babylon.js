@@ -3,42 +3,84 @@
         //No light calculation
     #else
         #ifdef PBR
+            // Compute Pre Lighting infos
             #ifdef SPOTLIGHT{X}
-                spotInfo = computeSpotLightingInfo(light{X}.vLightData);
-
-                #ifdef LIGHT_FALLOFF_GLTF{X}
-                    spotInfo.attenuation = computeDistanceLightFalloff_GLTF(spotInfo.lightDistanceSquared, light{X}.vLightFalloff.y);
-                    spotInfo.attenuation *= computeDirectionalLightFalloff_GLTF(light{X}.vLightDirection.xyz, spotInfo.directionToLightCenterW, light{X}.vLightFalloff.z, light{X}.vLightFalloff.w);
-                #elif defined(LIGHT_FALLOFF_PHYSICAL{X})
-                    spotInfo.attenuation = computeDistanceLightFalloff_Physical(spotInfo.lightDistanceSquared);
-                    spotInfo.attenuation *= computeDirectionalLightFalloff_Physical(light{X}.vLightDirection.xyz, spotInfo.directionToLightCenterW, light{X}.vLightDirection.w);
-                #elif defined(LIGHT_FALLOFF_STANDARD{X})
-                    spotInfo.attenuation = computeDistanceLightFalloff_Standard(spotInfo.lightOffset, light{X}.vLightFalloff.x);
-                    spotInfo.attenuation *= computeDirectionalLightFalloff_Standard(light{X}.vLightDirection.xyz, spotInfo.directionToLightCenterW, light{X}.vLightDirection.w, light{X}.vLightData.w);
-                #else
-                    spotInfo.attenuation = computeDistanceLightFalloff(spotInfo.lightOffset, spotInfo.lightDistanceSquared, light{X}.vLightFalloff.x, light{X}.vLightFalloff.y);
-                    spotInfo.attenuation *= computeDirectionalLightFalloff(light{X}.vLightDirection.xyz, spotInfo.directionToLightCenterW, light{X}.vLightDirection.w, light{X}.vLightData.w, light{X}.vLightFalloff.z, light{X}.vLightFalloff.w);
-                #endif
-
-                info = computeSpotLighting(spotInfo, viewDirectionW, normalW, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
+                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             #elif defined(POINTLIGHT{X})
-                pointInfo = computePointLightingInfo(light{X}.vLightData);
-
-                #ifdef LIGHT_FALLOFF_GLTF{X}
-                    pointInfo.attenuation = computeDistanceLightFalloff_GLTF(pointInfo.lightDistanceSquared, light{X}.vLightFalloff.y);
-                #elif defined(LIGHT_FALLOFF_PHYSICAL{X})
-                    pointInfo.attenuation = computeDistanceLightFalloff_Physical(pointInfo.lightDistanceSquared);
-                #elif defined(LIGHT_FALLOFF_STANDARD{X})
-                    pointInfo.attenuation = computeDistanceLightFalloff_Standard(pointInfo.lightOffset, light{X}.vLightFalloff.x);
-                #else
-                    pointInfo.attenuation = computeDistanceLightFalloff(pointInfo.lightOffset, pointInfo.lightDistanceSquared, light{X}.vLightFalloff.x, light{X}.vLightFalloff.y);
-                #endif
-                
-                info = computePointLighting(pointInfo, viewDirectionW, normalW, light{X}.vLightDiffuse.rgb, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
+                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             #elif defined(HEMILIGHT{X})
-                info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
+                preInfo = computeHemisphericPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             #elif defined(DIRLIGHT{X})
-                info = computeDirectionalLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, roughness, NdotV, specularEnvironmentR0, specularEnvironmentR90, geometricRoughnessFactor, NdotL);
+                preInfo = computeDirectionalPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
+            #endif
+
+            preInfo.NdotV = NdotV;
+
+            // Compute Attenuation infos
+            #ifdef SPOTLIGHT{X}
+                #ifdef LIGHT_FALLOFF_GLTF{X}
+                    preInfo.attenuation = computeDistanceLightFalloff_GLTF(preInfo.lightDistanceSquared, light{X}.vLightFalloff.y);
+                    preInfo.attenuation *= computeDirectionalLightFalloff_GLTF(light{X}.vLightDirection.xyz, preInfo.L, light{X}.vLightFalloff.z, light{X}.vLightFalloff.w);
+                #elif defined(LIGHT_FALLOFF_PHYSICAL{X})
+                    preInfo.attenuation = computeDistanceLightFalloff_Physical(preInfo.lightDistanceSquared);
+                    preInfo.attenuation *= computeDirectionalLightFalloff_Physical(light{X}.vLightDirection.xyz, preInfo.L, light{X}.vLightDirection.w);
+                #elif defined(LIGHT_FALLOFF_STANDARD{X})
+                    preInfo.attenuation = computeDistanceLightFalloff_Standard(preInfo.lightOffset, light{X}.vLightFalloff.x);
+                    preInfo.attenuation *= computeDirectionalLightFalloff_Standard(light{X}.vLightDirection.xyz, preInfo.L, light{X}.vLightDirection.w, light{X}.vLightData.w);
+                #else
+                    preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, light{X}.vLightFalloff.x, light{X}.vLightFalloff.y);
+                    preInfo.attenuation *= computeDirectionalLightFalloff(light{X}.vLightDirection.xyz, preInfo.L, light{X}.vLightDirection.w, light{X}.vLightData.w, light{X}.vLightFalloff.z, light{X}.vLightFalloff.w);
+                #endif
+            #elif defined(POINTLIGHT{X})
+                #ifdef LIGHT_FALLOFF_GLTF{X}
+                    preInfo.attenuation = computeDistanceLightFalloff_GLTF(preInfo.lightDistanceSquared, light{X}.vLightFalloff.y);
+                #elif defined(LIGHT_FALLOFF_PHYSICAL{X})
+                    preInfo.attenuation = computeDistanceLightFalloff_Physical(preInfo.lightDistanceSquared);
+                #elif defined(LIGHT_FALLOFF_STANDARD{X})
+                    preInfo.attenuation = computeDistanceLightFalloff_Standard(preInfo.lightOffset, light{X}.vLightFalloff.x);
+                #else
+                    preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, light{X}.vLightFalloff.x, light{X}.vLightFalloff.y);
+                #endif
+            #else
+                preInfo.attenuation = 1.0;
+            #endif
+
+            // Simulates Light radius for diffuse and spec term
+            // clear coat is using a dedicated roughness
+            #ifdef HEMILIGHT{X}
+                preInfo.roughness = roughness;
+            #else
+                preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightDiffuse.a, preInfo.lightDistance);
+            #endif
+
+            // Diffuse contribution
+            #ifdef HEMILIGHT{X}
+                info.diffuse = computeHemisphericDiffuseLighting(preInfo, light{X}.vLightDiffuse.rgb, light{X}.vLightGround);
+            #else
+                info.diffuse = computeDiffuseLighting(preInfo, light{X}.vLightDiffuse.rgb);
+            #endif
+
+            // Specular contribution
+            #ifdef SPECULARTERM
+                info.specular = computeSpecularLighting(preInfo, normalW, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
+            #endif
+
+            // Clear Coat contribution
+            #ifdef CLEARCOAT
+                // Simulates Light radius
+                #ifdef HEMILIGHT{X}
+                    preInfo.roughness = clearCoatRoughness;
+                #else
+                    preInfo.roughness = adjustRoughnessFromLightProperties(clearCoatRoughness, light{X}.vLightDiffuse.a, preInfo.lightDistance);
+                #endif
+
+                info.clearCoat = computeClearCoatLighting(preInfo, clearCoatNormalW, clearCoatAARoughnessFactors.x, clearCoatIntensity, light{X}.vLightDiffuse.rgb);
+
+                // Apply energy conservation on diffuse and specular term.
+                info.diffuse *= info.clearCoat.w;
+                #ifdef SPECULARTERM
+                    info.specular *= info.clearCoat.w * info.clearCoat.w;
+                #endif
             #endif
         #else
             #ifdef SPOTLIGHT{X}
@@ -49,10 +91,12 @@
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
             #endif
         #endif
+
         #ifdef PROJECTEDLIGHTTEXTURE{X}
             info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightSampler{X}, textureProjectionMatrix{X});
         #endif
     #endif
+
     #ifdef SHADOW{X}
         #ifdef SHADOWCLOSEESM{X}
             #if defined(SHADOWCUBE{X})
@@ -120,10 +164,18 @@
                     specularBase += info.specular * shadow * lightmapColor;
                 #endif
             #endif
+            #ifdef CLEARCOAT
+                #ifndef LIGHTMAPNOSPECULAR{X}
+                    clearCoatBase += info.clearCoat.rgb * shadow * lightmapColor;
+                #endif
+            #endif
         #else
             diffuseBase += info.diffuse * shadow;
             #ifdef SPECULARTERM
                 specularBase += info.specular * shadow;
+            #endif
+            #ifdef CLEARCOAT
+                clearCoatBase += info.clearCoat.rgb * shadow;
             #endif
         #endif
     #endif

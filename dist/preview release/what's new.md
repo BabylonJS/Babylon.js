@@ -24,6 +24,8 @@
   - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
   - Added support for [nine patch stretch](https://www.babylonjs-playground.com/#G5H9IN#2) mode for images. ([Deltakosh](https://github.com/deltakosh))
   - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev))
+- Migrate the code to modules and deploy es6 npm packages ([Sebavan](https://github.com/Sebavan))
+- Add clear coat support to PBR ([Sebavan](https://github.com/Sebavan))
 
 ## Updates
 
