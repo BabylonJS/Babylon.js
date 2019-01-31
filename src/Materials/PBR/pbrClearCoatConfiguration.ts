@@ -33,7 +33,7 @@ export class PBRClearCoatConfiguration {
      * Defines if the clear coat is enabled in the material.
      */
     @serialize()
-    public enable = false;
+    public isEnabled = false;
 
     /**
      * Defines the clear coat layer strength (between 0 and 1) it defaults to 1.
@@ -114,7 +114,7 @@ export class PBRClearCoatConfiguration {
      * @param scene defines the scene to the material belongs to.
      */
     public prepareDefines(defines: IMaterialClearCoatDefines, scene: Scene): void {
-        if (this.enable) {
+        if (this.isEnabled) {
             defines.CLEARCOAT = true;
 
             if (defines._areTexturesDirty) {
@@ -249,7 +249,7 @@ export class PBRClearCoatConfiguration {
     * Get the current class name of the texture useful for serialization or dynamic coding.
     * @returns "PBRClearCoatConfiguration"
     */
-   public getClassName(): string {
+    public getClassName(): string {
         return "PBRClearCoatConfiguration";
     }
 
