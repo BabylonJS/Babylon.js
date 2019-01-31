@@ -7,6 +7,7 @@ import { serialize } from "./Misc/decorators";
 import { Observable, Observer } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
 import { _DevTools } from './Misc/devTools';
+import { AbstractActionManager } from './Actions/abstractActionManager';
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -400,6 +401,15 @@ export class Node implements IBehaviorAware<Node> {
         this._cache.parent = this.parent;
 
         this._updateCache();
+    }
+
+    /** @hidden */
+    public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
+        if (!this.parent) {
+            return null;
+        }
+
+        return this.parent._getActionManagerForTrigger(trigger, false);
     }
 
     // override it in derived class if you add new variables to the cache

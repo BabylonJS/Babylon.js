@@ -25,14 +25,13 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         super(props);
     }
 
-    renderTextures() {
+    renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>) {
         const material = this.props.material;
 
         if (material.getActiveTextures().length === 0) {
             return null;
         }
 
-        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
             <LineContainerComponent title="TEXTURES">
@@ -52,16 +51,24 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
 
     render() {
         const material = this.props.material;
+        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
             <div className="pane">
                 <CommonMaterialPropertyGridComponent lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                {this.renderTextures()}
+                {this.renderTextures(onDebugSelectionChangeObservable)}
                 <LineContainerComponent title="LIGHTING & COLORS">
                     <Color3LineComponent label="Albedo" target={material} propertyName="albedoColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Reflectivity" target={material} propertyName="reflectivityColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Ambient" target={material} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
+                <LineContainerComponent title="CLEAR COAT">
+                    <CheckBoxLineComponent label="Enabled" target={material.clearCoat} propertyName="isEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Intensity" target={material.clearCoat} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Roughness" target={material.clearCoat} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextureLinkLineComponent label="Texture" texture={material.clearCoat.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                    <TextureLinkLineComponent label="Bump" texture={material.clearCoat.bumpTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="LEVELS" closed={true}>
                     <SliderLineComponent label="Environment" target={material} propertyName="environmentIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
