@@ -10,6 +10,8 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
+#define ANISOTROPIC 
+
 precision highp float;
 
 #include<__decl__pbrFragment>
@@ -455,13 +457,23 @@ void main(void) {
 
     #ifdef SPECULARAA
         // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
-        // 75% accounts a bit for the bigger tail linked to Gaussian Filtering.
         alphaG += AARoughnessFactors.y;
     #endif
 
     // _____________________________ Refraction Info _______________________________________
     #ifdef REFRACTION
         vec4 environmentRefraction = vec4(0., 0., 0., 0.);
+
+        // #ifdef ANISOTROPIC
+        //     float anisotropy = -1.;
+        //     vec3 anisotropicDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
+        //     vec3 anisotropicTangent = cross(normalize(anisotropicDirection), normalize(viewDirectionW));
+        //     vec3 anisotropicNormal = cross(anisotropicTangent, anisotropicDirection);
+        //     vec3 bentNormal = normalize(mix(normalW, anisotropicNormal, abs(anisotropy)));
+        //     vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), bentNormal);
+        // #else
+        //     vec3 reflectionVector = normalW;
+        // #endif
 
         vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
         #ifdef REFRACTIONMAP_OPPOSITEZ
@@ -543,8 +555,17 @@ void main(void) {
     #ifdef REFLECTION
         vec4 environmentRadiance = vec4(0., 0., 0., 0.);
         vec3 environmentIrradiance = vec3(0., 0., 0.);
+        #ifdef ANISOTROPIC
+            float anisotropy = 1.;
+            vec3 anisotropicDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
+            vec3 anisotropicTangent = cross(normalize(anisotropicDirection), normalize(viewDirectionW));
+            vec3 anisotropicNormal = cross(anisotropicTangent, anisotropicDirection);
+            vec3 bentNormal = normalize(mix(normalW, anisotropicNormal, abs(anisotropy)));
+            vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), bentNormal);
+        #else
+            vec3 reflectionVector = normalW;
+        #endif
 
-        vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
         #endif
@@ -693,7 +714,6 @@ void main(void) {
 
             #ifdef SPECULARAA
                 // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
-                // 75% accounts a bit for the bigger tail linked to Gaussian Filtering.
                 clearCoatAlphaG += clearCoatAARoughnessFactors.y;
             #endif
 
@@ -1138,4 +1158,10 @@ void main(void) {
     //gl_FragColor = vec4(eho, eho, eho, 1.0);
 
     //gl_FragColor = vec4(seo * eho, seo * eho, seo * eho, 1.0);
+
+    //gl_FragColor = vec4(normalize(TBN[0]) * 0.5 + 0.5, 1.0);
+
+    //gl_FragColor = vec4(vPositionW * 0.5 + 0.5, 1.0);
+
+    //gl_FragColor = vec4(vMainUV1, 0., 1.0);
 }
