@@ -50818,6 +50818,10 @@ declare module BABYLON {
         private _ssaoCombinePostProcess;
         private _firstUpdate;
         /**
+         * Gets active scene
+         */
+        readonly scene: Scene;
+        /**
          * @constructor
          * @param name The rendering pipeline name
          * @param scene The scene linked to this pipeline
@@ -50825,6 +50829,11 @@ declare module BABYLON {
          * @param cameras The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]);
+        /**
+         * Get the class name
+         * @returns "SSAO2RenderingPipeline"
+         */
+        getClassName(): string;
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
@@ -50903,13 +50912,13 @@ declare module BABYLON {
         /**
         * Related to fallOff, used to interpolate SSAO samples (first interpolate function input) based on the occlusion difference of each pixel
         * Must not be equal to fallOff and superior to fallOff.
-        * Default value is 0.975
+        * Default value is 0.0075
         */
         area: number;
         /**
         * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
         * Must not be equal to area and inferior to area.
-        * Default value is 0.0
+        * Default value is 0.000001
         */
         fallOff: number;
         /**
@@ -50927,6 +50936,10 @@ declare module BABYLON {
         private _ssaoCombinePostProcess;
         private _firstUpdate;
         /**
+         * Gets active scene
+         */
+        readonly scene: Scene;
+        /**
          * @constructor
          * @param name - The rendering pipeline name
          * @param scene - The scene linked to this pipeline
@@ -50934,6 +50947,11 @@ declare module BABYLON {
          * @param cameras - The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]);
+        /**
+         * Get the class name
+         * @returns "SSAORenderingPipeline"
+         */
+        getClassName(): string;
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
