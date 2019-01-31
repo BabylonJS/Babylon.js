@@ -64,6 +64,16 @@ varying vec2 vMicroSurfaceSamplerUV;
 varying vec2 vBumpUV;
 #endif
 
+#ifdef CLEARCOAT
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+        varying vec2 vClearCoatUV;
+    #endif
+
+    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
+        varying vec2 vClearCoatBumpUV;
+    #endif
+#endif
+
 // Output
 varying vec3 vPositionW;
 #ifdef NORMAL
@@ -248,6 +258,30 @@ void main(void) {
     {
         vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
     }
+#endif
+
+#ifdef CLEARCOAT
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+        if (vClearCoatInfos.x == 0.)
+        {
+            vClearCoatUV = vec2(clearCoatMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatUV = vec2(clearCoatMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
+        if (vClearCoatBumpInfos.x == 0.)
+        {
+            vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
 #endif
 
     // TBN

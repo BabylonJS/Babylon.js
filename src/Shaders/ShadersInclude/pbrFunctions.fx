@@ -2,10 +2,6 @@
 #define RECIPROCAL_PI2 0.15915494
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
 
-// PBR CUSTOM CONSTANTS
-const float kRougnhessToAlphaScale = 0.1;
-const float kRougnhessToAlphaOffset = 0.29248125;
-
 float convertRoughnessToAverageSlope(float roughness)
 {
     // Calculate AlphaG as square of roughness; add epsilon to avoid numerical issues
@@ -14,16 +10,70 @@ float convertRoughnessToAverageSlope(float roughness)
     return alphaG;
 }
 
-// From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
-float smithVisibilityG1_TrowbridgeReitzGGX(float dot, float alphaG)
-{
-    float tanSquared = (1.0 - dot * dot) / (dot * dot);
-    return 2.0 / (1.0 + sqrt(1.0 + alphaG * alphaG * tanSquared));
+vec2 getAARoughnessFactors(vec3 normalVector) {
+    #ifdef SPECULARAA
+        vec3 nDfdx = dFdx(normalVector.xyz);
+        vec3 nDfdy = dFdy(normalVector.xyz);
+        float slopeSquare = max(dot(nDfdx, nDfdx), dot(nDfdy, nDfdy));
+
+        // Vive analytical lights roughness factor.
+        float geometricRoughnessFactor = pow(clamp(slopeSquare , 0., 1.), 0.333);
+
+        // BJS factor.
+        float geometricAlphaGFactor = sqrt(slopeSquare);
+        // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
+        // 75% accounts a bit for the bigger tail linked to Gaussian Filtering.
+        geometricAlphaGFactor *= 0.75;
+
+        return vec2(geometricRoughnessFactor, geometricAlphaGFactor);
+    #else
+        return vec2(0.);
+    #endif
 }
 
-float smithVisibilityG_TrowbridgeReitzGGX_Walter(float NdotL, float NdotV, float alphaG)
+// From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
+// Kepp for references
+// float smithVisibilityG1_TrowbridgeReitzGGX(float dot, float alphaG)
+// {
+//     float tanSquared = (1.0 - dot * dot) / (dot * dot);
+//     return 2.0 / (1.0 + sqrt(1.0 + alphaG * alphaG * tanSquared));
+// }
+
+// float smithVisibility_TrowbridgeReitzGGX_Walter(float NdotL, float NdotV, float alphaG)
+// {
+//     float visibility = smithVisibilityG1_TrowbridgeReitzGGX(NdotL, alphaG) * smithVisibilityG1_TrowbridgeReitzGGX(NdotV, alphaG);
+//     visibility /= (4.0 * NdotL * NdotV); // Cook Torance Denominator  integrated in visibility to avoid issues when visibility function changes.
+//     return visibility;
+// }
+
+// From smithVisibilityG1_TrowbridgeReitzGGX * dot / dot to cancel the cook
+// torrance denominator :-)
+float smithVisibilityG1_TrowbridgeReitzGGXFast(float dot, float alphaG)
 {
-    return smithVisibilityG1_TrowbridgeReitzGGX(NdotL, alphaG) * smithVisibilityG1_TrowbridgeReitzGGX(NdotV, alphaG);
+    float alphaSquared = alphaG * alphaG;
+    return 1.0 / (dot + sqrt(alphaSquared + (1.0 - alphaSquared) * dot * dot));
+}
+
+// From smithVisibilityG1_TrowbridgeReitzGGXFast
+// Appply simplification as all squared root terms are below 1 and squared
+// Ready to be used
+// float smithVisibilityG1_TrowbridgeReitzGGXMobile(float dot, float alphaG)
+// {
+//     return 1.0 / (dot + alpha + (1.0 - alpha) * dot ));
+// }
+
+float smithVisibility_TrowbridgeReitzGGXFast(float NdotL, float NdotV, float alphaG)
+{
+    float visibility = smithVisibilityG1_TrowbridgeReitzGGXFast(NdotL, alphaG) * smithVisibilityG1_TrowbridgeReitzGGXFast(NdotV, alphaG);
+    // No Cook Torance Denominator as it is canceled out in the previous form
+    return visibility;
+}
+
+float kelemenVisibility(float VdotH) {
+    // Simplified form integration the cook torrance denminator.
+    // Expanded is nl * nv / vh2 which factor with 1 / (4 * nl * nv)
+    // giving 1 / (4 * vh2))
+    return 0.25 / (VdotH * VdotH); 
 }
 
 // Trowbridge-Reitz (GGX)
@@ -38,9 +88,14 @@ float normalDistributionFunction_TrowbridgeReitzGGX(float NdotH, float alphaG)
     return a2 / (PI * d * d);
 }
 
-vec3 fresnelSchlickGGX(float VdotH, vec3 reflectance0, vec3 reflectance90)
+vec3 fresnelSchlickGGXVec3(float VdotH, vec3 reflectance0, vec3 reflectance90)
 {
-    return reflectance0 + (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotH, 0., 1.), 5.0);
+    return reflectance0 + (reflectance90 - reflectance0) * pow(1.0 - VdotH, 5.0);
+}
+
+float fresnelSchlickGGXFloat(float VdotH, float reflectance0, float reflectance90)
+{
+    return reflectance0 + (reflectance90 - reflectance0) * pow(1.0 - VdotH, 5.0);
 }
 
 vec3 fresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectance90, float smoothness)
@@ -48,21 +103,6 @@ vec3 fresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectan
     // Schlick fresnel approximation, extended with basic smoothness term so that rough surfaces do not approach reflectance90 at grazing angle
     float weight = mix(FRESNEL_MAXIMUM_ON_ROUGH, 1.0, smoothness);
     return reflectance0 + weight * (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotN, 0., 1.), 5.0);
-}
-
-// Cook Torance Specular computation.
-vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor)
-{
-    roughness = max(roughness, geometricRoughnessFactor);
-    float alphaG = convertRoughnessToAverageSlope(roughness);
-
-    float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
-    float visibility = smithVisibilityG_TrowbridgeReitzGGX_Walter(NdotL, NdotV, alphaG);
-    visibility /= (4.0 * NdotL * NdotV); // Cook Torance Denominator  integated in viibility to avoid issues when visibility function changes.
-    float specTerm = max(0., visibility * distribution) * NdotL;
-
-    vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);
-    return fresnel * specTerm;
 }
 
 float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
@@ -76,7 +116,41 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNL) *
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNV);
 
-    return fresnel * NdotL / PI;
+    return fresnel / PI;
+}
+
+// Cook Torance Specular computation.
+vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor)
+{
+    roughness = max(roughness, geometricRoughnessFactor);
+    float alphaG = convertRoughnessToAverageSlope(roughness);
+
+    float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
+    float visibility = smithVisibility_TrowbridgeReitzGGXFast(NdotL, NdotV, alphaG);
+    float specTerm = max(0., visibility * distribution);
+
+    vec3 fresnel = fresnelSchlickGGXVec3(VdotH, reflectance0, reflectance90);
+    return fresnel * specTerm;
+}
+
+vec2 computeClearCoatTerm(float NdotH, float VdotH, float clearCoatRoughness, float geometricRoughnessFactor, float clearCoatIntensity) {
+    clearCoatRoughness = max(clearCoatRoughness, geometricRoughnessFactor);
+    float alphaG = convertRoughnessToAverageSlope(clearCoatRoughness);
+
+    float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
+    float visibility = kelemenVisibility(VdotH);
+    float clearCoatTerm = max(0., visibility * distribution);
+
+    // fo = 4% based on the IOR of a air-polyurethane interface.
+    // the max reflectance is relying on our special trick to prevent weird values on highly diffuse materials.
+    // To let as a configuration if required
+    const float reflectance0 = 0.04;
+    const float reflectance90 = 1.;
+
+    float fresnel = fresnelSchlickGGXFloat(VdotH, reflectance0, reflectance90);
+    fresnel *= clearCoatIntensity;
+    
+    return vec2(fresnel * clearCoatTerm, 1.0 - fresnel);
 }
 
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)

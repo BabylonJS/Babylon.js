@@ -80,44 +80,6 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     }
 
     /**
-     * Return the active textures of the material.
-     */
-    public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
-
-        if (this.baseTexture) {
-            activeTextures.push(this.baseTexture);
-        }
-
-        if (this.metallicRoughnessTexture) {
-            activeTextures.push(this.metallicRoughnessTexture);
-        }
-
-        return activeTextures;
-    }
-
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param texture - Base texture to use.
-     * @returns - Boolean specifying if a texture is used in the material.
-     */
-    public hasTexture(texture: BaseTexture): boolean {
-        if (super.hasTexture(texture)) {
-            return true;
-        }
-
-        if (this.baseTexture === texture) {
-            return true;
-        }
-
-        if (this.metallicRoughnessTexture === texture) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
      */
@@ -126,6 +88,8 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 
         clone.id = name;
         clone.name = name;
+
+        this.clearCoat.copyTo(clone.clearCoat);
 
         return clone;
     }
@@ -136,6 +100,9 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.PBRMetallicRoughnessMaterial";
+
+        serializationObject.clearCoat = this.clearCoat.serialize();
+
         return serializationObject;
     }
 
@@ -143,7 +110,11 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      * Parses a JSON object correponding to the serialize function.
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial {
-        return SerializationHelper.Parse(() => new PBRMetallicRoughnessMaterial(source.name, scene), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(() => new PBRMetallicRoughnessMaterial(source.name, scene), source, scene, rootUrl);
+        if (source.clearCoat) {
+            material.clearCoat.parse(source.clearCoat);
+        }
+        return material;
     }
 }
 

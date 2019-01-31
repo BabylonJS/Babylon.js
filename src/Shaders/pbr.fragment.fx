@@ -1,4 +1,4 @@
-﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA)
+﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -121,6 +121,30 @@ varying vec4 vColor;
     uniform sampler2D microSurfaceSampler;
 #endif
 
+#ifdef CLEARCOAT
+    #ifdef CLEARCOAT_TEXTURE
+        #if CLEARCOAT_TEXTUREDIRECTUV == 1
+            #define vClearCoatUV vMainUV1
+        #elif CLEARCOAT_TEXTUREDIRECTUV == 2
+            #define vClearCoatUV vMainUV2
+        #else
+            varying vec2 vClearCoatUV;
+        #endif
+        uniform sampler2D clearCoatSampler;
+    #endif
+
+    #ifdef CLEARCOAT_BUMP
+        #if CLEARCOAT_BUMPDIRECTUV == 1
+            #define vClearCoatBumpUV vMainUV1
+        #elif CLEARCOAT_BUMPDIRECTUV == 2
+            #define vClearCoatBumpUV vMainUV2
+        #else
+            varying vec2 vClearCoatBumpUV;
+        #endif
+        uniform sampler2D clearCoatBumpSampler;
+    #endif
+#endif
+
 // Refraction
 #ifdef REFRACTION
     #ifdef REFRACTIONMAP_3D
@@ -204,7 +228,9 @@ varying vec4 vColor;
 #include<shadowsFragmentFunctions>
 #include<pbrFunctions>
 #include<harmonicsFunctions>
-#include<pbrLightFunctions>
+#include<pbrPreLightingFunctions>
+#include<pbrFalloffLightingFunctions>
+#include<pbrLightingFunctions>
 
 #include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
@@ -226,19 +252,12 @@ void main(void) {
     vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
 #endif
 
-#include<bumpFragment>
-
-#ifdef SPECULARAA
-    vec3 nDfdx = dFdx(normalW.xyz);
-    vec3 nDfdy = dFdy(normalW.xyz);
-    float slopeSquare = max(dot(nDfdx, nDfdx), dot(nDfdy, nDfdy));
-    // Vive analytical lights roughness factor.
-    float geometricRoughnessFactor = pow(clamp(slopeSquare , 0., 1.), 0.333);
-    // BJS factor.
-    float geometricAlphaGFactor = sqrt(slopeSquare);
-#else
-    float geometricRoughnessFactor = 0.;
+#ifdef CLEARCOAT
+    // Needs to use the geometric normal before bump for this.
+    vec3 clearCoatNormalW = normalW;
 #endif
+
+#include<bumpFragment>
 
 #if defined(FORCENORMALFORWARD) && defined(NORMAL)
     vec3 faceNormal = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
@@ -268,6 +287,10 @@ void main(void) {
 
     surfaceAlbedo *= toLinearSpace(albedoTexture.rgb);
     surfaceAlbedo *= vAlbedoInfos.y;
+#endif
+
+#ifdef VERTEXCOLOR
+    surfaceAlbedo *= vColor.rgb;
 #endif
 
 // _____________________________ Alpha Information _______________________________
@@ -301,10 +324,6 @@ void main(void) {
 
 #include<depthPrePass>
 
-#ifdef VERTEXCOLOR
-    surfaceAlbedo *= vColor.rgb;
-#endif
-
 // _____________________________ AO    Information _______________________________
     vec3 ambientOcclusionColor = vec3(1., 1., 1.);
 
@@ -320,8 +339,8 @@ void main(void) {
     vec3 diffuseBase = vec3(1., 1., 1.);
 #else
     // _____________________________ Reflectivity Info _______________________________
-        float microSurface = vReflectivityColor.a;
-        vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
+    float microSurface = vReflectivityColor.a;
+    vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
 
     #ifdef METALLICWORKFLOW
         vec2 metallicRoughness = surfaceReflectivityColor.rg;
@@ -429,16 +448,16 @@ void main(void) {
     #endif
 
     // _____________________________ Compute LODs Fetch ____________________________________
-        // Compute N dot V.
-        float NdotVUnclamped = dot(normalW, viewDirectionW);
-        float NdotV = clamp(NdotVUnclamped,0., 1.) + 0.00001;
-        float alphaG = convertRoughnessToAverageSlope(roughness);
+    float NdotVUnclamped = dot(normalW, viewDirectionW);
+    float NdotV = clamp(NdotVUnclamped,0., 1.) + 0.00001;
+    float alphaG = convertRoughnessToAverageSlope(roughness);
+    vec2 AARoughnessFactors = getAARoughnessFactors(normalW.xyz);
 
-        #ifdef SPECULARAA
-            // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
-            // 75% accounts a bit for the bigger tail linked to Gaussian Filtering.
-            alphaG += (0.75 * geometricAlphaGFactor);
-        #endif
+    #ifdef SPECULARAA
+        // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
+        // 75% accounts a bit for the bigger tail linked to Gaussian Filtering.
+        alphaG += AARoughnessFactors.y;
+    #endif
 
     // _____________________________ Refraction Info _______________________________________
     #ifdef REFRACTION
@@ -616,6 +635,132 @@ void main(void) {
         environmentIrradiance *= vReflectionColor.rgb;
     #endif
 
+    // _____________________________ Clear Coat Information ____________________________
+    #ifdef CLEARCOAT
+        // Clear COAT parameters.
+        float clearCoatIntensity = vClearCoatParams.x;
+        float clearCoatRoughness = vClearCoatParams.y;
+
+        #ifdef CLEARCOAT_TEXTURE
+            vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
+            clearCoatIntensity *= clearCoatMapData.x;
+            clearCoatRoughness *= clearCoatMapData.y;
+
+            // remapping and linearization of clear coat roughness
+            // Let s see how it ends up in gltf
+            // clearCoatRoughness = mix(0.089, 0.6, clearCoatRoughness);
+        #endif
+
+        #ifdef CLEARCOAT_BUMP
+            #ifdef NORMALXYSCALE
+                float clearCoatNormalScale = 1.0;
+            #else
+                float clearCoatNormalScale = vClearCoatBumpInfos.y;
+            #endif
+
+            #if defined(TANGENT) && defined(NORMAL)
+                mat3 TBNClearCoat = vTBN;
+            #else
+                mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, vClearCoatBumpUV, vClearCoatTangentSpaceParams);
+            #endif
+
+            #ifdef OBJECTSPACE_NORMALMAP
+                clearCoatNormalW = normalize(texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset).xyz  * 2.0 - 1.0);
+                clearCoatNormalW = normalize(mat3(normalMatrix) * clearCoatNormalW);
+            #else
+                clearCoatNormalW = perturbNormal(TBN, vClearCoatBumpUV + uvOffset, clearCoatBumpSampler, vClearCoatBumpInfos.y);
+            #endif
+        #endif
+
+        #if defined(FORCENORMALFORWARD) && defined(NORMAL)
+            clearCoatNormalW *= sign(dot(clearCoatNormalW, faceNormal));
+        #endif
+
+        #if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
+            clearCoatNormalW = gl_FrontFacing ? clearCoatNormalW : -clearCoatNormalW;
+        #endif
+
+        // Clear Coat AA
+        vec2 clearCoatAARoughnessFactors = getAARoughnessFactors(clearCoatNormalW.xyz);
+
+        // Compute N dot V.
+        float clearCoatNdotVUnclamped = dot(clearCoatNormalW, viewDirectionW);
+        float clearCoatNdotV = clamp(clearCoatNdotVUnclamped,0., 1.) + 0.00001;
+
+        // Clear Coat Reflection
+        #if defined(REFLECTION)
+            float clearCoatAlphaG = convertRoughnessToAverageSlope(clearCoatRoughness);
+
+            #ifdef SPECULARAA
+                // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
+                // 75% accounts a bit for the bigger tail linked to Gaussian Filtering.
+                clearCoatAlphaG += clearCoatAARoughnessFactors.y;
+            #endif
+
+            vec4 environmentClearCoatRadiance = vec4(0., 0., 0., 0.);
+
+            vec3 clearCoatReflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), clearCoatNormalW);
+            #ifdef REFLECTIONMAP_OPPOSITEZ
+                clearCoatReflectionVector.z *= -1.0;
+            #endif
+
+            // _____________________________ 2D vs 3D Maps ________________________________
+            #ifdef REFLECTIONMAP_3D
+                vec3 clearCoatReflectionCoords = clearCoatReflectionVector;
+            #else
+                vec2 clearCoatReflectionCoords = clearCoatReflectionVector.xy;
+                #ifdef REFLECTIONMAP_PROJECTION
+                    clearCoatReflectionCoords /= clearCoatReflectionVector.z;
+                #endif
+                clearCoatReflectionCoords.y = 1.0 - clearCoatReflectionCoords.y;
+            #endif
+
+            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, clearCoatNdotVUnclamped);
+            #else
+                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, 1.);
+            #endif
+
+            #ifdef LODBASEDMICROSFURACE
+                // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
+                clearCoatReflectionLOD = clearCoatReflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
+                float requestedClearCoatReflectionLOD = clearCoatReflectionLOD;
+
+                environmentClearCoatRadiance = sampleReflectionLod(reflectionSampler, clearCoatReflectionCoords, requestedClearCoatReflectionLOD);
+            #else
+                float lodClearCoatReflectionNormalized = clamp(clearCoatReflectionLOD / log2(vReflectionMicrosurfaceInfos.x), 0., 1.);
+                float lodClearCoatReflectionNormalizedDoubled = lodClearCoatReflectionNormalized * 2.0;
+
+                vec4 environmentClearCoatMid = sampleReflection(reflectionSampler, reflectionCoords);
+                if(lodClearCoatReflectionNormalizedDoubled < 1.0){
+                    environmentClearCoatRadiance = mix(
+                        sampleReflection(reflectionSamplerHigh, clearCoatReflectionCoords),
+                        environmentClearCoatMid,
+                        lodClearCoatReflectionNormalizedDoubled
+                    );
+                }else{
+                    environmentClearCoatRadiance = mix(
+                        environmentClearCoatMid,
+                        sampleReflection(reflectionSamplerLow, clearCoatReflectionCoords),
+                        lodClearCoatReflectionNormalizedDoubled - 1.0
+                    );
+                }
+            #endif
+
+            #ifdef RGBDREFLECTION
+                environmentClearCoatRadiance.rgb = fromRGBD(environmentClearCoatRadiance);
+            #endif
+
+            #ifdef GAMMAREFLECTION
+                environmentClearCoatRadiance.rgb = toLinearSpace(environmentClearCoatRadiance.rgb);
+            #endif
+
+            // _____________________________ Levels _____________________________________
+            environmentClearCoatRadiance.rgb *= vReflectionInfos.x;
+            environmentClearCoatRadiance.rgb *= vReflectionColor.rgb;
+        #endif
+    #endif
+
     // ____________________________________________________________________________________
     // _____________________________ Direct Lighting Param ________________________________
         // Compute reflectance.
@@ -629,6 +774,9 @@ void main(void) {
     #ifdef SPECULARTERM
         vec3 specularBase = vec3(0., 0., 0.);
     #endif
+    #ifdef CLEARCOAT
+        vec3 clearCoatBase = vec3(0., 0., 0.);
+    #endif
 
     #ifdef LIGHTMAP
         vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb;
@@ -638,14 +786,11 @@ void main(void) {
         lightmapColor *= vLightmapInfos.y;
     #endif
 
-        lightingInfo info;
+    preLightingInfo preInfo;
+    lightingInfo info;
 
-        pointLightingInfo pointInfo;
-
-        spotLightingInfo spotInfo;
-
-        float shadow = 1.; // 1 - shadowLevel
-        float NdotL = -1.;
+    // 1 - shadowLevel
+    float shadow = 1.;
 
     #include<lightFragment>[0..maxSimultaneousLights]
 
@@ -681,6 +826,54 @@ void main(void) {
     #else
         // Jones implementation of a well balanced fast analytical solution.
         vec3 specularEnvironmentReflectance = fresnelSchlickEnvironmentGGX(NdotV, specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
+    #endif
+
+    // _________________________ Clear Coat Environment Oclusion __________________________
+    #ifdef CLEARCOAT
+        #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
+            // Indexed on cos(theta) and roughness
+            vec2 brdfClearCoatSamplerUV = vec2(clearCoatNdotV, clearCoatRoughness);
+            
+            // We can find the scale and offset to apply to the specular value.
+            vec4 environmentClearCoatBrdf = texture2D(environmentBrdfSampler, brdfClearCoatSamplerUV);
+
+            vec3 clearCoatEnvironmentReflectance = vec3(0.04) * environmentClearCoatBrdf.x + environmentClearCoatBrdf.y;
+
+            #ifdef RADIANCEOCCLUSION
+                float clearCoatSeo = environmentRadianceOcclusion(ambientMonochrome, clearCoatNdotVUnclamped);
+                clearCoatEnvironmentReflectance *= clearCoatSeo;
+            #endif
+
+            #ifdef HORIZONOCCLUSION
+                #ifdef BUMP
+                    #ifdef REFLECTIONMAP_3D
+                        float clearCoatEho = environmentHorizonOcclusion(-viewDirectionW, clearCoatNormalW);
+                        clearCoatEnvironmentReflectance *= clearCoatEho;
+                    #endif
+                #endif
+            #endif
+        #else
+            // Jones implementation of a well balanced fast analytical solution.
+            vec3 clearCoatEnvironmentReflectance = fresnelSchlickEnvironmentGGX(clearCoatNdotV, vec3(1.), vec3(1.), sqrt(1. - clearCoatRoughness));
+        #endif
+
+        // clear coar energy conservation
+        // fo = 4% based on the IOR of a air-polyurethane interface.
+        // the max reflectance is relying on our special trick to prevent weird values on highly diffuse materials.
+        // To let as a configuration if required
+        const float IBLClearCoatReflectance0 = 0.04;
+        const float IBLClearCoatReflectance90 = 1.;
+
+        float fresnelIBLClearCoat = fresnelSchlickGGXFloat(clearCoatNdotV, IBLClearCoatReflectance0, IBLClearCoatReflectance90);
+        fresnelIBLClearCoat *= clearCoatIntensity;
+        
+        float conservationFactor = (1. - fresnelIBLClearCoat);
+
+        clearCoatEnvironmentReflectance *= clearCoatIntensity;
+        #ifdef REFLECTION
+            environmentIrradiance *= conservationFactor;
+        #endif
+        specularEnvironmentReflectance *= (conservationFactor * conservationFactor);
     #endif
 
     // _____________________________ Refractance+Tint ________________________________
@@ -757,15 +950,44 @@ void main(void) {
         finalRefraction *= refractance;
     #endif
 
+    // _____________________________ Clear Coat _______________________________________
+    #ifdef CLEARCOAT
+        vec3 finalClearCoat = clearCoatBase;
+        finalClearCoat = max(finalClearCoat, 0.0);
+
+        // Full value needed for alpha.
+        vec3 finalClearCoatScaled = finalClearCoat * vLightingIntensity.x * vLightingIntensity.w;
+
+    // ____________________________ Clear Coat Radiance _______________________________
+        #ifdef REFLECTION
+            vec3 finalClearCoatRadiance = environmentClearCoatRadiance.rgb;
+            finalClearCoatRadiance *= clearCoatEnvironmentReflectance;
+
+            // Full value needed for alpha. 
+            vec3 finalClearCoatRadianceScaled = finalClearCoatRadiance * vLightingIntensity.z;
+        #endif
+
+        #ifdef REFRACTION
+            finalRefraction *= (conservationFactor * conservationFactor);
+        #endif
+    #endif
+
     // _____________________________ Highlights on Alpha _____________________________
     #ifdef ALPHABLEND
         float luminanceOverAlpha = 0.0;
         #if	defined(REFLECTION) && defined(RADIANCEOVERALPHA)
             luminanceOverAlpha += getLuminance(finalRadianceScaled);
+            #if defined(CLEARCOAT)
+                luminanceOverAlpha += getLuminance(finalClearCoatRadianceScaled);
+            #endif
         #endif
 
         #if defined(SPECULARTERM) && defined(SPECULAROVERALPHA)
             luminanceOverAlpha += getLuminance(finalSpecularScaled);
+        #endif
+
+        #if defined(CLEARCOAT) && defined(CLEARCOATOVERALPHA)
+            luminanceOverAlpha += getLuminance(finalClearCoatScaled);
         #endif
 
         #if defined(RADIANCEOVERALPHA) || defined(SPECULAROVERALPHA)
@@ -774,6 +996,7 @@ void main(void) {
     #endif
 #endif
 
+// _______________ Not done before as it is unlit only __________________________
 // _____________________________ Diffuse ________________________________________
     vec3 finalDiffuse = diffuseBase;
     finalDiffuse.rgb += vAmbientColor;
@@ -809,10 +1032,20 @@ void main(void) {
     //	finalSpecular			* vLightingIntensity.x * vLightingIntensity.w +
         finalSpecularScaled +
     #endif
+    #ifdef CLEARCOAT
+    // Computed in the previous step to help with alpha luminance.
+    //	finalClearCoat			* vLightingIntensity.x * vLightingIntensity.w +
+        finalClearCoatScaled +
+    #endif
     #ifdef REFLECTION
     // Comupted in the previous step to help with alpha luminance.
     //	finalRadiance			* vLightingIntensity.z +
         finalRadianceScaled +
+        #ifdef CLEARCOAT
+        //  Comupted in the previous step to help with alpha luminance.
+        //  finalClearCoatRadiance * vLightingIntensity.z 
+            finalClearCoatRadianceScaled +
+        #endif
     #endif
     #ifdef REFRACTION
         finalRefraction			* vLightingIntensity.z +
