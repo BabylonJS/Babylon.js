@@ -1,5 +1,5 @@
 Before creating an issue, please make sure to provide the following template (based on why you create the issue):
-(Please do not use Github issues for questions - We have a really active forum to help answering questions (https://forum.babylonjs.com/))
+(**Use Github issues ONLY for validated bugs** - We have a really active forum to help answering questions (https://forum.babylonjs.com/))
 
 # Bugs
 
