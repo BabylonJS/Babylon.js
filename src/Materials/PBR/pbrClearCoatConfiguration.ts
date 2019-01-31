@@ -29,10 +29,12 @@ export interface IMaterialClearCoatDefines {
  */
 export class PBRClearCoatConfiguration {
 
+    @serialize()
+    private _isEnabled = false;
     /**
      * Defines if the clear coat is enabled in the material.
      */
-    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
     /**
@@ -114,7 +116,7 @@ export class PBRClearCoatConfiguration {
      * @param scene defines the scene to the material belongs to.
      */
     public prepareDefines(defines: IMaterialClearCoatDefines, scene: Scene): void {
-        if (this.isEnabled) {
+        if (this._isEnabled) {
             defines.CLEARCOAT = true;
 
             if (defines._areTexturesDirty) {
@@ -158,7 +160,7 @@ export class PBRClearCoatConfiguration {
             }
 
             if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.ClearCoatTextureEnabled && !disableBumpMap) {
-                uniformBuffer.updateFloat2("vClearCoatBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level);
+                uniformBuffer.updateFloat2("vClearCoatBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level);
                 MaterialHelper.BindTextureMatrix(this._bumpTexture, uniformBuffer, "clearCoatBump");
 
                 if (scene._mirroredCameraPosition) {
