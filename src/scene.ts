@@ -2092,8 +2092,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
-                this._pointerCaptures[evt.pointerId] = false;
-
                 // PreObservable support
                 if (this.onPrePointerObservable.hasObservers()) {
                     if (!clickInfo.ignore) {
@@ -2115,6 +2113,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                     }
                 }
 
+                this._pointerCaptures[evt.pointerId] = false;
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }

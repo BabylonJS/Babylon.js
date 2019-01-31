@@ -47,7 +47,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline} propertyName="bloomEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Threshold" minimum={0} maximum={1} step={0.05} target={renderPipeline} propertyName="bloomThreshold" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Weight" minimum={0} maximum={1} step={0.05} target={renderPipeline} propertyName="bloomWeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Kernel" minimum={0} maximum={128} step={1} target={renderPipeline} propertyName="bloomKernel" onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={1} />
+                    <SliderLineComponent label="Kernel" minimum={0} maximum={128} step={1} target={renderPipeline} propertyName="bloomKernel" onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={0} />
                     <SliderLineComponent label="Scale" minimum={0} maximum={1} step={0.25} target={renderPipeline} propertyName="bloomScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="CHROMATIC ABERRATION">
@@ -62,7 +62,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                     <SliderLineComponent label="Focal length" minimum={0} maximum={camera.maxZ} step={0.1} target={renderPipeline.depthOfField} propertyName="focalLength" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="fStop" minimum={0} maximum={32} step={0.1} target={renderPipeline.depthOfField} propertyName="fStop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Distance" minimum={0} maximum={camera.maxZ} step={0.1} target={renderPipeline.depthOfField} propertyName="focusDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Lens size" minimum={0} maximum={1000} step={1} target={renderPipeline.depthOfField} propertyName="lensSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={1} />
+                    <SliderLineComponent label="Lens size" minimum={0} maximum={1000} step={1} target={renderPipeline.depthOfField} propertyName="lensSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={0} />
                 </LineContainerComponent>
                 <LineContainerComponent title="FXAA">
                     <CheckBoxLineComponent label="Enabled" target={renderPipeline} propertyName="fxaaEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
