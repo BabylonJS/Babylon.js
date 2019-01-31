@@ -71,6 +71,10 @@ import { RenderingPipelinePropertyGridComponent } from './propertyGrids/postProc
 import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
 import { DefaultRenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent';
 import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
+import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
+import { SSAORenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent';
+import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
+import { SSAO2RenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -219,6 +223,20 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("DefaultRenderingPipeline") !== -1) {
                 const renderPipeline = entity as DefaultRenderingPipeline;
                 return (<DefaultRenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("SSAORenderingPipeline") !== -1) {
+                const renderPipeline = entity as SSAORenderingPipeline;
+                return (<SSAORenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("SSAO2RenderingPipeline") !== -1) {
+                const renderPipeline = entity as SSAO2RenderingPipeline;
+                return (<SSAO2RenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
