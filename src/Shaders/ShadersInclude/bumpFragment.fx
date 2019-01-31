@@ -12,6 +12,8 @@
 	#else
 		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, vBumpUV);
 	#endif
+#elif defined(ANISOTROPIC)
+	mat3 TBN = cotangent_frame(normalW, vPositionW, vMainUV1, vec2(1., 1.));
 #endif
 
 #ifdef PARALLAX

@@ -61,7 +61,9 @@
             #endif
 
             // Specular contribution
-            #ifdef SPECULARTERM
+            #ifdef ANISOTROPIC
+                info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, vec3 T, vec3 B, anisotropy, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb) {
+            #elif defined(SPECULARTERM)
                 info.specular = computeSpecularLighting(preInfo, normalW, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
             #endif
 

@@ -21,16 +21,32 @@ vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
-vec3 computeSpecularLighting(preLightingInfo info, vec3 normal, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
-    float NdotH = clamp(dot(normal, info.H), 0.000000000001, 1.0);
+vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
+    float NdotH = clamp(dot(N, info.H), 0.000000000001, 1.0);
 
     vec3 specTerm = computeSpecularTerm(NdotH, info.NdotL, info.NdotV, info.VdotH, info.roughness, reflectance0, reflectance90, geometricRoughnessFactor);
     return specTerm * info.attenuation * info.NdotL * lightColor;
 }
 
-vec4 computeClearCoatLighting(preLightingInfo info, vec3 normalClearCoat, float geometricRoughnessFactor, float clearCoatIntensity, vec3 lightColor) {
-    float NccdotL = clamp(dot(normalClearCoat, info.L), 0.00000000001, 1.0);
-    float NccdotH = clamp(dot(normalClearCoat, info.H), 0.000000000001, 1.0);
+vec3 computeAnisotropicSpecularLighting(preLightingInfo info, vec3 V, vec3 N, vec3 T, vec3 B, float anisotropy, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
+    float NdotH = clamp(dot(N, info.H), 0.000000000001, 1.0);
+
+    float TdotH = dot(T, info.H);
+    float BdotH = dot(B, info.H);
+
+    float TdotV = dot(T, V);
+    float BdotV = dot(B, V);
+    float TdotL = dot(T, info.L);
+    float BdotL = dot(B, info.L);
+
+    computeAnisotropicSpecularTerm(NdotH, info.NdotL, info.NdotV, info.VdotH, TdotH, BdotH, TdotV, BdotV, TdotL, BdotL, info.roughness, anisotropy, reflectance0, reflectance90, geometricRoughnessFactor);
+    vec3 specTerm = computeSpecularTerm(NdotH, info.NdotL, info.NdotV, info.VdotH, info.roughness, reflectance0, reflectance90, geometricRoughnessFactor);
+    return specTerm * info.attenuation * info.NdotL * lightColor;
+}
+
+vec4 computeClearCoatLighting(preLightingInfo info, vec3 Ncc, float geometricRoughnessFactor, float clearCoatIntensity, vec3 lightColor) {
+    float NccdotL = clamp(dot(Ncc, info.L), 0.00000000001, 1.0);
+    float NccdotH = clamp(dot(Ncc, info.H), 0.000000000001, 1.0);
 
     vec2 clearCoatTerm = computeClearCoatTerm(NccdotH, info.VdotH, info.roughness, geometricRoughnessFactor, clearCoatIntensity);
 
