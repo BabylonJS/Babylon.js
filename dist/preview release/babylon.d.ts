@@ -34277,9 +34277,10 @@ declare module BABYLON {
         _checkInputs(): void;
         protected _checkLimits(): void;
         /**
-         * Rebuilds angles (alpha, beta) and radius from the give position and target.
+         * Rebuilds angles (alpha, beta) and radius from the give position and target
+         * @param updateView defines a boolean forcing the camera to update its position with a view matrix computation first (default is true)
          */
-        rebuildAnglesAndRadius(): void;
+        rebuildAnglesAndRadius(updateView?: boolean): void;
         /**
          * Use a position to define the current camera related information like aplha, beta and radius
          * @param position Defines the position to set the camera at

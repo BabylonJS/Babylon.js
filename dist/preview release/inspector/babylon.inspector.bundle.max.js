@@ -40982,7 +40982,6 @@ var Inspector = /** @class */ (function () {
         }
     };
     Inspector.Show = function (scene, userOptions) {
-        var _this = this;
         var options = tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({ original: true, popup: false, overlay: false, showExplorer: true, showInspector: true, embedMode: false, enableClose: true, handleResize: true, enablePopup: true }, userOptions);
         // Prepare state
         if (!this._GlobalState.onPropertyChangedObservable) {
@@ -41062,10 +41061,6 @@ var Inspector = /** @class */ (function () {
                 this._CreateActionTabs(scene, options, parentControl);
             }
         }
-        // Light gizmos
-        scene.lights.forEach(function (l) {
-            _this._GlobalState.enableLightGizmo(l, true);
-        });
     };
     Inspector._CreateCanvasContainer = function (parentControl) {
         // Create a container for previous elements

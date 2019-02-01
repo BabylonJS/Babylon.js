@@ -6139,6 +6139,10 @@ var Grid = /** @class */ (function (_super) {
                 cell.top = tops[x] + "px";
                 cell.width = widths[y] + "px";
                 cell.height = heights[x] + "px";
+                cell._left.ignoreAdaptiveScaling = true;
+                cell._top.ignoreAdaptiveScaling = true;
+                cell._width.ignoreAdaptiveScaling = true;
+                cell._height.ignoreAdaptiveScaling = true;
             }
         });
         _super.prototype._additionalProcessing.call(this, parentMeasure, context);
