@@ -1,6 +1,7 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
+import { Engine } from "../Engines/engine";
 
 // declare INSPECTOR namespace for compilation issue
 declare var INSPECTOR: any;
@@ -75,6 +76,10 @@ export interface IInspectorOptions {
      * Optional list of extensibility entries
      */
     explorerExtensibility?: IExplorerExtensibilityGroup[];
+    /**
+     * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
+     */
+    inspectorURL?: string;
 }
 
 declare module "../scene" {
@@ -114,7 +119,7 @@ export class DebugLayer {
      * By default it uses the babylonjs CDN.
      * @ignoreNaming
      */
-    public static InspectorURL = 'https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js';
+    public static InspectorURL = `https://unpkg.com/babylonjs-inspector@${Engine.Version}/babylon.inspector.bundle.js`;
 
     private _scene: Scene;
 
@@ -200,10 +205,11 @@ export class DebugLayer {
       * @param config Define the configuration of the inspector
       */
     public show(config?: IInspectorOptions): void {
-
         if (typeof this.BJSINSPECTOR == 'undefined') {
+            const inspectorUrl = config && config.inspectorURL ? config.inspectorURL : DebugLayer.InspectorURL;
+
             // Load inspector and add it to the DOM
-            Tools.LoadScript(DebugLayer.InspectorURL, this._createInspector.bind(this, config));
+            Tools.LoadScript(inspectorUrl, this._createInspector.bind(this, config));
         } else {
             // Otherwise creates the inspector
             this._createInspector(config);
