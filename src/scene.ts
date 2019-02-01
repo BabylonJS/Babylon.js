@@ -1792,14 +1792,17 @@ export class Scene extends AbstractScene implements IAnimatable {
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
             }
-            if (pickResult.pickedMesh.actionManager && !clickInfo.ignore) {
-                pickResult.pickedMesh.actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+            let actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
+            if (actionManager && !clickInfo.ignore) {
+                actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
 
                 if (!clickInfo.hasSwiped && clickInfo.singleClick) {
-                    pickResult.pickedMesh.actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                    actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                 }
-                if (clickInfo.doubleClick && pickResult.pickedMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
-                    pickResult.pickedMesh.actionManager.processTrigger(Constants.ACTION_OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+
+                let doubleClickActionManager = pickResult.pickedMesh._getActionManagerForTrigger(Constants.ACTION_OnDoublePickTrigger);
+                if (clickInfo.doubleClick && doubleClickActionManager) {
+                    doubleClickActionManager.processTrigger(Constants.ACTION_OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                 }
             }
         }
@@ -1811,11 +1814,11 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
         }
 
-        if (this._pickedDownMesh &&
-            this._pickedDownMesh.actionManager &&
-            this._pickedDownMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnPickOutTrigger) &&
-            this._pickedDownMesh !== this._pickedUpMesh) {
-            this._pickedDownMesh.actionManager.processTrigger(Constants.ACTION_OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+        if (this._pickedDownMesh && this._pickedDownMesh !== this._pickedUpMesh) {
+            let pickedDownActionManager = this._pickedDownMesh._getActionManagerForTrigger(Constants.ACTION_OnPickOutTrigger);
+            if (pickedDownActionManager) {
+                pickedDownActionManager.processTrigger(Constants.ACTION_OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+            }
         }
 
         let type = 0;
@@ -2092,8 +2095,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             this._initClickEvent(this.onPrePointerObservable, this.onPointerObservable, evt, (clickInfo: ClickInfo, pickResult: Nullable<PickingInfo>) => {
-                this._pointerCaptures[evt.pointerId] = false;
-
                 // PreObservable support
                 if (this.onPrePointerObservable.hasObservers()) {
                     if (!clickInfo.ignore) {
@@ -2115,6 +2116,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                     }
                 }
 
+                this._pointerCaptures[evt.pointerId] = false;
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
@@ -4790,13 +4792,20 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
 
-        if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-            this._pointerOverMesh.actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+        let actionManager: Nullable<AbstractActionManager>;
+        if (this._pointerOverMesh) {
+            actionManager = this._pointerOverMesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOutTrigger);
+            if (actionManager) {
+                actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+            }
         }
 
         this._pointerOverMesh = mesh;
-        if (this._pointerOverMesh && this._pointerOverMesh.actionManager) {
-            this._pointerOverMesh.actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+        if (this._pointerOverMesh) {
+            actionManager = this._pointerOverMesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOverTrigger);
+            if (actionManager) {
+                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(this._pointerOverMesh));
+            }
         }
     }
 

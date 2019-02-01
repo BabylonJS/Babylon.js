@@ -20,7 +20,7 @@ export interface IAction {
    */
     trigger: number;
 
-    /** the trigger, with or without parameters, for the action */
+    /** Options of the trigger */
     triggerOptions: any;
 
     /**

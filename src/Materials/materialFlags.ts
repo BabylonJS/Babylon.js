@@ -181,4 +181,36 @@ export class MaterialFlags {
         this._FresnelEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_FresnelDirtyFlag);
     }
+
+    private static _ClearCoatTextureEnabled = true;
+    /**
+     * Are clear coat textures enabled in the application.
+     */
+    public static get ClearCoatTextureEnabled(): boolean {
+        return this._ClearCoatTextureEnabled;
+    }
+    public static set ClearCoatTextureEnabled(value: boolean) {
+        if (this._ClearCoatTextureEnabled === value) {
+            return;
+        }
+
+        this._ClearCoatTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private static _ClearCoatBumpTextureEnabled = true;
+    /**
+     * Are clear coat bump textures enabled in the application.
+     */
+    public static get ClearCoatBumpTextureEnabled(): boolean {
+        return this._ClearCoatBumpTextureEnabled;
+    }
+    public static set ClearCoatBumpTextureEnabled(value: boolean) {
+        if (this._ClearCoatBumpTextureEnabled === value) {
+            return;
+        }
+
+        this._ClearCoatBumpTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
 }
