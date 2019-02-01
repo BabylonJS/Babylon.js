@@ -39,8 +39,7 @@ vec3 computeAnisotropicSpecularLighting(preLightingInfo info, vec3 V, vec3 N, ve
     float TdotL = dot(T, info.L);
     float BdotL = dot(B, info.L);
 
-    computeAnisotropicSpecularTerm(NdotH, info.NdotL, info.NdotV, info.VdotH, TdotH, BdotH, TdotV, BdotV, TdotL, BdotL, info.roughness, anisotropy, reflectance0, reflectance90, geometricRoughnessFactor);
-    vec3 specTerm = computeSpecularTerm(NdotH, info.NdotL, info.NdotV, info.VdotH, info.roughness, reflectance0, reflectance90, geometricRoughnessFactor);
+    vec3 specTerm = computeAnisotropicSpecularTerm(NdotH, info.NdotL, info.NdotV, info.VdotH, TdotH, BdotH, TdotV, BdotV, TdotL, BdotL, info.roughness, anisotropy, reflectance0, reflectance90, geometricRoughnessFactor);
     return specTerm * info.attenuation * info.NdotL * lightColor;
 }
 
