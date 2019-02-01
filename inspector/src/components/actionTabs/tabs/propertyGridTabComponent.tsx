@@ -65,6 +65,16 @@ import { GridPropertyGridComponent } from "./propertyGrids/gui/gridPropertyGridC
 import { PBRMetallicRoughnessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent";
 import { PBRSpecularGlossinessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent";
 import { StackPanelPropertyGridComponent } from "./propertyGrids/gui/stackPanelPropertyGridComponent";
+import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
+import { PostProcessPropertyGridComponent } from './propertyGrids/postProcesses/postProcessPropertyGridComponent';
+import { RenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/renderingPipelinePropertyGridComponent';
+import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+import { DefaultRenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent';
+import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
+import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
+import { SSAORenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent';
+import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
+import { SSAO2RenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -210,6 +220,41 @@ export class PropertyGridTabComponent extends PaneComponent {
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
+            if (className.indexOf("DefaultRenderingPipeline") !== -1) {
+                const renderPipeline = entity as DefaultRenderingPipeline;
+                return (<DefaultRenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("SSAORenderingPipeline") !== -1) {
+                const renderPipeline = entity as SSAORenderingPipeline;
+                return (<SSAORenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("SSAO2RenderingPipeline") !== -1) {
+                const renderPipeline = entity as SSAO2RenderingPipeline;
+                return (<SSAO2RenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("RenderingPipeline") !== -1) {
+                const renderPipeline = entity as PostProcessRenderPipeline;
+                return (<RenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("PostProcess") !== -1) {
+                const postProcess = entity as PostProcess;
+                return (<PostProcessPropertyGridComponent postProcess={postProcess}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
             if (className.indexOf("Texture") !== -1) {
                 const texture = entity as Texture;
                 return (<TexturePropertyGridComponent texture={texture}
@@ -272,7 +317,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 return (<StackPanelPropertyGridComponent stackPanel={stackPanel}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
-            }            
+            }
 
             if (className === "Grid") {
                 const grid = entity as Grid;

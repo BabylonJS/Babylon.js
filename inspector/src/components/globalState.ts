@@ -10,7 +10,7 @@ import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 
 export class GlobalState {
-    public onSelectionChangedObservable: Observable<string>;
+    public onSelectionChangedObservable: Observable<any>;
     public onPropertyChangedObservable: Observable<PropertyChangedEvent>;
     public onInspectorClosedObservable = new Observable<Scene>();
     public onTabChangedObservable = new Observable<number>();

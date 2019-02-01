@@ -683,113 +683,6 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * Returns an array of the actively used textures.
-     * @returns - Array of BaseTextures
-     */
-    public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
-
-        if (this._albedoTexture) {
-            activeTextures.push(this._albedoTexture);
-        }
-
-        if (this._ambientTexture) {
-            activeTextures.push(this._ambientTexture);
-        }
-
-        if (this._opacityTexture) {
-            activeTextures.push(this._opacityTexture);
-        }
-
-        if (this._reflectionTexture) {
-            activeTextures.push(this._reflectionTexture);
-        }
-
-        if (this._emissiveTexture) {
-            activeTextures.push(this._emissiveTexture);
-        }
-
-        if (this._reflectivityTexture) {
-            activeTextures.push(this._reflectivityTexture);
-        }
-
-        if (this._metallicTexture) {
-            activeTextures.push(this._metallicTexture);
-        }
-
-        if (this._microSurfaceTexture) {
-            activeTextures.push(this._microSurfaceTexture);
-        }
-
-        if (this._bumpTexture) {
-            activeTextures.push(this._bumpTexture);
-        }
-
-        if (this._lightmapTexture) {
-            activeTextures.push(this._lightmapTexture);
-        }
-
-        if (this._refractionTexture) {
-            activeTextures.push(this._refractionTexture);
-        }
-
-        return activeTextures;
-    }
-
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param texture - Base texture to use.
-     * @returns - Boolean specifying if a texture is used in the material.
-     */
-    public hasTexture(texture: BaseTexture): boolean {
-        if (super.hasTexture(texture)) {
-            return true;
-        }
-
-        if (this._albedoTexture === texture) {
-            return true;
-        }
-
-        if (this._ambientTexture === texture) {
-            return true;
-        }
-
-        if (this._opacityTexture === texture) {
-            return true;
-        }
-
-        if (this._reflectionTexture === texture) {
-            return true;
-        }
-
-        if (this._reflectivityTexture === texture) {
-            return true;
-        }
-
-        if (this._metallicTexture === texture) {
-            return true;
-        }
-
-        if (this._microSurfaceTexture === texture) {
-            return true;
-        }
-
-        if (this._bumpTexture === texture) {
-            return true;
-        }
-
-        if (this._lightmapTexture === texture) {
-            return true;
-        }
-
-        if (this._refractionTexture === texture) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
      */
@@ -798,6 +691,8 @@ export class PBRMaterial extends PBRBaseMaterial {
 
         clone.id = name;
         clone.name = name;
+
+        this.clearCoat.copyTo(clone.clearCoat);
 
         return clone;
     }
@@ -809,6 +704,9 @@ export class PBRMaterial extends PBRBaseMaterial {
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.PBRMaterial";
+
+        serializationObject.clearCoat = this.clearCoat.serialize();
+
         return serializationObject;
     }
 
@@ -821,7 +719,11 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @returns - PBRMaterial
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
-        return SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
+        if (source.clearCoat) {
+            material.clearCoat.parse(source.clearCoat);
+        }
+        return material;
     }
 }
 

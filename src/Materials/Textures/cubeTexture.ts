@@ -81,7 +81,10 @@ export class CubeTexture extends BaseTexture {
     private _noMipmap: boolean;
     private _files: string[];
     private _extensions: string[];
+
+    @serialize("textureMatrix")
     private _textureMatrix: Matrix;
+
     private _format: number;
     private _createPolynomials: boolean;
 
@@ -355,3 +358,5 @@ export class CubeTexture extends BaseTexture {
 }
 
 Texture._CubeTextureParser = CubeTexture.Parse;
+// Some exporters relies on Tools.Instantiate
+_TypeStore.RegisteredTypes["BABYLON.CubeTexture"] = CubeTexture;
