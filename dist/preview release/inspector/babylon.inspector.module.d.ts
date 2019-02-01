@@ -498,6 +498,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
@@ -509,7 +510,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         constructor(props: IPBRMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -2370,7 +2371,7 @@ declare module INSPECTOR {
     }
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         constructor(props: IPBRMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element | null;
         render(): JSX.Element;
     }
 }
