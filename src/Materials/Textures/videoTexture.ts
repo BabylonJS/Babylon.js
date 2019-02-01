@@ -196,7 +196,10 @@ export class VideoTexture extends Texture {
         if (!this.video.autoplay && !this._settings.poster) {
             let oldHandler = this.video.onplaying;
             let error = false;
+            let oldMuted = this.video.muted;
+            this.video.muted = true;
             this.video.onplaying = () => {
+                this.video.muted = oldMuted;
                 this.video.onplaying = oldHandler;
                 this._texture!.isReady = true;
                 this._updateInternalTexture();
