@@ -63,12 +63,10 @@ export class PBRAnisotropicConfiguration {
      * @param mesh the mesh we are preparing the defines for.
      */
     public prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh): void {
-        if (defines._areMiscDirty) {
-            defines.ANISOTROPIC = this._isEnabled;
-            if (this._isEnabled && !mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-                defines._needUVs = true;
-                defines.MAINUV1 = true;
-            }
+        defines.ANISOTROPIC = this._isEnabled;
+        if (this._isEnabled && !mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+            defines._needUVs = true;
+            defines.MAINUV1 = true;
         }
     }
 
