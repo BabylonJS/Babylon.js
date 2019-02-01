@@ -379,15 +379,30 @@ void main(void) {
         // Diffuse is used as the base of the reflectivity.
         vec3 baseColor = surfaceAlbedo;
 
-        // Default specular reflectance at normal incidence.
-        // 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
-        const vec3 DefaultSpecularReflectanceDielectric = vec3(0.04, 0.04, 0.04);
+        #ifdef REFLECTANCE
+            // Following Frostbite Remapping,
+            // https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf page 115
+            // vec3 f0 = 0.16 * reflectance * reflectance * (1.0 - metallic) + baseColor * metallic;
+            // where 0.16 * reflectance * reflectance remaps the reflectance to allow storage in 8 bit texture
 
-        // Compute the converted diffuse.
-        surfaceAlbedo = mix(baseColor.rgb * (1.0 - DefaultSpecularReflectanceDielectric.r), vec3(0., 0., 0.), metallicRoughness.r);
+            // Compute the converted diffuse.
+            surfaceAlbedo = baseColor.rgb * (1.0 - metallicRoughness.r);
 
-        // Compute the converted reflectivity.
-        surfaceReflectivityColor = mix(DefaultSpecularReflectanceDielectric, baseColor, metallicRoughness.r);
+            // Compute the converted reflectivity.
+            surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
+        #else
+            // we are here fixing our default reflectance to a common value for none metallic surface.
+
+            // Default specular reflectance at normal incidence.
+            // 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
+            const vec3 DefaultSpecularReflectanceDielectric = vec3(0.04, 0.04, 0.04);
+
+            // Compute the converted diffuse.
+            surfaceAlbedo = mix(baseColor.rgb * (1.0 - DefaultSpecularReflectanceDielectric.r), vec3(0., 0., 0.), metallicRoughness.r);
+
+            // Compute the converted reflectivity.
+            surfaceReflectivityColor = mix(DefaultSpecularReflectanceDielectric, baseColor, metallicRoughness.r);
+        #endif
     #else
         #ifdef REFLECTIVITY
             vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
@@ -657,6 +672,12 @@ void main(void) {
         environmentIrradiance *= vReflectionColor.rgb;
     #endif
 
+    // ___________________ Compute Reflectance aka R0 F0 info _________________________
+    float reflectance = max(max(surfaceReflectivityColor.r, surfaceReflectivityColor.g), surfaceReflectivityColor.b);
+    float reflectance90 = fresnelGrazingReflectance(reflectance);
+    vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
+    vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
+
     // _____________________________ Clear Coat Information ____________________________
     #ifdef CLEARCOAT
         // Clear COAT parameters.
@@ -667,11 +688,15 @@ void main(void) {
             vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
             clearCoatIntensity *= clearCoatMapData.x;
             clearCoatRoughness *= clearCoatMapData.y;
-
-            // remapping and linearization of clear coat roughness
-            // Let s see how it ends up in gltf
-            // clearCoatRoughness = mix(0.089, 0.6, clearCoatRoughness);
         #endif
+
+        // remapping and linearization of clear coat roughness
+        // Let s see how it ends up in gltf
+        // clearCoatRoughness = mix(0.089, 0.6, clearCoatRoughness);
+
+        // Remap F0 to account for the change of interface within the material.
+        vec3 specularEnvironmentR0Updated = getR0RemappedForPolyurethaneClearCoat(specularEnvironmentR0);
+        specularEnvironmentR0 = mix(specularEnvironmentR0, specularEnvironmentR0Updated, clearCoatIntensity);
 
         #ifdef CLEARCOAT_BUMP
             #ifdef NORMALXYSCALE
@@ -783,15 +808,8 @@ void main(void) {
     #endif
 
     // ____________________________________________________________________________________
-    // _____________________________ Direct Lighting Param ________________________________
-        // Compute reflectance.
-        float reflectance = max(max(surfaceReflectivityColor.r, surfaceReflectivityColor.g), surfaceReflectivityColor.b);
-        float reflectance90 = fresnelGrazingReflectance(reflectance);
-        vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
-        vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
-
     // _____________________________ Direct Lighting Info __________________________________
-        vec3 diffuseBase = vec3(0., 0., 0.);
+    vec3 diffuseBase = vec3(0., 0., 0.);
     #ifdef SPECULARTERM
         vec3 specularBase = vec3(0., 0., 0.);
     #endif
@@ -807,11 +825,10 @@ void main(void) {
         lightmapColor *= vLightmapInfos.y;
     #endif
 
+    // Direct Lighting Variables
     preLightingInfo preInfo;
     lightingInfo info;
-
-    // 1 - shadowLevel
-    float shadow = 1.;
+    float shadow = 1.; // 1 - shadowLevel
 
     #include<lightFragment>[0..maxSimultaneousLights]
 
@@ -858,7 +875,7 @@ void main(void) {
             // We can find the scale and offset to apply to the specular value.
             vec4 environmentClearCoatBrdf = texture2D(environmentBrdfSampler, brdfClearCoatSamplerUV);
 
-            vec3 clearCoatEnvironmentReflectance = vec3(0.04) * environmentClearCoatBrdf.x + environmentClearCoatBrdf.y;
+            vec3 clearCoatEnvironmentReflectance = vec3(CLEARCOATREFLECTANCE0 * environmentClearCoatBrdf.x + environmentClearCoatBrdf.y);
 
             #ifdef RADIANCEOCCLUSION
                 float clearCoatSeo = environmentRadianceOcclusion(ambientMonochrome, clearCoatNdotVUnclamped);
@@ -878,19 +895,13 @@ void main(void) {
             vec3 clearCoatEnvironmentReflectance = fresnelSchlickEnvironmentGGX(clearCoatNdotV, vec3(1.), vec3(1.), sqrt(1. - clearCoatRoughness));
         #endif
 
-        // clear coar energy conservation
-        // fo = 4% based on the IOR of a air-polyurethane interface.
-        // the max reflectance is relying on our special trick to prevent weird values on highly diffuse materials.
-        // To let as a configuration if required
-        const float IBLClearCoatReflectance0 = 0.04;
-        const float IBLClearCoatReflectance90 = 1.;
-
-        float fresnelIBLClearCoat = fresnelSchlickGGXFloat(clearCoatNdotV, IBLClearCoatReflectance0, IBLClearCoatReflectance90);
-        fresnelIBLClearCoat *= clearCoatIntensity;
-        
-        float conservationFactor = (1. - fresnelIBLClearCoat);
-
         clearCoatEnvironmentReflectance *= clearCoatIntensity;
+
+        // clear coat energy conservation
+        float fresnelIBLClearCoat = fresnelSchlickGGX(clearCoatNdotV, CLEARCOATREFLECTANCE0, CLEARCOATREFLECTANCE90);
+        fresnelIBLClearCoat *= clearCoatIntensity;
+
+        float conservationFactor = (1. - fresnelIBLClearCoat);
         #ifdef REFLECTION
             environmentIrradiance *= conservationFactor;
         #endif
@@ -1020,7 +1031,6 @@ void main(void) {
 // _______________ Not done before as it is unlit only __________________________
 // _____________________________ Diffuse ________________________________________
     vec3 finalDiffuse = diffuseBase;
-    finalDiffuse.rgb += vAmbientColor;
     finalDiffuse *= surfaceAlbedo.rgb;
     finalDiffuse = max(finalDiffuse, 0.0);
 
@@ -1043,6 +1053,7 @@ void main(void) {
 // _____________________________ Composition _____________________________________
     // Reflection already includes the environment intensity.
     vec4 finalColor = vec4(
+        vAmbientColor			* ambientOcclusionColor +
         finalDiffuse			* ambientOcclusionForDirectDiffuse * vLightingIntensity.x +
 #ifndef UNLIT
     #ifdef REFLECTION
@@ -1165,4 +1176,6 @@ void main(void) {
     //gl_FragColor = vec4(vPositionW * 0.5 + 0.5, 1.0);
 
     //gl_FragColor = vec4(vMainUV1, 0., 1.0);
+
+    //gl_FragColor = vec4(specularEnvironmentR0, 1.0);
 }
