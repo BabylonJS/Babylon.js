@@ -1,4 +1,6 @@
-import { Engine, Observable } from "babylonjs";
+import { Observable } from "@babylonjs/core/Misc/observable";
+import { Engine } from "@babylonjs/core/Engines/engine";
+
 
 /**
  * The data structure of a telemetry event.

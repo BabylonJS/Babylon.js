@@ -1,7 +1,7 @@
 import { ViewerConfiguration } from '../configuration';
-import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from 'babylonjs-viewer-assets';
-import { babylonFont } from 'babylonjs-viewer-assets';
-import * as images from 'babylonjs-viewer-assets';
+import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from '../../assets';
+import { babylonFont } from '../../assets/font';
+import * as images from '../../assets/img';
 
 /**
  * The default configuration of the viewer, including templates (canvas, overly, loading screen)

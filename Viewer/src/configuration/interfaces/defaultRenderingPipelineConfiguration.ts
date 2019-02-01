@@ -1,4 +1,4 @@
-import { DepthOfFieldEffectBlurLevel } from 'babylonjs';
+import { DepthOfFieldEffectBlurLevel } from "@babylonjs/core/PostProcesses/depthOfFieldEffect";
 
 export interface IDefaultRenderingPipelineConfiguration {
     sharpenEnabled?: boolean;
