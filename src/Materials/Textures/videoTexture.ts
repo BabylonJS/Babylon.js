@@ -197,7 +197,7 @@ export class VideoTexture extends Texture {
             let oldHandler = this.video.onplaying;
             let error = false;
             let oldMuted = this.video.muted;
-            this.video.muted = false;
+            this.video.muted = true;
             this.video.onplaying = () => {
                 this.video.muted = oldMuted;
                 this.video.onplaying = oldHandler;
