@@ -1,8 +1,14 @@
 
-import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration';
+import { ViewerConfiguration, IModelConfiguration, ILightConfiguration, ISceneConfiguration } from './../configuration';
 import { Template, EventCallback } from '../templating/templateManager';
-import { AbstractViewer } from './viewer';
-import { SpotLight, Vector3, FilesInput } from 'babylonjs';
+import { FilesInput } from '@babylonjs/core/Misc/filesInput';
+import { SpotLight } from '@babylonjs/core/Lights/spotLight';
+import { Vector3 } from '@babylonjs/core/Maths/math';
+import { TemplateManager } from '../templating/templateManager';
+import { AbstractViewerWithTemplate } from './viewerWithTemplate';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
+import { extendClassWithConfig } from '../helper';
 import { ViewerModel } from '../model/viewerModel';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
 import { IViewerTemplatePlugin } from '../templating/viewerTemplatePlugin';
@@ -13,7 +19,11 @@ import { PrintButtonPlugin } from '../templating/plugins/printButton';
  * The Default viewer is the default implementation of the AbstractViewer.
  * It uses the templating system to render a new canvas and controls.
  */
-export class DefaultViewer extends AbstractViewer {
+export class DefaultViewer extends AbstractViewerWithTemplate {
+    /**
+     * The corresponsing template manager of this viewer.
+     */
+    public templateManager: TemplateManager;
 
     public fullscreenElement?: Element;
 
@@ -24,7 +34,7 @@ export class DefaultViewer extends AbstractViewer {
      */
     constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
-
+        
         this.onModelLoadedObservable.add(this._onModelLoaded);
         this.onModelRemovedObservable.add(() => {
             this._configureTemplate();
@@ -37,6 +47,22 @@ export class DefaultViewer extends AbstractViewer {
         });
 
         this.onInitDoneObservable.add(() => {
+            this.sceneManager.setDefaultMaterial = function(sceneConfig: ISceneConfiguration){
+                let conf = sceneConfig.defaultMaterial;
+                if(!conf){
+                    return;
+                }
+                if ((conf.materialType === 'standard' && this.scene.defaultMaterial.getClassName() !== 'StandardMaterial') ||
+                    (conf.materialType === 'pbr' && this.scene.defaultMaterial.getClassName() !== 'PBRMaterial')) {
+                    this.scene.defaultMaterial.dispose();
+                    if (conf.materialType === 'standard') {
+                        this.scene.defaultMaterial = new StandardMaterial("defaultMaterial", this.scene);
+                    } else {
+                        this.scene.defaultMaterial = new PBRMaterial("defaultMaterial", this.scene);
+                    }
+                }
+                extendClassWithConfig(this.scene.defaultMaterial, conf);
+            }
             if (!this.sceneManager.models.length) {
                 this.hideLoadingScreen();
             }
@@ -600,6 +626,8 @@ export class DefaultViewer extends AbstractViewer {
     protected _onConfigurationLoaded(configuration: ViewerConfiguration) {
 
         super._onConfigurationLoaded(configuration);
+
+        this.templateManager = new TemplateManager(this.containerElement);
 
         // initialize the templates
         let templateConfiguration = this.configuration.templates || {};

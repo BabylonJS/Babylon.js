@@ -1,4 +1,3 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper, Axis, Matrix, DirectionalLight, SpotLight, PointLight, IShadowLight } from 'babylonjs';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration';
 import { ViewerModel, ModelState } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
@@ -9,6 +8,33 @@ import { ObservablesManager } from '../managers/observablesManager';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
 import { deepmerge } from '../helper';
 import { IEnvironmentMapConfiguration } from '../configuration/interfaces/environmentMapConfiguration';
+import { Observable } from '@babylonjs/core/Misc/observable';
+import { SceneOptimizer, SceneOptimizerOptions } from '@babylonjs/core/Misc/sceneOptimizer';
+import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
+import { Light } from '@babylonjs/core/Lights/light';
+import { EnvironmentHelper, IEnvironmentHelperOptions } from '@babylonjs/core/Helpers/environmentHelper';
+import { VRExperienceHelper, VRExperienceHelperOptions } from '@babylonjs/core/Cameras/VR/vrExperienceHelper';
+import { Color3, Quaternion, Vector3, Axis, Matrix } from '@babylonjs/core/Maths/math';
+import { Nullable } from '@babylonjs/core/types';
+import { DefaultRenderingPipeline } from '@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
+import { Engine } from '@babylonjs/core/Engines/engine';
+import { Animation } from '@babylonjs/core/Animations';
+import { AnimationPropertiesOverride } from '@babylonjs/core/Animations/animationPropertiesOverride';
+import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
+import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
+import { ShadowLight, IShadowLight } from '@babylonjs/core/Lights/shadowLight';
+import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture';
+import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
+import { Scalar } from '@babylonjs/core/Maths/math.scalar';
+import { SpotLight } from '@babylonjs/core/Lights/spotLight';
+import { PointLight } from '@babylonjs/core/Lights/pointLight';
+import { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Tags } from '@babylonjs/core/Misc/tags';
+import { Behavior } from '@babylonjs/core/Behaviors/behavior';
+import { FramingBehavior } from '@babylonjs/core/Behaviors/Cameras/framingBehavior';
+import { Scene } from '@babylonjs/core/scene';
+import { ShadowGenerator } from '@babylonjs/core/Lights/Shadows/shadowGenerator';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -344,7 +370,7 @@ export class SceneManager {
      * initialize the scene. Calling this function again will dispose the old scene, if exists.
      */
     public initScene(sceneConfiguration: ISceneConfiguration = {}, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
-
+        
         // if the scen exists, dispose it.
         if (this.scene) {
             this.scene.dispose();
@@ -566,6 +592,10 @@ export class SceneManager {
         }
     }
 
+    public setDefaultMaterial(sceneConfig: ISceneConfiguration){
+        
+    }
+
     /**
      * internally configure the scene using the provided configuration.
      * The scene will not be recreated, but just updated.
@@ -644,19 +674,7 @@ export class SceneManager {
             }
         }
 
-        if (sceneConfig.defaultMaterial) {
-            let conf = sceneConfig.defaultMaterial;
-            if ((conf.materialType === 'standard' && this.scene.defaultMaterial.getClassName() !== 'StandardMaterial') ||
-                (conf.materialType === 'pbr' && this.scene.defaultMaterial.getClassName() !== 'PBRMaterial')) {
-                this.scene.defaultMaterial.dispose();
-                if (conf.materialType === 'standard') {
-                    this.scene.defaultMaterial = new StandardMaterial("defaultMaterial", this.scene);
-                } else {
-                    this.scene.defaultMaterial = new PBRMaterial("defaultMaterial", this.scene);
-                }
-            }
-            extendClassWithConfig(this.scene.defaultMaterial, conf);
-        }
+        this.setDefaultMaterial(sceneConfig);
 
         if (sceneConfig.flags) {
             extendClassWithConfig(this.scene, sceneConfig.flags);
@@ -872,7 +890,44 @@ export class SceneManager {
             if (this._globalConfiguration.scene && this._globalConfiguration.scene.disableCameraControl) {
                 attachControl = false;
             }
-            this.scene.createDefaultCamera(true, true, attachControl);
+
+            // Inline scene.createDefaultCamera to reduce file size
+            // Dispose existing camera in replace mode.
+            if (this.scene.activeCamera) {
+                (this.scene.activeCamera as ArcRotateCamera).dispose();
+                this.scene.activeCamera = null;
+            }
+            // Camera
+            if (!this.scene.activeCamera) {
+                var worldExtends = this.scene.getWorldExtends();
+                var worldSize = worldExtends.max.subtract(worldExtends.min);
+                var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
+
+                var camera: ArcRotateCamera;
+                var radius = worldSize.length() * 1.5;
+                // empty scene scenario!
+                if (!isFinite(radius)) {
+                    radius = 1;
+                    worldCenter.copyFromFloats(0, 0, 0);
+                }
+
+                var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this.scene);
+                arcRotateCamera.lowerRadiusLimit = radius * 0.01;
+                arcRotateCamera.wheelPrecision = 100 / radius;
+                camera = arcRotateCamera;
+
+                camera.minZ = radius * 0.01;
+                camera.maxZ = radius * 1000;
+                camera.speed = radius * 0.2;
+                this.scene.activeCamera = camera;
+
+                let canvas = this.scene.getEngine().getRenderingCanvas();
+            }
+            let canvas = this.scene.getEngine().getRenderingCanvas();
+            if (canvas) {
+                this.scene.activeCamera.attachControl(canvas);
+            }
+            
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;
             this.camera.setTarget(Vector3.Zero());
         }
@@ -1058,7 +1113,7 @@ export class SceneManager {
             options.setupImageProcessing = false; // TMP
 
             if (!this.environmentHelper) {
-                this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+                this.environmentHelper = new EnvironmentHelper(options, this.scene);
             } else {
                 // unlikely, but there might be a new scene! we need to dispose.
 
@@ -1067,7 +1122,7 @@ export class SceneManager {
                 // is it a different scene? Oh no!
                 if (scene !== this.scene) {
                     this.environmentHelper.dispose();
-                    this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+                    this.environmentHelper = new EnvironmentHelper(options, this.scene);
                 } else {
                     // recreate the ground
                     if (this.environmentHelper.ground) {
@@ -1081,7 +1136,7 @@ export class SceneManager {
                     this.environmentHelper.updateOptions(options)!;
                     // update doesn't change the size of the skybox and ground, so we have to recreate!
                     //this.environmentHelper.dispose();
-                    //this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+                    //this.environmentHelper = new EnvironmentHelper(options, this.scene);
                 }
             }
 
@@ -1320,7 +1375,7 @@ export class SceneManager {
                 let shadowGroundPlane = Mesh.CreatePlane("shadowGroundPlane", 100, this.scene, false);
                 shadowGroundPlane.useVertexColors = false;
                 //material isn't ever used in rendering, just used to set back face culling
-                shadowGroundPlane.material = new StandardMaterial('shadowGroundPlaneMaterial', this.scene);
+                shadowGroundPlane.material = new PBRMaterial('shadowGroundPlaneMaterial', this.scene);
                 shadowGroundPlane.material.backFaceCulling = false;
                 shadowGroundPlane.rotation.x = Math.PI * 0.5;
                 shadowGroundPlane.freezeWorldMatrix();
