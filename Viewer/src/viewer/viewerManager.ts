@@ -1,4 +1,4 @@
-import { Observable } from 'babylonjs';
+import { Observable } from '@babylonjs/core/Misc/observable';
 import { AbstractViewer } from './viewer';
 
 /**

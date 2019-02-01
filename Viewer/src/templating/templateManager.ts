@@ -1,5 +1,5 @@
-
-import { Observable, IFileRequest, Tools } from 'babylonjs';
+import { Observable } from '@babylonjs/core/Misc/observable';
+import { IFileRequest, Tools } from '@babylonjs/core/Misc/tools';
 import { isUrl, camelToKebab, kebabToCamel } from '../helper';
 
 import * as Handlebars from 'handlebars/dist/handlebars';

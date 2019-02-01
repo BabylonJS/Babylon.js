@@ -1,6 +1,10 @@
 import { ViewerModel } from "../../model/viewerModel";
-import { IGLTFLoaderExtension, IGLTFLoaderData } from "babylonjs-loaders";
-import { AbstractMesh, ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderProgressEvent, BaseTexture, Material } from "babylonjs";
+import { IGLTFLoaderExtension, IGLTFLoaderData } from "@babylonjs/loaders/glTF";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "@babylonjs/core/Loading/sceneLoader";
+import { SceneLoaderProgressEvent } from "@babylonjs/core/Loading/sceneLoader";
+import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
+import { BaseTexture } from "@babylonjs/core/Materials/Textures/baseTexture";
+import { Material } from "@babylonjs/core/Materials/material";
 
 /**
  * This interface defines the structure of a loader plugin.

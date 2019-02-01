@@ -1,4 +1,4 @@
-import { Engine } from "babylonjs";
+import { Engine } from "@babylonjs/core/Engines/engine";
 
 export class ViewerGlobals {
 

@@ -1,4 +1,4 @@
-import { EngineOptions } from 'babylonjs';
+import { EngineOptions } from '@babylonjs/core/Engines/engine';
 import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from './interfaces';
 import { IEnvironmentMapConfiguration } from './interfaces/environmentMapConfiguration';
 
