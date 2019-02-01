@@ -80,3 +80,8 @@ uniform mat4 view;
         uniform mat4 clearCoatBumpMatrix;
     #endif
 #endif
+
+// Anisotropy
+#ifdef ANISOTROPIC
+    uniform float anisotropy;
+#endif
