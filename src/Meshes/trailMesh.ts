@@ -14,6 +14,7 @@ import { VertexData } from "../Meshes/mesh.vertexData";
 export class TrailMesh extends Mesh {
     private _generator: AbstractMesh;
     private _autoStart: boolean;
+    private _running: boolean;
     private _diameter: number;
     private _length: number;
     private _sectionPolygonPointsCount: number = 4;
@@ -34,6 +35,7 @@ export class TrailMesh extends Mesh {
     constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, material?: Material, autoStart: boolean = true) {
         super(name, scene);
 
+        this._running = false;
         this._autoStart = autoStart;
         this._generator = generator;
         this._diameter = diameter;
@@ -123,16 +125,20 @@ export class TrailMesh extends Mesh {
      * Start trailing mesh.
      */
     public start(): void {
-        this._beforeRenderObserver = this.getScene().onBeforeRenderObservable.add(() => {
-            this.update();
-        });
+        if (!this._running) {
+            this._running = true;
+            this._beforeRenderObserver = this.getScene().onBeforeRenderObservable.add(() => {
+                this.update();
+            });
+        }
     }
 
     /**
      * Stop trailing mesh.
      */
     public stop(): void {
-        if (this._beforeRenderObserver) {
+        if (this._beforeRenderObserver && this._running) {
+            this._running = false;
             this.getScene().onBeforeRenderObservable.remove(this._beforeRenderObserver);
         }
     }
