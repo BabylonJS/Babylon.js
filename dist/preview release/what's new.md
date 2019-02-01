@@ -93,6 +93,7 @@
 - Added MouseWheel bindings for FollowCamera. ([mrdunk](https://github.com))
 - Tweak MouseWheel bindings for FollowCamera orientations. ([mrdunk](https://github.com))
 - Added maximum and minimum limits for FollowCamera parameters. ([mrdunk](https://github.com))
+- Convert ArcRotateCamera to use new BaseCameraPointersInput. ([mrdunk](https://github.com))
 - Added per solid particle culling possibility : `solidParticle.isInFrustum()`  ([jerome](https://github.com/jbousquie))
 - Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
 - Added option `forceDisposeChildren` to multiMaterial.dispose ([danjpar](https://github.com/danjpar))

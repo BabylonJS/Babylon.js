@@ -23,6 +23,20 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     protected abstract _className: string;
 
     /**
+     * Whether keyboard modifier keys are pressed at time of last mouse event.
+     */
+    protected _altKey: boolean;
+    protected _ctrlKey: boolean;
+    protected _metaKey: boolean;
+    protected _shiftKey: boolean;
+
+    /**
+     * Which mouse buttons were pressed at time of last mouse event.
+     * https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+     */
+    protected _buttonsPressed: number;
+
+    /**
      * Defines the buttons associated with the input to handle camera move.
      */
     @serialize()
@@ -40,9 +54,15 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         var previousPinchSquaredDistance = 0;
         var previousMultiTouchPanPosition: Nullable<PointerTouch> = null;
 
+        this._altKey = false;
+        this._ctrlKey = false;
+        this._metaKey = false;
+        this._shiftKey = false;
+        this._buttonsPressed = 0;
+
         this._pointerInput = (p, s) => {
             var evt = <PointerEvent>p.event;
-            let isTouch = (<any>p.event).pointerType === "touch";
+            let isTouch = evt.pointerType === "touch";
 
             if (engine.isInVRExclusivePointerMode) {
                 return;
@@ -54,6 +74,12 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             }
 
             let srcElement = <HTMLElement>(evt.srcElement || evt.target);
+
+            this._altKey = evt.altKey;
+            this._ctrlKey = evt.ctrlKey;
+            this._metaKey = evt.metaKey;
+            this._shiftKey = evt.shiftKey;
+            this._buttonsPressed = evt.buttons;
 
             if (engine.isPointerLock) {
                 var offsetX = evt.movementX ||
@@ -68,6 +94,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                               0;
 
                 this.onTouch(null, offsetX, offsetY);
+                pointA = null;
+                pointB = null;
             } else if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
                 try {
                     srcElement.setPointerCapture(evt.pointerId);
@@ -87,12 +115,14 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                               type: evt.pointerType };
                 }
 
+                this.onButtonDown(evt, pointB ? 2 : 1);
+
                 if (!noPreventDefault) {
                     evt.preventDefault();
                     element.focus();
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
-                this.onDoubleTouch(evt.pointerType);
+                this.onDoubleTap(evt.pointerType);
             } else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                 try {
                     srcElement.releasePointerCapture(evt.pointerId);
@@ -138,6 +168,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                   previousPinchSquaredDistance = 0;
                   previousMultiTouchPanPosition = null;
                 }
+
+                this.onButtonUp(evt);
 
                 if (!noPreventDefault) {
                     evt.preventDefault();
@@ -190,6 +222,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
         this._onLostFocus = () => {
             pointA = pointB = null;
+            previousPinchSquaredDistance = 0;
+            previousMultiTouchPanPosition = null;
+            this.onLostFocus();
         };
 
         element.addEventListener("contextmenu",
@@ -221,6 +256,12 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
             this._onLostFocus = null;
         }
+
+        this._altKey = false;
+        this._ctrlKey = false;
+        this._metaKey = false;
+        this._shiftKey = false;
+        this._buttonsPressed = 0;
     }
 
     /**
@@ -243,14 +284,14 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Called on pointer POINTERDOUBLETAP event.
      * Override this method to provide functionality on POINTERDOUBLETAP event.
      */
-    protected onDoubleTouch(type: string) {
+    protected onDoubleTap(type: string) {
     }
 
     /**
      * Called on pointer POINTERMOVE event if only a single touch is active.
      * Override this method to provide functionality.
      */
-    protected onTouch(pointA: Nullable<PointerTouch>,
+    protected onTouch(point: Nullable<PointerTouch>,
                       offsetX: number,
                       offsetY: number): void {
     }
@@ -283,6 +324,29 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      */
     protected onContextMenu(evt: PointerEvent): void {
         evt.preventDefault();
+    }
+
+    /**
+     * Called each time a new POINTERDOWN event occurs. Ie, for each button
+     * press.
+     * Override this method to provide functionality.
+     */
+    protected onButtonDown(evt: PointerEvent, buttonCount: number): void {
+    }
+
+    /**
+     * Called each time a new POINTERUP event occurs. Ie, for each button
+     * release.
+     * Override this method to provide functionality.
+     */
+    protected onButtonUp(evt: PointerEvent): void {
+    }
+
+    /**
+     * Called when window becomes inactive.
+     * Override this method to provide functionality.
+     */
+    protected onLostFocus(): void {
     }
 
     private _pointerInput: (p: PointerInfo, s: EventState) => void;
