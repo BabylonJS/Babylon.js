@@ -659,6 +659,26 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
+    public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
+        if (this.actionManager && (initialCall || this.actionManager.isRecursive)) {
+            if (trigger) {
+                if (this.actionManager.hasSpecificTrigger(trigger)) {
+                    return this.actionManager;
+                }
+            }
+            else {
+                return this.actionManager;
+            }
+        }
+
+        if (!this.parent) {
+            return null;
+        }
+
+        return this.parent._getActionManagerForTrigger(trigger, false);
+    }
+
+    /** @hidden */
     public _rebuild(): void {
         this.onRebuildObservable.notifyObservers(this);
 
