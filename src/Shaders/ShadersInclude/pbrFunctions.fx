@@ -92,7 +92,7 @@ float normalDistributionFunction_TrowbridgeReitzGGX(float NdotH, float alphaG)
 vec2 getAnisotropicRoughness(float alphaG, float anisotropy) {
     float alphaT = max(alphaG * (1.0 + anisotropy), MINIMUMVARIANCE);
     float alphaB = max(alphaG * (1.0 - anisotropy), MINIMUMVARIANCE);
-    return vec2(at, ab);
+    return vec2(alphaT, alphaB);
 }
 
 // GGX Distribution Anisotropic
@@ -160,7 +160,7 @@ vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, flo
 
 vec3 computeAnisotropicSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float TdotH, float BdotH, float TdotV, float BdotV, float TdotL, float BdotL, float roughness, float anisotropy, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor) {
     float alphaG = convertRoughnessToAverageSlope(roughness);
-    vec2 alphaTB = getAnisotropicRoughness(alphaG, anisotropy)
+    vec2 alphaTB = getAnisotropicRoughness(alphaG, anisotropy);
     alphaTB = max(alphaTB, geometricRoughnessFactor * geometricRoughnessFactor);
 
     float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);

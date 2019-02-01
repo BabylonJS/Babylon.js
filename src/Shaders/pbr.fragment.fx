@@ -10,8 +10,6 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
-#define ANISOTROPIC 
-
 precision highp float;
 
 #include<__decl__pbrFragment>
@@ -449,7 +447,7 @@ void main(void) {
         #endif
     #endif
 
-    // _____________________________ Compute LODs Fetch ____________________________________
+    // _____________________________ Compute Geometry info _________________________________
     float NdotVUnclamped = dot(normalW, viewDirectionW);
     float NdotV = clamp(NdotVUnclamped,0., 1.) + 0.00001;
     float alphaG = convertRoughnessToAverageSlope(roughness);
@@ -460,22 +458,23 @@ void main(void) {
         alphaG += AARoughnessFactors.y;
     #endif
 
+    #ifdef ANISOTROPIC
+        vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
+        vec3 anisotropicFrameTangent = cross(normalize(anisotropicFrameDirection), viewDirectionW);
+        vec3 anisotropicFrameNormal = cross(anisotropicFrameTangent, anisotropicFrameDirection);
+        vec3 anisotropicNormal = normalize(mix(normalW, anisotropicFrameNormal, abs(anisotropy)));
+    #endif
+
     // _____________________________ Refraction Info _______________________________________
     #ifdef REFRACTION
         vec4 environmentRefraction = vec4(0., 0., 0., 0.);
 
-        // #ifdef ANISOTROPIC
-        //     float anisotropy = -1.;
-        //     vec3 anisotropicDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
-        //     vec3 anisotropicTangent = cross(normalize(anisotropicDirection), normalize(viewDirectionW));
-        //     vec3 anisotropicNormal = cross(anisotropicTangent, anisotropicDirection);
-        //     vec3 bentNormal = normalize(mix(normalW, anisotropicNormal, abs(anisotropy)));
-        //     vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), bentNormal);
-        // #else
-        //     vec3 reflectionVector = normalW;
-        // #endif
+        #ifdef ANISOTROPIC
+            vec3 refractionVector = refract(-viewDirectionW, anisotropicNormal, vRefractionInfos.y);
+        #else
+            vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
+        #endif
 
-        vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
         #ifdef REFRACTIONMAP_OPPOSITEZ
             refractionVector.z *= -1.0;
         #endif
@@ -555,15 +554,11 @@ void main(void) {
     #ifdef REFLECTION
         vec4 environmentRadiance = vec4(0., 0., 0., 0.);
         vec3 environmentIrradiance = vec3(0., 0., 0.);
+
         #ifdef ANISOTROPIC
-            float anisotropy = 1.;
-            vec3 anisotropicDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
-            vec3 anisotropicTangent = cross(normalize(anisotropicDirection), normalize(viewDirectionW));
-            vec3 anisotropicNormal = cross(anisotropicTangent, anisotropicDirection);
-            vec3 bentNormal = normalize(mix(normalW, anisotropicNormal, abs(anisotropy)));
-            vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), bentNormal);
+            vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), anisotropicNormal);
         #else
-            vec3 reflectionVector = normalW;
+            vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
         #endif
 
         #ifdef REFLECTIONMAP_OPPOSITEZ
@@ -642,10 +637,16 @@ void main(void) {
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
-                vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
+                #ifdef ANISOTROPIC
+                    vec3 irradianceVector = vec3(reflectionMatrix * vec4(anisotropicNormal, 0)).xyz;
+                #else
+                    vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
+                #endif
+
                 #ifdef REFLECTIONMAP_OPPOSITEZ
                     irradianceVector.z *= -1.0;
                 #endif
+
                 environmentIrradiance = environmentIrradianceJones(irradianceVector);
             #endif
         #endif
@@ -1159,7 +1160,7 @@ void main(void) {
 
     //gl_FragColor = vec4(seo * eho, seo * eho, seo * eho, 1.0);
 
-    //gl_FragColor = vec4(normalize(TBN[0]) * 0.5 + 0.5, 1.0);
+    //gl_FragColor = vec4(normalize(-TBN[0]), 1.0);
 
     //gl_FragColor = vec4(vPositionW * 0.5 + 0.5, 1.0);
 
