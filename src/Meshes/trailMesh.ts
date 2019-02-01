@@ -1,5 +1,4 @@
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Material } from "../Materials/material";
 import { Mesh } from "../Meshes/mesh";
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
@@ -29,10 +28,9 @@ export class TrailMesh extends Mesh {
      * @param scene The scene to add this mesh to.
      * @param diameter Diameter of trailing mesh. Default is 1.
      * @param length Length of trailing mesh. Default is 60.
-     * @param material Material to apply to trailing mesh. Defaults to scene default.
      * @param autoStart Automatically start trailing mesh. Default true.
      */
-    constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, material?: Material, autoStart: boolean = true) {
+    constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, autoStart: boolean = true) {
         super(name, scene);
 
         this._running = false;
@@ -45,11 +43,6 @@ export class TrailMesh extends Mesh {
         for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
             this._sectionVectors[i] = Vector3.Zero();
             this._sectionNormalVectors[i] = Vector3.Zero();
-        }
-        if (material instanceof Material) {
-            this.material = material;
-        } else {
-            this.material = scene.defaultMaterial;
         }
         this._createMesh();
     }
@@ -193,7 +186,7 @@ export class TrailMesh extends Mesh {
      * @returns a new mesh
      */
     public clone(name: string = "", newGenerator: AbstractMesh): TrailMesh {
-        return new TrailMesh(name, (newGenerator === undefined ? this._generator : newGenerator), this.getScene(), this._diameter, this._length, (this.material === null ? this.getScene().defaultMaterial : this.material), this._autoStart);
+        return new TrailMesh(name, (newGenerator === undefined ? this._generator : newGenerator), this.getScene(), this._diameter, this._length, this._autoStart);
     }
 
     /**
@@ -211,6 +204,6 @@ export class TrailMesh extends Mesh {
      * @returns the created trail mesh
      */
     public static Parse(parsedMesh: any, scene: Scene): TrailMesh {
-        return new TrailMesh(parsedMesh.name, parsedMesh._generator, scene, parsedMesh._diameter, parsedMesh._length, parsedMesh.material, parsedMesh._autoStart);
+        return new TrailMesh(parsedMesh.name, parsedMesh._generator, scene, parsedMesh._diameter, parsedMesh._length, parsedMesh._autoStart);
     }
 }
