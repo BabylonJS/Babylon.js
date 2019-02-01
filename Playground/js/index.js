@@ -2,8 +2,6 @@
 var defaultScene = "scripts/basic scene.js";
 var monacoMode = "javascript";
 
-BABYLON.DebugLayer.InspectorURL = "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js";
-
 function getRunCode(jsEditor, callBack) {
     var code = jsEditor.getValue();
     callBack(code);
