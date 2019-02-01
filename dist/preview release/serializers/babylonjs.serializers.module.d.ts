@@ -1082,11 +1082,11 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform"
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual" {
+    import { Nullable } from "babylonjs/types";
     import { Node } from "babylonjs/node";
     import { INode } from "babylonjs-gltf2interface";
     import { IGLTFExporterExtensionV2 } from "babylonjs-serializers/glTF/2.0/glTFExporterExtension";
     import { _Exporter } from "babylonjs-serializers/glTF/2.0/glTFExporter";
-    import { Nullable } from 'babylonjs';
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
      */

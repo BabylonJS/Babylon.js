@@ -11,7 +11,7 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 import { GlobalState } from "../../globalState";
-import { UtilityLayerRenderer } from 'babylonjs';
+import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;

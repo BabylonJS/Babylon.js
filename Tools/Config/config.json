@@ -30,7 +30,10 @@
             "../../dist/preview release/loaders/babylonjs.loaders.d.ts",
             "../../dist/preview release/serializers/babylonjs.serializers.d.ts"
         ],
-        "typedocEntryPoint": ["\"babylon.d\"", "BABYLON"],
+        "typedocEntryPoint": [
+            "\"babylon.d\"",
+            "BABYLON"
+        ],
         "typedocJSON": "../../.temp/babylon.typedoc.json",
         "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json"
     },
@@ -510,6 +513,12 @@
         "build": {
             "ignoreInTestMode": true,
             "mainFolder": "./inspector/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom",
+                "re-resizable",
+                "glTF"
+            ],
             "umd": {
                 "packageName": "babylonjs-inspector",
                 "webpackRoot": "INSPECTOR",
@@ -528,7 +537,8 @@
                         "@babylonjs/loaders": "BABYLON",
                         "@babylonjs/serializers": "BABYLON",
                         "@babylonjs/gui": "BABYLON.GUI",
-                        "@fortawesome": false
+                        "@fortawesome": false,
+                        "react-contextmenu": false
                     }
                 }
             },

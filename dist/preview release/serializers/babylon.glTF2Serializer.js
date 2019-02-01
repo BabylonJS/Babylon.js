@@ -211,7 +211,7 @@ var KHR_lights_punctual = /** @class */ (function () {
                 var light = void 0;
                 var lightType = (babylonLight.getTypeID() == babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_POINTLIGHT ? LightType.POINT : (babylonLight.getTypeID() == babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_DIRECTIONALLIGHT ? LightType.DIRECTIONAL : (babylonLight.getTypeID() == babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_SPOTLIGHT ? LightType.SPOT : null)));
                 if (lightType == null) {
-                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn(context + ": Light " + babylonLight.name + " is not supported in " + NAME);
+                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn(context + ": Light " + babylonLight.name + " is not supported in " + NAME);
                 }
                 else {
                     var lightPosition = babylonLight.position.clone();
@@ -235,7 +235,7 @@ var KHR_lights_punctual = /** @class */ (function () {
                         }
                     }
                     if (babylonLight.falloffType !== babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Light"].FALLOFF_GLTF) {
-                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn(context + ": Light falloff for " + babylonLight.name + " does not match the " + NAME + " specification!");
+                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn(context + ": Light falloff for " + babylonLight.name + " does not match the " + NAME + " specification!");
                     }
                     light = {
                         type: lightType

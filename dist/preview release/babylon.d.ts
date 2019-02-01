@@ -6748,177 +6748,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines a runtime animation
-     */
-    export class RuntimeAnimation {
-        private _events;
-        /**
-         * The current frame of the runtime animation
-         */
-        private _currentFrame;
-        /**
-         * The animation used by the runtime animation
-         */
-        private _animation;
-        /**
-         * The target of the runtime animation
-         */
-        private _target;
-        /**
-         * The initiating animatable
-         */
-        private _host;
-        /**
-         * The original value of the runtime animation
-         */
-        private _originalValue;
-        /**
-         * The original blend value of the runtime animation
-         */
-        private _originalBlendValue;
-        /**
-         * The offsets cache of the runtime animation
-         */
-        private _offsetsCache;
-        /**
-         * The high limits cache of the runtime animation
-         */
-        private _highLimitsCache;
-        /**
-         * Specifies if the runtime animation has been stopped
-         */
-        private _stopped;
-        /**
-         * The blending factor of the runtime animation
-         */
-        private _blendingFactor;
-        /**
-         * The BabylonJS scene
-         */
-        private _scene;
-        /**
-         * The current value of the runtime animation
-         */
-        private _currentValue;
-        /** @hidden */
-        _workValue: any;
-        /**
-         * The active target of the runtime animation
-         */
-        private _activeTarget;
-        /**
-         * The target path of the runtime animation
-         */
-        private _targetPath;
-        /**
-         * The weight of the runtime animation
-         */
-        private _weight;
-        /**
-         * The ratio offset of the runtime animation
-         */
-        private _ratioOffset;
-        /**
-         * The previous delay of the runtime animation
-         */
-        private _previousDelay;
-        /**
-         * The previous ratio of the runtime animation
-         */
-        private _previousRatio;
-        /**
-         * Gets the current frame of the runtime animation
-         */
-        readonly currentFrame: number;
-        /**
-         * Gets the weight of the runtime animation
-         */
-        readonly weight: number;
-        /**
-         * Gets the current value of the runtime animation
-         */
-        readonly currentValue: any;
-        /**
-         * Gets the target path of the runtime animation
-         */
-        readonly targetPath: string;
-        /**
-         * Gets the actual target of the runtime animation
-         */
-        readonly target: any;
-        /**
-         * Create a new RuntimeAnimation object
-         * @param target defines the target of the animation
-         * @param animation defines the source animation object
-         * @param scene defines the hosting scene
-         * @param host defines the initiating Animatable
-         */
-        constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
-        /**
-         * Gets the animation from the runtime animation
-         */
-        readonly animation: Animation;
-        /**
-         * Resets the runtime animation to the beginning
-         * @param restoreOriginal defines whether to restore the target property to the original value
-         */
-        reset(restoreOriginal?: boolean): void;
-        /**
-         * Specifies if the runtime animation is stopped
-         * @returns Boolean specifying if the runtime animation is stopped
-         */
-        isStopped(): boolean;
-        /**
-         * Disposes of the runtime animation
-         */
-        dispose(): void;
-        /**
-         * Interpolates the animation from the current frame
-         * @param currentFrame The frame to interpolate the animation to
-         * @param repeatCount The number of times that the animation should loop
-         * @param loopMode The type of looping mode to use
-         * @param offsetValue Animation offset value
-         * @param highLimitValue The high limit value
-         * @returns The interpolated value
-         */
-        private _interpolate;
-        /**
-         * Apply the interpolated value to the target
-         * @param currentValue defines the value computed by the animation
-         * @param weight defines the weight to apply to this value (Defaults to 1.0)
-         */
-        setValue(currentValue: any, weight?: number): void;
-        private _setValue;
-        /**
-         * Gets the loop pmode of the runtime animation
-         * @returns Loop Mode
-         */
-        private _getCorrectLoopMode;
-        /**
-         * Move the current animation to a given frame
-         * @param frame defines the frame to move to
-         */
-        goToFrame(frame: number): void;
-        /**
-         * @hidden Internal use only
-         */
-        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
-        /**
-         * Execute the current animation
-         * @param delay defines the delay to add to the current frame
-         * @param from defines the lower bound of the animation range
-         * @param to defines the upper bound of the animation range
-         * @param loop defines if the current animation must loop
-         * @param speedRatio defines the current speed ratio
-         * @param weight defines the weight of the animation (default is -1 so no weight)
-         * @param onLoop optional callback called when animation loops
-         * @returns a boolean indicating if the animation is running
-         */
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number, onLoop?: () => void): boolean;
-    }
-}
-declare module BABYLON {
-    /**
      * @hidden
      */
     export class IntersectionInfo {
@@ -7555,6 +7384,417 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
+     * @see https://doc.babylonjs.com/how_to/transformnode
+     */
+    export class TransformNode extends Node {
+        /**
+         * Object will not rotate to face the camera
+         */
+        static BILLBOARDMODE_NONE: number;
+        /**
+         * Object will rotate to face the camera but only on the x axis
+         */
+        static BILLBOARDMODE_X: number;
+        /**
+         * Object will rotate to face the camera but only on the y axis
+         */
+        static BILLBOARDMODE_Y: number;
+        /**
+         * Object will rotate to face the camera but only on the z axis
+         */
+        static BILLBOARDMODE_Z: number;
+        /**
+         * Object will rotate to face the camera
+         */
+        static BILLBOARDMODE_ALL: number;
+        private _forward;
+        private _forwardInverted;
+        private _up;
+        private _right;
+        private _rightInverted;
+        private _position;
+        private _rotation;
+        private _rotationQuaternion;
+        protected _scaling: Vector3;
+        protected _isDirty: boolean;
+        private _transformToBoneReferal;
+        /**
+        * Set the billboard mode. Default is 0.
+        *
+        * | Value | Type | Description |
+        * | --- | --- | --- |
+        * | 0 | BILLBOARDMODE_NONE |  |
+        * | 1 | BILLBOARDMODE_X |  |
+        * | 2 | BILLBOARDMODE_Y |  |
+        * | 4 | BILLBOARDMODE_Z |  |
+        * | 7 | BILLBOARDMODE_ALL |  |
+        *
+        */
+        billboardMode: number;
+        /**
+         * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
+         */
+        scalingDeterminant: number;
+        /**
+         * Sets the distance of the object to max, often used by skybox
+         */
+        infiniteDistance: boolean;
+        /**
+         * Gets or sets a boolean indicating that non uniform scaling (when at least one component is different from others) should be ignored.
+         * By default the system will update normals to compensate
+         */
+        ignoreNonUniformScaling: boolean;
+        /** @hidden */
+        _poseMatrix: Matrix;
+        /** @hidden */
+        _localMatrix: Matrix;
+        private _absolutePosition;
+        private _pivotMatrix;
+        private _pivotMatrixInverse;
+        protected _postMultiplyPivotMatrix: boolean;
+        protected _isWorldMatrixFrozen: boolean;
+        /** @hidden */
+        _indexInSceneTransformNodesArray: number;
+        /**
+        * An event triggered after the world matrix is updated
+        */
+        onAfterWorldMatrixUpdateObservable: Observable<TransformNode>;
+        constructor(name: string, scene?: Nullable<Scene>, isPure?: boolean);
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "TransformNode" string
+         */
+        getClassName(): string;
+        /**
+          * Gets or set the node position (default is (0.0, 0.0, 0.0))
+          */
+        position: Vector3;
+        /**
+          * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
+          * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
+          */
+        rotation: Vector3;
+        /**
+         * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (0.0, 0.0, 0.0)).
+         */
+        scaling: Vector3;
+        /**
+         * Gets or sets the rotation Quaternion property : this a Quaternion object defining the node rotation by using a unit quaternion (undefined by default, but can be null).
+         * If set, only the rotationQuaternion is then used to compute the node rotation (ie. node.rotation will be ignored)
+         */
+        rotationQuaternion: Nullable<Quaternion>;
+        /**
+         * The forward direction of that transform in world space.
+         */
+        readonly forward: Vector3;
+        /**
+         * The up direction of that transform in world space.
+         */
+        readonly up: Vector3;
+        /**
+         * The right direction of that transform in world space.
+         */
+        readonly right: Vector3;
+        /**
+         * Copies the parameter passed Matrix into the mesh Pose matrix.
+         * @param matrix the matrix to copy the pose from
+         * @returns this TransformNode.
+         */
+        updatePoseMatrix(matrix: Matrix): TransformNode;
+        /**
+         * Returns the mesh Pose matrix.
+         * @returns the pose matrix
+         */
+        getPoseMatrix(): Matrix;
+        /** @hidden */
+        _isSynchronized(): boolean;
+        /** @hidden */
+        _initCache(): void;
+        /**
+        * Flag the transform node as dirty (Forcing it to update everything)
+        * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+        * @returns this transform node
+        */
+        markAsDirty(property: string): TransformNode;
+        /**
+         * Returns the current mesh absolute position.
+         * Returns a Vector3.
+         */
+        readonly absolutePosition: Vector3;
+        /**
+         * Sets a new matrix to apply before all other transformation
+         * @param matrix defines the transform matrix
+         * @returns the current TransformNode
+         */
+        setPreTransformMatrix(matrix: Matrix): TransformNode;
+        /**
+         * Sets a new pivot matrix to the current node
+         * @param matrix defines the new pivot matrix to use
+         * @param postMultiplyPivotMatrix defines if the pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect
+         * @returns the current TransformNode
+        */
+        setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix?: boolean): TransformNode;
+        /**
+         * Returns the mesh pivot matrix.
+         * Default : Identity.
+         * @returns the matrix
+         */
+        getPivotMatrix(): Matrix;
+        /**
+         * Prevents the World matrix to be computed any longer.
+         * @returns the TransformNode.
+         */
+        freezeWorldMatrix(): TransformNode;
+        /**
+         * Allows back the World matrix computation.
+         * @returns the TransformNode.
+         */
+        unfreezeWorldMatrix(): this;
+        /**
+         * True if the World matrix has been frozen.
+         */
+        readonly isWorldMatrixFrozen: boolean;
+        /**
+        * Retuns the mesh absolute position in the World.
+        * @returns a Vector3.
+        */
+        getAbsolutePosition(): Vector3;
+        /**
+         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
+         * @param absolutePosition the absolute position to set
+         * @returns the TransformNode.
+         */
+        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        /**
+         * Sets the mesh position in its local space.
+         * @param vector3 the position to set in localspace
+         * @returns the TransformNode.
+         */
+        setPositionWithLocalVector(vector3: Vector3): TransformNode;
+        /**
+         * Returns the mesh position in the local space from the current World matrix values.
+         * @returns a new Vector3.
+         */
+        getPositionExpressedInLocalSpace(): Vector3;
+        /**
+         * Translates the mesh along the passed Vector3 in its local space.
+         * @param vector3 the distance to translate in localspace
+         * @returns the TransformNode.
+         */
+        locallyTranslate(vector3: Vector3): TransformNode;
+        private static _lookAtVectorCache;
+        /**
+         * Orients a mesh towards a target point. Mesh must be drawn facing user.
+         * @param targetPoint the position (must be in same space as current mesh) to look at
+         * @param yawCor optional yaw (y-axis) correction in radians
+         * @param pitchCor optional pitch (x-axis) correction in radians
+         * @param rollCor optional roll (z-axis) correction in radians
+         * @param space the choosen space of the target
+         * @returns the TransformNode.
+         */
+        lookAt(targetPoint: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number, space?: Space): TransformNode;
+        /**
+          * Returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
+          * This Vector3 is expressed in the World space.
+          * @param localAxis axis to rotate
+          * @returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
+          */
+        getDirection(localAxis: Vector3): Vector3;
+        /**
+         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
+         * localAxis is expressed in the mesh local space.
+         * result is computed in the Wordl space from the mesh World matrix.
+         * @param localAxis axis to rotate
+         * @param result the resulting transformnode
+         * @returns this TransformNode.
+         */
+        getDirectionToRef(localAxis: Vector3, result: Vector3): TransformNode;
+        /**
+         * Sets this transform node rotation to the given local axis.
+         * @param localAxis the axis in local space
+         * @param yawCor optional yaw (y-axis) correction in radians
+         * @param pitchCor optional pitch (x-axis) correction in radians
+         * @param rollCor optional roll (z-axis) correction in radians
+         * @returns this TransformNode
+         */
+        setDirection(localAxis: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number): TransformNode;
+        /**
+         * Sets a new pivot point to the current node
+         * @param point defines the new pivot point to use
+         * @param space defines if the point is in world or local space (local by default)
+         * @returns the current TransformNode
+        */
+        setPivotPoint(point: Vector3, space?: Space): TransformNode;
+        /**
+         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
+         * @returns the pivot point
+         */
+        getPivotPoint(): Vector3;
+        /**
+         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
+         * @param result the vector3 to store the result
+         * @returns this TransformNode.
+         */
+        getPivotPointToRef(result: Vector3): TransformNode;
+        /**
+         * Returns a new Vector3 set with the mesh pivot point World coordinates.
+         * @returns a new Vector3 set with the mesh pivot point World coordinates.
+         */
+        getAbsolutePivotPoint(): Vector3;
+        /**
+         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
+         * @param result vector3 to store the result
+         * @returns this TransformNode.
+         */
+        getAbsolutePivotPointToRef(result: Vector3): TransformNode;
+        /**
+         * Defines the passed node as the parent of the current node.
+         * The node will remain exactly where it is and its position / rotation will be updated accordingly
+         * @param node the node ot set as the parent
+         * @returns this TransformNode.
+         */
+        setParent(node: Nullable<Node>): TransformNode;
+        private _nonUniformScaling;
+        /**
+         * True if the scaling property of this object is non uniform eg. (1,2,1)
+         */
+        readonly nonUniformScaling: boolean;
+        /** @hidden */
+        _updateNonUniformScalingState(value: boolean): boolean;
+        /**
+         * Attach the current TransformNode to another TransformNode associated with a bone
+         * @param bone Bone affecting the TransformNode
+         * @param affectedTransformNode TransformNode associated with the bone
+         * @returns this object
+         */
+        attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode;
+        /**
+         * Detach the transform node if its associated with a bone
+         * @returns this object
+         */
+        detachFromBone(): TransformNode;
+        private static _rotationAxisCache;
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
+         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized.
+         * @param axis the axis to rotate around
+         * @param amount the amount to rotate in radians
+         * @param space Space to rotate in (Default: local)
+         * @returns the TransformNode.
+         */
+        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized. .
+         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
+         * @param point the point to rotate around
+         * @param axis the axis to rotate around
+         * @param amount the amount to rotate in radians
+         * @returns the TransformNode
+         */
+        rotateAround(point: Vector3, axis: Vector3, amount: number): TransformNode;
+        /**
+         * Translates the mesh along the axis vector for the passed distance in the given space.
+         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
+         * @param axis the axis to translate in
+         * @param distance the distance to translate
+         * @param space Space to rotate in (Default: local)
+         * @returns the TransformNode.
+         */
+        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
+        /**
+         * Adds a rotation step to the mesh current rotation.
+         * x, y, z are Euler angles expressed in radians.
+         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
+         * This means this rotation is made in the mesh local space only.
+         * It's useful to set a custom rotation order different from the BJS standard one YXZ.
+         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
+         * ```javascript
+         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
+         * ```
+         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
+         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
+         * @param x Rotation to add
+         * @param y Rotation to add
+         * @param z Rotation to add
+         * @returns the TransformNode.
+         */
+        addRotation(x: number, y: number, z: number): TransformNode;
+        /**
+         * Computes the world matrix of the node
+         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+         * @returns the world matrix
+         */
+        computeWorldMatrix(force?: boolean): Matrix;
+        protected _afterComputeWorldMatrix(): void;
+        /**
+        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
+        * @param func callback function to add
+        *
+        * @returns the TransformNode.
+        */
+        registerAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode;
+        /**
+         * Removes a registered callback function.
+         * @param func callback function to remove
+         * @returns the TransformNode.
+         */
+        unregisterAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode;
+        /**
+         * Gets the position of the current mesh in camera space
+         * @param camera defines the camera to use
+         * @returns a position
+         */
+        getPositionInCameraSpace(camera?: Nullable<Camera>): Vector3;
+        /**
+         * Returns the distance from the mesh to the active camera
+         * @param camera defines the camera to use
+         * @returns the distance
+         */
+        getDistanceToCamera(camera?: Nullable<Camera>): number;
+        /**
+         * Clone the current transform node
+         * @param name Name of the new clone
+         * @param newParent New parent for the clone
+         * @param doNotCloneChildren Do not clone children hierarchy
+         * @returns the new transform node
+         */
+        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode>;
+        /**
+         * Serializes the objects information.
+         * @param currentSerializationObject defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(currentSerializationObject?: any): any;
+        /**
+         * Returns a new TransformNode object parsed from the source provided.
+         * @param parsedTransformNode is the source.
+         * @param scene the scne the object belongs to
+         * @param rootUrl is a string, it's the root URL to prefix the `delayLoadingFile` property with
+         * @returns a new TransformNode object parsed from the source provided.
+         */
+        static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode;
+        /**
+         * Get all child-transformNodes of this node
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @returns an array of TransformNode
+         */
+        getChildTransformNodes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): TransformNode[];
+        /**
+         * Releases resources associated with this transform node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to override all child animations of a given target
      */
     export class AnimationPropertiesOverride {
@@ -7574,369 +7814,357 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines a target to use with MorphTargetManager
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     * Class used to store bone information
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
      */
-    export class MorphTarget implements IAnimatable {
-        /** defines the name of the target */
+    export class Bone extends Node {
+        /**
+         * defines the bone name
+         */
         name: string;
+        private static _tmpVecs;
+        private static _tmpQuat;
+        private static _tmpMats;
         /**
-         * Gets or sets the list of animations
+         * Gets the list of child bones
          */
+        children: Bone[];
+        /** Gets the animations associated with this bone */
         animations: Animation[];
-        private _scene;
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
         /**
-         * Observable raised when the influence changes
+         * Gets or sets bone length
          */
-        onInfluenceChanged: Observable<boolean>;
+        length: number;
+        /**
+         * @hidden Internal only
+         * Set this value to map this bone to a different index in the transform matrices
+         * Set this value to -1 to exclude the bone from the transform matrices
+         */
+        _index: Nullable<number>;
+        private _skeleton;
+        private _localMatrix;
+        private _restPose;
+        private _baseMatrix;
+        private _absoluteTransform;
+        private _invertedAbsoluteTransform;
+        private _parent;
+        private _scalingDeterminant;
+        private _worldTransform;
+        private _localScaling;
+        private _localRotation;
+        private _localPosition;
+        private _needToDecompose;
+        private _needToCompose;
         /** @hidden */
-        _onDataLayoutChanged: Observable<void>;
+        _linkedTransformNode: Nullable<TransformNode>;
+        /** @hidden */
+        /** @hidden */
+        _matrix: Matrix;
         /**
-         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
-         */
-        influence: number;
-        /**
-         * Gets or sets the id of the morph Target
-         */
-        id: string;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        /**
-         * Creates a new MorphTarget
-         * @param name defines the name of the target
-         * @param influence defines the influence to use
-         * @param scene defines the scene the morphtarget belongs to
+         * Create a new bone
+         * @param name defines the bone name
+         * @param skeleton defines the parent skeleton
+         * @param parentBone defines the parent (can be null if the bone is the root)
+         * @param localMatrix defines the local matrix
+         * @param restPose defines the rest pose matrix
+         * @param baseMatrix defines the base matrix
+         * @param index defines index of the bone in the hiearchy
          */
         constructor(
-        /** defines the name of the target */
-        name: string, influence?: number, scene?: Nullable<Scene>);
         /**
-         * Gets a boolean defining if the target contains position data
+         * defines the bone name
          */
-        readonly hasPositions: boolean;
+        name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
         /**
-         * Gets a boolean defining if the target contains normal data
+         * Gets the parent skeleton
+         * @returns a skeleton
          */
-        readonly hasNormals: boolean;
+        getSkeleton(): Skeleton;
         /**
-         * Gets a boolean defining if the target contains tangent data
+         * Gets parent bone
+         * @returns a bone or null if the bone is the root of the bone hierarchy
          */
-        readonly hasTangents: boolean;
+        getParent(): Nullable<Bone>;
         /**
-         * Affects position data to this target
-         * @param data defines the position data to use
+         * Sets the parent bone
+         * @param parent defines the parent (can be null if the bone is the root)
+         * @param updateDifferenceMatrix defines if the difference matrix must be updated
          */
-        setPositions(data: Nullable<FloatArray>): void;
+        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
         /**
-         * Gets the position data stored in this target
-         * @returns a FloatArray containing the position data (or null if not present)
+         * Gets the local matrix
+         * @returns a matrix
          */
-        getPositions(): Nullable<FloatArray>;
+        getLocalMatrix(): Matrix;
         /**
-         * Affects normal data to this target
-         * @param data defines the normal data to use
+         * Gets the base matrix (initial matrix which remains unchanged)
+         * @returns a matrix
          */
-        setNormals(data: Nullable<FloatArray>): void;
+        getBaseMatrix(): Matrix;
         /**
-         * Gets the normal data stored in this target
-         * @returns a FloatArray containing the normal data (or null if not present)
+         * Gets the rest pose matrix
+         * @returns a matrix
          */
-        getNormals(): Nullable<FloatArray>;
+        getRestPose(): Matrix;
         /**
-         * Affects tangent data to this target
-         * @param data defines the tangent data to use
+         * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
          */
-        setTangents(data: Nullable<FloatArray>): void;
+        getWorldMatrix(): Matrix;
         /**
-         * Gets the tangent data stored in this target
-         * @returns a FloatArray containing the tangent data (or null if not present)
+         * Sets the local matrix to rest pose matrix
          */
-        getTangents(): Nullable<FloatArray>;
+        returnToRest(): void;
         /**
-         * Serializes the current target into a Serialization object
-         * @returns the serialized object
+         * Gets the inverse of the absolute transform matrix.
+         * This matrix will be multiplied by local matrix to get the difference matrix (ie. the difference between original state and current state)
+         * @returns a matrix
          */
-        serialize(): any;
+        getInvertedAbsoluteTransform(): Matrix;
         /**
-         * Returns the string "MorphTarget"
-         * @returns "MorphTarget"
+         * Gets the absolute transform matrix (ie base matrix * parent world matrix)
+         * @returns a matrix
          */
-        getClassName(): string;
+        getAbsoluteTransform(): Matrix;
         /**
-         * Creates a new target from serialized data
-         * @param serializationObject defines the serialized data to use
-         * @returns a new MorphTarget
+         * Links with the given transform node.
+         * The local matrix of this bone is copied from the transform node every frame.
+         * @param transformNode defines the transform node to link to
          */
-        static Parse(serializationObject: any): MorphTarget;
+        linkTransformNode(transformNode: Nullable<TransformNode>): void;
+        /** Gets or sets current position (in local space) */
+        position: Vector3;
+        /** Gets or sets current rotation (in local space) */
+        rotation: Vector3;
+        /** Gets or sets current rotation quaternion (in local space) */
+        rotationQuaternion: Quaternion;
+        /** Gets or sets current scaling (in local space) */
+        scaling: Vector3;
         /**
-         * Creates a MorphTarget from mesh data
-         * @param mesh defines the source mesh
-         * @param name defines the name to use for the new target
-         * @param influence defines the influence to attach to the target
-         * @returns a new MorphTarget
+         * Gets the animation properties override
          */
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class is used to deform meshes using morphing between different targets
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
-     */
-    export class MorphTargetManager {
-        private _targets;
-        private _targetInfluenceChangedObservers;
-        private _targetDataLayoutChangedObservers;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
+        readonly animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        private _decompose;
+        private _compose;
         /**
-         * Creates a new MorphTargetManager
-         * @param scene defines the current scene
+         * Update the base and local matrices
+         * @param matrix defines the new base or local matrix
+         * @param updateDifferenceMatrix defines if the difference matrix must be updated
+         * @param updateLocalMatrix defines if the local matrix should be updated
          */
-        constructor(scene?: Nullable<Scene>);
-        /**
-         * Gets the unique ID of this manager
-         */
-        readonly uniqueId: number;
-        /**
-         * Gets the number of vertices handled by this manager
-         */
-        readonly vertexCount: number;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of normals
-         */
-        readonly supportsNormals: boolean;
-        /**
-         * Gets a boolean indicating if this manager supports morphing of tangents
-         */
-        readonly supportsTangents: boolean;
-        /**
-         * Gets the number of targets stored in this manager
-         */
-        readonly numTargets: number;
-        /**
-         * Gets the number of influencers (ie. the number of targets with influences > 0)
-         */
-        readonly numInfluencers: number;
-        /**
-         * Gets the list of influences (one per target)
-         */
-        readonly influences: Float32Array;
-        /**
-         * Gets the active target at specified index. An active target is a target with an influence > 0
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getActiveTarget(index: number): MorphTarget;
-        /**
-         * Gets the target at specified index
-         * @param index defines the index to check
-         * @returns the requested target
-         */
-        getTarget(index: number): MorphTarget;
-        /**
-         * Add a new target to this manager
-         * @param target defines the target to add
-         */
-        addTarget(target: MorphTarget): void;
-        /**
-         * Removes a target from the manager
-         * @param target defines the target to remove
-         */
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object
-         * @returns the serialized object
-         */
-        serialize(): any;
-        private _syncActiveTargets;
-        /**
-         * Syncrhonize the targets with all the meshes using this morph target manager
-         */
-        synchronize(): void;
-        /**
-         * Creates a new MorphTargetManager from serialized data
-         * @param serializationObject defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns the new MorphTargetManager
-         */
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-declare module BABYLON {
-    /**
-     * Creates an instance based on a source mesh.
-     */
-    export class InstancedMesh extends AbstractMesh {
-        private _sourceMesh;
-        private _currentLOD;
+        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean, updateLocalMatrix?: boolean): void;
         /** @hidden */
-        _indexInSourceMeshInstanceArray: number;
-        constructor(name: string, source: Mesh);
+        _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren?: boolean): void;
         /**
-         * Returns the string "InstancedMesh".
+         * Flag the bone as dirty (Forcing it to update everything)
          */
-        getClassName(): string;
+        markAsDirty(): void;
+        private _markAsDirtyAndCompose;
+        private _markAsDirtyAndDecompose;
         /**
-         * If the source mesh receives shadows
+         * Translate the bone in local or world space
+         * @param vec The amount to translate the bone
+         * @param space The space that the translation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
-        readonly receiveShadows: boolean;
+        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * The material of the source mesh
+         * Set the postion of the bone in local or world space
+         * @param position The position to set the bone
+         * @param space The space that the position is in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
          */
-        readonly material: Nullable<Material>;
+        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Visibility of the source mesh
+         * Set the absolute position of the bone (world space)
+         * @param position The position to set the bone
+         * @param mesh The mesh that this bone is attached to
          */
-        readonly visibility: number;
+        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
         /**
-         * Skeleton of the source mesh
+         * Scale the bone on the x, y and z axes (in local space)
+         * @param x The amount to scale the bone on the x axis
+         * @param y The amount to scale the bone on the y axis
+         * @param z The amount to scale the bone on the z axis
+         * @param scaleChildren sets this to true if children of the bone should be scaled as well (false by default)
          */
-        readonly skeleton: Nullable<Skeleton>;
+        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
         /**
-         * Rendering ground id of the source mesh
+         * Set the bone scaling in local space
+         * @param scale defines the scaling vector
          */
-        renderingGroupId: number;
+        setScale(scale: Vector3): void;
         /**
-         * Returns the total number of vertices (integer).
+         * Gets the current scaling in local space
+         * @returns the current scaling vector
          */
-        getTotalVertices(): number;
+        getScale(): Vector3;
         /**
-         * Returns a positive integer : the total number of indices in this mesh geometry.
-         * @returns the numner of indices or zero if the mesh has no geometry.
+         * Gets the current scaling in local space and stores it in a target vector
+         * @param result defines the target vector
          */
-        getTotalIndices(): number;
+        getScaleToRef(result: Vector3): void;
         /**
-         * The source mesh of the instance
+         * Set the yaw, pitch, and roll of the bone in local or world space
+         * @param yaw The rotation of the bone on the y axis
+         * @param pitch The rotation of the bone on the x axis
+         * @param roll The rotation of the bone on the z axis
+         * @param space The space that the axes of rotation are in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
          */
-        readonly sourceMesh: Mesh;
+        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Is this node ready to be used/rendered
-         * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
-         * @return {boolean} is it ready
+         * Add a rotation to the bone on an axis in local or world space
+         * @param axis The axis to rotate the bone on
+         * @param amount The amount to rotate the bone
+         * @param space The space that the axis is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
-        isReady(completeCheck?: boolean): boolean;
+        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.
-         * @param kind kind of verticies to retreive (eg. positons, normals, uvs, etc.)
-         * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
-         * @returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
+         * Set the rotation of the bone to a particular axis angle in local or world space
+         * @param axis The axis to rotate the bone on
+         * @param angle The angle that the bone should be rotated to
+         * @param space The space that the axis is in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
          */
-        getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray>;
+        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Sets the vertex data of the mesh geometry for the requested `kind`.
-         * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
-         * The `data` are either a numeric array either a Float32Array.
-         * The parameter `updatable` is passed as is to the underlying Geometry object constructor (if initianilly none) or updater.
-         * The parameter `stride` is an optional positive integer, it is usually automatically deducted from the `kind` (3 for positions or normals, 2 for UV, etc).
-         * Note that a new underlying VertexBuffer object is created each call.
-         * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
-         *
-         * Possible `kind` values :
-         * - VertexBuffer.PositionKind
-         * - VertexBuffer.UVKind
-         * - VertexBuffer.UV2Kind
-         * - VertexBuffer.UV3Kind
-         * - VertexBuffer.UV4Kind
-         * - VertexBuffer.UV5Kind
-         * - VertexBuffer.UV6Kind
-         * - VertexBuffer.ColorKind
-         * - VertexBuffer.MatricesIndicesKind
-         * - VertexBuffer.MatricesIndicesExtraKind
-         * - VertexBuffer.MatricesWeightsKind
-         * - VertexBuffer.MatricesWeightsExtraKind
-         *
-         * Returns the Mesh.
+         * Set the euler rotation of the bone in local of world space
+         * @param rotation The euler rotation that the bone should be set to
+         * @param space The space that the rotation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
-        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh;
+        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Updates the existing vertex data of the mesh geometry for the requested `kind`.
-         * If the mesh has no geometry, it is simply returned as it is.
-         * The `data` are either a numeric array either a Float32Array.
-         * No new underlying VertexBuffer object is created.
-         * If the `kind` is the `PositionKind` and if `updateExtends` is true, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
-         * If the parameter `makeItUnique` is true, a new global geometry is created from this positions and is set to the mesh.
-         *
-         * Possible `kind` values :
-         * - VertexBuffer.PositionKind
-         * - VertexBuffer.UVKind
-         * - VertexBuffer.UV2Kind
-         * - VertexBuffer.UV3Kind
-         * - VertexBuffer.UV4Kind
-         * - VertexBuffer.UV5Kind
-         * - VertexBuffer.UV6Kind
-         * - VertexBuffer.ColorKind
-         * - VertexBuffer.MatricesIndicesKind
-         * - VertexBuffer.MatricesIndicesExtraKind
-         * - VertexBuffer.MatricesWeightsKind
-         * - VertexBuffer.MatricesWeightsExtraKind
-         *
-         * Returns the Mesh.
+         * Set the quaternion rotation of the bone in local of world space
+         * @param quat The quaternion rotation that the bone should be set to
+         * @param space The space that the rotation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
-        updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh;
+        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Sets the mesh indices.
-         * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array).
-         * If the mesh has no geometry, a new Geometry object is created and set to the mesh.
-         * This method creates a new index buffer each call.
-         * Returns the Mesh.
+         * Set the rotation matrix of the bone in local of world space
+         * @param rotMat The rotation matrix that the bone should be set to
+         * @param space The space that the rotation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
-        setIndices(indices: IndicesArray, totalVertices?: Nullable<number>): Mesh;
+        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
+        private _rotateWithMatrix;
+        private _getNegativeRotationToRef;
         /**
-         * Boolean : True if the mesh owns the requested kind of data.
+         * Get the position of the bone in local or world space
+         * @param space The space that the returned position is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @returns The position of the bone
          */
-        isVerticesDataPresent(kind: string): boolean;
+        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
         /**
-         * Returns an array of indices (IndicesArray).
+         * Copy the position of the bone to a vector3 in local or world space
+         * @param space The space that the returned position is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param result The vector3 to copy the position to
          */
-        getIndices(): Nullable<IndicesArray>;
-        readonly _positions: Nullable<Vector3[]>;
+        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
         /**
-         * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
-         * This means the mesh underlying bounding box and sphere are recomputed.
-         * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
-         * @returns the current mesh
+         * Get the absolute position of the bone (world space)
+         * @param mesh The mesh that this bone is attached to
+         * @returns The absolute position of the bone
          */
-        refreshBoundingInfo(applySkeleton?: boolean): InstancedMesh;
-        /** @hidden */
-        _preActivate(): InstancedMesh;
-        /** @hidden */
-        _activate(renderId: number): InstancedMesh;
+        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
         /**
-         * Returns the current associated LOD AbstractMesh.
+         * Copy the absolute position of the bone (world space) to the result param
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 to copy the absolute position to
          */
-        getLOD(camera: Camera): AbstractMesh;
-        /** @hidden */
-        _syncSubMeshes(): InstancedMesh;
-        /** @hidden */
-        _generatePointsArray(): boolean;
+        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
         /**
-         * Creates a new InstancedMesh from the current mesh.
-         * - name (string) : the cloned mesh name
-         * - newParent (optional Node) : the optional Node to parent the clone to.
-         * - doNotCloneChildren (optional boolean, default `false`) : if `true` the model children aren't cloned.
-         *
-         * Returns the clone.
+         * Compute the absolute transforms of this bone and its children
          */
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): InstancedMesh;
+        computeAbsoluteTransforms(): void;
         /**
-         * Disposes the InstancedMesh.
-         * Returns nothing.
+         * Get the world direction from an axis that is in the local space of the bone
+         * @param localAxis The local direction that is used to compute the world direction
+         * @param mesh The mesh that this bone is attached to
+         * @returns The world direction
          */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the world direction to a vector3 from an axis that is in the local space of the bone
+         * @param localAxis The local direction that is used to compute the world direction
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 that the world direction will be copied to
+         */
+        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the euler rotation of the bone in local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @returns The euler rotation
+         */
+        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param result The vector3 that the rotation should be copied to
+         */
+        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the quaternion rotation of the bone in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @returns The quaternion rotation
+         */
+        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
+        /**
+         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param result The quaternion that the rotation should be copied to
+         */
+        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
+        /**
+         * Get the rotation matrix of the bone in local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @returns The rotation matrix
+         */
+        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
+        /**
+         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param result The quaternion that the rotation should be copied to
+         */
+        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
+        /**
+         * Get the world position of a point that is in the local space of the bone
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to
+         * @returns The world position
+         */
+        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the world position of a point that is in the local space of the bone and copy it to the result param
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 that the world position should be copied to
+         */
+        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the local position of a point that is in world space
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to
+         * @returns The local position
+         */
+        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the local position of a point that is in world space and copy it to the result param
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 that the local position should be copied to
+         */
+        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
     }
 }
 declare module BABYLON {
@@ -8501,97 +8729,6 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface used to define ActionEvent
-     */
-    export interface IActionEvent {
-        /** The mesh or sprite that triggered the action */
-        source: any;
-        /** The X mouse cursor position at the time of the event */
-        pointerX: number;
-        /** The Y mouse cursor position at the time of the event */
-        pointerY: number;
-        /** The mesh that is currently pointed at (can be null) */
-        meshUnderPointer: Nullable<AbstractMesh>;
-        /** the original (browser) event that triggered the ActionEvent */
-        sourceEvent?: any;
-        /** additional data for the event */
-        additionalData?: any;
-    }
-    /**
-     * ActionEvent is the event being sent when an action is triggered.
-     */
-    export class ActionEvent implements IActionEvent {
-        /** The mesh or sprite that triggered the action */
-        source: any;
-        /** The X mouse cursor position at the time of the event */
-        pointerX: number;
-        /** The Y mouse cursor position at the time of the event */
-        pointerY: number;
-        /** The mesh that is currently pointed at (can be null) */
-        meshUnderPointer: Nullable<AbstractMesh>;
-        /** the original (browser) event that triggered the ActionEvent */
-        sourceEvent?: any;
-        /** additional data for the event */
-        additionalData?: any;
-        /**
-         * Creates a new ActionEvent
-         * @param source The mesh or sprite that triggered the action
-         * @param pointerX The X mouse cursor position at the time of the event
-         * @param pointerY The Y mouse cursor position at the time of the event
-         * @param meshUnderPointer The mesh that is currently pointed at (can be null)
-         * @param sourceEvent the original (browser) event that triggered the ActionEvent
-         * @param additionalData additional data for the event
-         */
-        constructor(
-        /** The mesh or sprite that triggered the action */
-        source: any, 
-        /** The X mouse cursor position at the time of the event */
-        pointerX: number, 
-        /** The Y mouse cursor position at the time of the event */
-        pointerY: number, 
-        /** The mesh that is currently pointed at (can be null) */
-        meshUnderPointer: Nullable<AbstractMesh>, 
-        /** the original (browser) event that triggered the ActionEvent */
-        sourceEvent?: any, 
-        /** additional data for the event */
-        additionalData?: any);
-        /**
-         * Helper function to auto-create an ActionEvent from a source mesh.
-         * @param source The source mesh that triggered the event
-         * @param evt The original (browser) event
-         * @param additionalData additional data for the event
-         * @returns the new ActionEvent
-         */
-        static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent;
-        /**
-         * Helper function to auto-create an ActionEvent from a source sprite
-         * @param source The source sprite that triggered the event
-         * @param scene Scene associated with the sprite
-         * @param evt The original (browser) event
-         * @param additionalData additional data for the event
-         * @returns the new ActionEvent
-         */
-        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: Event, additionalData?: any): ActionEvent;
-        /**
-         * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
-         * @param scene the scene where the event occurred
-         * @param evt The original (browser) event
-         * @returns the new ActionEvent
-         */
-        static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent;
-        /**
-         * Helper function to auto-create an ActionEvent from a primitive
-         * @param prim defines the target primitive
-         * @param pointerPos defines the pointer position
-         * @param evt The original (browser) event
-         * @param additionalData additional data for the event
-         * @returns the new ActionEvent
-         */
-        static CreateNewFromPrimitive(prim: any, pointerPos: Vector2, evt?: Event, additionalData?: any): ActionEvent;
     }
 }
 declare module BABYLON {
@@ -10066,7 +10203,7 @@ declare module BABYLON {
        * Trigger for the action
        */
         trigger: number;
-        /** the trigger, with or without parameters, for the action */
+        /** Options of the trigger */
         triggerOptions: any;
         /**
          * Gets the trigger parameters
@@ -10703,82 +10840,6 @@ declare module BABYLON {
          * @returns the serialized object
          */
         serialize(parent: any): any;
-    }
-}
-declare module BABYLON {
-    /**
-     * Abstract class used to decouple action Manager from scene and meshes.
-     * Do not instantiate.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export abstract class AbstractActionManager implements IDisposable {
-        /** Gets the list of active triggers */
-        static Triggers: {
-            [key: string]: number;
-        };
-        /** Gets the cursor to use when hovering items */
-        hoverCursor: string;
-        /** Gets the list of actions */
-        actions: IAction[];
-        /**
-         * Releases all associated resources
-         */
-        abstract dispose(): void;
-        /**
-         * Does this action manager has pointer triggers
-         */
-        abstract readonly hasPointerTriggers: boolean;
-        /**
-         * Does this action manager has pick triggers
-         */
-        abstract readonly hasPickTriggers: boolean;
-        /**
-         * Process a specific trigger
-         * @param trigger defines the trigger to process
-         * @param evt defines the event details to be processed
-         */
-        abstract processTrigger(trigger: number, evt?: IActionEvent): void;
-        /**
-         * Does this action manager handles actions of any of the given triggers
-         * @param triggers defines the triggers to be tested
-         * @return a boolean indicating whether one (or more) of the triggers is handled
-         */
-        abstract hasSpecificTriggers(triggers: number[]): boolean;
-        /**
-         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for
-         * speed.
-         * @param triggerA defines the trigger to be tested
-         * @param triggerB defines the trigger to be tested
-         * @return a boolean indicating whether one (or more) of the triggers is handled
-         */
-        abstract hasSpecificTriggers2(triggerA: number, triggerB: number): boolean;
-        /**
-         * Does this action manager handles actions of a given trigger
-         * @param trigger defines the trigger to be tested
-         * @param parameterPredicate defines an optional predicate to filter triggers by parameter
-         * @return whether the trigger is handled
-         */
-        abstract hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean;
-        /**
-             * Serialize this manager to a JSON object
-             * @param name defines the property name to store this manager
-             * @returns a JSON representation of this manager
-             */
-        abstract serialize(name: string): any;
-        /**
-         * Does exist one action manager with at least one trigger
-         **/
-        static readonly HasTriggers: boolean;
-        /**
-         * Does exist one action manager with at least one pick trigger
-         **/
-        static readonly HasPickTriggers: boolean;
-        /**
-         * Does exist one action manager that handles actions of a given trigger
-         * @param trigger defines the trigger to be tested
-         * @return a boolean indicating whether the trigger is handeled by at least one action manager
-        **/
-        static HasSpecificTrigger(trigger: number): boolean;
     }
 }
 declare module BABYLON {
@@ -12258,417 +12319,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
-     * @see https://doc.babylonjs.com/how_to/transformnode
-     */
-    export class TransformNode extends Node {
-        /**
-         * Object will not rotate to face the camera
-         */
-        static BILLBOARDMODE_NONE: number;
-        /**
-         * Object will rotate to face the camera but only on the x axis
-         */
-        static BILLBOARDMODE_X: number;
-        /**
-         * Object will rotate to face the camera but only on the y axis
-         */
-        static BILLBOARDMODE_Y: number;
-        /**
-         * Object will rotate to face the camera but only on the z axis
-         */
-        static BILLBOARDMODE_Z: number;
-        /**
-         * Object will rotate to face the camera
-         */
-        static BILLBOARDMODE_ALL: number;
-        private _forward;
-        private _forwardInverted;
-        private _up;
-        private _right;
-        private _rightInverted;
-        private _position;
-        private _rotation;
-        private _rotationQuaternion;
-        protected _scaling: Vector3;
-        protected _isDirty: boolean;
-        private _transformToBoneReferal;
-        /**
-        * Set the billboard mode. Default is 0.
-        *
-        * | Value | Type | Description |
-        * | --- | --- | --- |
-        * | 0 | BILLBOARDMODE_NONE |  |
-        * | 1 | BILLBOARDMODE_X |  |
-        * | 2 | BILLBOARDMODE_Y |  |
-        * | 4 | BILLBOARDMODE_Z |  |
-        * | 7 | BILLBOARDMODE_ALL |  |
-        *
-        */
-        billboardMode: number;
-        /**
-         * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
-         */
-        scalingDeterminant: number;
-        /**
-         * Sets the distance of the object to max, often used by skybox
-         */
-        infiniteDistance: boolean;
-        /**
-         * Gets or sets a boolean indicating that non uniform scaling (when at least one component is different from others) should be ignored.
-         * By default the system will update normals to compensate
-         */
-        ignoreNonUniformScaling: boolean;
-        /** @hidden */
-        _poseMatrix: Matrix;
-        /** @hidden */
-        _localMatrix: Matrix;
-        private _absolutePosition;
-        private _pivotMatrix;
-        private _pivotMatrixInverse;
-        protected _postMultiplyPivotMatrix: boolean;
-        protected _isWorldMatrixFrozen: boolean;
-        /** @hidden */
-        _indexInSceneTransformNodesArray: number;
-        /**
-        * An event triggered after the world matrix is updated
-        */
-        onAfterWorldMatrixUpdateObservable: Observable<TransformNode>;
-        constructor(name: string, scene?: Nullable<Scene>, isPure?: boolean);
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "TransformNode" string
-         */
-        getClassName(): string;
-        /**
-          * Gets or set the node position (default is (0.0, 0.0, 0.0))
-          */
-        position: Vector3;
-        /**
-          * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
-          * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
-          */
-        rotation: Vector3;
-        /**
-         * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (0.0, 0.0, 0.0)).
-         */
-        scaling: Vector3;
-        /**
-         * Gets or sets the rotation Quaternion property : this a Quaternion object defining the node rotation by using a unit quaternion (undefined by default, but can be null).
-         * If set, only the rotationQuaternion is then used to compute the node rotation (ie. node.rotation will be ignored)
-         */
-        rotationQuaternion: Nullable<Quaternion>;
-        /**
-         * The forward direction of that transform in world space.
-         */
-        readonly forward: Vector3;
-        /**
-         * The up direction of that transform in world space.
-         */
-        readonly up: Vector3;
-        /**
-         * The right direction of that transform in world space.
-         */
-        readonly right: Vector3;
-        /**
-         * Copies the parameter passed Matrix into the mesh Pose matrix.
-         * @param matrix the matrix to copy the pose from
-         * @returns this TransformNode.
-         */
-        updatePoseMatrix(matrix: Matrix): TransformNode;
-        /**
-         * Returns the mesh Pose matrix.
-         * @returns the pose matrix
-         */
-        getPoseMatrix(): Matrix;
-        /** @hidden */
-        _isSynchronized(): boolean;
-        /** @hidden */
-        _initCache(): void;
-        /**
-        * Flag the transform node as dirty (Forcing it to update everything)
-        * @param property if set to "rotation" the objects rotationQuaternion will be set to null
-        * @returns this transform node
-        */
-        markAsDirty(property: string): TransformNode;
-        /**
-         * Returns the current mesh absolute position.
-         * Returns a Vector3.
-         */
-        readonly absolutePosition: Vector3;
-        /**
-         * Sets a new matrix to apply before all other transformation
-         * @param matrix defines the transform matrix
-         * @returns the current TransformNode
-         */
-        setPreTransformMatrix(matrix: Matrix): TransformNode;
-        /**
-         * Sets a new pivot matrix to the current node
-         * @param matrix defines the new pivot matrix to use
-         * @param postMultiplyPivotMatrix defines if the pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect
-         * @returns the current TransformNode
-        */
-        setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix?: boolean): TransformNode;
-        /**
-         * Returns the mesh pivot matrix.
-         * Default : Identity.
-         * @returns the matrix
-         */
-        getPivotMatrix(): Matrix;
-        /**
-         * Prevents the World matrix to be computed any longer.
-         * @returns the TransformNode.
-         */
-        freezeWorldMatrix(): TransformNode;
-        /**
-         * Allows back the World matrix computation.
-         * @returns the TransformNode.
-         */
-        unfreezeWorldMatrix(): this;
-        /**
-         * True if the World matrix has been frozen.
-         */
-        readonly isWorldMatrixFrozen: boolean;
-        /**
-        * Retuns the mesh absolute position in the World.
-        * @returns a Vector3.
-        */
-        getAbsolutePosition(): Vector3;
-        /**
-         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
-         * @param absolutePosition the absolute position to set
-         * @returns the TransformNode.
-         */
-        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
-        /**
-         * Sets the mesh position in its local space.
-         * @param vector3 the position to set in localspace
-         * @returns the TransformNode.
-         */
-        setPositionWithLocalVector(vector3: Vector3): TransformNode;
-        /**
-         * Returns the mesh position in the local space from the current World matrix values.
-         * @returns a new Vector3.
-         */
-        getPositionExpressedInLocalSpace(): Vector3;
-        /**
-         * Translates the mesh along the passed Vector3 in its local space.
-         * @param vector3 the distance to translate in localspace
-         * @returns the TransformNode.
-         */
-        locallyTranslate(vector3: Vector3): TransformNode;
-        private static _lookAtVectorCache;
-        /**
-         * Orients a mesh towards a target point. Mesh must be drawn facing user.
-         * @param targetPoint the position (must be in same space as current mesh) to look at
-         * @param yawCor optional yaw (y-axis) correction in radians
-         * @param pitchCor optional pitch (x-axis) correction in radians
-         * @param rollCor optional roll (z-axis) correction in radians
-         * @param space the choosen space of the target
-         * @returns the TransformNode.
-         */
-        lookAt(targetPoint: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number, space?: Space): TransformNode;
-        /**
-          * Returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
-          * This Vector3 is expressed in the World space.
-          * @param localAxis axis to rotate
-          * @returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
-          */
-        getDirection(localAxis: Vector3): Vector3;
-        /**
-         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
-         * localAxis is expressed in the mesh local space.
-         * result is computed in the Wordl space from the mesh World matrix.
-         * @param localAxis axis to rotate
-         * @param result the resulting transformnode
-         * @returns this TransformNode.
-         */
-        getDirectionToRef(localAxis: Vector3, result: Vector3): TransformNode;
-        /**
-         * Sets this transform node rotation to the given local axis.
-         * @param localAxis the axis in local space
-         * @param yawCor optional yaw (y-axis) correction in radians
-         * @param pitchCor optional pitch (x-axis) correction in radians
-         * @param rollCor optional roll (z-axis) correction in radians
-         * @returns this TransformNode
-         */
-        setDirection(localAxis: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number): TransformNode;
-        /**
-         * Sets a new pivot point to the current node
-         * @param point defines the new pivot point to use
-         * @param space defines if the point is in world or local space (local by default)
-         * @returns the current TransformNode
-        */
-        setPivotPoint(point: Vector3, space?: Space): TransformNode;
-        /**
-         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
-         * @returns the pivot point
-         */
-        getPivotPoint(): Vector3;
-        /**
-         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
-         * @param result the vector3 to store the result
-         * @returns this TransformNode.
-         */
-        getPivotPointToRef(result: Vector3): TransformNode;
-        /**
-         * Returns a new Vector3 set with the mesh pivot point World coordinates.
-         * @returns a new Vector3 set with the mesh pivot point World coordinates.
-         */
-        getAbsolutePivotPoint(): Vector3;
-        /**
-         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
-         * @param result vector3 to store the result
-         * @returns this TransformNode.
-         */
-        getAbsolutePivotPointToRef(result: Vector3): TransformNode;
-        /**
-         * Defines the passed node as the parent of the current node.
-         * The node will remain exactly where it is and its position / rotation will be updated accordingly
-         * @param node the node ot set as the parent
-         * @returns this TransformNode.
-         */
-        setParent(node: Nullable<Node>): TransformNode;
-        private _nonUniformScaling;
-        /**
-         * True if the scaling property of this object is non uniform eg. (1,2,1)
-         */
-        readonly nonUniformScaling: boolean;
-        /** @hidden */
-        _updateNonUniformScalingState(value: boolean): boolean;
-        /**
-         * Attach the current TransformNode to another TransformNode associated with a bone
-         * @param bone Bone affecting the TransformNode
-         * @param affectedTransformNode TransformNode associated with the bone
-         * @returns this object
-         */
-        attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode;
-        /**
-         * Detach the transform node if its associated with a bone
-         * @returns this object
-         */
-        detachFromBone(): TransformNode;
-        private static _rotationAxisCache;
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
-         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
-         * The passed axis is also normalized.
-         * @param axis the axis to rotate around
-         * @param amount the amount to rotate in radians
-         * @param space Space to rotate in (Default: local)
-         * @returns the TransformNode.
-         */
-        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
-         * The passed axis is also normalized. .
-         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
-         * @param point the point to rotate around
-         * @param axis the axis to rotate around
-         * @param amount the amount to rotate in radians
-         * @returns the TransformNode
-         */
-        rotateAround(point: Vector3, axis: Vector3, amount: number): TransformNode;
-        /**
-         * Translates the mesh along the axis vector for the passed distance in the given space.
-         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
-         * @param axis the axis to translate in
-         * @param distance the distance to translate
-         * @param space Space to rotate in (Default: local)
-         * @returns the TransformNode.
-         */
-        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
-        /**
-         * Adds a rotation step to the mesh current rotation.
-         * x, y, z are Euler angles expressed in radians.
-         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
-         * This means this rotation is made in the mesh local space only.
-         * It's useful to set a custom rotation order different from the BJS standard one YXZ.
-         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
-         * ```javascript
-         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
-         * ```
-         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
-         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
-         * @param x Rotation to add
-         * @param y Rotation to add
-         * @param z Rotation to add
-         * @returns the TransformNode.
-         */
-        addRotation(x: number, y: number, z: number): TransformNode;
-        /**
-         * Computes the world matrix of the node
-         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
-         * @returns the world matrix
-         */
-        computeWorldMatrix(force?: boolean): Matrix;
-        protected _afterComputeWorldMatrix(): void;
-        /**
-        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
-        * @param func callback function to add
-        *
-        * @returns the TransformNode.
-        */
-        registerAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode;
-        /**
-         * Removes a registered callback function.
-         * @param func callback function to remove
-         * @returns the TransformNode.
-         */
-        unregisterAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode;
-        /**
-         * Gets the position of the current mesh in camera space
-         * @param camera defines the camera to use
-         * @returns a position
-         */
-        getPositionInCameraSpace(camera?: Nullable<Camera>): Vector3;
-        /**
-         * Returns the distance from the mesh to the active camera
-         * @param camera defines the camera to use
-         * @returns the distance
-         */
-        getDistanceToCamera(camera?: Nullable<Camera>): number;
-        /**
-         * Clone the current transform node
-         * @param name Name of the new clone
-         * @param newParent New parent for the clone
-         * @param doNotCloneChildren Do not clone children hierarchy
-         * @returns the new transform node
-         */
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode>;
-        /**
-         * Serializes the objects information.
-         * @param currentSerializationObject defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(currentSerializationObject?: any): any;
-        /**
-         * Returns a new TransformNode object parsed from the source provided.
-         * @param parsedTransformNode is the source.
-         * @param scene the scne the object belongs to
-         * @param rootUrl is a string, it's the root URL to prefix the `delayLoadingFile` property with
-         * @returns a new TransformNode object parsed from the source provided.
-         */
-        static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode;
-        /**
-         * Get all child-transformNodes of this node
-         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
-         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-         * @returns an array of TransformNode
-         */
-        getChildTransformNodes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): TransformNode[];
-        /**
-         * Releases resources associated with this transform node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
-    }
-}
-declare module BABYLON {
-    /**
     * Defines the types of pose enabled controllers that are supported
     */
     export enum PoseEnabledControllerType {
@@ -13347,6 +12997,10 @@ declare module BABYLON {
         /** Name of the PostProcess. */
         name: string;
         /**
+         * Gets or sets the unique id of the post process
+         */
+        uniqueId: number;
+        /**
         * Width of the texture to apply the post process on
         */
         width: number;
@@ -13530,6 +13184,11 @@ declare module BABYLON {
         /** Name of the PostProcess. */
         name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean);
         /**
+         * Gets a string idenfifying the name of the class
+         * @returns "PostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Gets the engine which this post process belongs to.
          * @returns The engine the post process was enabled with.
          */
@@ -13654,120 +13313,6 @@ declare module BABYLON {
          * Disposes of the post process manager.
          */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Raw texture can help creating a texture directly from an array of data.
-     * This can be super useful if you either get the data from an uncompressed source or
-     * if you wish to create your texture pixel by pixel.
-     */
-    export class RawTexture extends Texture {
-        /**
-         * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
-         */
-        format: number;
-        private _engine;
-        /**
-         * Instantiates a new RawTexture.
-         * Raw texture can help creating a texture directly from an array of data.
-         * This can be super useful if you either get the data from an uncompressed source or
-         * if you wish to create your texture pixel by pixel.
-         * @param data define the array of data to use to create the texture
-         * @param width define the width of the texture
-         * @param height define the height of the texture
-         * @param format define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
-         * @param scene  define the scene the texture belongs to
-         * @param generateMipMaps define whether mip maps should be generated or not
-         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
-         */
-        constructor(data: ArrayBufferView, width: number, height: number, 
-        /**
-         * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
-         */
-        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number);
-        /**
-         * Updates the texture underlying data.
-         * @param data Define the new data of the texture
-         */
-        update(data: ArrayBufferView): void;
-        /**
-         * Creates a luminance texture from some data.
-         * @param data Define the texture data
-         * @param width Define the width of the texture
-         * @param height Define the height of the texture
-         * @param scene Define the scene the texture belongs to
-         * @param generateMipMaps Define whether or not to create mip maps for the texture
-         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-         * @returns the luminance texture
-         */
-        static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
-        /**
-         * Creates a luminance alpha texture from some data.
-         * @param data Define the texture data
-         * @param width Define the width of the texture
-         * @param height Define the height of the texture
-         * @param scene Define the scene the texture belongs to
-         * @param generateMipMaps Define whether or not to create mip maps for the texture
-         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-         * @returns the luminance alpha texture
-         */
-        static CreateLuminanceAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
-        /**
-         * Creates an alpha texture from some data.
-         * @param data Define the texture data
-         * @param width Define the width of the texture
-         * @param height Define the height of the texture
-         * @param scene Define the scene the texture belongs to
-         * @param generateMipMaps Define whether or not to create mip maps for the texture
-         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-         * @returns the alpha texture
-         */
-        static CreateAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
-        /**
-         * Creates a RGB texture from some data.
-         * @param data Define the texture data
-         * @param width Define the width of the texture
-         * @param height Define the height of the texture
-         * @param scene Define the scene the texture belongs to
-         * @param generateMipMaps Define whether or not to create mip maps for the texture
-         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
-         * @returns the RGB alpha texture
-         */
-        static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
-        /**
-         * Creates a RGBA texture from some data.
-         * @param data Define the texture data
-         * @param width Define the width of the texture
-         * @param height Define the height of the texture
-         * @param scene Define the scene the texture belongs to
-         * @param generateMipMaps Define whether or not to create mip maps for the texture
-         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
-         * @returns the RGBA texture
-         */
-        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
-        /**
-         * Creates a R texture from some data.
-         * @param data Define the texture data
-         * @param width Define the width of the texture
-         * @param height Define the height of the texture
-         * @param scene Define the scene the texture belongs to
-         * @param generateMipMaps Define whether or not to create mip maps for the texture
-         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
-         * @returns the R texture
-         */
-        static CreateRTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
     }
 }
 declare module BABYLON {
@@ -16576,6 +16121,549 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Creates an instance based on a source mesh.
+     */
+    export class InstancedMesh extends AbstractMesh {
+        private _sourceMesh;
+        private _currentLOD;
+        /** @hidden */
+        _indexInSourceMeshInstanceArray: number;
+        constructor(name: string, source: Mesh);
+        /**
+         * Returns the string "InstancedMesh".
+         */
+        getClassName(): string;
+        /**
+         * If the source mesh receives shadows
+         */
+        readonly receiveShadows: boolean;
+        /**
+         * The material of the source mesh
+         */
+        readonly material: Nullable<Material>;
+        /**
+         * Visibility of the source mesh
+         */
+        readonly visibility: number;
+        /**
+         * Skeleton of the source mesh
+         */
+        readonly skeleton: Nullable<Skeleton>;
+        /**
+         * Rendering ground id of the source mesh
+         */
+        renderingGroupId: number;
+        /**
+         * Returns the total number of vertices (integer).
+         */
+        getTotalVertices(): number;
+        /**
+         * Returns a positive integer : the total number of indices in this mesh geometry.
+         * @returns the numner of indices or zero if the mesh has no geometry.
+         */
+        getTotalIndices(): number;
+        /**
+         * The source mesh of the instance
+         */
+        readonly sourceMesh: Mesh;
+        /**
+         * Is this node ready to be used/rendered
+         * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+         * @return {boolean} is it ready
+         */
+        isReady(completeCheck?: boolean): boolean;
+        /**
+         * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.
+         * @param kind kind of verticies to retreive (eg. positons, normals, uvs, etc.)
+         * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+         * @returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
+         */
+        getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray>;
+        /**
+         * Sets the vertex data of the mesh geometry for the requested `kind`.
+         * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
+         * The `data` are either a numeric array either a Float32Array.
+         * The parameter `updatable` is passed as is to the underlying Geometry object constructor (if initianilly none) or updater.
+         * The parameter `stride` is an optional positive integer, it is usually automatically deducted from the `kind` (3 for positions or normals, 2 for UV, etc).
+         * Note that a new underlying VertexBuffer object is created each call.
+         * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
+         *
+         * Possible `kind` values :
+         * - VertexBuffer.PositionKind
+         * - VertexBuffer.UVKind
+         * - VertexBuffer.UV2Kind
+         * - VertexBuffer.UV3Kind
+         * - VertexBuffer.UV4Kind
+         * - VertexBuffer.UV5Kind
+         * - VertexBuffer.UV6Kind
+         * - VertexBuffer.ColorKind
+         * - VertexBuffer.MatricesIndicesKind
+         * - VertexBuffer.MatricesIndicesExtraKind
+         * - VertexBuffer.MatricesWeightsKind
+         * - VertexBuffer.MatricesWeightsExtraKind
+         *
+         * Returns the Mesh.
+         */
+        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh;
+        /**
+         * Updates the existing vertex data of the mesh geometry for the requested `kind`.
+         * If the mesh has no geometry, it is simply returned as it is.
+         * The `data` are either a numeric array either a Float32Array.
+         * No new underlying VertexBuffer object is created.
+         * If the `kind` is the `PositionKind` and if `updateExtends` is true, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
+         * If the parameter `makeItUnique` is true, a new global geometry is created from this positions and is set to the mesh.
+         *
+         * Possible `kind` values :
+         * - VertexBuffer.PositionKind
+         * - VertexBuffer.UVKind
+         * - VertexBuffer.UV2Kind
+         * - VertexBuffer.UV3Kind
+         * - VertexBuffer.UV4Kind
+         * - VertexBuffer.UV5Kind
+         * - VertexBuffer.UV6Kind
+         * - VertexBuffer.ColorKind
+         * - VertexBuffer.MatricesIndicesKind
+         * - VertexBuffer.MatricesIndicesExtraKind
+         * - VertexBuffer.MatricesWeightsKind
+         * - VertexBuffer.MatricesWeightsExtraKind
+         *
+         * Returns the Mesh.
+         */
+        updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh;
+        /**
+         * Sets the mesh indices.
+         * Expects an array populated with integers or a typed array (Int32Array, Uint32Array, Uint16Array).
+         * If the mesh has no geometry, a new Geometry object is created and set to the mesh.
+         * This method creates a new index buffer each call.
+         * Returns the Mesh.
+         */
+        setIndices(indices: IndicesArray, totalVertices?: Nullable<number>): Mesh;
+        /**
+         * Boolean : True if the mesh owns the requested kind of data.
+         */
+        isVerticesDataPresent(kind: string): boolean;
+        /**
+         * Returns an array of indices (IndicesArray).
+         */
+        getIndices(): Nullable<IndicesArray>;
+        readonly _positions: Nullable<Vector3[]>;
+        /**
+         * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
+         * This means the mesh underlying bounding box and sphere are recomputed.
+         * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+         * @returns the current mesh
+         */
+        refreshBoundingInfo(applySkeleton?: boolean): InstancedMesh;
+        /** @hidden */
+        _preActivate(): InstancedMesh;
+        /** @hidden */
+        _activate(renderId: number): InstancedMesh;
+        /**
+         * Returns the current associated LOD AbstractMesh.
+         */
+        getLOD(camera: Camera): AbstractMesh;
+        /** @hidden */
+        _syncSubMeshes(): InstancedMesh;
+        /** @hidden */
+        _generatePointsArray(): boolean;
+        /**
+         * Creates a new InstancedMesh from the current mesh.
+         * - name (string) : the cloned mesh name
+         * - newParent (optional Node) : the optional Node to parent the clone to.
+         * - doNotCloneChildren (optional boolean, default `false`) : if `true` the model children aren't cloned.
+         *
+         * Returns the clone.
+         */
+        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): InstancedMesh;
+        /**
+         * Disposes the InstancedMesh.
+         * Returns nothing.
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the options associated with the creation of a shader material.
+     */
+    export interface IShaderMaterialOptions {
+        /**
+         * Does the material work in alpha blend mode
+         */
+        needAlphaBlending: boolean;
+        /**
+         * Does the material work in alpha test mode
+         */
+        needAlphaTesting: boolean;
+        /**
+         * The list of attribute names used in the shader
+         */
+        attributes: string[];
+        /**
+         * The list of unifrom names used in the shader
+         */
+        uniforms: string[];
+        /**
+         * The list of UBO names used in the shader
+         */
+        uniformBuffers: string[];
+        /**
+         * The list of sampler names used in the shader
+         */
+        samplers: string[];
+        /**
+         * The list of defines used in the shader
+         */
+        defines: string[];
+    }
+    /**
+     * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
+     *
+     * This returned material effects how the mesh will look based on the code in the shaders.
+     *
+     * @see http://doc.babylonjs.com/how_to/shader_material
+     */
+    export class ShaderMaterial extends Material {
+        private _shaderPath;
+        private _options;
+        private _textures;
+        private _textureArrays;
+        private _floats;
+        private _ints;
+        private _floatsArrays;
+        private _colors3;
+        private _colors3Arrays;
+        private _colors4;
+        private _vectors2;
+        private _vectors3;
+        private _vectors4;
+        private _matrices;
+        private _matrices3x3;
+        private _matrices2x2;
+        private _vectors2Arrays;
+        private _vectors3Arrays;
+        private _cachedWorldViewMatrix;
+        private _renderId;
+        /**
+         * Instantiate a new shader material.
+         * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
+         * This returned material effects how the mesh will look based on the code in the shaders.
+         * @see http://doc.babylonjs.com/how_to/shader_material
+         * @param name Define the name of the material in the scene
+         * @param scene Define the scene the material belongs to
+         * @param shaderPath Defines  the route to the shader code in one of three ways:
+         *     - object - { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
+         *     - object - { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in <script> tags
+         *     - string - "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+         * @param options Define the options used to create the shader
+         */
+        constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>);
+        /**
+         * Gets the current class name of the material e.g. "ShaderMaterial"
+         * Mainly use in serialization.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Specifies if the material will require alpha blending
+         * @returns a boolean specifying if alpha blending is needed
+         */
+        needAlphaBlending(): boolean;
+        /**
+         * Specifies if this material should be rendered in alpha test mode
+         * @returns a boolean specifying if an alpha test is needed.
+         */
+        needAlphaTesting(): boolean;
+        private _checkUniform;
+        /**
+         * Set a texture in the shader.
+         * @param name Define the name of the uniform samplers as defined in the shader
+         * @param texture Define the texture to bind to this sampler
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setTexture(name: string, texture: Texture): ShaderMaterial;
+        /**
+         * Set a texture array in the shader.
+         * @param name Define the name of the uniform sampler array as defined in the shader
+         * @param textures Define the list of textures to bind to this sampler
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setTextureArray(name: string, textures: Texture[]): ShaderMaterial;
+        /**
+         * Set a float in the shader.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setFloat(name: string, value: number): ShaderMaterial;
+        /**
+         * Set a int in the shader.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setInt(name: string, value: number): ShaderMaterial;
+        /**
+         * Set an array of floats in the shader.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setFloats(name: string, value: number[]): ShaderMaterial;
+        /**
+         * Set a vec3 in the shader from a Color3.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setColor3(name: string, value: Color3): ShaderMaterial;
+        /**
+         * Set a vec3 array in the shader from a Color3 array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setColor3Array(name: string, value: Color3[]): ShaderMaterial;
+        /**
+         * Set a vec4 in the shader from a Color4.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setColor4(name: string, value: Color4): ShaderMaterial;
+        /**
+         * Set a vec2 in the shader from a Vector2.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setVector2(name: string, value: Vector2): ShaderMaterial;
+        /**
+         * Set a vec3 in the shader from a Vector3.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setVector3(name: string, value: Vector3): ShaderMaterial;
+        /**
+         * Set a vec4 in the shader from a Vector4.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setVector4(name: string, value: Vector4): ShaderMaterial;
+        /**
+         * Set a mat4 in the shader from a Matrix.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setMatrix(name: string, value: Matrix): ShaderMaterial;
+        /**
+         * Set a mat3 in the shader from a Float32Array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setMatrix3x3(name: string, value: Float32Array): ShaderMaterial;
+        /**
+         * Set a mat2 in the shader from a Float32Array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setMatrix2x2(name: string, value: Float32Array): ShaderMaterial;
+        /**
+         * Set a vec2 array in the shader from a number array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setArray2(name: string, value: number[]): ShaderMaterial;
+        /**
+         * Set a vec3 array in the shader from a number array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setArray3(name: string, value: number[]): ShaderMaterial;
+        private _checkCache;
+        /**
+         * Checks if the material is ready to render the requested mesh
+         * @param mesh Define the mesh to render
+         * @param useInstances Define whether or not the material is used with instances
+         * @returns true if ready, otherwise false
+         */
+        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        /**
+         * Binds the world matrix to the material
+         * @param world defines the world transformation matrix
+         */
+        bindOnlyWorldMatrix(world: Matrix): void;
+        /**
+         * Binds the material to the mesh
+         * @param world defines the world transformation matrix
+         * @param mesh defines the mesh to bind the material to
+         */
+        bind(world: Matrix, mesh?: Mesh): void;
+        /**
+         * Gets the active textures from the material
+         * @returns an array of textures
+         */
+        getActiveTextures(): BaseTexture[];
+        /**
+         * Specifies if the material uses a texture
+         * @param texture defines the texture to check against the material
+         * @returns a boolean specifying if the material uses the texture
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Makes a duplicate of the material, and gives it a new name
+         * @param name defines the new name for the duplicated material
+         * @returns the cloned material
+         */
+        clone(name: string): ShaderMaterial;
+        /**
+         * Disposes the material
+         * @param forceDisposeEffect specifies if effects should be forcefully disposed
+         * @param forceDisposeTextures specifies if textures should be forcefully disposed
+         * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
+         */
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void;
+        /**
+         * Serializes this material in a JSON representation
+         * @returns the serialized material object
+         */
+        serialize(): any;
+        /**
+         * Creates a shader material from parsed shader material data
+         * @param source defines the JSON represnetation of the material
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a new material
+         */
+        static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var colorPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var colorVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Line mesh
+     * @see https://doc.babylonjs.com/babylon101/parametric_shapes
+     */
+    export class LinesMesh extends Mesh {
+        /**
+         * If vertex color should be applied to the mesh
+         */
+        useVertexColor?: boolean | undefined;
+        /**
+         * If vertex alpha should be applied to the mesh
+         */
+        useVertexAlpha?: boolean | undefined;
+        /**
+         * Color of the line (Default: White)
+         */
+        color: Color3;
+        /**
+         * Alpha of the line (Default: 1)
+         */
+        alpha: number;
+        /**
+         * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
+         * This margin is expressed in world space coordinates, so its value may vary.
+         * Default value is 0.1
+         */
+        intersectionThreshold: number;
+        private _colorShader;
+        /**
+         * Creates a new LinesMesh
+         * @param name defines the name
+         * @param scene defines the hosting scene
+         * @param parent defines the parent mesh if any
+         * @param source defines the optional source LinesMesh used to clone data from
+         * @param doNotCloneChildren When cloning, skip cloning child meshes of source, default False.
+         * When false, achieved by calling a clone(), also passing False.
+         * This will make creation of children, recursive.
+         * @param useVertexColor defines if this LinesMesh supports vertex color
+         * @param useVertexAlpha defines if this LinesMesh supports vertex alpha
+         */
+        constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: LinesMesh, doNotCloneChildren?: boolean, 
+        /**
+         * If vertex color should be applied to the mesh
+         */
+        useVertexColor?: boolean | undefined, 
+        /**
+         * If vertex alpha should be applied to the mesh
+         */
+        useVertexAlpha?: boolean | undefined);
+        /**
+         * Returns the string "LineMesh"
+         */
+        getClassName(): string;
+        /**
+         * @hidden
+         */
+        /**
+        * @hidden
+        */
+        material: Material;
+        /**
+         * @hidden
+         */
+        readonly checkCollisions: boolean;
+        /** @hidden */
+        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh;
+        /** @hidden */
+        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): LinesMesh;
+        /**
+         * Disposes of the line mesh
+         * @param doNotRecurse If children should be disposed
+         */
+        dispose(doNotRecurse?: boolean): void;
+        /**
+         * Returns a new LineMesh object cloned from the current one.
+         */
+        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh;
+        /**
+         * Creates a new InstancedLinesMesh object from the mesh model.
+         * @see http://doc.babylonjs.com/how_to/how_to_use_instances
+         * @param name defines the name of the new instance
+         * @returns a new InstancedLinesMesh
+         */
+        createInstance(name: string): InstancedLinesMesh;
+    }
+    /**
+     * Creates an instance based on a source LinesMesh
+     */
+    export class InstancedLinesMesh extends InstancedMesh {
+        /**
+         * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
+         * This margin is expressed in world space coordinates, so its value may vary.
+         * Initilized with the intersectionThreshold value of the source LinesMesh
+         */
+        intersectionThreshold: number;
+        constructor(name: string, source: LinesMesh);
+        /**
+         * Returns the string "InstancedLinesMesh".
+         */
+        getClassName(): string;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var linePixelShader: {
         name: string;
@@ -17685,382 +17773,988 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines the options associated with the creation of a shader material.
+     * Raw texture can help creating a texture directly from an array of data.
+     * This can be super useful if you either get the data from an uncompressed source or
+     * if you wish to create your texture pixel by pixel.
      */
-    export interface IShaderMaterialOptions {
+    export class RawTexture extends Texture {
         /**
-         * Does the material work in alpha blend mode
+         * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
          */
-        needAlphaBlending: boolean;
+        format: number;
+        private _engine;
         /**
-         * Does the material work in alpha test mode
+         * Instantiates a new RawTexture.
+         * Raw texture can help creating a texture directly from an array of data.
+         * This can be super useful if you either get the data from an uncompressed source or
+         * if you wish to create your texture pixel by pixel.
+         * @param data define the array of data to use to create the texture
+         * @param width define the width of the texture
+         * @param height define the height of the texture
+         * @param format define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
+         * @param scene  define the scene the texture belongs to
+         * @param generateMipMaps define whether mip maps should be generated or not
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
          */
-        needAlphaTesting: boolean;
+        constructor(data: ArrayBufferView, width: number, height: number, 
         /**
-         * The list of attribute names used in the shader
+         * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
          */
-        attributes: string[];
+        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number);
         /**
-         * The list of unifrom names used in the shader
+         * Updates the texture underlying data.
+         * @param data Define the new data of the texture
          */
-        uniforms: string[];
+        update(data: ArrayBufferView): void;
         /**
-         * The list of UBO names used in the shader
+         * Creates a luminance texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param scene Define the scene the texture belongs to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @returns the luminance texture
          */
-        uniformBuffers: string[];
+        static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
         /**
-         * The list of sampler names used in the shader
+         * Creates a luminance alpha texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param scene Define the scene the texture belongs to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @returns the luminance alpha texture
          */
-        samplers: string[];
+        static CreateLuminanceAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
         /**
-         * The list of defines used in the shader
+         * Creates an alpha texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param scene Define the scene the texture belongs to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @returns the alpha texture
          */
-        defines: string[];
+        static CreateAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        /**
+         * Creates a RGB texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param scene Define the scene the texture belongs to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+         * @returns the RGB alpha texture
+         */
+        static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
+        /**
+         * Creates a RGBA texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param scene Define the scene the texture belongs to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+         * @returns the RGBA texture
+         */
+        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
+        /**
+         * Creates a R texture from some data.
+         * @param data Define the texture data
+         * @param width Define the width of the texture
+         * @param height Define the height of the texture
+         * @param scene Define the scene the texture belongs to
+         * @param generateMipMaps Define whether or not to create mip maps for the texture
+         * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+         * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+         * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+         * @returns the R texture
+         */
+        static CreateRTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
     }
+}
+declare module BABYLON {
     /**
-     * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
-     *
-     * This returned material effects how the mesh will look based on the code in the shaders.
-     *
-     * @see http://doc.babylonjs.com/how_to/shader_material
+     * Defines a runtime animation
      */
-    export class ShaderMaterial extends Material {
-        private _shaderPath;
-        private _options;
-        private _textures;
-        private _textureArrays;
-        private _floats;
-        private _ints;
-        private _floatsArrays;
-        private _colors3;
-        private _colors3Arrays;
-        private _colors4;
-        private _vectors2;
-        private _vectors3;
-        private _vectors4;
-        private _matrices;
-        private _matrices3x3;
-        private _matrices2x2;
-        private _vectors2Arrays;
-        private _vectors3Arrays;
-        private _cachedWorldViewMatrix;
-        private _renderId;
+    export class RuntimeAnimation {
+        private _events;
         /**
-         * Instantiate a new shader material.
-         * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
-         * This returned material effects how the mesh will look based on the code in the shaders.
-         * @see http://doc.babylonjs.com/how_to/shader_material
-         * @param name Define the name of the material in the scene
-         * @param scene Define the scene the material belongs to
-         * @param shaderPath Defines  the route to the shader code in one of three ways:
-         *     - object - { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-         *     - object - { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in <script> tags
-         *     - string - "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
-         * @param options Define the options used to create the shader
+         * The current frame of the runtime animation
          */
-        constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>);
+        private _currentFrame;
         /**
-         * Gets the current class name of the material e.g. "ShaderMaterial"
-         * Mainly use in serialization.
-         * @returns the class name
+         * The animation used by the runtime animation
          */
-        getClassName(): string;
+        private _animation;
         /**
-         * Specifies if the material will require alpha blending
-         * @returns a boolean specifying if alpha blending is needed
+         * The target of the runtime animation
          */
-        needAlphaBlending(): boolean;
+        private _target;
         /**
-         * Specifies if this material should be rendered in alpha test mode
-         * @returns a boolean specifying if an alpha test is needed.
+         * The initiating animatable
          */
-        needAlphaTesting(): boolean;
-        private _checkUniform;
+        private _host;
         /**
-         * Set a texture in the shader.
-         * @param name Define the name of the uniform samplers as defined in the shader
-         * @param texture Define the texture to bind to this sampler
-         * @return the material itself allowing "fluent" like uniform updates
+         * The original value of the runtime animation
          */
-        setTexture(name: string, texture: Texture): ShaderMaterial;
+        private _originalValue;
         /**
-         * Set a texture array in the shader.
-         * @param name Define the name of the uniform sampler array as defined in the shader
-         * @param textures Define the list of textures to bind to this sampler
-         * @return the material itself allowing "fluent" like uniform updates
+         * The original blend value of the runtime animation
          */
-        setTextureArray(name: string, textures: Texture[]): ShaderMaterial;
+        private _originalBlendValue;
         /**
-         * Set a float in the shader.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The offsets cache of the runtime animation
          */
-        setFloat(name: string, value: number): ShaderMaterial;
+        private _offsetsCache;
         /**
-         * Set a int in the shader.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The high limits cache of the runtime animation
          */
-        setInt(name: string, value: number): ShaderMaterial;
+        private _highLimitsCache;
         /**
-         * Set an array of floats in the shader.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * Specifies if the runtime animation has been stopped
          */
-        setFloats(name: string, value: number[]): ShaderMaterial;
+        private _stopped;
         /**
-         * Set a vec3 in the shader from a Color3.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The blending factor of the runtime animation
          */
-        setColor3(name: string, value: Color3): ShaderMaterial;
+        private _blendingFactor;
         /**
-         * Set a vec3 array in the shader from a Color3 array.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The BabylonJS scene
          */
-        setColor3Array(name: string, value: Color3[]): ShaderMaterial;
+        private _scene;
         /**
-         * Set a vec4 in the shader from a Color4.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The current value of the runtime animation
          */
-        setColor4(name: string, value: Color4): ShaderMaterial;
+        private _currentValue;
+        /** @hidden */
+        _workValue: any;
         /**
-         * Set a vec2 in the shader from a Vector2.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The active target of the runtime animation
          */
-        setVector2(name: string, value: Vector2): ShaderMaterial;
+        private _activeTarget;
         /**
-         * Set a vec3 in the shader from a Vector3.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The target path of the runtime animation
          */
-        setVector3(name: string, value: Vector3): ShaderMaterial;
+        private _targetPath;
         /**
-         * Set a vec4 in the shader from a Vector4.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The weight of the runtime animation
          */
-        setVector4(name: string, value: Vector4): ShaderMaterial;
+        private _weight;
         /**
-         * Set a mat4 in the shader from a Matrix.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The ratio offset of the runtime animation
          */
-        setMatrix(name: string, value: Matrix): ShaderMaterial;
+        private _ratioOffset;
         /**
-         * Set a mat3 in the shader from a Float32Array.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The previous delay of the runtime animation
          */
-        setMatrix3x3(name: string, value: Float32Array): ShaderMaterial;
+        private _previousDelay;
         /**
-         * Set a mat2 in the shader from a Float32Array.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * The previous ratio of the runtime animation
          */
-        setMatrix2x2(name: string, value: Float32Array): ShaderMaterial;
+        private _previousRatio;
         /**
-         * Set a vec2 array in the shader from a number array.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * Gets the current frame of the runtime animation
          */
-        setArray2(name: string, value: number[]): ShaderMaterial;
+        readonly currentFrame: number;
         /**
-         * Set a vec3 array in the shader from a number array.
-         * @param name Define the name of the uniform as defined in the shader
-         * @param value Define the value to give to the uniform
-         * @return the material itself allowing "fluent" like uniform updates
+         * Gets the weight of the runtime animation
          */
-        setArray3(name: string, value: number[]): ShaderMaterial;
-        private _checkCache;
+        readonly weight: number;
         /**
-         * Checks if the material is ready to render the requested mesh
-         * @param mesh Define the mesh to render
-         * @param useInstances Define whether or not the material is used with instances
-         * @returns true if ready, otherwise false
+         * Gets the current value of the runtime animation
          */
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        readonly currentValue: any;
         /**
-         * Binds the world matrix to the material
-         * @param world defines the world transformation matrix
+         * Gets the target path of the runtime animation
          */
-        bindOnlyWorldMatrix(world: Matrix): void;
+        readonly targetPath: string;
         /**
-         * Binds the material to the mesh
-         * @param world defines the world transformation matrix
-         * @param mesh defines the mesh to bind the material to
+         * Gets the actual target of the runtime animation
          */
-        bind(world: Matrix, mesh?: Mesh): void;
+        readonly target: any;
         /**
-         * Gets the active textures from the material
-         * @returns an array of textures
+         * Create a new RuntimeAnimation object
+         * @param target defines the target of the animation
+         * @param animation defines the source animation object
+         * @param scene defines the hosting scene
+         * @param host defines the initiating Animatable
          */
-        getActiveTextures(): BaseTexture[];
+        constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
         /**
-         * Specifies if the material uses a texture
-         * @param texture defines the texture to check against the material
-         * @returns a boolean specifying if the material uses the texture
+         * Gets the animation from the runtime animation
          */
-        hasTexture(texture: BaseTexture): boolean;
+        readonly animation: Animation;
         /**
-         * Makes a duplicate of the material, and gives it a new name
-         * @param name defines the new name for the duplicated material
-         * @returns the cloned material
+         * Resets the runtime animation to the beginning
+         * @param restoreOriginal defines whether to restore the target property to the original value
          */
-        clone(name: string): ShaderMaterial;
+        reset(restoreOriginal?: boolean): void;
         /**
-         * Disposes the material
-         * @param forceDisposeEffect specifies if effects should be forcefully disposed
-         * @param forceDisposeTextures specifies if textures should be forcefully disposed
-         * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
+         * Specifies if the runtime animation is stopped
+         * @returns Boolean specifying if the runtime animation is stopped
          */
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void;
+        isStopped(): boolean;
         /**
-         * Serializes this material in a JSON representation
-         * @returns the serialized material object
+         * Disposes of the runtime animation
+         */
+        dispose(): void;
+        /**
+         * Interpolates the animation from the current frame
+         * @param currentFrame The frame to interpolate the animation to
+         * @param repeatCount The number of times that the animation should loop
+         * @param loopMode The type of looping mode to use
+         * @param offsetValue Animation offset value
+         * @param highLimitValue The high limit value
+         * @returns The interpolated value
+         */
+        private _interpolate;
+        /**
+         * Apply the interpolated value to the target
+         * @param currentValue defines the value computed by the animation
+         * @param weight defines the weight to apply to this value (Defaults to 1.0)
+         */
+        setValue(currentValue: any, weight?: number): void;
+        private _setValue;
+        /**
+         * Gets the loop pmode of the runtime animation
+         * @returns Loop Mode
+         */
+        private _getCorrectLoopMode;
+        /**
+         * Move the current animation to a given frame
+         * @param frame defines the frame to move to
+         */
+        goToFrame(frame: number): void;
+        /**
+         * @hidden Internal use only
+         */
+        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
+        /**
+         * Execute the current animation
+         * @param delay defines the delay to add to the current frame
+         * @param from defines the lower bound of the animation range
+         * @param to defines the upper bound of the animation range
+         * @param loop defines if the current animation must loop
+         * @param speedRatio defines the current speed ratio
+         * @param weight defines the weight of the animation (default is -1 so no weight)
+         * @param onLoop optional callback called when animation loops
+         * @returns a boolean indicating if the animation is running
+         */
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number, onLoop?: () => void): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store an actual running animation
+     */
+    export class Animatable {
+        /** defines the target object */
+        target: any;
+        /** defines the starting frame number (default is 0) */
+        fromFrame: number;
+        /** defines the ending frame number (default is 100) */
+        toFrame: number;
+        /** defines if the animation must loop (default is false)  */
+        loopAnimation: boolean;
+        /** defines a callback to call when animation ends if it is not looping */
+        onAnimationEnd?: (() => void) | null | undefined;
+        /** defines a callback to call when animation loops */
+        onAnimationLoop?: (() => void) | null | undefined;
+        private _localDelayOffset;
+        private _pausedDelay;
+        private _runtimeAnimations;
+        private _paused;
+        private _scene;
+        private _speedRatio;
+        private _weight;
+        private _syncRoot;
+        /**
+         * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
+         * This will only apply for non looping animation (default is true)
+         */
+        disposeOnEnd: boolean;
+        /**
+         * Gets a boolean indicating if the animation has started
+         */
+        animationStarted: boolean;
+        /**
+         * Observer raised when the animation ends
+         */
+        onAnimationEndObservable: Observable<Animatable>;
+        /**
+         * Observer raised when the animation loops
+         */
+        onAnimationLoopObservable: Observable<Animatable>;
+        /**
+         * Gets the root Animatable used to synchronize and normalize animations
+         */
+        readonly syncRoot: Animatable;
+        /**
+         * Gets the current frame of the first RuntimeAnimation
+         * Used to synchronize Animatables
+         */
+        readonly masterFrame: number;
+        /**
+         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
+         */
+        weight: number;
+        /**
+         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
+         */
+        speedRatio: number;
+        /**
+         * Creates a new Animatable
+         * @param scene defines the hosting scene
+         * @param target defines the target object
+         * @param fromFrame defines the starting frame number (default is 0)
+         * @param toFrame defines the ending frame number (default is 100)
+         * @param loopAnimation defines if the animation must loop (default is false)
+         * @param speedRatio defines the factor to apply to animation speed (default is 1)
+         * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
+         * @param animations defines a group of animation to add to the new Animatable
+         * @param onAnimationLoop defines a callback to call when animation loops
+         */
+        constructor(scene: Scene, 
+        /** defines the target object */
+        target: any, 
+        /** defines the starting frame number (default is 0) */
+        fromFrame?: number, 
+        /** defines the ending frame number (default is 100) */
+        toFrame?: number, 
+        /** defines if the animation must loop (default is false)  */
+        loopAnimation?: boolean, speedRatio?: number, 
+        /** defines a callback to call when animation ends if it is not looping */
+        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
+        /** defines a callback to call when animation loops */
+        onAnimationLoop?: (() => void) | null | undefined);
+        /**
+         * Synchronize and normalize current Animatable with a source Animatable
+         * This is useful when using animation weights and when animations are not of the same length
+         * @param root defines the root Animatable to synchronize with
+         * @returns the current Animatable
+         */
+        syncWith(root: Animatable): Animatable;
+        /**
+         * Gets the list of runtime animations
+         * @returns an array of RuntimeAnimation
+         */
+        getAnimations(): RuntimeAnimation[];
+        /**
+         * Adds more animations to the current animatable
+         * @param target defines the target of the animations
+         * @param animations defines the new animations to add
+         */
+        appendAnimations(target: any, animations: Animation[]): void;
+        /**
+         * Gets the source animation for a specific property
+         * @param property defines the propertyu to look for
+         * @returns null or the source animation for the given property
+         */
+        getAnimationByTargetProperty(property: string): Nullable<Animation>;
+        /**
+         * Gets the runtime animation for a specific property
+         * @param property defines the propertyu to look for
+         * @returns null or the runtime animation for the given property
+         */
+        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
+        /**
+         * Resets the animatable to its original state
+         */
+        reset(): void;
+        /**
+         * Allows the animatable to blend with current running animations
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         * @param blendingSpeed defines the blending speed to use
+         */
+        enableBlending(blendingSpeed: number): void;
+        /**
+         * Disable animation blending
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         */
+        disableBlending(): void;
+        /**
+         * Jump directly to a given frame
+         * @param frame defines the frame to jump to
+         */
+        goToFrame(frame: number): void;
+        /**
+         * Pause the animation
+         */
+        pause(): void;
+        /**
+         * Restart the animation
+         */
+        restart(): void;
+        private _raiseOnAnimationEnd;
+        /**
+         * Stop and delete the current animation
+         * @param animationName defines a string used to only stop some of the runtime animations instead of all
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+         */
+        stop(animationName?: string, targetMask?: (target: any) => boolean): void;
+        /**
+         * Wait asynchronously for the animation to end
+         * @returns a promise which will be fullfilled when the animation ends
+         */
+        waitAsync(): Promise<Animatable>;
+        /** @hidden */
+        _animate(delay: number): boolean;
+    }
+        interface Scene {
+            /** @hidden */
+            _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
+            /** @hidden */
+            _processLateAnimationBindingsForMatrices(holder: {
+                totalWeight: number;
+                animations: RuntimeAnimation[];
+                originalValue: Matrix;
+            }): any;
+            /** @hidden */
+            _processLateAnimationBindingsForQuaternions(holder: {
+                totalWeight: number;
+                animations: RuntimeAnimation[];
+                originalValue: Quaternion;
+            }, refQuaternion: Quaternion): Quaternion;
+            /** @hidden */
+            _processLateAnimationBindings(): void;
+            /**
+             * Will start the animation sequence of a given target
+             * @param target defines the target
+             * @param from defines from which frame should animation start
+             * @param to defines until which frame should animation run.
+             * @param weight defines the weight to apply to the animation (1.0 by default)
+             * @param loop defines if the animation loops
+             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+             * @param onAnimationEnd defines the function to be executed when the animation ends
+             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the animatable object created for this animation
+             */
+            beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
+            /**
+             * Will start the animation sequence of a given target
+             * @param target defines the target
+             * @param from defines from which frame should animation start
+             * @param to defines until which frame should animation run.
+             * @param loop defines if the animation loops
+             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+             * @param onAnimationEnd defines the function to be executed when the animation ends
+             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+             * @param stopCurrent defines if the current animations must be stopped first (true by default)
+             * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the animatable object created for this animation
+             */
+            beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
+            /**
+             * Will start the animation sequence of a given target and its hierarchy
+             * @param target defines the target
+             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+             * @param from defines from which frame should animation start
+             * @param to defines until which frame should animation run.
+             * @param loop defines if the animation loops
+             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+             * @param onAnimationEnd defines the function to be executed when the animation ends
+             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+             * @param stopCurrent defines if the current animations must be stopped first (true by default)
+             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the list of created animatables
+             */
+            beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[];
+            /**
+             * Begin a new animation on a given node
+             * @param target defines the target where the animation will take place
+             * @param animations defines the list of animations to start
+             * @param from defines the initial value
+             * @param to defines the final value
+             * @param loop defines if you want animation to loop (off by default)
+             * @param speedRatio defines the speed ratio to apply to all animations
+             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the list of created animatables
+             */
+            beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable;
+            /**
+             * Begin a new animation on a given node and its hierarchy
+             * @param target defines the root node where the animation will take place
+             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+             * @param animations defines the list of animations to start
+             * @param from defines the initial value
+             * @param to defines the final value
+             * @param loop defines if you want animation to loop (off by default)
+             * @param speedRatio defines the speed ratio to apply to all animations
+             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the list of animatables created for all nodes
+             */
+            beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[];
+            /**
+             * Gets the animatable associated with a specific target
+             * @param target defines the target of the animatable
+             * @returns the required animatable if found
+             */
+            getAnimatableByTarget(target: any): Nullable<Animatable>;
+            /**
+             * Gets all animatables associated with a given target
+             * @param target defines the target to look animatables for
+             * @returns an array of Animatables
+             */
+            getAllAnimatablesByTarget(target: any): Array<Animatable>;
+            /**
+             * Will stop the animation of the given target
+             * @param target - the target
+             * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+             * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+             */
+            stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
+            /**
+            * Stops and removes all animations that have been applied to the scene
+            */
+            stopAllAnimations(): void;
+        }
+        interface Bone {
+            /**
+             * Copy an animation range from another bone
+             * @param source defines the source bone
+             * @param rangeName defines the range name to copy
+             * @param frameOffset defines the frame offset
+             * @param rescaleAsRequired defines if rescaling must be applied if required
+             * @param skelDimensionsRatio defines the scaling ratio
+             * @returns true if operation was successful
+             */
+            copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired: boolean, skelDimensionsRatio: Nullable<Vector3>): boolean;
+        }
+}
+declare module BABYLON {
+    /**
+     * Class used to handle skinning animations
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     */
+    export class Skeleton implements IAnimatable {
+        /** defines the skeleton name */
+        name: string;
+        /** defines the skeleton Id */
+        id: string;
+        /**
+         * Defines the list of child bones
+         */
+        bones: Bone[];
+        /**
+         * Defines an estimate of the dimension of the skeleton at rest
+         */
+        dimensionsAtRest: Vector3;
+        /**
+         * Defines a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
+         */
+        needInitialSkinMatrix: boolean;
+        /**
+         * Defines a mesh that override the matrix used to get the world matrix (null by default).
+         */
+        overrideMesh: Nullable<AbstractMesh>;
+        /**
+         * Gets the list of animations attached to this skeleton
+         */
+        animations: Array<Animation>;
+        private _scene;
+        private _isDirty;
+        private _transformMatrices;
+        private _transformMatrixTexture;
+        private _meshesWithPoseMatrix;
+        private _animatables;
+        private _identity;
+        private _synchronizedWithMesh;
+        private _ranges;
+        private _lastAbsoluteTransformsUpdateId;
+        private _canUseTextureForBones;
+        /** @hidden */
+        _numBonesWithLinkedTransformNode: number;
+        /**
+         * Specifies if the skeleton should be serialized
+         */
+        doNotSerialize: boolean;
+        /**
+         * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
+         * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
+         */
+        useTextureToStoreBoneMatrices: boolean;
+        private _animationPropertiesOverride;
+        /**
+         * Gets or sets the animation properties override
+         */
+        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        /**
+         * An observable triggered before computing the skeleton's matrices
+         */
+        onBeforeComputeObservable: Observable<Skeleton>;
+        /**
+         * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
+         */
+        readonly isUsingTextureForMatrices: boolean;
+        /**
+         * Creates a new skeleton
+         * @param name defines the skeleton name
+         * @param id defines the skeleton Id
+         * @param scene defines the hosting scene
+         */
+        constructor(
+        /** defines the skeleton name */
+        name: string, 
+        /** defines the skeleton Id */
+        id: string, scene: Scene);
+        /**
+         * Gets the list of transform matrices to send to shaders (one matrix per bone)
+         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
+         * @returns a Float32Array containing matrices data
+         */
+        getTransformMatrices(mesh: AbstractMesh): Float32Array;
+        /**
+         * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+         * @returns a raw texture containing the data
+         */
+        getTransformMatrixTexture(): Nullable<RawTexture>;
+        /**
+         * Gets the current hosting scene
+         * @returns a scene object
+         */
+        getScene(): Scene;
+        /**
+         * Gets a string representing the current skeleton data
+         * @param fullDetails defines a boolean indicating if we want a verbose version
+         * @returns a string representing the current skeleton data
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+        * Get bone's index searching by name
+        * @param name defines bone's name to search for
+        * @return the indice of the bone. Returns -1 if not found
+        */
+        getBoneIndexByName(name: string): number;
+        /**
+         * Creater a new animation range
+         * @param name defines the name of the range
+         * @param from defines the start key
+         * @param to defines the end key
+         */
+        createAnimationRange(name: string, from: number, to: number): void;
+        /**
+         * Delete a specific animation range
+         * @param name defines the name of the range
+         * @param deleteFrames defines if frames must be removed as well
+         */
+        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
+        /**
+         * Gets a specific animation range
+         * @param name defines the name of the range to look for
+         * @returns the requested animation range or null if not found
+         */
+        getAnimationRange(name: string): Nullable<AnimationRange>;
+        /**
+         * Gets the list of all animation ranges defined on this skeleton
+         * @returns an array
+         */
+        getAnimationRanges(): Nullable<AnimationRange>[];
+        /**
+         * Copy animation range from a source skeleton.
+         * This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
+         * @param source defines the source skeleton
+         * @param name defines the name of the range to copy
+         * @param rescaleAsRequired defines if rescaling must be applied if required
+         * @returns true if operation was successful
+         */
+        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
+        /**
+         * Forces the skeleton to go to rest pose
+         */
+        returnToRest(): void;
+        private _getHighestAnimationFrame;
+        /**
+         * Begin a specific animation range
+         * @param name defines the name of the range to start
+         * @param loop defines if looping must be turned on (false by default)
+         * @param speedRatio defines the speed ratio to apply (1 by default)
+         * @param onAnimationEnd defines a callback which will be called when animation will end
+         * @returns a new animatable
+         */
+        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /** @hidden */
+        _markAsDirty(): void;
+        /** @hidden */
+        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        /** @hidden */
+        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        private _computeTransformMatrices;
+        /**
+         * Build all resources required to render a skeleton
+         */
+        prepare(): void;
+        /**
+         * Gets the list of animatables currently running for this skeleton
+         * @returns an array of animatables
+         */
+        getAnimatables(): IAnimatable[];
+        /**
+         * Clone the current skeleton
+         * @param name defines the name of the new skeleton
+         * @param id defines the id of the enw skeleton
+         * @returns the new skeleton
+         */
+        clone(name: string, id: string): Skeleton;
+        /**
+         * Enable animation blending for this skeleton
+         * @param blendingSpeed defines the blending speed to apply
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         */
+        enableBlending(blendingSpeed?: number): void;
+        /**
+         * Releases all resources associated with the current skeleton
+         */
+        dispose(): void;
+        /**
+         * Serialize the skeleton in a JSON object
+         * @returns a JSON object
          */
         serialize(): any;
         /**
-         * Creates a shader material from parsed shader material data
-         * @param source defines the JSON represnetation of the material
+         * Creates a new skeleton from serialized data
+         * @param parsedSkeleton defines the serialized data
          * @param scene defines the hosting scene
-         * @param rootUrl defines the root URL to use to load textures and relative dependencies
-         * @returns a new material
+         * @returns a new skeleton
          */
-        static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial;
+        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
+        /**
+         * Compute all node absolute transforms
+         * @param forceUpdate defines if computation must be done even if cache is up to date
+         */
+        computeAbsoluteTransforms(forceUpdate?: boolean): void;
+        /**
+         * Gets the root pose matrix
+         * @returns a matrix
+         */
+        getPoseMatrix(): Nullable<Matrix>;
+        /**
+         * Sorts bones per internal index
+         */
+        sortBones(): void;
+        private _sortBones;
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export var colorPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var colorVertexShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
     /**
-     * Line mesh
-     * @see https://doc.babylonjs.com/babylon101/parametric_shapes
+     * Defines a target to use with MorphTargetManager
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
-    export class LinesMesh extends Mesh {
+    export class MorphTarget implements IAnimatable {
+        /** defines the name of the target */
+        name: string;
         /**
-         * If vertex color should be applied to the mesh
+         * Gets or sets the list of animations
          */
-        useVertexColor?: boolean | undefined;
+        animations: Animation[];
+        private _scene;
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
         /**
-         * If vertex alpha should be applied to the mesh
+         * Observable raised when the influence changes
          */
-        useVertexAlpha?: boolean | undefined;
+        onInfluenceChanged: Observable<boolean>;
+        /** @hidden */
+        _onDataLayoutChanged: Observable<void>;
         /**
-         * Color of the line (Default: White)
+         * Gets or sets the influence of this target (ie. its weight in the overall morphing)
          */
-        color: Color3;
+        influence: number;
         /**
-         * Alpha of the line (Default: 1)
+         * Gets or sets the id of the morph Target
          */
-        alpha: number;
+        id: string;
+        private _animationPropertiesOverride;
         /**
-         * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
-         * This margin is expressed in world space coordinates, so its value may vary.
-         * Default value is 0.1
+         * Gets or sets the animation properties override
          */
-        intersectionThreshold: number;
-        private _colorShader;
+        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
         /**
-         * Creates a new LinesMesh
-         * @param name defines the name
-         * @param scene defines the hosting scene
-         * @param parent defines the parent mesh if any
-         * @param source defines the optional source LinesMesh used to clone data from
-         * @param doNotCloneChildren When cloning, skip cloning child meshes of source, default False.
-         * When false, achieved by calling a clone(), also passing False.
-         * This will make creation of children, recursive.
-         * @param useVertexColor defines if this LinesMesh supports vertex color
-         * @param useVertexAlpha defines if this LinesMesh supports vertex alpha
+         * Creates a new MorphTarget
+         * @param name defines the name of the target
+         * @param influence defines the influence to use
+         * @param scene defines the scene the morphtarget belongs to
          */
-        constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: LinesMesh, doNotCloneChildren?: boolean, 
+        constructor(
+        /** defines the name of the target */
+        name: string, influence?: number, scene?: Nullable<Scene>);
         /**
-         * If vertex color should be applied to the mesh
+         * Gets a boolean defining if the target contains position data
          */
-        useVertexColor?: boolean | undefined, 
+        readonly hasPositions: boolean;
         /**
-         * If vertex alpha should be applied to the mesh
+         * Gets a boolean defining if the target contains normal data
          */
-        useVertexAlpha?: boolean | undefined);
+        readonly hasNormals: boolean;
         /**
-         * Returns the string "LineMesh"
+         * Gets a boolean defining if the target contains tangent data
+         */
+        readonly hasTangents: boolean;
+        /**
+         * Affects position data to this target
+         * @param data defines the position data to use
+         */
+        setPositions(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the position data stored in this target
+         * @returns a FloatArray containing the position data (or null if not present)
+         */
+        getPositions(): Nullable<FloatArray>;
+        /**
+         * Affects normal data to this target
+         * @param data defines the normal data to use
+         */
+        setNormals(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the normal data stored in this target
+         * @returns a FloatArray containing the normal data (or null if not present)
+         */
+        getNormals(): Nullable<FloatArray>;
+        /**
+         * Affects tangent data to this target
+         * @param data defines the tangent data to use
+         */
+        setTangents(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the tangent data stored in this target
+         * @returns a FloatArray containing the tangent data (or null if not present)
+         */
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Returns the string "MorphTarget"
+         * @returns "MorphTarget"
          */
         getClassName(): string;
         /**
-         * @hidden
+         * Creates a new target from serialized data
+         * @param serializationObject defines the serialized data to use
+         * @returns a new MorphTarget
          */
+        static Parse(serializationObject: any): MorphTarget;
         /**
-        * @hidden
-        */
-        material: Material;
-        /**
-         * @hidden
+         * Creates a MorphTarget from mesh data
+         * @param mesh defines the source mesh
+         * @param name defines the name to use for the new target
+         * @param influence defines the influence to attach to the target
+         * @returns a new MorphTarget
          */
-        readonly checkCollisions: boolean;
-        /** @hidden */
-        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh;
-        /** @hidden */
-        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): LinesMesh;
-        /**
-         * Disposes of the line mesh
-         * @param doNotRecurse If children should be disposed
-         */
-        dispose(doNotRecurse?: boolean): void;
-        /**
-         * Returns a new LineMesh object cloned from the current one.
-         */
-        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh;
-        /**
-         * Creates a new InstancedLinesMesh object from the mesh model.
-         * @see http://doc.babylonjs.com/how_to/how_to_use_instances
-         * @param name defines the name of the new instance
-         * @returns a new InstancedLinesMesh
-         */
-        createInstance(name: string): InstancedLinesMesh;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
     }
+}
+declare module BABYLON {
     /**
-     * Creates an instance based on a source LinesMesh
+     * This class is used to deform meshes using morphing between different targets
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
-    export class InstancedLinesMesh extends InstancedMesh {
+    export class MorphTargetManager {
+        private _targets;
+        private _targetInfluenceChangedObservers;
+        private _targetDataLayoutChangedObservers;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
         /**
-         * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
-         * This margin is expressed in world space coordinates, so its value may vary.
-         * Initilized with the intersectionThreshold value of the source LinesMesh
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
          */
-        intersectionThreshold: number;
-        constructor(name: string, source: LinesMesh);
+        constructor(scene?: Nullable<Scene>);
         /**
-         * Returns the string "InstancedLinesMesh".
+         * Gets the unique ID of this manager
          */
-        getClassName(): string;
+        readonly uniqueId: number;
+        /**
+         * Gets the number of vertices handled by this manager
+         */
+        readonly vertexCount: number;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of normals
+         */
+        readonly supportsNormals: boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of tangents
+         */
+        readonly supportsTangents: boolean;
+        /**
+         * Gets the number of targets stored in this manager
+         */
+        readonly numTargets: number;
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
+        readonly numInfluencers: number;
+        /**
+         * Gets the list of influences (one per target)
+         */
+        readonly influences: Float32Array;
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getActiveTarget(index: number): MorphTarget;
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
+        getTarget(index: number): MorphTarget;
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
+        addTarget(target: MorphTarget): void;
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
+         */
+        serialize(): any;
+        private _syncActiveTargets;
+        /**
+         * Syncrhonize the targets with all the meshes using this morph target manager
+         */
+        synchronize(): void;
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 declare module BABYLON {
@@ -18365,13 +19059,13 @@ declare module BABYLON {
          */
         constructor(jointData: PhysicsJointData);
         /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        * Set the motor values.
+        * Attention, this function is plugin specific. Engines won't react 100% the same.
+        * @param {number} targetSpeed the speed the motor is to reach
+        * @param {number} maxForce max force for this motor.
+        * @param {motorIndex} the motor's index, 0 or 1.
+        */
+        setMotor(targetSpeed?: number, maxForce?: number, motorIndex?: number): void;
         /**
          * Set the motor limits.
          * Attention, this function is plugin specific. Engines won't react 100% the same.
@@ -22779,6 +23473,8 @@ declare module BABYLON {
          */
         toString(fullDetails?: boolean): string;
         /** @hidden */
+        _getActionManagerForTrigger(trigger?: number, initialCall?: boolean): Nullable<AbstractActionManager>;
+        /** @hidden */
         _rebuild(): void;
         /** @hidden */
         _resyncLightSources(): void;
@@ -23212,855 +23908,174 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to handle skinning animations
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     * Interface used to define ActionEvent
      */
-    export class Skeleton implements IAnimatable {
-        /** defines the skeleton name */
-        name: string;
-        /** defines the skeleton Id */
-        id: string;
+    export interface IActionEvent {
+        /** The mesh or sprite that triggered the action */
+        source: any;
+        /** The X mouse cursor position at the time of the event */
+        pointerX: number;
+        /** The Y mouse cursor position at the time of the event */
+        pointerY: number;
+        /** The mesh that is currently pointed at (can be null) */
+        meshUnderPointer: Nullable<AbstractMesh>;
+        /** the original (browser) event that triggered the ActionEvent */
+        sourceEvent?: any;
+        /** additional data for the event */
+        additionalData?: any;
+    }
+    /**
+     * ActionEvent is the event being sent when an action is triggered.
+     */
+    export class ActionEvent implements IActionEvent {
+        /** The mesh or sprite that triggered the action */
+        source: any;
+        /** The X mouse cursor position at the time of the event */
+        pointerX: number;
+        /** The Y mouse cursor position at the time of the event */
+        pointerY: number;
+        /** The mesh that is currently pointed at (can be null) */
+        meshUnderPointer: Nullable<AbstractMesh>;
+        /** the original (browser) event that triggered the ActionEvent */
+        sourceEvent?: any;
+        /** additional data for the event */
+        additionalData?: any;
         /**
-         * Defines the list of child bones
-         */
-        bones: Bone[];
-        /**
-         * Defines an estimate of the dimension of the skeleton at rest
-         */
-        dimensionsAtRest: Vector3;
-        /**
-         * Defines a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
-         */
-        needInitialSkinMatrix: boolean;
-        /**
-         * Defines a mesh that override the matrix used to get the world matrix (null by default).
-         */
-        overrideMesh: Nullable<AbstractMesh>;
-        /**
-         * Gets the list of animations attached to this skeleton
-         */
-        animations: Array<Animation>;
-        private _scene;
-        private _isDirty;
-        private _transformMatrices;
-        private _transformMatrixTexture;
-        private _meshesWithPoseMatrix;
-        private _animatables;
-        private _identity;
-        private _synchronizedWithMesh;
-        private _ranges;
-        private _lastAbsoluteTransformsUpdateId;
-        private _canUseTextureForBones;
-        /** @hidden */
-        _numBonesWithLinkedTransformNode: number;
-        /**
-         * Specifies if the skeleton should be serialized
-         */
-        doNotSerialize: boolean;
-        /**
-         * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
-         * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
-         */
-        useTextureToStoreBoneMatrices: boolean;
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        /**
-         * An observable triggered before computing the skeleton's matrices
-         */
-        onBeforeComputeObservable: Observable<Skeleton>;
-        /**
-         * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
-         */
-        readonly isUsingTextureForMatrices: boolean;
-        /**
-         * Creates a new skeleton
-         * @param name defines the skeleton name
-         * @param id defines the skeleton Id
-         * @param scene defines the hosting scene
+         * Creates a new ActionEvent
+         * @param source The mesh or sprite that triggered the action
+         * @param pointerX The X mouse cursor position at the time of the event
+         * @param pointerY The Y mouse cursor position at the time of the event
+         * @param meshUnderPointer The mesh that is currently pointed at (can be null)
+         * @param sourceEvent the original (browser) event that triggered the ActionEvent
+         * @param additionalData additional data for the event
          */
         constructor(
-        /** defines the skeleton name */
-        name: string, 
-        /** defines the skeleton Id */
-        id: string, scene: Scene);
+        /** The mesh or sprite that triggered the action */
+        source: any, 
+        /** The X mouse cursor position at the time of the event */
+        pointerX: number, 
+        /** The Y mouse cursor position at the time of the event */
+        pointerY: number, 
+        /** The mesh that is currently pointed at (can be null) */
+        meshUnderPointer: Nullable<AbstractMesh>, 
+        /** the original (browser) event that triggered the ActionEvent */
+        sourceEvent?: any, 
+        /** additional data for the event */
+        additionalData?: any);
         /**
-         * Gets the list of transform matrices to send to shaders (one matrix per bone)
-         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
-         * @returns a Float32Array containing matrices data
+         * Helper function to auto-create an ActionEvent from a source mesh.
+         * @param source The source mesh that triggered the event
+         * @param evt The original (browser) event
+         * @param additionalData additional data for the event
+         * @returns the new ActionEvent
          */
-        getTransformMatrices(mesh: AbstractMesh): Float32Array;
+        static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent;
         /**
-         * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
-         * @returns a raw texture containing the data
+         * Helper function to auto-create an ActionEvent from a source sprite
+         * @param source The source sprite that triggered the event
+         * @param scene Scene associated with the sprite
+         * @param evt The original (browser) event
+         * @param additionalData additional data for the event
+         * @returns the new ActionEvent
          */
-        getTransformMatrixTexture(): Nullable<RawTexture>;
+        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: Event, additionalData?: any): ActionEvent;
         /**
-         * Gets the current hosting scene
-         * @returns a scene object
+         * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
+         * @param scene the scene where the event occurred
+         * @param evt The original (browser) event
+         * @returns the new ActionEvent
          */
-        getScene(): Scene;
+        static CreateNewFromScene(scene: Scene, evt: Event): ActionEvent;
         /**
-         * Gets a string representing the current skeleton data
-         * @param fullDetails defines a boolean indicating if we want a verbose version
-         * @returns a string representing the current skeleton data
+         * Helper function to auto-create an ActionEvent from a primitive
+         * @param prim defines the target primitive
+         * @param pointerPos defines the pointer position
+         * @param evt The original (browser) event
+         * @param additionalData additional data for the event
+         * @returns the new ActionEvent
          */
-        toString(fullDetails?: boolean): string;
-        /**
-        * Get bone's index searching by name
-        * @param name defines bone's name to search for
-        * @return the indice of the bone. Returns -1 if not found
-        */
-        getBoneIndexByName(name: string): number;
-        /**
-         * Creater a new animation range
-         * @param name defines the name of the range
-         * @param from defines the start key
-         * @param to defines the end key
-         */
-        createAnimationRange(name: string, from: number, to: number): void;
-        /**
-         * Delete a specific animation range
-         * @param name defines the name of the range
-         * @param deleteFrames defines if frames must be removed as well
-         */
-        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
-        /**
-         * Gets a specific animation range
-         * @param name defines the name of the range to look for
-         * @returns the requested animation range or null if not found
-         */
-        getAnimationRange(name: string): Nullable<AnimationRange>;
-        /**
-         * Gets the list of all animation ranges defined on this skeleton
-         * @returns an array
-         */
-        getAnimationRanges(): Nullable<AnimationRange>[];
-        /**
-         * Copy animation range from a source skeleton.
-         * This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
-         * @param source defines the source skeleton
-         * @param name defines the name of the range to copy
-         * @param rescaleAsRequired defines if rescaling must be applied if required
-         * @returns true if operation was successful
-         */
-        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
-        /**
-         * Forces the skeleton to go to rest pose
-         */
-        returnToRest(): void;
-        private _getHighestAnimationFrame;
-        /**
-         * Begin a specific animation range
-         * @param name defines the name of the range to start
-         * @param loop defines if looping must be turned on (false by default)
-         * @param speedRatio defines the speed ratio to apply (1 by default)
-         * @param onAnimationEnd defines a callback which will be called when animation will end
-         * @returns a new animatable
-         */
-        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
-        /** @hidden */
-        _markAsDirty(): void;
-        /** @hidden */
-        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        /** @hidden */
-        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        private _computeTransformMatrices;
-        /**
-         * Build all resources required to render a skeleton
-         */
-        prepare(): void;
-        /**
-         * Gets the list of animatables currently running for this skeleton
-         * @returns an array of animatables
-         */
-        getAnimatables(): IAnimatable[];
-        /**
-         * Clone the current skeleton
-         * @param name defines the name of the new skeleton
-         * @param id defines the id of the enw skeleton
-         * @returns the new skeleton
-         */
-        clone(name: string, id: string): Skeleton;
-        /**
-         * Enable animation blending for this skeleton
-         * @param blendingSpeed defines the blending speed to apply
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
-         */
-        enableBlending(blendingSpeed?: number): void;
-        /**
-         * Releases all resources associated with the current skeleton
-         */
-        dispose(): void;
-        /**
-         * Serialize the skeleton in a JSON object
-         * @returns a JSON object
-         */
-        serialize(): any;
-        /**
-         * Creates a new skeleton from serialized data
-         * @param parsedSkeleton defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns a new skeleton
-         */
-        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
-        /**
-         * Compute all node absolute transforms
-         * @param forceUpdate defines if computation must be done even if cache is up to date
-         */
-        computeAbsoluteTransforms(forceUpdate?: boolean): void;
-        /**
-         * Gets the root pose matrix
-         * @returns a matrix
-         */
-        getPoseMatrix(): Nullable<Matrix>;
-        /**
-         * Sorts bones per internal index
-         */
-        sortBones(): void;
-        private _sortBones;
+        static CreateNewFromPrimitive(prim: any, pointerPos: Vector2, evt?: Event, additionalData?: any): ActionEvent;
     }
 }
 declare module BABYLON {
     /**
-     * Class used to store bone information
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     * Abstract class used to decouple action Manager from scene and meshes.
+     * Do not instantiate.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
      */
-    export class Bone extends Node {
+    export abstract class AbstractActionManager implements IDisposable {
+        /** Gets the list of active triggers */
+        static Triggers: {
+            [key: string]: number;
+        };
+        /** Gets the cursor to use when hovering items */
+        hoverCursor: string;
+        /** Gets the list of actions */
+        actions: IAction[];
         /**
-         * defines the bone name
+         * Gets or sets a boolean indicating that the manager is recursive meaning that it can trigger action from children
          */
-        name: string;
-        private static _tmpVecs;
-        private static _tmpQuat;
-        private static _tmpMats;
+        isRecursive: boolean;
         /**
-         * Gets the list of child bones
+         * Releases all associated resources
          */
-        children: Bone[];
-        /** Gets the animations associated with this bone */
-        animations: Animation[];
+        abstract dispose(): void;
         /**
-         * Gets or sets bone length
+         * Does this action manager has pointer triggers
          */
-        length: number;
+        abstract readonly hasPointerTriggers: boolean;
         /**
-         * @hidden Internal only
-         * Set this value to map this bone to a different index in the transform matrices
-         * Set this value to -1 to exclude the bone from the transform matrices
+         * Does this action manager has pick triggers
          */
-        _index: Nullable<number>;
-        private _skeleton;
-        private _localMatrix;
-        private _restPose;
-        private _baseMatrix;
-        private _absoluteTransform;
-        private _invertedAbsoluteTransform;
-        private _parent;
-        private _scalingDeterminant;
-        private _worldTransform;
-        private _localScaling;
-        private _localRotation;
-        private _localPosition;
-        private _needToDecompose;
-        private _needToCompose;
-        /** @hidden */
-        _linkedTransformNode: Nullable<TransformNode>;
-        /** @hidden */
-        /** @hidden */
-        _matrix: Matrix;
+        abstract readonly hasPickTriggers: boolean;
         /**
-         * Create a new bone
-         * @param name defines the bone name
-         * @param skeleton defines the parent skeleton
-         * @param parentBone defines the parent (can be null if the bone is the root)
-         * @param localMatrix defines the local matrix
-         * @param restPose defines the rest pose matrix
-         * @param baseMatrix defines the base matrix
-         * @param index defines index of the bone in the hiearchy
+         * Process a specific trigger
+         * @param trigger defines the trigger to process
+         * @param evt defines the event details to be processed
          */
-        constructor(
+        abstract processTrigger(trigger: number, evt?: IActionEvent): void;
         /**
-         * defines the bone name
+         * Does this action manager handles actions of any of the given triggers
+         * @param triggers defines the triggers to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled
          */
-        name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
+        abstract hasSpecificTriggers(triggers: number[]): boolean;
         /**
-         * Gets the parent skeleton
-         * @returns a skeleton
+         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for
+         * speed.
+         * @param triggerA defines the trigger to be tested
+         * @param triggerB defines the trigger to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled
          */
-        getSkeleton(): Skeleton;
+        abstract hasSpecificTriggers2(triggerA: number, triggerB: number): boolean;
         /**
-         * Gets parent bone
-         * @returns a bone or null if the bone is the root of the bone hierarchy
+         * Does this action manager handles actions of a given trigger
+         * @param trigger defines the trigger to be tested
+         * @param parameterPredicate defines an optional predicate to filter triggers by parameter
+         * @return whether the trigger is handled
          */
-        getParent(): Nullable<Bone>;
+        abstract hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean;
         /**
-         * Sets the parent bone
-         * @param parent defines the parent (can be null if the bone is the root)
-         * @param updateDifferenceMatrix defines if the difference matrix must be updated
-         */
-        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
+             * Serialize this manager to a JSON object
+             * @param name defines the property name to store this manager
+             * @returns a JSON representation of this manager
+             */
+        abstract serialize(name: string): any;
         /**
-         * Gets the local matrix
-         * @returns a matrix
-         */
-        getLocalMatrix(): Matrix;
+         * Does exist one action manager with at least one trigger
+         **/
+        static readonly HasTriggers: boolean;
         /**
-         * Gets the base matrix (initial matrix which remains unchanged)
-         * @returns a matrix
-         */
-        getBaseMatrix(): Matrix;
+         * Does exist one action manager with at least one pick trigger
+         **/
+        static readonly HasPickTriggers: boolean;
         /**
-         * Gets the rest pose matrix
-         * @returns a matrix
-         */
-        getRestPose(): Matrix;
-        /**
-         * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
-         */
-        getWorldMatrix(): Matrix;
-        /**
-         * Sets the local matrix to rest pose matrix
-         */
-        returnToRest(): void;
-        /**
-         * Gets the inverse of the absolute transform matrix.
-         * This matrix will be multiplied by local matrix to get the difference matrix (ie. the difference between original state and current state)
-         * @returns a matrix
-         */
-        getInvertedAbsoluteTransform(): Matrix;
-        /**
-         * Gets the absolute transform matrix (ie base matrix * parent world matrix)
-         * @returns a matrix
-         */
-        getAbsoluteTransform(): Matrix;
-        /**
-         * Links with the given transform node.
-         * The local matrix of this bone is copied from the transform node every frame.
-         * @param transformNode defines the transform node to link to
-         */
-        linkTransformNode(transformNode: Nullable<TransformNode>): void;
-        /** Gets or sets current position (in local space) */
-        position: Vector3;
-        /** Gets or sets current rotation (in local space) */
-        rotation: Vector3;
-        /** Gets or sets current rotation quaternion (in local space) */
-        rotationQuaternion: Quaternion;
-        /** Gets or sets current scaling (in local space) */
-        scaling: Vector3;
-        /**
-         * Gets the animation properties override
-         */
-        readonly animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
-        private _decompose;
-        private _compose;
-        /**
-         * Update the base and local matrices
-         * @param matrix defines the new base or local matrix
-         * @param updateDifferenceMatrix defines if the difference matrix must be updated
-         * @param updateLocalMatrix defines if the local matrix should be updated
-         */
-        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean, updateLocalMatrix?: boolean): void;
-        /** @hidden */
-        _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren?: boolean): void;
-        /**
-         * Flag the bone as dirty (Forcing it to update everything)
-         */
-        markAsDirty(): void;
-        private _markAsDirtyAndCompose;
-        private _markAsDirtyAndDecompose;
-        /**
-         * Translate the bone in local or world space
-         * @param vec The amount to translate the bone
-         * @param space The space that the translation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the postion of the bone in local or world space
-         * @param position The position to set the bone
-         * @param space The space that the position is in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         */
-        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the absolute position of the bone (world space)
-         * @param position The position to set the bone
-         * @param mesh The mesh that this bone is attached to
-         */
-        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
-        /**
-         * Scale the bone on the x, y and z axes (in local space)
-         * @param x The amount to scale the bone on the x axis
-         * @param y The amount to scale the bone on the y axis
-         * @param z The amount to scale the bone on the z axis
-         * @param scaleChildren sets this to true if children of the bone should be scaled as well (false by default)
-         */
-        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
-        /**
-         * Set the bone scaling in local space
-         * @param scale defines the scaling vector
-         */
-        setScale(scale: Vector3): void;
-        /**
-         * Gets the current scaling in local space
-         * @returns the current scaling vector
-         */
-        getScale(): Vector3;
-        /**
-         * Gets the current scaling in local space and stores it in a target vector
-         * @param result defines the target vector
-         */
-        getScaleToRef(result: Vector3): void;
-        /**
-         * Set the yaw, pitch, and roll of the bone in local or world space
-         * @param yaw The rotation of the bone on the y axis
-         * @param pitch The rotation of the bone on the x axis
-         * @param roll The rotation of the bone on the z axis
-         * @param space The space that the axes of rotation are in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         */
-        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Add a rotation to the bone on an axis in local or world space
-         * @param axis The axis to rotate the bone on
-         * @param amount The amount to rotate the bone
-         * @param space The space that the axis is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation of the bone to a particular axis angle in local or world space
-         * @param axis The axis to rotate the bone on
-         * @param angle The angle that the bone should be rotated to
-         * @param space The space that the axis is in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         */
-        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the euler rotation of the bone in local of world space
-         * @param rotation The euler rotation that the bone should be set to
-         * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the quaternion rotation of the bone in local of world space
-         * @param quat The quaternion rotation that the bone should be set to
-         * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation matrix of the bone in local of world space
-         * @param rotMat The rotation matrix that the bone should be set to
-         * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
-        private _rotateWithMatrix;
-        private _getNegativeRotationToRef;
-        /**
-         * Get the position of the bone in local or world space
-         * @param space The space that the returned position is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         * @returns The position of the bone
-         */
-        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the position of the bone to a vector3 in local or world space
-         * @param space The space that the returned position is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         * @param result The vector3 to copy the position to
-         */
-        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
-        /**
-         * Get the absolute position of the bone (world space)
-         * @param mesh The mesh that this bone is attached to
-         * @returns The absolute position of the bone
-         */
-        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the absolute position of the bone (world space) to the result param
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 to copy the absolute position to
-         */
-        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
-        /**
-         * Compute the absolute transforms of this bone and its children
-         */
-        computeAbsoluteTransforms(): void;
-        /**
-         * Get the world direction from an axis that is in the local space of the bone
-         * @param localAxis The local direction that is used to compute the world direction
-         * @param mesh The mesh that this bone is attached to
-         * @returns The world direction
-         */
-        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the world direction to a vector3 from an axis that is in the local space of the bone
-         * @param localAxis The local direction that is used to compute the world direction
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 that the world direction will be copied to
-         */
-        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the euler rotation of the bone in local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @returns The euler rotation
-         */
-        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @param result The vector3 that the rotation should be copied to
-         */
-        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the quaternion rotation of the bone in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @returns The quaternion rotation
-         */
-        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
-        /**
-         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @param result The quaternion that the rotation should be copied to
-         */
-        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
-        /**
-         * Get the rotation matrix of the bone in local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @returns The rotation matrix
-         */
-        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
-        /**
-         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @param result The quaternion that the rotation should be copied to
-         */
-        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
-        /**
-         * Get the world position of a point that is in the local space of the bone
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to
-         * @returns The world position
-         */
-        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the world position of a point that is in the local space of the bone and copy it to the result param
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 that the world position should be copied to
-         */
-        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the local position of a point that is in world space
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to
-         * @returns The local position
-         */
-        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the local position of a point that is in world space and copy it to the result param
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 that the local position should be copied to
-         */
-        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+         * Does exist one action manager that handles actions of a given trigger
+         * @param trigger defines the trigger to be tested
+         * @return a boolean indicating whether the trigger is handeled by at least one action manager
+        **/
+        static HasSpecificTrigger(trigger: number): boolean;
     }
-}
-declare module BABYLON {
-    /**
-     * Class used to store an actual running animation
-     */
-    export class Animatable {
-        /** defines the target object */
-        target: any;
-        /** defines the starting frame number (default is 0) */
-        fromFrame: number;
-        /** defines the ending frame number (default is 100) */
-        toFrame: number;
-        /** defines if the animation must loop (default is false)  */
-        loopAnimation: boolean;
-        /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined;
-        /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined;
-        private _localDelayOffset;
-        private _pausedDelay;
-        private _runtimeAnimations;
-        private _paused;
-        private _scene;
-        private _speedRatio;
-        private _weight;
-        private _syncRoot;
-        /**
-         * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
-         * This will only apply for non looping animation (default is true)
-         */
-        disposeOnEnd: boolean;
-        /**
-         * Gets a boolean indicating if the animation has started
-         */
-        animationStarted: boolean;
-        /**
-         * Observer raised when the animation ends
-         */
-        onAnimationEndObservable: Observable<Animatable>;
-        /**
-         * Observer raised when the animation loops
-         */
-        onAnimationLoopObservable: Observable<Animatable>;
-        /**
-         * Gets the root Animatable used to synchronize and normalize animations
-         */
-        readonly syncRoot: Animatable;
-        /**
-         * Gets the current frame of the first RuntimeAnimation
-         * Used to synchronize Animatables
-         */
-        readonly masterFrame: number;
-        /**
-         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
-         */
-        weight: number;
-        /**
-         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
-         */
-        speedRatio: number;
-        /**
-         * Creates a new Animatable
-         * @param scene defines the hosting scene
-         * @param target defines the target object
-         * @param fromFrame defines the starting frame number (default is 0)
-         * @param toFrame defines the ending frame number (default is 100)
-         * @param loopAnimation defines if the animation must loop (default is false)
-         * @param speedRatio defines the factor to apply to animation speed (default is 1)
-         * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
-         * @param animations defines a group of animation to add to the new Animatable
-         * @param onAnimationLoop defines a callback to call when animation loops
-         */
-        constructor(scene: Scene, 
-        /** defines the target object */
-        target: any, 
-        /** defines the starting frame number (default is 0) */
-        fromFrame?: number, 
-        /** defines the ending frame number (default is 100) */
-        toFrame?: number, 
-        /** defines if the animation must loop (default is false)  */
-        loopAnimation?: boolean, speedRatio?: number, 
-        /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
-        /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined);
-        /**
-         * Synchronize and normalize current Animatable with a source Animatable
-         * This is useful when using animation weights and when animations are not of the same length
-         * @param root defines the root Animatable to synchronize with
-         * @returns the current Animatable
-         */
-        syncWith(root: Animatable): Animatable;
-        /**
-         * Gets the list of runtime animations
-         * @returns an array of RuntimeAnimation
-         */
-        getAnimations(): RuntimeAnimation[];
-        /**
-         * Adds more animations to the current animatable
-         * @param target defines the target of the animations
-         * @param animations defines the new animations to add
-         */
-        appendAnimations(target: any, animations: Animation[]): void;
-        /**
-         * Gets the source animation for a specific property
-         * @param property defines the propertyu to look for
-         * @returns null or the source animation for the given property
-         */
-        getAnimationByTargetProperty(property: string): Nullable<Animation>;
-        /**
-         * Gets the runtime animation for a specific property
-         * @param property defines the propertyu to look for
-         * @returns null or the runtime animation for the given property
-         */
-        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
-        /**
-         * Resets the animatable to its original state
-         */
-        reset(): void;
-        /**
-         * Allows the animatable to blend with current running animations
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
-         * @param blendingSpeed defines the blending speed to use
-         */
-        enableBlending(blendingSpeed: number): void;
-        /**
-         * Disable animation blending
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
-         */
-        disableBlending(): void;
-        /**
-         * Jump directly to a given frame
-         * @param frame defines the frame to jump to
-         */
-        goToFrame(frame: number): void;
-        /**
-         * Pause the animation
-         */
-        pause(): void;
-        /**
-         * Restart the animation
-         */
-        restart(): void;
-        private _raiseOnAnimationEnd;
-        /**
-         * Stop and delete the current animation
-         * @param animationName defines a string used to only stop some of the runtime animations instead of all
-         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-         */
-        stop(animationName?: string, targetMask?: (target: any) => boolean): void;
-        /**
-         * Wait asynchronously for the animation to end
-         * @returns a promise which will be fullfilled when the animation ends
-         */
-        waitAsync(): Promise<Animatable>;
-        /** @hidden */
-        _animate(delay: number): boolean;
-    }
-        interface Scene {
-            /** @hidden */
-            _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
-            /** @hidden */
-            _processLateAnimationBindingsForMatrices(holder: {
-                totalWeight: number;
-                animations: RuntimeAnimation[];
-                originalValue: Matrix;
-            }): any;
-            /** @hidden */
-            _processLateAnimationBindingsForQuaternions(holder: {
-                totalWeight: number;
-                animations: RuntimeAnimation[];
-                originalValue: Quaternion;
-            }, refQuaternion: Quaternion): Quaternion;
-            /** @hidden */
-            _processLateAnimationBindings(): void;
-            /**
-             * Will start the animation sequence of a given target
-             * @param target defines the target
-             * @param from defines from which frame should animation start
-             * @param to defines until which frame should animation run.
-             * @param weight defines the weight to apply to the animation (1.0 by default)
-             * @param loop defines if the animation loops
-             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-             * @param onAnimationEnd defines the function to be executed when the animation ends
-             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the animatable object created for this animation
-             */
-            beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
-            /**
-             * Will start the animation sequence of a given target
-             * @param target defines the target
-             * @param from defines from which frame should animation start
-             * @param to defines until which frame should animation run.
-             * @param loop defines if the animation loops
-             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-             * @param onAnimationEnd defines the function to be executed when the animation ends
-             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-             * @param stopCurrent defines if the current animations must be stopped first (true by default)
-             * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the animatable object created for this animation
-             */
-            beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
-            /**
-             * Will start the animation sequence of a given target and its hierarchy
-             * @param target defines the target
-             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-             * @param from defines from which frame should animation start
-             * @param to defines until which frame should animation run.
-             * @param loop defines if the animation loops
-             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-             * @param onAnimationEnd defines the function to be executed when the animation ends
-             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-             * @param stopCurrent defines if the current animations must be stopped first (true by default)
-             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the list of created animatables
-             */
-            beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[];
-            /**
-             * Begin a new animation on a given node
-             * @param target defines the target where the animation will take place
-             * @param animations defines the list of animations to start
-             * @param from defines the initial value
-             * @param to defines the final value
-             * @param loop defines if you want animation to loop (off by default)
-             * @param speedRatio defines the speed ratio to apply to all animations
-             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the list of created animatables
-             */
-            beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable;
-            /**
-             * Begin a new animation on a given node and its hierarchy
-             * @param target defines the root node where the animation will take place
-             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-             * @param animations defines the list of animations to start
-             * @param from defines the initial value
-             * @param to defines the final value
-             * @param loop defines if you want animation to loop (off by default)
-             * @param speedRatio defines the speed ratio to apply to all animations
-             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the list of animatables created for all nodes
-             */
-            beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[];
-            /**
-             * Gets the animatable associated with a specific target
-             * @param target defines the target of the animatable
-             * @returns the required animatable if found
-             */
-            getAnimatableByTarget(target: any): Nullable<Animatable>;
-            /**
-             * Gets all animatables associated with a given target
-             * @param target defines the target to look animatables for
-             * @returns an array of Animatables
-             */
-            getAllAnimatablesByTarget(target: any): Array<Animatable>;
-            /**
-             * Will stop the animation of the given target
-             * @param target - the target
-             * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
-             * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-             */
-            stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
-            /**
-            * Stops and removes all animations that have been applied to the scene
-            */
-            stopAllAnimations(): void;
-        }
-        interface Bone {
-            /**
-             * Copy an animation range from another bone
-             * @param source defines the source bone
-             * @param rangeName defines the range name to copy
-             * @param frameOffset defines the frame offset
-             * @param rescaleAsRequired defines if rescaling must be applied if required
-             * @param skelDimensionsRatio defines the scaling ratio
-             * @returns true if operation was successful
-             */
-            copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired: boolean, skelDimensionsRatio: Nullable<Vector3>): boolean;
-        }
 }
 declare module BABYLON {
     /**
@@ -24245,6 +24260,8 @@ declare module BABYLON {
         /** @hidden */
         updateCache(force?: boolean): void;
         /** @hidden */
+        _getActionManagerForTrigger(trigger?: number, initialCall?: boolean): Nullable<AbstractActionManager>;
+        /** @hidden */
         _updateCache(ignoreParentClass?: boolean): void;
         /** @hidden */
         _isSynchronized(): boolean;
@@ -24292,7 +24309,7 @@ declare module BABYLON {
         getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[];
         /**
          * Get all child-meshes of this node
-         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: false)
          * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
          * @returns an array of AbstractMesh
          */
@@ -37071,6 +37088,16 @@ declare module BABYLON {
          * Are fresnels enabled in the application.
          */
         static FresnelEnabled: boolean;
+        private static _ClearCoatTextureEnabled;
+        /**
+         * Are clear coat textures enabled in the application.
+         */
+        static ClearCoatTextureEnabled: boolean;
+        private static _ClearCoatBumpTextureEnabled;
+        /**
+         * Are clear coat bump textures enabled in the application.
+         */
+        static ClearCoatBumpTextureEnabled: boolean;
     }
 }
 declare module BABYLON {
@@ -39680,6 +39707,10 @@ declare module BABYLON {
          * Optional list of extensibility entries
          */
         explorerExtensibility?: IExplorerExtensibilityGroup[];
+        /**
+         * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
+         */
+        inspectorURL?: string;
     }
         interface Scene {
             /**
@@ -42222,6 +42253,236 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IMaterialClearCoatDefines {
+        CLEARCOAT: boolean;
+        CLEARCOAT_TEXTURE: boolean;
+        CLEARCOAT_TEXTUREDIRECTUV: number;
+        CLEARCOAT_BUMP: boolean;
+        CLEARCOAT_BUMPDIRECTUV: number;
+        /** @hidden */
+        _areTexturesDirty: boolean;
+    }
+    /**
+     * Define the code related to the clear coat parameters of the pbr material.
+     */
+    export class PBRClearCoatConfiguration {
+        private _isEnabled;
+        /**
+         * Defines if the clear coat is enabled in the material.
+         */
+        isEnabled: boolean;
+        /**
+         * Defines the clear coat layer strength (between 0 and 1) it defaults to 1.
+         */
+        intensity: number;
+        /**
+         * Defines the clear coat layer roughness.
+         */
+        roughness: number;
+        private _texture;
+        /**
+         * Stores the clear coat values in a texture.
+         */
+        texture: Nullable<BaseTexture>;
+        private _bumpTexture;
+        /**
+         * Define the clear coat specific bump texture.
+         */
+        bumpTexture: Nullable<BaseTexture>;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsTexturesDirty;
+        /** @hidden */
+        _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Instantiate a new istance of clear coat configuration.
+         * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsTexturesDirty: () => void);
+        /**
+         * Specifies that the submesh is ready to be used.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         * @param engine defines the engine the material belongs to.
+         * @param disableBumpMap defines wether the material disables bump or not.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
+        isReadyForSubMesh(defines: IMaterialClearCoatDefines, scene: Scene, engine: Engine, disableBumpMap: boolean): boolean;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene to the material belongs to.
+         */
+        prepareDefines(defines: IMaterialClearCoatDefines, scene: Scene): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
+         * @param engine defines the engine the material belongs to.
+         * @param disableBumpMap defines wether the material disables bump or not.
+         * @param isFrozen defines wether the material is frozen or not.
+         * @param invertNormalMapX If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
+         * @param invertNormalMapY If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Returns an array of the actively used textures.
+         * @param activeTextures Array of BaseTextures
+         */
+        getActiveTextures(activeTextures: BaseTexture[]): void;
+        /**
+         * Returns the animatable textures.
+         * @param animatables Array of animatable textures.
+         */
+        getAnimatables(animatables: IAnimatable[]): void;
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
+        /**
+        * Get the current class name of the texture useful for serialization or dynamic coding.
+        * @returns "PBRClearCoatConfiguration"
+        */
+        getClassName(): string;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param clearCoatConfiguration define the config where to copy the info
+         */
+        copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void;
+        /**
+         * Serializes this clear coat configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Clear Coat Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
+        /**
+         * Add fallbacks to the effect fallbacks list.
+         * @param defines defines the Base texture to use.
+         * @param fallbacks defines the current fallback list.
+         * @param currentRank defines the current fallback rank.
+         * @returns the new fallback rank.
+         */
+        static AddFallbacks(defines: IMaterialClearCoatDefines, fallbacks: EffectFallbacks, currentRank: number): number;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IMaterialAnisotropicDefines {
+        ANISOTROPIC: boolean;
+        MAINUV1: boolean;
+        _areMiscDirty: boolean;
+        _needUVs: boolean;
+    }
+    /**
+     * Define the code related to the anisotropic parameters of the pbr material.
+     */
+    export class PBRAnisotropicConfiguration {
+        private _isEnabled;
+        /**
+         * Defines if the anisotropy is enabled in the material.
+         */
+        isEnabled: boolean;
+        /**
+         * Defines the anisotropy strength (between 0 and 1) it defaults to 1.
+         */
+        intensity: number;
+        /**
+         * Defines if the effect is along the tangents or bitangents.
+         * By default, the effect is "strectching" the highlights along the tangents.
+         */
+        followTangents: boolean;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsMiscDirty;
+        /** @hidden */
+        _markAllSubMeshesAsMiscDirty(): void;
+        /**
+         * Instantiate a new istance of clear coat configuration.
+         * @param markAllSubMeshesAsMiscDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsMiscDirty: () => void);
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param defines the list of "defines" to update.
+         * @param mesh the mesh we are preparing the defines for.
+         */
+        prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param isFrozen defines wether the material is frozen or not.
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, isFrozen: boolean): void;
+        /**
+        * Get the current class name of the texture useful for serialization or dynamic coding.
+        * @returns "PBRAnisotropicConfiguration"
+        */
+        getClassName(): string;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param anisotropicConfiguration define the config where to copy the info
+         */
+        copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void;
+        /**
+         * Serializes this clear coat configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Clear Coat Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
+        /**
+         * Add fallbacks to the effect fallbacks list.
+         * @param defines defines the Base texture to use.
+         * @param fallbacks defines the current fallback list.
+         * @param currentRank defines the current fallback rank.
+         * @returns the new fallback rank.
+         */
+        static AddFallbacks(defines: IMaterialAnisotropicDefines, fallbacks: EffectFallbacks, currentRank: number): number;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var pbrFragmentDeclaration: {
         name: string;
@@ -42251,7 +42512,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrLightFunctions: {
+    export var pbrPreLightingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrFalloffLightingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrLightingFunctions: {
         name: string;
         shader: string;
     };
@@ -42622,6 +42897,14 @@ declare module BABYLON {
          */
         private _unlit;
         /**
+         * Defines the clear coat layer parameters for the material.
+         */
+        readonly clearCoat: PBRClearCoatConfiguration;
+        /**
+         * Defines the anisotropic parameters for the material.
+         */
+        readonly anisotropy: PBRAnisotropicConfiguration;
+        /**
          * Instantiates a new PBRMaterial instance.
          *
          * @param name The material name
@@ -42735,6 +43018,17 @@ declare module BABYLON {
          * is linked with transparency, returns environment texture.  Otherwise, returns null.
          */
         private _getRefractionTexture;
+        /**
+         * Returns an array of the actively used textures.
+         * @returns - Array of BaseTextures
+         */
+        getActiveTextures(): BaseTexture[];
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
         /**
          * Disposes the resources of the material.
          * @param forceDisposeEffect - Forces the disposal of effects.
@@ -43133,17 +43427,6 @@ declare module BABYLON {
          * Returns the name of this material class.
          */
         getClassName(): string;
-        /**
-         * Returns an array of the actively used textures.
-         * @returns - Array of BaseTextures
-         */
-        getActiveTextures(): BaseTexture[];
-        /**
-         * Checks to see if a texture is used in the material.
-         * @param texture - Base texture to use.
-         * @returns - Boolean specifying if a texture is used in the material.
-         */
-        hasTexture(texture: BaseTexture): boolean;
         /**
          * Makes a duplicate of the current material.
          * @param name - name to use for the new material.
@@ -45355,7 +45638,7 @@ declare module BABYLON {
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
         updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, force?: number, motorIndex?: number): void;
         setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
         syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
         getRadius(impostor: PhysicsImpostor): number;
@@ -45536,11 +45819,6 @@ declare module BABYLON {
          */
         useLightmapAsShadowmap: boolean;
         /**
-         * Return the active textures of the material.
-         */
-        getActiveTextures(): BaseTexture[];
-        hasTexture(texture: BaseTexture): boolean;
-        /**
          * Instantiates a new PBRMaterial instance.
          *
          * @param name The material name
@@ -45597,16 +45875,6 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Return the active textures of the material.
-         */
-        getActiveTextures(): BaseTexture[];
-        /**
-         * Checks to see if a texture is used in the material.
-         * @param texture - Base texture to use.
-         * @returns - Boolean specifying if a texture is used in the material.
-         */
-        hasTexture(texture: BaseTexture): boolean;
-        /**
          * Makes a duplicate of the current material.
          * @param name - name to use for the new material.
          */
@@ -45661,16 +45929,6 @@ declare module BABYLON {
          * Return the currrent class name of the material.
          */
         getClassName(): string;
-        /**
-         * Return the active textures of the material.
-         */
-        getActiveTextures(): BaseTexture[];
-        /**
-         * Checks to see if a texture is used in the material.
-         * @param texture - Base texture to use.
-         * @returns - Boolean specifying if a texture is used in the material.
-         */
-        hasTexture(texture: BaseTexture): boolean;
         /**
          * Makes a duplicate of the current material.
          * @param name - name to use for the new material.
@@ -49801,7 +50059,7 @@ declare module BABYLON {
          */
         focalLength: number;
         /**
-         * F-Stop of the effect's camera. The diamater of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
+         * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
          */
         fStop: number;
         /**
@@ -50267,18 +50525,22 @@ declare module BABYLON {
         /** @hidden */
         _name: string;
         /**
+         * Gets pipeline name
+         */
+        readonly name: string;
+        /**
          * Initializes a PostProcessRenderPipeline
          * @param engine engine to add the pipeline to
          * @param name name of the pipeline
          */
         constructor(engine: Engine, name: string);
         /**
-         * "PostProcessRenderPipeline"
+         * Gets the class name
          * @returns "PostProcessRenderPipeline"
          */
         getClassName(): string;
         /**
-         * If all the render effects in the pipeline are support
+         * If all the render effects in the pipeline are supported
          */
         readonly isSupported: boolean;
         /**
@@ -50374,7 +50636,7 @@ declare module BABYLON {
         grain: GrainPostProcess;
         private _grainEffect;
         /**
-         * Glow post process which adds a glow to emmisive areas of the image
+         * Glow post process which adds a glow to emissive areas of the image
          */
         private _glowLayer;
         /**
@@ -50393,6 +50655,10 @@ declare module BABYLON {
         private _chromaticAberrationEnabled;
         private _grainEnabled;
         private _buildAllowed;
+        /**
+         * Gets active scene
+         */
+        readonly scene: Scene;
         /**
          * Enable or disable the sharpen process from the pipeline
          */
@@ -50472,6 +50738,11 @@ declare module BABYLON {
          * @param automaticBuild - if false, you will have to manually call prepare() to update the pipeline (default: true)
          */
         constructor(name?: string, hdr?: boolean, scene?: Scene, cameras?: Camera[], automaticBuild?: boolean);
+        /**
+         * Get the class name
+         * @returns "DefaultRenderingPipeline"
+         */
+        getClassName(): string;
         /**
          * Force the compilation of the entire pipeline.
          */
@@ -50796,6 +51067,10 @@ declare module BABYLON {
         private _ssaoCombinePostProcess;
         private _firstUpdate;
         /**
+         * Gets active scene
+         */
+        readonly scene: Scene;
+        /**
          * @constructor
          * @param name The rendering pipeline name
          * @param scene The scene linked to this pipeline
@@ -50803,6 +51078,11 @@ declare module BABYLON {
          * @param cameras The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]);
+        /**
+         * Get the class name
+         * @returns "SSAO2RenderingPipeline"
+         */
+        getClassName(): string;
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
@@ -50881,13 +51161,13 @@ declare module BABYLON {
         /**
         * Related to fallOff, used to interpolate SSAO samples (first interpolate function input) based on the occlusion difference of each pixel
         * Must not be equal to fallOff and superior to fallOff.
-        * Default value is 0.975
+        * Default value is 0.0075
         */
         area: number;
         /**
         * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
         * Must not be equal to area and inferior to area.
-        * Default value is 0.0
+        * Default value is 0.000001
         */
         fallOff: number;
         /**
@@ -50905,6 +51185,10 @@ declare module BABYLON {
         private _ssaoCombinePostProcess;
         private _firstUpdate;
         /**
+         * Gets active scene
+         */
+        readonly scene: Scene;
+        /**
          * @constructor
          * @param name - The rendering pipeline name
          * @param scene - The scene linked to this pipeline
@@ -50912,6 +51196,11 @@ declare module BABYLON {
          * @param cameras - The array of cameras that the rendering pipeline will be attached to
          */
         constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]);
+        /**
+         * Get the class name
+         * @returns "SSAORenderingPipeline"
+         */
+        getClassName(): string;
         /**
          * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
          */
@@ -51253,6 +51542,10 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
          */
         constructor();
+        /**
+         * Gets the list of supported render pipelines
+         */
+        readonly supportedPipelines: PostProcessRenderPipeline[];
         /**
          * Adds a pipeline to the manager
          * @param renderPipeline The pipeline to add

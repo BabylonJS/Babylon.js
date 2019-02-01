@@ -58,3 +58,16 @@ uniform float pointSize;
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
 #endif
+
+// Clear Coat
+#ifdef CLEARCOAT
+    #ifdef CLEARCOAT_TEXTURE
+        uniform vec2 vClearCoatInfos;
+        uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_BUMP
+        uniform vec2 vClearCoatBumpInfos;
+        uniform mat4 clearCoatBumpMatrix;
+    #endif
+#endif

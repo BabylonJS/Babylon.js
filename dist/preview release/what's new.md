@@ -24,6 +24,9 @@
   - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
   - Added support for [nine patch stretch](https://www.babylonjs-playground.com/#G5H9IN#2) mode for images. ([Deltakosh](https://github.com/deltakosh))
   - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev))
+- Migrate the code to modules and deploy es6 npm packages ([Sebavan](https://github.com/Sebavan))
+- Add clear coat support to PBR ([Sebavan](https://github.com/Sebavan))
+- Add anisotropy support to PBR ([Sebavan](https://github.com/Sebavan))
 
 ## Updates
 
@@ -157,7 +160,7 @@
 - Fix more case sensitive paths ([mrdunk](https://github.com))
 - Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev)))
-- Warn of motor with maxForce in Oimo and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
+- Warn of motor with maxForce in Oimo plugin and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBehavior should not let the drag plane get out of sync when rotating the object during dragging ([TrevorDev](https://github.com/TrevorDev))
 - Do not crash the application if webVR submitFrame fails ([TrevorDev](https://github.com/TrevorDev))

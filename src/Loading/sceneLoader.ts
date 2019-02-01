@@ -468,7 +468,7 @@ export class SceneLoader {
             name = Tools.GetFilename(rootUrl);
             rootUrl = Tools.GetFolderPath(rootUrl);
         }
-        else if ((sceneFilename as File).lastModified) {
+        else if ((sceneFilename as File).name) {
             const sceneFile = sceneFilename as File;
             url = rootUrl + sceneFile.name;
             name = sceneFile.name;

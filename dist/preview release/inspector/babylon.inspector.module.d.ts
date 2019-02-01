@@ -18,7 +18,7 @@ declare module "babylonjs-inspector/components/globalState" {
     import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     export class GlobalState {
-        onSelectionChangedObservable: Observable<string>;
+        onSelectionChangedObservable: Observable<any>;
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
         onInspectorClosedObservable: Observable<Scene>;
         onTabChangedObservable: Observable<number>;
@@ -217,6 +217,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/sliderLineCompon
         onChange?: (value: number) => void;
         onInput?: (value: number) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        decimalCount?: number;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -497,6 +498,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
@@ -508,7 +510,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         constructor(props: IPBRMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -760,6 +762,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
         displayAxis: boolean;
     }> {
         constructor(props: IAxisViewerComponentProps);
+        shouldComponentUpdate(nextProps: IAxisViewerComponentProps, nextState: {
+            displayAxis: boolean;
+        }): boolean;
         displayAxes(): void;
         render(): JSX.Element;
     }
@@ -1189,6 +1194,147 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/gui
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
+    interface ICommonPostProcessPropertyGridComponentProps {
+        postProcess: PostProcess;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class CommonPostProcessPropertyGridComponent extends React.Component<ICommonPostProcessPropertyGridComponentProps> {
+        constructor(props: ICommonPostProcessPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/postProcessPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PostProcess } from "babylonjs/PostProcesses/postProcess";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    interface IPostProcessPropertyGridComponentProps {
+        postProcess: PostProcess;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
+        constructor(props: IPostProcessPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+    interface ICommonRenderingPipelinePropertyGridComponentProps {
+        renderPipeline: PostProcessRenderPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class CommonRenderingPipelinePropertyGridComponent extends React.Component<ICommonRenderingPipelinePropertyGridComponentProps> {
+        constructor(props: ICommonRenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/renderingPipelinePropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PostProcessRenderPipeline } from "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    interface IRenderingPipelinePropertyGridComponentProps {
+        renderPipeline: PostProcessRenderPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class RenderingPipelinePropertyGridComponent extends React.Component<IRenderingPipelinePropertyGridComponentProps> {
+        constructor(props: IRenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/lines/vector2LineComponent" {
+    import * as React from "react";
+    import { Vector2 } from "babylonjs/Maths/math";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newvalue: Vector2) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: Vector2;
+    }> {
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { DefaultRenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    interface IDefaultRenderingPipelinePropertyGridComponentProps {
+        renderPipeline: DefaultRenderingPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class DefaultRenderingPipelinePropertyGridComponent extends React.Component<IDefaultRenderingPipelinePropertyGridComponentProps> {
+        constructor(props: IDefaultRenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
+    interface ISSAORenderingPipelinePropertyGridComponentProps {
+        renderPipeline: SSAORenderingPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class SSAORenderingPipelinePropertyGridComponent extends React.Component<ISSAORenderingPipelinePropertyGridComponentProps> {
+        constructor(props: ISSAORenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
+    interface ISSAO2RenderingPipelinePropertyGridComponentProps {
+        renderPipeline: SSAO2RenderingPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component<ISSAO2RenderingPipelinePropertyGridComponentProps> {
+        constructor(props: ISSAO2RenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -1490,6 +1636,34 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/animationG
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/sceneExplorer/entities/postProcessTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
+    import * as React from 'react';
+    interface IPostProcessItemComponentProps {
+        postProcess: PostProcess;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class PostProcessItemComponent extends React.Component<IPostProcessItemComponentProps> {
+        constructor(props: IPostProcessItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/sceneExplorer/entities/renderingPipelineTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+    import * as React from 'react';
+    interface IRenderPipelineItemComponenttProps {
+        renderPipeline: PostProcessRenderPipeline;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class RenderingPipelineItemComponent extends React.Component<IRenderPipelineItemComponenttProps> {
+        constructor(props: IRenderPipelineItemComponenttProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/sceneExplorer/treeItemSpecializedComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
@@ -1561,17 +1735,23 @@ declare module "babylonjs-inspector/components/sceneExplorer/treeItemComponent" 
         entity?: any;
         selectedEntity: any;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
+        contextMenuItems?: {
+            label: string;
+            action: () => void;
+        }[];
     }
     export class TreeItemComponent extends React.Component<ITreeItemComponentProps, {
         isExpanded: boolean;
         mustExpand: boolean;
     }> {
+        static _ContextMenuUniqueIdGenerator: number;
         constructor(props: ITreeItemComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemComponentProps, nextState: {
             isExpanded: boolean;
         }): boolean;
         expandAll(expand: boolean): void;
+        renderContextMenu(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -1768,7 +1948,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class GlobalState {
-        onSelectionChangedObservable: BABYLON.Observable<string>;
+        onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
@@ -1946,6 +2126,7 @@ declare module INSPECTOR {
         onChange?: (value: number) => void;
         onInput?: (value: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        decimalCount?: number;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -2190,7 +2371,7 @@ declare module INSPECTOR {
     }
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         constructor(props: IPBRMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -2384,6 +2565,9 @@ declare module INSPECTOR {
         displayAxis: boolean;
     }> {
         constructor(props: IAxisViewerComponentProps);
+        shouldComponentUpdate(nextProps: IAxisViewerComponentProps, nextState: {
+            displayAxis: boolean;
+        }): boolean;
         displayAxes(): void;
         render(): JSX.Element;
     }
@@ -2698,6 +2882,108 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ICommonPostProcessPropertyGridComponentProps {
+        postProcess: BABYLON.PostProcess;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonPostProcessPropertyGridComponent extends React.Component<ICommonPostProcessPropertyGridComponentProps> {
+        constructor(props: ICommonPostProcessPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPostProcessPropertyGridComponentProps {
+        postProcess: BABYLON.PostProcess;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
+        constructor(props: IPostProcessPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ICommonRenderingPipelinePropertyGridComponentProps {
+        renderPipeline: BABYLON.PostProcessRenderPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonRenderingPipelinePropertyGridComponent extends React.Component<ICommonRenderingPipelinePropertyGridComponentProps> {
+        constructor(props: ICommonRenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IRenderingPipelinePropertyGridComponentProps {
+        renderPipeline: BABYLON.PostProcessRenderPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class RenderingPipelinePropertyGridComponent extends React.Component<IRenderingPipelinePropertyGridComponentProps> {
+        constructor(props: IRenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newvalue: BABYLON.Vector2) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector2;
+    }> {
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IDefaultRenderingPipelinePropertyGridComponentProps {
+        renderPipeline: BABYLON.DefaultRenderingPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class DefaultRenderingPipelinePropertyGridComponent extends React.Component<IDefaultRenderingPipelinePropertyGridComponentProps> {
+        constructor(props: IDefaultRenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISSAORenderingPipelinePropertyGridComponentProps {
+        renderPipeline: BABYLON.SSAORenderingPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SSAORenderingPipelinePropertyGridComponent extends React.Component<ISSAORenderingPipelinePropertyGridComponentProps> {
+        constructor(props: ISSAORenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISSAO2RenderingPipelinePropertyGridComponentProps {
+        renderPipeline: BABYLON.SSAO2RenderingPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component<ISSAO2RenderingPipelinePropertyGridComponentProps> {
+        constructor(props: ISSAO2RenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -2955,6 +3241,28 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IPostProcessItemComponentProps {
+        postProcess: BABYLON.PostProcess;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class PostProcessItemComponent extends React.Component<IPostProcessItemComponentProps> {
+        constructor(props: IPostProcessItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IRenderPipelineItemComponenttProps {
+        renderPipeline: BABYLON.PostProcessRenderPipeline;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class RenderingPipelineItemComponent extends React.Component<IRenderPipelineItemComponenttProps> {
+        constructor(props: IRenderPipelineItemComponenttProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ITreeItemSpecializedComponentProps {
         label: string;
         entity?: any;
@@ -3014,17 +3322,23 @@ declare module INSPECTOR {
         entity?: any;
         selectedEntity: any;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        contextMenuItems?: {
+            label: string;
+            action: () => void;
+        }[];
     }
     export class TreeItemComponent extends React.Component<ITreeItemComponentProps, {
         isExpanded: boolean;
         mustExpand: boolean;
     }> {
+        static _ContextMenuUniqueIdGenerator: number;
         constructor(props: ITreeItemComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemComponentProps, nextState: {
             isExpanded: boolean;
         }): boolean;
         expandAll(expand: boolean): void;
+        renderContextMenu(): JSX.Element | null;
         render(): JSX.Element;
     }
 }

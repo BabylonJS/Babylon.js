@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_textBlock__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!*********************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \*********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2070,9 +2070,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js":
-/*!***********************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
-  \***********************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: far, prefix, faAddressBook, faAddressCard, faAngry, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faBell, faBellSlash, faBookmark, faBuilding, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faChartBar, faCheckCircle, faCheckSquare, faCircle, faClipboard, faClock, faClone, faClosedCaptioning, faComment, faCommentAlt, faCommentDots, faComments, faCompass, faCopy, faCopyright, faCreditCard, faDizzy, faDotCircle, faEdit, faEnvelope, faEnvelopeOpen, faEye, faEyeSlash, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileExcel, faFileImage, faFilePdf, faFilePowerpoint, faFileVideo, faFileWord, faFlag, faFlushed, faFolder, faFolderOpen, faFontAwesomeLogoFull, faFrown, faFrownOpen, faFutbol, faGem, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHandshake, faHdd, faHeart, faHospital, faHourglass, faIdBadge, faIdCard, faImage, faImages, faKeyboard, faKiss, faKissBeam, faKissWinkHeart, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLemon, faLifeRing, faLightbulb, faListAlt, faMap, faMeh, faMehBlank, faMehRollingEyes, faMinusSquare, faMoneyBillAlt, faMoon, faNewspaper, faObjectGroup, faObjectUngroup, faPaperPlane, faPauseCircle, faPlayCircle, faPlusSquare, faQuestionCircle, faRegistered, faSadCry, faSadTear, faSave, faShareSquare, faSmile, faSmileBeam, faSmileWink, faSnowflake, faSquare, faStar, faStarHalf, faStickyNote, faStopCircle, faSun, faSurprise, faThumbsDown, faThumbsUp, faTimesCircle, faTired, faTrashAlt, faUser, faUserCircle, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2550,9 +2550,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!*********************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \*********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBackspace, faBackward, faBalanceScale, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBinoculars, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookOpen, faBookReader, faBookmark, faBowlingBall, faBox, faBoxOpen, faBoxes, faBraille, faBrain, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCamera, faCameraRetro, faCampground, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCartArrowDown, faCartPlus, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMoon, faCloudSun, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCube, faCubes, faCut, faDatabase, faDeaf, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDungeon, faEdit, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFastBackward, faFastForward, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGlassMartini, faGlassMartiniAlt, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripVertical, faHSquare, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingUsd, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHands, faHandsHelping, faHandshake, faHanukiah, faHashtag, faHatWizard, faHaykal, faHdd, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHome, faHorse, faHospital, faHospitalAlt, faHospitalSymbol, faHotTub, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHryvnia, faICursor, faIdBadge, faIdCard, faIdCardAlt, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMousePointer, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleCarry, faPercent, faPercentage, faPhone, faPhoneSlash, faPhoneSquare, faPhoneVolume, faPiggyBank, faPills, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRandom, faReceipt, faRecycle, faRedo, faRedoAlt, faRegistered, faReply, faReplyAll, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSave, faSchool, faScrewdriver, faScroll, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSitemap, faSkull, faSkullCrossbones, faSlash, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmoking, faSmokingBan, faSnowflake, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaUp, faSortAmountDown, faSortAmountUp, faSortDown, faSortNumericDown, faSortNumericUp, faSortUp, faSpa, faSpaceShuttle, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStore, faStoreAlt, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToiletPaper, faToolbox, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrain, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVrCardboard, faWalking, faWallet, faWarehouse, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5130,9 +5130,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!******************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \******************************************************************************************/
+/*!***********************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \***********************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5559,10 +5559,72 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 
 /***/ }),
 
+/***/ "../../node_modules/classnames/index.js":
+/*!************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/classnames/index.js ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+  Copyright (c) 2017 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+	'use strict';
+
+	var hasOwn = {}.hasOwnProperty;
+
+	function classNames () {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg) && arg.length) {
+				var inner = classNames.apply(null, arg);
+				if (inner) {
+					classes.push(inner);
+				}
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes.push(key);
+					}
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+	if ( true && module.exports) {
+		classNames.default = classNames;
+		module.exports = classNames;
+	} else if (true) {
+		// register as 'classnames', consistent with npm package name
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function () {
+			return classNames;
+		}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	} else {}
+}());
+
+
+/***/ }),
+
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/actionTabs/actionTabs.scss":
-/*!********************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/css-loader!C:/Dev/Babylon/LibToModule/node_modules/sass-loader/lib/loader.js!./components/actionTabs/actionTabs.scss ***!
-  \********************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/actionTabs/actionTabs.scss ***!
+  \******************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5579,9 +5641,9 @@ exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/embedHost/embedHost.scss":
-/*!******************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/css-loader!C:/Dev/Babylon/LibToModule/node_modules/sass-loader/lib/loader.js!./components/embedHost/embedHost.scss ***!
-  \******************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/embedHost/embedHost.scss ***!
+  \****************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5598,9 +5660,9 @@ exports.push([module.i, "#embed-host {\n  position: absolute;\n  right: 0px;\n  
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/css-loader!C:/Dev/Babylon/LibToModule/node_modules/sass-loader/lib/loader.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5609,7 +5671,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 5;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 6;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 7; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 8; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .gizmo {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .gizmo.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 5;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 6;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 7; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 8; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .gizmo {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .gizmo.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 
 // exports
 
@@ -5617,9 +5679,9 @@ exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!./index.css":
-/*!**********************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/css-loader!./index.css ***!
-  \**********************************************************************/
+/*!***************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!./index.css ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5636,9 +5698,9 @@ exports.push([module.i, "", ""]);
 /***/ }),
 
 /***/ "../../node_modules/css-loader/lib/css-base.js":
-/*!**************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/css-loader/lib/css-base.js ***!
-  \**************************************************************************/
+/*!*******************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -5723,9 +5785,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!**********************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/object-assign/index.js ***!
-  \**********************************************************************/
+/*!***************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5825,9 +5887,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!****************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/prop-types/checkPropTypes.js ***!
-  \****************************************************************************/
+/*!*********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5928,9 +5990,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \*************************************************************************************/
+/*!******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6495,9 +6557,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!*******************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/prop-types/index.js ***!
-  \*******************************************************************/
+/*!************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6530,9 +6592,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!**************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \**************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6554,9 +6616,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/re-resizable/lib/index.es5.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/re-resizable/lib/index.es5.js ***!
-  \*****************************************************************************/
+/*!**********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7302,10 +7364,1475 @@ module.exports = Resizable;
 
 /***/ }),
 
+/***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
+/*!******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \******************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "../../node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _MenuItem__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MenuItem */ "../../node_modules/react-contextmenu/es6/MenuItem.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+
+
+
+
+
+var AbstractMenu = function (_Component) {
+    _inherits(AbstractMenu, _Component);
+
+    function AbstractMenu(props) {
+        _classCallCheck(this, AbstractMenu);
+
+        var _this = _possibleConstructorReturn(this, (AbstractMenu.__proto__ || Object.getPrototypeOf(AbstractMenu)).call(this, props));
+
+        _initialiseProps.call(_this);
+
+        _this.seletedItemRef = null;
+        _this.state = {
+            selectedItem: null,
+            forceSubMenuOpen: false
+        };
+        return _this;
+    }
+
+    return AbstractMenu;
+}(react__WEBPACK_IMPORTED_MODULE_0__["Component"]);
+
+AbstractMenu.propTypes = {
+    children: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.node.isRequired
+};
+
+var _initialiseProps = function _initialiseProps() {
+    var _this2 = this;
+
+    this.handleKeyNavigation = function (e) {
+        // check for isVisible strictly here as it might be undefined when this code executes in the context of SubMenu
+        // but we only need to check when it runs in the ContextMenu context
+        if (_this2.state.isVisible === false) {
+            return;
+        }
+
+        switch (e.keyCode) {
+            case 37: // left arrow
+            case 27:
+                // escape
+                e.preventDefault();
+                _this2.hideMenu(e);
+                break;
+            case 38:
+                // up arrow
+                e.preventDefault();
+                _this2.selectChildren(true);
+                break;
+            case 40:
+                // down arrow
+                e.preventDefault();
+                _this2.selectChildren(false);
+                break;
+            case 39:
+                // right arrow
+                _this2.tryToOpenSubMenu(e);
+                break;
+            case 13:
+                // enter
+                e.preventDefault();
+                _this2.tryToOpenSubMenu(e);
+                {
+                    // determine the selected item is disabled or not
+                    var disabled = _this2.seletedItemRef && _this2.seletedItemRef.props && _this2.seletedItemRef.props.disabled;
+
+                    if (_this2.seletedItemRef && _this2.seletedItemRef.ref instanceof HTMLElement && !disabled) {
+                        _this2.seletedItemRef.ref.click();
+                    } else {
+                        _this2.hideMenu(e);
+                    }
+                }
+                break;
+            default:
+            // do nothing
+        }
+    };
+
+    this.handleForceClose = function () {
+        _this2.setState({ forceSubMenuOpen: false });
+    };
+
+    this.tryToOpenSubMenu = function (e) {
+        if (_this2.state.selectedItem && _this2.state.selectedItem.type === _this2.getSubMenuType()) {
+            e.preventDefault();
+            _this2.setState({ forceSubMenuOpen: true });
+        }
+    };
+
+    this.selectChildren = function (forward) {
+        var selectedItem = _this2.state.selectedItem;
+
+        var children = [];
+        var childCollector = function childCollector(child) {
+            // child can be empty in case you do conditional rendering of components, in which
+            // case it should not be accounted for as a real child
+            if (!child) {
+                return;
+            }
+
+            if ([_MenuItem__WEBPACK_IMPORTED_MODULE_2__["default"], _this2.getSubMenuType()].indexOf(child.type) < 0) {
+                // Maybe the MenuItem or SubMenu is capsuled in a wrapper div or something else
+                react__WEBPACK_IMPORTED_MODULE_0___default.a.Children.forEach(child.props.children, childCollector);
+            } else if (!child.props.divider) {
+                children.push(child);
+            }
+        };
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.Children.forEach(_this2.props.children, childCollector);
+        var currentIndex = children.indexOf(selectedItem);
+        if (currentIndex < 0) {
+            _this2.setState({
+                selectedItem: forward ? children[children.length - 1] : children[0],
+                forceSubMenuOpen: false
+            });
+        } else if (forward) {
+            _this2.setState({
+                selectedItem: children[currentIndex - 1 < 0 ? children.length - 1 : currentIndex - 1],
+                forceSubMenuOpen: false
+            });
+        } else {
+            _this2.setState({
+                selectedItem: children[currentIndex + 1 < children.length ? currentIndex + 1 : 0],
+                forceSubMenuOpen: false
+            });
+        }
+    };
+
+    this.onChildMouseMove = function (child) {
+        if (_this2.state.selectedItem !== child) {
+            _this2.setState({ selectedItem: child, forceSubMenuOpen: false });
+        }
+    };
+
+    this.onChildMouseLeave = function () {
+        _this2.setState({ selectedItem: null, forceSubMenuOpen: false });
+    };
+
+    this.renderChildren = function (children) {
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.Children.map(children, function (child) {
+            var props = {};
+            if (!react__WEBPACK_IMPORTED_MODULE_0___default.a.isValidElement(child)) return child;
+            if ([_MenuItem__WEBPACK_IMPORTED_MODULE_2__["default"], _this2.getSubMenuType()].indexOf(child.type) < 0) {
+                // Maybe the MenuItem or SubMenu is capsuled in a wrapper div or something else
+                props.children = _this2.renderChildren(child.props.children);
+                return react__WEBPACK_IMPORTED_MODULE_0___default.a.cloneElement(child, props);
+            }
+            props.onMouseLeave = _this2.onChildMouseLeave.bind(_this2);
+            if (child.type === _this2.getSubMenuType()) {
+                // special props for SubMenu only
+                props.forceOpen = _this2.state.forceSubMenuOpen && _this2.state.selectedItem === child;
+                props.forceClose = _this2.handleForceClose;
+                props.parentKeyNavigationHandler = _this2.handleKeyNavigation;
+            }
+            if (!child.props.divider && _this2.state.selectedItem === child) {
+                // special props for selected item only
+                props.selected = true;
+                props.ref = function (ref) {
+                    _this2.seletedItemRef = ref;
+                };
+                return react__WEBPACK_IMPORTED_MODULE_0___default.a.cloneElement(child, props);
+            }
+            // onMouseMove is only needed for non selected items
+            props.onMouseMove = function () {
+                return _this2.onChildMouseMove(child);
+            };
+            return react__WEBPACK_IMPORTED_MODULE_0___default.a.cloneElement(child, props);
+        });
+    };
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (AbstractMenu);
+
+/***/ }),
+
+/***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
+/*!*****************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \*****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "../../node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! classnames */ "../../node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! object-assign */ "../../node_modules/object-assign/index.js");
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(object_assign__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _globalEventListener__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./globalEventListener */ "../../node_modules/react-contextmenu/es6/globalEventListener.js");
+/* harmony import */ var _AbstractMenu__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./AbstractMenu */ "../../node_modules/react-contextmenu/es6/AbstractMenu.js");
+/* harmony import */ var _SubMenu__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./SubMenu */ "../../node_modules/react-contextmenu/es6/SubMenu.js");
+/* harmony import */ var _actions__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./actions */ "../../node_modules/react-contextmenu/es6/actions.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./helpers */ "../../node_modules/react-contextmenu/es6/helpers.js");
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+
+
+
+
+
+
+
+
+
+
+
+var ContextMenu = function (_AbstractMenu) {
+    _inherits(ContextMenu, _AbstractMenu);
+
+    function ContextMenu(props) {
+        _classCallCheck(this, ContextMenu);
+
+        var _this = _possibleConstructorReturn(this, (ContextMenu.__proto__ || Object.getPrototypeOf(ContextMenu)).call(this, props));
+
+        _this.registerHandlers = function () {
+            document.addEventListener('mousedown', _this.handleOutsideClick);
+            document.addEventListener('touchstart', _this.handleOutsideClick);
+            document.addEventListener('scroll', _this.handleHide);
+            document.addEventListener('contextmenu', _this.handleHide);
+            document.addEventListener('keydown', _this.handleKeyNavigation);
+            window.addEventListener('resize', _this.handleHide);
+        };
+
+        _this.unregisterHandlers = function () {
+            document.removeEventListener('mousedown', _this.handleOutsideClick);
+            document.removeEventListener('touchstart', _this.handleOutsideClick);
+            document.removeEventListener('scroll', _this.handleHide);
+            document.removeEventListener('contextmenu', _this.handleHide);
+            document.removeEventListener('keydown', _this.handleKeyNavigation);
+            window.removeEventListener('resize', _this.handleHide);
+        };
+
+        _this.handleShow = function (e) {
+            if (e.detail.id !== _this.props.id || _this.state.isVisible) return;
+
+            var _e$detail$position = e.detail.position,
+                x = _e$detail$position.x,
+                y = _e$detail$position.y;
+
+
+            _this.setState({ isVisible: true, x: x, y: y });
+            _this.registerHandlers();
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_8__["callIfExists"])(_this.props.onShow, e);
+        };
+
+        _this.handleHide = function (e) {
+            if (_this.state.isVisible && (!e.detail || !e.detail.id || e.detail.id === _this.props.id)) {
+                _this.unregisterHandlers();
+                _this.setState({ isVisible: false, selectedItem: null, forceSubMenuOpen: false });
+                Object(_helpers__WEBPACK_IMPORTED_MODULE_8__["callIfExists"])(_this.props.onHide, e);
+            }
+        };
+
+        _this.handleOutsideClick = function (e) {
+            if (!_this.menu.contains(e.target)) Object(_actions__WEBPACK_IMPORTED_MODULE_7__["hideMenu"])();
+        };
+
+        _this.handleMouseLeave = function (event) {
+            event.preventDefault();
+
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_8__["callIfExists"])(_this.props.onMouseLeave, event, object_assign__WEBPACK_IMPORTED_MODULE_3___default()({}, _this.props.data, _helpers__WEBPACK_IMPORTED_MODULE_8__["store"].data), _helpers__WEBPACK_IMPORTED_MODULE_8__["store"].target);
+
+            if (_this.props.hideOnLeave) Object(_actions__WEBPACK_IMPORTED_MODULE_7__["hideMenu"])();
+        };
+
+        _this.handleContextMenu = function (e) {
+            if (false) {}
+            _this.handleHide(e);
+        };
+
+        _this.hideMenu = function (e) {
+            if (e.keyCode === 27 || e.keyCode === 13) {
+                // ECS or enter
+                Object(_actions__WEBPACK_IMPORTED_MODULE_7__["hideMenu"])();
+            }
+        };
+
+        _this.getMenuPosition = function () {
+            var x = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+            var y = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
+            var menuStyles = {
+                top: y,
+                left: x
+            };
+
+            if (!_this.menu) return menuStyles;
+
+            var _window = window,
+                innerWidth = _window.innerWidth,
+                innerHeight = _window.innerHeight;
+
+            var rect = _this.menu.getBoundingClientRect();
+
+            if (y + rect.height > innerHeight) {
+                menuStyles.top -= rect.height;
+            }
+
+            if (x + rect.width > innerWidth) {
+                menuStyles.left -= rect.width;
+            }
+
+            if (menuStyles.top < 0) {
+                menuStyles.top = rect.height < innerHeight ? (innerHeight - rect.height) / 2 : 0;
+            }
+
+            if (menuStyles.left < 0) {
+                menuStyles.left = rect.width < innerWidth ? (innerWidth - rect.width) / 2 : 0;
+            }
+
+            return menuStyles;
+        };
+
+        _this.getRTLMenuPosition = function () {
+            var x = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+            var y = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
+            var menuStyles = {
+                top: y,
+                left: x
+            };
+
+            if (!_this.menu) return menuStyles;
+
+            var _window2 = window,
+                innerWidth = _window2.innerWidth,
+                innerHeight = _window2.innerHeight;
+
+            var rect = _this.menu.getBoundingClientRect();
+
+            // Try to position the menu on the left side of the cursor
+            menuStyles.left = x - rect.width;
+
+            if (y + rect.height > innerHeight) {
+                menuStyles.top -= rect.height;
+            }
+
+            if (menuStyles.left < 0) {
+                menuStyles.left += rect.width;
+            }
+
+            if (menuStyles.top < 0) {
+                menuStyles.top = rect.height < innerHeight ? (innerHeight - rect.height) / 2 : 0;
+            }
+
+            if (menuStyles.left + rect.width > innerWidth) {
+                menuStyles.left = rect.width < innerWidth ? (innerWidth - rect.width) / 2 : 0;
+            }
+
+            return menuStyles;
+        };
+
+        _this.menuRef = function (c) {
+            _this.menu = c;
+        };
+
+        _this.state = object_assign__WEBPACK_IMPORTED_MODULE_3___default()({}, _this.state, {
+            x: 0,
+            y: 0,
+            isVisible: false
+        });
+        return _this;
+    }
+
+    _createClass(ContextMenu, [{
+        key: 'getSubMenuType',
+        value: function getSubMenuType() {
+            // eslint-disable-line class-methods-use-this
+            return _SubMenu__WEBPACK_IMPORTED_MODULE_6__["default"];
+        }
+    }, {
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            this.listenId = _globalEventListener__WEBPACK_IMPORTED_MODULE_4__["default"].register(this.handleShow, this.handleHide);
+        }
+    }, {
+        key: 'componentDidUpdate',
+        value: function componentDidUpdate() {
+            var _this2 = this;
+
+            if (this.state.isVisible) {
+                var wrapper = window.requestAnimationFrame || setTimeout;
+
+                wrapper(function () {
+                    var _state = _this2.state,
+                        x = _state.x,
+                        y = _state.y;
+
+                    var _ref = _this2.props.rtl ? _this2.getRTLMenuPosition(x, y) : _this2.getMenuPosition(x, y),
+                        top = _ref.top,
+                        left = _ref.left;
+
+                    wrapper(function () {
+                        if (!_this2.menu) return;
+                        _this2.menu.style.top = top + 'px';
+                        _this2.menu.style.left = left + 'px';
+                        _this2.menu.style.opacity = 1;
+                        _this2.menu.style.pointerEvents = 'auto';
+                    });
+                });
+            } else {
+                if (!this.menu) return;
+                this.menu.style.opacity = 0;
+                this.menu.style.pointerEvents = 'none';
+            }
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            if (this.listenId) {
+                _globalEventListener__WEBPACK_IMPORTED_MODULE_4__["default"].unregister(this.listenId);
+            }
+
+            this.unregisterHandlers();
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var _props = this.props,
+                children = _props.children,
+                className = _props.className,
+                style = _props.style;
+            var isVisible = this.state.isVisible;
+
+            var inlineStyle = object_assign__WEBPACK_IMPORTED_MODULE_3___default()({}, style, { position: 'fixed', opacity: 0, pointerEvents: 'none' });
+            var menuClassnames = classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_8__["cssClasses"].menu, className, _defineProperty({}, _helpers__WEBPACK_IMPORTED_MODULE_8__["cssClasses"].menuVisible, isVisible));
+
+            return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'nav',
+                {
+                    role: 'menu', tabIndex: '-1', ref: this.menuRef, style: inlineStyle, className: menuClassnames,
+                    onContextMenu: this.handleContextMenu, onMouseLeave: this.handleMouseLeave },
+                this.renderChildren(children)
+            );
+        }
+    }]);
+
+    return ContextMenu;
+}(_AbstractMenu__WEBPACK_IMPORTED_MODULE_5__["default"]);
+
+ContextMenu.propTypes = {
+    id: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string.isRequired,
+    children: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.node.isRequired,
+    data: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object,
+    className: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string,
+    hideOnLeave: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    rtl: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    onHide: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
+    onMouseLeave: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
+    onShow: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
+    style: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object
+};
+ContextMenu.defaultProps = {
+    className: '',
+    data: {},
+    hideOnLeave: false,
+    rtl: false,
+    onHide: function onHide() {
+        return null;
+    },
+    onMouseLeave: function onMouseLeave() {
+        return null;
+    },
+    onShow: function onShow() {
+        return null;
+    },
+
+    style: {}
+};
+/* harmony default export */ __webpack_exports__["default"] = (ContextMenu);
+
+/***/ }),
+
+/***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
+/*!************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "../../node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! classnames */ "../../node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! object-assign */ "../../node_modules/object-assign/index.js");
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(object_assign__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _actions__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./actions */ "../../node_modules/react-contextmenu/es6/actions.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./helpers */ "../../node_modules/react-contextmenu/es6/helpers.js");
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+
+
+
+
+
+
+
+
+var ContextMenuTrigger = function (_Component) {
+    _inherits(ContextMenuTrigger, _Component);
+
+    function ContextMenuTrigger() {
+        var _ref;
+
+        var _temp, _this, _ret;
+
+        _classCallCheck(this, ContextMenuTrigger);
+
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        }
+
+        return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = ContextMenuTrigger.__proto__ || Object.getPrototypeOf(ContextMenuTrigger)).call.apply(_ref, [this].concat(args))), _this), _this.touchHandled = false, _this.handleMouseDown = function (event) {
+            if (_this.props.holdToDisplay >= 0 && event.button === 0) {
+                event.persist();
+                event.stopPropagation();
+
+                _this.mouseDownTimeoutId = setTimeout(function () {
+                    return _this.handleContextClick(event);
+                }, _this.props.holdToDisplay);
+            }
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["callIfExists"])(_this.props.attributes.onMouseDown, event);
+        }, _this.handleMouseUp = function (event) {
+            if (event.button === 0) {
+                clearTimeout(_this.mouseDownTimeoutId);
+            }
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["callIfExists"])(_this.props.attributes.onMouseUp, event);
+        }, _this.handleMouseOut = function (event) {
+            if (event.button === 0) {
+                clearTimeout(_this.mouseDownTimeoutId);
+            }
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["callIfExists"])(_this.props.attributes.onMouseOut, event);
+        }, _this.handleTouchstart = function (event) {
+            _this.touchHandled = false;
+
+            if (_this.props.holdToDisplay >= 0) {
+                event.persist();
+                event.stopPropagation();
+
+                _this.touchstartTimeoutId = setTimeout(function () {
+                    _this.handleContextClick(event);
+                    _this.touchHandled = true;
+                }, _this.props.holdToDisplay);
+            }
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["callIfExists"])(_this.props.attributes.onTouchStart, event);
+        }, _this.handleTouchEnd = function (event) {
+            if (_this.touchHandled) {
+                event.preventDefault();
+            }
+            clearTimeout(_this.touchstartTimeoutId);
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["callIfExists"])(_this.props.attributes.onTouchEnd, event);
+        }, _this.handleContextMenu = function (event) {
+            _this.handleContextClick(event);
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["callIfExists"])(_this.props.attributes.onContextMenu, event);
+        }, _this.handleContextClick = function (event) {
+            if (_this.props.disable) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            var x = event.clientX || event.touches && event.touches[0].pageX;
+            var y = event.clientY || event.touches && event.touches[0].pageY;
+
+            if (_this.props.posX) {
+                x -= _this.props.posX;
+            }
+            if (_this.props.posY) {
+                y -= _this.props.posY;
+            }
+
+            Object(_actions__WEBPACK_IMPORTED_MODULE_4__["hideMenu"])();
+
+            var data = Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["callIfExists"])(_this.props.collect, _this.props);
+            var showMenuConfig = {
+                position: { x: x, y: y },
+                target: _this.elem,
+                id: _this.props.id,
+                data: data
+            };
+            if (data && typeof data.then === 'function') {
+                // it's promise
+                data.then(function (resp) {
+                    showMenuConfig.data = resp;
+                    Object(_actions__WEBPACK_IMPORTED_MODULE_4__["showMenu"])(showMenuConfig);
+                });
+            } else {
+                Object(_actions__WEBPACK_IMPORTED_MODULE_4__["showMenu"])(showMenuConfig);
+            }
+        }, _this.elemRef = function (c) {
+            _this.elem = c;
+        }, _temp), _possibleConstructorReturn(_this, _ret);
+    }
+
+    _createClass(ContextMenuTrigger, [{
+        key: 'render',
+        value: function render() {
+            var _props = this.props,
+                renderTag = _props.renderTag,
+                attributes = _props.attributes,
+                children = _props.children;
+
+            var newAttrs = object_assign__WEBPACK_IMPORTED_MODULE_3___default()({}, attributes, {
+                className: classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuWrapper, attributes.className),
+                onContextMenu: this.handleContextMenu,
+                onMouseDown: this.handleMouseDown,
+                onMouseUp: this.handleMouseUp,
+                onTouchStart: this.handleTouchstart,
+                onTouchEnd: this.handleTouchEnd,
+                onMouseOut: this.handleMouseOut,
+                ref: this.elemRef
+            });
+
+            return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(renderTag, newAttrs, children);
+        }
+    }]);
+
+    return ContextMenuTrigger;
+}(react__WEBPACK_IMPORTED_MODULE_0__["Component"]);
+
+ContextMenuTrigger.propTypes = {
+    id: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string.isRequired,
+    children: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.node.isRequired,
+    attributes: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object,
+    collect: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
+    disable: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    holdToDisplay: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.number,
+    posX: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.number,
+    posY: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.number,
+    renderTag: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.node, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func])
+};
+ContextMenuTrigger.defaultProps = {
+    attributes: {},
+    collect: function collect() {
+        return null;
+    },
+
+    disable: false,
+    holdToDisplay: 1000,
+    renderTag: 'div',
+    posX: 0,
+    posY: 0
+};
+/* harmony default export */ __webpack_exports__["default"] = (ContextMenuTrigger);
+
+/***/ }),
+
+/***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
+/*!**************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \**************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "../../node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! classnames */ "../../node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! object-assign */ "../../node_modules/object-assign/index.js");
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(object_assign__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _actions__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./actions */ "../../node_modules/react-contextmenu/es6/actions.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./helpers */ "../../node_modules/react-contextmenu/es6/helpers.js");
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+
+
+
+
+
+
+
+
+var MenuItem = function (_Component) {
+    _inherits(MenuItem, _Component);
+
+    function MenuItem() {
+        var _ref;
+
+        var _temp, _this, _ret;
+
+        _classCallCheck(this, MenuItem);
+
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        }
+
+        return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = MenuItem.__proto__ || Object.getPrototypeOf(MenuItem)).call.apply(_ref, [this].concat(args))), _this), _this.handleClick = function (event) {
+            event.preventDefault();
+
+            if (_this.props.disabled || _this.props.divider) return;
+
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["callIfExists"])(_this.props.onClick, event, object_assign__WEBPACK_IMPORTED_MODULE_3___default()({}, _this.props.data, _helpers__WEBPACK_IMPORTED_MODULE_5__["store"].data), _helpers__WEBPACK_IMPORTED_MODULE_5__["store"].target);
+
+            if (_this.props.preventClose) return;
+
+            Object(_actions__WEBPACK_IMPORTED_MODULE_4__["hideMenu"])();
+        }, _temp), _possibleConstructorReturn(_this, _ret);
+    }
+
+    _createClass(MenuItem, [{
+        key: 'render',
+        value: function render() {
+            var _cx,
+                _this2 = this;
+
+            var _props = this.props,
+                disabled = _props.disabled,
+                divider = _props.divider,
+                children = _props.children,
+                attributes = _props.attributes,
+                selected = _props.selected;
+
+            var menuItemClassNames = classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuItem, attributes.className, (_cx = {}, _defineProperty(_cx, classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuItemDisabled, attributes.disabledClassName), disabled), _defineProperty(_cx, classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuItemDivider, attributes.dividerClassName), divider), _defineProperty(_cx, classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuItemSelected, attributes.selectedClassName), selected), _cx));
+
+            return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'div',
+                _extends({}, attributes, { className: menuItemClassNames,
+                    role: 'menuitem', tabIndex: '-1', 'aria-disabled': disabled ? 'true' : 'false',
+                    'aria-orientation': divider ? 'horizontal' : null,
+                    ref: function ref(_ref2) {
+                        _this2.ref = _ref2;
+                    },
+                    onMouseMove: this.props.onMouseMove, onMouseLeave: this.props.onMouseLeave,
+                    onTouchEnd: this.handleClick, onClick: this.handleClick }),
+                divider ? null : children
+            );
+        }
+    }]);
+
+    return MenuItem;
+}(react__WEBPACK_IMPORTED_MODULE_0__["Component"]);
+
+MenuItem.propTypes = {
+    children: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.node,
+    attributes: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object,
+    data: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object,
+    disabled: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    divider: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    preventClose: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    onClick: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
+    selected: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    onMouseMove: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
+    onMouseLeave: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func
+};
+MenuItem.defaultProps = {
+    disabled: false,
+    data: {},
+    divider: false,
+    attributes: {},
+    preventClose: false,
+    onClick: function onClick() {
+        return null;
+    },
+
+    children: null,
+    selected: false,
+    onMouseMove: function onMouseMove() {
+        return null;
+    },
+    onMouseLeave: function onMouseLeave() {
+        return null;
+    }
+};
+/* harmony default export */ __webpack_exports__["default"] = (MenuItem);
+
+/***/ }),
+
+/***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
+/*!*************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \*************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "../../node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! classnames */ "../../node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! object-assign */ "../../node_modules/object-assign/index.js");
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(object_assign__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _AbstractMenu__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./AbstractMenu */ "../../node_modules/react-contextmenu/es6/AbstractMenu.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./helpers */ "../../node_modules/react-contextmenu/es6/helpers.js");
+/* harmony import */ var _globalEventListener__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./globalEventListener */ "../../node_modules/react-contextmenu/es6/globalEventListener.js");
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+
+
+
+
+
+
+
+
+
+var SubMenu = function (_AbstractMenu) {
+    _inherits(SubMenu, _AbstractMenu);
+
+    function SubMenu(props) {
+        _classCallCheck(this, SubMenu);
+
+        var _this = _possibleConstructorReturn(this, (SubMenu.__proto__ || Object.getPrototypeOf(SubMenu)).call(this, props));
+
+        _this.getMenuPosition = function () {
+            var _window = window,
+                innerWidth = _window.innerWidth,
+                innerHeight = _window.innerHeight;
+
+            var rect = _this.subMenu.getBoundingClientRect();
+            var position = {};
+
+            if (rect.bottom > innerHeight) {
+                position.bottom = 0;
+            } else {
+                position.top = 0;
+            }
+
+            if (rect.right < innerWidth) {
+                position.left = '100%';
+            } else {
+                position.right = '100%';
+            }
+
+            return position;
+        };
+
+        _this.getRTLMenuPosition = function () {
+            var _window2 = window,
+                innerHeight = _window2.innerHeight;
+
+            var rect = _this.subMenu.getBoundingClientRect();
+            var position = {};
+
+            if (rect.bottom > innerHeight) {
+                position.bottom = 0;
+            } else {
+                position.top = 0;
+            }
+
+            if (rect.left < 0) {
+                position.left = '100%';
+            } else {
+                position.right = '100%';
+            }
+
+            return position;
+        };
+
+        _this.hideMenu = function (e) {
+            // avoid closing submenus of a different menu tree
+            if (e.detail && e.detail.id && _this.menu && e.detail.id !== _this.menu.id) {
+                return;
+            }
+
+            if (_this.props.forceOpen) {
+                _this.props.forceClose();
+            }
+            _this.setState({ visible: false, selectedItem: null });
+            _this.unregisterHandlers();
+        };
+
+        _this.handleClick = function (event) {
+            event.preventDefault();
+
+            if (_this.props.disabled) return;
+
+            Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["callIfExists"])(_this.props.onClick, event, object_assign__WEBPACK_IMPORTED_MODULE_3___default()({}, _this.props.data, _helpers__WEBPACK_IMPORTED_MODULE_5__["store"].data), _helpers__WEBPACK_IMPORTED_MODULE_5__["store"].target);
+        };
+
+        _this.handleMouseEnter = function () {
+            if (_this.closetimer) clearTimeout(_this.closetimer);
+
+            if (_this.props.disabled || _this.state.visible) return;
+
+            _this.opentimer = setTimeout(function () {
+                return _this.setState({
+                    visible: true,
+                    selectedItem: null
+                });
+            }, _this.props.hoverDelay);
+        };
+
+        _this.handleMouseLeave = function () {
+            if (_this.opentimer) clearTimeout(_this.opentimer);
+
+            if (!_this.state.visible) return;
+
+            _this.closetimer = setTimeout(function () {
+                return _this.setState({
+                    visible: false,
+                    selectedItem: null
+                });
+            }, _this.props.hoverDelay);
+        };
+
+        _this.menuRef = function (c) {
+            _this.menu = c;
+        };
+
+        _this.subMenuRef = function (c) {
+            _this.subMenu = c;
+        };
+
+        _this.registerHandlers = function () {
+            document.removeEventListener('keydown', _this.props.parentKeyNavigationHandler);
+            document.addEventListener('keydown', _this.handleKeyNavigation);
+        };
+
+        _this.unregisterHandlers = function (dismounting) {
+            document.removeEventListener('keydown', _this.handleKeyNavigation);
+            if (!dismounting) {
+                document.addEventListener('keydown', _this.props.parentKeyNavigationHandler);
+            }
+        };
+
+        _this.state = object_assign__WEBPACK_IMPORTED_MODULE_3___default()({}, _this.state, {
+            visible: false
+        });
+        return _this;
+    }
+
+    _createClass(SubMenu, [{
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            this.listenId = _globalEventListener__WEBPACK_IMPORTED_MODULE_6__["default"].register(function () {}, this.hideMenu);
+        }
+    }, {
+        key: 'getSubMenuType',
+        value: function getSubMenuType() {
+            // eslint-disable-line class-methods-use-this
+            return SubMenu;
+        }
+    }, {
+        key: 'shouldComponentUpdate',
+        value: function shouldComponentUpdate(nextProps, nextState) {
+            this.isVisibilityChange = (this.state.visible !== nextState.visible || this.props.forceOpen !== nextProps.forceOpen) && !(this.state.visible && nextProps.forceOpen) && !(this.props.forceOpen && nextState.visible);
+            return true;
+        }
+    }, {
+        key: 'componentDidUpdate',
+        value: function componentDidUpdate() {
+            var _this2 = this;
+
+            if (!this.isVisibilityChange) return;
+            if (this.props.forceOpen || this.state.visible) {
+                var wrapper = window.requestAnimationFrame || setTimeout;
+                wrapper(function () {
+                    var styles = _this2.props.rtl ? _this2.getRTLMenuPosition() : _this2.getMenuPosition();
+
+                    _this2.subMenu.style.removeProperty('top');
+                    _this2.subMenu.style.removeProperty('bottom');
+                    _this2.subMenu.style.removeProperty('left');
+                    _this2.subMenu.style.removeProperty('right');
+
+                    if (Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["hasOwnProp"])(styles, 'top')) _this2.subMenu.style.top = styles.top;
+                    if (Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["hasOwnProp"])(styles, 'left')) _this2.subMenu.style.left = styles.left;
+                    if (Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["hasOwnProp"])(styles, 'bottom')) _this2.subMenu.style.bottom = styles.bottom;
+                    if (Object(_helpers__WEBPACK_IMPORTED_MODULE_5__["hasOwnProp"])(styles, 'right')) _this2.subMenu.style.right = styles.right;
+                    _this2.subMenu.classList.add(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuVisible);
+
+                    _this2.registerHandlers();
+                    _this2.setState({ selectedItem: null });
+                });
+            } else {
+                var cleanup = function cleanup() {
+                    _this2.subMenu.removeEventListener('transitionend', cleanup);
+                    _this2.subMenu.style.removeProperty('bottom');
+                    _this2.subMenu.style.removeProperty('right');
+                    _this2.subMenu.style.top = 0;
+                    _this2.subMenu.style.left = '100%';
+                    _this2.unregisterHandlers();
+                };
+                this.subMenu.addEventListener('transitionend', cleanup);
+                this.subMenu.classList.remove(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuVisible);
+            }
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            if (this.listenId) {
+                _globalEventListener__WEBPACK_IMPORTED_MODULE_6__["default"].unregister(this.listenId);
+            }
+
+            if (this.opentimer) clearTimeout(this.opentimer);
+
+            if (this.closetimer) clearTimeout(this.closetimer);
+
+            this.unregisterHandlers(true);
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var _cx;
+
+            var _props = this.props,
+                children = _props.children,
+                attributes = _props.attributes,
+                disabled = _props.disabled,
+                title = _props.title,
+                selected = _props.selected;
+            var visible = this.state.visible;
+
+            var menuProps = {
+                ref: this.menuRef,
+                onMouseEnter: this.handleMouseEnter,
+                onMouseLeave: this.handleMouseLeave,
+                className: classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuItem, _helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].subMenu, attributes.listClassName),
+                style: {
+                    position: 'relative'
+                }
+            };
+            var menuItemProps = {
+                className: classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuItem, attributes.className, (_cx = {}, _defineProperty(_cx, classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuItemDisabled, attributes.disabledClassName), disabled), _defineProperty(_cx, classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuItemActive, attributes.visibleClassName), visible), _defineProperty(_cx, classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menuItemSelected, attributes.selectedClassName), selected), _cx)),
+                onMouseMove: this.props.onMouseMove,
+                onMouseOut: this.props.onMouseOut,
+                onClick: this.handleClick
+            };
+            var subMenuProps = {
+                ref: this.subMenuRef,
+                style: {
+                    position: 'absolute',
+                    transition: 'opacity 1ms', // trigger transitionend event
+                    top: 0,
+                    left: '100%'
+                },
+                className: classnames__WEBPACK_IMPORTED_MODULE_2___default()(_helpers__WEBPACK_IMPORTED_MODULE_5__["cssClasses"].menu, this.props.className)
+            };
+
+            return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'nav',
+                _extends({}, menuProps, { role: 'menuitem', tabIndex: '-1', 'aria-haspopup': 'true' }),
+                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                    'div',
+                    _extends({}, attributes, menuItemProps),
+                    title
+                ),
+                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                    'nav',
+                    _extends({}, subMenuProps, { role: 'menu', tabIndex: '-1' }),
+                    this.renderChildren(children)
+                )
+            );
+        }
+    }]);
+
+    return SubMenu;
+}(_AbstractMenu__WEBPACK_IMPORTED_MODULE_4__["default"]);
+
+SubMenu.propTypes = {
+    children: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.node.isRequired,
+    attributes: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object,
+    title: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.node.isRequired,
+    className: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string,
+    disabled: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    hoverDelay: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.number,
+    rtl: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    selected: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    onMouseMove: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
+    onMouseOut: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
+    forceOpen: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
+    forceClose: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
+    parentKeyNavigationHandler: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func
+};
+SubMenu.defaultProps = {
+    disabled: false,
+    hoverDelay: 500,
+    attributes: {},
+    className: '',
+    rtl: false,
+    selected: false,
+    onMouseMove: function onMouseMove() {
+        return null;
+    },
+    onMouseOut: function onMouseOut() {
+        return null;
+    },
+    forceOpen: false,
+    forceClose: function forceClose() {
+        return null;
+    },
+    parentKeyNavigationHandler: function parentKeyNavigationHandler() {
+        return null;
+    }
+};
+/* harmony default export */ __webpack_exports__["default"] = (SubMenu);
+
+/***/ }),
+
+/***/ "../../node_modules/react-contextmenu/es6/actions.js":
+/*!*************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \*************************************************************************/
+/*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MENU_SHOW", function() { return MENU_SHOW; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MENU_HIDE", function() { return MENU_HIDE; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dispatchGlobalEvent", function() { return dispatchGlobalEvent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "showMenu", function() { return showMenu; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hideMenu", function() { return hideMenu; });
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! object-assign */ "../../node_modules/object-assign/index.js");
+/* harmony import */ var object_assign__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(object_assign__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./helpers */ "../../node_modules/react-contextmenu/es6/helpers.js");
+
+
+
+
+var MENU_SHOW = 'REACT_CONTEXTMENU_SHOW';
+var MENU_HIDE = 'REACT_CONTEXTMENU_HIDE';
+
+function dispatchGlobalEvent(eventName, opts) {
+    var target = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window;
+
+    // Compatibale with IE
+    // @see http://stackoverflow.com/questions/26596123/internet-explorer-9-10-11-event-constructor-doesnt-work
+    var event = void 0;
+
+    if (typeof window.CustomEvent === 'function') {
+        event = new window.CustomEvent(eventName, { detail: opts });
+    } else {
+        event = document.createEvent('CustomEvent');
+        event.initCustomEvent(eventName, false, true, opts);
+    }
+
+    if (target) {
+        target.dispatchEvent(event);
+        object_assign__WEBPACK_IMPORTED_MODULE_0___default()(_helpers__WEBPACK_IMPORTED_MODULE_1__["store"], opts);
+    }
+}
+
+function showMenu() {
+    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var target = arguments[1];
+
+    dispatchGlobalEvent(MENU_SHOW, object_assign__WEBPACK_IMPORTED_MODULE_0___default()({}, opts, { type: MENU_SHOW }), target);
+}
+
+function hideMenu() {
+    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var target = arguments[1];
+
+    dispatchGlobalEvent(MENU_HIDE, object_assign__WEBPACK_IMPORTED_MODULE_0___default()({}, opts, { type: MENU_HIDE }), target);
+}
+
+/***/ }),
+
+/***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
+/*!*****************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \*****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _ContextMenuTrigger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ContextMenuTrigger */ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js");
+/* harmony import */ var _globalEventListener__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./globalEventListener */ "../../node_modules/react-contextmenu/es6/globalEventListener.js");
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+
+
+
+
+
+// collect ContextMenuTrigger's expected props to NOT pass them on as part of the context
+var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuTrigger__WEBPACK_IMPORTED_MODULE_1__["default"].propTypes)), ['children']);
+
+// expect the id of the menu to be responsible for as outer parameter
+/* harmony default export */ __webpack_exports__["default"] = (function (menuId) {
+    // expect menu component to connect as inner parameter
+    // <Child/> is presumably a wrapper of <ContextMenu/>
+    return function (Child) {
+        // return wrapper for <Child/> that forwards the ContextMenuTrigger's additional props
+        return function (_Component) {
+            _inherits(ConnectMenu, _Component);
+
+            function ConnectMenu(props) {
+                _classCallCheck(this, ConnectMenu);
+
+                var _this = _possibleConstructorReturn(this, (ConnectMenu.__proto__ || Object.getPrototypeOf(ConnectMenu)).call(this, props));
+
+                _this.handleShow = function (e) {
+                    if (e.detail.id !== menuId) return;
+
+                    // the onShow event's detail.data object holds all ContextMenuTrigger props
+                    var data = e.detail.data;
+
+                    var filteredData = {};
+
+                    for (var key in data) {
+                        // exclude props the ContextMenuTrigger is expecting itself
+                        if (!ignoredTriggerProps.includes(key)) {
+                            filteredData[key] = data[key];
+                        }
+                    }
+                    _this.setState({ trigger: filteredData });
+                };
+
+                _this.handleHide = function () {
+                    _this.setState({ trigger: null });
+                };
+
+                _this.state = { trigger: null };
+                return _this;
+            }
+
+            _createClass(ConnectMenu, [{
+                key: 'componentDidMount',
+                value: function componentDidMount() {
+                    this.listenId = _globalEventListener__WEBPACK_IMPORTED_MODULE_2__["default"].register(this.handleShow, this.handleHide);
+                }
+            }, {
+                key: 'componentWillUnmount',
+                value: function componentWillUnmount() {
+                    if (this.listenId) {
+                        _globalEventListener__WEBPACK_IMPORTED_MODULE_2__["default"].unregister(this.listenId);
+                    }
+                }
+            }, {
+                key: 'render',
+                value: function render() {
+                    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Child, _extends({}, this.props, { id: menuId, trigger: this.state.trigger }));
+                }
+            }]);
+
+            return ConnectMenu;
+        }(react__WEBPACK_IMPORTED_MODULE_0__["Component"]);
+    };
+});
+
+/***/ }),
+
+/***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
+/*!*************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \*************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _actions__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./actions */ "../../node_modules/react-contextmenu/es6/actions.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./helpers */ "../../node_modules/react-contextmenu/es6/helpers.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+
+
+
+var GlobalEventListener = function GlobalEventListener() {
+    var _this = this;
+
+    _classCallCheck(this, GlobalEventListener);
+
+    this.handleShowEvent = function (event) {
+        for (var id in _this.callbacks) {
+            if (Object(_helpers__WEBPACK_IMPORTED_MODULE_1__["hasOwnProp"])(_this.callbacks, id)) _this.callbacks[id].show(event);
+        }
+    };
+
+    this.handleHideEvent = function (event) {
+        for (var id in _this.callbacks) {
+            if (Object(_helpers__WEBPACK_IMPORTED_MODULE_1__["hasOwnProp"])(_this.callbacks, id)) _this.callbacks[id].hide(event);
+        }
+    };
+
+    this.register = function (showCallback, hideCallback) {
+        var id = Object(_helpers__WEBPACK_IMPORTED_MODULE_1__["uniqueId"])();
+
+        _this.callbacks[id] = {
+            show: showCallback,
+            hide: hideCallback
+        };
+
+        return id;
+    };
+
+    this.unregister = function (id) {
+        if (id && _this.callbacks[id]) {
+            delete _this.callbacks[id];
+        }
+    };
+
+    this.callbacks = {};
+
+    if (_helpers__WEBPACK_IMPORTED_MODULE_1__["canUseDOM"]) {
+        window.addEventListener(_actions__WEBPACK_IMPORTED_MODULE_0__["MENU_SHOW"], this.handleShowEvent);
+        window.addEventListener(_actions__WEBPACK_IMPORTED_MODULE_0__["MENU_HIDE"], this.handleHideEvent);
+    }
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (new GlobalEventListener());
+
+/***/ }),
+
+/***/ "../../node_modules/react-contextmenu/es6/helpers.js":
+/*!*************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \*************************************************************************/
+/*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "callIfExists", function() { return callIfExists; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hasOwnProp", function() { return hasOwnProp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "uniqueId", function() { return uniqueId; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cssClasses", function() { return cssClasses; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "store", function() { return store; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "canUseDOM", function() { return canUseDOM; });
+function callIfExists(func) {
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+    }
+
+    return typeof func === 'function' && func.apply(undefined, args);
+}
+
+function hasOwnProp(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+function uniqueId() {
+    return Math.random().toString(36).substring(7);
+}
+
+var cssClasses = {
+    menu: 'react-contextmenu',
+    menuVisible: 'react-contextmenu--visible',
+    menuWrapper: 'react-contextmenu-wrapper',
+    menuItem: 'react-contextmenu-item',
+    menuItemActive: 'react-contextmenu-item--active',
+    menuItemDisabled: 'react-contextmenu-item--disabled',
+    menuItemDivider: 'react-contextmenu-item--divider',
+    menuItemSelected: 'react-contextmenu-item--selected',
+    subMenu: 'react-contextmenu-submenu'
+};
+
+var store = {};
+
+var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && window.document.createElement);
+
+/***/ }),
+
+/***/ "../../node_modules/react-contextmenu/es6/index.js":
+/*!***********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \***********************************************************************/
+/*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _ContextMenu__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ContextMenu */ "../../node_modules/react-contextmenu/es6/ContextMenu.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ContextMenu", function() { return _ContextMenu__WEBPACK_IMPORTED_MODULE_0__["default"]; });
+
+/* harmony import */ var _ContextMenuTrigger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ContextMenuTrigger */ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ContextMenuTrigger", function() { return _ContextMenuTrigger__WEBPACK_IMPORTED_MODULE_1__["default"]; });
+
+/* harmony import */ var _MenuItem__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MenuItem */ "../../node_modules/react-contextmenu/es6/MenuItem.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MenuItem", function() { return _MenuItem__WEBPACK_IMPORTED_MODULE_2__["default"]; });
+
+/* harmony import */ var _SubMenu__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./SubMenu */ "../../node_modules/react-contextmenu/es6/SubMenu.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SubMenu", function() { return _SubMenu__WEBPACK_IMPORTED_MODULE_3__["default"]; });
+
+/* harmony import */ var _connectMenu__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./connectMenu */ "../../node_modules/react-contextmenu/es6/connectMenu.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "connectMenu", function() { return _connectMenu__WEBPACK_IMPORTED_MODULE_4__["default"]; });
+
+/* harmony import */ var _actions__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./actions */ "../../node_modules/react-contextmenu/es6/actions.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "hideMenu", function() { return _actions__WEBPACK_IMPORTED_MODULE_5__["hideMenu"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "showMenu", function() { return _actions__WEBPACK_IMPORTED_MODULE_5__["showMenu"]; });
+
+
+
+
+
+
+
+
+/***/ }),
+
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!**************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \**************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -27042,9 +28569,9 @@ module.exports = reactDom;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/react-dom/index.js ***!
-  \******************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -27087,9 +28614,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!******************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/react/cjs/react.development.js ***!
-  \******************************************************************************/
+/*!***********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -28939,9 +30466,9 @@ module.exports = react;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!**************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/react/index.js ***!
-  \**************************************************************/
+/*!*******************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react/index.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -28956,9 +30483,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \**********************************************************************************************/
+/*!***************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -29388,9 +30915,9 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!**************************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \**************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30035,9 +31562,9 @@ exports.unstable_shouldYield = unstable_shouldYield;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/scheduler/index.js ***!
-  \******************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30052,9 +31579,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!********************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/scheduler/tracing.js ***!
-  \********************************************************************/
+/*!*************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30069,9 +31596,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/split.js/dist/split.es.js":
-/*!*************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/split.js/dist/split.es.js ***!
-  \*************************************************************************/
+/*!******************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/split.js/dist/split.es.js ***!
+  \******************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -30853,9 +32380,9 @@ var Split = function (idsOption, options) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/lib/addStyles.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/style-loader/lib/addStyles.js ***!
-  \*****************************************************************************/
+/*!**********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -31244,9 +32771,9 @@ function updateLink (link, options, obj) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/lib/urls.js":
-/*!************************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/style-loader/lib/urls.js ***!
-  \************************************************************************/
+/*!*****************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/urls.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -31344,9 +32871,9 @@ module.exports = function (css) {
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/LibToModule/node_modules/tslib/tslib.es6.js ***!
-  \******************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -32653,7 +34180,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "slider" },
-                this.state.value ? this.state.value.toFixed(2) : "0",
+                this.state.value ? this.state.value.toFixed(this.props.decimalCount || 2) : "0",
                 "\u00A0",
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.props.minimum, max: this.props.maximum, value: this.state.value, onInput: function (evt) { return _this.onInput(evt.target.value); }, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
     };
@@ -33108,6 +34635,98 @@ var ValueLineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/lines/vector2LineComponent.tsx":
+/*!**************************************************************!*\
+  !*** ./components/actionTabs/lines/vector2LineComponent.tsx ***!
+  \**************************************************************/
+/*! exports provided: Vector2LineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector2LineComponent", function() { return Vector2LineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./numericInputComponent */ "./components/actionTabs/lines/numericInputComponent.tsx");
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+
+
+
+
+
+var Vector2LineComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2LineComponent, _super);
+    function Vector2LineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        _this.state = { isExpanded: false, value: _this.props.target[_this.props.propertyName].clone() };
+        return _this;
+    }
+    Vector2LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        var nextPropsValue = nextProps.target[nextProps.propertyName];
+        if (!nextPropsValue.equals(nextState.value) || this._localChange) {
+            nextState.value = nextPropsValue.clone();
+            this._localChange = false;
+            return true;
+        }
+        return false;
+    };
+    Vector2LineComponent.prototype.switchExpandState = function () {
+        this._localChange = true;
+        this.setState({ isExpanded: !this.state.isExpanded });
+    };
+    Vector2LineComponent.prototype.raiseOnPropertyChanged = function (previousValue) {
+        if (this.props.onChange) {
+            this.props.onChange(this.state.value);
+        }
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: this.state.value,
+            initialValue: previousValue
+        });
+    };
+    Vector2LineComponent.prototype.updateStateX = function (value) {
+        this._localChange = true;
+        var store = this.state.value.clone();
+        this.props.target[this.props.propertyName].x = value;
+        this.state.value.x = value;
+        this.setState({ value: this.state.value });
+        this.raiseOnPropertyChanged(store);
+    };
+    Vector2LineComponent.prototype.updateStateY = function (value) {
+        this._localChange = true;
+        var store = this.state.value.clone();
+        this.props.target[this.props.propertyName].y = value;
+        this.state.value.y = value;
+        this.setState({ value: this.state.value });
+        this.raiseOnPropertyChanged(store);
+    };
+    Vector2LineComponent.prototype.render = function () {
+        var _this = this;
+        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2)),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
+            this.state.isExpanded &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }))));
+    };
+    return Vector2LineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/lines/vector3LineComponent.tsx":
 /*!**************************************************************!*\
   !*** ./components/actionTabs/lines/vector3LineComponent.tsx ***!
@@ -33443,6 +35062,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_materials_pbrMetallicRoughnessMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_materials_pbrSpecularGlossinessMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./propertyGrids/gui/stackPanelPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/stackPanelPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_postProcesses_postProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./propertyGrids/postProcesses/postProcessPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/postProcessPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_postProcesses_renderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./propertyGrids/postProcesses/renderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/renderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_postProcesses_defaultRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_postProcesses_ssaoRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_postProcesses_ssao2RenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! ./propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent.tsx");
+
+
+
+
+
 
 
 
@@ -33556,6 +35185,26 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
             if (className.indexOf("Material") !== -1) {
                 var material = entity;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_materialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_3__["MaterialPropertyGridComponent"], { material: material, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className.indexOf("DefaultRenderingPipeline") !== -1) {
+                var renderPipeline = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_defaultRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_36__["DefaultRenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className.indexOf("SSAORenderingPipeline") !== -1) {
+                var renderPipeline = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_ssaoRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_37__["SSAORenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className.indexOf("SSAO2RenderingPipeline") !== -1) {
+                var renderPipeline = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_ssao2RenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_38__["SSAO2RenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className.indexOf("RenderingPipeline") !== -1) {
+                var renderPipeline = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_renderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_35__["RenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className.indexOf("PostProcess") !== -1) {
+                var postProcess = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_postProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_34__["PostProcessPropertyGridComponent"], { postProcess: postProcess, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("Texture") !== -1) {
                 var texture = entity;
@@ -34109,7 +35758,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
@@ -34410,7 +36059,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
@@ -34824,7 +36473,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
@@ -35302,12 +36951,11 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
     function PBRMaterialPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
-    PBRMaterialPropertyGridComponent.prototype.renderTextures = function () {
+    PBRMaterialPropertyGridComponent.prototype.renderTextures = function (onDebugSelectionChangeObservable) {
         var material = this.props.material;
         if (material.getActiveTextures().length === 0) {
             return null;
         }
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TEXTURES" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Metallic", texture: material.metallicTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
@@ -35322,14 +36970,21 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
     };
     PBRMaterialPropertyGridComponent.prototype.render = function () {
         var material = this.props.material;
+        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CommonMaterialPropertyGridComponent"], { lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            this.renderTextures(),
+            this.renderTextures(onDebugSelectionChangeObservable),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LIGHTING & COLORS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Albedo", target: material, propertyName: "albedoColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Reflectivity", target: material, propertyName: "reflectivityColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "CLEAR COAT" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.clearCoat, propertyName: "isEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Intensity", target: material.clearCoat, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Roughness", target: material.clearCoat, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Texture", texture: material.clearCoat.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Bump", texture: material.clearCoat.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LEVELS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Environment", target: material, propertyName: "environmentIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -35603,7 +37258,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/valueLineComponent */ "./components/actionTabs/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 
 
@@ -35681,7 +37336,8 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is cube", value: texture.isCube ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is render target", value: texture.isRenderTarget ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Has mipmaps", value: !texture.noMipmap ? "Yes" : "No" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "UV set", target: texture, propertyName: "coordinatesIndex", minimum: 0, maximum: 3, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "UV set", target: texture, propertyName: "coordinatesIndex", minimum: 0, maximum: 3, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Level", target: texture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 texture.updateSamplingMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return texture.updateSamplingMode(value); } })),
             texture.rootContainer &&
@@ -35739,6 +37395,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var AxesViewerComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AxesViewerComponent, _super);
     function AxesViewerComponent(props) {
@@ -35750,9 +37407,15 @@ var AxesViewerComponent = /** @class */ (function (_super) {
         _this.state = { displayAxis: (node.reservedDataStore && node.reservedDataStore.axisViewer) ? true : false };
         return _this;
     }
+    AxesViewerComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (nextProps.node !== this.props.node) {
+            nextState.displayAxis = (nextProps.node.reservedDataStore && nextProps.node.reservedDataStore.axisViewer) ? true : false;
+        }
+        return true;
+    };
     AxesViewerComponent.prototype.displayAxes = function () {
         var node = this.props.node;
-        var scene = node.getScene();
+        var scene = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultUtilityLayer.utilityLayerScene;
         if (node.reservedDataStore.axisViewer) {
             node.reservedDataStore.axisViewer.dispose();
             node.reservedDataStore.axisViewer = null;
@@ -35770,12 +37433,11 @@ var AxesViewerComponent = /** @class */ (function (_super) {
         viewer.yAxis.reservedDataStore = { hidden: true };
         viewer.zAxis.reservedDataStore = { hidden: true };
         node.reservedDataStore.onBeforeRenderObserver = scene.onBeforeRenderObservable.add(function () {
+            var cameraMatrix = scene.activeCamera.getWorldMatrix();
             var matrix = node.getWorldMatrix();
             var extend = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Tmp"].Vector3[0];
-            var worldExtend = scene.getWorldExtends();
-            worldExtend.max.subtractToRef(worldExtend.min, extend);
-            extend.scaleInPlace(0.5 * 0.5);
-            viewer.scaleLines = Math.max(extend.x, extend.y, extend.z) * 2;
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformCoordinatesFromFloatsToRef(0, 0, 1, cameraMatrix, extend);
+            viewer.scaleLines = extend.length() / 10;
             viewer.update(node.getAbsolutePosition(), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformNormal(x, matrix), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformNormal(y, matrix), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformNormal(z, matrix));
         });
         this.setState({ displayAxis: true });
@@ -36055,6 +37717,356 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent.tsx":
+/*!***********************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent.tsx ***!
+  \***********************************************************************************************************/
+/*! exports provided: CommonPostProcessPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommonPostProcessPropertyGridComponent", function() { return CommonPostProcessPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+
+
+
+
+
+
+
+var CommonPostProcessPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CommonPostProcessPropertyGridComponent, _super);
+    function CommonPostProcessPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    CommonPostProcessPropertyGridComponent.prototype.render = function () {
+        var postProcess = this.props.postProcess;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: postProcess.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Width", value: postProcess.width.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Height", value: postProcess.height.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Auto clear", target: postProcess, propertyName: "autoClear", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                postProcess.clearColor &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { label: "Clear color", target: postProcess, propertyName: "clearColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Pixel perfect", target: postProcess, propertyName: "enablePixelPerfectMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Fullscreen viewport", target: postProcess, propertyName: "forceFullscreenViewport", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Samples", target: postProcess, propertyName: "samples", minimum: 1, maximum: 8, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+    };
+    return CommonPostProcessPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent.tsx":
+/*!*****************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent.tsx ***!
+  \*****************************************************************************************************************/
+/*! exports provided: CommonRenderingPipelinePropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommonRenderingPipelinePropertyGridComponent", function() { return CommonRenderingPipelinePropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+
+
+
+
+var CommonRenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CommonRenderingPipelinePropertyGridComponent, _super);
+    function CommonRenderingPipelinePropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    CommonRenderingPipelinePropertyGridComponent.prototype.render = function () {
+        var renderPipeline = this.props.renderPipeline;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: renderPipeline.getClassName() }))));
+    };
+    return CommonRenderingPipelinePropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx":
+/*!******************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx ***!
+  \******************************************************************************************************************/
+/*! exports provided: DefaultRenderingPipelinePropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DefaultRenderingPipelinePropertyGridComponent", function() { return DefaultRenderingPipelinePropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/vector2LineComponent */ "./components/actionTabs/lines/vector2LineComponent.tsx");
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! babylonjs/Materials/imageProcessingConfiguration */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
+
+
+
+
+
+
+
+
+
+
+var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultRenderingPipelinePropertyGridComponent, _super);
+    function DefaultRenderingPipelinePropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    DefaultRenderingPipelinePropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var renderPipeline = this.props.renderPipeline;
+        var camera = renderPipeline.scene.activeCamera;
+        var toneMappingOptions = [
+            { label: "Standard", value: babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8__["ImageProcessingConfiguration"].TONEMAPPING_STANDARD },
+            { label: "ACES", value: babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8__["ImageProcessingConfiguration"].TONEMAPPING_ACES }
+        ];
+        var vignetteModeOptions = [
+            { label: "Multiply", value: babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8__["ImageProcessingConfiguration"].VIGNETTEMODE_MULTIPLY },
+            { label: "Opaque", value: babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8__["ImageProcessingConfiguration"].VIGNETTEMODE_OPAQUE }
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "BLOOM" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "bloomEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Threshold", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Weight", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Kernel", minimum: 0, maximum: 128, step: 1, target: renderPipeline, propertyName: "bloomKernel", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Scale", minimum: 0, maximum: 1, step: 0.25, target: renderPipeline, propertyName: "bloomScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "CHROMATIC ABERRATION" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "chromaticAberrationEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "aberrationAmount", minimum: 0, maximum: 128, step: 0.1, target: renderPipeline.chromaticAberration, propertyName: "aberrationAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Radial intensity", minimum: 0, maximum: 1, step: 0.01, target: renderPipeline.chromaticAberration, propertyName: "radialIntensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Center", target: renderPipeline.chromaticAberration, propertyName: "centerPosition", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Direction", target: renderPipeline.chromaticAberration, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "DEPTH OF FIELD" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "depthOfFieldEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Focal length", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focalLength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "fStop", minimum: 0, maximum: 32, step: 0.1, target: renderPipeline.depthOfField, propertyName: "fStop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distance", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focusDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Lens size", minimum: 0, maximum: 1000, step: 1, target: renderPipeline.depthOfField, propertyName: "lensSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "FXAA" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "fxaaEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "GLOW LAYER" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "glowLayerEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "GRAIN" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "grainEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Animated", target: renderPipeline.grain, propertyName: "animated", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Intensity", minimum: 0, maximum: 50, step: 0.1, target: renderPipeline.grain, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "IMAGE PROCESSING" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "imageProcessingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                renderPipeline.imageProcessing &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Contrast", target: renderPipeline.imageProcessing, propertyName: "contrast", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Exposure", target: renderPipeline.imageProcessing, propertyName: "exposure", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Tone mapping", target: renderPipeline.imageProcessing, propertyName: "toneMappingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Tone mapping type", options: toneMappingOptions, target: renderPipeline.imageProcessing, propertyName: "toneMappingType", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Vignette", target: renderPipeline.imageProcessing, propertyName: "vignetteEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Vignette weight", target: renderPipeline.imageProcessing, propertyName: "vignetteWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 1, step: 0.1, label: "Vignette stretch", target: renderPipeline.imageProcessing, propertyName: "vignetteStretch", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: Math.PI, step: 0.1, label: "Vignette FOV", target: renderPipeline.imageProcessing, propertyName: "vignetteCameraFov", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 1, step: 0.1, label: "Vignette center X", target: renderPipeline.imageProcessing, propertyName: "vignetteCentreX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 1, step: 0.1, label: "Vignette center Y", target: renderPipeline.imageProcessing, propertyName: "vignetteCentreY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { label: "Vignette color", target: renderPipeline.imageProcessing, propertyName: "vignetteColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Vignette blend mode", options: vignetteModeOptions, target: renderPipeline.imageProcessing, propertyName: "vignetteBlendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SHARPEN" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "sharpenEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Color amount", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline.sharpen, propertyName: "colorAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Edge amount", minimum: 0, maximum: 5, step: 0.05, target: renderPipeline.sharpen, propertyName: "edgeAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+    };
+    return DefaultRenderingPipelinePropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/postProcesses/postProcessPropertyGridComponent.tsx":
+/*!*****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/postProcesses/postProcessPropertyGridComponent.tsx ***!
+  \*****************************************************************************************************/
+/*! exports provided: PostProcessPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PostProcessPropertyGridComponent", function() { return PostProcessPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonPostProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonPostProcessPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent.tsx");
+
+
+
+var PostProcessPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PostProcessPropertyGridComponent, _super);
+    function PostProcessPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    PostProcessPropertyGridComponent.prototype.render = function () {
+        var postProcess = this.props.postProcess;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPostProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonPostProcessPropertyGridComponent"], { lockObject: this.props.lockObject, postProcess: postProcess, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return PostProcessPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/postProcesses/renderingPipelinePropertyGridComponent.tsx":
+/*!***********************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/postProcesses/renderingPipelinePropertyGridComponent.tsx ***!
+  \***********************************************************************************************************/
+/*! exports provided: RenderingPipelinePropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RenderingPipelinePropertyGridComponent", function() { return RenderingPipelinePropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent.tsx");
+
+
+
+var RenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RenderingPipelinePropertyGridComponent, _super);
+    function RenderingPipelinePropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    RenderingPipelinePropertyGridComponent.prototype.render = function () {
+        var renderPipeline = this.props.renderPipeline;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return RenderingPipelinePropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent.tsx":
+/*!****************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent.tsx ***!
+  \****************************************************************************************************************/
+/*! exports provided: SSAO2RenderingPipelinePropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SSAO2RenderingPipelinePropertyGridComponent", function() { return SSAO2RenderingPipelinePropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+
+
+
+
+
+var SSAO2RenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SSAO2RenderingPipelinePropertyGridComponent, _super);
+    function SSAO2RenderingPipelinePropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SSAO2RenderingPipelinePropertyGridComponent.prototype.render = function () {
+        var renderPipeline = this.props.renderPipeline;
+        var camera = renderPipeline.scene.activeCamera;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SSAO" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Strength", minimum: 0, maximum: 2, step: 0.05, target: renderPipeline, propertyName: "totalStrength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Base", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "base", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Max Z", minimum: 0, maximum: camera.maxZ, step: 1, target: renderPipeline, propertyName: "maxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Min Z aspect", minimum: 0, maximum: 0.5, step: 0.01, target: renderPipeline, propertyName: "minZAspect", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Radius", minimum: 0, maximum: 10, step: 0.05, target: renderPipeline, propertyName: "radius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+    };
+    return SSAO2RenderingPipelinePropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent.tsx":
+/*!***************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent.tsx ***!
+  \***************************************************************************************************************/
+/*! exports provided: SSAORenderingPipelinePropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SSAORenderingPipelinePropertyGridComponent", function() { return SSAORenderingPipelinePropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+
+
+
+
+
+var SSAORenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SSAORenderingPipelinePropertyGridComponent, _super);
+    function SSAORenderingPipelinePropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SSAORenderingPipelinePropertyGridComponent.prototype.render = function () {
+        var renderPipeline = this.props.renderPipeline;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SSAO" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Strength", minimum: 0, maximum: 2, step: 0.05, target: renderPipeline, propertyName: "totalStrength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Base", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "base", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Radius", minimum: 0.0001, maximum: 0.001, step: 0.0001, target: renderPipeline, propertyName: "radius", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 4 }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Area", minimum: 0.0001, maximum: 0.01, step: 0.0001, target: renderPipeline, propertyName: "area", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 4 }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Falloff", minimum: 0, maximum: 0.00001, step: 0.000001, target: renderPipeline, propertyName: "fallOff", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 6 }))));
+    };
+    return SSAORenderingPipelinePropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/renderGridPropertyGridComponent.tsx":
 /*!**************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/renderGridPropertyGridComponent.tsx ***!
@@ -36265,6 +38277,10 @@ var ScenePropertyGridComponent = /** @class */ (function (_super) {
             { label: "Standard", value: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["ImageProcessingConfiguration"].TONEMAPPING_STANDARD },
             { label: "ACES", value: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["ImageProcessingConfiguration"].TONEMAPPING_ACES }
         ];
+        var vignetteModeOptions = [
+            { label: "Multiply", value: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["ImageProcessingConfiguration"].VIGNETTEMODE_MULTIPLY },
+            { label: "Opaque", value: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["ImageProcessingConfiguration"].VIGNETTEMODE_OPAQUE }
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "RENDERING MODE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_radioLineComponent__WEBPACK_IMPORTED_MODULE_4__["RadioButtonLineComponent"], { onSelectionChangedObservable: this._renderingModeGroupObservable, label: "Point", isSelected: function () { return scene.forcePointsCloud; }, onSelect: function () { return _this.setRenderingModes(true, false); } }),
@@ -36283,7 +38299,15 @@ var ScenePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Contrast", target: imageProcessing, propertyName: "contrast", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Exposure", target: imageProcessing, propertyName: "exposure", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Tone mapping", target: imageProcessing, propertyName: "toneMappingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_13__["OptionsLineComponent"], { label: "Tone mapping type", options: toneMappingOptions, target: imageProcessing, propertyName: "toneMappingType", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_13__["OptionsLineComponent"], { label: "Tone mapping type", options: toneMappingOptions, target: imageProcessing, propertyName: "toneMappingType", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Vignette", target: imageProcessing, propertyName: "vignetteEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Vignette weight", target: imageProcessing, propertyName: "vignetteWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 1, step: 0.1, label: "Vignette stretch", target: imageProcessing, propertyName: "vignetteStretch", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: Math.PI, step: 0.1, label: "Vignette FOV", target: imageProcessing, propertyName: "vignetteCameraFov", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 1, step: 0.1, label: "Vignette center X", target: imageProcessing, propertyName: "vignetteCentreX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 1, step: 0.1, label: "Vignette center Y", target: imageProcessing, propertyName: "vignetteCentreY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { label: "Vignette color", target: imageProcessing, propertyName: "vignetteColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_13__["OptionsLineComponent"], { label: "Vignette blend mode", options: vignetteModeOptions, target: imageProcessing, propertyName: "vignetteBlendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } })),
             dummy !== null &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "PHYSICS", closed: true },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_11__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Time step", target: dummy, propertyName: "timeStep", onChange: function (newValue) { return _this.updateTimeStep(newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37488,6 +39512,84 @@ var MeshTreeItemComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/sceneExplorer/entities/postProcessTreeItemComponent.tsx":
+/*!****************************************************************************!*\
+  !*** ./components/sceneExplorer/entities/postProcessTreeItemComponent.tsx ***!
+  \****************************************************************************/
+/*! exports provided: PostProcessItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PostProcessItemComponent", function() { return PostProcessItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var PostProcessItemComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PostProcessItemComponent, _super);
+    function PostProcessItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    PostProcessItemComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "postProcessTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: this.props.postProcess.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faMagic"], color: "red" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: this.props.postProcess, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return PostProcessItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/sceneExplorer/entities/renderingPipelineTreeItemComponent.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/sceneExplorer/entities/renderingPipelineTreeItemComponent.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: RenderingPipelineItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RenderingPipelineItemComponent", function() { return RenderingPipelineItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var RenderingPipelineItemComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RenderingPipelineItemComponent, _super);
+    function RenderingPipelineItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    RenderingPipelineItemComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "postProcessTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: this.props.renderPipeline.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faMagic"], color: "orangered" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: this.props.renderPipeline, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return RenderingPipelineItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/sceneExplorer/entities/sceneTreeItemComponent.tsx":
 /*!**********************************************************************!*\
   !*** ./components/sceneExplorer/entities/sceneTreeItemComponent.tsx ***!
@@ -37923,6 +40025,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneExplorerFilterComponent, _super);
@@ -38068,12 +40171,29 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         var guiElements = scene.textures.filter(function (t) { return t.getClassName() === "AdvancedDynamicTexture"; });
         var textures = scene.textures.filter(function (t) { return t.getClassName() !== "AdvancedDynamicTexture"; });
+        var postProcessses = scene.postProcesses;
+        var pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
+        var pipelineContextMenus = [];
+        if (scene.activeCamera) {
+            if (!pipelines.some(function (p) { return p.getClassName() === "DefaultRenderingPipeline"; })) {
+                pipelineContextMenus.push({
+                    label: "Add new DefaultRenderingPipeline",
+                    action: function () {
+                        var newPipeline = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["DefaultRenderingPipeline"]("Default rendering pipeline", true, scene, [scene.activeCamera]);
+                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    }
+                });
+            }
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.materials, label: "Materials", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: textures, label: "Textures", offset: 1, filter: this.state.filter }),
+            postProcessses.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: postProcessses, label: "Post-processes", offset: 1, filter: this.state.filter }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, contextMenuItems: pipelineContextMenus, selectedEntity: this.state.selectedEntity, items: pipelines, label: "Rendering pipelines", offset: 1, filter: this.state.filter }),
             guiElements && guiElements.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter }),
             scene.animationGroups.length > 0 &&
@@ -38152,6 +40272,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
 /* harmony import */ var _treeItemSelectableComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./treeItemSelectableComponent */ "./components/sceneExplorer/treeItemSelectableComponent.tsx");
 /* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../tools */ "./tools.ts");
+/* harmony import */ var react_contextmenu__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-contextmenu */ "../../node_modules/react-contextmenu/es6/index.js");
+
 
 
 
@@ -38223,6 +40345,15 @@ var TreeItemComponent = /** @class */ (function (_super) {
     TreeItemComponent.prototype.expandAll = function (expand) {
         this.setState({ isExpanded: expand, mustExpand: expand });
     };
+    TreeItemComponent.prototype.renderContextMenu = function () {
+        if (!this.props.contextMenuItems) {
+            TreeItemComponent._ContextMenuUniqueIdGenerator++;
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react_contextmenu__WEBPACK_IMPORTED_MODULE_6__["ContextMenu"], { id: "contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator++, className: "context-menu" }, this.props.contextMenuItems.map(function (c) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react_contextmenu__WEBPACK_IMPORTED_MODULE_6__["MenuItem"], { onClick: function () { return c.action(); }, key: c.label }, c.label));
+        })));
+    };
     TreeItemComponent.prototype.render = function () {
         var _this = this;
         var items = this.props.items;
@@ -38235,20 +40366,27 @@ var TreeItemComponent = /** @class */ (function (_super) {
         }
         if (!items.length) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "groupContainer", style: marginStyle },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](TreeItemRootHeaderComponent, { label: this.props.label })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react_contextmenu__WEBPACK_IMPORTED_MODULE_6__["ContextMenuTrigger"], { id: "contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator },
+                    this.renderContextMenu(),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](TreeItemRootHeaderComponent, { label: this.props.label }))));
         }
         if (!this.state.isExpanded) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "groupContainer", style: marginStyle },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](TreeItemExpandableHeaderComponent, { isExpanded: false, label: this.props.label, onClick: function () { return _this.switchExpandedState(); }, onExpandAll: function (expand) { return _this.expandAll(expand); } })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react_contextmenu__WEBPACK_IMPORTED_MODULE_6__["ContextMenuTrigger"], { id: "contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator },
+                    this.renderContextMenu(),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](TreeItemExpandableHeaderComponent, { isExpanded: false, label: this.props.label, onClick: function () { return _this.switchExpandedState(); }, onExpandAll: function (expand) { return _this.expandAll(expand); } }))));
         }
         var sortedItems = _tools__WEBPACK_IMPORTED_MODULE_5__["Tools"].SortAndFilter(null, items);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "groupContainer", style: marginStyle },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](TreeItemExpandableHeaderComponent, { isExpanded: this.state.isExpanded, label: this.props.label, onClick: function () { return _this.switchExpandedState(); }, onExpandAll: function (expand) { return _this.expandAll(expand); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react_contextmenu__WEBPACK_IMPORTED_MODULE_6__["ContextMenuTrigger"], { id: "contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator },
+                    this.renderContextMenu(),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](TreeItemExpandableHeaderComponent, { isExpanded: this.state.isExpanded, label: this.props.label, onClick: function () { return _this.switchExpandedState(); }, onExpandAll: function (expand) { return _this.expandAll(expand); } }))),
             sortedItems.map(function (item) {
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemSelectableComponent__WEBPACK_IMPORTED_MODULE_4__["TreeItemSelectableComponent"], { mustExpand: _this.state.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, key: item.uniqueId, offset: _this.props.offset + 1, selectedEntity: _this.props.selectedEntity, entity: item, globalState: _this.props.globalState, filter: _this.props.filter }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemSelectableComponent__WEBPACK_IMPORTED_MODULE_4__["TreeItemSelectableComponent"], { mustExpand: _this.state.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, key: item.uniqueId || item.name, offset: _this.props.offset + 1, selectedEntity: _this.props.selectedEntity, entity: item, globalState: _this.props.globalState, filter: _this.props.filter }));
             })));
     };
+    TreeItemComponent._ContextMenuUniqueIdGenerator = 0;
     return TreeItemComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
@@ -38460,6 +40598,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./entities/gui/controlTreeItemComponent */ "./components/sceneExplorer/entities/gui/controlTreeItemComponent.tsx");
 /* harmony import */ var _entities_gui_advancedDynamicTextureTreeItemComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./entities/gui/advancedDynamicTextureTreeItemComponent */ "./components/sceneExplorer/entities/gui/advancedDynamicTextureTreeItemComponent.tsx");
 /* harmony import */ var _entities_animationGroupTreeItemComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./entities/animationGroupTreeItemComponent */ "./components/sceneExplorer/entities/animationGroupTreeItemComponent.tsx");
+/* harmony import */ var _entities_postProcessTreeItemComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./entities/postProcessTreeItemComponent */ "./components/sceneExplorer/entities/postProcessTreeItemComponent.tsx");
+/* harmony import */ var _entities_renderingPipelineTreeItemComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./entities/renderingPipelineTreeItemComponent */ "./components/sceneExplorer/entities/renderingPipelineTreeItemComponent.tsx");
+
+
 
 
 
@@ -38518,6 +40660,12 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
             }
             if (className.indexOf("Texture") !== -1) {
                 return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_textureTreeItemComponent__WEBPACK_IMPORTED_MODULE_7__["TextureTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, texture: entity, onClick: function () { return _this.onClick(); } }));
+            }
+            if (className.indexOf("RenderingPipeline") !== -1) {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_renderingPipelineTreeItemComponent__WEBPACK_IMPORTED_MODULE_14__["RenderingPipelineItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, renderPipeline: entity, onClick: function () { return _this.onClick(); } }));
+            }
+            if (className.indexOf("PostProcess") !== -1) {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_postProcessTreeItemComponent__WEBPACK_IMPORTED_MODULE_13__["PostProcessItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, postProcess: entity, onClick: function () { return _this.onClick(); } }));
             }
             if (entity._host) {
                 return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_10__["ControlTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, control: entity, onClick: function () { return _this.onClick(); } }));
@@ -39108,14 +41256,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/textBlock":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_textBlock__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 
