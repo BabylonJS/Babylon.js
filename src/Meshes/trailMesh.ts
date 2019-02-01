@@ -65,31 +65,24 @@ export class TrailMesh extends Mesh {
         let positions: Array<number> = [];
         let normals: Array<number> = [];
         let indices: Array<number> = [];
-
+        let meshCenter = Vector3.Zero();
+        if (this._generator._boundingInfo) {
+            meshCenter = this._generator._boundingInfo.boundingBox.centerWorld;
+        }
         let alpha: number = 2 * Math.PI / this._sectionPolygonPointsCount;
         for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
             positions.push(
-                Math.cos(i * alpha) * this._diameter,
-                Math.sin(i * alpha) * this._diameter,
-                -this._length
-            );
-            normals.push(
-                Math.cos(i * alpha),
-                Math.sin(i * alpha),
-                0
+                meshCenter.x + Math.cos(i * alpha) * this._diameter,
+                meshCenter.y + Math.sin(i * alpha) * this._diameter,
+                meshCenter.z
             );
         }
         for (let i: number = 1; i <= this._length; i++) {
             for (let j: number = 0; j < this._sectionPolygonPointsCount; j++) {
                 positions.push(
-                    Math.cos(j * alpha) * this._diameter,
-                    Math.sin(j * alpha) * this._diameter,
-                    -this._length + i
-                );
-                normals.push(
-                    Math.cos(j * alpha),
-                    Math.sin(j * alpha),
-                    0
+                    meshCenter.x + Math.cos(j * alpha) * this._diameter,
+                    meshCenter.y + Math.sin(j * alpha) * this._diameter,
+                    meshCenter.z
                 );
             }
             let l: number = positions.length / 3 - 2 * this._sectionPolygonPointsCount;
@@ -116,6 +109,7 @@ export class TrailMesh extends Mesh {
                 l
             );
         }
+        VertexData.ComputeNormals(positions, indices, normals);
         data.positions = positions;
         data.normals = normals;
         data.indices = indices;
@@ -128,8 +122,10 @@ export class TrailMesh extends Mesh {
     /**
      * Start trailing mesh.
      */
-    public start(mesh: TrailMesh = this): void {
-        this._beforeRenderObserver = this.getScene().onBeforeRenderObservable.add(function() { mesh.update(); });
+    public start(): void {
+        this._beforeRenderObserver = this.getScene().onBeforeRenderObservable.add(() => {
+            this.update();
+        });
     }
 
     /**
@@ -147,6 +143,7 @@ export class TrailMesh extends Mesh {
     public update(): void {
         let positions = this.getVerticesData(VertexBuffer.PositionKind);
         let normals = this.getVerticesData(VertexBuffer.NormalKind);
+        let wm = this._generator.getWorldMatrix();
         if (positions && normals) {
             for (let i: number = 3 * this._sectionPolygonPointsCount; i < positions.length; i++) {
                 positions[i - 3 * this._sectionPolygonPointsCount] = positions[i] - normals[i] / this._length * this._diameter;
@@ -167,8 +164,8 @@ export class TrailMesh extends Mesh {
                     Math.sin(i * alpha),
                     0
                 );
-                Vector3.TransformCoordinatesToRef(this._sectionVectors[i], this._generator.getWorldMatrix(), this._sectionVectors[i]);
-                Vector3.TransformNormalToRef(this._sectionNormalVectors[i], this._generator.getWorldMatrix(), this._sectionNormalVectors[i]);
+                Vector3.TransformCoordinatesToRef(this._sectionVectors[i], wm, this._sectionVectors[i]);
+                Vector3.TransformNormalToRef(this._sectionNormalVectors[i], wm, this._sectionNormalVectors[i]);
             }
             for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
                 positions[l + 3 * i] = this._sectionVectors[i].x;
