@@ -42265,6 +42265,7 @@ declare module BABYLON {
      * Define the code related to the clear coat parameters of the pbr material.
      */
     export class PBRClearCoatConfiguration {
+        private _isEnabled;
         /**
          * Defines if the clear coat is enabled in the material.
          */

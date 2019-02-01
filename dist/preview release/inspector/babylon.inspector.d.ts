@@ -432,7 +432,7 @@ declare module INSPECTOR {
     }
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         constructor(props: IPBRMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element | null;
         render(): JSX.Element;
     }
 }
