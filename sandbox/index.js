@@ -19,6 +19,8 @@ var footer = document.getElementById("footer");
 var canvas = document.getElementById("renderCanvas");
 var canvasZone = document.getElementById("canvasZone");
 
+BABYLON.DebugLayer.InspectorURL = "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js";
+
 var indexOf = location.href.indexOf("?");
 if (indexOf !== -1) {
     var params = location.href.substr(indexOf + 1).split("&");
