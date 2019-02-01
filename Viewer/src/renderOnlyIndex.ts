@@ -1,4 +1,4 @@
-import { TemplateFreeViewer } from './viewer/templateFreeViewer';
+import { RenderOnlyViewer } from './viewer/renderOnlyViewer';
 // Required side effects
 import '@babylonjs/loaders/glTF/2.0';
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent"
@@ -12,4 +12,4 @@ import "@babylonjs/core/PostProcesses/RenderPipeline/postProcessRenderPipelineMa
 // import "@babylonjs/core/Gamepads/gamepadSceneComponent"
 
 
-export { TemplateFreeViewer };
+export { RenderOnlyViewer };

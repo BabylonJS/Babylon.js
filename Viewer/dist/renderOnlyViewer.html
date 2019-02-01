@@ -251,7 +251,7 @@
             }
             
             // Create viewer with a canvas element
-            var viewer = new BabylonViewer.TemplateFreeViewer(document.getElementById("babylon-viewer"), config);
+            var viewer = new BabylonViewer.RenderOnlyViewer(document.getElementById("babylon-viewer"), config);
 
             // Initialize the viewer (this will setup the scene and load a model if its not)
             viewer.initialize().then(()=>{

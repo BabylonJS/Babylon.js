@@ -1,8 +1,8 @@
 
-import { ViewerConfiguration } from './../configuration';
+import { ViewerConfiguration } from '../configuration';
 import { AbstractViewer } from './viewer';
 
-export class TemplateFreeViewer extends AbstractViewer {
+export class RenderOnlyViewer extends AbstractViewer {
     constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = {}) {
         super(containerElement, initialConfiguration);
         this._canvas = containerElement as HTMLCanvasElement
