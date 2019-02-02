@@ -95,7 +95,11 @@ export class BoundingBoxGizmo extends Gizmo {
     private coloredMaterial: StandardMaterial;
     private hoverColoredMaterial: StandardMaterial;
 
-    setColor(color: Color3) {
+    /**
+     * Sets the color of the bounding box gizmo
+     * @param color the color to set
+     */
+    public setColor(color: Color3) {
         this.coloredMaterial.emissiveColor = color;
         this.hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.3, 0.3, 0.3));
         this._lineBoundingBox.getChildren().forEach((l) => {
