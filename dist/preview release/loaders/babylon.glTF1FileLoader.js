@@ -3359,6 +3359,9 @@ var GLTFFileLoader = /** @class */ (function () {
         return 0;
     };
     GLTFFileLoader._decodeBufferToText = function (buffer) {
+        if (typeof TextDecoder !== "undefined") {
+            return new TextDecoder().decode(buffer);
+        }
         var result = "";
         var length = buffer.byteLength;
         for (var i = 0; i < length; i++) {

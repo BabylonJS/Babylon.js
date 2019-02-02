@@ -10,8 +10,10 @@ import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { Scene } from "babylonjs/scene";
 
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
+import { GlobalState } from '../../../globalState';
 
 interface IRenderGridPropertyGridComponentProps {
+    globalState: GlobalState;
     scene: Scene;
 }
 

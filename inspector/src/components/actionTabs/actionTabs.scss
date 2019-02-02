@@ -801,37 +801,58 @@
 
                 .paneContainer {
                     margin-top: 3px;
+                    display:grid;
+                    grid-template-rows: 100%;
+                    grid-template-columns: 100%;
                     
-                    .header {
-                        display: grid;
-                        grid-template-columns: 1fr auto;
-                        background: #555555;    
-                        height: 30px;   
-                        padding-right: 5px;                        
-                        cursor: pointer;
+                    .paneContainer-highlight-border {
+                        grid-row: 1;
+                        grid-column: 1;
+                        opacity: 1;
+                        border: 3px solid red;
+                        transition: opacity 250ms;
+                        pointer-events: none;
                         
-                        .title {
-                            margin-left: 5px;
-                            grid-column: 1;
-                            display: flex;
-                            align-items: center;
+                        &.transparent {
+                            opacity: 0;
                         }
-
-                        .collapse {
-                            grid-column: 2;
-                            display: flex;
-                            align-items: center;  
-                            justify-items: center;
-                            transform-origin: center;
-
-                            &.closed {
-                                transform: rotate(180deg);
-                            }
-                        }                        
                     }
 
-                    .paneList > div:not(:last-child) {
-                        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+                    .paneContainer-content {
+                        grid-row: 1;
+                        grid-column: 1;
+
+                        .header {
+                            display: grid;
+                            grid-template-columns: 1fr auto;
+                            background: #555555;    
+                            height: 30px;   
+                            padding-right: 5px;                        
+                            cursor: pointer;
+                            
+                            .title {
+                                margin-left: 5px;
+                                grid-column: 1;
+                                display: flex;
+                                align-items: center;
+                            }
+
+                            .collapse {
+                                grid-column: 2;
+                                display: flex;
+                                align-items: center;  
+                                justify-items: center;
+                                transform-origin: center;
+
+                                &.closed {
+                                    transform: rotate(180deg);
+                                }
+                            }                        
+                        }
+
+                        .paneList > div:not(:last-child) {
+                            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+                        }
                     }
                 }
             }

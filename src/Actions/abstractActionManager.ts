@@ -20,6 +20,11 @@ export abstract class AbstractActionManager implements IDisposable {
     public actions = new Array<IAction>();
 
     /**
+     * Gets or sets a boolean indicating that the manager is recursive meaning that it can trigger action from children
+     */
+    public isRecursive = false;
+
+    /**
      * Releases all associated resources
      */
     public abstract dispose(): void;

@@ -796,6 +796,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     private static _decodeBufferToText(buffer: Uint8Array): string {
+        if (typeof TextDecoder !== "undefined") {
+            return new TextDecoder().decode(buffer);
+        }
+
         let result = "";
         const length = buffer.byteLength;
 

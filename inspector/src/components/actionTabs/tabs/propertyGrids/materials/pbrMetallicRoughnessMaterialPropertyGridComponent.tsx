@@ -11,8 +11,10 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
 
 interface IPBRMetallicRoughnessMaterialPropertyGridComponentProps {
+    globalState: GlobalState,
     material: PBRMetallicRoughnessMaterial,
     lockObject: LockObject,
     onSelectionChangedObservable?: Observable<any>,
@@ -34,7 +36,7 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
         const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
-            <LineContainerComponent title="TEXTURES">
+            <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
                 <TextureLinkLineComponent label="Base" texture={material.baseTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Metallic roughness" texture={material.metallicRoughnessTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Environment" texture={material.environmentTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
@@ -49,13 +51,13 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
 
         return (
             <div className="pane">
-                <CommonMaterialPropertyGridComponent lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 {this.renderTextures()}
-                <LineContainerComponent title="LIGHTING & COLORS">
+                <LineContainerComponent globalState={this.props.globalState} title="LIGHTING & COLORS">
                     <Color3LineComponent label="Base" target={material} propertyName="baseColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="LEVELS" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="LEVELS" closed={true}>
                     <SliderLineComponent label="Metallic" target={material} propertyName="metallic" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Roughness" target={material} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>

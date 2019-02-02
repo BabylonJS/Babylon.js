@@ -1512,9 +1512,9 @@ export class Control {
         this._transform(context);
 
         // Clip
-        if (this.clipChildren) {
-            this._clip(context, invalidatedRectangle);
-        }
+        //     if (this.clipChildren) {
+        this._clip(context, invalidatedRectangle);
+        //   }
 
         if (this.onBeforeDrawObservable.hasObservers()) {
             this.onBeforeDrawObservable.notifyObservers(this);

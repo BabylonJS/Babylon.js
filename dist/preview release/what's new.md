@@ -23,7 +23,11 @@
   - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/) / [Deltakosh](https://github.com/deltakosh))
   - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
   - Added support for [nine patch stretch](https://www.babylonjs-playground.com/#G5H9IN#2) mode for images. ([Deltakosh](https://github.com/deltakosh))
-  - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev))
+  - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev)) **** NEED DEMO or DOC LINK)
+- Migrated the code to modules and deploy ES6 npm packages ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+- Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+- Added anisotropy support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+- Added `TrailMesh` class. Credit to furcatomasz ([danjpar](https://github.com/danjpar)) **** NEED DEMO or DOC LINK)
 
 ## Updates
 
@@ -117,7 +121,12 @@
 
 ### glTF Serializer
 
+- Added support for exporting `KHR_lights_punctual`
+
 ### Viewer
+
+### Post-Processes Library
+- Added the `Ocean` post-process ([julien-moreau](https://github.com/julien-moreau))
 
 ### Materials Library
 - Added the `cameraOffset` vector property in the `SkyMaterial` to get an offset according to the horizon ([julien-moreau](https://github.com/julien-moreau))
@@ -126,6 +135,7 @@
 - Fixed `TerrainMaterial.isReadyForSubMesh` to remove WebGL warnings ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
+- Fixed ArcRotateCamera.setTarget (position was sometimes wrong) ([Deltakosh](https://github.com/deltakosh))
 - Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
 - Fixed ArcRotateCamera control when upVector was modified ([Deltakosh](https://github.com/deltakosh))
 - Fixed anaglyph mode for Free and Universal cameras ([Deltakosh](https://github.com/deltakosh))
@@ -157,9 +167,10 @@
 - Fix more case sensitive paths ([mrdunk](https://github.com))
 - Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev)))
-- Warn of motor with maxForce in Oimo, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
+- Warn of motor with maxForce in Oimo plugin and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBehavior should not let the drag plane get out of sync when rotating the object during dragging ([TrevorDev](https://github.com/TrevorDev))
+- Do not crash the application if webVR submitFrame fails ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -230,3 +241,4 @@
 - No more `babylon.worker.js` javascript following the lack of usage from the feature ([Sebavan]
 (https://github.com/Sebavan))
 - No more `Primitive Geometries` as they were not in use since 2.0 ([Sebavan](https://github.com/Sebavan))
+- Change `shouldExportTransformNode` callback in glTF serializer options to `shouldExportNode`([kcoley](https://github.com/kcoley))

@@ -418,6 +418,10 @@ export class Grid extends Container {
                 cell.top = tops[x] + "px";
                 cell.width = widths[y] + "px";
                 cell.height = heights[x] + "px";
+                cell._left.ignoreAdaptiveScaling = true;
+                cell._top.ignoreAdaptiveScaling = true;
+                cell._width.ignoreAdaptiveScaling = true;
+                cell._height.ignoreAdaptiveScaling = true;
             }
         });
 

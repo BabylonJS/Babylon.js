@@ -18,7 +18,7 @@ import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
 import { LockObject } from "../lockObject";
 import { ValueLineComponent } from "../../../lines/valueLineComponent";
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../../../../components/globalState";
 
 import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
@@ -92,11 +92,11 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
         return (
             <div className="pane">
-                <LineContainerComponent title="PREVIEW">
+                <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
                     <TextureLineComponent texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
@@ -104,7 +104,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
-                    <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={0} />
+                    <SliderLineComponent label="Level" target={texture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         texture.updateSamplingMode &&
                         <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
@@ -112,7 +113,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 </LineContainerComponent>
                 {
                     (texture as any).rootContainer &&
-                    <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
+                    <LineContainerComponent globalState={this.props.globalState} title="ADVANCED TEXTURE PROPERTIES">
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={texture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -124,7 +125,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <CheckBoxLineComponent label="Invalidate Rect optimization" target={texture} propertyName="useInvalidateRectOptimization" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
-                <LineContainerComponent title="TRANSFORM">
+                <LineContainerComponent globalState={this.props.globalState} title="TRANSFORM">
                     {
                         !texture.isCube &&
                         <div>

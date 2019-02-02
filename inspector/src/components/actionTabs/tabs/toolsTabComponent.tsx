@@ -2,7 +2,7 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
 import { ButtonLineComponent } from "../lines/buttonLineComponent";
-
+import { Node } from "babylonjs/node";
 import { Nullable } from "babylonjs/types";
 import { VideoRecorder } from "babylonjs/Misc/videoRecorder";
 import { Tools } from "babylonjs/Misc/tools";
@@ -12,7 +12,6 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { SceneSerializer } from "babylonjs/Misc/sceneSerializer";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
@@ -69,12 +68,12 @@ export class ToolsTabComponent extends PaneComponent {
         this.setState({ tag: "Stop recording" });
     }
 
-    shouldExport(transformNode: TransformNode): boolean {
+    shouldExport(node: Node): boolean {
 
         // No skybox
-        if (transformNode instanceof Mesh) {
-            if (transformNode.material) {
-                const material = transformNode.material as PBRMaterial | StandardMaterial | BackgroundMaterial;
+        if (node instanceof Mesh) {
+            if (node.material) {
+                const material = node.material as PBRMaterial | StandardMaterial | BackgroundMaterial;
                 const reflectionTexture = material.reflectionTexture;
                 if (reflectionTexture && reflectionTexture.coordinatesMode === Texture.SKYBOX_MODE) {
                     return false;
@@ -89,7 +88,7 @@ export class ToolsTabComponent extends PaneComponent {
         const scene = this.props.scene;
 
         GLTF2Export.GLBAsync(scene, "scene", {
-            shouldExportTransformNode: (transformNode) => this.shouldExport(transformNode)
+            shouldExportNode: (node) => this.shouldExport(node)
         }).then((glb: GLTFData) => {
             glb.downloadFiles();
         });
@@ -126,11 +125,11 @@ export class ToolsTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent title="CAPTURE">
+                <LineContainerComponent globalState={this.props.globalState} title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="SCENE EXPORT">
+                <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
                     <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                     <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                     {
