@@ -44,6 +44,8 @@ uniform Material
     uniform vec2 vClearCoatBumpInfos;
     uniform vec2 vClearCoatTangentSpaceParams;
     uniform mat4 clearCoatBumpMatrix;
+
+    uniform float anisotropy;
 };
 
 uniform Scene {

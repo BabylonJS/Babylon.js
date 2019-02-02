@@ -11,8 +11,10 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
 
 interface IStandardMaterialPropertyGridComponentProps {
+    globalState: GlobalState;
     material: StandardMaterial;
     lockObject: LockObject;
     onSelectionChangedObservable?: Observable<any>;
@@ -34,7 +36,7 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
         const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
-            <LineContainerComponent title="TEXTURES">
+            <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
                 <TextureLinkLineComponent label="Diffuse" texture={material.diffuseTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Specular" texture={material.specularTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Reflection" texture={material.reflectionTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
@@ -53,16 +55,16 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
 
         return (
             <div className="pane">
-                <CommonMaterialPropertyGridComponent lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 {this.renderTextures()}
-                <LineContainerComponent title="LIGHTING & COLORS">
+                <LineContainerComponent globalState={this.props.globalState} title="LIGHTING & COLORS">
                     <Color3LineComponent label="Diffuse" target={material} propertyName="diffuseColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Specular" target={material} propertyName="specularColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Specular power" target={material} propertyName="specularPower" minimum={0} maximum={128} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Ambient" target={material} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="LEVELS" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="LEVELS" closed={true}>
                     {
                         material.diffuseTexture &&
                         <SliderLineComponent label="Diffuse level" target={material.diffuseTexture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

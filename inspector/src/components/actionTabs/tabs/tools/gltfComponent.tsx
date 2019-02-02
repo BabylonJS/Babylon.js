@@ -74,7 +74,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         const issues = validationResults.issues;
 
         return (
-            <LineContainerComponent title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
+            <LineContainerComponent globalState={this.props.globalState} title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
                 {
                     issues.numErrors !== 0 &&
                     <MessageLineComponent text="Your file has some validation issues" icon={faTimesCircle} color="Red" />
@@ -109,7 +109,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
 
         return (
             <div>
-                <LineContainerComponent title="GLTF LOADER" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="GLTF LOADER" closed={true}>
                     <OptionsLineComponent label="Animation start mode" options={animationStartMode} target={loaderState} propertyName="animationStartMode" />
                     <CheckBoxLineComponent label="Capture performance counters" target={loaderState} propertyName="capturePerformanceCounters" />
                     <CheckBoxLineComponent label="Compile materials" target={loaderState} propertyName="compileMaterials" />
@@ -121,7 +121,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                     <CheckBoxLineComponent label="Validate" target={loaderState} propertyName="validate" />
                     <MessageLineComponent text="You need to reload your file to see these changes" />
                 </LineContainerComponent>
-                <LineContainerComponent title="GLTF EXTENSIONS" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="GLTF EXTENSIONS" closed={true}>
                     <CheckBoxLineComponent label="MSFT_lod" isSelected={() => extensionStates["MSFT_lod"].enabled} onSelect={value => extensionStates["MSFT_lod"].enabled = value} />
                     <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" additionalClass="gltf-extension-property" />
                     <CheckBoxLineComponent label="MSFT_minecraftMesh" isSelected={() => extensionStates["MSFT_minecraftMesh"].enabled} onSelect={value => extensionStates["MSFT_minecraftMesh"].enabled = value} />

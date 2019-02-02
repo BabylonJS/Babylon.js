@@ -92,11 +92,11 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
         return (
             <div className="pane">
-                <LineContainerComponent title="PREVIEW">
+                <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
                     <TextureLineComponent texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
@@ -113,7 +113,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 </LineContainerComponent>
                 {
                     (texture as any).rootContainer &&
-                    <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
+                    <LineContainerComponent globalState={this.props.globalState} title="ADVANCED TEXTURE PROPERTIES">
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={texture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -125,7 +125,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <CheckBoxLineComponent label="Invalidate Rect optimization" target={texture} propertyName="useInvalidateRectOptimization" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
-                <LineContainerComponent title="TRANSFORM">
+                <LineContainerComponent globalState={this.props.globalState} title="TRANSFORM">
                     {
                         !texture.isCube &&
                         <div>

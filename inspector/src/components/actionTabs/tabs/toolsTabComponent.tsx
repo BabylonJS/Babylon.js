@@ -125,11 +125,11 @@ export class ToolsTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent title="CAPTURE">
+                <LineContainerComponent globalState={this.props.globalState} title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="SCENE EXPORT">
+                <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
                     <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                     <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                     {

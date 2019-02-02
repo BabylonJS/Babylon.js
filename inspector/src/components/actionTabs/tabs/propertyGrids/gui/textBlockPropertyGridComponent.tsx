@@ -10,8 +10,10 @@ import { LockObject } from "../lockObject";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
+import { GlobalState } from '../../../../globalState';
 
 interface ITextBlockPropertyGridComponentProps {
+    globalState: GlobalState;
     textBlock: TextBlock;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -45,8 +47,8 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="TEXTBLOCK">
+                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="TEXTBLOCK">
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Text" target={textBlock} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Horizontal text alignment" options={horizontalOptions} target={textBlock} propertyName="textHorizontalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Vertical text alignment" options={verticalOptions} target={textBlock} propertyName="textVerticalAlignment" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -54,7 +56,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                     <OptionsLineComponent label="Wrapping" options={wrappingOptions} target={textBlock} propertyName="textWrapping" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Line spacing" target={textBlock} propertyName="lineSpacing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="OUTLINE">
+                <LineContainerComponent globalState={this.props.globalState} title="OUTLINE">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Outline width" target={textBlock} propertyName="outlineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Outline color" target={textBlock} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>

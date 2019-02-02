@@ -24,6 +24,7 @@ export class GlobalState {
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
 
     public blockMutationUpdates = false;
+    public selectedLineContainerTitle = "";
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
         var loaderState = this.glTFLoaderDefaults;
