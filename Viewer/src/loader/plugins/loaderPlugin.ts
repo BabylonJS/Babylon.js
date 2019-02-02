@@ -1,5 +1,5 @@
 import { ViewerModel } from "../../model/viewerModel";
-import { IGLTFLoaderExtension, IGLTFLoaderData } from "@babylonjs/loaders/glTF";
+import { IGLTFLoaderExtension, IGLTFLoaderData } from "@babylonjs/loaders/glTF/glTFFileLoader";
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "@babylonjs/core/Loading/sceneLoader";
 import { SceneLoaderProgressEvent } from "@babylonjs/core/Loading/sceneLoader";
 import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";

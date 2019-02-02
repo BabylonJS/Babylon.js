@@ -1,4 +1,4 @@
-import {GLTFFileLoader, GLTFLoaderAnimationStartMode} from "@babylonjs/loaders/glTF"
+import {GLTFFileLoader, GLTFLoaderAnimationStartMode} from "@babylonjs/loaders/glTF/glTFFileLoader"
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from '@babylonjs/core/Loading/sceneLoader';
 import { Tools } from '@babylonjs/core/Misc/tools';
 import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader';
