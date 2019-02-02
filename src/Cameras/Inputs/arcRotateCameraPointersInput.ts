@@ -214,4 +214,3 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
 }
 (<any>CameraInputTypes)["ArcRotateCameraPointersInput"] =
   ArcRotateCameraPointersInput;
-
