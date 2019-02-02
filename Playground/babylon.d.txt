@@ -33696,9 +33696,10 @@ declare module BABYLON {
         /** @hidden */checkInputs(): void;
         protected _checkLimits(): void;
         /**
-         * Rebuilds angles (alpha, beta) and radius from the give position and target.
+         * Rebuilds angles (alpha, beta) and radius from the give position and target
+         * @param updateView defines a boolean forcing the camera to update its position with a view matrix computation first (default is true)
          */
-        rebuildAnglesAndRadius(): void;
+        rebuildAnglesAndRadius(updateView?: boolean): void;
         /**
          * Use a position to define the current camera related information like aplha, beta and radius
          * @param position Defines the position to set the camera at
@@ -39091,6 +39092,10 @@ declare module BABYLON {
          * Optional list of extensibility entries
          */
         explorerExtensibility?: IExplorerExtensibilityGroup[];
+        /**
+         * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
+         */
+        inspectorURL?: string;
     }
         interface Scene {
             /**
@@ -41660,7 +41665,7 @@ declare module BABYLON {
         constructor(markAllSubMeshesAsTexturesDirty: () => void);
         /**
          * Specifies that the submesh is ready to be used.
-         * @param defines defines the Base texture to use.
+         * @param defines the list of "defines" to update.
          * @param scene defines the scene the material belongs to.
          * @param engine defines the engine the material belongs to.
          * @param disableBumpMap defines wether the material disables bump or not.
@@ -41669,7 +41674,7 @@ declare module BABYLON {
         isReadyForSubMesh(defines: IMaterialClearCoatDefines, scene: Scene, engine: Engine, disableBumpMap: boolean): boolean;
         /**
          * Checks to see if a texture is used in the material.
-         * @param defines defines the Base texture to use.
+         * @param defines the list of "defines" to update.
          * @param scene defines the scene to the material belongs to.
          */
         prepareDefines(defines: IMaterialClearCoatDefines, scene: Scene): void;
@@ -41712,9 +41717,9 @@ declare module BABYLON {
         getClassName(): string;
         /**
          * Makes a duplicate of the current configuration into another one.
-         * @param clearCoatconfiguration define the config where to copy the info
+         * @param clearCoatConfiguration define the config where to copy the info
          */
-        copyTo(clearCoatconfiguration: PBRClearCoatConfiguration): void;
+        copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void;
         /**
          * Serializes this clear coat configuration.
          * @returns - An object with the serialized config.
@@ -41743,6 +41748,92 @@ declare module BABYLON {
          * @param samplers defines the current sampler list.
          */
         static AddSamplers(samplers: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IMaterialAnisotropicDefines {
+        ANISOTROPIC: boolean;
+        MAINUV1: boolean;areMiscDirty: boolean;needUVs: boolean;
+    }
+    /**
+     * Define the code related to the anisotropic parameters of the pbr material.
+     */
+    export class PBRAnisotropicConfiguration {
+        private _isEnabled;
+        /**
+         * Defines if the anisotropy is enabled in the material.
+         */
+        isEnabled: boolean;
+        /**
+         * Defines the anisotropy strength (between 0 and 1) it defaults to 1.
+         */
+        intensity: number;
+        /**
+         * Defines if the effect is along the tangents or bitangents.
+         * By default, the effect is "strectching" the highlights along the tangents.
+         */
+        followTangents: boolean;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsMiscDirty;
+        /** @hidden */markAllSubMeshesAsMiscDirty(): void;
+        /**
+         * Instantiate a new istance of clear coat configuration.
+         * @param markAllSubMeshesAsMiscDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsMiscDirty: () => void);
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param defines the list of "defines" to update.
+         * @param mesh the mesh we are preparing the defines for.
+         */
+        prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param isFrozen defines wether the material is frozen or not.
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, isFrozen: boolean): void;
+        /**
+        * Get the current class name of the texture useful for serialization or dynamic coding.
+        * @returns "PBRAnisotropicConfiguration"
+        */
+        getClassName(): string;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param anisotropicConfiguration define the config where to copy the info
+         */
+        copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void;
+        /**
+         * Serializes this clear coat configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Clear Coat Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
+        /**
+         * Add fallbacks to the effect fallbacks list.
+         * @param defines defines the Base texture to use.
+         * @param fallbacks defines the current fallback list.
+         * @param currentRank defines the current fallback rank.
+         * @returns the new fallback rank.
+         */
+        static AddFallbacks(defines: IMaterialAnisotropicDefines, fallbacks: EffectFallbacks, currentRank: number): number;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
         /**
          * Add the required uniforms to the current buffer.
          * @param uniformBuffer defines the current uniform buffer.
@@ -42168,6 +42259,10 @@ declare module BABYLON {
          * Defines the clear coat layer parameters for the material.
          */
         readonly clearCoat: PBRClearCoatConfiguration;
+        /**
+         * Defines the anisotropic parameters for the material.
+         */
+        readonly anisotropy: PBRAnisotropicConfiguration;
         /**
          * Instantiates a new PBRMaterial instance.
          *
@@ -61789,6 +61884,101 @@ declare module BABYLON {
          * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
          */
         constructor(name: string, camera: BABYLON.Camera, options?: string | IDigitalRainPostProcessOptions);
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var oceanPostProcessPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Option available in the Ocean Post Process.
+     */
+    export interface IOceanPostProcessOptions {
+        /**
+         * The size of the reflection RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
+         */
+        reflectionSize?: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        };
+        /**
+         * The size of the refraction RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
+         */
+        refractionSize?: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        };
+    }
+    /**
+     * OceanPostProcess helps rendering an infinite ocean surface that can reflect and refract environment.
+     *
+     * Simmply add it to your scene and let the nerd that lives in you have fun.
+     * Example usage:
+     *  var pp = new OceanPostProcess("myOcean", camera);
+     *  pp.reflectionEnabled = true;
+     *  pp.refractionEnabled = true;
+     */
+    export class OceanPostProcess extends BABYLON.PostProcess {
+        /**
+         * Gets a boolean indicating if the real-time reflection is enabled on the ocean.
+         */
+        /**
+        * Sets weither or not the real-time reflection is enabled on the ocean.
+        * Is set to true, the reflection mirror texture will be used as reflection texture.
+        */
+        reflectionEnabled: boolean;
+        /**
+         * Gets a boolean indicating if the real-time refraction is enabled on the ocean.
+         */
+        /**
+        * Sets weither or not the real-time refraction is enabled on the ocean.
+        * Is set to true, the refraction render target texture will be used as refraction texture.
+        */
+        refractionEnabled: boolean;
+        /**
+         * Gets wether or not the post-processes is supported by the running hardware.
+         * This requires draw buffer supports.
+         */
+        readonly isSupported: boolean;
+        /**
+         * This is the reflection mirror texture used to display reflections on the ocean.
+         * By default, render list is empty.
+         */
+        reflectionTexture: BABYLON.MirrorTexture;
+        /**
+         * This is the refraction render target texture used to display refraction on the ocean.
+         * By default, render list is empty.
+         */
+        refractionTexture: BABYLON.RenderTargetTexture;
+        private _time;
+        private _cameraRotation;
+        private _cameraViewMatrix;
+        private _reflectionEnabled;
+        private _refractionEnabled;
+        private _geometryRenderer;
+        /**
+         * Instantiates a new Ocean Post Process.
+         * @param name the name to give to the postprocess.
+         * @camera the camera to apply the post process to.
+         * @param options optional object following the IOceanPostProcessOptions format used to customize reflection and refraction render targets sizes.
+         */
+        constructor(name: string, camera: BABYLON.TargetCamera, options?: IOceanPostProcessOptions);
+        /**
+         * Returns the appropriate defines according to the current configuration.
+         */
+        private _getDefines;
+        /**
+         * Computes the current camera rotation as the shader requires a camera rotation.
+         */
+        private _computeCameraRotation;
     }
 }
 declare module BABYLON {

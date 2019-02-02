@@ -1,13 +1,17 @@
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
+// AlphaG epsilon to avoid numerical issues
+#define MINIMUMVARIANCE 0.0005
+
+// f0 = 4% based on the IOR of a air-polyurethane interface.
+#define CLEARCOATREFLECTANCE0 0.04
+#define CLEARCOATREFLECTANCE90 1.0
 
 float convertRoughnessToAverageSlope(float roughness)
 {
     // Calculate AlphaG as square of roughness; add epsilon to avoid numerical issues
-    const float kMinimumVariance = 0.0005;
-    float alphaG = square(roughness) + kMinimumVariance;
-    return alphaG;
+    return square(roughness) + MINIMUMVARIANCE;
 }
 
 vec2 getAARoughnessFactors(vec3 normalVector) {
@@ -19,10 +23,9 @@ vec2 getAARoughnessFactors(vec3 normalVector) {
         // Vive analytical lights roughness factor.
         float geometricRoughnessFactor = pow(clamp(slopeSquare , 0., 1.), 0.333);
 
-        // BJS factor.
-        float geometricAlphaGFactor = sqrt(slopeSquare);
         // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
-        // 75% accounts a bit for the bigger tail linked to Gaussian Filtering.
+        float geometricAlphaGFactor = sqrt(slopeSquare);
+        // BJS factor.
         geometricAlphaGFactor *= 0.75;
 
         return vec2(geometricRoughnessFactor, geometricAlphaGFactor);
@@ -31,8 +34,36 @@ vec2 getAARoughnessFactors(vec3 normalVector) {
     #endif
 }
 
+// Schlick's approximation for R0 (Fresnel Reflectance Values)
+// Keep for references
+// vec3 getR0fromAirToSurfaceIOR(vec3 ior1) {
+//     return getR0fromIOR(ior1, vec3(1.0));
+// }
+
+// vec3 getR0fromIOR(vec3 ior1, vec3 ior2) {
+//     vec3 t = (ior1 - ior2) / (ior1 + ior2);
+//     return t * t;
+// }
+
+// vec3 getIORfromAirToSurfaceR0(vec3 f0) {
+//     vec3 s = sqrt(f0);
+//     return (1.0 + s) / (1.0 - s);
+// }
+
+// // Clear coat Remapping
+// vec3 getR0RemappedForClearCoat(vec3 f0, vec3 clearCoatF0) {
+//     vec3 iorBase = getIORfromAirToSurfaceR0(f0);
+//     vec3 clearCoatIor = getIORfromAirToSurfaceR0(clearCoatF0);
+//     return getR0fromIOR(iorBase, clearCoatIor);
+// }
+
+vec3 getR0RemappedForPolyurethaneClearCoat(vec3 f0) {
+    vec3 s = sqrt(f0);
+    return (-1.0 + 5.0 * s) / (5.0 + s);
+}
+
 // From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
-// Kepp for references
+// Keep for references
 // float smithVisibilityG1_TrowbridgeReitzGGX(float dot, float alphaG)
 // {
 //     float tanSquared = (1.0 - dot * dot) / (dot * dot);
@@ -88,12 +119,39 @@ float normalDistributionFunction_TrowbridgeReitzGGX(float NdotH, float alphaG)
     return a2 / (PI * d * d);
 }
 
-vec3 fresnelSchlickGGXVec3(float VdotH, vec3 reflectance0, vec3 reflectance90)
+// Aniso parameter remapping
+// https://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides_v2.pdf page 24
+vec2 getAnisotropicRoughness(float alphaG, float anisotropy) {
+    float alphaT = max(alphaG * (1.0 + anisotropy), MINIMUMVARIANCE);
+    float alphaB = max(alphaG * (1.0 - anisotropy), MINIMUMVARIANCE);
+    return vec2(alphaT, alphaB);
+}
+
+// GGX Distribution Anisotropic
+// https://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf Addenda
+float normalDistributionFunction_BurleyGGX_Anisotropic(float NdotH, float TdotH, float BdotH, const vec2 alphaTB) {
+    float a2 = alphaTB.x * alphaTB.y;
+    vec3 v = vec3(alphaTB.y * TdotH, alphaTB.x  * BdotH, a2 * NdotH);
+    float v2 = dot(v, v);
+    float w2 = a2 / v2;
+    return a2 * w2 * w2 * (1.0 / PI);
+}
+
+// GGX Mask/Shadowing Anisotropic 
+// Heitz http://jcgt.org/published/0003/02/03/paper.pdf
+float smithVisibility_GGXCorrelated_Anisotropic(float NdotV, float NdotL, float TdotV, float BdotV, float TdotL, float BdotL, const vec2 alphaTB) {
+    float lambdaV = NdotL * length(vec3(alphaTB.x * TdotV, alphaTB.y * BdotV, NdotV));
+    float lambdaL = NdotV * length(vec3(alphaTB.x * TdotL, alphaTB.y * BdotL, NdotL));
+    float v = 0.5 / (lambdaV + lambdaL);
+    return v;
+}
+
+vec3 fresnelSchlickGGX(float VdotH, vec3 reflectance0, vec3 reflectance90)
 {
     return reflectance0 + (reflectance90 - reflectance0) * pow(1.0 - VdotH, 5.0);
 }
 
-float fresnelSchlickGGXFloat(float VdotH, float reflectance0, float reflectance90)
+float fresnelSchlickGGX(float VdotH, float reflectance0, float reflectance90)
 {
     return reflectance0 + (reflectance90 - reflectance0) * pow(1.0 - VdotH, 5.0);
 }
@@ -105,6 +163,9 @@ vec3 fresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectan
     return reflectance0 + weight * (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotN, 0., 1.), 5.0);
 }
 
+// Disney diffuse term
+// https://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf
+// Page 14
 float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
 {
     // Diffuse fresnel falloff as per Disney principled BRDF, and in the spirit of
@@ -120,8 +181,7 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
 }
 
 // Cook Torance Specular computation.
-vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor)
-{
+vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor) {
     roughness = max(roughness, geometricRoughnessFactor);
     float alphaG = convertRoughnessToAverageSlope(roughness);
 
@@ -129,7 +189,20 @@ vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, flo
     float visibility = smithVisibility_TrowbridgeReitzGGXFast(NdotL, NdotV, alphaG);
     float specTerm = max(0., visibility * distribution);
 
-    vec3 fresnel = fresnelSchlickGGXVec3(VdotH, reflectance0, reflectance90);
+    vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);
+    return fresnel * specTerm;
+}
+
+vec3 computeAnisotropicSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float TdotH, float BdotH, float TdotV, float BdotV, float TdotL, float BdotL, float roughness, float anisotropy, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor) {
+    float alphaG = convertRoughnessToAverageSlope(roughness);
+    vec2 alphaTB = getAnisotropicRoughness(alphaG, anisotropy);
+    alphaTB = max(alphaTB, geometricRoughnessFactor * geometricRoughnessFactor);
+
+    float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
+    float visibility = smithVisibility_GGXCorrelated_Anisotropic(NdotV, NdotL, TdotV, BdotV, TdotL, BdotL, alphaTB);
+    float specTerm = max(0., visibility * distribution);
+
+    vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);
     return fresnel * specTerm;
 }
 
@@ -141,13 +214,7 @@ vec2 computeClearCoatTerm(float NdotH, float VdotH, float clearCoatRoughness, fl
     float visibility = kelemenVisibility(VdotH);
     float clearCoatTerm = max(0., visibility * distribution);
 
-    // fo = 4% based on the IOR of a air-polyurethane interface.
-    // the max reflectance is relying on our special trick to prevent weird values on highly diffuse materials.
-    // To let as a configuration if required
-    const float reflectance0 = 0.04;
-    const float reflectance90 = 1.;
-
-    float fresnel = fresnelSchlickGGXFloat(VdotH, reflectance0, reflectance90);
+    float fresnel = fresnelSchlickGGX(VdotH, CLEARCOATREFLECTANCE0, CLEARCOATREFLECTANCE90);
     fresnel *= clearCoatIntensity;
     
     return vec2(fresnel * clearCoatTerm, 1.0 - fresnel);

@@ -15,6 +15,7 @@ import { Mesh } from "../../Meshes/mesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { IMaterialClearCoatDefines, PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
+import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
@@ -38,7 +39,8 @@ import "../../Shaders/pbr.vertex";
  * Manages the defines for the PBR Material.
  * @hiddenChildren
  */
-class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines {
+class PBRMaterialDefines extends MaterialDefines
+    implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines {
     public PBR = true;
 
     public MAINUV1 = false;
@@ -183,6 +185,8 @@ class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConf
     public CLEARCOAT_TEXTUREDIRECTUV = 0;
     public CLEARCOAT_BUMP = false;
     public CLEARCOAT_BUMPDIRECTUV = 0;
+
+    public ANISOTROPIC = false;
 
     public UNLIT = false;
 
@@ -655,6 +659,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly clearCoat = new PBRClearCoatConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
+     * Defines the anisotropic parameters for the material.
+     */
+    public readonly anisotropy = new PBRAnisotropicConfiguration(this._markAllSubMeshesAsMiscDirty.bind(this));
+
+    /**
      * Instantiates a new PBRMaterial instance.
      *
      * @param name The material name
@@ -1010,6 +1019,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "PARALLAXOCCLUSION");
         }
 
+        fallbackRank = PBRAnisotropicConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
         fallbackRank = PBRClearCoatConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
 
         if (defines.ENVIRONMENTBRDF) {
@@ -1114,6 +1124,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         PBRClearCoatConfiguration.AddUniforms(uniforms);
         PBRClearCoatConfiguration.AddSamplers(samplers);
+
+        PBRAnisotropicConfiguration.AddUniforms(uniforms);
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1391,8 +1403,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             defines.SPECULARAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
 
-        this.clearCoat.prepareDefines(defines, scene);
-
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.prepareDefines(defines);
         }
@@ -1408,6 +1418,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
         }
+
+        // External config
+        this.clearCoat.prepareDefines(defines, scene);
+        this.anisotropy.prepareDefines(defines, mesh);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);
@@ -1482,6 +1496,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("pointSize", 1);
 
         PBRClearCoatConfiguration.PrepareUniformBuffer(this._uniformBuffer);
+        PBRAnisotropicConfiguration.PrepareUniformBuffer(this._uniformBuffer);
 
         this._uniformBuffer.create();
     }
@@ -1748,6 +1763,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             this.clearCoat.bindForSubMesh(this._uniformBuffer, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
+            this.anisotropy.bindForSubMesh(this._uniformBuffer, this.isFrozen);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);

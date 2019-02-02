@@ -11,11 +11,13 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
 
 interface IArcRotateCameraPropertyGridComponentProps {
-    camera: ArcRotateCamera,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    globalState: GlobalState;
+    camera: ArcRotateCamera;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRotateCameraPropertyGridComponentProps> {
@@ -28,13 +30,13 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
 
         return (
             <div className="pane">
-                <CommonCameraPropertyGridComponent lockObject={this.props.lockObject} camera={camera} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="TRANSFORMS">
+                <CommonCameraPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} camera={camera} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <SliderLineComponent label="Alpha" target={camera} propertyName="alpha" minimum={camera.lowerAlphaLimit || 0} maximum={camera.upperAlphaLimit || 2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Beta" target={camera} propertyName="beta" minimum={camera.lowerAlphaLimit || 0} maximum={camera.upperBetaLimit || 2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Radius" target={camera} propertyName="radius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="CONTROLS" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="CONTROLS" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Angular sensitivity X" target={camera} propertyName="angularSensibilityX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Angular sensitivity Y" target={camera} propertyName="angularSensibilityY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Panning sensitivity" target={camera} propertyName="panningSensibility" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -42,11 +44,11 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                     <FloatLineComponent lockObject={this.props.lockObject} label="Wheel delta percentage" target={camera} propertyName="wheelDeltaPercentage" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Speed" target={camera} propertyName="speed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="COLLISIONS" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="COLLISIONS" closed={true}>
                     <CheckBoxLineComponent label="Check collisions" target={camera} propertyName="checkCollisions" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Collision radius" target={camera} propertyName="collisionRadius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="LIMITS" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="LIMITS" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Lower alpha limit" target={camera} propertyName="lowerAlphaLimit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Upper alpha limit" target={camera} propertyName="upperAlphaLimit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Lower beta limit" target={camera} propertyName="lowerBetaLimit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -54,7 +56,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                     <FloatLineComponent lockObject={this.props.lockObject} label="Lower radius limit" target={camera} propertyName="lowerRadiusLimit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Upper radius limit" target={camera} propertyName="upperRadiusLimit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="BEHAVIORS" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="BEHAVIORS" closed={true}>
                     <CheckBoxLineComponent label="Auto rotation" target={camera} propertyName="useAutoRotationBehavior" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Bouncing" target={camera} propertyName="useBouncingBehavior" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Framing" target={camera} propertyName="useFramingBehavior" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

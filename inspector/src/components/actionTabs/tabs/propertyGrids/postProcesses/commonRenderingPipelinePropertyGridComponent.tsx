@@ -7,8 +7,10 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { LockObject } from "../lockObject";
 import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+import { GlobalState } from '../../../../globalState';
 
 interface ICommonRenderingPipelinePropertyGridComponentProps {
+    globalState: GlobalState;
     renderPipeline: PostProcessRenderPipeline;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -24,7 +26,7 @@ export class CommonRenderingPipelinePropertyGridComponent extends React.Componen
 
         return (
             <div>
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Class" value={renderPipeline.getClassName()} />
                 </LineContainerComponent>
             </div>

@@ -62,7 +62,11 @@
 
             // Specular contribution
             #ifdef SPECULARTERM
-                info.specular = computeSpecularLighting(preInfo, normalW, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
+                #ifdef ANISOTROPIC
+                    info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, normalize(TBN[0]), normalize(TBN[1]), anisotropy, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
+                #else
+                    info.specular = computeSpecularLighting(preInfo, normalW, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
+                #endif
             #endif
 
             // Clear Coat contribution

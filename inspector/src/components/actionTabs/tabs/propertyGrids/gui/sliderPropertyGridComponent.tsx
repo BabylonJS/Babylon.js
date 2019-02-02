@@ -8,8 +8,10 @@ import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
+import { GlobalState } from '../../../../globalState';
 
 interface ISliderPropertyGridComponentProps {
+    globalState: GlobalState;
     slider: Slider,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -25,8 +27,8 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={slider} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="SLIDER">
+                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={slider} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="SLIDER">
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Border color" target={slider} propertyName="borderColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Display thumb" target={slider} propertyName="displayThumb" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Thumb circle" target={slider} propertyName="isThumbCircle" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

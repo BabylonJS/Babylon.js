@@ -7,7 +7,7 @@
 		exports["babylonjs-materials"] = factory(require("babylonjs"));
 	else
 		root["MATERIALS"] = factory(root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__) {
+})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -358,7 +358,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return ShaderSpecialParts; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return CustomMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -596,14 +596,14 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "babylonjs/Materials/effect":
+/***/ "babylonjs/Misc/decorators":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__;
 
 /***/ })
 

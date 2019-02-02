@@ -83,7 +83,7 @@ export class PBRClearCoatConfiguration {
 
     /**
      * Specifies that the submesh is ready to be used.
-     * @param defines defines the Base texture to use.
+     * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
      * @param engine defines the engine the material belongs to.
      * @param disableBumpMap defines wether the material disables bump or not.
@@ -112,7 +112,7 @@ export class PBRClearCoatConfiguration {
 
     /**
      * Checks to see if a texture is used in the material.
-     * @param defines defines the Base texture to use.
+     * @param defines the list of "defines" to update.
      * @param scene defines the scene to the material belongs to.
      */
     public prepareDefines(defines: IMaterialClearCoatDefines, scene: Scene): void {
@@ -257,10 +257,10 @@ export class PBRClearCoatConfiguration {
 
     /**
      * Makes a duplicate of the current configuration into another one.
-     * @param clearCoatconfiguration define the config where to copy the info
+     * @param clearCoatConfiguration define the config where to copy the info
      */
-    public copyTo(clearCoatconfiguration: PBRClearCoatConfiguration): void {
-        SerializationHelper.Clone(() => clearCoatconfiguration, this);
+    public copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void {
+        SerializationHelper.Clone(() => clearCoatConfiguration, this);
     }
 
     /**

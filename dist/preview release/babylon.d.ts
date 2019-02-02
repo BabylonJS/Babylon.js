@@ -34277,9 +34277,10 @@ declare module BABYLON {
         _checkInputs(): void;
         protected _checkLimits(): void;
         /**
-         * Rebuilds angles (alpha, beta) and radius from the give position and target.
+         * Rebuilds angles (alpha, beta) and radius from the give position and target
+         * @param updateView defines a boolean forcing the camera to update its position with a view matrix computation first (default is true)
          */
-        rebuildAnglesAndRadius(): void;
+        rebuildAnglesAndRadius(updateView?: boolean): void;
         /**
          * Use a position to define the current camera related information like aplha, beta and radius
          * @param position Defines the position to set the camera at
@@ -39707,6 +39708,10 @@ declare module BABYLON {
          * Optional list of extensibility entries
          */
         explorerExtensibility?: IExplorerExtensibilityGroup[];
+        /**
+         * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
+         */
+        inspectorURL?: string;
     }
         interface Scene {
             /**
@@ -39753,6 +39758,7 @@ declare module BABYLON {
         constructor(scene: Scene);
         /** Creates the inspector window. */
         private _createInspector;
+        select(entity: any, lineContainerTitle?: string): void;
         /** Get the inspector from bundle or global */
         private _getGlobalInspector;
         /**
@@ -39767,8 +39773,9 @@ declare module BABYLON {
         /**
           * Launch the debugLayer.
           * @param config Define the configuration of the inspector
+          * @return a promise fulfilled when the debug layer is visible
           */
-        show(config?: IInspectorOptions): void;
+        show(config?: IInspectorOptions): Promise<DebugLayer>;
     }
 }
 declare module BABYLON {
@@ -42299,7 +42306,7 @@ declare module BABYLON {
         constructor(markAllSubMeshesAsTexturesDirty: () => void);
         /**
          * Specifies that the submesh is ready to be used.
-         * @param defines defines the Base texture to use.
+         * @param defines the list of "defines" to update.
          * @param scene defines the scene the material belongs to.
          * @param engine defines the engine the material belongs to.
          * @param disableBumpMap defines wether the material disables bump or not.
@@ -42308,7 +42315,7 @@ declare module BABYLON {
         isReadyForSubMesh(defines: IMaterialClearCoatDefines, scene: Scene, engine: Engine, disableBumpMap: boolean): boolean;
         /**
          * Checks to see if a texture is used in the material.
-         * @param defines defines the Base texture to use.
+         * @param defines the list of "defines" to update.
          * @param scene defines the scene to the material belongs to.
          */
         prepareDefines(defines: IMaterialClearCoatDefines, scene: Scene): void;
@@ -42351,9 +42358,9 @@ declare module BABYLON {
         getClassName(): string;
         /**
          * Makes a duplicate of the current configuration into another one.
-         * @param clearCoatconfiguration define the config where to copy the info
+         * @param clearCoatConfiguration define the config where to copy the info
          */
-        copyTo(clearCoatconfiguration: PBRClearCoatConfiguration): void;
+        copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void;
         /**
          * Serializes this clear coat configuration.
          * @returns - An object with the serialized config.
@@ -42382,6 +42389,95 @@ declare module BABYLON {
          * @param samplers defines the current sampler list.
          */
         static AddSamplers(samplers: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IMaterialAnisotropicDefines {
+        ANISOTROPIC: boolean;
+        MAINUV1: boolean;
+        _areMiscDirty: boolean;
+        _needUVs: boolean;
+    }
+    /**
+     * Define the code related to the anisotropic parameters of the pbr material.
+     */
+    export class PBRAnisotropicConfiguration {
+        private _isEnabled;
+        /**
+         * Defines if the anisotropy is enabled in the material.
+         */
+        isEnabled: boolean;
+        /**
+         * Defines the anisotropy strength (between 0 and 1) it defaults to 1.
+         */
+        intensity: number;
+        /**
+         * Defines if the effect is along the tangents or bitangents.
+         * By default, the effect is "strectching" the highlights along the tangents.
+         */
+        followTangents: boolean;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsMiscDirty;
+        /** @hidden */
+        _markAllSubMeshesAsMiscDirty(): void;
+        /**
+         * Instantiate a new istance of clear coat configuration.
+         * @param markAllSubMeshesAsMiscDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsMiscDirty: () => void);
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param defines the list of "defines" to update.
+         * @param mesh the mesh we are preparing the defines for.
+         */
+        prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param isFrozen defines wether the material is frozen or not.
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, isFrozen: boolean): void;
+        /**
+        * Get the current class name of the texture useful for serialization or dynamic coding.
+        * @returns "PBRAnisotropicConfiguration"
+        */
+        getClassName(): string;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param anisotropicConfiguration define the config where to copy the info
+         */
+        copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void;
+        /**
+         * Serializes this clear coat configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Clear Coat Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
+        /**
+         * Add fallbacks to the effect fallbacks list.
+         * @param defines defines the Base texture to use.
+         * @param fallbacks defines the current fallback list.
+         * @param currentRank defines the current fallback rank.
+         * @returns the new fallback rank.
+         */
+        static AddFallbacks(defines: IMaterialAnisotropicDefines, fallbacks: EffectFallbacks, currentRank: number): number;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
         /**
          * Add the required uniforms to the current buffer.
          * @param uniformBuffer defines the current uniform buffer.
@@ -42807,6 +42903,10 @@ declare module BABYLON {
          * Defines the clear coat layer parameters for the material.
          */
         readonly clearCoat: PBRClearCoatConfiguration;
+        /**
+         * Defines the anisotropic parameters for the material.
+         */
+        readonly anisotropy: PBRAnisotropicConfiguration;
         /**
          * Instantiates a new PBRMaterial instance.
          *
@@ -46867,6 +46967,69 @@ declare module BABYLON {
          * @returns The new Mesh
          */
         toMesh(name: string, material: Nullable<Material>, scene: Scene, keepSubMeshes: boolean): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to create a trail following a mesh
+     */
+    export class TrailMesh extends Mesh {
+        private _generator;
+        private _autoStart;
+        private _running;
+        private _diameter;
+        private _length;
+        private _sectionPolygonPointsCount;
+        private _sectionVectors;
+        private _sectionNormalVectors;
+        private _beforeRenderObserver;
+        /**
+         * @constructor
+         * @param name The value used by scene.getMeshByName() to do a lookup.
+         * @param generator The mesh to generate a trail.
+         * @param scene The scene to add this mesh to.
+         * @param diameter Diameter of trailing mesh. Default is 1.
+         * @param length Length of trailing mesh. Default is 60.
+         * @param autoStart Automatically start trailing mesh. Default true.
+         */
+        constructor(name: string, generator: AbstractMesh, scene: Scene, diameter?: number, length?: number, autoStart?: boolean);
+        /**
+         * "TrailMesh"
+         * @returns "TrailMesh"
+         */
+        getClassName(): string;
+        private _createMesh;
+        /**
+         * Start trailing mesh.
+         */
+        start(): void;
+        /**
+         * Stop trailing mesh.
+         */
+        stop(): void;
+        /**
+         * Update trailing mesh geometry.
+         */
+        update(): void;
+        /**
+         * Returns a new TrailMesh object.
+         * @param name is a string, the name given to the new mesh
+         * @param newGenerator use new generator object for cloned trail mesh
+         * @returns a new mesh
+         */
+        clone(name: string | undefined, newGenerator: AbstractMesh): TrailMesh;
+        /**
+         * Serializes this trail mesh
+         * @param serializationObject object to write serialization to
+         */
+        serialize(serializationObject: any): void;
+        /**
+         * Parses a serialized trail mesh
+         * @param parsedMesh the serialized mesh
+         * @param scene the scene to create the trail mesh in
+         * @returns the created trail mesh
+         */
+        static Parse(parsedMesh: any, scene: Scene): TrailMesh;
     }
 }
 declare module BABYLON {

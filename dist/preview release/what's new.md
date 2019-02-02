@@ -23,9 +23,11 @@
   - Added new [ScrollViewer](https://doc.babylonjs.com/how_to/scrollviewer) with mouse wheel scrolling for larger containers to be viewed using Sliders ([JohnK](https://github.com/BabylonJSGuide/) / [Deltakosh](https://github.com/deltakosh))
   - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
   - Added support for [nine patch stretch](https://www.babylonjs-playground.com/#G5H9IN#2) mode for images. ([Deltakosh](https://github.com/deltakosh))
-  - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev))
-- Migrate the code to modules and deploy es6 npm packages ([Sebavan](https://github.com/Sebavan))
-- Add clear coat support to PBR ([Sebavan](https://github.com/Sebavan))
+  - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev)) **** NEED DEMO or DOC LINK)
+- Migrated the code to modules and deploy ES6 npm packages ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+- Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+- Added anisotropy support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+- Added `TrailMesh` class. Credit to furcatomasz ([danjpar](https://github.com/danjpar)) **** NEED DEMO or DOC LINK)
 
 ## Updates
 
@@ -121,6 +123,9 @@
 
 ### Viewer
 
+### Post-Processes Library
+- Added the `Ocean` post-process ([julien-moreau](https://github.com/julien-moreau))
+
 ### Materials Library
 - Added the `cameraOffset` vector property in the `SkyMaterial` to get an offset according to the horizon ([julien-moreau](https://github.com/julien-moreau))
 - Fixed `GradientMaterial` to consider disableLighting working as emissive ([julien-moreau](https://github.com/julien-moreau))
@@ -128,6 +133,7 @@
 - Fixed `TerrainMaterial.isReadyForSubMesh` to remove WebGL warnings ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
+- Fixed ArcRotateCamera.setTarget (position was sometimes wrong) ([Deltakosh](https://github.com/deltakosh))
 - Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
 - Fixed ArcRotateCamera control when upVector was modified ([Deltakosh](https://github.com/deltakosh))
 - Fixed anaglyph mode for Free and Universal cameras ([Deltakosh](https://github.com/deltakosh))
