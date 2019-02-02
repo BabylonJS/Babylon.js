@@ -74,7 +74,7 @@ export class StatisticsTabComponent extends PaneComponent {
             <div className="pane">
                 <TextLineComponent label="Version" value={Engine.Version} color="rgb(113, 159, 255)" />
                 <ValueLineComponent label="FPS" value={engine.getFps()} fractionDigits={0} />
-                <LineContainerComponent title="COUNT">
+                <LineContainerComponent globalState={this.props.globalState} title="COUNT">
                     <TextLineComponent label="Total meshes" value={scene.meshes.length.toString()} />
                     <TextLineComponent label="Active meshes" value={scene.getActiveMeshes().length.toString()} />
                     <TextLineComponent label="Active indices" value={scene.getActiveIndices().toString()} />
@@ -88,7 +88,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <TextLineComponent label="Total materials" value={scene.materials.length.toString()} />
                     <TextLineComponent label="Total textures" value={scene.textures.length.toString()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="FRAME STEPS DURATION">
+                <LineContainerComponent globalState={this.props.globalState} title="FRAME STEPS DURATION">
                     <ValueLineComponent label="Absolute FPS" value={1000.0 / this._sceneInstrumentation!.frameTimeCounter.current} fractionDigits={0} />
                     <ValueLineComponent label="Meshes selection" value={sceneInstrumentation.activeMeshesEvaluationTimeCounter.current} units="ms" />
                     <ValueLineComponent label="Render targets" value={sceneInstrumentation.renderTargetsRenderTimeCounter.current} units="ms" />
@@ -102,7 +102,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <ValueLineComponent label="GPU Frame time" value={engineInstrumentation.gpuFrameTimeCounter.current * 0.000001} units="ms" />
                     <ValueLineComponent label="GPU Frame time (average)" value={engineInstrumentation.gpuFrameTimeCounter.average * 0.000001} units="ms" />
                 </LineContainerComponent>
-                <LineContainerComponent title="SYSTEM INFO">
+                <LineContainerComponent globalState={this.props.globalState} title="SYSTEM INFO">
                     <TextLineComponent label="Resolution" value={engine.getRenderWidth() + "x" + engine.getRenderHeight()} />
                     <TextLineComponent label="WebGL version" value={engine.webGLVersion.toString()} />
                     <BooleanLineComponent label="Std derivatives" value={caps.standardDerivatives} />

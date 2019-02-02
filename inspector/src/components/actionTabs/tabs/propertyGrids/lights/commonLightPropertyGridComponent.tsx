@@ -6,8 +6,10 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
 
 interface ICommonLightPropertyGridComponentProps {
+    globalState: GlobalState,
     light: Light,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -22,7 +24,7 @@ export class CommonLightPropertyGridComponent extends React.Component<ICommonLig
         const light = this.props.light;
 
         return (
-            <LineContainerComponent title="GENERAL">
+            <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                 <TextLineComponent label="ID" value={light.id} />
                 <TextLineComponent label="Unique ID" value={light.uniqueId.toString()} />
                 <TextLineComponent label="Class" value={light.getClassName()} />

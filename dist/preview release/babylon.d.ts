@@ -39758,6 +39758,7 @@ declare module BABYLON {
         constructor(scene: Scene);
         /** Creates the inspector window. */
         private _createInspector;
+        select(entity: any, lineContainerTitle?: string): void;
         /** Get the inspector from bundle or global */
         private _getGlobalInspector;
         /**
@@ -39772,8 +39773,9 @@ declare module BABYLON {
         /**
           * Launch the debugLayer.
           * @param config Define the configuration of the inspector
+          * @return a promise fulfilled when the debug layer is visible
           */
-        show(config?: IInspectorOptions): void;
+        show(config?: IInspectorOptions): Promise<DebugLayer>;
     }
 }
 declare module BABYLON {
@@ -46965,6 +46967,69 @@ declare module BABYLON {
          * @returns The new Mesh
          */
         toMesh(name: string, material: Nullable<Material>, scene: Scene, keepSubMeshes: boolean): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to create a trail following a mesh
+     */
+    export class TrailMesh extends Mesh {
+        private _generator;
+        private _autoStart;
+        private _running;
+        private _diameter;
+        private _length;
+        private _sectionPolygonPointsCount;
+        private _sectionVectors;
+        private _sectionNormalVectors;
+        private _beforeRenderObserver;
+        /**
+         * @constructor
+         * @param name The value used by scene.getMeshByName() to do a lookup.
+         * @param generator The mesh to generate a trail.
+         * @param scene The scene to add this mesh to.
+         * @param diameter Diameter of trailing mesh. Default is 1.
+         * @param length Length of trailing mesh. Default is 60.
+         * @param autoStart Automatically start trailing mesh. Default true.
+         */
+        constructor(name: string, generator: AbstractMesh, scene: Scene, diameter?: number, length?: number, autoStart?: boolean);
+        /**
+         * "TrailMesh"
+         * @returns "TrailMesh"
+         */
+        getClassName(): string;
+        private _createMesh;
+        /**
+         * Start trailing mesh.
+         */
+        start(): void;
+        /**
+         * Stop trailing mesh.
+         */
+        stop(): void;
+        /**
+         * Update trailing mesh geometry.
+         */
+        update(): void;
+        /**
+         * Returns a new TrailMesh object.
+         * @param name is a string, the name given to the new mesh
+         * @param newGenerator use new generator object for cloned trail mesh
+         * @returns a new mesh
+         */
+        clone(name: string | undefined, newGenerator: AbstractMesh): TrailMesh;
+        /**
+         * Serializes this trail mesh
+         * @param serializationObject object to write serialization to
+         */
+        serialize(serializationObject: any): void;
+        /**
+         * Parses a serialized trail mesh
+         * @param parsedMesh the serialized mesh
+         * @param scene the scene to create the trail mesh in
+         * @returns the created trail mesh
+         */
+        static Parse(parsedMesh: any, scene: Scene): TrailMesh;
     }
 }
 declare module BABYLON {

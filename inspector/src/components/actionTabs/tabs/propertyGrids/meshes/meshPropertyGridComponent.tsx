@@ -19,8 +19,10 @@ import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent"
 import { AxesViewerComponent } from "./axesViewerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
 
 interface IMeshPropertyGridComponentProps {
+    globalState: GlobalState;
     mesh: Mesh;
     lockObject: LockObject;
     onSelectionChangedObservable?: Observable<any>;
@@ -152,7 +154,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
 
         return (
             <div className="pane">
-                <LineContainerComponent title="GENERAL">
+                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={mesh.id} />
                     <TextLineComponent label="Unique ID" value={mesh.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={mesh.getClassName()} />
@@ -167,7 +169,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <TextLineComponent label="Material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="TRANSFORMS">
+                <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !mesh.rotationQuaternion &&
@@ -179,7 +181,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     }
                     <Vector3LineComponent label="Scaling" target={mesh} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="DISPLAY" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="DISPLAY" closed={true}>
                     <SliderLineComponent label="Visibility" target={mesh} propertyName="visibility" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Alpha index" target={mesh} propertyName="alphaIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Receive shadows" target={mesh} propertyName="receiveShadows" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -196,7 +198,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <CheckBoxLineComponent label="Infinite distance" target={mesh} propertyName="infiniteDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="ADVANCED" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="ADVANCED" closed={true}>
                     {
                         mesh.useBones &&
                         <CheckBoxLineComponent label="Compute bones using shaders" target={mesh} propertyName="computeBonesUsingShaders" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -214,14 +216,14 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 </LineContainerComponent>
                 {
                     mesh.physicsImpostor != null &&
-                    <LineContainerComponent title="PHYSICS" closed={true}>
+                    <LineContainerComponent globalState={this.props.globalState} title="PHYSICS" closed={true}>
                         <FloatLineComponent lockObject={this.props.lockObject} label="Mass" target={mesh.physicsImpostor} propertyName="mass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <FloatLineComponent lockObject={this.props.lockObject} label="Friction" target={mesh.physicsImpostor} propertyName="friction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <FloatLineComponent lockObject={this.props.lockObject} label="Restitution" target={mesh.physicsImpostor} propertyName="restitution" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <TextLineComponent label="Type" value={this.convertPhysicsTypeToString()} />
                     </LineContainerComponent>
                 }
-                <LineContainerComponent title="DEBUG" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
                     <CheckBoxLineComponent label="Show bounding box" target={mesh} propertyName="showBoundingBox" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.material &&
@@ -231,7 +233,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         mesh.isVerticesDataPresent(VertexBuffer.NormalKind) &&
                         <CheckBoxLineComponent label="Render vertex normals" isSelected={() => renderNormalVectors} onSelect={() => this.renderNormalVectors()} />
                     }
-                    <AxesViewerComponent node={mesh} />
+                    <AxesViewerComponent globalState={this.props.globalState} node={mesh} />
                 </LineContainerComponent>
             </div>
         );

@@ -8,8 +8,10 @@ import { CommonRenderingPipelinePropertyGridComponent } from './commonRenderingP
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { LineContainerComponent } from '../../../lineContainerComponent';
 import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
+import { GlobalState } from '../../../../globalState';
 
 interface ISSAO2RenderingPipelinePropertyGridComponentProps {
+    globalState: GlobalState;
     renderPipeline: SSAO2RenderingPipeline,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -27,8 +29,8 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
 
         return (
             <div className="pane">
-                <CommonRenderingPipelinePropertyGridComponent lockObject={this.props.lockObject} renderPipeline={renderPipeline} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="SSAO">
+                <CommonRenderingPipelinePropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} renderPipeline={renderPipeline} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="SSAO">
                     <SliderLineComponent label="Strength" minimum={0} maximum={2} step={0.05} target={renderPipeline} propertyName="totalStrength" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Base" minimum={0} maximum={1} step={0.05} target={renderPipeline} propertyName="base" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Max Z" minimum={0} maximum={camera.maxZ} step={1} target={renderPipeline} propertyName="maxZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

@@ -26,6 +26,7 @@ declare module INSPECTOR {
             [key: string]: any;
         };
         blockMutationUpdates: boolean;
+        selectedLineContainerTitle: string;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
@@ -77,16 +78,19 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ILineContainerComponentProps {
+        globalState: GlobalState;
         title: string;
         children: any[] | any;
         closed?: boolean;
     }
     export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
         isExpanded: boolean;
+        isHighlighted: boolean;
     }> {
         private static _InMemoryStorage;
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
+        componentDidMount(): void;
         renderHeader(): JSX.Element;
         render(): JSX.Element;
     }
@@ -150,6 +154,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IRenderGridPropertyGridComponentProps {
+        globalState: GlobalState;
         scene: BABYLON.Scene;
     }
     export class RenderGridPropertyGridComponent extends React.Component<IRenderGridPropertyGridComponentProps, {
@@ -242,6 +247,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ICommonMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
         material: BABYLON.Material;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -253,6 +259,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
         material: BABYLON.Material;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -328,6 +335,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IStandardMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
         material: BABYLON.StandardMaterial;
         lockObject: LockObject;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
@@ -425,6 +433,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IPBRMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
         material: BABYLON.PBRMaterial;
         lockObject: LockObject;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
@@ -456,6 +465,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IFogPropertyGridComponentProps {
+        globalState: GlobalState;
         scene: BABYLON.Scene;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -495,6 +505,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IScenePropertyGridComponentProps {
+        globalState: GlobalState;
         scene: BABYLON.Scene;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -514,6 +525,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ICommonLightPropertyGridComponentProps {
+        globalState: GlobalState;
         light: BABYLON.Light;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -525,6 +537,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IHemisphericLightPropertyGridComponentProps {
+        globalState: GlobalState;
         light: BABYLON.HemisphericLight;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -536,6 +549,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ICommonShadowLightPropertyGridComponentProps {
+        globalState: GlobalState;
         light: BABYLON.IShadowLight;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -547,6 +561,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IPointLightPropertyGridComponentProps {
+        globalState: GlobalState;
         light: BABYLON.PointLight;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -558,6 +573,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ICommonCameraPropertyGridComponentProps {
+        globalState: GlobalState;
         camera: BABYLON.Camera;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -571,6 +587,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IFreeCameraPropertyGridComponentProps {
+        globalState: GlobalState;
         camera: BABYLON.FreeCamera;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -582,6 +599,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IArcRotateCameraPropertyGridComponentProps {
+        globalState: GlobalState;
         camera: BABYLON.ArcRotateCamera;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -621,6 +639,7 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface IAxisViewerComponentProps {
         node: BABYLON.TransformNode;
+        globalState: GlobalState;
     }
     export class AxesViewerComponent extends React.Component<IAxisViewerComponentProps, {
         displayAxis: boolean;
@@ -635,6 +654,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IMeshPropertyGridComponentProps {
+        globalState: GlobalState;
         mesh: BABYLON.Mesh;
         lockObject: LockObject;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
@@ -654,6 +674,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ITransformNodePropertyGridComponentProps {
+        globalState: GlobalState;
         transformNode: BABYLON.TransformNode;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -665,6 +686,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IBackgroundMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
         material: BABYLON.BackgroundMaterial;
         lockObject: LockObject;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
@@ -702,6 +724,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ICommonControlPropertyGridComponentProps {
+        globalState: GlobalState;
         control: BABYLON.GUI.Control;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -714,6 +737,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IControlPropertyGridComponentProps {
+        globalState: GlobalState;
         control: BABYLON.GUI.Control;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -725,6 +749,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ITextBlockPropertyGridComponentProps {
+        globalState: GlobalState;
         textBlock: BABYLON.GUI.TextBlock;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -736,6 +761,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IInputTextPropertyGridComponentProps {
+        globalState: GlobalState;
         inputText: BABYLON.GUI.InputText;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -747,6 +773,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IColorPickerPropertyGridComponentProps {
+        globalState: GlobalState;
         colorPicker: BABYLON.GUI.ColorPicker;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -768,6 +795,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IAnimationGroupGridComponentProps {
+        globalState: GlobalState;
         animationGroup: BABYLON.AnimationGroup;
         scene: BABYLON.Scene;
         lockObject: LockObject;
@@ -794,6 +822,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IImagePropertyGridComponentProps {
+        globalState: GlobalState;
         image: BABYLON.GUI.Image;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -805,6 +834,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ISliderPropertyGridComponentProps {
+        globalState: GlobalState;
         slider: BABYLON.GUI.Slider;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -816,6 +846,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IImageBasedSliderPropertyGridComponentProps {
+        globalState: GlobalState;
         imageBasedSlider: BABYLON.GUI.ImageBasedSlider;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -827,6 +858,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IRectanglePropertyGridComponentProps {
+        globalState: GlobalState;
         rectangle: BABYLON.GUI.Rectangle;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -838,6 +870,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IEllipsePropertyGridComponentProps {
+        globalState: GlobalState;
         ellipse: BABYLON.GUI.Ellipse;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -849,6 +882,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ICheckboxPropertyGridComponentProps {
+        globalState: GlobalState;
         checkbox: BABYLON.GUI.Checkbox;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -860,6 +894,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IRadioButtonPropertyGridComponentProps {
+        globalState: GlobalState;
         radioButton: BABYLON.GUI.RadioButton;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -871,6 +906,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ILinePropertyGridComponentProps {
+        globalState: GlobalState;
         line: BABYLON.GUI.Line;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -883,6 +919,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IScrollViewerPropertyGridComponentProps {
+        globalState: GlobalState;
         scrollViewer: BABYLON.GUI.ScrollViewer;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -894,6 +931,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IGridPropertyGridComponentProps {
+        globalState: GlobalState;
         grid: BABYLON.GUI.Grid;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -907,6 +945,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IPBRMetallicRoughnessMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
         material: BABYLON.PBRMetallicRoughnessMaterial;
         lockObject: LockObject;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
@@ -920,6 +959,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IPBRSpecularGlossinessMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
         material: BABYLON.PBRSpecularGlossinessMaterial;
         lockObject: LockObject;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
@@ -933,6 +973,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IStackPanelPropertyGridComponentProps {
+        globalState: GlobalState;
         stackPanel: BABYLON.GUI.StackPanel;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -944,6 +985,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ICommonPostProcessPropertyGridComponentProps {
+        globalState: GlobalState;
         postProcess: BABYLON.PostProcess;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -955,6 +997,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IPostProcessPropertyGridComponentProps {
+        globalState: GlobalState;
         postProcess: BABYLON.PostProcess;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -966,6 +1009,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ICommonRenderingPipelinePropertyGridComponentProps {
+        globalState: GlobalState;
         renderPipeline: BABYLON.PostProcessRenderPipeline;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -977,6 +1021,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IRenderingPipelinePropertyGridComponentProps {
+        globalState: GlobalState;
         renderPipeline: BABYLON.PostProcessRenderPipeline;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -1013,6 +1058,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IDefaultRenderingPipelinePropertyGridComponentProps {
+        globalState: GlobalState;
         renderPipeline: BABYLON.DefaultRenderingPipeline;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -1024,6 +1070,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ISSAORenderingPipelinePropertyGridComponentProps {
+        globalState: GlobalState;
         renderPipeline: BABYLON.SSAORenderingPipeline;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -1035,6 +1082,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ISSAO2RenderingPipelinePropertyGridComponentProps {
+        globalState: GlobalState;
         renderPipeline: BABYLON.SSAO2RenderingPipeline;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -1509,9 +1557,10 @@ declare module INSPECTOR {
         private static _Scene;
         private static _OpenedPane;
         private static _OnBeforeRenderObserver;
-        static OnSelectionChangeObservable: BABYLON.Observable<string>;
+        static OnSelectionChangeObservable: BABYLON.Observable<any>;
         static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         private static _GlobalState;
+        static MarkLineContainerTitleForHighlighting(title: string): void;
         private static _CopyStyles;
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
@@ -1529,6 +1578,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IDirectionalLightPropertyGridComponentProps {
+        globalState: GlobalState;
         light: BABYLON.DirectionalLight;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -1540,6 +1590,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ISpotLightPropertyGridComponentProps {
+        globalState: GlobalState;
         light: BABYLON.SpotLight;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
