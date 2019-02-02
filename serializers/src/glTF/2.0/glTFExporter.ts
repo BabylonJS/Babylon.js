@@ -1,4 +1,4 @@
-import { AccessorType, IBufferView, IAccessor, INode, IAsset, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType } from "babylonjs-gltf2interface";
+import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType } from "babylonjs-gltf2interface";
 
 import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
 import { Viewport, Color3, Vector2, Vector3, Vector4, Quaternion } from "babylonjs/Maths/math";
@@ -53,6 +53,10 @@ interface _IVertexAttributeData {
  */
 export class _Exporter {
     /**
+     * Stores the glTF to export
+     */
+    public _glTF: IGLTF;
+    /**
      * Stores all generated buffer views, which represents views into the main glTF buffer data
      */
     public _bufferViews: IBufferView[];
@@ -64,10 +68,6 @@ export class _Exporter {
      * Stores all the generated nodes, which contains transform and/or mesh information per node
      */
     private _nodes: INode[];
-    /**
-     * Stores the glTF asset information, which represents the glTF version and this file generator
-     */
-    private _asset: IAsset;
     /**
      * Stores all the generated glTF scenes, which stores multiple node hierarchies
      */
@@ -109,7 +109,7 @@ export class _Exporter {
     /**
      * Stores a reference to the Babylon scene containing the source geometry and material information
      */
-    private _babylonScene: Scene;
+    public _babylonScene: Scene;
     /**
      * Stores a map of the image data, where the key is the file name and the value
      * is the image data
@@ -124,7 +124,7 @@ export class _Exporter {
     /**
      * Specifies if the Babylon scene should be converted to right-handed on export
      */
-    private _convertToRightHandedSystem: boolean;
+    public _convertToRightHandedSystem: boolean;
 
     /**
      * Baked animation sample rate
@@ -132,18 +132,15 @@ export class _Exporter {
     private _animationSampleRate: number;
 
     /**
-     * Callback which specifies if a transform node should be exported or not
+     * Callback which specifies if a node should be exported or not
      */
-    private _shouldExportTransformNode: ((babylonTransformNode: TransformNode) => boolean);
+    private _shouldExportNode: ((babylonNode: Node) => boolean);
 
     private _localEngine: Engine;
 
     public _glTFMaterialExporter: _GLTFMaterialExporter;
 
     private _extensions: { [name: string]: IGLTFExporterExtensionV2 } = {};
-
-    private _extensionsUsed: string[];
-    private _extensionsRequired: string[];
 
     private static _ExtensionNames = new Array<string>();
     private static _ExtensionFactories: { [name: string]: (exporter: _Exporter) => IGLTFExporterExtensionV2 } = {};
@@ -183,6 +180,23 @@ export class _Exporter {
         return this._applyExtensions(meshPrimitive, (extension) => extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(context, meshPrimitive, babylonSubMesh, binaryWriter));
     }
 
+    public _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>> {
+        return this._applyExtensions(node, (extension) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode));
+    }
+
+    private _forEachExtensions(action: (extension: IGLTFExporterExtensionV2) => void): void {
+        for (const name of _Exporter._ExtensionNames) {
+            const extension = this._extensions[name];
+            if (extension.enabled) {
+                action(extension);
+            }
+        }
+    }
+
+    private _extensionsOnExporting(): void {
+        this._forEachExtensions((extension) => extension.onExporting && extension.onExporting());
+    }
+
     /**
      * Load glTF serializer extensions
      */
@@ -199,9 +213,9 @@ export class _Exporter {
      * @param options Options to modify the behavior of the exporter
      */
     public constructor(babylonScene: Scene, options?: IExportOptions) {
-        this._asset = { generator: "BabylonJS", version: "2.0" };
-        this._extensionsUsed = [];
-        this._extensionsRequired = [];
+        this._glTF = {
+            asset: { generator: "BabylonJS", version: "2.0" }
+        };
         this._babylonScene = babylonScene;
         this._bufferViews = [];
         this._accessors = [];
@@ -217,7 +231,7 @@ export class _Exporter {
         this._imageData = {};
         this._convertToRightHandedSystem = this._babylonScene.useRightHandedSystem ? false : true;
         const _options = options || {};
-        this._shouldExportTransformNode = _options.shouldExportTransformNode ? _options.shouldExportTransformNode : (babylonTransformNode: TransformNode) => true;
+        this._shouldExportNode = _options.shouldExportNode ? _options.shouldExportNode : (babylonNode: Node) => true;
         this._animationSampleRate = _options.animationSampleRate ? _options.animationSampleRate : 1 / 60;
 
         this._glTFMaterialExporter = new _GLTFMaterialExporter(this);
@@ -667,52 +681,43 @@ export class _Exporter {
         let bufferView: IBufferView;
         let byteOffset: number = this._totalByteLength;
 
-        let glTF: IGLTF = {
-            asset: this._asset
-        };
-        if (this._extensionsUsed && this._extensionsUsed.length) {
-            glTF.extensionsUsed = this._extensionsUsed;
-        }
-        if (this._extensionsRequired && this._extensionsRequired.length) {
-            glTF.extensionsRequired = this._extensionsRequired;
-        }
         if (buffer.byteLength) {
-            glTF.buffers = [buffer];
+            this._glTF.buffers = [buffer];
         }
         if (this._nodes && this._nodes.length) {
-            glTF.nodes = this._nodes;
+            this._glTF.nodes = this._nodes;
         }
         if (this._meshes && this._meshes.length) {
-            glTF.meshes = this._meshes;
+            this._glTF.meshes = this._meshes;
         }
         if (this._scenes && this._scenes.length) {
-            glTF.scenes = this._scenes;
-            glTF.scene = 0;
+            this._glTF.scenes = this._scenes;
+            this._glTF.scene = 0;
         }
         if (this._bufferViews && this._bufferViews.length) {
-            glTF.bufferViews = this._bufferViews;
+            this._glTF.bufferViews = this._bufferViews;
         }
         if (this._accessors && this._accessors.length) {
-            glTF.accessors = this._accessors;
+            this._glTF.accessors = this._accessors;
         }
         if (this._animations && this._animations.length) {
-            glTF.animations = this._animations;
+            this._glTF.animations = this._animations;
         }
         if (this._materials && this._materials.length) {
-            glTF.materials = this._materials;
+            this._glTF.materials = this._materials;
         }
         if (this._textures && this._textures.length) {
-            glTF.textures = this._textures;
+            this._glTF.textures = this._textures;
         }
         if (this._samplers && this._samplers.length) {
-            glTF.samplers = this._samplers;
+            this._glTF.samplers = this._samplers;
         }
         if (this._images && this._images.length) {
             if (!shouldUseGlb) {
-                glTF.images = this._images;
+                this._glTF.images = this._images;
             }
             else {
-                glTF.images = [];
+                this._glTF.images = [];
 
                 this._images.forEach((image) => {
                     if (image.uri) {
@@ -725,10 +730,10 @@ export class _Exporter {
                         image.name = imageName;
                         image.mimeType = imageData.mimeType;
                         image.uri = undefined;
-                        if (!glTF.images) {
-                            glTF.images = [];
+                        if (!this._glTF.images) {
+                            this._glTF.images = [];
                         }
-                        glTF.images.push(image);
+                        this._glTF.images.push(image);
                     }
                 });
                 // Replace uri with bufferview and mime type for glb
@@ -740,7 +745,7 @@ export class _Exporter {
             buffer.uri = glTFPrefix + ".bin";
         }
 
-        const jsonText = prettyPrint ? JSON.stringify(glTF, null, 2) : JSON.stringify(glTF);
+        const jsonText = prettyPrint ? JSON.stringify(this._glTF, null, 2) : JSON.stringify(this._glTF);
 
         return jsonText;
     }
@@ -752,6 +757,7 @@ export class _Exporter {
      */
     public _generateGLTFAsync(glTFPrefix: string): Promise<GLTFData> {
         return this._generateBinaryAsync().then((binaryBuffer) => {
+            this._extensionsOnExporting();
             const jsonText = this.generateJSON(false, glTFPrefix, true);
             const bin = new Blob([binaryBuffer], { type: 'application/octet-stream' });
 
@@ -808,6 +814,7 @@ export class _Exporter {
      */
     public _generateGLBAsync(glTFPrefix: string): Promise<GLTFData> {
         return this._generateBinaryAsync().then((binaryBuffer) => {
+            this._extensionsOnExporting();
             const jsonText = this.generateJSON(true);
             const glbFileName = glTFPrefix + '.glb';
             const headerLength = 12;
@@ -1247,10 +1254,10 @@ export class _Exporter {
         let glTFNodeIndex: number;
         let glTFNode: INode;
         let directDescendents: Node[];
-        const nodes = [...babylonScene.transformNodes, ...babylonScene.meshes];
+        const nodes: Node[] = [...babylonScene.transformNodes, ...babylonScene.meshes, ...babylonScene.lights];
 
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, true).then(() => {
-            return this.createNodeMapAndAnimationsAsync(babylonScene, nodes, this._shouldExportTransformNode, binaryWriter).then((nodeMap) => {
+            return this.createNodeMapAndAnimationsAsync(babylonScene, nodes, this._shouldExportNode, binaryWriter).then((nodeMap) => {
                 this._nodeMap = nodeMap;
 
                 this._totalByteLength = binaryWriter.getByteOffset();
@@ -1259,13 +1266,13 @@ export class _Exporter {
                 }
 
                 // Build Hierarchy with the node map.
-                for (let babylonTransformNode of nodes) {
-                    glTFNodeIndex = this._nodeMap[babylonTransformNode.uniqueId];
-                    if (glTFNodeIndex != null) {
+                for (let babylonNode of nodes) {
+                    glTFNodeIndex = this._nodeMap[babylonNode.uniqueId];
+                    if (glTFNodeIndex !== undefined) {
                         glTFNode = this._nodes[glTFNodeIndex];
-                        if (!babylonTransformNode.parent) {
-                            if (!this._shouldExportTransformNode(babylonTransformNode)) {
-                                Tools.Log("Omitting " + babylonTransformNode.name + " from scene.");
+                        if (!babylonNode.parent) {
+                            if (!this._shouldExportNode(babylonNode)) {
+                                Tools.Log("Omitting " + babylonNode.name + " from scene.");
                             }
                             else {
                                 if (this._convertToRightHandedSystem) {
@@ -1280,7 +1287,7 @@ export class _Exporter {
                             }
                         }
 
-                        directDescendents = babylonTransformNode.getDescendants(true);
+                        directDescendents = babylonNode.getDescendants(true);
                         if (!glTFNode.children && directDescendents && directDescendents.length) {
                             const children: number[] = [];
                             for (let descendent of directDescendents) {
@@ -1305,11 +1312,11 @@ export class _Exporter {
      * Creates a mapping of Node unique id to node index and handles animations
      * @param babylonScene Babylon Scene
      * @param nodes Babylon transform nodes
-     * @param shouldExportTransformNode Callback specifying if a transform node should be exported
+     * @param shouldExportNode Callback specifying if a transform node should be exported
      * @param binaryWriter Buffer to write binary data to
      * @returns Node mapping of unique id to index
      */
-    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: TransformNode[], shouldExportTransformNode: (babylonTransformNode: TransformNode) => boolean, binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
+    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], shouldExportNode: (babylonNode: Node) => boolean, binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
         let promiseChain = Promise.resolve();
         const nodeMap: { [key: number]: number } = {};
         let nodeIndex: number;
@@ -1320,25 +1327,34 @@ export class _Exporter {
         };
         let idleGLTFAnimations: IAnimation[] = [];
 
-        for (let babylonTransformNode of nodes) {
-            if (shouldExportTransformNode(babylonTransformNode)) {
+        for (let babylonNode of nodes) {
+            if (shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(() => {
-                    return this.createNodeAsync(babylonTransformNode, binaryWriter).then((node) => {
-                        const directDescendents = babylonTransformNode.getDescendants(true, (node: Node) => { return (node instanceof TransformNode); });
-                        if (directDescendents.length || node.mesh != null) {
-                            this._nodes.push(node);
-                            nodeIndex = this._nodes.length - 1;
-                            nodeMap[babylonTransformNode.uniqueId] = nodeIndex;
+                    return this.createNodeAsync(babylonNode, binaryWriter).then((node) => {
+                        const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
+                        if (promise == null) {
+                            Tools.Warn(`Not exporting node ${babylonNode.name}`);
+                            return Promise.resolve();
                         }
+                        else {
+                            return promise.then((node) => {
+                                const directDescendents = babylonNode.getDescendants(true, (node: Node) => { return (node instanceof Node); });
+                                if (directDescendents.length || node.mesh != null || (node.extensions)) {
+                                    this._nodes.push(node);
+                                    nodeIndex = this._nodes.length - 1;
+                                    nodeMap[babylonNode.uniqueId] = nodeIndex;
+                                }
 
-                        if (!babylonScene.animationGroups.length && babylonTransformNode.animations.length) {
-                            _GLTFAnimation._CreateNodeAnimationFromTransformNodeAnimations(babylonTransformNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);
+                                if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
+                                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);
+                                }
+                            });
                         }
                     });
                 });
             }
             else {
-                `Excluding mesh ${babylonTransformNode.name}`;
+                `Excluding node ${babylonNode.name}`;
             }
         }
 
@@ -1366,28 +1382,32 @@ export class _Exporter {
      * @param binaryWriter Buffer for storing geometry data
      * @returns glTF node
      */
-    private createNodeAsync(babylonTransformNode: TransformNode, binaryWriter: _BinaryWriter): Promise<INode> {
+    private createNodeAsync(babylonNode: Node, binaryWriter: _BinaryWriter): Promise<INode> {
         return Promise.resolve().then(() => {
             // create node to hold translation/rotation/scale and the mesh
             const node: INode = {};
             // create mesh
             const mesh: IMesh = { primitives: [] };
 
-            if (babylonTransformNode.name) {
-                node.name = babylonTransformNode.name;
+            if (babylonNode.name) {
+                node.name = babylonNode.name;
             }
 
-            // Set transformation
-            this.setNodeTransformation(node, babylonTransformNode);
+            if (babylonNode instanceof TransformNode) {
+                // Set transformation
+                this.setNodeTransformation(node, babylonNode);
 
-            return this.setPrimitiveAttributesAsync(mesh, babylonTransformNode, binaryWriter).then(() => {
-                if (mesh.primitives.length) {
-                    this._meshes.push(mesh);
-                    node.mesh = this._meshes.length - 1;
-                }
-
+                return this.setPrimitiveAttributesAsync(mesh, babylonNode, binaryWriter).then(() => {
+                    if (mesh.primitives.length) {
+                        this._meshes.push(mesh);
+                        node.mesh = this._meshes.length - 1;
+                    }
+                    return node;
+                });
+            }
+            else {
                 return node;
-            });
+            }
         });
     }
 }

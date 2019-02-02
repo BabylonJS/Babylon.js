@@ -422,16 +422,18 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         }
     }
 
-    public setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number) {
-        if (maxForce !== undefined) {
-            Logger.Warn("OimoJS plugin currently has unexpected behavior when using setMotor with maxForce parameter");
+    public setMotor(joint: IMotorEnabledJoint, speed: number, force?: number, motorIndex?: number) {
+        if (force !== undefined) {
+            Logger.Warn("OimoJS plugin currently has unexpected behavior when using setMotor with force parameter");
+        }else {
+            force = 1e6;
         }
         speed *= -1;
 
         //TODO separate rotational and transational motors.
         var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
         if (motor) {
-            motor.setMotor(speed, maxForce);
+            motor.setMotor(speed, force);
         }
     }
 

@@ -31,7 +31,7 @@ var _copySource = function <T>(creationFunction: () => T, source: T, instanciate
         var sourceProperty = (<any>source)[property];
         var propertyType = propertyDescriptor.type;
 
-        if (sourceProperty !== undefined && sourceProperty !== null) {
+        if (sourceProperty !== undefined && sourceProperty !== null && property !== "uniqueId") {
             switch (propertyType) {
                 case 0:     // Value
                 case 6:     // Mesh reference

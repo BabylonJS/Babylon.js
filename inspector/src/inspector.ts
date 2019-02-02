@@ -37,9 +37,13 @@ export class Inspector {
     private static _OpenedPane = 0;
     private static _OnBeforeRenderObserver: Nullable<Observer<Scene>>;
 
-    public static OnSelectionChangeObservable = new Observable<string>();
+    public static OnSelectionChangeObservable = new Observable<any>();
     public static OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
     private static _GlobalState = new GlobalState();
+
+    public static MarkLineContainerTitleForHighlighting(title: string) {
+        this._GlobalState.selectedLineContainerTitle = title;
+    }
 
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
@@ -404,11 +408,6 @@ export class Inspector {
                 this._CreateActionTabs(scene, options, parentControl);
             }
         }
-
-        // Light gizmos
-        scene.lights.forEach((l)=>{
-            this._GlobalState.enableLightGizmo(l, true);
-        });
     }
 
     private static _CreateCanvasContainer(parentControl: HTMLElement) {
@@ -449,12 +448,12 @@ export class Inspector {
         }
 
         // Gizmo disposal
-        this._GlobalState.lightGizmos.forEach((g)=>{
-            if(g.light){
+        this._GlobalState.lightGizmos.forEach((g) => {
+            if (g.light) {
                 this._GlobalState.enableLightGizmo(g.light, false);
             }
         })
-        if(this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager){
+        if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {
             this._Scene.reservedDataStore.gizmoManager.dispose();
             this._Scene.reservedDataStore.gizmoManager = null;
         }
@@ -505,7 +504,7 @@ export class Inspector {
                 this._EmbedHost.parentElement.removeChild(this._EmbedHost);
             }
             this._EmbedHost = null;
-        }        
+        }
 
         Inspector._OpenedPane = 0;
         this._Cleanup();

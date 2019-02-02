@@ -775,7 +775,7 @@ export class Effect {
         this.onCompiled = () => {
             var scenes = this.getEngine().scenes;
             for (var i = 0; i < scenes.length; i++) {
-                scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
             }
 
             if (onCompiled) {

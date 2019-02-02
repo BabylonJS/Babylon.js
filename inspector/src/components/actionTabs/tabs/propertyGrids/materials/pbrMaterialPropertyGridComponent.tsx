@@ -12,8 +12,10 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
 
 interface IPBRMaterialPropertyGridComponentProps {
+    globalState: GlobalState;
     material: PBRMaterial;
     lockObject: LockObject;
     onSelectionChangedObservable?: Observable<any>;
@@ -25,17 +27,16 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         super(props);
     }
 
-    renderTextures() {
+    renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>) {
         const material = this.props.material;
 
         if (material.getActiveTextures().length === 0) {
             return null;
         }
 
-        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
-            <LineContainerComponent title="TEXTURES">
+            <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
                 <TextureLinkLineComponent label="Albedo" texture={material.albedoTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Metallic" texture={material.metallicTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Reflection" texture={material.reflectionTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
@@ -52,18 +53,31 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
 
     render() {
         const material = this.props.material;
+        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
 
         return (
             <div className="pane">
-                <CommonMaterialPropertyGridComponent lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                {this.renderTextures()}
-                <LineContainerComponent title="LIGHTING & COLORS">
+                <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                {this.renderTextures(onDebugSelectionChangeObservable)}
+                <LineContainerComponent globalState={this.props.globalState} title="LIGHTING & COLORS">
                     <Color3LineComponent label="Albedo" target={material} propertyName="albedoColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Reflectivity" target={material} propertyName="reflectivityColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Ambient" target={material} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="LEVELS" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="CLEAR COAT">
+                    <CheckBoxLineComponent label="Enabled" target={material.clearCoat} propertyName="isEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Intensity" target={material.clearCoat} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Roughness" target={material.clearCoat} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextureLinkLineComponent label="Texture" texture={material.clearCoat.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                    <TextureLinkLineComponent label="Bump" texture={material.clearCoat.bumpTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="ANISOTROPIC">
+                    <CheckBoxLineComponent label="Enabled" target={material.anisotropy} propertyName="isEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Intensity" target={material.anisotropy} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Follow tangents" target={material.anisotropy} propertyName="followTangents" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="LEVELS" closed={true}>
                     <SliderLineComponent label="Environment" target={material} propertyName="environmentIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Metallic" target={material} propertyName="metallic" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Roughness" target={material} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -82,7 +96,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         <SliderLineComponent label="Reflection strength" target={material.reflectionTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                 </LineContainerComponent>
-                <LineContainerComponent title="RENDERING" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="RENDERING" closed={true}>
                     <CheckBoxLineComponent label="Alpha from albedo" target={material} propertyName="useAlphaFromAlbedoTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Ambient in grayscale" target={material} propertyName="useAmbientInGrayScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Radiance over alpha" target={material} propertyName="useRadianceOverAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -91,7 +105,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Specular over alpha" target={material} propertyName="useSpecularOverAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Specular anti-aliasing" target={material} propertyName="enableSpecularAntiAliasing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="ADVANCED" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="ADVANCED" closed={true}>
                     <CheckBoxLineComponent label="Radiance occlusion" target={material} propertyName="useRadianceOcclusion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Horizon occlusion " target={material} propertyName="useHorizonOcclusion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Unlit" target={material} propertyName="unlit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

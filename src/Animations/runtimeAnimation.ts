@@ -425,44 +425,32 @@ export class RuntimeAnimation {
             return false;
         }
 
-        var returnValue = true;
+        let returnValue = true;
 
         let keys = this._animation.getKeys();
+        let min = keys[0].frame;
+        let max = keys[keys.length - 1].frame;
 
-        // Adding a start key at frame 0 if missing
-        if (keys[0].frame !== 0) {
-            var newKey = { frame: 0, value: keys[0].value };
+        // Add a start key at frame 0 if missing
+        if (min !== 0) {
+            const newKey = { frame: 0, value: keys[0].value };
             keys.splice(0, 0, newKey);
-        }
-        // Adding a duplicate key when there is only one key at frame zero
-        else if (keys.length === 1) {
-            var newKey = { frame: 0.001, value: keys[0].value };
-            keys.push(newKey);
         }
 
         // Check limits
-        if (from < keys[0].frame || from > keys[keys.length - 1].frame) {
-            from = keys[0].frame;
+        if (from < min || from > max) {
+            from = min;
         }
-        if (to < keys[0].frame || to > keys[keys.length - 1].frame) {
-            to = keys[keys.length - 1].frame;
-        }
-
-        //to and from cannot be the same key
-        if (from === to) {
-            if (from > keys[0].frame) {
-                from--;
-            } else if (to < keys[keys.length - 1].frame) {
-                to++;
-            }
+        if (to < min || to > max) {
+            to = max;
         }
 
-        // Compute ratio
-        var range = to - from;
-        var offsetValue: any;
-        // ratio represents the frame delta between from and to
-        var ratio = (delay * (this._animation.framePerSecond * speedRatio) / 1000.0) + this._ratioOffset;
-        var highLimitValue = 0;
+        const range = to - from;
+        let offsetValue: any;
+
+        // Compute ratio which represents the frame delta between from and to
+        const ratio = (delay * (this._animation.framePerSecond * speedRatio) / 1000.0) + this._ratioOffset;
+        let highLimitValue = 0;
 
         this._previousDelay = delay;
         this._previousRatio = ratio;
@@ -541,18 +529,17 @@ export class RuntimeAnimation {
         }
 
         // Compute value
-        var repeatCount = (ratio / range) >> 0;
-        var currentFrame = returnValue ? from + ratio % range : to;
+        let currentFrame = (returnValue && range !== 0) ? from + ratio % range : to;
 
         // Need to normalize?
         if (this._host && this._host.syncRoot) {
-            let syncRoot = this._host.syncRoot;
-            let hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
+            const syncRoot = this._host.syncRoot;
+            const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
             currentFrame = from + (to - from) * hostNormalizedFrame;
         }
 
         // Reset events if looping
-        let events = this._events;
+        const events = this._events;
         if (range > 0 && this.currentFrame > currentFrame ||
             range < 0 && this.currentFrame < currentFrame) {
             if (onLoop) {
@@ -568,7 +555,8 @@ export class RuntimeAnimation {
             }
         }
 
-        var currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
+        const repeatCount = range === 0 ? 0 : (ratio / range) >> 0;
+        const currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
 
         // Set value
         this.setValue(currentValue, weight);
