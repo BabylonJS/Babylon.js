@@ -55,6 +55,14 @@ vec4 computeClearCoatLighting(preLightingInfo info, vec3 Ncc, float geometricRou
     return result;
 }
 
+vec3 computeClearCoatLightingAbsorption(float NdotVRefract, vec3 L, vec3 Ncc, vec3 clearCoatColor, float clearCoatThickness, float clearCoatIntensity) {
+    vec3 LRefract = -refract(L, Ncc, vClearCoatRefractionParams.y);
+    float NdotLRefract = clamp(dot(Ncc, LRefract), 0.00000000001, 1.0);
+
+    vec3 absorption = computeClearCoatAbsorption(NdotVRefract, NdotLRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);
+    return absorption;
+}
+
 vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
 	vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
 	strq /= strq.w;
