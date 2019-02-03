@@ -82,7 +82,7 @@
                 
                 #ifdef CLEARCOAT_TINT
                     // Absorption
-                    absorption = computeClearCoatLightingAbsorption(clearCoatNdotVRefract, info.L, clearCoatNormalW, clearCoatColor, clearCoatThickness, clearCoatIntensity);
+                    absorption = computeClearCoatLightingAbsorption(clearCoatNdotVRefract, preInfo.L, clearCoatNormalW, clearCoatColor, clearCoatThickness, clearCoatIntensity);
                     info.diffuse *= absorption;
                     #ifdef SPECULARTERM
                         info.specular *= absorption;
