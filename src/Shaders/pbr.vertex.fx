@@ -72,6 +72,10 @@ varying vec2 vBumpUV;
     #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
         varying vec2 vClearCoatBumpUV;
     #endif
+
+    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0 
+        varying vec2 vClearCoatTintUV;
+    #endif
 #endif
 
 // Output
@@ -280,6 +284,17 @@ void main(void) {
         else
         {
             vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0 
+        if (vClearCoatTintInfos.x == 0.)
+        {
+            vClearCoatTintUV = vec2(clearCoatTintMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatTintUV = vec2(clearCoatTintMatrix * vec4(uv2, 1.0, 0.0));
         }
     #endif
 #endif

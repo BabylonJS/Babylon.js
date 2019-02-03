@@ -181,10 +181,14 @@ class PBRMaterialDefines extends MaterialDefines
     public SPECULARAA = false;
 
     public CLEARCOAT = false;
+    public CLEARCOAT_DEFAULTIOR = false;
     public CLEARCOAT_TEXTURE = false;
     public CLEARCOAT_TEXTUREDIRECTUV = 0;
     public CLEARCOAT_BUMP = false;
     public CLEARCOAT_BUMPDIRECTUV = 0;
+    public CLEARCOAT_TINT = false;
+    public CLEARCOAT_TINT_TEXTURE = false;
+    public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
 
     public ANISOTROPIC = false;
 
