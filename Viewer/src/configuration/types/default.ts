@@ -1,7 +1,6 @@
 import { ViewerConfiguration } from '../configuration';
-import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from '../../assets';
-import { babylonFont } from '../../assets/font';
-import * as images from '../../assets/img';
+import { babylonFont, defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from 'babylonjs-viewer-assets';
+import * as images from 'babylonjs-viewer-assets';
 import { renderOnlyDefaultConfiguration } from './renderOnlyDefault';
 import { deepmerge } from '../../helper';
 

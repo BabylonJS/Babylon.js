@@ -1,5 +1,5 @@
 import { ViewerConfiguration } from './../configuration';
-import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, overlay, error, loading, close } from '../../assets';
+import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, overlay, error, loading, close } from 'babylonjs-viewer-assets';
 
 /**
  * The minimal configuration needed to make the viewer work.
