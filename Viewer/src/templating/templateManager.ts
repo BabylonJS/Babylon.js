@@ -51,7 +51,7 @@ export class TemplateManager {
 
     private templates: { [name: string]: Template };
 
-    constructor(public containerElement: HTMLElement) {
+    constructor(public containerElement: Element) {
         this.templates = {};
 
         this.onTemplateInit = new Observable<Template>();
@@ -73,7 +73,7 @@ export class TemplateManager {
             //init template
             let template = this.templates[name];
 
-            let childrenTemplates = Object.keys(dependencyMap).map(childName => {
+            let childrenTemplates = Object.keys(dependencyMap).map((childName) => {
                 return internalInit(dependencyMap[childName], childName, template);
             });
 
@@ -84,7 +84,7 @@ export class TemplateManager {
                 let containingElement = (lastElements && lastElements.length && lastElements.item(lastElements.length - 1)) || this.containerElement;
                 template.appendTo(<HTMLElement>containingElement);
                 this._checkLoadedState();
-            }
+            };
 
             if (parentTemplate && !parentTemplate.parent) {
                 parentTemplate.onAppended.add(() => {
@@ -96,10 +96,10 @@ export class TemplateManager {
             //});
 
             return template;
-        }
+        };
 
         //build the html tree
-        return this._buildHTMLTree(templates).then(htmlTree => {
+        return this._buildHTMLTree(templates).then((htmlTree) => {
             if (this.templates['main']) {
                 internalInit(htmlTree, 'main');
             } else {
@@ -110,17 +110,17 @@ export class TemplateManager {
     }
 
     /**
-     * 
+     *
      * This function will create a simple map with child-dependencies of the template html tree.
      * It will compile each template, check if its children exist in the configuration and will add them if they do.
      * It is expected that the main template will be called main!
-     * 
+     *
      * @param templates
      */
     private _buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
-        let promises: Array<Promise<Template | boolean>> = Object.keys(templates).map(name => {
+        let promises: Array<Promise<Template | boolean>> = Object.keys(templates).map((name) => {
             // if the template was overridden
-            if (!templates[name]) return Promise.resolve(false);
+            if (!templates[name]) { return Promise.resolve(false); }
             // else - we have a template, let's do our job!
             let template = new Template(name, templates[name]);
             template.onLoaded.add(() => {
@@ -131,7 +131,7 @@ export class TemplateManager {
             });
             this.onTemplateInit.notifyObservers(template);
             // make sure the global onEventTriggered is called as well
-            template.onEventTriggered.add(eventData => this.onEventTriggered.notifyObservers(eventData));
+            template.onEventTriggered.add((eventData) => this.onEventTriggered.notifyObservers(eventData));
             this.templates[name] = template;
             return template.initPromise;
         });
@@ -141,12 +141,12 @@ export class TemplateManager {
             // now iterate through all templates and check for children:
             let buildTree = (parentObject, name) => {
                 this.templates[name].isInHtmlTree = true;
-                let childNodes = this.templates[name].getChildElements().filter(n => !!this.templates[n]);
-                childNodes.forEach(element => {
+                let childNodes = this.templates[name].getChildElements().filter((n) => !!this.templates[n]);
+                childNodes.forEach((element) => {
                     parentObject[element] = {};
                     buildTree(parentObject[element], element);
                 });
-            }
+            };
             if (this.templates['main']) {
                 buildTree(templateStructure, "main");
             }
@@ -185,7 +185,7 @@ export class TemplateManager {
      */
     public dispose() {
         // dispose all templates
-        Object.keys(this.templates).forEach(template => {
+        Object.keys(this.templates).forEach((template) => {
             this.templates[template].dispose();
         });
         this.templates = {};
@@ -201,9 +201,9 @@ export class TemplateManager {
 }
 
 // register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
-Handlebars.registerHelper('eachInMap', function (map, block) {
+Handlebars.registerHelper('eachInMap', function(map, block) {
     var out = '';
-    Object.keys(map).map(function (prop) {
+    Object.keys(map).map(function(prop) {
         let data = map[prop];
         if (typeof data === 'object') {
             data.id = data.id || prop;
@@ -215,32 +215,31 @@ Handlebars.registerHelper('eachInMap', function (map, block) {
     return out;
 });
 
-Handlebars.registerHelper('add', function (a, b) {
+Handlebars.registerHelper('add', function(a, b) {
     var out = a + b;
     return out;
 });
 
-Handlebars.registerHelper('eq', function (a, b) {
+Handlebars.registerHelper('eq', function(a, b) {
     var out = (a == b);
     return out;
 });
 
-
-Handlebars.registerHelper('or', function (a, b) {
+Handlebars.registerHelper('or', function(a, b) {
     var out = a || b;
     return out;
 });
 
-Handlebars.registerHelper('not', function (a) {
+Handlebars.registerHelper('not', function(a) {
     var out = !a;
     return out;
 });
 
-Handlebars.registerHelper('count', function (map) {
+Handlebars.registerHelper('count', function(map) {
     return map.length;
 });
 
-Handlebars.registerHelper('gt', function (a, b) {
+Handlebars.registerHelper('gt', function(a, b) {
     var out = a > b;
     return out;
 });
@@ -250,7 +249,7 @@ Handlebars.registerHelper('gt', function (a, b) {
  * An example for a template is a single canvas, an overlay (containing sub-templates) or the navigation bar.
  * A template is injected using the template manager in the correct position.
  * The template is rendered using Handlebars and can use Handlebars' features (such as parameter injection)
- * 
+ *
  * For further information please refer to the documentation page, https://doc.babylonjs.com
  */
 export class Template {
@@ -325,7 +324,7 @@ export class Template {
 
         let htmlContentPromise = this._getTemplateAsHtml(_configuration);
 
-        this.initPromise = htmlContentPromise.then(htmlTemplate => {
+        this.initPromise = htmlContentPromise.then((htmlTemplate) => {
             if (htmlTemplate) {
                 this._htmlTemplate = htmlTemplate;
                 let compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: (this._configuration.params && !!this._configuration.params.noEscape) });
@@ -350,9 +349,9 @@ export class Template {
      * Some templates have parameters (like background color for example).
      * The parameters are provided to Handlebars which in turn generates the template.
      * This function will update the template with the new parameters
-     * 
+     *
      * Note that when updating parameters the events will be registered again (after being cleared).
-     * 
+     *
      * @param params the new template parameters
      */
     public updateParams(params: { [key: string]: string | number | boolean | object }, append: boolean = true) {
@@ -410,7 +409,10 @@ export class Template {
             children = this._fragment.querySelectorAll('*');
         }
         for (let i = 0; i < children.length; ++i) {
-            childrenArray.push(kebabToCamel(children.item(i).nodeName.toLowerCase()));
+            const child = children.item(i);
+            if (child) {
+                childrenArray.push(kebabToCamel(child.nodeName.toLowerCase()));
+            }
         }
         return childrenArray;
     }
@@ -461,10 +463,10 @@ export class Template {
      * The provided function returns a promise that should be fullfilled when the element is shown.
      * Since it is a promise async operations are more than possible.
      * See the default viewer for an opacity example.
-     * @param visibilityFunction The function to execute to show the template. 
+     * @param visibilityFunction The function to execute to show the template.
      */
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
-        if (this._isHiding) return Promise.resolve(this);
+        if (this._isHiding) { return Promise.resolve(this); }
         return Promise.resolve().then(() => {
             this._isShowing = true;
             if (visibilityFunction) {
@@ -491,10 +493,10 @@ export class Template {
      * The provided function returns a promise that should be fullfilled when the element is hidden.
      * Since it is a promise async operations are more than possible.
      * See the default viewer for an opacity example.
-     * @param visibilityFunction The function to execute to show the template. 
+     * @param visibilityFunction The function to execute to show the template.
      */
     public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
-        if (this._isShowing) return Promise.resolve(this);
+        if (this._isShowing) { return Promise.resolve(this); }
         return Promise.resolve().then(() => {
             this._isHiding = true;
             if (visibilityFunction) {
@@ -528,12 +530,12 @@ export class Template {
             //noop
         }
 
-        this.loadRequests.forEach(request => {
+        this.loadRequests.forEach((request) => {
             request.abort();
         });
 
         if (this._registeredEvents) {
-            this._registeredEvents.forEach(evt => {
+            this._registeredEvents.forEach((evt) => {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
             });
         }
@@ -575,7 +577,7 @@ export class Template {
         this._registeredEvents = this._registeredEvents || [];
         if (this._registeredEvents.length) {
             // first remove the registered events
-            this._registeredEvents.forEach(evt => {
+            this._registeredEvents.forEach((evt) => {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
             });
         }
@@ -584,15 +586,15 @@ export class Template {
                 if (this._configuration.events && this._configuration.events[eventName]) {
                     let functionToFire = (selector, event) => {
                         this.onEventTriggered.notifyObservers({ event: event, template: this, selector: selector });
-                    }
+                    };
 
                     // if boolean, set the parent as the event listener
                     if (typeof this._configuration.events[eventName] === 'boolean') {
-                        let selector = this.parent.id
+                        let selector = this.parent.id;
                         if (selector) {
-                            selector = '#' + selector
+                            selector = '#' + selector;
                         } else {
-                            selector = this.parent.tagName
+                            selector = this.parent.tagName;
                         }
                         let binding = functionToFire.bind(this, selector);
                         this.parent.addEventListener(eventName, functionToFire.bind(this, selector), false);
@@ -605,7 +607,7 @@ export class Template {
                         let selectorsArray: Array<string> = Object.keys(this._configuration.events[eventName] || {});
                         // strict null checl is working incorrectly, must override:
                         let event = this._configuration.events[eventName] || {};
-                        selectorsArray.filter(selector => event[selector]).forEach(selector => {
+                        selectorsArray.filter((selector) => event[selector]).forEach((selector) => {
                             let htmlElement = <HTMLElement>this.parent.querySelector(selector);
                             if (!htmlElement) {
                                 // backcompat, fallback to id

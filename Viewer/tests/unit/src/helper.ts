@@ -23,7 +23,7 @@ describe("viewer helper", () => {
     it("should find absolute and relative http urls", (done) => {
 
         let url = "http://test.url/?param=123";
-        let https = "https://https.url.to.check/"
+        let https = "https://https.url.to.check/";
         let relativeUrl = "/url/to/find";
         let notUrl = "not a url!";
         let ftp = "ftp://test.ftp.server";
@@ -47,10 +47,10 @@ describe("viewer helper", () => {
                 r: 0,
                 g: 0
             },
-            test: function () {
+            test: function() {
 
             }
-        }
+        };
 
         let augmentation: any = {
             definedKey: finalKey,
@@ -61,7 +61,7 @@ describe("viewer helper", () => {
             },
             undefinedKey: "shouldNotBeAugmented",
             test: "should be ignored"
-        }
+        };
 
         assert.notEqual(toAugoment.definedKey, augmentation.definedKey);
 

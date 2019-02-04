@@ -1,4 +1,4 @@
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
@@ -65,12 +65,17 @@ export class TextBlock extends Control {
      * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
      */
     public set resizeToFit(value: boolean) {
+        if (this._resizeToFit === value) {
+            return;
+        }
         this._resizeToFit = value;
 
         if (this._resizeToFit) {
             this._width.ignoreAdaptiveScaling = true;
             this._height.ignoreAdaptiveScaling = true;
         }
+
+        this._markAsDirty();
     }
 
     /**
@@ -221,12 +226,50 @@ export class TextBlock extends Control {
         return "TextBlock";
     }
 
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        if (!this._fontOffset) {
+            this._fontOffset = Control._GetFontOffset(context.font);
+        }
+
+        super._processMeasures(parentMeasure, context);
+
+        // Prepare lines
+        this._lines = this._breakLines(this._currentMeasure.width, context);
+        this.onLinesReadyObservable.notifyObservers(this);
+
+        let maxLineWidth: number = 0;
+
+        for (let i = 0; i < this._lines.length; i++) {
+            const line = this._lines[i];
+
+            if (line.width > maxLineWidth) {
+                maxLineWidth = line.width;
+            }
+        }
+
+        if (this._resizeToFit) {
+            if (this._textWrapping === TextWrapping.Clip) {
+                let newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
+                if (newWidth !== this._width.internalValue) {
+                    this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
+                    this._rebuildLayout = true;
+                }
+            }
+            let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
+
+            if (newHeight !== this._height.internalValue) {
+                this._height.updateInPlace(newHeight, ValueAndUnit.UNITMODE_PIXEL);
+                this._rebuildLayout = true;
+            }
+        }
+    }
+
     private _drawText(text: string, textWidth: number, y: number, context: CanvasRenderingContext2D): void {
         var width = this._currentMeasure.width;
         var x = 0;
         switch (this._textHorizontalAlignment) {
             case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                x = 0
+                x = 0;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_RIGHT:
                 x = width - textWidth;
@@ -250,15 +293,14 @@ export class TextBlock extends Control {
     }
 
     /** @hidden */
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         this._applyStates(context);
 
-        if (this._processMeasures(parentMeasure, context)) {
-            // Render lines
-            this._renderLines(context);
-        }
+        // Render lines
+        this._renderLines(context);
+
         context.restore();
     }
 
@@ -270,20 +312,15 @@ export class TextBlock extends Control {
         }
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-        this._lines = this._breakLines(this._currentMeasure.width, context);
-        this.onLinesReadyObservable.notifyObservers(this);
-    }
-
     protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[] {
         var lines = [];
         var _lines = this.text.split("\n");
 
-        if (this._textWrapping === TextWrapping.Ellipsis && !this._resizeToFit) {
+        if (this._textWrapping === TextWrapping.Ellipsis) {
             for (var _line of _lines) {
                 lines.push(this._parseLineEllipsis(_line, refWidth, context));
             }
-        } else if (this._textWrapping === TextWrapping.WordWrap && !this._resizeToFit) {
+        } else if (this._textWrapping === TextWrapping.WordWrap) {
             for (var _line of _lines) {
                 lines.push(...this._parseLineWordWrap(_line, refWidth, context));
             }
@@ -342,10 +379,6 @@ export class TextBlock extends Control {
 
     protected _renderLines(context: CanvasRenderingContext2D): void {
         var height = this._currentMeasure.height;
-
-        if (!this._fontOffset) {
-            this._fontOffset = Control._GetFontOffset(context.font);
-        }
         var rootY = 0;
         switch (this._textVerticalAlignment) {
             case Control.VERTICAL_ALIGNMENT_TOP:
@@ -361,8 +394,6 @@ export class TextBlock extends Control {
 
         rootY += this._currentMeasure.top;
 
-        var maxLineWidth: number = 0;
-
         for (let i = 0; i < this._lines.length; i++) {
             const line = this._lines[i];
 
@@ -377,13 +408,6 @@ export class TextBlock extends Control {
 
             this._drawText(line.text, line.width, rootY, context);
             rootY += this._fontOffset.height;
-
-            if (line.width > maxLineWidth) maxLineWidth = line.width;
-        }
-
-        if (this._resizeToFit) {
-            this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
-            this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
         }
     }
 

@@ -13,8 +13,8 @@
   },
   "systems": [
     {
-      "name": "surfaceParticles",
-      "id": "surfaceParticles",
+      "name": "sunSystem",
+      "id": "sunSystem",
       "capacity": 1600,
       "renderingGroupId": 3,
       "isBillboardBased": false,

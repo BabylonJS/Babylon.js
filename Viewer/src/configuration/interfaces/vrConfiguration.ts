@@ -9,5 +9,5 @@ export interface IVRConfiguration {
     vrOptions?: VRExperienceHelperOptions;
     modelHeightCorrection?: number | boolean;
     rotateUsingControllers?: boolean; // experimental feature
-    cameraPosition?: { x: number, y: number, z: number }
+    cameraPosition?: { x: number, y: number, z: number };
 }

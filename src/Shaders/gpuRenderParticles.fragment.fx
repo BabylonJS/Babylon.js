@@ -7,9 +7,7 @@ in vec4 vColor;
 
 out vec4 outFragColor;
 
-#ifdef CLIPPLANE
-in float fClipDistance;
-#endif
+#include<clipPlaneFragmentDeclaration2> 
 
 #include<imageProcessingDeclaration>
 
@@ -18,11 +16,14 @@ in float fClipDistance;
 #include<imageProcessingFunctions>
 
 void main() {
-#ifdef CLIPPLANE
-	if (fClipDistance > 0.0)
-		discard;
-#endif  
-  outFragColor = texture(textureSampler, vUV) * vColor;
+	#include<clipPlaneFragment> 
+	vec4 textureColor = texture(textureSampler, vUV);
+  	outFragColor = textureColor * vColor;
+
+	#ifdef BLENDMULTIPLYMODE
+	float alpha = vColor.a * textureColor.a;
+	outFragColor.rgb = outFragColor.rgb * alpha + vec3(1.0) * (1.0 - alpha);	
+	#endif	  
 
 // Apply image processing if relevant. As this applies in linear space, 
 // We first move from gamma to linear.

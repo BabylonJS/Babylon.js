@@ -12,7 +12,7 @@ export { TelemetryLoaderPlugin, ILoaderPlugin, MSFTLodLoaderPlugin, ApplyMateria
 /**
  * Get a loader plugin according to its name.
  * The plugin will be cached and will be reused if called for again.
- * 
+ *
  * @param name the name of the plugin
  */
 export function getLoaderPluginByName(name: string) {
@@ -37,7 +37,7 @@ export function getLoaderPluginByName(name: string) {
 }
 
 /**
- * 
+ *
  */
 export function addLoaderPlugin(name: string, plugin: ILoaderPlugin) {
     if (pluginCache[name]) {

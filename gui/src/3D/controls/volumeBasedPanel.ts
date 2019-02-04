@@ -1,5 +1,8 @@
+import { Tools } from "babylonjs/Misc/tools";
+import { Matrix, Tmp, Vector3 } from "babylonjs/Maths/math";
+import { int } from "babylonjs/types";
+
 import { Container3D } from "./container3D";
-import { Tools, int, Matrix, Tmp, Vector3 } from "babylonjs";
 import { Control3D } from "./control3D";
 
 /**
@@ -47,8 +50,8 @@ export abstract class VolumeBasedPanel extends Container3D {
     }
 
     /**
-     * Gets or sets the number of columns requested (10 by default). 
-     * The panel will automatically compute the number of rows based on number of child controls. 
+     * Gets or sets the number of columns requested (10 by default).
+     * The panel will automatically compute the number of rows based on number of child controls.
      */
     public get columns(): int {
         return this._columns;
@@ -68,8 +71,8 @@ export abstract class VolumeBasedPanel extends Container3D {
     }
 
     /**
-     * Gets or sets a the number of rows requested. 
-     * The panel will automatically compute the number of columns based on number of child controls. 
+     * Gets or sets a the number of rows requested.
+     * The panel will automatically compute the number of columns based on number of child controls.
      */
     public get rows(): int {
         return this._rows;

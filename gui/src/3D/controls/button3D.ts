@@ -1,5 +1,14 @@
+import { int, Nullable } from "babylonjs/types";
+import { Color3, Vector4 } from "babylonjs/Maths/math";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
+import { Material } from "babylonjs/Materials/material";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Scene } from "babylonjs/scene";
+
 import { AbstractButton3D } from "./abstractButton3D";
-import { Material, Nullable, int, Color3, StandardMaterial, Texture, Scene, TransformNode, Vector4, MeshBuilder, AbstractMesh } from "babylonjs";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control } from "../../2D/controls/control";
 
@@ -72,11 +81,11 @@ export class Button3D extends AbstractButton3D {
                 return;
             }
             (<StandardMaterial>this._currentMaterial).emissiveColor = Color3.Red();
-        }
+        };
 
         this.pointerOutAnimation = () => {
             (<StandardMaterial>this._currentMaterial).emissiveColor = Color3.Black();
-        }
+        };
 
         this.pointerDownAnimation = () => {
             if (!this.mesh) {
@@ -84,7 +93,7 @@ export class Button3D extends AbstractButton3D {
             }
 
             this.mesh.scaling.scaleInPlace(0.95);
-        }
+        };
 
         this.pointerUpAnimation = () => {
             if (!this.mesh) {
@@ -92,7 +101,7 @@ export class Button3D extends AbstractButton3D {
             }
 
             this.mesh.scaling.scaleInPlace(1.0 / 0.95);
-        }
+        };
     }
 
     /**
@@ -143,7 +152,7 @@ export class Button3D extends AbstractButton3D {
         }
         faceUV[1] = new Vector4(0, 0, 1, 1);
 
-        let mesh = MeshBuilder.CreateBox(this.name + "_rootMesh", {
+        let mesh = BoxBuilder.CreateBox(this.name + "_rootMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08,

@@ -2,7 +2,6 @@
 
 // Constants
 uniform vec3 vEyePosition;
-uniform vec4 vDiffuseColor;
 
 // Gradient variables
 uniform vec4 topColor;
@@ -35,13 +34,6 @@ varying vec4 vColor;
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
-
-// Samplers
-#ifdef DIFFUSE
-varying vec2 vDiffuseUV;
-uniform sampler2D diffuseSampler;
-uniform vec2 vDiffuseInfos;
-#endif
 
 #include<clipPlaneFragmentDeclaration>
 
@@ -84,15 +76,16 @@ void main(void) {
 #endif
 
 	// Lighting
+#ifdef EMISSIVE
+	vec3 diffuseBase = baseColor.rgb;
+#else
 	vec3 diffuseBase = vec3(0., 0., 0.);
+#endif
     lightingInfo info;
 	float shadow = 1.;
     float glossiness = 0.;
     
-#include<lightFragment>[0]
-#include<lightFragment>[1]
-#include<lightFragment>[2]
-#include<lightFragment>[3]
+#include<lightFragment>[0..maxSimultaneousLights]
 
 #ifdef VERTEXALPHA
 	alpha *= vColor.a;

@@ -10,16 +10,17 @@ varying vec4 vViewPos;
 varying vec3 vPosition;
 #endif
 
+#ifdef VELOCITY
+varying vec4 vCurrentPosition;
+varying vec4 vPreviousPosition;
+#endif
+
 #ifdef ALPHATEST
 varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
-#ifdef POSITION
-#include<mrtFragmentDeclaration>[3]
-#else
-#include<mrtFragmentDeclaration>[2]
-#endif
+#include<mrtFragmentDeclaration>[RENDER_TARGET_COUNT]
 
 void main() {
 #ifdef ALPHATEST
@@ -33,6 +34,17 @@ void main() {
     //color2 = vec4(vPositionV, 1.0);
 
     #ifdef POSITION
-    gl_FragData[2] = vec4(vPosition, 1.0);
+    gl_FragData[POSITION_INDEX] = vec4(vPosition, 1.0);
+    #endif
+
+    #ifdef VELOCITY
+    vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
+	vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
+
+    vec2 velocity = (a - b) * 0.5 + 0.5;
+	velocity *= 0.5 + 0.5;
+	velocity = vec2(pow(velocity.x, 3.0), pow(velocity.y, 3.0));
+
+    gl_FragData[VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
     #endif
 }

@@ -1,4 +1,5 @@
-import { IDisposable, Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
+import { IDisposable } from "babylonjs/scene";
 import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
 import { ValueAndUnit } from "./valueAndUnit";
 
@@ -62,7 +63,7 @@ export class Style implements IDisposable {
     }
 
     /**
-     * Gets or sets the font style 
+     * Gets or sets the font style
      */
     public get fontStyle(): string {
         return this._fontStyle;
@@ -95,4 +96,4 @@ export class Style implements IDisposable {
     public dispose() {
         this.onChangedObservable.clear();
     }
-}    
+}

@@ -9,36 +9,66 @@
 }
 
 canvas {
+    height: calc(100% - 56px);
     border:none !important;
     outline:none !important;
 }
 
+.footerLeft{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 #fpsLabel {
-    position: absolute;
-    right: 10px;
-    top: 20px;
     cursor: default;
-    color: white;
+    z-index:10;
+    color:white;
+    pointer-events: none;
+    user-select: none;
+    line-height: 56px;
+    vertical-align: middle;
+    margin: auto 0px auto 15px;
 }
 
-#link {
+
+.footer {
     position: absolute;
     width: 100%;
-    bottom: 10px;
-    cursor: default;
-    color: white;
-    text-align: center;
-    left:0;
-    cursor:pointer;
+    height: 56px;
+    bottom: 0;
+    margin: 0;
+    padding: 0;
+    right: 0;
+    left: 0;
+    background-color: #3B789A;
 }
 
-#refresh {
+.footerRight {
+    display: inline;
     position: absolute;
-    width: 100%;
-    top: 10px;
-    cursor: default;
-    color: white;
-    text-align: center;
-    left:0;
-    cursor:pointer;
+    bottom: 0;
+    right: 0px;
+    top: 0px;
+}
+
+.footerRight a {
+    float: left; /* Float links side by side */
+    width: 56px; 
+    height: 56px;
+    margin: 0px;
+    padding: 0;
+    transition: all 0.3s ease; /* Add transition for hover effects */
+}
+
+.footerRight a img {
+    margin: 10px;
+}
+
+.footerRight a:hover {
+    background-color: #2c5a74; /* Add a hover color */    
+}
+
+.footerRight a:active{
+    background-color: #162D3A; /* Add a hover color */
 }

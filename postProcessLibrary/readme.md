@@ -21,7 +21,7 @@ To build all post processes and generate the *dist* folder, just run from the to
 gulp postProcesLibrary
 ```
 
-To integrate your new post process to the build process, you have to edit the config.json file in the tools/gulp folder and add an entry in the "postProcessLibray/libraries" section of the file:
+To integrate your new post process to the build process, you have to edit the config.json file in the tools/config folder and add an entry in the "postProcessLibray/libraries" section of the file:
 
 ```
   "libraries": [   

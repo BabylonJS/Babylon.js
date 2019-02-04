@@ -73,9 +73,9 @@ describe("Configuration mappers", () => {
             map: (rawSource) => {
                 return {
                     version: randomVersion
-                }
+                };
             }
-        }
+        };
 
         console.log("Next error log is expected");
 

@@ -1,47 +1,51 @@
-/// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
+import { Nullable } from "babylonjs/types";
+import { Material } from "babylonjs/Materials/material";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 
-module BABYLON.GLTF2.Extensions {
-    const NAME = "MSFT_minecraftMesh";
+import { IMaterial } from "../glTFLoaderInterfaces";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { GLTFLoader } from "../glTFLoader";
 
-    /** @hidden */
-    export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
-        public readonly name = NAME;
-        public enabled = true;
+const NAME = "MSFT_minecraftMesh";
 
-        private _loader: GLTFLoader;
+/** @hidden */
+export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
+    public readonly name = NAME;
+    public enabled = true;
 
-        constructor(loader: GLTFLoader) {
-            this._loader = loader;
-        }
+    private _loader: GLTFLoader;
 
-        public dispose() {
-            delete this._loader;
-        }
-
-        public loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-            return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
-                if (extra) {
-                    if (!(babylonMaterial instanceof PBRMaterial)) {
-                        throw new Error(`${extraContext}: Material type not supported`);
-                    }
-
-                    const promise = this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
-
-                    if (babylonMaterial.needAlphaBlending()) {
-                        babylonMaterial.forceDepthWrite = true;
-                        babylonMaterial.separateCullingPass = true;
-                    }
-
-                    babylonMaterial.backFaceCulling = babylonMaterial.forceDepthWrite;
-                    babylonMaterial.twoSidedLighting = true;
-
-                    return promise;
-                }
-
-                return null;
-            });
-        }
+    constructor(loader: GLTFLoader) {
+        this._loader = loader;
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new MSFT_minecraftMesh(loader));
+    public dispose() {
+        delete this._loader;
+    }
+
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+        return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
+            if (extra) {
+                if (!(babylonMaterial instanceof PBRMaterial)) {
+                    throw new Error(`${extraContext}: Material type not supported`);
+                }
+
+                const promise = this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
+
+                if (babylonMaterial.needAlphaBlending()) {
+                    babylonMaterial.forceDepthWrite = true;
+                    babylonMaterial.separateCullingPass = true;
+                }
+
+                babylonMaterial.backFaceCulling = babylonMaterial.forceDepthWrite;
+                babylonMaterial.twoSidedLighting = true;
+
+                return promise;
+            }
+
+            return null;
+        });
+    }
 }
+
+GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_minecraftMesh(loader));

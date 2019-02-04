@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfigRules",
+  "compilerOptions": {
+    "baseUrl": "./src/",
+    "rootDir": "./src/",
+    "paths": {
+      "babylonjs/*": [
+        "../../dist/preview release/babylon.module.d.ts"
+      ],
+      "babylonjs-gltf2interface": [
+        "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
+      ]
+    }
+  }
+}

@@ -12,12 +12,12 @@ export class Boot {
         document.body.innerHTML = `<div id="result-div"></div><div id="working-div"></div>`;
 
         //register actions to occur before each test
-        beforeEach(function (done) {
+        beforeEach(function(done) {
             // tslint:disable-next-line:no-console
             //console.debug('> Executing "' + details.name + '"');
 
             //clear DOM and create canvas and container
-            document.getElementById('working-div')!.innerHTML = `<div style="font-size:30px;">WORKING CANVASES.</div> 
+            document.getElementById('working-div')!.innerHTML = `<div style="font-size:30px;">WORKING CANVASES.</div>
 				<div id="viewer-testing" style="width:512px;height:512px;">
                     <div id="renderCanvas" width="512" height="512" style="width:512px;height:512px;">
                     <canvas width="512" height="512" style="width:512px;height:512px;"></canvas></div>
@@ -53,8 +53,8 @@ export class Boot {
 
             viewerGlobals.disableInit = true;
 
-            var DOMContentLoaded_event = document.createEvent("Event")
-            DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true)
+            var DOMContentLoaded_event = document.createEvent("Event");
+            DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true);
             window.document.dispatchEvent(DOMContentLoaded_event);
 
             // Disable Webgl2 support in test mode for Phantom/IE compatibility.
@@ -62,7 +62,7 @@ export class Boot {
             done();
         });
 
-        afterEach(function (done) {
+        afterEach(function(done) {
             Helper.disposeViewer();
             //(<any>window).BabylonViewer.disposeAll();
             done();

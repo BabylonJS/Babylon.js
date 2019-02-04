@@ -1,51 +1,59 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
     <title>BabylonJS - Sandbox</title>
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
     <link href="index.css" rel="stylesheet" />
+    <script src="../dist/preview%20release/ammo.js"></script>
     <script src="../dist/preview%20release/cannon.js"></script>
     <script src="../dist/preview%20release/Oimo.js"></script>
+    <script src="../dist/preview%20release/gltf_validator.js"></script>
     <script src="../Tools/DevLoader/BabylonLoader.js"></script>
 </head>
+
 <body>
-    <p id="droptext">Drag and drop gltf, glb, obj or babylon files to view them</p>
-    <canvas id="renderCanvas"></canvas>
-    <div id="logo">
-    </div>
-    <div id="footer" class="footer">
-        <div id="animationBar">
-            <div class="dropdown">
-                <div id="dropdownBtn">
-                    <img src="Assets/Icon_Up.svg" id="chevronUp">
-                    <img src="Assets/Icon_Down.svg" id="chevronDown">
-                    <span id="dropdownLabel"></span>
+    <div id="root">
+        <p id="droptext">Drag and drop gltf, glb, obj or babylon files to view them</p>
+        <div id="canvasZone">
+            <canvas id="renderCanvas" touch-action="none"></canvas>
+        </div>
+        <div id="footer" class="footer">
+            <div id="animationBar">
+                <div class="dropdown">
+                    <div id="dropdownBtn">
+                        <img src="Assets/Icon_Up.svg" id="chevronUp">
+                        <img src="Assets/Icon_Down.svg" id="chevronDown">
+                        <span id="dropdownLabel"></span>
+                    </div>
+                    <div id="dropdownContent">
+                    </div>
                 </div>
-                <div id="dropdownContent">
+                <div class="row">
+                    <button id="playBtn" class="pause">
+                        <img id="playImg" src="Assets/Icon_Play.svg">
+                        <img id="pauseImg" src="Assets/Icon_Pause.svg">
+                    </button>
+                    <input id="slider" type="range" min="0" max="100" value="0" step="any">
                 </div>
             </div>
-            <div class="row">
-                <button id="playBtn" class="pause">
-                    <img id="playImg" src="Assets/Icon_Play.svg">
-                    <img id="pauseImg" src="Assets/Icon_Pause.svg">
-                </button>
-                <input id="slider" type="range" min="0" max="100" value="0" step="any">
+            <div class="footerRight">
+                <a href="javascript:void(null);" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg"
+                        alt="Display inspector" title="Display inspector" /></a>
+                <a href="javascript:void(null);">
+                    <div class="custom-upload" title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
+                        <input type="file" id="files" multiple />
+                    </div>
+                </a>
             </div>
         </div>
-        <div class="footerRight">
-            <a href="javascript:void(null);" id="btnFullscreen" class="hidden"><img src="./Assets/Icon_Fullscreen.svg" alt="Switch the scene to full screen" title="Switch the scene to full screen" /></a> 
-            <a href="javascript:void(null);" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg" alt="Display inspector" title="Display inspector" /></a> 
-            <a href="javascript:void(null);">
-                <div class="custom-upload" title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
-                    <input type="file" id="files" multiple />
-                </div>
-            </a>
+        <div id="logo">
         </div>
+        <div id="errorZone"></div>
     </div>
-    <div id="errorZone"></div>
     <script>
         // prevent drag and drop of file until local scripts are loaded
-        document.ondragover = function (e) {
+        document.ondragover = function(e) {
             e.dataTransfer.dropEffect = "none";
             e.dataTransfer.effectAllowed = "none";
             e.preventDefault();
@@ -53,7 +61,7 @@
 
         BABYLONDEVTOOLS.Loader
             .require('index.js')
-            .load(function () {
+            .load(function() {
                 BABYLON.DracoCompression.Configuration.decoder = {
                     wasmUrl: "../dist/preview%20release/draco_wasm_wrapper_gltf.js",
                     wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
@@ -62,4 +70,5 @@
             });
     </script>
 </body>
+
 </html>

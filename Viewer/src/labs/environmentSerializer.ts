@@ -37,7 +37,6 @@ export interface PBREnvironment {
     textureIntensityScale: number;
 }
 
-
 /**
 		 * Environment map representations: layouts, projections and approximations
 		 */
@@ -238,7 +237,7 @@ export class EnvironmentDeserializer {
     /**
      * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
      *	  L = (1/pi) * E * rho
-     * 
+     *
      * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
      * @param harmonics Spherical harmonic coefficients (9)
      */

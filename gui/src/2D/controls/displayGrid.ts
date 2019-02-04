@@ -1,6 +1,4 @@
-
-import { Control } from ".";
-import { Measure } from "..";
+import { Control } from "./control";
 
 /** Class used to render a grid  */
 export class DisplayGrid extends Control {
@@ -32,7 +30,7 @@ export class DisplayGrid extends Control {
 
         this._displayMinorLines = value;
         this._markAsDirty();
-    }  
+    }
 
     /** Gets or sets a boolean indicating if major lines must be rendered (true by default)) */
     public get displayMajorLines(): boolean {
@@ -46,7 +44,7 @@ export class DisplayGrid extends Control {
 
         this._displayMajorLines = value;
         this._markAsDirty();
-    }  
+    }
 
     /** Gets or sets background color (Black by default) */
     public get background(): string {
@@ -60,7 +58,7 @@ export class DisplayGrid extends Control {
 
         this._background = value;
         this._markAsDirty();
-    }    
+    }
 
     /** Gets or sets the width of each cell (20 by default) */
     public get cellWidth(): number {
@@ -104,7 +102,7 @@ export class DisplayGrid extends Control {
         this._minorLineColor = value;
 
         this._markAsDirty();
-    }    
+    }
 
     /** Gets or sets the tickness of major lines (2 by default) */
     public get majorLineTickness(): number {
@@ -126,7 +124,7 @@ export class DisplayGrid extends Control {
         this._majorLineColor = value;
 
         this._markAsDirty();
-    }    
+    }
 
     /** Gets or sets the frequency of major lines (default is 1 every 5 minor lines)*/
     public get majorLineFrequency(): number {
@@ -147,12 +145,12 @@ export class DisplayGrid extends Control {
         super(name);
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
-        
+
         this._applyStates(context);
 
-        if (this._processMeasures(parentMeasure, context)) {
+        if (this._isEnabled) {
 
             if (this._background) {
                 context.fillStyle = this._background;
@@ -162,13 +160,13 @@ export class DisplayGrid extends Control {
             let cellCountX = this._currentMeasure.width / this._cellWidth;
             let cellCountY = this._currentMeasure.height / this._cellHeight;
 
-            // Minor lines    
+            // Minor lines
             const left = this._currentMeasure.left + this._currentMeasure.width / 2;
             const top = this._currentMeasure.top + this._currentMeasure.height / 2;
 
             if (this._displayMinorLines) {
                 context.strokeStyle = this._minorLineColor;
-                context.lineWidth = this._minorLineTickness;    
+                context.lineWidth = this._minorLineTickness;
 
                 for (var x = -cellCountX / 2; x < cellCountX / 2; x++) {
                     const cellX = left + x * this.cellWidth;
@@ -176,8 +174,8 @@ export class DisplayGrid extends Control {
                     context.beginPath();
                     context.moveTo(cellX, this._currentMeasure.top);
                     context.lineTo(cellX, this._currentMeasure.top + this._currentMeasure.height);
-                    
-                    context.stroke();                
+
+                    context.stroke();
                 }
 
                 for (var y = -cellCountY / 2; y < cellCountY / 2; y++) {
@@ -193,12 +191,12 @@ export class DisplayGrid extends Control {
             // Major lines
             if (this._displayMajorLines) {
                 context.strokeStyle = this._majorLineColor;
-                context.lineWidth = this._majorLineTickness;        
+                context.lineWidth = this._majorLineTickness;
 
                 for (var x = -cellCountX / 2 + this._majorLineFrequency; x < cellCountX / 2; x += this._majorLineFrequency) {
                     let cellX = left + x * this.cellWidth;
 
-                    context.beginPath();    
+                    context.beginPath();
                     context.moveTo(cellX, this._currentMeasure.top);
                     context.lineTo(cellX, this._currentMeasure.top + this._currentMeasure.height);
                     context.stroke();
@@ -220,4 +218,4 @@ export class DisplayGrid extends Control {
     protected _getTypeName(): string {
         return "DisplayGrid";
     }
-}    
+}

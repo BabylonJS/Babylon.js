@@ -80,9 +80,9 @@ export class Helper {
     }
 
     public static MockScreenCapture(viewer: AbstractViewer, data) {
-        BABYLON.Tools.CreateScreenshot = function (viewer, camera, size, successCallback) {
+        BABYLON.Tools.CreateScreenshot = function(viewer, camera, size, successCallback) {
             successCallback && successCallback(data || '');
-        }
+        };
     }
 
     public static MockModelAnimation(model: ViewerModel, name: string) {
@@ -137,12 +137,9 @@ export class NullEngineAbstractViewer extends AbstractViewer {
 
         this.engine.getRenderingCanvas = () => {
             return this.canvas;
-        }
+        };
 
         this.sceneManager = new SceneManager(this.engine, this.configurationContainer, this.observablesManager);
-
-        // Disable manifest checking
-        BABYLON.Database.IDBStorageEnabled = false;
 
         if (!config.disableResize) {
             window.addEventListener('resize', this._resize);
@@ -153,9 +150,9 @@ export class NullEngineAbstractViewer extends AbstractViewer {
             this.engine.setHardwareScalingLevel(scale);
         }
 
-        this.engine.createCubeTexture = <any>function () { };
+        this.engine.createCubeTexture = <any>function() { };
 
-        this.engine.dispose = function () { };
+        this.engine.dispose = function() { };
 
         return Promise.resolve(this.engine);
     }
@@ -179,12 +176,9 @@ export class NullEngineDefaultViewer extends DefaultViewer {
         this.engine = new BABYLON.NullEngine(config.engineOptions);
         this.engine.getRenderingCanvas = () => {
             return this.canvas;
-        }
+        };
 
         this.sceneManager = new SceneManager(this.engine, this.configurationContainer, this.observablesManager);
-
-        // Disable manifest checking
-        BABYLON.Database.IDBStorageEnabled = false;
 
         if (!config.disableResize) {
             window.addEventListener('resize', this._resize);
@@ -195,9 +189,9 @@ export class NullEngineDefaultViewer extends DefaultViewer {
             this.engine.setHardwareScalingLevel(scale);
         }
 
-        this.engine.createCubeTexture = <any>function () { };
+        this.engine.createCubeTexture = <any>function() { };
 
-        this.engine.dispose = function () { };
+        this.engine.dispose = function() { };
 
         return Promise.resolve(this.engine);
     }
@@ -218,22 +212,22 @@ class ModelAnimationMock implements IModelAnimation {
     public playMode = AnimationPlayMode.ONCE;
 
     constructor(public name: string) {
-        this.state = AnimationState.INIT
+        this.state = AnimationState.INIT;
     }
 
     public reset() {
         this.currentFrame = 0;
-        this.state = AnimationState.STOPPED
+        this.state = AnimationState.STOPPED;
     }
     public restart() {
         this.goToFrame(0);
     }
 
     public start() {
-        this.state = AnimationState.PLAYING
+        this.state = AnimationState.PLAYING;
     }
     public stop() {
-        this.state = AnimationState.STOPPED
+        this.state = AnimationState.STOPPED;
     }
     public dispose() {
 
@@ -242,6 +236,6 @@ class ModelAnimationMock implements IModelAnimation {
         this.currentFrame = frame;
     }
     public pause() {
-        this.state = AnimationState.PAUSED
+        this.state = AnimationState.PAUSED;
     }
 }

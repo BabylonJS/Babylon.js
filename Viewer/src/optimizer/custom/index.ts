@@ -4,7 +4,7 @@ import { SceneManager } from "../../managers/sceneManager";
 const cache: { [key: string]: (sceneManager: SceneManager) => boolean } = {};
 
 /**
- * 
+ *
  * @param name the name of the custom optimizer configuration
  * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
  */

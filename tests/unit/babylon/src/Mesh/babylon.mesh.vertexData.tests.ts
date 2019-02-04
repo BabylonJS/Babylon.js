@@ -5,11 +5,12 @@ describe('Babylon Mesh Vertex Data', () => {
     /**
      * Loads the dependencies.
      */
-    before(function (done) {
+    before(function(done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
-            .load(function () {
+            .testMode()
+            .load(function() {
                 // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 done();

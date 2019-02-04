@@ -62,8 +62,10 @@ export let defaultConfiguration: ViewerConfiguration = {
                 }
             },
             events: {
+                click: {
+                    '.navbar-control': true
+                },
                 pointerdown: {
-                    '.navbar-control': true,
                     '.help-button': true
                 },
                 input: {
@@ -117,4 +119,4 @@ export let defaultConfiguration: ViewerConfiguration = {
     },
     scene: {
     }
-}
+};

@@ -1,5 +1,7 @@
+import { Tools } from "babylonjs/Misc/tools";
+import { Matrix, Tmp, Vector3 } from "babylonjs/Maths/math";
+
 import { Container3D } from "./container3D";
-import { Tools, Matrix, Tmp, Vector3 } from "babylonjs";
 
 /**
  * Class used to create a stack panel in 3D on XY plane
@@ -33,7 +35,7 @@ export class StackPanel3D extends Container3D {
 
     /**
      * Creates new StackPanel
-     * @param isVertical 
+     * @param isVertical
      */
     public constructor(isVertical = false) {
         super();
@@ -102,7 +104,7 @@ export class StackPanel3D extends Container3D {
                 offset += extendSize.x * 2;
             }
 
-            offset += (controlCount > 0 ? this.margin : 0)
+            offset += (controlCount > 0 ? this.margin : 0);
         }
     }
 }

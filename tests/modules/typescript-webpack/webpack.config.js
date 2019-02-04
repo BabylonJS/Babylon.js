@@ -11,7 +11,6 @@ module.exports = {
         alias: {
             "babylonjs": __dirname + '/../../../dist/preview release/babylon.max.js',
             "babylonjs-gui": __dirname + '/../../../dist/preview release/gui/babylon.gui.js',
-            "babylonjs-inspector": __dirname + '/../../../dist/preview release/inspector/babylon.inspector.js',
             "babylonjs-loaders": __dirname + '/../../../dist/preview release/loaders/babylonjs.loaders.js',
             "babylonjs-serializers": __dirname + '/../../../dist/preview release/serializers/babylonjs.serializers.js',
         }

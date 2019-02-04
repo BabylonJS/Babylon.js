@@ -2,7 +2,6 @@
 
 // Uniforms
 uniform float brightness;
-uniform int octaves;
 uniform float persistence;
 uniform float timeScale;
 
@@ -42,7 +41,7 @@ float perlinNoise2D(float x,float y)
     float sum = 0.0;
     float frequency = 0.0;
     float amplitude = 0.0;
-    for(int i = 0; i < octaves; i++)
+    for(int i = 0; i < OCTAVES; i++)
     {
         frequency = pow(2.0, float(i));
         amplitude = pow(persistence, float(i));

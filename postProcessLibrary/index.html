@@ -4,7 +4,7 @@
 <head>
 	<title>Shaders Library</title>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
-	<script src="../tools/DevLoader/BabylonLoader.js"></script>
+	<script src="../Tools/DevLoader/BabylonLoader.js"></script>
 
 	<style>
 		html,
@@ -58,7 +58,24 @@
 			var hemisphericLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 			
 			// Create meshes
-			var sphere = BABYLON.Mesh.CreateSphere("sphere", 48, 30.0, scene);			
+			var sphere = BABYLON.Mesh.CreateSphere("sphere", 48, 30.0, scene);
+
+			var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
+			var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+			skyboxMaterial.backFaceCulling = false;
+			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/Playground/textures/TropicalSunnyDay", scene);
+			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+			skyboxMaterial.disableLighting = true;
+			skybox.material = skyboxMaterial;
+			skybox.setEnabled(false);
+			
+			// Materials
+			sphere.material = new BABYLON.StandardMaterial("std", scene);
+			sphere.material.diffuseTexture = new BABYLON.Texture("/Playground/textures/amiga.jpg", scene);
+			sphere.material.diffuseTexture.uScale = 5;
+			sphere.material.diffuseTexture.vScale = 5;
 
 			// Register a render loop to repeatedly render the scene
 			engine.runRenderLoop(function () {
@@ -71,29 +88,43 @@
 				engine.resize();
 			});
 
+			// Post-processes
 			var aaPostProcess = new BABYLON.AsciiArtPostProcess("AsciiArt", camera);
 			var drPostProcess = new BABYLON.DigitalRainPostProcess("AsciiArt", camera);
 
+			var oceanPostProcess = new BABYLON.OceanPostProcess("Ocean", camera);
+			if (oceanPostProcess.isSupported) {
+				oceanPostProcess.refractionTexture.renderList = scene.meshes;
+				oceanPostProcess.reflectionTexture.renderList = scene.meshes;
+				oceanPostProcess.reflectionEnabled = oceanPostProcess.refractionEnabled = true;
+			}
+			
 			//camera.detachPostProcess(aaPostProcess);
 			camera.detachPostProcess(drPostProcess);
+			camera.detachPostProcess(oceanPostProcess);
 
 			var gui = new dat.GUI();
 			var options = {
 				postProcess: "asciiArt"
 			}
 
-			gui.add(options, 'postProcess', ['asciiArt', 'digitalRain']).onFinishChange(function () {
-				
+			gui.add(options, 'postProcess', ['asciiArt', 'digitalRain', 'ocean']).onFinishChange(function () {
+				camera.detachPostProcess(aaPostProcess);
+				camera.detachPostProcess(drPostProcess);
+				camera.detachPostProcess(oceanPostProcess);
+
+				skybox.setEnabled(false);
+
 				switch (options.postProcess) {
 					case "asciiArt":
-						camera.detachPostProcess(aaPostProcess);
-						camera.detachPostProcess(drPostProcess);
 						camera.attachPostProcess(aaPostProcess);
 						break;
 					case "digitalRain":
-						camera.detachPostProcess(aaPostProcess);
-						camera.detachPostProcess(drPostProcess);
 						camera.attachPostProcess(drPostProcess);
+						break;
+					case "ocean":
+						camera.attachPostProcess(oceanPostProcess);
+						skybox.setEnabled(true);
 						break;
 				}
 			});

@@ -1,8 +1,9 @@
+import { Nullable } from "babylonjs/types";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+
 import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
-import { Nullable, AbstractMesh } from "babylonjs";
 import { Measure } from "../measure";
-
 
 /**
  * Class used to create multi line control
@@ -67,22 +68,22 @@ export class MultiLine extends Control {
 
     /**
      * Adds new points to the point collection
-     * @param items defines the list of items (mesh, control or 2d coordiantes) to add 
+     * @param items defines the list of items (mesh, control or 2d coordiantes) to add
      * @returns the list of created MultiLinePoint
      */
     public add(...items: (AbstractMesh | Control | { x: string | number, y: string | number })[]): MultiLinePoint[] {
-        return items.map(item => this.push(item));
+        return items.map((item) => this.push(item));
     }
 
     /**
      * Adds a new point to the point collection
-     * @param item defines the item (mesh, control or 2d coordiantes) to add 
+     * @param item defines the item (mesh, control or 2d coordiantes) to add
      * @returns the created MultiLinePoint
      */
     public push(item?: (AbstractMesh | Control | { x: string | number, y: string | number })): MultiLinePoint {
         var point: MultiLinePoint = this.getAt(this._points.length);
 
-        if (item == null) return point;
+        if (item == null) { return point; }
 
         if (item instanceof AbstractMesh) {
             point.mesh = item;
@@ -127,6 +128,24 @@ export class MultiLine extends Control {
         this._points.splice(index, 1);
     }
 
+    /**
+     * Resets this object to initial state (no point)
+     */
+    public reset(): void {
+        while (this._points.length > 0) {
+            this.remove(this._points.length - 1);
+        }
+    }
+
+    /**
+     * Resets all links
+     */
+    public resetLinks(): void {
+        this._points.forEach((point) => {
+            if (point != null) { point.resetLinks(); }
+        });
+    }
+
     /** Gets or sets line width */
     public get lineWidth(): number {
         return this._lineWidth;
@@ -153,7 +172,7 @@ export class MultiLine extends Control {
         return "MultiLine";
     }
 
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -165,32 +184,30 @@ export class MultiLine extends Control {
 
         this._applyStates(context);
 
-        if (this._processMeasures(parentMeasure, context)) {
-            context.strokeStyle = this.color;
-            context.lineWidth = this._lineWidth;
-            context.setLineDash(this._dash);
+        context.strokeStyle = this.color;
+        context.lineWidth = this._lineWidth;
+        context.setLineDash(this._dash);
 
-            context.beginPath();
+        context.beginPath();
 
-            var first: boolean = true; //first index is not necessarily 0
+        var first: boolean = true; //first index is not necessarily 0
 
-            this._points.forEach(point => {
-                if (!point) {
-                    return;
-                }
+        this._points.forEach((point) => {
+            if (!point) {
+                return;
+            }
 
-                if (first) {
-                    context.moveTo(point._point.x, point._point.y);
+            if (first) {
+                context.moveTo(point._point.x, point._point.y);
 
-                    first = false;
-                }
-                else {
-                    context.lineTo(point._point.x, point._point.y);
-                }
-            });
+                first = false;
+            }
+            else {
+                context.lineTo(point._point.x, point._point.y);
+            }
+        });
 
-            context.stroke();
-        }
+        context.stroke();
 
         context.restore();
     }
@@ -208,16 +225,16 @@ export class MultiLine extends Control {
 
             point.translate();
 
-            if (this._minX == null || point._point.x < this._minX) this._minX = point._point.x;
-            if (this._minY == null || point._point.y < this._minY) this._minY = point._point.y;
-            if (this._maxX == null || point._point.x > this._maxX) this._maxX = point._point.x;
-            if (this._maxY == null || point._point.y > this._maxY) this._maxY = point._point.y;
+            if (this._minX == null || point._point.x < this._minX) { this._minX = point._point.x; }
+            if (this._minY == null || point._point.y < this._minY) { this._minY = point._point.y; }
+            if (this._maxX == null || point._point.x > this._maxX) { this._maxX = point._point.x; }
+            if (this._maxY == null || point._point.y > this._maxY) { this._maxY = point._point.y; }
         });
 
-        if (this._minX == null) this._minX = 0;
-        if (this._minY == null) this._minY = 0;
-        if (this._maxX == null) this._maxX = 0;
-        if (this._maxY == null) this._maxY = 0;
+        if (this._minX == null) { this._minX = 0; }
+        if (this._minY == null) { this._minY = 0; }
+        if (this._maxX == null) { this._maxX = 0; }
+        if (this._maxY == null) { this._maxY = 0; }
     }
 
     public _measure(): void {
@@ -239,11 +256,9 @@ export class MultiLine extends Control {
     }
 
     public dispose(): void {
-        while (this._points.length > 0) {
-            this.remove(this._points.length - 1);
-        }
+        this.reset();
 
         super.dispose();
     }
 
-}    
+}

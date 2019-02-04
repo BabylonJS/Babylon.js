@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper, Axis, Matrix } from 'babylonjs';
+import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper, Axis, Matrix, DirectionalLight, SpotLight, PointLight, IShadowLight } from 'babylonjs';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration';
 import { ViewerModel, ModelState } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
@@ -82,7 +82,6 @@ export class SceneManager {
 
     private _animationBlendingEnabled: boolean = true;
 
-
     //The following are configuration objects, default values.
     protected _defaultHighpTextureType: number;
     protected _shadowGeneratorBias: number;
@@ -114,7 +113,6 @@ export class SceneManager {
     public get defaultRenderingPipeline() {
         return this._defaultRenderingPipeline;
     }
-
 
     protected _vrHelper?: VRExperienceHelper;
 
@@ -154,7 +152,7 @@ export class SceneManager {
                         }
                     }
                 }
-            }
+            };
             scene.registerBeforeRender(() => {
                 if (this._forceShadowUpdate || (scene.animatables && scene.animatables.length > 0)) {
                     // make sure all models are loaded
@@ -165,7 +163,7 @@ export class SceneManager {
                         model.shadowsRenderedAfterLoad = true;
                         return false;
                     }
-                    return model.state === ModelState.COMPLETE && !model.currentAnimation
+                    return model.state === ModelState.COMPLETE && !model.currentAnimation;
                 }))) {
                     updateShadows();
                 }
@@ -187,12 +185,12 @@ export class SceneManager {
                 this._focusOnModel(model);
             });
 
-            this._observablesManager.onModelAddedObservable.add(model => {
+            this._observablesManager.onModelAddedObservable.add((model) => {
                 this.models.push(model);
             });
-            this._observablesManager.onModelRemovedObservable.add(model => {
+            this._observablesManager.onModelRemovedObservable.add((model) => {
                 this.models.splice(this.models.indexOf(model), 1);
-            })
+            });
 
         }
 
@@ -240,7 +238,7 @@ export class SceneManager {
     /**
      * Should shadows be rendered every frame, or only once and stop.
      * This can be used to optimize a scene.
-     * 
+     *
      * Not that the shadows will NOT disapear but will remain in place.
      * @param process if true shadows will be updated once every frame. if false they will stop being updated.
      */
@@ -269,7 +267,7 @@ export class SceneManager {
     }
 
     public set groundEnabled(newValue: boolean) {
-        if (newValue === this._groundEnabled) return;
+        if (newValue === this._groundEnabled) { return; }
 
         this._groundEnabled = newValue;
 
@@ -359,8 +357,8 @@ export class SceneManager {
 
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
-            var defaultMaterial = new BABYLON.PBRMaterial('defaultMaterial', this.scene);
-            defaultMaterial.reflectivityColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            var defaultMaterial = new PBRMaterial('defaultMaterial', this.scene);
+            defaultMaterial.reflectivityColor = new Color3(0.1, 0.1, 0.1);
             defaultMaterial.microSurface = 0.6;
 
             if (this.scene.defaultMaterial) {
@@ -381,7 +379,7 @@ export class SceneManager {
             if (typeof sceneConfiguration.glow === 'object') {
                 options = sceneConfiguration.glow
             }
-            var gl = new BABYLON.GlowLayer("glow", this.scene, options);
+            var gl = new GlowLayer("glow", this.scene, options);
         }*/
 
         return this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
@@ -389,11 +387,11 @@ export class SceneManager {
 
     public clearScene(clearModels: boolean = true, clearLights: boolean = false) {
         if (clearModels) {
-            this.models.forEach(m => m.dispose());
+            this.models.forEach((m) => m.dispose());
             this.models.length = 0;
         }
         if (clearLights) {
-            this.scene.lights.forEach(l => l.dispose());
+            this.scene.lights.forEach((l) => l.dispose());
         }
     }
 
@@ -465,7 +463,7 @@ export class SceneManager {
 
             if (newConfiguration.lab.globalLightRotation !== undefined) {
                 // rotate all lights that are shadow lights
-                this.scene.lights.filter(light => light instanceof ShadowLight).forEach(light => {
+                this.scene.lights.filter((light) => light instanceof ShadowLight).forEach((light) => {
                     // casting and '!' are safe, due to the constraints tested before
                     this.labs.rotateShadowLight(<ShadowLight>light, newConfiguration.lab!.globalLightRotation!);
                 });
@@ -586,13 +584,13 @@ export class SceneManager {
                 oldcc.r = cc.r;
             }
             if (cc.g !== undefined) {
-                oldcc.g = cc.g
+                oldcc.g = cc.g;
             }
             if (cc.b !== undefined) {
-                oldcc.b = cc.b
+                oldcc.b = cc.b;
             }
             if (cc.a !== undefined) {
-                oldcc.a = cc.a
+                oldcc.a = cc.a;
             }
         }
 
@@ -705,7 +703,7 @@ export class SceneManager {
             }
             if (this.sceneOptimizer) {
                 this.sceneOptimizer.stop();
-                this.sceneOptimizer.dispose()
+                this.sceneOptimizer.dispose();
             }
             if (optimizerConfig.custom) {
                 let customOptimizer = getCustomOptimizerByName(optimizerConfig.custom, optimizerConfig.improvementMode);
@@ -798,6 +796,16 @@ export class SceneManager {
                 });
             });
         }
+        this._vrHelper.onEnteringVRObservable.add(() => {
+            if (this._observablesManager) {
+                this._observablesManager.onEnteringVRObservable.notifyObservers(this);
+            }
+        });
+        this._vrHelper.onExitingVRObservable.add(() => {
+            if (this._observablesManager) {
+                this._observablesManager.onExitingVRObservable.notifyObservers(this);
+            }
+        });
         this.onVRConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this._vrHelper,
@@ -807,7 +815,7 @@ export class SceneManager {
 
     protected _configureEnvironmentMap(environmentMapConfiguration: IEnvironmentMapConfiguration): any {
         if (environmentMapConfiguration.texture) {
-            this.scene.environmentTexture = new BABYLON.CubeTexture(this._getAssetUrl(environmentMapConfiguration.texture), this.scene);
+            this.scene.environmentTexture = new CubeTexture(this._getAssetUrl(environmentMapConfiguration.texture), this.scene);
         }
 
         //sanity check
@@ -824,14 +832,13 @@ export class SceneManager {
                 this.mainColor.r = mc.r;
             }
             if (mc.g !== undefined) {
-                this.mainColor.g = mc.g
+                this.mainColor.g = mc.g;
             }
             if (mc.b !== undefined) {
-                this.mainColor.b = mc.b
+                this.mainColor.b = mc.b;
             }
 
             this.reflectionColor.copyFrom(this.mainColor);
-
 
             let environmentTint = getConfigurationKey("environmentMap.tintLevel", this._globalConfiguration) || 0;
 
@@ -887,7 +894,7 @@ export class SceneManager {
         }*/
 
         if (cameraConfig.rotation) {
-            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
+            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0);
         }
 
         if (cameraConfig.behaviors) {
@@ -896,7 +903,7 @@ export class SceneManager {
                     this._setCameraBehavior(name, cameraConfig.behaviors[name]);
                 }
             }
-        };
+        }
 
         const sceneExtends = this.scene.getWorldExtends((mesh) => {
             return !this.environmentHelper || (mesh !== this.environmentHelper.ground && mesh !== this.environmentHelper.rootMesh && mesh !== this.environmentHelper.skybox);
@@ -934,11 +941,13 @@ export class SceneManager {
         this.camera.radius = (this._globalConfiguration.camera && this._globalConfiguration.camera.radius) || this.camera.radius;
 
         const sceneDiagonalLenght = sizeVec.length();
-        if (isFinite(sceneDiagonalLenght))
+        if (isFinite(sceneDiagonalLenght)) {
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
+        }
 
-        if (this._configurationContainer.configuration)
+        if (this._configurationContainer.configuration) {
             this._configureEnvironment(this._configurationContainer.configuration.skybox, this._configurationContainer.configuration.ground);
+        }
         /*this.scene.lights.filter(light => light instanceof ShadowLight).forEach(light => {
             // casting ais safe, due to the constraints tested before
             (<ShadowLight>light).setDirectionToTarget(center);
@@ -950,9 +959,8 @@ export class SceneManager {
             if (this.environmentHelper) {
                 this.environmentHelper.dispose();
                 this.environmentHelper = undefined;
-            };
+            }
         } else {
-
 
             const options: Partial<IEnvironmentHelperOptions> = {
                 createGround: !!groundConfiguration && this._groundEnabled,
@@ -986,7 +994,7 @@ export class SceneManager {
                     options.groundTexture = this._getAssetUrl(groundConfig.texture);
                 }
                 if (groundConfig.color) {
-                    options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
+                    options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b);
                 }
 
                 if (groundConfig.opacity !== undefined) {
@@ -997,18 +1005,24 @@ export class SceneManager {
                     options.enableGroundMirror = true;
                     // to prevent undefines
                     if (typeof groundConfig.mirror === "object") {
-                        if (groundConfig.mirror.amount !== undefined)
+                        if (groundConfig.mirror.amount !== undefined) {
                             options.groundMirrorAmount = groundConfig.mirror.amount;
-                        if (groundConfig.mirror.sizeRatio !== undefined)
+                        }
+                        if (groundConfig.mirror.sizeRatio !== undefined) {
                             options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
-                        if (groundConfig.mirror.blurKernel !== undefined)
+                        }
+                        if (groundConfig.mirror.blurKernel !== undefined) {
                             options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
-                        if (groundConfig.mirror.fresnelWeight !== undefined)
+                        }
+                        if (groundConfig.mirror.fresnelWeight !== undefined) {
                             options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
-                        if (groundConfig.mirror.fallOffDistance !== undefined)
+                        }
+                        if (groundConfig.mirror.fallOffDistance !== undefined) {
                             options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
-                        if (this._defaultPipelineTextureType !== undefined)
+                        }
+                        if (this._defaultPipelineTextureType !== undefined) {
                             options.groundMirrorTextureType = this._defaultPipelineTextureType;
+                        }
                     }
                 }
             }
@@ -1025,7 +1039,7 @@ export class SceneManager {
                 }
                 options.sizeAuto = !options.skyboxSize;
                 if (conf.color) {
-                    options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b)
+                    options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b);
                 }
                 if (conf.cubeTexture && conf.cubeTexture.url) {
                     if (typeof conf.cubeTexture.url === "string") {
@@ -1099,7 +1113,6 @@ export class SceneManager {
                 }
             }
 
-
             let skyboxMaterial = this.environmentHelper.skyboxMaterial;
             if (skyboxMaterial) {
                 skyboxMaterial._perceptualColor = this.mainColor;
@@ -1117,7 +1130,6 @@ export class SceneManager {
             this._updateGroundMirrorRenderList(model);
         });
 
-
         this.onEnvironmentConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.environmentHelper!,
@@ -1130,25 +1142,26 @@ export class SceneManager {
 
     /**
      * configure the lights.
-     * 
+     *
      * @param lightsConfiguration the (new) light(s) configuration
      * @param model optionally use the model to configure the camera.
      */
     protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}) {
 
         // sanity check!
-        let lightKeys = Object.keys(lightsConfiguration).filter(name => name !== 'globalRotation');
+        let lightKeys = Object.keys(lightsConfiguration).filter((name) => name !== 'globalRotation');
 
         if (!lightKeys.length) {
-            if (!this.scene.lights.length)
+            if (!this.scene.lights.length) {
                 this.scene.createDefaultLight(true);
+            }
         } else {
 
-            let lightsAvailable: Array<string> = this.scene.lights.map(light => light.name);
+            let lightsAvailable: Array<string> = this.scene.lights.map((light) => light.name);
             // compare to the global (!) configuration object and dispose unneeded:
             let lightsToConfigure = Object.keys(this._globalConfiguration.lights || []);
             if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
-                lightsAvailable.forEach(lName => {
+                lightsAvailable.forEach((lName) => {
                     if (lightsToConfigure.indexOf(lName) === -1) {
                         this.scene.getLightByName(lName)!.dispose();
                     }
@@ -1170,7 +1183,7 @@ export class SceneManager {
                 // light is not already available
                 if (lightsAvailable.indexOf(name) === -1) {
                     let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                    if (!constructor) return;
+                    if (!constructor) { return; }
                     light = constructor();
                 } else {
                     // available? get it from the scene
@@ -1178,11 +1191,11 @@ export class SceneManager {
                     if (typeof lightsConfiguration[name] === 'boolean') {
                         lightConfig.type = light.getTypeID();
                     }
-                    lightsAvailable = lightsAvailable.filter(ln => ln !== name);
+                    lightsAvailable = lightsAvailable.filter((ln) => ln !== name);
                     if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
                         light.dispose();
                         let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                        if (!constructor) return;
+                        if (!constructor) { return; }
                         light = constructor();
                     }
                 }
@@ -1197,10 +1210,7 @@ export class SceneManager {
                 var enabled = lightConfig.enabled !== undefined ? lightConfig.enabled : !lightConfig.disabled;
                 light.setEnabled(enabled);
 
-
                 extendClassWithConfig(light, lightConfig);
-
-
 
                 //position. Some lights don't support shadows
                 if (light instanceof ShadowLight) {
@@ -1219,12 +1229,12 @@ export class SceneManager {
                     }
 
                     let isShadowEnabled = false;
-                    if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-                        (<BABYLON.DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
+                    if (light.getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+                        (<DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
                         isShadowEnabled = true;
                     }
-                    else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
-                        let spotLight: BABYLON.SpotLight = <BABYLON.SpotLight>light;
+                    else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
+                        let spotLight: SpotLight = <SpotLight>light;
                         if (lightConfig.spotAngle !== undefined) {
                             spotLight.angle = lightConfig.spotAngle * Math.PI / 180;
                         }
@@ -1233,14 +1243,14 @@ export class SceneManager {
                         }
                         isShadowEnabled = true;
                     }
-                    else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
+                    else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
                         if (lightConfig.shadowFieldOfView) {
-                            (<BABYLON.PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
+                            (<PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
                         }
                         isShadowEnabled = true;
                     }
 
-                    let shadowGenerator = <BABYLON.ShadowGenerator>light.getShadowGenerator();
+                    let shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
                     if (isShadowEnabled && lightConfig.shadowEnabled && this._maxShadows) {
                         let bufferSize = lightConfig.shadowBufferSize || 256;
 
@@ -1274,7 +1284,7 @@ export class SceneManager {
                 let configuration = globalLightsConfiguration[name];
                 let light = this.scene.getLightByName(name);
                 // sanity check
-                if (!light) return;
+                if (!light) { return; }
                 light.renderPriority = -idx;
             });
         }
@@ -1292,11 +1302,11 @@ export class SceneManager {
         let focusMeshes = model ? model.meshes : this.scene.meshes;
         // add the focues meshes to the shadow list
         let shadownMap = shadowGenerator.getShadowMap();
-        if (!shadownMap) return;
+        if (!shadownMap) { return; }
         if (resetList && shadownMap.renderList) {
             shadownMap.renderList.length = 0;
         } else {
-            shadownMap.renderList = shadownMap.renderList || []
+            shadownMap.renderList = shadownMap.renderList || [];
         }
         for (var index = 0; index < focusMeshes.length; index++) {
             let mesh = focusMeshes[index];
@@ -1351,16 +1361,16 @@ export class SceneManager {
      * @param bufferSize The size of the shadow map
      * @return the kernel blur size
      */
-    public getBlurKernel(light: BABYLON.IShadowLight, bufferSize: number): number {
+    public getBlurKernel(light: IShadowLight, bufferSize: number): number {
         var normalizedBlurKernel = 0.05; // TODO Should come from the config.
-        if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-            normalizedBlurKernel = normalizedBlurKernel / (<BABYLON.DirectionalLight>light).shadowFrustumSize;
+        if (light.getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / (<DirectionalLight>light).shadowFrustumSize;
         }
-        else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
-            normalizedBlurKernel = normalizedBlurKernel / (<BABYLON.PointLight>light).shadowAngle;
+        else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / (<PointLight>light).shadowAngle;
         }
-        else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
-            normalizedBlurKernel = normalizedBlurKernel / ((<BABYLON.SpotLight>light).angle * (<BABYLON.SpotLight>light).shadowAngleScale);
+        else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / ((<SpotLight>light).angle * (<SpotLight>light).shadowAngleScale);
         }
 
         let minimumBlurKernel = 5 / (bufferSize / 256); //magic number that aims to keep away sawtooth shadows
@@ -1429,7 +1439,7 @@ export class SceneManager {
             this.environmentHelper.dispose();
         }
 
-        this.models.forEach(model => {
+        this.models.forEach((model) => {
             model.dispose();
         });
 
@@ -1473,14 +1483,14 @@ export class SceneManager {
         let behavior: Behavior<ArcRotateCamera> | null;
         let type: number;
         if (typeof behaviorConfig === 'object') {
-            type = behaviorConfig.type
+            type = behaviorConfig.type;
         } else if (typeof behaviorConfig === 'number') {
             type = behaviorConfig;
         } else {
             type = this._cameraBehaviorMapping[name];
         }
 
-        if (type === undefined) return;
+        if (type === undefined) { return; }
 
         let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
 

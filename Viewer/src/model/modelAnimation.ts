@@ -20,7 +20,7 @@ export const enum AnimationState {
 }
 
 /**
- * The different type of easing functions available 
+ * The different type of easing functions available
  */
 export const enum EasingFunction {
     Linear = 0,
@@ -78,14 +78,14 @@ export interface IModelAnimation {
     readonly name: string;
     /**
      * Get the max numbers of frame available in the animation group
-     * 
+     *
      * In correlation to an arry, this would be ".length"
      */
     readonly frames: number;
     /**
-     * Get the current frame playing right now. 
+     * Get the current frame playing right now.
      * This can be used to poll the frame currently playing (and, for exmaple, display a progress bar with the data)
-     * 
+     *
      * In correlation to an array, this would be the current index
      */
     readonly currentFrame: number;
@@ -124,7 +124,7 @@ export interface IModelAnimation {
      */
     restart();
     /**
-     * Go to a specific 
+     * Go to a specific
      * @param frameNumber the frame number to go to
      */
     goToFrame(frameNumber: number);
@@ -187,7 +187,7 @@ export class GroupModelAnimation implements IModelAnimation {
 
     /**
      * Get the max numbers of frame available in the animation group
-     * 
+     *
      * In correlation to an arry, this would be ".length"
      */
     public get frames(): number {
@@ -195,9 +195,9 @@ export class GroupModelAnimation implements IModelAnimation {
     }
 
     /**
-     * Get the current frame playing right now. 
+     * Get the current frame playing right now.
      * This can be used to poll the frame currently playing (and, for exmaple, display a progress bar with the data)
-     * 
+     *
      * In correlation to an array, this would be the current index
      */
     public get currentFrame(): number {
@@ -266,14 +266,16 @@ export class GroupModelAnimation implements IModelAnimation {
      * Restart the animation group
      */
     restart() {
-        if (this.state === AnimationState.PAUSED)
+        if (this.state === AnimationState.PAUSED) {
             this._animationGroup.restart();
-        else
+        }
+        else {
             this.start();
+        }
     }
 
     /**
-     * 
+     *
      * @param frameNumber Go to a specific frame in the animation
      */
     goToFrame(frameNumber: number) {

@@ -1,74 +1,78 @@
-/// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
+import { Nullable } from "babylonjs/types";
+import { Color3 } from "babylonjs/Maths/math";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { Material } from "babylonjs/Materials/material";
 
-module BABYLON.GLTF2.Extensions {
-    const NAME = "KHR_materials_unlit";
+import { IMaterial } from "../glTFLoaderInterfaces";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { GLTFLoader } from "../glTFLoader";
 
-    /**
-     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
-     */
-    export class KHR_materials_unlit implements IGLTFLoaderExtension {
-        /** The name of this extension. */
-        public readonly name = NAME;
+const NAME = "KHR_materials_unlit";
 
-        /** Defines whether this extension is enabled. */
-        public enabled = true;
+/**
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
+ */
+export class KHR_materials_unlit implements IGLTFLoaderExtension {
+    /** The name of this extension. */
+    public readonly name = NAME;
 
-        private _loader: GLTFLoader;
+    /** Defines whether this extension is enabled. */
+    public enabled = true;
 
-        /** @hidden */
-        constructor(loader: GLTFLoader) {
-            this._loader = loader;
-        }
+    private _loader: GLTFLoader;
 
-        /** @hidden */
-        public dispose() {
-            delete this._loader;
-        }
-
-        /** @hidden */
-        public loadMaterialPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-            return GLTFLoader.LoadExtensionAsync(context, material, this.name, () => {
-                return this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
-            });
-        }
-
-        private _loadUnlitPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: Material): Promise<void> {
-            if (!(babylonMaterial instanceof PBRMaterial)) {
-                throw new Error(`${context}: Material type not supported`);
-            }
-
-            const promises = new Array<Promise<any>>();
-
-            babylonMaterial.unlit = true;
-
-            const properties = material.pbrMetallicRoughness;
-            if (properties) {
-                if (properties.baseColorFactor) {
-                    babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
-                    babylonMaterial.alpha = properties.baseColorFactor[3];
-                }
-                else {
-                    babylonMaterial.albedoColor = Color3.White();
-                }
-
-                if (properties.baseColorTexture) {
-                    promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, texture => {
-                        babylonMaterial.albedoTexture = texture;
-                        return Promise.resolve();
-                    }));
-                }
-            }
-
-            if (material.doubleSided) {
-                babylonMaterial.backFaceCulling = false;
-                babylonMaterial.twoSidedLighting = true;
-            }
-
-            this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
-
-            return Promise.all(promises).then(() => {});
-        }
+    /** @hidden */
+    constructor(loader: GLTFLoader) {
+        this._loader = loader;
     }
 
-    GLTFLoader.RegisterExtension(NAME, loader => new KHR_materials_unlit(loader));
+    /** @hidden */
+    public dispose() {
+        delete this._loader;
+    }
+
+    /** @hidden */
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+        return GLTFLoader.LoadExtensionAsync(context, material, this.name, () => {
+            return this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
+        });
+    }
+
+    private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
+        if (!(babylonMaterial instanceof PBRMaterial)) {
+            throw new Error(`${context}: Material type not supported`);
+        }
+
+        const promises = new Array<Promise<any>>();
+        babylonMaterial.unlit = true;
+
+        const properties = material.pbrMetallicRoughness;
+        if (properties) {
+            if (properties.baseColorFactor) {
+                babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
+                babylonMaterial.alpha = properties.baseColorFactor[3];
+            }
+            else {
+                babylonMaterial.albedoColor = Color3.White();
+            }
+
+            if (properties.baseColorTexture) {
+                promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Base Color)`;
+                    babylonMaterial.albedoTexture = texture;
+                }));
+            }
+        }
+
+        if (material.doubleSided) {
+            babylonMaterial.backFaceCulling = false;
+            babylonMaterial.twoSidedLighting = true;
+        }
+
+        this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
+
+        return Promise.all(promises).then(() => { });
+    }
 }
+
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_unlit(loader));

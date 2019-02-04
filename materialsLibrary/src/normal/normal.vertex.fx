@@ -39,11 +39,6 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
-#ifdef VERTEXCOLOR
-varying vec4 vColor;
-#endif
-
-
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
@@ -88,11 +83,6 @@ void main(void) {
     // Fog
 #include<fogVertex>
 #include<shadowsVertex>[0..maxSimultaneousLights]
-
-	// Vertex color
-#ifdef VERTEXCOLOR
-	vColor = color;
-#endif
 
 	// Point size
 #ifdef POINTSIZE

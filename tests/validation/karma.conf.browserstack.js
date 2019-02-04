@@ -25,7 +25,7 @@ module.exports = function (config) {
             { pattern: 'Playground/scenes/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/textures/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/sounds/**/*', watched: false, included: false, served: true },
-            { pattern: 'Tools/Gulp/config.json', watched: false, included: false, served: true },
+            { pattern: 'Tools/Config/config.json', watched: false, included: false, served: true },
         ],
         proxies: {
             '/': '/base/'

@@ -1,4 +1,5 @@
-import { Vector2, Epsilon, Nullable } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Vector2, Epsilon } from "babylonjs/Maths/math";
 
 /**
  * Class used to transport Vector2 information for pointer events
@@ -24,11 +25,11 @@ export class Matrix2D {
     /**
      * Creates a new matrix
      * @param m00 defines value for (0, 0)
-     * @param m01 defines value for (0, 1) 
-     * @param m10 defines value for (1, 0) 
-     * @param m11 defines value for (1, 1) 
-     * @param m20 defines value for (2, 0) 
-     * @param m21 defines value for (2, 1) 
+     * @param m01 defines value for (0, 1)
+     * @param m10 defines value for (1, 0)
+     * @param m11 defines value for (1, 1)
+     * @param m20 defines value for (2, 0)
+     * @param m21 defines value for (2, 1)
      */
     constructor(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number) {
         this.fromValues(m00, m01, m10, m11, m20, m21);
@@ -51,7 +52,7 @@ export class Matrix2D {
         return this;
     }
 
-    /** 
+    /**
      * Gets matrix determinant
      * @returns the determinant
      */
@@ -92,7 +93,7 @@ export class Matrix2D {
     /**
      * Multiplies the current matrix with another one
      * @param other defines the second operand
-     * @param result defines the target matrix 
+     * @param result defines the target matrix
      * @returns the current matrix
      */
     public multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D {
@@ -114,8 +115,8 @@ export class Matrix2D {
     /**
      * Applies the current matrix to a set of 2 floats and stores the result in a vector2
      * @param x defines the x coordinate to transform
-     * @param y defines the x coordinate to transform 
-     * @param result defines the target vector2 
+     * @param y defines the x coordinate to transform
+     * @param result defines the target vector2
      * @returns the current matrix
      */
     public transformCoordinates(x: number, y: number, result: Vector2): Matrix2D {
@@ -137,7 +138,7 @@ export class Matrix2D {
     /**
      * Creates a translation matrix and stores it in a target matrix
      * @param x defines the x coordinate of the translation
-     * @param y defines the y coordinate of the translation 
+     * @param y defines the y coordinate of the translation
      * @param result defines the target matrix
      */
     public static TranslationToRef(x: number, y: number, result: Matrix2D): void {
@@ -147,7 +148,7 @@ export class Matrix2D {
     /**
      * Creates a scaling matrix and stores it in a target matrix
      * @param x defines the x coordinate of the scaling
-     * @param y defines the y coordinate of the scaling 
+     * @param y defines the y coordinate of the scaling
      * @param result defines the target matrix
      */
     public static ScalingToRef(x: number, y: number, result: Matrix2D): void {
@@ -175,14 +176,14 @@ export class Matrix2D {
     private static _TempCompose2 = Matrix2D.Identity();
 
     /**
-     * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix 
+     * Composes a matrix from translation, rotation, scaling and parent matrix and stores it in a target matrix
      * @param tx defines the x coordinate of the translation
-     * @param ty defines the y coordinate of the translation 
-     * @param angle defines the rotation angle 
+     * @param ty defines the y coordinate of the translation
+     * @param angle defines the rotation angle
      * @param scaleX defines the x coordinate of the scaling
-     * @param scaleY defines the y coordinate of the scaling 
+     * @param scaleY defines the y coordinate of the scaling
      * @param parentMatrix defines the parent matrix to multiply by (can be null)
-     * @param result defines the target matrix 
+     * @param result defines the target matrix
      */
     public static ComposeToRef(tx: number, ty: number, angle: number, scaleX: number, scaleY: number, parentMatrix: Nullable<Matrix2D>, result: Matrix2D): void {
         Matrix2D.TranslationToRef(tx, ty, Matrix2D._TempPreTranslationMatrix);
@@ -202,4 +203,4 @@ export class Matrix2D {
             Matrix2D._TempCompose1.multiplyToRef(Matrix2D._TempPostTranslationMatrix, result);
         }
     }
-}   
+}

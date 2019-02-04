@@ -80,9 +80,7 @@ void main(void) {
 #endif
 
 	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
+	#include<clipPlaneVertex>
 
 	// Fog
 	#include<fogVertex>

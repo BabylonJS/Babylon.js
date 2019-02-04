@@ -1,14 +1,16 @@
 {
-    "compilerOptions": {
-      "target": "es5",
-      "module": "none",
-      "lib": [
-        "dom",
-        "es2015.promise",
-        "es5"
+  "compilerOptions": {
+    "target": "es5",
+    "module": "none",
+    "lib": [
+      "es5",
+      "dom",
+      "es2015.promise",
+      "es2015.collection",
+      "es2015.iterable"
     ]
-    },
-    "exclude": [
-      "node_modules"
-    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

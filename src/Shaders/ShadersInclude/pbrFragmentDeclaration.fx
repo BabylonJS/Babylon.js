@@ -13,7 +13,7 @@ uniform vec2 vAlbedoInfos;
 #endif
 
 #ifdef AMBIENT
-uniform vec3 vAmbientInfos;
+uniform vec4 vAmbientInfos;
 #endif
 
 #ifdef BUMP
@@ -63,4 +63,25 @@ uniform mat4 view;
 	    uniform vec3 vReflectionPosition;
 	    uniform vec3 vReflectionSize; 
     #endif
+#endif
+
+// Clear Coat
+#ifdef CLEARCOAT
+    uniform vec2 vClearCoatParams;
+
+    #ifdef CLEARCOAT_TEXTURE
+        uniform vec2 vClearCoatInfos;
+        uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_BUMP
+        uniform vec2 vClearCoatBumpInfos;
+        uniform vec2 vClearCoatTangentSpaceParams;
+        uniform mat4 clearCoatBumpMatrix;
+    #endif
+#endif
+
+// Anisotropy
+#ifdef ANISOTROPIC
+    uniform float anisotropy;
 #endif

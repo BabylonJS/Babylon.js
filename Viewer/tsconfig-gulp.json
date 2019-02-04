@@ -23,13 +23,13 @@
         "rootDir": "./",
         "paths": {
             "babylonjs": [
-                "../../dist/preview release/babylon.d.ts"
+                "../../dist/preview release/babylon.module.d.ts"
             ],
             "babylonjs-loaders": [
-                "externalModules.d.ts"
+                "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
             ],
             "babylonjs-gltf2interface": [
-                "../../dist/babylon.glTF2Interface.d.ts"
+                "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
             ],
             "deepmerge": [
                 "./helper/deepmerge.d.ts"
@@ -43,11 +43,6 @@
         },
         "outDir": "./build"
     },
-    "exclude": [
-        "node_modules",
-        "dist",
-        "tests"
-    ],
     "include": [
         "./src/**/*.ts"
     ]

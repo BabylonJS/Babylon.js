@@ -54,7 +54,7 @@ export class TelemetryManager {
 
     /**
      * Enable or disable telemetry events
-     * @param enabled Boolan, true if events are enabled 
+     * @param enabled Boolan, true if events are enabled
      */
     public set enable(enabled: boolean) {
         if (enabled) {
@@ -121,4 +121,3 @@ export class TelemetryManager {
 }
 
 export const telemetryManager = new TelemetryManager();
-

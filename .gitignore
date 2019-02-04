@@ -1,6 +1,5 @@
 # Build Folders (you can keep bin if you'd like, to store dlls and pdbs)
 [Bb]in/
-[Oo]bj/
 
 # mstest test results
 TestResults
@@ -17,7 +16,9 @@ TestResults
 
 # javascript files
 src/**/*.js
+!src/webpack.config.js
 src/**/*.d.ts
+!src/LibDeclarations/*.d.ts
 loaders/src/**/*.js
 materialsLibrary/src/**/*.js
 proceduralTexturesLibrary/src/**/*.js
@@ -107,7 +108,6 @@ AppPackages/
 
 # Others
 [Bb]in
-[Oo]bj
 sql
 TestResults
 [Tt]est[Rr]esult*
@@ -164,6 +164,10 @@ node_modules
 !dist/**/*.d.ts
 !dist/**/*.js.map
 !lib.d.ts
+!src/LibDeclarations/*.d.ts
+*.fragment.ts
+*.vertex.ts
+**/ShadersInclude/**/*.ts
 
 # Split declaration file
 !ISplit.d.ts
@@ -189,3 +193,7 @@ Viewer/tests/Lib/**/*.js
 Viewer/tests/commons/**/*.js
 .sass-cache/
 gui/dist/
+/Viewer/tests/tsc
+/Viewer/tests/tsc.cmd
+/Viewer/tests/tsserver
+/Viewer/tests/tsserver.cmd

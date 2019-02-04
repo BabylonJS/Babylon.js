@@ -35,17 +35,10 @@
                 },
                 "background": {
                     "activeOnStart": true,
-                    "beginsPattern": "Starting \\'watch\\'",
-                    "endsPattern": "Finished \\'run\\'"
+                    "beginsPattern": "Starting \\'watchCore\\'",
+                    "endsPattern": "Watching for file changes"
                 }
             }
-        },
-        {
-            "taskName": "typescript-all",
-            "isBuildCommand": true,
-            "problemMatcher": [
-                "$tsc"
-            ]
         },
         {
             "label": "serve-viewer",
