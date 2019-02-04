@@ -695,11 +695,6 @@ void main(void) {
         float clearCoatIntensity = vClearCoatParams.x;
         float clearCoatRoughness = vClearCoatParams.y;
 
-        // float clearCoatF0 = vClearCoatRefractionParams.x;
-        // float clearCoatEta = vClearCoatRefractionParams.y;
-        // float clearCoatRemappingFactorA = vClearCoatRefractionParams.z;
-        // float clearCoatRemappingFactorB = vClearCoatRefractionParams.w;
-
         #ifdef CLEARCOAT_TEXTURE
             vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
             clearCoatIntensity *= clearCoatMapData.x;

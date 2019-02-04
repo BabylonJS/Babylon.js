@@ -56,6 +56,7 @@ vec2 getAARoughnessFactors(vec3 normalVector) {
 //     return getR0fromIOR(iorBase, clearCoatIor);
 // }
 
+#ifdef CLEARCOAT
 // Knowing ior clear coat is fix for the material
 // Solving iorbase = 1 + sqrt(fo) / (1 - sqrt(fo)) and f0base = square((iorbase - iorclearcoat) / (iorbase - iorclearcoat))
 // provide f0base = square(A + B * sqrt(fo)) / (B + A * sqrt(fo))
@@ -74,6 +75,7 @@ vec3 getR0RemappedForClearCoat(vec3 f0) {
         return t * t;
     #endif
 }
+#endif
 
 // From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
 // Keep for references
