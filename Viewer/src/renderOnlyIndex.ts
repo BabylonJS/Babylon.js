@@ -4,7 +4,8 @@ import { RenderOnlyViewer } from './viewer/renderOnlyViewer';
 import '@babylonjs/loaders/glTF/2.0';
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent"
 import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/core/Meshes/meshBuilder";
+import "@babylonjs/core/Meshes/Builders/planeBuilder";
+import "@babylonjs/core/Meshes/Builders/boxBuilder";
 import "@babylonjs/core/Materials/Textures/Loaders/ddsTextureLoader"
 import "@babylonjs/core/Materials/Textures/Loaders/envTextureLoader"
 import "@babylonjs/core/Materials/Textures/Loaders/ktxTextureLoader"
