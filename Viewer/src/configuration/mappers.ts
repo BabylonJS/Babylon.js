@@ -11,12 +11,12 @@ export interface IMapper {
 }
 
 /**
- * This is a simple HTML mapper. 
+ * This is a simple HTML mapper.
  * This mapper parses a single HTML element and returns the configuration from its attributes.
  * it parses numbers and boolean values to the corresponding variable types.
- * The following HTML element: 
+ * The following HTML element:
  *  <div test="1" random-flag="true" a.string.object="test"> will result in the following configuration:
- * 
+ *
  *  {
  *      test: 1, //a number!
  *      randomFlag: boolean, //camelCase and boolean
@@ -31,7 +31,7 @@ class HTMLMapper implements IMapper {
 
     /**
      * Map a specific element and get configuration from it
-     * @param element the HTML element to analyze. 
+     * @param element the HTML element to analyze.
      */
     map(element: HTMLElement): ViewerConfiguration {
 
@@ -57,7 +57,7 @@ class HTMLMapper implements IMapper {
                     } else if (val === "null") {
                         val = null;
                     } else {
-                        var isnum = !isNaN(parseFloat(val)) && isFinite(val);///^\d+$/.test(val);
+                        var isnum = !isNaN(parseFloat(val)) && isFinite(val); ///^\d+$/.test(val);
                         if (isnum) {
                             let number = parseFloat(val);
                             if (!isNaN(number)) {
@@ -102,7 +102,7 @@ class DOMMapper implements IMapper {
         let htmlMapper = new HTMLMapper();
         let config = htmlMapper.map(baseElement);
 
-        let traverseChildren = function (element: HTMLElement, partConfig) {
+        let traverseChildren = function(element: HTMLElement, partConfig) {
             let children = element.children;
             if (children.length) {
                 for (let i = 0; i < children.length; ++i) {
@@ -114,12 +114,12 @@ class DOMMapper implements IMapper {
                         partConfig[key] = [];
                     } else {
                         if (element.attributes.getNamedItem('array') && element.attributes.getNamedItem('array')!.nodeValue === 'true') {
-                            partConfig.push(configMapped)
+                            partConfig.push(configMapped);
                         } else if (partConfig[key]) {
                             //exists already! probably an array
                             element.setAttribute('array', 'true');
                             let oldItem = partConfig[key];
-                            partConfig = [oldItem, configMapped]
+                            partConfig = [oldItem, configMapped];
                         } else {
                             partConfig[key] = configMapped;
                         }
@@ -128,10 +128,9 @@ class DOMMapper implements IMapper {
                 }
             }
             return partConfig;
-        }
+        };
 
         traverseChildren(baseElement, config);
-
 
         return config;
     }
@@ -155,12 +154,12 @@ export class MapperManager {
             "html": new HTMLMapper(),
             "json": new JSONMapper(),
             "dom": new DOMMapper()
-        }
+        };
     }
 
     /**
      * Get a specific configuration mapper.
-     * 
+     *
      * @param type the name of the mapper to load
      */
     public getMapper(type: string) {
@@ -174,7 +173,7 @@ export class MapperManager {
      * Use this functio to register your own configuration mapper.
      * After a mapper is registered, it can be used to parse the specific type fo configuration to the standard ViewerConfiguration.
      * @param type the name of the mapper. This will be used to define the configuration type and/or to get the mapper
-     * @param mapper The implemented mapper 
+     * @param mapper The implemented mapper
      */
     public registerMapper(type: string, mapper: IMapper) {
         this._mappers[type] = mapper;

@@ -8,6 +8,7 @@ declare module BABYLON {
         bottomColor: Color3;
         bottomColorAlpha: number;
         offset: number;
+        scale: number;
         smoothness: number;
         disableLighting: boolean;
         private _scaledDiffuse;

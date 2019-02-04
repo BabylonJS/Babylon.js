@@ -4,13 +4,14 @@
     },
     "name": "babylonjs-loaders",
     "description": "The Babylon.js file loaders library is an extension you can use to load different 3D file types into a Babylon scene.",
-    "version": "3.3.0-alpha.14",
+    "version": "4.0.0-alpha.22",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
     "main": "babylonjs.loaders.min.js",
     "files": [
+        "babylonjs.loaders.js.map",
         "babylonjs.loaders.js",
         "babylonjs.loaders.min.js",
         "babylonjs.loaders.module.d.ts",
@@ -27,10 +28,8 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "babylonjs-gltf2interface": "3.3.0-alpha.14"
-    },
-    "peerDependencies": {
-        "babylonjs": ">=3.2.0-alpha"
+        "babylonjs-gltf2interface": "4.0.0-alpha.22",
+        "babylonjs": "4.0.0-alpha.22"
     },
     "engines": {
         "node": "*"

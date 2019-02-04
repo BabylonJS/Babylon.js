@@ -1,5 +1,5 @@
 var BABYLON = require("../../dist/preview release/babylon.max");
-// var LOADERS = require("../../dist/preview release/loaders/babylonjs.loaders");
+var LOADERS = require("../../dist/preview release/loaders/babylonjs.loaders");
 global.XMLHttpRequest = require('xhr2').XMLHttpRequest;
 
 var engine = new BABYLON.NullEngine();
@@ -32,7 +32,7 @@ var engine = new BABYLON.NullEngine();
 //         scene.render();
 //     })
 // });
-    
+
 // Setup environment
 // var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 90, BABYLON.Vector3.Zero(), scene);
 // camera.lowerBetaLimit = 0.1;
@@ -100,29 +100,29 @@ var engine = new BABYLON.NullEngine();
 // });
 // 	//Adding a light
 // 	var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
-    
+
 //         //Adding an Arc Rotate Camera
 //         var camera = new BABYLON.ArcRotateCamera("Camera", -0.5, 2.2, 100, BABYLON.Vector3.Zero(), scene);
-    
+
 //         // The first parameter can be used to specify which mesh to import. Here we import all meshes
 //         BABYLON.SceneLoader.ImportMesh("", "https://www.babylonjs-playground.com/scenes/", "skull.babylon", scene, function (newMeshes) {
 //             // Set the target of the camera to the first imported mesh
 //             camera.target = newMeshes[0];
-    
+
 //             newMeshes[0].material = new BABYLON.StandardMaterial("skull", scene);
 //             newMeshes[0].material.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
 //         });
-    
+
 //         // Create the "God Rays" effect (volumetric light scattering)
 //         var godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, null, 100, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
-    
+
 //         // By default it uses a billboard to render the sun, just apply the desired texture
 //         // position and scale
 //         godrays.mesh.material.diffuseTexture = new BABYLON.Texture('https://www.babylonjs-playground.com/textures/sun.png', scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
 //         godrays.mesh.material.diffuseTexture.hasAlpha = true;
 //         godrays.mesh.position = new BABYLON.Vector3(-150, 150, 150);
 //         godrays.mesh.scaling = new BABYLON.Vector3(350, 350, 350);
-    
+
 //         light.position = godrays.mesh.position;
 
 // engine.runRenderLoop(function() {
@@ -140,7 +140,7 @@ var engine = new BABYLON.NullEngine();
 //    // engine.runRenderLoop(function() {
 //      //   scene.render();
 //     //});
-  
+
 //   }, progress => {}, (scene, err) => console.error('error:', err));
 // var scene = new BABYLON.Scene(engine);
 // var camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 0, BABYLON.Vector3.Zero(), scene);
@@ -222,95 +222,139 @@ var engine = new BABYLON.NullEngine();
 
 // assetsManager.load();
 
+// var scene = new BABYLON.Scene(engine);
+// var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 1,  Math.PI / 1, 5, BABYLON.Vector3.Zero(), scene);
+// camera.setPosition(new BABYLON.Vector3(-800,1200,-2000));
+// camera.setTarget(BABYLON.Vector3.Zero());
+// var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+// light.intensity = 1;
+
+
+// function createPart(name,opt,parent){
+
+//     var part = BABYLON.MeshBuilder.CreateBox(name, opt.size, scene);
+//     part.position = new BABYLON.Vector3(opt.pos.x, opt.pos.y, opt.pos.z);
+
+//     let mate = new BABYLON.StandardMaterial('mat-'+name, scene);
+
+//     if(parent) {
+//         mate.specularPower = 200;
+//         mate.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+//         mate.diffuseTexture = new BABYLON.Texture(opt.mat.url,scene);
+//         mate.diffuseTexture.wAng = opt.mat.grain*Math.PI/180;
+//         part.parent = parent;
+//     }else{
+//         mate.alpha = 0;
+//     }
+
+//     part.material = mate;
+
+//     return part;
+// }
+
+
+
+// var parent;
+
+// function createUnit(x,y,z,b){
+
+//     var item = {
+//         size:{width:x,depth:y,height:z},
+//         pos:{x:0,y:0,z:0},
+//         mat:{url:false,grain:0},
+//         child:{
+//             left:{
+//                 size:{width:b,depth:y,height:z},
+//                 pos:{x:-(x-b)/2,y:0,z:0},
+//                 mat:{url:"/Playground/textures/crate.png",grain:90}
+//             },
+//             right:{
+//                 size:{width:b,depth:y,height:z},
+//                 pos:{x:(x-b)/2,y:0,z:0},
+//                 mat:{url:"/Playground/textures/crate.png",grain:90}
+//             },
+//             top:{
+//                 size:{width:x-(b*2),depth:y,height:b},
+//                 pos:{x:0,y:(z-b-1)/2,z:0},
+//                 mat:{url:"/Playground/textures/albedo.png",grain:0}
+//             },
+//             bottom:{
+//                 size:{width:x-(b*2),depth:y,height:b},
+//                 pos:{x:0,y:-(z-b-1)/2,z:0},
+//                 mat:{url:"/Playground/textures/albedo.png",grain:0}
+//             },
+//             back:{
+//                 size:{width:x-(b*2),depth:b,height:z-(b*2)-1},
+//                 pos:{x:0,y:0,z:(y-b)/2-20},
+//                 mat:{url:"/Playground/textures/albedo.png",grain:0}
+//             },
+//             shelf:{
+//                 size:{width:x-(b*2)-1,depth:y-b-30,height:b},
+//                 pos:{x:0,y:0,z:-((b+20)/2)+5},
+//                 mat:{url:"textures/crate.png",grain:45}
+//             }
+//         }
+//     };
+
+//     if(parent){
+//         parent.dispose();
+//     }
+
+//     parent = createPart("Unit",item,false);
+
+//     Object.keys(item.child).forEach(function(key) {
+//         createPart(key,item.child[key],parent);
+//     });
+
+//     return item;
+// }
+
+// createUnit(600,300,900,18);
+
+
+// var serialized = BABYLON.SceneSerializer.SerializeMesh(parent, true, true);
+// console.log(serialized);
+
+// var scene = new BABYLON.Scene(engine);
+
+// var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
+
+// var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
+
+// BABYLON.SceneLoader.ImportMesh("", "https://playground.babylonjs.com/scenes/", "skull.babylon", scene, function(newMeshes) {
+//     camera.target = newMeshes[0];
+
+//     console.log("Meshes loaded from babylon file: " + newMeshes.length);
+//     for (var index = 0; index < newMeshes.length; index++) {
+//         console.log(newMeshes[index].toString());
+//     }
+
+//     BABYLON.SceneLoader.ImportMesh("", "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/", "DamagedHelmet.gltf", scene, function(meshes) {
+//         console.log("Meshes loaded from gltf file: " + meshes.length);
+//         for (var index = 0; index < meshes.length; index++) {
+//             console.log(meshes[index].toString());
+//         }
+//     });
+
+//     console.log("render started")
+//     engine.runRenderLoop(function() {
+//         scene.render();
+//     })
+// });
 var scene = new BABYLON.Scene(engine);
-var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 1,  Math.PI / 1, 5, BABYLON.Vector3.Zero(), scene);
-camera.setPosition(new BABYLON.Vector3(-800,1200,-2000));
-camera.setTarget(BABYLON.Vector3.Zero());
-var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
-light.intensity = 1;
+var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
+const scaling = engine.getHardwareScalingLevel();
 
-
-function createPart(name,opt,parent){
-
-    var part = BABYLON.MeshBuilder.CreateBox(name, opt.size, scene);
-    part.position = new BABYLON.Vector3(opt.pos.x, opt.pos.y, opt.pos.z);
-
-    let mate = new BABYLON.StandardMaterial('mat-'+name, scene);
-
-    if(parent) {
-        mate.specularPower = 200;
-        mate.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        mate.diffuseTexture = new BABYLON.Texture(opt.mat.url,scene);
-        mate.diffuseTexture.wAng = opt.mat.grain*Math.PI/180;
-        part.parent = parent;
-    }else{
-        mate.alpha = 0;
-    }
-
-    part.material = mate;
-
-    return part;
-}
-
-
-
-var parent;
-
-function createUnit(x,y,z,b){
-
-    var item = {
-        size:{width:x,depth:y,height:z},
-        pos:{x:0,y:0,z:0},
-        mat:{url:false,grain:0},
-        child:{
-            left:{
-                size:{width:b,depth:y,height:z},
-                pos:{x:-(x-b)/2,y:0,z:0},
-                mat:{url:"/playground/textures/crate.png",grain:90}
-            },
-            right:{
-                size:{width:b,depth:y,height:z},
-                pos:{x:(x-b)/2,y:0,z:0},
-                mat:{url:"/playground/textures/crate.png",grain:90}
-            },
-            top:{
-                size:{width:x-(b*2),depth:y,height:b},
-                pos:{x:0,y:(z-b-1)/2,z:0},
-                mat:{url:"/playground/textures/albedo.png",grain:0}
-            },
-            bottom:{
-                size:{width:x-(b*2),depth:y,height:b},
-                pos:{x:0,y:-(z-b-1)/2,z:0},
-                mat:{url:"/playground/textures/albedo.png",grain:0}
-            },
-            back:{
-                size:{width:x-(b*2),depth:b,height:z-(b*2)-1},
-                pos:{x:0,y:0,z:(y-b)/2-20},
-                mat:{url:"/playground/textures/albedo.png",grain:0}
-            },
-            shelf:{
-                size:{width:x-(b*2)-1,depth:y-b-30,height:b},
-                pos:{x:0,y:0,z:-((b+20)/2)+5},
-                mat:{url:"textures/crate.png",grain:45}
-            }
-        }
-    };
-
-    if(parent){
-        parent.dispose();
-    }
-    
-    parent = createPart("Unit",item,false);
-
-    Object.keys(item.child).forEach(function(key) {
-        createPart(key,item.child[key],parent);
-    });
-
-    return item;
-}
-
-createUnit(600,300,900,18);
-
-
-var serialized = BABYLON.SceneSerializer.SerializeMesh(parent, true, true);
-console.log(serialized);
+const pos = BABYLON.Vector3.Project(
+    new BABYLON.Vector3(5, 10, 3),
+    BABYLON.Matrix.IdentityReadOnly,
+    scene.getTransformMatrix(),
+    scene.activeCamera.viewport.toGlobal(
+        engine.getRenderWidth(),
+        engine.getRenderHeight(),
+    ),
+);
+pos.x *= scaling;
+pos.y *= scaling;
+pos.z *= scaling;
+return pos;

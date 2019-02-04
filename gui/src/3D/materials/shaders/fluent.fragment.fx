@@ -32,7 +32,7 @@ void main(void) {
 	float alpha = albedoColor.a;
 
 #ifdef TEXTURE
-	albedo = texture(albedoSampler, vUV).rgb;
+	albedo = texture2D(albedoSampler, vUV).rgb;
 #endif
 
 #ifdef HOVERLIGHT

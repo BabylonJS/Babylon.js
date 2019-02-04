@@ -1,8 +1,11 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -22,6 +25,9 @@ var BABYLON;
         function SkyMaterialDefines() {
             var _this = _super.call(this) || this;
             _this.CLIPPLANE = false;
+            _this.CLIPPLANE2 = false;
+            _this.CLIPPLANE3 = false;
+            _this.CLIPPLANE4 = false;
             _this.POINTSIZE = false;
             _this.FOG = false;
             _this.VERTEXCOLOR = false;
@@ -59,7 +65,7 @@ var BABYLON;
         SkyMaterial.prototype.getAlphaTestTexture = function () {
             return null;
         };
-        // Methods   
+        // Methods
         SkyMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -79,7 +85,7 @@ var BABYLON;
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
-            // Get correct effect      
+            // Get correct effect
             if (defines.isDirty) {
                 defines.markAsProcessed();
                 scene.resetCachedMaterial();
@@ -96,7 +102,7 @@ var BABYLON;
                 var shaderName = "sky";
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, ["world", "viewProjection", "view",
-                    "vFogInfos", "vFogColor", "pointSize", "vClipPlane",
+                    "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
                     "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
                     "cameraPosition"
                 ], [], join, fallbacks, this.onCompiled, this.onError), defines);
@@ -119,15 +125,11 @@ var BABYLON;
                 return;
             }
             this._activeEffect = effect;
-            // Matrices        
+            // Matrices
             this.bindOnlyWorldMatrix(world);
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
             if (this._mustRebind(scene, effect)) {
-                // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._activeEffect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+                BABYLON.MaterialHelper.BindClipPlane(this._activeEffect, scene);
                 // Point size
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);

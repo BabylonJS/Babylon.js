@@ -1,6 +1,8 @@
+import { Nullable } from "babylonjs/types";
+import { Logger } from "babylonjs/Misc/logger";
+
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Nullable } from "babylonjs";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
@@ -13,7 +15,7 @@ export class Container extends Control {
     /** @hidden */
     protected _measureForChildren = Measure.Empty();
     /** @hidden */
-    protected _background: string;
+    protected _background = "";
     /** @hidden */
     protected _adaptWidthToChildren = false;
     /** @hidden */
@@ -88,6 +90,12 @@ export class Container extends Control {
         return "Container";
     }
 
+    public _flagDescendantsAsMatrixDirty(): void {
+        for (var child of this.children) {
+            child._markMatrixAsDirty();
+        }
+    }
+
     /**
      * Gets a child using its name
      * @param name defines the child name to look for
@@ -143,7 +151,7 @@ export class Container extends Control {
         if (index !== -1) {
             return this;
         }
-        control._link(this, this._host);
+        control._link(this._host);
 
         control._markAllAsDirty();
 
@@ -158,7 +166,7 @@ export class Container extends Control {
      * @returns the current container
      */
     public clearControls(): Container {
-        let children = this._children.slice();
+        let children = this.children.slice();
 
         for (var child of children) {
             this.removeControl(child);
@@ -195,14 +203,18 @@ export class Container extends Control {
     public _reOrderControl(control: Control): void {
         this.removeControl(control);
 
+        let wasAdded = false;
         for (var index = 0; index < this._children.length; index++) {
             if (this._children[index].zIndex > control.zIndex) {
                 this._children.splice(index, 0, control);
-                return;
+                wasAdded = true;
+                break;
             }
         }
 
-        this._children.push(control);
+        if (!wasAdded) {
+            this._children.push(control);
+        }
 
         control.parent = this;
 
@@ -210,11 +222,20 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _markMatrixAsDirty(): void {
-        super._markMatrixAsDirty();
+    public _offsetLeft(offset: number) {
+        super._offsetLeft(offset);
 
-        for (var index = 0; index < this._children.length; index++) {
-            this._children[index]._markMatrixAsDirty();
+        for (var child of this._children) {
+            child._offsetLeft(offset);
+        }
+    }
+
+    /** @hidden */
+    public _offsetTop(offset: number) {
+        super._offsetTop(offset);
+
+        for (var child of this._children) {
+            child._offsetTop(offset);
         }
     }
 
@@ -230,6 +251,7 @@ export class Container extends Control {
     /** @hidden */
     protected _localDraw(context: CanvasRenderingContext2D): void {
         if (this._background) {
+            context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
                 context.shadowBlur = this.shadowBlur;
@@ -239,70 +261,145 @@ export class Container extends Control {
 
             context.fillStyle = this._background;
             context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
-
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                context.shadowBlur = 0;
-                context.shadowOffsetX = 0;
-                context.shadowOffsetY = 0;
-            }
+            context.restore();
         }
     }
 
     /** @hidden */
-    public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
-        super._link(root, host);
+    public _link(host: AdvancedDynamicTexture): void {
+        super._link(host);
 
         for (var child of this._children) {
-            child._link(root, host);
+            child._link(host);
         }
     }
 
     /** @hidden */
-    public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-        if (!this.isVisible || this.notRenderable) {
-            return;
+    protected _beforeLayout() {
+        // Do nothing
+    }
+
+    /** @hidden */
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            super._processMeasures(parentMeasure, context);
+            this._evaluateClippingState(parentMeasure);
         }
+    }
+
+    /** @hidden */
+    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+        if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
+            return false;
+        }
+
+        if (this._isDirty) {
+            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
+        }
+
+        let rebuildCount = 0;
+
         context.save();
 
         this._applyStates(context);
 
-        if (this._processMeasures(parentMeasure, context)) {
-            this._localDraw(context);
+        this._beforeLayout();
 
-            this._clipForChildren(context);
-
+        do {
             let computedWidth = -1;
             let computedHeight = -1;
+            this._rebuildLayout = false;
+            this._processMeasures(parentMeasure, context);
 
-            for (var child of this._children) {
-                if (child.isVisible && !child.notRenderable) {
+            if (!this._isClipped) {
+                for (var child of this._children) {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
-                    child._draw(this._measureForChildren, context);
 
-                    if (child.onAfterDrawObservable.hasObservers()) {
-                        child.onAfterDrawObservable.notifyObservers(child);
-                    }
+                    if (child._layout(this._measureForChildren, context)) {
 
-                    if (this.adaptWidthToChildren && child._width.isPixel) {
-                        computedWidth = Math.max(computedWidth, child._currentMeasure.width);
-                    }
-                    if (this.adaptHeightToChildren && child._height.isPixel) {
-                        computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                        if (this.adaptWidthToChildren && child._width.isPixel) {
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                        }
+                        if (this.adaptHeightToChildren && child._height.isPixel) {
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                        }
                     }
                 }
-            }
 
-            if (this.adaptWidthToChildren && computedWidth >= 0) {
-                this.width = computedWidth + "px";
+                if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    if (this.width !== computedWidth + "px") {
+                        this.width = computedWidth + "px";
+                        this._rebuildLayout = true;
+                    }
+                }
+                if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    if (this.height !== computedHeight + "px") {
+                        this.height = computedHeight + "px";
+                        this._rebuildLayout = true;
+                    }
+                }
+
+                this._postMeasure();
             }
-            if (this.adaptHeightToChildren && computedHeight >= 0) {
-                this.height = computedHeight + "px";
-            }
+            rebuildCount++;
         }
+        while (this._rebuildLayout && rebuildCount < 3);
+
+        if (rebuildCount >= 3) {
+            Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
+        }
+
         context.restore();
 
-        if (this.onAfterDrawObservable.hasObservers()) {
-            this.onAfterDrawObservable.notifyObservers(this);
+        if (this._isDirty) {
+            this.invalidateRect();
+
+            this._isDirty = false;
+        }
+
+        return true;
+    }
+
+    protected _postMeasure() {
+        // Do nothing by default
+    }
+
+    /** @hidden */
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
+
+        this._localDraw(context);
+
+        if (this.clipChildren) {
+            this._clipForChildren(context);
+        }
+
+        for (var child of this._children) {
+            // Only redraw parts of the screen that are invalidated
+            if (invalidatedRectangle) {
+                if (!child._intersectsRect(invalidatedRectangle)) {
+                    continue;
+                }
+            }
+            child._render(context, invalidatedRectangle);
+        }
+    }
+
+    /** @hidden */
+    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+        if (!this.children) {
+            return;
+        }
+
+        for (var index = 0; index < this.children.length; index++) {
+            var item = this.children[index];
+
+            if (!predicate || predicate(item)) {
+                results.push(item);
+            }
+
+            if (!directDescendantsOnly) {
+                item._getDescendants(results, false, predicate);
+            }
         }
     }
 
@@ -320,6 +417,9 @@ export class Container extends Control {
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
             if (child._processPicking(x, y, type, pointerId, buttonIndex)) {
+                if (child.hoverCursor) {
+                    this._host._changeCursor(child.hoverCursor);
+                }
                 return true;
             }
         }
@@ -329,11 +429,6 @@ export class Container extends Control {
         }
 
         return this._processObservables(type, x, y, pointerId, buttonIndex);
-    }
-
-    /** @hidden */
-    protected _clipForChildren(context: CanvasRenderingContext2D): void {
-        // DO nothing
     }
 
     /** @hidden */
@@ -347,8 +442,8 @@ export class Container extends Control {
     public dispose() {
         super.dispose();
 
-        for (var control of this._children) {
-            control.dispose();
+        for (var index = this.children.length - 1; index >= 0; index--) {
+            this.children[index].dispose();
         }
     }
-}   
+}

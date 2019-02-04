@@ -1,6 +1,6 @@
 # Babylon.js Viewer Assets
 
-Babylon's viewer assets package contains all needed binsry assets neeed for the proper operation of the viewer's templating system.
+Babylon's viewer assets package contains all needed binary assets neeed for the proper operation of the viewer's templating system.
 
 This packes is only needed when intalling the viewer's npm package and is installed  and used automatically.
 

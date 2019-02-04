@@ -124,6 +124,10 @@ void main(void) {
 	vec3 normalW = vec3(1.0, 1.0, 1.0);
 #endif
 
+#ifdef UNLIT
+	vec3 diffuseBase = vec3(1., 1., 1.);
+#else
+
 	// Lighting
 	vec3 diffuseBase = vec3(0., 0., 0.);
     lightingInfo info;
@@ -135,6 +139,7 @@ void main(void) {
 #include<lightFragment>[2]
 #include<lightFragment>[3]
 
+#endif
 
 #ifdef VERTEXALPHA
 	alpha *= vColor.a;

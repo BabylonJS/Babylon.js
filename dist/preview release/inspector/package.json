@@ -4,15 +4,16 @@
     },
     "name": "babylonjs-inspector",
     "description": "The Babylon.js inspector.",
-    "version": "3.3.0-alpha.14",
+    "version": "4.0.0-alpha.22",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
     "main": "babylon.inspector.bundle.js",
     "files": [
+        "babylon.inspector.bundle.max.js",
+        "babylon.inspector.bundle.max.js.map",
         "babylon.inspector.bundle.js",
-        "babylon.inspector.bundle.js.map",
         "babylon.inspector.module.d.ts",
         "readme.md",
         "package.json"
@@ -27,8 +28,14 @@
         "inspector"
     ],
     "license": "Apache-2.0",
-    "peerDependencies": {
-        "babylonjs": ">=3.2.0-alpha"
+    "dependencies": {
+        "@types/react": "~16.7.3",
+        "@types/react-dom": "~16.0.9",
+        "babylonjs": "4.0.0-alpha.22",
+        "babylonjs-gui": "4.0.0-alpha.22",
+        "babylonjs-loaders": "4.0.0-alpha.22",
+        "babylonjs-serializers": "4.0.0-alpha.22",
+        "babylonjs-gltf2interface": "4.0.0-alpha.22"
     },
     "engines": {
         "node": "*"

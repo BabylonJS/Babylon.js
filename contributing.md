@@ -1,6 +1,22 @@
 # Contributing to Babylon.js
 
-The foundation of **Babylon.js** is simplicity. 
+## Golden rules
+
+**Babylon.js** is built upon 3 golden rules:
+
+1. You cannot add code that will break backward compatibility
+2. You cannot add code that will slow down the rendering process
+3. You cannot add code that will make things complex to use
+
+### Backward compatibility
+
+The first golden rule is a really important one because we want our users to trust Babylon.js. And when we need to introduce something that will break backward compatibility, we know that it will imply more work for our customers to switch to a new version. So even if something could be simpler to do by breaking the backward compatibility, we will not do it (exceptions may apply of course if there is a problem with performance or if this is related to a bug).
+
+### Performance
+
+Babylon.js is a 3D rendering engine. So every piece of code has to be scrutinized to look for potential bottlenecks or slow downs. Ultimately the goal is to render more with less resources.
+
+### Simplicity
 
 A developer should be able to quickly and easily learn to use the API. 
 
@@ -8,14 +24,12 @@ Simplicity and a low barrier to entry are must-have features of every API. If yo
 
 You can always add to an API, you cannot ever remove anything from one. If the design does not feel right, and you ship it anyway, you are likely to regret having done so.
 
-That's why many of the guidelines of this document are obvious and serve only one purpose: Simplicity.
-
 ## Forum and Github issues
 
-Since the very beginning, Babylon.js relies on a great forum and a tremendous community: http://www.html5gamedevs.com/forum/16-babylonjs/.
+Since the very beginning, Babylon.js relies on a great forum and a tremendous community: https://forum.babylonjs.com/.
 Please use the forum for **ANY questions you may have**.
 
-Please use the Github issues **only** for:
+Please use the Github issues (after discussing them on the forum) **only** for:
 - Bugs
 - Feature requests
 
@@ -24,10 +38,22 @@ We will try to enforce these rules as we consider the forum is a better place fo
 ## Pull requests
 
 We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/how_to/approved_naming_conventions)
-Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
+Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/resources/creating_the_mini-fied_version)
 
-Need help contributing, here are some links:
-  - [Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp) to build from command line.
-  - [VSCode Editor](https://code.visualstudio.com/), Microsoft Code editor, see [Julian Chenard's post](http://pixelcodr.com/tutos/contribute/contribute.html) a Microsoft code editor.
-  - [Visual Studio](http://doc.babylonjs.com/generals/setup_visualStudio), Microsoft's IDE.
-  - [Forum thread](http://www.html5gamedevs.com/topic/20456-contributing-on-babylonjs/) for assistance from our very helpful family.
+You should read the [how to contribute documentation](http://doc.babylonjs.com/how_to/how_to_start) before working on your PR.
+We also have a [forum thread](http://www.html5gamedevs.com/topic/20456-contributing-on-babylonjs/) for assistance from our very helpful family.
+  
+To validate your PR, please follow these steps:
+- Run "gulp" locally and make sure that no error is generated
+- Make sure that all public functions and classes are commented using JSDoc syntax
+- Make sure to add a line about your PR in the [what's new](https://github.com/BabylonJS/Babylon.js/blob/master/dist/preview%20release/what's%20new.md)
+  
+ ## What should go where?
+
+In order to not bloat the core engine with unwanted or unnecessary features (that we will need to maintain forever), here is a list of questions you could ask yourself before submitting a new feature (or feature request) for Babylon.js core engine:
+- Does my feature belong to a framework library?
+- Can my feature be used by multiple different applications?
+- Is there a general use case for this feature?
+- Does this feature already exist in a similar framework?
+
+If your PR is does not fall into the core category you can consider using our [Extensions repo](https://github.com/BabylonJS/Extensions) for more high level features.

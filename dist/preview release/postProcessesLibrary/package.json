@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-post-process",
     "description": "The Babylon.js materials library is a collection of advanced materials to be used in a Babylon.js scene.",
-    "version": "3.3.0-alpha.14",
+    "version": "4.0.0-alpha.22",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -12,6 +12,7 @@
     "main": "babylonjs.postProcess.min.js",
     "files": [
         "babylonjs.postProcess.js",
+        "babylonjs.postProcess.js.map",
         "babylonjs.postProcess.min.js",
         "babylonjs.postProcess.module.d.ts",
         "readme.md",
@@ -26,8 +27,8 @@
         "post process"
     ],
     "license": "Apache-2.0",
-    "peerDependencies": {
-        "babylonjs": ">=3.2.0-alpha"
+    "dependencies": {
+        "babylonjs": "4.0.0-alpha.22"
     },
     "engines": {
         "node": "*"

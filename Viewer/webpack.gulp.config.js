@@ -11,11 +11,6 @@ module.exports = {
         library: 'BabylonViewer',
         umdNamedDefine: true
     },
-    externals: {
-        cannon: 'CANNON',
-        oimo: 'OIMO',
-        "earcut": true
-    },
     resolve: {
         extensions: ['.ts', '.js'],
         alias: {

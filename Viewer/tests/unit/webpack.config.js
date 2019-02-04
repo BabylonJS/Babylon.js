@@ -19,12 +19,6 @@ module.exports = {
             "babylonjs-viewer-assets": __dirname + '/../../src/assets/index.ts'
         }
     },
-    externals: {
-        // until physics will be integrated in the viewer, ignore cannon
-        cannon: 'CANNON',
-        oimo: 'OIMO',
-        "earcut": true
-    },
     mode: "development",
     devtool: 'source-map',
     module: {

@@ -15,8 +15,10 @@ module.exports = function (config) {
             '!./**/*.d.ts',
             './Tools/DevLoader/BabylonLoader.js',
             './tests/unit/babylon/babylon.example.tests.js',
+            './tests/unit/babylon/src/Mesh/babylon.positionAndRotation.tests.js',
             './tests/unit/babylon/serializers/babylon.glTFSerializer.tests.js',
             './tests/unit/babylon/src/babylon.node.tests.js',
+            './tests/unit/babylon/src/Animations/babylon.animation.tests.js',
             './tests/unit/babylon/src/Animations/babylon.animationGroup.tests.js',
             './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
             './tests/unit/babylon/src/PostProcess/babylon.postProcess.tests.js',
@@ -30,7 +32,7 @@ module.exports = function (config) {
             { pattern: 'Playground/scenes/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/textures/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/sounds/**/*', watched: false, included: false, served: true },
-            { pattern: 'Tools/Gulp/config.json', watched: false, included: false, served: true },
+            { pattern: 'Tools/Config/config.json', watched: false, included: false, served: true },
         ],
         proxies: {
             '/': '/base/'

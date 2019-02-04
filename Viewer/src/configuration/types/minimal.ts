@@ -43,4 +43,4 @@ export let minimalConfiguration: ViewerConfiguration = {
     engine: {
         antialiasing: true
     }
-}
+};

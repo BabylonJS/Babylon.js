@@ -8,6 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
     <script src="../dist/preview%20release/cannon.js"></script>
     <script src="../dist/preview%20release/Oimo.js"></script>
+    <script src="../dist/preview%20release/ammo.js"></script>
+    <script src="../dist/preview%20release/gltf_validator.js"></script>
     <script src="../Tools/DevLoader/BabylonLoader.js"></script>
     <script src="src/webgl-debug.js"></script>
 
@@ -24,6 +26,8 @@
         #renderCanvas {
             width: 100%;
             height: 100%;
+            display: block;
+            font-size: 0;
         }
 
         #fps {
@@ -38,6 +42,13 @@
             width: 60px;
             height: 20px;
         }
+
+        @font-face {
+            font-family: BabylonJSglyphs;
+           /* src: url("http://www.killer-squid.com/fonts/BabylonJSglyphs.otf"); */
+            src: local("BabylonJSglyphs");
+        }
+        
     </style>
 </head>
 
@@ -63,10 +74,12 @@
         }
         indexjs += '.js';
 
+        // var indexjs = "http://localhost:1234/index.js"
+
         // Load the scripts + map file to allow vscode debug.
         BABYLONDEVTOOLS.Loader
             .require(indexjs)
-            .load(function () {
+            .load(function() {
                 BABYLON.DracoCompression.Configuration.decoder = {
                     wasmUrl: "../dist/preview%20release/draco_wasm_wrapper_gltf.js",
                     wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
@@ -89,7 +102,7 @@
                         if (scene) {
                             // Register a render loop to repeatedly render the scene
 
-                            engine.runRenderLoop(function () {
+                            engine.runRenderLoop(function() {
                                 if (scene.activeCamera) {
                                     scene.render();
                                 }
@@ -101,17 +114,31 @@
                         var scene = createScene();
 
                         if (scene) {
-                            // Register a render loop to repeatedly render the scene
 
-                            engine.runRenderLoop(function () {
-                                scene.render();
-                                divFps.innerHTML = engine.getFps().toFixed() + " fps";
-                            });
+                            var processCurrentScene = function(scene) {
+                                engine.runRenderLoop(function() {
+                                    scene.render();
+                                    divFps.innerHTML = engine.getFps().toFixed() + " fps";
+                                });
+                            }
+
+                            if (scene.then) {
+                                // Handle if createScene returns a promise
+                                scene.then(function(currentScene) {
+                                    processCurrentScene(currentScene);
+                                }).catch(function(e) {
+                                    console.error(e);
+                                    onError();
+                                });
+                            } else {
+                                // Register a render loop to repeatedly render the scene
+                                processCurrentScene(scene);
+                            }
                         }
                     }
 
                     // Resize
-                    window.addEventListener("resize", function () {
+                    window.addEventListener("resize", function() {
                         engine.resize();
                     });
                 }

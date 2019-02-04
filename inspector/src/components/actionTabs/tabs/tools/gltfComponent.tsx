@@ -1,0 +1,145 @@
+import * as React from "react";
+import { Scene } from "babylonjs/scene";
+import { LineContainerComponent } from "../../lineContainerComponent";
+import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
+import { GlobalState } from "../../../globalState";
+import { FloatLineComponent } from "../../lines/floatLineComponent";
+import { OptionsLineComponent } from "../../lines/optionsLineComponent";
+import { MessageLineComponent } from "../../lines/messageLineComponent";
+import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { TextLineComponent } from "../../lines/textLineComponent";
+import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "babylonjs-loaders/glTF/index";
+
+interface IGLTFComponentProps {
+    scene: Scene,
+    globalState: GlobalState
+}
+
+export class GLTFComponent extends React.Component<IGLTFComponentProps> {
+    constructor(props: IGLTFComponentProps) {
+        super(props);
+
+        const extensionStates = this.props.globalState.glTFLoaderExtensionDefaults;
+
+        extensionStates["MSFT_lod"] = extensionStates["MSFT_lod"] || { enabled: true, maxLODsToLoad: Number.MAX_VALUE };
+        extensionStates["MSFT_minecraftMesh"] = extensionStates["MSFT_minecraftMesh"] || { enabled: true };
+        extensionStates["MSFT_sRGBFactors"] = extensionStates["MSFT_sRGBFactors"] || { enabled: true };
+        extensionStates["MSFT_audio_emitter"] = extensionStates["MSFT_audio_emitter"] || { enabled: true };
+        extensionStates["KHR_draco_mesh_compression"] = extensionStates["KHR_draco_mesh_compression"] || { enabled: true };
+        extensionStates["KHR_materials_pbrSpecularGlossiness"] = extensionStates["KHR_materials_pbrSpecularGlossiness"] || { enabled: true };
+        extensionStates["KHR_materials_unlit"] = extensionStates["KHR_materials_unlit"] || { enabled: true };
+        extensionStates["KHR_lights_punctual"] = extensionStates["KHR_lights_punctual"] || { enabled: true };
+        extensionStates["KHR_texture_transform"] = extensionStates["KHR_texture_transform"] || { enabled: true };
+        extensionStates["EXT_lights_image_based"] = extensionStates["EXT_lights_image_based"] || { enabled: true };
+
+        const loaderState = this.props.globalState.glTFLoaderDefaults;
+
+        if (loaderState["animationStartMode"] === undefined) {
+            loaderState["animationStartMode"] = GLTFLoaderAnimationStartMode.FIRST;
+        }
+        loaderState["capturePerformanceCounters"] = loaderState["capturePerformanceCounters"] || false;
+        loaderState["compileMaterials"] = loaderState["compileMaterials"] || false;
+        loaderState["compileShadowGenerators"] = loaderState["compileShadowGenerators"] || false;
+        loaderState["coordinateSystemMode"] = loaderState["coordinateSystemMode"] || GLTFLoaderCoordinateSystemMode.AUTO;
+        loaderState["loggingEnabled"] = loaderState["loggingEnabled"] || false;
+        loaderState["transparencyAsCoverage"] = loaderState["transparencyAsCoverage"] || false;
+        loaderState["useClipPlane"] = loaderState["useClipPlane"] || false;
+        loaderState["validate"] = loaderState["validate"] || true;
+    }
+
+    openValidationDetails() {
+        const validationResults = this.props.globalState.validationResults;
+        const win = window.open("", "_blank");
+        if (win) {
+            // TODO: format this better and use generator registry (https://github.com/KhronosGroup/glTF-Generator-Registry)
+            win.document.title = "glTF Validation Results";
+            win.document.body.innerText = JSON.stringify(validationResults, null, 2);
+            win.document.body.style.whiteSpace = "pre";
+            win.document.body.style.fontFamily = `monospace`;
+            win.document.body.style.fontSize = `14px`;
+            win.focus();
+        }
+    }
+
+    prepareText(singularForm: string, count: number) {
+        if (count) {
+            return `${count} ${singularForm}s`;
+        }
+
+        return `${singularForm}`;
+    }
+
+    renderValidation() {
+        const validationResults = this.props.globalState.validationResults;
+        const issues = validationResults.issues;
+
+        return (
+            <LineContainerComponent title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
+                {
+                    issues.numErrors !== 0 &&
+                    <MessageLineComponent text="Your file has some validation issues" icon={faTimesCircle} color="Red" />
+                }
+                {
+                    issues.numErrors === 0 &&
+                    <MessageLineComponent text="Your file is a valid glTF file" icon={faCheck} color="Green" />
+                }
+                <TextLineComponent label="Errors" value={issues.numErrors.toString()} />
+                <TextLineComponent label="Warnings" value={issues.numWarnings.toString()} />
+                <TextLineComponent label="Infos" value={issues.numInfos.toString()} />
+                <TextLineComponent label="Hints" value={issues.numHints.toString()} />
+                <TextLineComponent label="More details" value="Click here" onLink={() => this.openValidationDetails()} />
+            </LineContainerComponent>
+        )
+    }
+
+    render() {
+        const extensionStates = this.props.globalState.glTFLoaderExtensionDefaults;
+        const loaderState = this.props.globalState.glTFLoaderDefaults;
+
+        var animationStartMode = [
+            { label: "None", value: GLTFLoaderAnimationStartMode.NONE },
+            { label: "First", value: GLTFLoaderAnimationStartMode.FIRST },
+            { label: "ALL", value: GLTFLoaderAnimationStartMode.ALL }
+        ];
+
+        var coordinateSystemMode = [
+            { label: "Auto", value: GLTFLoaderCoordinateSystemMode.AUTO },
+            { label: "Right handed", value: GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED }
+        ];
+
+        return (
+            <div>
+                <LineContainerComponent title="GLTF LOADER" closed={true}>
+                    <OptionsLineComponent label="Animation start mode" options={animationStartMode} target={loaderState} propertyName="animationStartMode" />
+                    <CheckBoxLineComponent label="Capture performance counters" target={loaderState} propertyName="capturePerformanceCounters" />
+                    <CheckBoxLineComponent label="Compile materials" target={loaderState} propertyName="compileMaterials" />
+                    <CheckBoxLineComponent label="Compile shadow generators" target={loaderState} propertyName="compileShadowGenerators" />
+                    <OptionsLineComponent label="Coordinate system" options={coordinateSystemMode} target={loaderState} propertyName="coordinateSystemMode" />
+                    <CheckBoxLineComponent label="Enable logging" target={loaderState} propertyName="loggingEnabled" />
+                    <CheckBoxLineComponent label="Transparency as coverage" target={loaderState} propertyName="transparencyAsCoverage" />
+                    <CheckBoxLineComponent label="Use clip plane" target={loaderState} propertyName="useClipPlane" />
+                    <CheckBoxLineComponent label="Validate" target={loaderState} propertyName="validate" />
+                    <MessageLineComponent text="You need to reload your file to see these changes" />
+                </LineContainerComponent>
+                <LineContainerComponent title="GLTF EXTENSIONS" closed={true}>
+                    <CheckBoxLineComponent label="MSFT_lod" isSelected={() => extensionStates["MSFT_lod"].enabled} onSelect={value => extensionStates["MSFT_lod"].enabled = value} />
+                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" additionalClass="gltf-extension-property" />
+                    <CheckBoxLineComponent label="MSFT_minecraftMesh" isSelected={() => extensionStates["MSFT_minecraftMesh"].enabled} onSelect={value => extensionStates["MSFT_minecraftMesh"].enabled = value} />
+                    <CheckBoxLineComponent label="MSFT_sRGBFactors" isSelected={() => extensionStates["MSFT_sRGBFactors"].enabled} onSelect={value => extensionStates["MSFT_sRGBFactors"].enabled = value} />
+                    <CheckBoxLineComponent label="MSFT_audio_emitter" isSelected={() => extensionStates["MSFT_audio_emitter"].enabled} onSelect={value => extensionStates["MSFT_audio_emitter"].enabled = value} />
+                    <CheckBoxLineComponent label="KHR_draco_mesh_compression" isSelected={() => extensionStates["KHR_draco_mesh_compression"].enabled} onSelect={value => extensionStates["KHR_draco_mesh_compression"].enabled = value} />
+                    <CheckBoxLineComponent label="KHR_materials_pbrSpecularGlossiness" isSelected={() => extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled} onSelect={value => extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled = value} />
+                    <CheckBoxLineComponent label="KHR_materials_unlit" isSelected={() => extensionStates["KHR_materials_unlit"].enabled} onSelect={value => extensionStates["KHR_materials_unlit"].enabled = value} />
+                    <CheckBoxLineComponent label="KHR_lights_punctual" isSelected={() => extensionStates["KHR_lights_punctual"].enabled} onSelect={value => extensionStates["KHR_lights_punctual"].enabled = value} />
+                    <CheckBoxLineComponent label="KHR_texture_transform" isSelected={() => extensionStates["KHR_texture_transform"].enabled} onSelect={value => extensionStates["KHR_texture_transform"].enabled = value} />
+                    <CheckBoxLineComponent label="EXT_lights_image_based" isSelected={() => extensionStates["EXT_lights_image_based"].enabled} onSelect={value => extensionStates["EXT_lights_image_based"].enabled = value} />
+                    <MessageLineComponent text="You need to reload your file to see these changes" />
+                </LineContainerComponent>
+                {
+                    loaderState["validate"] && this.props.globalState.validationResults &&
+                    this.renderValidation()
+                }
+            </div>
+        );
+    }
+}

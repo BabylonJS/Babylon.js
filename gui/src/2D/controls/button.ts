@@ -1,8 +1,10 @@
+import { Nullable } from "babylonjs/types";
+import { Vector2 } from "babylonjs/Maths/math";
+
 import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
-import { Vector2 } from "babylonjs";
 
 /**
  * Class used to create 2D buttons
@@ -25,6 +27,22 @@ export class Button extends Rectangle {
      */
     public pointerUpAnimation: () => void;
 
+    private _image: Nullable<Image>;
+    /**
+     * Returns the image part of the button (if any)
+     */
+    public get image(): Nullable<Image> {
+        return this._image;
+    }
+
+    private _textBlock: Nullable<TextBlock>;
+    /**
+     * Returns the image part of the button (if any)
+     */
+    public get textBlock(): Nullable<TextBlock> {
+        return this._textBlock;
+    }
+
     /**
      * Creates a new Button
      * @param name defines the name of the button
@@ -35,23 +53,28 @@ export class Button extends Rectangle {
         this.thickness = 1;
         this.isPointerBlocker = true;
 
+        let alphaStore: Nullable<number> = null;
+
         this.pointerEnterAnimation = () => {
+            alphaStore = this.alpha;
             this.alpha -= 0.1;
-        }
+        };
 
         this.pointerOutAnimation = () => {
-            this.alpha += 0.1;
-        }
+            if (alphaStore !== null) {
+                this.alpha = alphaStore;
+            }
+        };
 
         this.pointerDownAnimation = () => {
             this.scaleX -= 0.05;
             this.scaleY -= 0.05;
-        }
+        };
 
         this.pointerUpAnimation = () => {
             this.scaleX += 0.05;
             this.scaleY += 0.05;
-        }
+        };
     }
 
     protected _getTypeName(): string {
@@ -88,12 +111,12 @@ export class Button extends Rectangle {
     }
 
     /** @hidden */
-    public _onPointerOut(target: Control): void {
+    public _onPointerOut(target: Control, force = false): void {
         if (this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
 
-        super._onPointerOut(target);
+        super._onPointerOut(target, force);
     }
 
     /** @hidden */
@@ -101,7 +124,6 @@ export class Button extends Rectangle {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
             return false;
         }
-
 
         if (this.pointerDownAnimation) {
             this.pointerDownAnimation();
@@ -144,6 +166,10 @@ export class Button extends Rectangle {
         iconImage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         result.addControl(iconImage);
 
+        // Store
+        result._image = iconImage;
+        result._textBlock = textBlock;
+
         return result;
     }
 
@@ -162,6 +188,9 @@ export class Button extends Rectangle {
         iconImage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         result.addControl(iconImage);
 
+        // Store
+        result._image = iconImage;
+
         return result;
     }
 
@@ -179,6 +208,9 @@ export class Button extends Rectangle {
         textBlock.textWrapping = true;
         textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         result.addControl(textBlock);
+
+        // Store
+        result._textBlock = textBlock;
 
         return result;
     }
@@ -204,6 +236,10 @@ export class Button extends Rectangle {
         textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         result.addControl(textBlock);
 
+        // Store
+        result._image = iconImage;
+        result._textBlock = textBlock;
+
         return result;
     }
-}    
+}

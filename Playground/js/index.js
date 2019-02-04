@@ -30,16 +30,16 @@ function showError(errorMessage, errorEvent) {
     document.getElementById("errorZone").innerHTML = errorContent;
 
     // Close button error
-    document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
+    document.getElementById("errorZone").querySelector('.close').addEventListener('click', function() {
         document.getElementById("errorZone").style.display = 'none';
     });
 }
 
-(function () {
+(function() {
 
     var multipleSize = [1600, 1475, 1030, 750];
-    var setToMultipleID = function (id, thingToDo, param) {
-        multipleSize.forEach(function (size) {
+    var setToMultipleID = function(id, thingToDo, param) {
+        multipleSize.forEach(function(size) {
 
             if (thingToDo == "innerHTML") {
                 document.getElementById(id + size).innerHTML = param
@@ -76,15 +76,15 @@ function showError(errorMessage, errorEvent) {
         '.navbarBottom',
         '.navbarBottom .links .link'];
 
-    var run = function () {
+    var run = function() {
 
         // #region - Examples playgrounds
         var examplesButton = document.getElementsByClassName("examplesButton");
 
         if (examplesButton && examplesButton.length > 0) {
             var isExamplesDisplayed = false;
-            for(var i = 0; i < examplesButton.length; i++) {
-                examplesButton[i].parentElement.onclick = function () {
+            for (var i = 0; i < examplesButton.length; i++) {
+                examplesButton[i].parentElement.onclick = function() {
                     isExamplesDisplayed = !isExamplesDisplayed;
                     if (isExamplesDisplayed) {
                         document.getElementById("exampleList").style.display = "block";
@@ -94,15 +94,15 @@ function showError(errorMessage, errorEvent) {
                         document.getElementById("exampleList").style.display = "none";
                         document.getElementsByClassName("wrapper")[0].style.width = "100%";
                     }
-                } 
+                }
             }
         }
-        
+
 
         var filterBar = document.getElementById("filterBar");
         if (filterBar) {
             var filterBarClear = document.getElementById("filterBarClear");
-            var filter = function () {
+            var filter = function() {
                 var filterText = filterBar.value.toLowerCase();
                 if (filterText == "") filterBarClear.style.display = "none";
                 else filterBarClear.style.display = "inline-block";
@@ -132,10 +132,10 @@ function showError(errorMessage, errorEvent) {
                 if (displayCount == 0) document.getElementById("noResultsContainer").style.display = "block";
                 else document.getElementById("noResultsContainer").style.display = "none";
             }
-            filterBar.oninput = function () {
+            filterBar.oninput = function() {
                 filter();
             }
-            filterBarClear.onclick = function () {
+            filterBarClear.onclick = function() {
                 filterBar.value = "";
                 filter();
             }
@@ -144,22 +144,22 @@ function showError(errorMessage, errorEvent) {
 
         var blockEditorChange = false;
 
-        var markDirty = function () {
+        var markDirty = function() {
             if (blockEditorChange) {
                 return;
             }
 
             // setToMultipleID("currentScript", "innerHTML", "Custom");
             setToMultipleID("safemodeToggle", "addClass", "checked");
-            setToMultipleID("minimapToggle", "addClass", "checked");
+            // setToMultipleID("minimapToggle", "addClass", "checked"); // Why ?!
             setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
 
-        jsEditor.onKeyUp(function (evt) {
+        jsEditor.onKeyUp(function(evt) {
             markDirty();
         });
 
-        var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
+        var snippetV3Url = "https://snippet.babylonjs.com"
         var currentSnippetToken;
         var currentSnippetTitle = null;
         var currentSnippetDescription = null;
@@ -179,7 +179,7 @@ function showError(errorMessage, errorEvent) {
         var checkTypescriptSupport = function(xhr) {
             var filename = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
             if (xhr.responseText.indexOf("class Playground") !== -1) {// Typescript content
-                if(!filename) {
+                if (!filename) {
                     window.location.href = location.protocol + "//" + location.host + "/ts.html" + window.location.hash;
                     return false;
                 }
@@ -191,18 +191,18 @@ function showError(errorMessage, errorEvent) {
                 if (filename === "ts.html") {
                     window.location.href = location.protocol + "//" + location.host + location.pathname.replace(filename, "index.html") + window.location.hash;
                     return false;
-                }  
+                }
             }
 
             return true;
         }
 
-        var loadScript = function (scriptURL, title) {
+        var loadScript = function(scriptURL, title) {
             var xhr = new XMLHttpRequest();
 
             xhr.open('GET', scriptURL, true);
 
-            xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
 
@@ -227,33 +227,20 @@ function showError(errorMessage, errorEvent) {
             xhr.send(null);
         };
 
-        var loadScriptFromIndex = function (index) {
-            if (index === 0) {
-                index = 1;
-            }
-
-            var script = scripts[index - 1].trim();
-            loadScript("scripts/" + script + ".js", script);
-        }
-
-        var onScriptClick = function (evt) {
-            loadScriptFromIndex(evt.target.scriptLinkIndex);
-        };
-
-        var loadScriptsList = function () {
+        var loadScriptsList = function() {
 
             var exampleList = document.getElementById("exampleList");
-           
+
             var xhr = new XMLHttpRequest();
             //Open Typescript or Javascript examples
-            if(exampleList.className != 'typescript') {
+            if (exampleList.className != 'typescript') {
                 xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json', true);
             }
             else {
                 xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list_ts.json', true);
             }
 
-            xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         scripts = JSON.parse(xhr.response)["examples"];
@@ -265,7 +252,7 @@ function showError(errorMessage, errorEvent) {
                         }
                         scripts.sort(sortScriptsList);
 
-                                                
+
 
                         if (exampleList) {
                             for (var i = 0; i < scripts.length; i++) {
@@ -344,44 +331,42 @@ function showError(errorMessage, errorEvent) {
                                 var query = queryString.replace("?", "");
                                 index = parseInt(query);
                                 if (!isNaN(index)) {
-                                    // Old examples
-                                    //loadScriptFromIndex(index);
                                     var newPG = "";
-                                    switch(index) {
-                                        case 1 : newPG = "#TAZ2CB#0"; break; // Basic scene
-                                        case 2 : newPG = "#A1210C#0"; break; // Basic elements
-                                        case 3 : newPG = "#CURCZC#0"; break; // Rotation and scaling
-                                        case 4 : newPG = "#DXARSP#0"; break; // Materials
-                                        case 5 : newPG = "#1A3M5C#0"; break; // Cameras
-                                        case 6 : newPG = "#AQRDKW#0"; break; // Lights
-                                        case 7 : newPG = "#QYFDDP#1"; break; // Animations
-                                        case 8 : newPG = "#9RI8CG#0"; break; // Sprites
-                                        case 9 : newPG = "#U8MEB0#0"; break; // Collisions
-                                        case 10 : newPG = "#KQV9SA#0"; break; // Intersections
-                                        case 11 : newPG = "#NU4F6Y#0"; break; // Picking
-                                        case 12 : newPG = "#EF9X5R#0"; break; // Particles
-                                        case 13 : newPG = "#7G0IQW#0"; break; // Environment
-                                        case 14 : newPG = "#95PXRY#0"; break; // Height map
-                                        case 15 : newPG = "#IFYDRS#0"; break; // Shadows
-                                        case 16 : newPG = "#AQZJ4C#0"; break; // Import meshes
-                                        case 17 : newPG = "#J19GYK#0"; break; // Actions
-                                        case 18 : newPG = "#UZ23UH#0"; break; // Drag and drop
-                                        case 19 : newPG = "#AQZJ4C#0"; break; // Fresnel
-                                        case 20 : newPG = "#8ZNVGR#0"; break; // Easing functions
-                                        case 21 : newPG = "#B2ZXG6#0"; break; // Procedural texture
-                                        case 22 : newPG = "#DXAEUY#0"; break; // Basic sounds
-                                        case 23 : newPG = "#EDVU95#0"; break; // Sound on mesh
-                                        case 24 : newPG = "#N96NXC#0"; break; // SSAO rendering pipeline
-                                        case 25 : newPG = "#7D2QDD#0"; break; // SSAO 2
-                                        case 26 : newPG = "#V2DAKC#0"; break; // Volumetric light scattering
-                                        case 27 : newPG = "#XH85A9#0"; break; // Refraction and reflection
-                                        case 28 : newPG = "#8MGKWK#0"; break; // PBR
-                                        case 29 : newPG = "#0K8EYN#0"; break; // Instanced bones
-                                        case 30 : newPG = "#C245A1#0"; break; // Pointer events handling
-                                        case 31 : newPG = "#TAFSN0#2"; break; // WebVR
-                                        case 32 : newPG = "#3VMTI9#0"; break; // GUI
-                                        case 33 : newPG = "#7149G4#0"; break; // Physics
-                                        
+                                    switch (index) {
+                                        case 1: newPG = "#TAZ2CB#0"; break; // Basic scene
+                                        case 2: newPG = "#A1210C#0"; break; // Basic elements
+                                        case 3: newPG = "#CURCZC#0"; break; // Rotation and scaling
+                                        case 4: newPG = "#DXARSP#0"; break; // Materials
+                                        case 5: newPG = "#1A3M5C#0"; break; // Cameras
+                                        case 6: newPG = "#AQRDKW#0"; break; // Lights
+                                        case 7: newPG = "#QYFDDP#1"; break; // Animations
+                                        case 8: newPG = "#9RI8CG#0"; break; // Sprites
+                                        case 9: newPG = "#U8MEB0#0"; break; // Collisions
+                                        case 10: newPG = "#KQV9SA#0"; break; // Intersections
+                                        case 11: newPG = "#NU4F6Y#0"; break; // Picking
+                                        case 12: newPG = "#EF9X5R#0"; break; // Particles
+                                        case 13: newPG = "#7G0IQW#0"; break; // Environment
+                                        case 14: newPG = "#95PXRY#0"; break; // Height map
+                                        case 15: newPG = "#IFYDRS#0"; break; // Shadows
+                                        case 16: newPG = "#AQZJ4C#0"; break; // Import meshes
+                                        case 17: newPG = "#J19GYK#0"; break; // Actions
+                                        case 18: newPG = "#UZ23UH#0"; break; // Drag and drop
+                                        case 19: newPG = "#AQZJ4C#0"; break; // Fresnel
+                                        case 20: newPG = "#8ZNVGR#0"; break; // Easing functions
+                                        case 21: newPG = "#B2ZXG6#0"; break; // Procedural texture
+                                        case 22: newPG = "#DXAEUY#0"; break; // Basic sounds
+                                        case 23: newPG = "#EDVU95#0"; break; // Sound on mesh
+                                        case 24: newPG = "#N96NXC#0"; break; // SSAO rendering pipeline
+                                        case 25: newPG = "#7D2QDD#0"; break; // SSAO 2
+                                        case 26: newPG = "#V2DAKC#0"; break; // Volumetric light scattering
+                                        case 27: newPG = "#XH85A9#0"; break; // Refraction and reflection
+                                        case 28: newPG = "#8MGKWK#0"; break; // PBR
+                                        case 29: newPG = "#0K8EYN#0"; break; // Instanced bones
+                                        case 30: newPG = "#C245A1#0"; break; // Pointer events handling
+                                        case 31: newPG = "#TAFSN0#2"; break; // WebVR
+                                        case 32: newPG = "#3VMTI9#0"; break; // GUI
+                                        case 33: newPG = "#7149G4#0"; break; // Physics
+
                                         default: newPG = ""; break;
                                     }
                                     window.location.href = location.protocol + "//" + location.host + location.pathname + "#" + newPG;
@@ -400,7 +385,7 @@ function showError(errorMessage, errorEvent) {
                         toggleTheme(theme);
 
                         // Remove editor if window size is less than 850px
-                        var removeEditorForSmallScreen = function () {
+                        var removeEditorForSmallScreen = function() {
                             if (mq.matches) {
                                 splitInstance.collapse(0);
                             } else {
@@ -416,7 +401,7 @@ function showError(errorMessage, errorEvent) {
             xhr.send(null);
         }
 
-        var createNewScript = function () {
+        var createNewScript = function() {
             // check if checked is on
             let iCanClear = checkSafeMode("Are you sure you want to create a new playground?");
             if (!iCanClear) return;
@@ -436,7 +421,7 @@ function showError(errorMessage, errorEvent) {
             compileAndRun();
         }
 
-        var clear = function () {
+        var clear = function() {
             // check if checked is on
             let iCanClear = checkSafeMode("Are you sure you want to clear the playground?");
             if (!iCanClear) return;
@@ -447,7 +432,7 @@ function showError(errorMessage, errorEvent) {
             jsEditor.focus();
         }
 
-        var checkSafeMode = function (message) {
+        var checkSafeMode = function(message) {
             var safeToggle = document.getElementById("safemodeToggle1600");
             if (safeToggle.classList.contains('checked')) {
                 let confirm = window.confirm(message);
@@ -462,7 +447,7 @@ function showError(errorMessage, errorEvent) {
             }
         }
 
-        var showNoMetadata = function () {
+        var showNoMetadata = function() {
             if (currentSnippetTitle) {
                 document.getElementById("saveFormTitle").value = currentSnippetTitle;
                 document.getElementById("saveFormTitle").readOnly = true;
@@ -492,7 +477,7 @@ function showError(errorMessage, errorEvent) {
         };
         showNoMetadata();
 
-        var hideNoMetadata = function () {
+        var hideNoMetadata = function() {
             document.getElementById("saveFormTitle").readOnly = true;
             document.getElementById("saveFormDescription").readOnly = true;
             document.getElementById("saveFormTags").readOnly = true;
@@ -500,7 +485,7 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID("metadataButton", "display", "inline-block");
         };
 
-        compileAndRun = function () {
+        compileAndRun = function() {
             try {
                 var waitRing = document.getElementById("waitDiv");
                 if (waitRing) {
@@ -513,29 +498,11 @@ function showError(errorMessage, errorEvent) {
                 }
 
                 var showInspector = false;
-                var showDebugLayer = false;
-                var initialTabIndex = 0;
                 showBJSPGMenu();
                 jsEditor.updateOptions({ readOnly: false });
 
-                if (document.getElementsByClassName('insp-wrapper').length > 0) {
-                    for (var i = 0; i < engine.scenes.length; i++) {
-                        if (engine.scenes[i]._debugLayer) {
-                            //TODO: once inspector is updated on netlify, use getActiveTabIndex instead of the following loop
-                            //initialTabIndex = engine.scenes[i]._debugLayer._inspector.getActiveTabIndex();
-                            var tabs = engine.scenes[i]._debugLayer._inspector._tabbar._tabs;
-                            for (var j = 0; j < tabs.length; j++) {
-                                if (tabs[j].isActive()) {
-                                    initialTabIndex = j;
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
+                if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
                     showInspector = true;
-                } else if (document.getElementById('DebugLayer')) {
-                    showDebugLayer = true;
                 }
 
                 if (engine) {
@@ -548,22 +515,23 @@ function showError(errorMessage, errorEvent) {
                 document.getElementById("errorZone").innerHTML = "";
                 document.getElementById("statusBar").innerHTML = "Loading assets...Please wait";
                 var checkCamera = true;
+                var checkSceneCount = true;
                 var wrappedEval = false;
                 var createEngineFunction = "createDefaultEngine";
                 var createSceneFunction;
 
                 getRunCode(jsEditor, function(code) {
-                    var createDefaultEngine = function () {
+                    var createDefaultEngine = function() {
                         return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
                     }
-    
+
                     var scene;
                     var defaultEngineZip = "new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true })";
 
                     if (code.indexOf("createEngine") !== -1) {
                         createEngineFunction = "createEngine";
                     }
-    
+
                     if (code.indexOf("delayCreateScene") !== -1) { // createScene
                         createSceneFunction = "delayCreateScene";
                         checkCamera = false;
@@ -574,14 +542,14 @@ function showError(errorMessage, errorEvent) {
                     } else if (code.indexOf("createscene") !== -1) { // createscene
                         createSceneFunction = "createscene";
                     }
-    
+
                     if (!createSceneFunction) {
                         // just pasted code.
                         engine = createDefaultEngine();
                         scene = new BABYLON.Scene(engine);
                         eval("runScript = function(scene, canvas) {" + code + "}");
                         runScript(scene, canvas);
-    
+
                         zipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
                     } else {
                         //execute the code
@@ -592,70 +560,78 @@ function showError(errorMessage, errorEvent) {
                             showError("createEngine function must return an engine.", null);
                             return;
                         }
-    
+
                         //create scene
                         eval("scene = " + createSceneFunction + "()");
-    
+
                         if (!scene) {
                             showError(createSceneFunction + " function must return a scene.", null);
                             return;
                         }
-    
+
+                        // if scene returns a promise avoid checks
+                        if (scene.then) {
+                            checkCamera = false;
+                            checkSceneCount = false;
+                        }
+
                         var createEngineZip = (createEngineFunction === "createEngine")
                             ? "createEngine()"
-                            : defaultEngineZip
+                            : defaultEngineZip;
 
-                        zipCode = 
+                        zipCode =
                             code + "\r\n\r\n" +
                             "var engine = " + createEngineZip + ";\r\n" +
-                            "var scene = " + createSceneFunction + "();"
+                            "var scene = " + createSceneFunction + "();";
 
                     }
-    
-                    engine.runRenderLoop(function () {
+
+                    engine.runRenderLoop(function() {
                         if (engine.scenes.length === 0) {
                             return;
                         }
-    
+
                         if (canvas.width !== canvas.clientWidth) {
                             engine.resize();
                         }
-    
+
                         var scene = engine.scenes[0];
-    
+
                         if (scene.activeCamera || scene.activeCameras.length > 0) {
                             scene.render();
                         }
-    
+
                         fpsLabel.style.right = document.body.clientWidth - (jsEditor.domElement.clientWidth + canvas.clientWidth) + "px";
                         fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                     });
-    
-                    if (engine.scenes.length === 0) {
+
+                    if (checkSceneCount && engine.scenes.length === 0) {
+
                         showError("You must at least create a scene.", null);
                         return;
                     }
-    
+
                     if (checkCamera && engine.scenes[0].activeCamera == null) {
                         showError("You must at least create a camera.", null);
                         return;
+                    } else if (scene.then) {
+                        scene.then(function() {
+                            document.getElementById("statusBar").innerHTML = "";
+                        });
+                    } else {
+                        engine.scenes[0].executeWhenReady(function() {
+                            document.getElementById("statusBar").innerHTML = "";
+                        });
                     }
-    
-                    engine.scenes[0].executeWhenReady(function () {
-                        document.getElementById("statusBar").innerHTML = "";
-                    });
-    
+
                     if (scene) {
                         if (showInspector) {
-                            scene.debugLayer.show({ initialTab: initialTabIndex });
-                            scene.executeWhenReady(function () {
-                                scene.debugLayer._inspector.refresh();
-                            })
-                        } else if (showDebugLayer) {
-                            scene.debugLayer.show();
+                            if (!scene.debugLayer.isVisible()) {
+                                scene.debugLayer.show({ embedMode: true });
+                            }
                         }
                     }
-                });              
+                });
 
             } catch (e) {
                 showError(e.message, e);
@@ -664,7 +640,7 @@ function showError(errorMessage, errorEvent) {
             }
         };
         window.addEventListener("resize",
-            function () {
+            function() {
                 if (engine) {
                     engine.resize();
                 }
@@ -674,7 +650,7 @@ function showError(errorMessage, errorEvent) {
         loadScriptsList();
 
         // Zip
-        var addContentToZip = function (zip, name, url, replace, buffer, then) {
+        var addContentToZip = function(zip, name, url, replace, buffer, then) {
             if (url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
                 then();
                 return;
@@ -688,7 +664,7 @@ function showError(errorMessage, errorEvent) {
                 xhr.responseType = "arraybuffer";
             }
 
-            xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         var text;
@@ -716,7 +692,7 @@ function showError(errorMessage, errorEvent) {
             xhr.send(null);
         }
 
-        var addTexturesToZip = function (zip, index, textures, folder, then) {
+        var addTexturesToZip = function(zip, index, textures, folder, then) {
 
             if (index === textures.length) {
                 then();
@@ -763,7 +739,7 @@ function showError(errorMessage, errorEvent) {
                     url,
                     null,
                     true,
-                    function () {
+                    function() {
                         addTexturesToZip(zip, index + 1, textures, folder, then);
                     });
             }
@@ -772,7 +748,7 @@ function showError(errorMessage, errorEvent) {
             }
         }
 
-        var addImportedFilesToZip = function (zip, index, importedFiles, folder, then) {
+        var addImportedFilesToZip = function(zip, index, importedFiles, folder, then) {
             if (index === importedFiles.length) {
                 then();
                 return;
@@ -790,12 +766,12 @@ function showError(errorMessage, errorEvent) {
                 url,
                 null,
                 true,
-                function () {
+                function() {
                     addImportedFilesToZip(zip, index + 1, importedFiles, folder, then);
                 });
         }
 
-        var getZip = function () {
+        var getZip = function() {
             if (engine.scenes.length === 0) {
                 return;
             }
@@ -819,17 +795,17 @@ function showError(errorMessage, errorEvent) {
                 "zipContent/index.html",
                 zipCode,
                 false,
-                function () {
+                function() {
                     addTexturesToZip(zip,
                         0,
                         textures,
                         null,
-                        function () {
+                        function() {
                             addImportedFilesToZip(zip,
                                 0,
                                 importedFiles,
                                 null,
-                                function () {
+                                function() {
                                     var blob = zip.generate({ type: "blob" });
                                     saveAs(blob, "sample.zip");
                                     document.getElementById("statusBar").innerHTML = "";
@@ -839,7 +815,7 @@ function showError(errorMessage, errorEvent) {
         }
 
         // Versions
-        setVersion = function (version) {
+        setVersion = function(version) {
             switch (version) {
                 case "stable":
                     location.href = "indexStable.html" + location.hash;
@@ -851,35 +827,35 @@ function showError(errorMessage, errorEvent) {
         }
 
         // Fonts
-        setFontSize = function (size) {
+        setFontSize = function(size) {
             fontSize = size;
             jsEditor.updateOptions({ fontSize: size });
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
         // Fullscreen
-        document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function () {
+        document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function() {
             if (document.webkitIsFullScreen) goFullPage();
             else exitFullPage();
         }, false);
 
-        var goFullPage = function () {
+        var goFullPage = function() {
             var canvasElement = document.getElementById("renderCanvas");
             canvasElement.style.position = "absolute";
             canvasElement.style.top = 0;
             canvasElement.style.left = 0;
             canvasElement.style.zIndex = 100;
         }
-        var exitFullPage = function () {
+        var exitFullPage = function() {
             document.getElementById("renderCanvas").style.position = "relative";
             document.getElementById("renderCanvas").style.zIndex = 0;
         }
-        var goFullscreen = function () {
+        var goFullscreen = function() {
             if (engine) {
                 engine.switchFullscreen(true);
             }
         }
-        var editorGoFullscreen = function () {
+        var editorGoFullscreen = function() {
             var editorDiv = document.getElementById("jsEditor");
             if (editorDiv.requestFullscreen) {
                 editorDiv.requestFullscreen();
@@ -891,7 +867,7 @@ function showError(errorMessage, errorEvent) {
 
         }
 
-        var toggleEditor = function () {
+        var toggleEditor = function() {
             var editorButton = document.getElementById("editorButton1600");
             var scene = engine.scenes[0];
 
@@ -899,7 +875,7 @@ function showError(errorMessage, errorEvent) {
             if (editorButton.classList.contains('checked')) {
                 setToMultipleID("editorButton", "removeClass", 'checked');
                 splitInstance.collapse(0);
-                setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square-o" aria-hidden="true"></i>');
+                setToMultipleID("editorButton", "innerHTML", 'Editor <i class="far fa-square" aria-hidden="true"></i>');
             } else {
                 setToMultipleID("editorButton", "addClass", 'checked');
                 splitInstance.setSizes([50, 50]);  // Reset
@@ -908,15 +884,14 @@ function showError(errorMessage, errorEvent) {
             engine.resize();
 
             if (scene.debugLayer.isVisible()) {
-                scene.debugLayer.hide();
-                scene.debugLayer.show();
+                scene.debugLayer.show({ embedMode: true });
             }
         }
 
         /**
          * Toggle the dark theme
          */
-        var toggleTheme = function (theme) {
+        var toggleTheme = function(theme) {
             // Monaco
             var vsTheme;
             if (theme == 'dark') {
@@ -941,13 +916,17 @@ function showError(errorMessage, errorEvent) {
                 contextmenu: false,
                 folding: true,
                 showFoldingControls: "always",
-                renderIndentGuides: true
-            };            
+                renderIndentGuides: true,
+                minimap: {
+                    enabled: true
+                }
+            };
+            editorOptions.minimap.enabled = document.getElementById("minimapToggle1600").classList.contains('checked');
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
 
-            jsEditor.onKeyUp(function (evt) {
+            jsEditor.onKeyUp(function(evt) {
                 markDirty();
             });
 
@@ -963,38 +942,33 @@ function showError(errorMessage, errorEvent) {
             }
 
             localStorage.setItem("bjs-playground-theme", theme);
-
         }
 
-        var toggleDebug = function () {
-            var debugButton = document.getElementById("debugButton1600");
+        var toggleDebug = function() {
+            // Always showing the debug layer, because you can close it by itself
             var scene = engine.scenes[0];
-
-            if (debugButton.classList.contains('uncheck')) {
-                setToMultipleID("debugButton", "removeClass", 'uncheck');
-                setToMultipleID("debugButton", "innerHTML", 'Inspector<i class="fa fa-check-square" aria-hidden="true"></i>');
-                scene.debugLayer.show();
-            } else {
-                setToMultipleID("debugButton", "addClass", 'uncheck');
-                setToMultipleID("debugButton", "innerHTML", 'Inspector<i class="fa fa-square-o" aria-hidden="true"></i>');
+            if (scene.debugLayer.isVisible()) {
                 scene.debugLayer.hide();
+            }
+            else {
+                scene.debugLayer.show({ embedMode: true });
             }
         }
 
-        var toggleMetadata = function () {
+        var toggleMetadata = function() {
             var scene = engine.scenes[0];
             document.getElementById("saveLayer").style.display = "block";
         }
 
-        var formatCode = function () {
+        var formatCode = function() {
             jsEditor.getAction('editor.action.format').run();
         }
 
-        var toggleMinimap = function () {
+        var toggleMinimap = function() {
             var minimapToggle = document.getElementById("minimapToggle1600");
             if (minimapToggle.classList.contains('checked')) {
                 jsEditor.updateOptions({ minimap: { enabled: false } });
-                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square-o" aria-hidden="true"></i>');
+                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="far fa-square" aria-hidden="true"></i>');
             } else {
                 jsEditor.updateOptions({ minimap: { enabled: true } });
                 setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
@@ -1004,7 +978,7 @@ function showError(errorMessage, errorEvent) {
 
 
         //Navigation Overwrites
-        var exitPrompt = function (e) {
+        var exitPrompt = function(e) {
             var safeToggle = document.getElementById("safemodeToggle1600");
             if (safeToggle.classList.contains('checked')) {
                 e = e || window.event;
@@ -1020,7 +994,7 @@ function showError(errorMessage, errorEvent) {
         window.onbeforeunload = exitPrompt;
 
         // Snippet
-        var save = function () {
+        var save = function() {
 
             // Retrieve title if necessary
             if (document.getElementById("saveLayer")) {
@@ -1030,9 +1004,9 @@ function showError(errorMessage, errorEvent) {
             }
 
             var xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = function () {
+            xmlHttp.onreadystatechange = function() {
                 if (xmlHttp.readyState === 4) {
-                    if (xmlHttp.status === 201) {
+                    if (xmlHttp.status === 200) {
                         var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                         var snippet = JSON.parse(xmlHttp.responseText);
                         var newUrl = baseUrl + "#" + snippet.id;
@@ -1050,13 +1024,13 @@ function showError(errorMessage, errorEvent) {
                 }
             }
 
-            xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
+            xmlHttp.open("POST", snippetV3Url + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
             xmlHttp.setRequestHeader("Content-Type", "application/json");
 
             var dataToSend = {
-                payload: {
+                payload: JSON.stringify({
                     code: jsEditor.getValue()
-                },
+                }),
                 name: currentSnippetTitle,
                 description: currentSnippetDescription,
                 tags: currentSnippetTags
@@ -1065,7 +1039,7 @@ function showError(errorMessage, errorEvent) {
             xmlHttp.send(JSON.stringify(dataToSend));
         }
 
-        var askForSave = function () {
+        var askForSave = function() {
             if (currentSnippetTitle == null
                 || currentSnippetDescription == null
                 || currentSnippetTags == null) {
@@ -1076,18 +1050,18 @@ function showError(errorMessage, errorEvent) {
                 save();
             }
         };
-        document.getElementById("saveFormButtonOk").addEventListener("click", function () {
+        document.getElementById("saveFormButtonOk").addEventListener("click", function() {
             document.getElementById("saveLayer").style.display = "none";
             save();
         });
-        document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
+        document.getElementById("saveFormButtonCancel").addEventListener("click", function() {
             document.getElementById("saveLayer").style.display = "none";
         });
         document.getElementById("mainTitle").innerHTML = "v" + BABYLON.Engine.Version;
 
         var previousHash = "";
 
-        var cleanHash = function () {
+        var cleanHash = function() {
             var splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
             if (splits.length > 2) {
@@ -1097,7 +1071,7 @@ function showError(errorMessage, errorEvent) {
             location.hash = splits.join("#");
         }
 
-        var checkHash = function (firstTime) {
+        var checkHash = function(firstTime) {
             if (location.hash) {
                 if (previousHash !== location.hash) {
                     cleanHash();
@@ -1106,7 +1080,7 @@ function showError(errorMessage, errorEvent) {
 
                     try {
                         var xmlHttp = new XMLHttpRequest();
-                        xmlHttp.onreadystatechange = function () {
+                        xmlHttp.onreadystatechange = function() {
                             if (xmlHttp.readyState === 4) {
                                 if (xmlHttp.status === 200) {
 
@@ -1114,7 +1088,7 @@ function showError(errorMessage, errorEvent) {
                                         return;
                                     }
 
-                                    var snippet = JSON.parse(xmlHttp.responseText)[0];
+                                    var snippet = JSON.parse(xmlHttp.responseText);
 
                                     blockEditorChange = true;
                                     jsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
@@ -1154,11 +1128,6 @@ function showError(errorMessage, errorEvent) {
                                     compileAndRun();
 
                                     // setToMultipleID("currentScript", "innerHTML", "Custom");
-                                } else if (firstTime) {
-                                    location.href = location.href.replace(location.hash, "");
-                                    if (scripts) {
-                                        loadScriptFromIndex(0);
-                                    }
                                 }
                             }
                         };
@@ -1168,7 +1137,7 @@ function showError(errorMessage, errorEvent) {
                         if (!hash.split("#")[1]) hash += "#0";
 
 
-                        xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
+                        xmlHttp.open("GET", snippetV3Url + "/" + hash.replace("#", "/"));
                         xmlHttp.send();
                     } catch (e) {
 
@@ -1197,12 +1166,12 @@ function showError(errorMessage, errorEvent) {
         setToMultipleID("darkTheme", "click", toggleTheme.bind(this, 'dark'));
         setToMultipleID("lightTheme", "click", toggleTheme.bind(this, 'light'));
         // Safe mode
-        setToMultipleID("safemodeToggle", 'click', function () {
+        setToMultipleID("safemodeToggle", 'click', function() {
             document.getElementById("safemodeToggle1600").classList.toggle('checked');
             if (document.getElementById("safemodeToggle1600").classList.contains('checked')) {
                 setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
             } else {
-                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square-o" aria-hidden="true"></i>');
+                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="far fa-square" aria-hidden="true"></i>');
             }
         });
         // Editor
@@ -1224,6 +1193,7 @@ function showError(errorMessage, errorEvent) {
         // Restore theme
         var theme = localStorage.getItem("bjs-playground-theme") || 'light';
         toggleTheme(theme);
+        toggleMinimap();
     }
 
     // Monaco
@@ -1232,11 +1202,11 @@ function showError(errorMessage, errorEvent) {
 
     xhr.open('GET', "babylon.d.txt", true);
 
-    xhr.onreadystatechange = function () {
+    xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
                 require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
-                require(['vs/editor/editor.main'], function () {
+                require(['vs/editor/editor.main'], function() {
                     if (monacoMode === "javascript") {
                         monaco.languages.typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                     } else {

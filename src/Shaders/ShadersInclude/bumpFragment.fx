@@ -12,6 +12,12 @@
 	#else
 		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, vBumpUV);
 	#endif
+#elif defined(ANISOTROPIC)
+	#if defined(TANGENT) && defined(NORMAL)
+		mat3 TBN = vTBN;
+	#else
+		mat3 TBN = cotangent_frame(normalW, vPositionW, vMainUV1, vec2(1., 1.));
+	#endif
 #endif
 
 #ifdef PARALLAX
@@ -25,10 +31,10 @@
 #endif
 
 #ifdef BUMP
-#ifdef OBJECTSPACE_NORMALMAP
-	normalW = normalize(texture2D(bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
-	normalW = normalize(mat3(normalMatrix) * normalW);	
-#else
-	normalW = perturbNormal(TBN, vBumpUV + uvOffset);
-#endif
+	#ifdef OBJECTSPACE_NORMALMAP
+		normalW = normalize(texture2D(bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
+		normalW = normalize(mat3(normalMatrix) * normalW);	
+	#else
+		normalW = perturbNormal(TBN, vBumpUV + uvOffset);
+	#endif
 #endif

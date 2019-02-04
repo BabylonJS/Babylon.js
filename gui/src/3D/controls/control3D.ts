@@ -1,4 +1,12 @@
-import { IDisposable, IBehaviorAware, Nullable, TransformNode, Vector3, Observable, Behavior, AbstractMesh, Scene, PointerEventTypes } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Observable } from "babylonjs/Misc/observable";
+import { Vector3 } from "babylonjs/Maths/math";
+import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { IBehaviorAware, Behavior } from "babylonjs/Behaviors/behavior";
+import { IDisposable, Scene } from "babylonjs/scene";
+
 import { GUI3DManager } from "../gui3DManager";
 import { Vector3WithInfo } from "../vector3WithInfo";
 import { Container3D } from "./container3D";
@@ -29,7 +37,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             return;
         }
 
-        this._node.position = value;;
+        this._node.position = value;
     }
 
     /** Gets or sets the control scaling  in world space */
@@ -46,7 +54,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             return;
         }
 
-        this._node.scaling = value;;
+        this._node.scaling = value;
     }
 
     /** Callback used to start pointer enter animation */
@@ -198,6 +206,14 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
      * Gets a string representing the class name
      */
     public get typeName(): string {
+        return this._getTypeName();
+    }
+
+    /**
+     * Get the current class name of the control.
+     * @returns current class name
+     */
+    public getClassName(): string {
         return this._getTypeName();
     }
 

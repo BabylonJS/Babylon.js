@@ -84,4 +84,4 @@ export class Ellipse extends Container {
 
         context.clip();
     }
-}   
+}

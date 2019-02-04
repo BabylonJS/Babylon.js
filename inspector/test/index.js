@@ -1,43 +1,31 @@
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 
-var Test = (function () {
+var Test = (function() {
     function Test(canvasId) {
         var _this = this;
         var canvas = document.getElementById(canvasId);
         this.engine = new BABYLON.Engine(canvas, true);
-        // BABYLONDEVTOOLS.Loader.debugShortcut(this.engine);
         this.scene = null;
-        window.addEventListener("resize", function () {
+        window.addEventListener("resize", function() {
             _this.engine.resize();
         });
         this._run();
     }
-    Test.prototype._run = function () {
+    Test.prototype._run = function() {
         var _this = this;
         this._initScene();
-        // this.scene.debugLayer.show({
-        //     popup: false,
-        //     parentElement: document.getElementById('inspector'),
-        //     newColors: {
-        //         backgroundColor: '#eee',
-        //         backgroundColorLighter: '#fff',
-        //         backgroundColorLighter2: '#fff',
-        //         backgroundColorLighter3: '#fff',
-        //         color: '#333'
-        //     }
-        // });
-        this.scene.executeWhenReady(function () {
-            _this.engine.runRenderLoop(function () {
+        this.scene.executeWhenReady(function() {
+            _this.engine.runRenderLoop(function() {
                 _this.scene.render();
             });
         });
     };
-    Test.prototype._initScene = function () {
+    Test.prototype._initScene = function() {
         var scene = new BABYLON.Scene(this.engine);
         var canvas = scene.getEngine().getRenderingCanvas();
 
-        var camera = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 2, -2), scene); 
-        
+        var camera = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 2, -2), scene);
+
         var camera2 = new BABYLON.ArcRotateCamera("Camera2", 0, 0, 5, new BABYLON.Vector3(0, 0, 0), scene);
 
         var camera3 = new BABYLON.ArcRotateCamera("Camera3", 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene);
@@ -49,12 +37,15 @@ var Test = (function () {
         var camera6 = new BABYLON.ArcRotateCamera("Camera6", 0, 0, 25, new BABYLON.Vector3(0, 0, 0), scene);
 
         scene.activeCamera = camera2;
-        
+
         camera2.attachControl(canvas);
 
         var sceneRoot = new BABYLON.TransformNode("abstractmesh");
 
         var tn = new BABYLON.TransformNode("transform node");
+
+        let DDSTexture = new BABYLON.CubeTexture("test/environment.dds", scene);
+        let DDSTexture2 = new BABYLON.Texture("test/test_1.dds", scene);
 
         // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
         var ground = BABYLON.Mesh.CreateGround("node_damagedHelmet_-6514", 6, 6, 2, scene);
@@ -84,7 +75,9 @@ var Test = (function () {
 
         scene.createDefaultCameraOrLight(true);
         scene.activeCamera.attachControl(canvas);
-        scene.debugLayer.show();
+        
+        scene.debugLayer.show({embedMode: true});
+        //scene.debugLayer.show();
         scene.debugLayer.onPropertyChangedObservable.add((result) => {
             console.log(result.object);
             console.log("Property : " + result.property);

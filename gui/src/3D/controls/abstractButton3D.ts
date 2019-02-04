@@ -1,5 +1,7 @@
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Scene } from "babylonjs/scene";
+
 import { Control3D } from "./control3D";
-import { TransformNode, Scene } from "babylonjs";
 
 /**
  * Class used as a root to all buttons

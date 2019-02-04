@@ -3,7 +3,7 @@ import { SceneManager } from '../../managers/sceneManager';
 
 /**
  * A custom upgrade-oriented function configuration for the scene optimizer.
- * 
+ *
  * @param viewer the viewer to optimize
  */
 export function extendedUpgrade(sceneManager: SceneManager): boolean {
@@ -28,7 +28,7 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
         return false;
     }
     if (defaultPipeline && !sceneManager.fxaaEnabled) {
-        sceneManager.fxaaEnabled = true
+        sceneManager.fxaaEnabled = true;
         return false;
     }
     var hardwareScalingLevel = Math.max(1 / 2, 1 / (window.devicePixelRatio || 2));
@@ -42,7 +42,7 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
         return false;
     }
     if (defaultPipeline && !sceneManager.bloomEnabled) {
-        sceneManager.bloomEnabled = true
+        sceneManager.bloomEnabled = true;
         return false;
     }
     if (!sceneManager.groundMirrorEnabled) {
@@ -54,7 +54,7 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
 
 /**
  * A custom degrade-oriented function configuration for the scene optimizer.
- * 
+ *
  * @param viewer the viewer to optimize
  */
 export function extendedDegrade(sceneManager: SceneManager): boolean {

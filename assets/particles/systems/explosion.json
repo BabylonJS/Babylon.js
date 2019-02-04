@@ -1,0 +1,1361 @@
+{
+    "systems":
+    [
+        {
+            "name": "flash",
+            "id": "flash",
+            "capacity": 40,
+            "emitter":
+            [
+                0,
+                0,
+                0
+            ],
+            "particleEmitterType":
+            {
+                "type": "ConeParticleEmitter",
+                "radius": 0.1,
+                "angle": 0.7853981633974483,
+                "directionRandomizer": 0
+            },
+            "textureName": "explosion/FlashParticle.png",
+            "invertY": true,
+            "animations": [],
+            "beginAnimationOnStart": false,
+            "beginAnimationFrom": 0,
+            "beginAnimationTo": 60,
+            "beginAnimationLoop": false,
+            "startDelay": 0,
+            "renderingGroupId": 2,
+            "isBillboardBased": true,
+            "billboardMode": 7,
+            "minAngularSpeed": 0,
+            "maxAngularSpeed": 0,
+            "minSize": 0.1,
+            "maxSize": 0.1,
+            "minScaleX": 10,
+            "maxScaleX": 20,
+            "minScaleY": 70,
+            "maxScaleY": 100,
+            "minEmitPower": 0,
+            "maxEmitPower": 0,
+            "minLifeTime": 0.2,
+            "maxLifeTime": 0.4,
+            "emitRate": 400,
+            "gravity":
+            [
+                0,
+                0,
+                0
+            ],
+            "noiseStrength":
+            [
+                10,
+                10,
+                10
+            ],
+            "color1":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "color2":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "colorDead":
+            [
+                1,
+                1,
+                1,
+                0
+            ],
+            "updateSpeed": 0.016666666666666666,
+            "targetStopDuration": 0.2,
+            "blendMode": 2,
+            "preWarmCycles": 0,
+            "preWarmStepOffset": 1,
+            "minInitialRotation": -0.78539816,
+            "maxInitialRotation": 0.78539816,
+            "startSpriteCellID": 0,
+            "endSpriteCellID": 0,
+            "spriteCellChangeSpeed": 1,
+            "spriteCellWidth": 0,
+            "spriteCellHeight": 0,
+            "spriteRandomStartCell": false,
+            "isAnimationSheetEnabled": false,
+            "colorGradients":
+            [
+                {
+                    "gradient": 0,
+                    "color1":
+                    [
+                        1,
+                        0.896,
+                        0,
+                        1
+                    ]
+                },
+                {
+                    "gradient": 0.4,
+                    "color1":
+                    [
+                        0.7547,
+                        0.1219,
+                        0.0391,
+                        1
+                    ]
+                },
+                {
+                    "gradient": 0.8,
+                    "color1":
+                    [
+                        0.3679,
+                        0.0721,
+                        0.0295,
+                        0
+                    ]
+                }
+            ],
+            "textureMask":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "customShader": null,
+            "preventAutoStart": true
+        },
+        {
+            "name": "shockwave",
+            "id": "shockwave",
+            "capacity": 500,
+            "emitter":
+            [
+                0,
+                2,
+                0
+            ],
+            "particleEmitterType":
+            {
+                "type": "CylinderParticleEmitter",
+                "radius": 1,
+                "height": 0.5,
+                "radiusRange": 0,
+                "directionRandomizer": 0
+            },
+            "textureName": "explosion/Smoke_SpriteSheet_8x8.png",
+            "invertY": false,
+            "animations": [],
+            "beginAnimationOnStart": false,
+            "beginAnimationFrom": 0,
+            "beginAnimationTo": 60,
+            "beginAnimationLoop": false,
+            "startDelay": 60,
+            "renderingGroupId": 0,
+            "isBillboardBased": true,
+            "billboardMode": 7,
+            "minAngularSpeed": 0,
+            "maxAngularSpeed": 0,
+            "minSize": 0.2,
+            "maxSize": 2,
+            "minScaleX": 1,
+            "maxScaleX": 1,
+            "minScaleY": 1,
+            "maxScaleY": 1,
+            "minEmitPower": 40,
+            "maxEmitPower": 90,
+            "minLifeTime": 3,
+            "maxLifeTime": 3,
+            "emitRate": 3000,
+            "gravity":
+            [
+                0,
+                0,
+                0
+            ],
+            "noiseStrength":
+            [
+                10,
+                10,
+                10
+            ],
+            "color1":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "color2":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "colorDead":
+            [
+                1,
+                1,
+                1,
+                0
+            ],
+            "updateSpeed": 0.016666666666666666,
+            "targetStopDuration": 0.5,
+            "blendMode": 4,
+            "preWarmCycles": 0,
+            "preWarmStepOffset": 1,
+            "minInitialRotation": -1.5707963267948966,
+            "maxInitialRotation": 1.5707963267948966,
+            "startSpriteCellID": 0,
+            "endSpriteCellID": 63,
+            "spriteCellChangeSpeed": 1,
+            "spriteCellWidth": 128,
+            "spriteCellHeight": 128,
+            "spriteRandomStartCell": true,
+            "isAnimationSheetEnabled": true,
+            "colorGradients":
+            [
+                {
+                    "gradient": 0,
+                    "color1":
+                    [
+                        1,
+                        1,
+                        1,
+                        0.15
+                    ]
+                },
+                {
+                    "gradient": 0.6,
+                    "color1":
+                    [
+                        1,
+                        1,
+                        1,
+                        0.15
+                    ]
+                },
+                {
+                    "gradient": 1,
+                    "color1":
+                    [
+                        1,
+                        1,
+                        1,
+                        0
+                    ]
+                }
+            ],
+            "rampGradients":
+            [
+                {
+                    "gradient": 0,
+                    "color":
+                    [
+                        1,
+                        1,
+                        1
+                    ]
+                },
+                {
+                    "gradient": 0.09,
+                    "color":
+                    [
+                        0.8196078431372549,
+                        0.8,
+                        0.7450980392156863
+                    ]
+                },
+                {
+                    "gradient": 0.18,
+                    "color":
+                    [
+                        0.8666666666666667,
+                        0.7843137254901961,
+                        0.7450980392156863
+                    ]
+                },
+                {
+                    "gradient": 0.28,
+                    "color":
+                    [
+                        0.7843137254901961,
+                        0.7450980392156863,
+                        0.7058823529411765
+                    ]
+                },
+                {
+                    "gradient": 0.47,
+                    "color":
+                    [
+                        0.45098039215686275,
+                        0.35294117647058826,
+                        0.3137254901960784
+                    ]
+                },
+                {
+                    "gradient": 0.88,
+                    "color":
+                    [
+                        0.19607843137254902,
+                        0.19607843137254902,
+                        0.19607843137254902
+                    ]
+                },
+                {
+                    "gradient": 1,
+                    "color":
+                    [
+                        0.19607843137254902,
+                        0.19607843137254902,
+                        0.19607843137254902
+                    ]
+                }
+            ],
+            "useRampGradients": true,
+            "colorRemapGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 0,
+                    "factor2": 0.8
+                },
+                {
+                    "gradient": 0.2,
+                    "factor1": 0.1,
+                    "factor2": 0.8
+                },
+                {
+                    "gradient": 0.3,
+                    "factor1": 0.2,
+                    "factor2": 0.85
+                },
+                {
+                    "gradient": 0.35,
+                    "factor1": 0.4,
+                    "factor2": 0.85
+                },
+                {
+                    "gradient": 0.4,
+                    "factor1": 0.5,
+                    "factor2": 0.9
+                },
+                {
+                    "gradient": 0.5,
+                    "factor1": 0.95,
+                    "factor2": 1
+                },
+                {
+                    "gradient": 1,
+                    "factor1": 0.95,
+                    "factor2": 1
+                }
+            ],
+            "sizeGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 2,
+                    "factor2": 3
+                },
+                {
+                    "gradient": 1,
+                    "factor1": 5,
+                    "factor2": 8
+                }
+            ],
+            "angularSpeedGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 0
+                },
+                {
+                    "gradient": 1,
+                    "factor1": -0.4,
+                    "factor2": 0.4
+                }
+            ],
+            "limitVelocityGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 70
+                },
+                {
+                    "gradient": 0.15,
+                    "factor1": 10
+                },
+                {
+                    "gradient": 0.25,
+                    "factor1": 2
+                },
+                {
+                    "gradient": 1,
+                    "factor1": 1.5
+                }
+            ],
+            "limitVelocityDamping": 0.9,
+            "textureMask":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "customShader": null,
+            "preventAutoStart": true
+        },
+        {
+            "name": "fireball",
+            "id": "fireball",
+            "capacity": 1000,
+            "emitter":
+            [
+                0,
+                0,
+                0
+            ],
+            "particleEmitterType":
+            {
+                "type": "HemisphericParticleEmitter",
+                "radius": 0.2,
+                "radiusRange": 1,
+                "directionRandomizer": 0
+            },
+            "textureName": "explosion/Smoke_SpriteSheet_8x8.png",
+            "invertY": false,
+            "animations":
+            [
+                {
+                    "name": "plumeAnimation",
+                    "property": "emitter.y",
+                    "framePerSecond": 60,
+                    "dataType": 0,
+                    "loopBehavior": 2,
+                    "blendingSpeed": 0.01,
+                    "keys":
+                    [
+                        {
+                            "frame": 0,
+                            "values":
+                            [
+                                0
+                            ]
+                        },
+                        {
+                            "frame": 10,
+                            "values":
+                            [
+                                2
+                            ]
+                        },
+                        {
+                            "frame": 40,
+                            "values":
+                            [
+                                8
+                            ]
+                        },
+                        {
+                            "frame": 50,
+                            "values":
+                            [
+                                9
+                            ]
+                        },
+                        {
+                            "frame": 55,
+                            "values":
+                            [
+                                9.5
+                            ]
+                        },
+                        {
+                            "frame": 60,
+                            "values":
+                            [
+                                10
+                            ]
+                        }
+                    ],
+                    "ranges": []
+                }
+            ],
+            "beginAnimationOnStart": true,
+            "beginAnimationFrom": 0,
+            "beginAnimationTo": 60,
+            "beginAnimationLoop": false,
+            "startDelay": 60,
+            "renderingGroupId": 1,
+            "isBillboardBased": true,
+            "billboardMode": 7,
+            "minAngularSpeed": 0,
+            "maxAngularSpeed": 0,
+            "minSize": 1,
+            "maxSize": 3,
+            "minScaleX": 1,
+            "maxScaleX": 1,
+            "minScaleY": 1,
+            "maxScaleY": 1,
+            "minEmitPower": 30,
+            "maxEmitPower": 60,
+            "minLifeTime": 6,
+            "maxLifeTime": 8,
+            "emitRate": 400,
+            "gravity":
+            [
+                0,
+                0,
+                0
+            ],
+            "noiseStrength":
+            [
+                10,
+                10,
+                10
+            ],
+            "color1":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "color2":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "colorDead":
+            [
+                1,
+                1,
+                1,
+                0
+            ],
+            "updateSpeed": 0.016666666666666666,
+            "targetStopDuration": 1,
+            "blendMode": 4,
+            "preWarmCycles": 0,
+            "preWarmStepOffset": 1,
+            "minInitialRotation": 0,
+            "maxInitialRotation": 0,
+            "startSpriteCellID": 0,
+            "endSpriteCellID": 63,
+            "spriteCellChangeSpeed": 1,
+            "spriteCellWidth": 128,
+            "spriteCellHeight": 128,
+            "spriteRandomStartCell": true,
+            "isAnimationSheetEnabled": true,
+            "colorGradients":
+            [
+                {
+                    "gradient": 0,
+                    "color1":
+                    [
+                        1,
+                        1,
+                        1,
+                        0.8
+                    ]
+                },
+                {
+                    "gradient": 0.4,
+                    "color1":
+                    [
+                        1,
+                        1,
+                        1,
+                        0.6
+                    ]
+                },
+                {
+                    "gradient": 1,
+                    "color1":
+                    [
+                        1,
+                        1,
+                        1,
+                        0
+                    ]
+                }
+            ],
+            "rampGradients":
+            [
+                {
+                    "gradient": 0,
+                    "color":
+                    [
+                        1,
+                        1,
+                        1
+                    ]
+                },
+                {
+                    "gradient": 0.09,
+                    "color":
+                    [
+                        0.8196078431372549,
+                        0.8,
+                        0.058823529411764705
+                    ]
+                },
+                {
+                    "gradient": 0.18,
+                    "color":
+                    [
+                        0.8666666666666667,
+                        0.47058823529411764,
+                        0.054901960784313725
+                    ]
+                },
+                {
+                    "gradient": 0.28,
+                    "color":
+                    [
+                        0.7843137254901961,
+                        0.16862745098039217,
+                        0.07058823529411765
+                    ]
+                },
+                {
+                    "gradient": 0.47,
+                    "color":
+                    [
+                        0.45098039215686275,
+                        0.08627450980392157,
+                        0.058823529411764705
+                    ]
+                },
+                {
+                    "gradient": 0.88,
+                    "color":
+                    [
+                        0.054901960784313725,
+                        0.054901960784313725,
+                        0.054901960784313725
+                    ]
+                },
+                {
+                    "gradient": 1,
+                    "color":
+                    [
+                        0.054901960784313725,
+                        0.054901960784313725,
+                        0.054901960784313725
+                    ]
+                }
+            ],
+            "useRampGradients": true,
+            "colorRemapGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 0,
+                    "factor2": 0.8
+                },
+                {
+                    "gradient": 0.2,
+                    "factor1": 0.1,
+                    "factor2": 0.8
+                },
+                {
+                    "gradient": 0.3,
+                    "factor1": 0.2,
+                    "factor2": 0.85
+                },
+                {
+                    "gradient": 0.35,
+                    "factor1": 0.4,
+                    "factor2": 0.85
+                },
+                {
+                    "gradient": 0.4,
+                    "factor1": 0.5,
+                    "factor2": 0.9
+                },
+                {
+                    "gradient": 0.5,
+                    "factor1": 0.95,
+                    "factor2": 1
+                },
+                {
+                    "gradient": 1,
+                    "factor1": 0.95,
+                    "factor2": 1
+                }
+            ],
+            "startSizeGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 2,
+                    "factor2": 4
+                },
+                {
+                    "gradient": 0.3,
+                    "factor1": 0.5,
+                    "factor2": 1
+                },
+                {
+                    "gradient": 0.6,
+                    "factor1": 1,
+                    "factor2": 3
+                },
+                {
+                    "gradient": 1,
+                    "factor1": 1.7,
+                    "factor2": 3.7
+                }
+            ],
+            "limitVelocityGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 5
+                },
+                {
+                    "gradient": 0.15,
+                    "factor1": 3
+                },
+                {
+                    "gradient": 0.25,
+                    "factor1": 2
+                },
+                {
+                    "gradient": 1,
+                    "factor1": 1
+                }
+            ],
+            "lifeTimeGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 3
+                },
+                {
+                    "gradient": 1,
+                    "factor1": 1.75
+                }
+            ],            
+            "limitVelocityDamping": 0.7,
+            "textureMask":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "customShader": null,
+            "preventAutoStart": true
+        },
+        {
+            "name": "debris",
+            "id": "debris",
+            "capacity": 10,
+            "emitter":
+            [
+                0,
+                0,
+                0
+            ],
+            "particleEmitterType":
+            {
+                "type": "ConeParticleEmitter",
+                "radius": 0.2,
+                "angle": 2,
+                "directionRandomizer": 0
+            },
+            "textureName": "explosion/Flare.png",
+            "invertY": true,
+            "animations": [],
+            "beginAnimationOnStart": false,
+            "beginAnimationFrom": 0,
+            "beginAnimationTo": 60,
+            "beginAnimationLoop": false,
+            "startDelay": 90,
+            "renderingGroupId": 0,
+            "isBillboardBased": true,
+            "billboardMode": 7,
+            "minAngularSpeed": 0,
+            "maxAngularSpeed": 0,
+            "minSize": 0.1,
+            "maxSize": 0.1,
+            "minScaleX": 1,
+            "maxScaleX": 1,
+            "minScaleY": 1,
+            "maxScaleY": 1,
+            "minEmitPower": 16,
+            "maxEmitPower": 30,
+            "minLifeTime": 2,
+            "maxLifeTime": 2,
+            "emitRate": 50,
+            "gravity":
+            [
+                0,
+                -20,
+                0
+            ],
+            "noiseStrength":
+            [
+                10,
+                10,
+                10
+            ],
+            "color1":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "color2":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "colorDead":
+            [
+                1,
+                1,
+                1,
+                0
+            ],
+            "updateSpeed": 0.016666666666666666,
+            "targetStopDuration": 0.2,
+            "blendMode": 0,
+            "preWarmCycles": 0,
+            "preWarmStepOffset": 1,
+            "minInitialRotation": 0,
+            "maxInitialRotation": 0,
+            "startSpriteCellID": 0,
+            "endSpriteCellID": 0,
+            "spriteCellChangeSpeed": 1,
+            "spriteCellWidth": 0,
+            "spriteCellHeight": 0,
+            "spriteRandomStartCell": false,
+            "isAnimationSheetEnabled": false,
+            "colorGradients":
+            [
+                {
+                    "gradient": 0,
+                    "color1":
+                    [
+                        1,
+                        1,
+                        1,
+                        0
+                    ]
+                },
+                {
+                    "gradient": 1,
+                    "color1":
+                    [
+                        1,
+                        1,
+                        1,
+                        0
+                    ]
+                }
+            ],
+            "textureMask":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "customShader": null,
+            "preventAutoStart": true,
+            "subEmitters":
+            [
+                [
+                    {
+                        "type": 0,
+                        "inheritDirection": true,
+                        "inheritedVelocityAmount": 0,
+                        "particleSystem":
+                        {
+                            "name": "fireSubEmitter",
+                            "id": "fireSubEmitter",
+                            "capacity": 200,
+                            "emitter":
+                            [
+                                0,
+                                0,
+                                0
+                            ],
+                            "particleEmitterType":
+                            {
+                                "type": "ConeParticleEmitter",
+                                "radius": 0.1,
+                                "angle": 0.7853981633974483,
+                                "directionRandomizer": 0
+                            },
+                            "textureName": "explosion/FlameBlastSpriteSheet.png",
+                            "invertY": false,
+                            "animations": [],
+                            "beginAnimationOnStart": false,
+                            "beginAnimationFrom": 0,
+                            "beginAnimationTo": 60,
+                            "beginAnimationLoop": false,
+                            "startDelay": 0,
+                            "renderingGroupId": 1,
+                            "isBillboardBased": true,
+                            "billboardMode": 7,
+                            "minAngularSpeed": 0,
+                            "maxAngularSpeed": 0,
+                            "minSize": 0.8,
+                            "maxSize": 1.2,
+                            "minScaleX": 1,
+                            "maxScaleX": 1,
+                            "minScaleY": 1,
+                            "maxScaleY": 1,
+                            "minEmitPower": 0,
+                            "maxEmitPower": 0,
+                            "minLifeTime": 0.5,
+                            "maxLifeTime": 0.8,
+                            "emitRate": 130,
+                            "gravity":
+                            [
+                                0,
+                                0,
+                                0
+                            ],
+                            "noiseStrength":
+                            [
+                                10,
+                                10,
+                                10
+                            ],
+                            "color1":
+                            [
+                                1,
+                                1,
+                                1,
+                                1
+                            ],
+                            "color2":
+                            [
+                                1,
+                                1,
+                                1,
+                                1
+                            ],
+                            "colorDead":
+                            [
+                                1,
+                                1,
+                                1,
+                                0
+                            ],
+                            "updateSpeed": 0.016666666666666666,
+                            "targetStopDuration": 1.2,
+                            "blendMode": 2,
+                            "preWarmCycles": 0,
+                            "preWarmStepOffset": 1,
+                            "minInitialRotation": -1.5707963267948966,
+                            "maxInitialRotation": 1.5707963267948966,
+                            "startSpriteCellID": 0,
+                            "endSpriteCellID": 15,
+                            "spriteCellChangeSpeed": 1,
+                            "spriteCellWidth": 256,
+                            "spriteCellHeight": 256,
+                            "spriteRandomStartCell": false,
+                            "isAnimationSheetEnabled": true,
+                            "colorGradients":
+                            [
+                                {
+                                    "gradient": 0,
+                                    "color1":
+                                    [
+                                        0.9245,
+                                        0.654,
+                                        0.0915,
+                                        1
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.04,
+                                    "color1":
+                                    [
+                                        0.9062,
+                                        0.6132,
+                                        0.0942,
+                                        1
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.29,
+                                    "color1":
+                                    [
+                                        0.7968,
+                                        0.3685,
+                                        0.1105,
+                                        1
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.53,
+                                    "color1":
+                                    [
+                                        0.6886,
+                                        0.1266,
+                                        0.1266,
+                                        1
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.9,
+                                    "color1":
+                                    [
+                                        0.3113,
+                                        0.0367,
+                                        0.0367,
+                                        1
+                                    ]
+                                },
+                                {
+                                    "gradient": 1,
+                                    "color1":
+                                    [
+                                        0.3113,
+                                        0.0367,
+                                        0.0367,
+                                        1
+                                    ]
+                                }
+                            ],
+                            "startSizeGradients":
+                            [
+                                {
+                                    "gradient": 0,
+                                    "factor1": 1
+                                },
+                                {
+                                    "gradient": 0.7,
+                                    "factor1": 1
+                                },
+                                {
+                                    "gradient": 1,
+                                    "factor1": 0.2
+                                }
+                            ],
+                            "textureMask":
+                            [
+                                1,
+                                1,
+                                1,
+                                1
+                            ],
+                            "customShader": null,
+                            "preventAutoStart": true
+                        }
+                    },
+                    {
+                        "type": 0,
+                        "inheritDirection": true,
+                        "inheritedVelocityAmount": 0,
+                        "particleSystem":
+                        {
+                            "name": "smokeSubEmitter",
+                            "id": "smokeSubEmitter",
+                            "capacity": 600,
+                            "emitter":
+                            [
+                                0,
+                                0,
+                                0
+                            ],
+                            "particleEmitterType":
+                            {
+                                "type": "ConeParticleEmitter",
+                                "radius": 0.1,
+                                "angle": 0.7853981633974483,
+                                "directionRandomizer": 0
+                            },
+                            "textureName": "explosion/Smoke_SpriteSheet_8x8.png",
+                            "invertY": false,
+                            "animations": [],
+                            "beginAnimationOnStart": false,
+                            "beginAnimationFrom": 0,
+                            "beginAnimationTo": 60,
+                            "beginAnimationLoop": false,
+                            "startDelay": 0,
+                            "renderingGroupId": 0,
+                            "isBillboardBased": true,
+                            "billboardMode": 7,
+                            "minAngularSpeed": 0,
+                            "maxAngularSpeed": 0,
+                            "minSize": 2,
+                            "maxSize": 5,
+                            "minScaleX": 1,
+                            "maxScaleX": 1,
+                            "minScaleY": 1,
+                            "maxScaleY": 1,
+                            "minEmitPower": 0,
+                            "maxEmitPower": 0,
+                            "minLifeTime": 1,
+                            "maxLifeTime": 3,
+                            "emitRate": 100,
+                            "gravity":
+                            [
+                                0,
+                                0,
+                                0
+                            ],
+                            "noiseStrength":
+                            [
+                                10,
+                                10,
+                                10
+                            ],
+                            "color1":
+                            [
+                                1,
+                                1,
+                                1,
+                                1
+                            ],
+                            "color2":
+                            [
+                                1,
+                                1,
+                                1,
+                                1
+                            ],
+                            "colorDead":
+                            [
+                                1,
+                                1,
+                                1,
+                                0
+                            ],
+                            "updateSpeed": 0.016666666666666666,
+                            "targetStopDuration": 1.2,
+                            "blendMode": 4,
+                            "preWarmCycles": 0,
+                            "preWarmStepOffset": 1,
+                            "minInitialRotation": -1.5707963267948966,
+                            "maxInitialRotation": 1.5707963267948966,
+                            "startSpriteCellID": 0,
+                            "endSpriteCellID": 63,
+                            "spriteCellChangeSpeed": 1,
+                            "spriteCellWidth": 128,
+                            "spriteCellHeight": 128,
+                            "spriteRandomStartCell": true,
+                            "isAnimationSheetEnabled": true,
+                            "colorGradients":
+                            [
+                                {
+                                    "gradient": 0,
+                                    "color1":
+                                    [
+                                        1,
+                                        1,
+                                        1,
+                                        0
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.05,
+                                    "color1":
+                                    [
+                                        1,
+                                        1,
+                                        1,
+                                        0
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.1,
+                                    "color1":
+                                    [
+                                        1,
+                                        1,
+                                        1,
+                                        0.2
+                                    ]
+                                },
+                                {
+                                    "gradient": 1,
+                                    "color1":
+                                    [
+                                        1,
+                                        1,
+                                        1,
+                                        0
+                                    ]
+                                }
+                            ],
+                            "rampGradients":
+                            [
+                                {
+                                    "gradient": 0,
+                                    "color":
+                                    [
+                                        1,
+                                        1,
+                                        1
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.09,
+                                    "color":
+                                    [
+                                        0.8196078431372549,
+                                        0.8,
+                                        0.7450980392156863
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.18,
+                                    "color":
+                                    [
+                                        0.8666666666666667,
+                                        0.7843137254901961,
+                                        0.7450980392156863
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.28,
+                                    "color":
+                                    [
+                                        0.7843137254901961,
+                                        0.7450980392156863,
+                                        0.7058823529411765
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.47,
+                                    "color":
+                                    [
+                                        0.45098039215686275,
+                                        0.35294117647058826,
+                                        0.3137254901960784
+                                    ]
+                                },
+                                {
+                                    "gradient": 0.88,
+                                    "color":
+                                    [
+                                        0.19607843137254902,
+                                        0.19607843137254902,
+                                        0.19607843137254902
+                                    ]
+                                },
+                                {
+                                    "gradient": 1,
+                                    "color":
+                                    [
+                                        0.19607843137254902,
+                                        0.19607843137254902,
+                                        0.19607843137254902
+                                    ]
+                                }
+                            ],
+                            "useRampGradients": true,
+                            "colorRemapGradients":
+                            [
+                                {
+                                    "gradient": 0,
+                                    "factor1": 0,
+                                    "factor2": 0.8
+                                },
+                                {
+                                    "gradient": 0.2,
+                                    "factor1": 0.1,
+                                    "factor2": 0.8
+                                },
+                                {
+                                    "gradient": 0.3,
+                                    "factor1": 0.2,
+                                    "factor2": 0.85
+                                },
+                                {
+                                    "gradient": 0.35,
+                                    "factor1": 0.4,
+                                    "factor2": 0.85
+                                },
+                                {
+                                    "gradient": 0.4,
+                                    "factor1": 0.5,
+                                    "factor2": 0.9
+                                },
+                                {
+                                    "gradient": 0.5,
+                                    "factor1": 0.95,
+                                    "factor2": 1
+                                },
+                                {
+                                    "gradient": 1,
+                                    "factor1": 0.95,
+                                    "factor2": 1
+                                }
+                            ],
+                            "sizeGradients":
+                            [
+                                {
+                                    "gradient": 0,
+                                    "factor1": 1
+                                },
+                                {
+                                    "gradient": 1,
+                                    "factor1": 3
+                                }
+                            ],
+                            "startSizeGradients":
+                            [
+                                {
+                                    "gradient": 0,
+                                    "factor1": 1
+                                },
+                                {
+                                    "gradient": 0.6,
+                                    "factor1": 1
+                                },
+                                {
+                                    "gradient": 1,
+                                    "factor1": 0.05
+                                }
+                            ],
+                            "lifeTimeGradients":
+                            [
+                                {
+                                    "gradient": 0,
+                                    "factor1": 3
+                                },
+                                {
+                                    "gradient": 1,
+                                    "factor1": 1.75
+                                }
+                            ],                             
+                            "textureMask":
+                            [
+                                1,
+                                1,
+                                1,
+                                1
+                            ],
+                            "customShader": null,
+                            "preventAutoStart": true
+                        }
+                    }
+                ]
+            ]
+        }
+    ]
+}

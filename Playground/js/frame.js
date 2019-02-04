@@ -1,10 +1,10 @@
-﻿(function () {
-    var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
+﻿(function() {
+    var snippetUrl = "https://snippet.babylonjs.com";
     var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
     var refreshAnchor = document.getElementById("refresh");
-    var linkAnchor = document.getElementById("link");
+    var editAnchor = document.getElementById("edit");
     var scripts;
     var zipCode;
 
@@ -13,17 +13,17 @@
         fpsLabel.style.display = "none";
         refreshAnchor.style.visibility = "hidden";
         refreshAnchor.style.display = "none";
-        linkAnchor.style.visibility = "hidden";
-        linkAnchor.style.display = "none";
+        editAnchor.style.visibility = "hidden";
+        editAnchor.style.display = "none";
     }
 
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
-    var loadScript = function (scriptURL, title) {
+    var loadScript = function(scriptURL, title) {
         var xhr = new XMLHttpRequest();
 
         xhr.open('GET', scriptURL, true);
 
-        xhr.onreadystatechange = function () {
+        xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     blockEditorChange = true;
@@ -43,11 +43,11 @@
         xhr.send(null);
     };
 
-    var showError = function (error) {
+    var showError = function(error) {
         console.warn(error);
     };
 
-    compileAndRun = function (code) {
+    compileAndRun = function(code) {
         try {
 
             if (!BABYLON.Engine.isSupported()) {
@@ -67,7 +67,7 @@
             var createEngineFunction = "createDefaultEngine";
             var createSceneFunction;
 
-            var createDefaultEngine = function () {
+            var createDefaultEngine = function() {
                 return new BABYLON.Engine(canvas, true, { stencil: true });
             }
 
@@ -119,7 +119,7 @@
             }
 
             BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault = true;
-            engine.runRenderLoop(function () {
+            engine.runRenderLoop(function() {
                 if (engine.scenes.length === 0) {
                     return;
                 }
@@ -143,15 +143,14 @@
             // showError(e.message);
         }
     };
-    window.addEventListener("resize", function () {
+    window.addEventListener("resize", function() {
         if (engine) {
             engine.resize();
         }
     });
 
     // UI
-
-    var cleanHash = function () {
+    var cleanHash = function() {
         var splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
         if (splits.length > 2) {
@@ -161,22 +160,22 @@
         location.hash = splits.join("#");
     };
 
-    var checkHash = function () {
+    var checkHash = function() {
         if (location.hash) {
             cleanHash();
 
             try {
                 var xmlHttp = new XMLHttpRequest();
-                xmlHttp.onreadystatechange = function () {
+                xmlHttp.onreadystatechange = function() {
                     if (xmlHttp.readyState === 4) {
                         if (xmlHttp.status === 200) {
-                            var snippetCode = JSON.parse(JSON.parse(xmlHttp.responseText)[0].jsonPayload).code;
+                            var snippetCode = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload).code;
                             compileAndRun(snippetCode);
 
                             var refresh = document.getElementById("refresh");
 
                             if (refresh) {
-                                refresh.addEventListener("click", function () {
+                                refresh.addEventListener("click", function() {
                                     compileAndRun(snippetCode);
                                 });
                             }
@@ -191,10 +190,10 @@
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                 xmlHttp.send();
 
-                var link = document.getElementById("link");
+                var edit = document.getElementById("edit");
 
-                if (link) {
-                    link.href = "//www.babylonjs-playground.com/#" + hash;
+                if (edit) {
+                    edit.href = "//www.babylonjs-playground.com/#" + hash;
                 }
             } catch (e) {
 

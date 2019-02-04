@@ -7,6 +7,19 @@ declare module BABYLON {
         updateShaderUniforms(): void;
         ampScale: number;
         woodColor: Color3;
+        /**
+         * Serializes this wood procedural texture
+         * @returns a serialized wood procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Wood Procedural Texture from parsed wood procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing wood procedural texture information
+         * @returns a parsed Wood Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): WoodProceduralTexture;
     }
 }
 
@@ -25,10 +38,24 @@ declare module BABYLON {
         static readonly GreenFireColors: Color3[];
         static readonly RedFireColors: Color3[];
         static readonly BlueFireColors: Color3[];
+        autoGenerateTime: boolean;
         fireColors: Color3[];
         time: number;
         speed: Vector2;
         alphaThreshold: number;
+        /**
+         * Serializes this fire procedural texture
+         * @returns a serialized fire procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Fire Procedural Texture from parsed fire procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing fire procedural texture information
+         * @returns a parsed Fire Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): FireProceduralTexture;
     }
 }
 
@@ -41,6 +68,19 @@ declare module BABYLON {
         updateShaderUniforms(): void;
         skyColor: Color4;
         cloudColor: Color4;
+        /**
+         * Serializes this cloud procedural texture
+         * @returns a serialized cloud procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Cloud Procedural Texture from parsed cloud procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing cloud procedural texture information
+         * @returns a parsed Cloud Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CloudProceduralTexture;
     }
 }
 
@@ -53,6 +93,19 @@ declare module BABYLON {
         updateShaderUniforms(): void;
         grassColors: Color3[];
         groundColor: Color3;
+        /**
+         * Serializes this grass procedural texture
+         * @returns a serialized grass procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Grass Procedural Texture from parsed grass procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing grass procedural texture information
+         * @returns a parsed Grass Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): GrassProceduralTexture;
     }
 }
 
@@ -63,6 +116,19 @@ declare module BABYLON {
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         roadColor: Color3;
+        /**
+         * Serializes this road procedural texture
+         * @returns a serialized road procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Road Procedural Texture from parsed road procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing road procedural texture information
+         * @returns a parsed Road Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): RoadProceduralTexture;
     }
 }
 
@@ -79,6 +145,19 @@ declare module BABYLON {
         numberOfBricksWidth: number;
         jointColor: Color3;
         brickColor: Color3;
+        /**
+         * Serializes this brick procedural texture
+         * @returns a serialized brick procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Brick Procedural Texture from parsed brick procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing brick procedural texture information
+         * @returns a parsed Brick Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BrickProceduralTexture;
     }
 }
 
@@ -95,6 +174,19 @@ declare module BABYLON {
         amplitude: number;
         numberOfTilesWidth: number;
         jointColor: Color3;
+        /**
+         * Serializes this marble procedural texture
+         * @returns a serialized marble procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Marble Procedural Texture from parsed marble procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing marble procedural texture information
+         * @returns a parsed Marble Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): MarbleProceduralTexture;
     }
 }
 
@@ -125,6 +217,19 @@ declare module BABYLON {
         darkmatter: number;
         distfading: number;
         saturation: number;
+        /**
+         * Serializes this starfield procedural texture
+         * @returns a serialized starfield procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Starfield Procedural Texture from parsed startfield procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing startfield procedural texture information
+         * @returns a parsed Starfield Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): StarfieldProceduralTexture;
     }
 }
 
@@ -137,6 +242,19 @@ declare module BABYLON {
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
         baseTexture: Texture;
+        /**
+         * Serializes this normal map procedural texture
+         * @returns a serialized normal map procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Normal Map Procedural Texture from parsed normal map procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing normal map procedural texture information
+         * @returns a parsed Normal Map Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): NormalMapProceduralTexture;
     }
 }
 
@@ -144,12 +262,25 @@ declare module BABYLON {
 declare module BABYLON {
     class PerlinNoiseProceduralTexture extends ProceduralTexture {
         time: number;
-        speed: number;
+        timeScale: number;
         translationSpeed: number;
         private _currentTranslation;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
+        /**
+         * Serializes this perlin noise procedural texture
+         * @returns a serialized perlin noise procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Perlin Noise Procedural Texture from parsed perlin noise procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing perlin noise procedural texture information
+         * @returns a parsed Perlin Noise Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): PerlinNoiseProceduralTexture;
     }
 }

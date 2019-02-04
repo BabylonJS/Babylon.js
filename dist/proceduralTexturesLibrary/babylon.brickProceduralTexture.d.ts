@@ -11,5 +11,18 @@ declare module BABYLON {
         numberOfBricksWidth: number;
         jointColor: Color3;
         brickColor: Color3;
+        /**
+         * Serializes this brick procedural texture
+         * @returns a serialized brick procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Creates a Brick Procedural Texture from parsed brick procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing brick procedural texture information
+         * @returns a parsed Brick Procedural Texture
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BrickProceduralTexture;
     }
 }

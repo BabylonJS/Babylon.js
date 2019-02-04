@@ -1,41 +1,117 @@
 ﻿{
   "root": "https://rawgit.com/BabylonJS/Website/master",
-  "tests": [  
+  "tests": [
+    {
+      "title": "Anisotropic",
+      "playgroundId": "#MAXCNU#1",
+      "referenceImage": "anisotropic.png"
+    },
+    {
+      "title": "Clear Coat",
+      "playgroundId": "#YACNQS#2",
+      "referenceImage": "clearCoat.png"
+    },
+    {
+      "title": "GUI Transform StackPanel",
+      "playgroundId": "#BS60AB#0",
+      "referenceImage": "TransformStackPanel.png"
+    },
+    {
+      "title": "GUI StackPanel",
+      "playgroundId": "#LLVZ90#0",
+      "referenceImage": "StackPanel.png"
+    },
+    {
+      "title": "Camera rig",
+      "playgroundId": "#ATL1CS#9",
+      "referenceImage": "cameraRig.png"
+    },
+    {
+      "title": "XR camera container rotation",
+      "playgroundId": "#JV98QW#5",
+      "referenceImage": "xrCameraContainerRotation.png",
+      "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "Sliders",
+      "playgroundId": "#HATGQZ#3",
+      "referenceImage": "Sliders.png",
+      "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "Pointers",
+      "playgroundId": "#1GLEJK#5",
+      "referenceImage": "pointers.png",
+      "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "LineEdgesRenderer",
+      "playgroundId": "#T90MQ4#1",
+      "renderCount": 50,
+      "referenceImage": "LineEdgesRenderer.png"
+    },
+    {
+      "title": "Solid particle system",
+      "playgroundId": "#WCDZS#92",
+      "renderCount": 150,
+      "referenceImage": "sps.png"
+    },
+    {
+      "title": "Simulate pointer",
+      "playgroundId": "#8MGKWK#78",
+      "referenceImage": "simulatePointer.png"
+    },
+    {
+      "title": "Color Grading",
+      "playgroundId": "#8EDB5N#2",
+      "referenceImage": "colorGrading.png"
+    },
+    {
+      "title": "Ribbon morphing",
+      "playgroundId": "#ACKC2#1",
+      "renderCount": 50,
+      "referenceImage": "ribbon morphing.png"
+    },
+    {
+      "title": "Clip planes",
+      "playgroundId": "#Y6W087#0",
+      "referenceImage": "clipplanes.png"
+    },
     {
       "title": "ShadowOnlyMaterial",
       "playgroundId": "#1KF7V1#18",
       "referenceImage": "shadowOnlyMaterial.png"
-    },     
+    },
     {
       "title": "Gizmos",
       "playgroundId": "#8GY6J8#48",
       "renderCount": 50,
       "referenceImage": "Gizmos.png"
-    }, 
+    },
     {
       "title": "GUI3D SpherePanel",
       "playgroundId": "#HB4C01#9",
       "renderCount": 50,
       "referenceImage": "spherepanel.png"
-    },     
+    },
     {
       "title": "Particle Helper",
       "playgroundId": "#1VGT5D#2",
       "renderCount": 50,
       "referenceImage": "particle_helper.png"
-    },     
+    },
     {
       "title": "Chibi Rex",
       "playgroundId": "#QATUCH#4",
       "renderCount": 50,
       "referenceImage": "chibi_rex.png"
-    },     
+    },
     {
       "title": "Yeti",
       "playgroundId": "#QATUCH#3",
       "renderCount": 150,
       "referenceImage": "yeti.png"
-    },   
+    },
     {
       "title": "Sponza",
       "sceneFolder": "/Scenes/Sponza/",
@@ -53,7 +129,7 @@
       "sceneFolder": "/Scenes/Espilit/",
       "sceneFilename": "espilit.babylon",
       "referenceImage": "Espilit.png"
-    },    
+    },
     {
       "title": "The car",
       "sceneFolder": "/Scenes/TheCar/",
@@ -185,7 +261,7 @@
     },
     {
       "title": "Advanced shadows",
-      "renderCount": 2,
+      "renderCount": 20,
       "scriptToRun": "/Demos/AdvancedShadows/advancedShadows.js",
       "functionToCall": "CreateAdvancedShadowsTestScene",
       "referenceImage": "advancedShadows.png",
@@ -225,92 +301,82 @@
     },
     {
       "title": "GLTF Buffer Interleaved",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createBufferInterleavedScene",
+      "playgroundId": "#a68vz0#3",
       "referenceImage": "gltfBufferInterleaved.png"
     },
     {
       "title": "GLTF Material",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialScene",
+      "playgroundId": "#a68vz0#2",
       "referenceImage": "gltfMaterial.png"
     },
     {
       "title": "GLTF Material Alpha Blend",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialAlphaBlendScene",
+      "playgroundId": "#a68vz0#4",
       "referenceImage": "gltfMaterialAlphaBlend.png"
     },
     {
       "title": "GLTF Material Alpha Mask",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialAlphaMaskScene",
+      "playgroundId": "#a68vz0#5",
       "referenceImage": "gltfMaterialAlphaMask.png"
     },
     {
       "title": "GLTF Material Double Sided",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialDoubleSidedScene",
+      "playgroundId": "#a68vz0#7",
       "referenceImage": "gltfMaterialDoubleSided.png"
     },
     {
       "title": "GLTF Material Double Sided (Back)",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialDoubleSidedBackScene",
+      "playgroundId": "#a68vz0#6",
       "referenceImage": "gltfMaterialDoubleSidedBack.png"
     },
     {
       "title": "GLTF Material Mixed",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialMixedScene",
+      "playgroundId": "#a68vz0#8",
       "referenceImage": "gltfMaterialMixed.png"
     },
     {
       "title": "GLTF Mesh Primitives",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMeshPrimitivesScene",
+      "playgroundId": "#a68vz0#9",
       "referenceImage": "gltfMeshPrimitives.png"
     },
     {
       "title": "GLTF Mesh Primitive Mode",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMeshPrimitiveModeScene",
+      "playgroundId": "#a68vz0#10",
       "referenceImage": "gltfMeshPrimitiveMode.png"
     },
     {
       "title": "GLTF Mesh Primitive Vertex Color",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createPrimitiveVertexColorScene",
+      "playgroundId": "#a68vz0#11",
       "referenceImage": "gltfMeshPrimitiveVertexColor.png"
     },
     {
       "title": "GLTF Mesh Primitives UV",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMeshPrimitivesUVScene",
+      "playgroundId": "#a68vz0#12",
       "referenceImage": "gltfMeshPrimitivesUV.png"
     },
     {
       "title": "GLTF Primitive Attribute",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createPrimitiveAttributeScene",
+      "playgroundId": "#a68vz0#13",
       "referenceImage": "gltfPrimitiveAttribute.png"
     },
     {
       "title": "GLTF Metallic Roughness",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialMetallicRoughnessScene",
+      "playgroundId": "#a68vz0#14",
       "referenceImage": "gltfMaterialMetallicRoughness.png"
     },
     {
       "title": "GLTF Specular Glossiness",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialSpecularGlossinessScene",
+      "playgroundId": "#a68vz0#15",
       "referenceImage": "gltfMaterialSpecularGlossiness.png"
     },
     {
+      "title": "GLTF Serializer Texture Transform",
+      "playgroundId": "#S5SWJB#32",
+      "referenceImage": "glTFSerializerTextureTransform.png"
+    },
+    {
       "title": "GLTF Texture Sampler",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createTextureSamplerScene",
+      "playgroundId": "#a68vz0#16",
       "referenceImage": "gltfTextureSampler.png"
     },
     {
@@ -393,7 +459,7 @@
       "scriptToRun": "/Demos/Particles/particles.js",
       "functionToCall": "CreateParticlesTestScene",
       "referenceImage": "particles.png"
-    },    
+    },
     {
       "title": "Reflection probes",
       "renderCount": 20,
@@ -418,7 +484,7 @@
     },
     {
       "title": "Texture cache",
-      "playgroundId": "#20OAV9#133",
+      "playgroundId": "#20OAV9#237",
       "referenceImage": "texture cache.png"
     },
     {
@@ -504,9 +570,42 @@
       "referenceImage": "dds.png"
     },
     {
+      "title": "DDS2D",
+      "playgroundId": "#I2MSBE#0",
+      "referenceImage": "dds2d.png"
+    },
+    {
       "title": "LightFalloff",
       "playgroundId": "#20OAV9#201",
       "referenceImage": "lightFalloff.png"
+    },
+    {
+      "title": "MeshSimplification",
+      "playgroundId": "#1ED15P#35",
+      "referenceImage": "meshSimplification.png"
+    },
+    {
+      "title": "SSAO2",
+      "playgroundId": "#XT1HAS#1",
+      "referenceImage": "ssao2.png",
+      "renderCount": 200,
+      "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "DepthRenderer",
+      "playgroundId": "#3HPMAA#0",
+      "renderCount": 50,
+      "referenceImage": "depthRenderer.png"
+    },
+    {
+      "title": "Edges",
+      "playgroundId": "#TYAHX#114",
+      "referenceImage": "edges.png"
+    },
+    {
+      "title": "Outline",
+      "playgroundId": "#10WJ5S#6",
+      "referenceImage": "outline.png"
     }
   ]
 }

@@ -79,7 +79,7 @@ mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)
 }
 
 vec3 perturbNormal(vec3 viewDir, vec3 mixColor)
-{	
+{
 	vec3 bump1Color = texture2D(bump1Sampler, vTextureUV * diffuse1Infos).xyz;
 	vec3 bump2Color = texture2D(bump2Sampler, vTextureUV * diffuse2Infos).xyz;
 	vec3 bump3Color = texture2D(bump3Sampler, vTextureUV * diffuse3Infos).xyz;
@@ -97,10 +97,7 @@ vec3 perturbNormal(vec3 viewDir, vec3 mixColor)
 
 void main(void) {
 	// Clip plane
-#ifdef CLIPPLANE
-	if (fClipDistance > 0.0)
-		discard;
-#endif
+	#include<clipPlaneFragment>
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 

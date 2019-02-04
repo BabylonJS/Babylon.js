@@ -4,6 +4,7 @@ declare module BABYLON {
         private _renderId;
         private _activeLight;
         constructor(name: string, scene: Scene);
+        shadowColor: Color3;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;

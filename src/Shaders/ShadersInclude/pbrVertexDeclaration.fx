@@ -8,7 +8,7 @@ uniform vec2 vAlbedoInfos;
 
 #ifdef AMBIENT
 uniform mat4 ambientMatrix;
-uniform vec3 vAmbientInfos;
+uniform vec4 vAmbientInfos;
 #endif
 
 #ifdef OPACITY
@@ -57,4 +57,17 @@ uniform float pointSize;
     uniform vec2 vReflectionInfos;
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
+#endif
+
+// Clear Coat
+#ifdef CLEARCOAT
+    #ifdef CLEARCOAT_TEXTURE
+        uniform vec2 vClearCoatInfos;
+        uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_BUMP
+        uniform vec2 vClearCoatBumpInfos;
+        uniform mat4 clearCoatBumpMatrix;
+    #endif
 #endif

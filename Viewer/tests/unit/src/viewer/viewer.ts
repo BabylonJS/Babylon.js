@@ -1,6 +1,7 @@
 import { Helper } from "../../../commons/helper";
 import { assert, expect, should } from "../viewerReference";
 import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../../src";
+import { Engine } from "babylonjs";
 
 export let name = "viewer Tests";
 
@@ -8,7 +9,7 @@ export let name = "viewer Tests";
  * To prevent test-state-leakage ensure that there is a viewer.dispose() for every new DefaultViewer
  */
 
-describe('Viewer', function () {
+describe('Viewer', function() {
     it('should initialize a new viewer and its internal variables', (done) => {
         let viewer = Helper.getNewViewerInstance();
         assert.isDefined(viewer.baseId, "base id should be defined");
@@ -45,7 +46,7 @@ describe('Viewer', function () {
             // force typescript to "think" that the element exist with "!"
             let viewer = Helper.getNewViewerInstance(document.getElementById('doesntexist')!);
             expect(viewer).not.to.exist;
-            if (viewer) viewer.dispose();
+            if (viewer) { viewer.dispose(); }
         } catch (e) {
             // exception was thrown, we are happy
             assert.isTrue(true);
@@ -57,13 +58,14 @@ describe('Viewer', function () {
         let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             // default visibility is not none
-            expect(viewer.containerElement.style.display).not.to.equal('none');
+            const htmlElement = viewer.containerElement as HTMLElement;
+            expect(htmlElement.style.display).not.to.equal('none');
             viewer.hide().then(() => {
                 // element is hidden
-                assert.equal(viewer.containerElement.style.display, 'none', "Viewer is still visible");
+                assert.equal(htmlElement.style.display, 'none', "Viewer is still visible");
                 viewer.show().then(() => {
                     //element is shown
-                    assert.notEqual(viewer.containerElement.style.display, 'none', "Viewer is not visible");
+                    assert.notEqual(htmlElement.style.display, 'none', "Viewer is not visible");
                     viewer.dispose();
                     done();
                 });
@@ -100,13 +102,13 @@ describe('Viewer', function () {
                 renderCount++;
             });
             assert.equal(renderCount, 0);
-            window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(function() {
                 assert.equal(renderCount, 1, "render loop should have been executed");
                 viewer.runRenderLoop = false;
-                window.requestAnimationFrame(function () {
+                window.requestAnimationFrame(function() {
                     assert.equal(renderCount, 1, "Render loop should not have been executed");
                     viewer.runRenderLoop = true;
-                    window.requestAnimationFrame(function () {
+                    window.requestAnimationFrame(function() {
                         assert.equal(renderCount, 2, "render loop should have been executed again");
                         viewer.dispose();
                         done();
@@ -118,7 +120,7 @@ describe('Viewer', function () {
 
     it('should have a version', (done) => {
         assert.exists(Version, "Viewer should have a version");
-        assert.equal(Version, BABYLON.Engine.Version, "Viewer version should equal to Babylon's engine version");
+        assert.equal(Version, Engine.Version, "Viewer version should equal to Babylon's engine version");
         done();
     });
 
@@ -131,7 +133,7 @@ describe('Viewer', function () {
             // mock the resize function
             engine.resize = () => {
                 resizeCount++;
-            }
+            };
         });
 
         viewer.onInitDoneObservable.add(() => {
@@ -213,7 +215,7 @@ describe('Viewer', function () {
         viewer.onInitDoneObservable.add(() => {
             Helper.MockScreenCapture(viewer, Helper.mockScreenCaptureData());
 
-            viewer.takeScreenshot(function (data) {
+            viewer.takeScreenshot(function(data) {
                 assert.equal(data, Helper.mockScreenCaptureData(), "Screenshot failed.");
 
                 viewer.dispose();
@@ -240,7 +242,7 @@ describe('Viewer', function () {
 
         viewer.onSceneInitObservable.add((scene) => {
             assert.equal(scene, viewer.sceneManager.scene, "scene instance is not the same");
-        })
+        });
 
         viewer.onInitDoneObservable.add((viewerInstance) => {
             assert.isDefined(viewerInstance.sceneManager.scene, "scene is not defined");
@@ -309,7 +311,6 @@ describe('Viewer', function () {
 
 //}
 /*
-
 
 QUnit.test('Viewer disable ctrl for panning', function (assert) {
     let viewer = new DefaultViewer(Helper.getCanvas());

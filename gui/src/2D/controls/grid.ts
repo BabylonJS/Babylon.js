@@ -1,3 +1,5 @@
+import { Nullable } from "babylonjs/types";
+
 import { Container } from "./container";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
@@ -12,9 +14,49 @@ export class Grid extends Container {
     private _cells: { [key: string]: Container } = {};
     private _childControls = new Array<Control>();
 
+    /**
+     * Gets the number of columns
+     */
+    public get columnCount(): number {
+        return this._columnDefinitions.length;
+    }
+
+    /**
+     * Gets the number of rows
+     */
+    public get rowCount(): number {
+        return this._rowDefinitions.length;
+    }
+
     /** Gets the list of children */
     public get children(): Control[] {
         return this._childControls;
+    }
+
+    /**
+     * Gets the definition of a specific row
+     * @param index defines the index of the row
+     * @returns the row definition
+     */
+    public getRowDefinition(index: number): Nullable<ValueAndUnit> {
+        if (index < 0 || index >= this._rowDefinitions.length) {
+            return null;
+        }
+
+        return this._rowDefinitions[index];
+    }
+
+    /**
+     * Gets the definition of a specific column
+     * @param index defines the index of the column
+     * @returns the column definition
+     */
+    public getColumnDefinition(index: number): Nullable<ValueAndUnit> {
+        if (index < 0 || index >= this._columnDefinitions.length) {
+            return null;
+        }
+
+        return this._columnDefinitions[index];
     }
 
     /**
@@ -57,6 +99,11 @@ export class Grid extends Container {
             return this;
         }
 
+        let current = this._rowDefinitions[index];
+        if (current && current.isPixel === isPixel && current.internalValue === height) {
+            return this;
+        }
+
         this._rowDefinitions[index] = new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE);
 
         this._markAsDirty();
@@ -76,11 +123,41 @@ export class Grid extends Container {
             return this;
         }
 
+        let current = this._columnDefinitions[index];
+        if (current && current.isPixel === isPixel && current.internalValue === width) {
+            return this;
+        }
+
         this._columnDefinitions[index] = new ValueAndUnit(width, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE);
 
         this._markAsDirty();
 
         return this;
+    }
+
+    /**
+     * Gets the list of children stored in a specific cell
+     * @param row defines the row to check
+     * @param column defines the column to check
+     * @returns the list of controls
+     */
+    public getChildrenAt(row: number, column: number): Nullable<Array<Control>> {
+        const cell = this._cells[`${row}:${column}`];
+
+        if (!cell) {
+            return null;
+        }
+
+        return cell.children;
+    }
+
+    /**
+     * Gets a string representing the child cell info (row x column)
+     * @param child defines the control to get info from
+     * @returns a string containing the child cell info (row x column)
+     */
+    public getChildCellInfo(child: Control): string {
+        return child._tag;
     }
 
     private _removeCell(cell: Container, key: string) {
@@ -215,6 +292,7 @@ export class Grid extends Container {
         goodContainer.addControl(control);
         this._childControls.push(control);
         control._tag = key;
+        control.parent = this;
 
         this._markAsDirty();
 
@@ -255,7 +333,7 @@ export class Grid extends Container {
         return "Grid";
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _getGridDefinitions(definitionCallback: (lefts: number[], tops: number[], widths: number[], heights: number[]) => void) {
         let widths = [];
         let heights = [];
         let lefts = [];
@@ -321,23 +399,71 @@ export class Grid extends Container {
             index++;
         }
 
-        // Setting child sizes
+        definitionCallback(lefts, tops, widths, heights);
+    }
+
+    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
+            // Setting child sizes
+            for (var key in this._cells) {
+                if (!this._cells.hasOwnProperty(key)) {
+                    continue;
+                }
+                let split = key.split(":");
+                let x = parseInt(split[0]);
+                let y = parseInt(split[1]);
+                let cell = this._cells[key];
+
+                cell.left = lefts[y] + "px";
+                cell.top = tops[x] + "px";
+                cell.width = widths[y] + "px";
+                cell.height = heights[x] + "px";
+                cell._left.ignoreAdaptiveScaling = true;
+                cell._top.ignoreAdaptiveScaling = true;
+                cell._width.ignoreAdaptiveScaling = true;
+                cell._height.ignoreAdaptiveScaling = true;
+            }
+        });
+
+        super._additionalProcessing(parentMeasure, context);
+    }
+
+    public _flagDescendantsAsMatrixDirty(): void {
         for (var key in this._cells) {
             if (!this._cells.hasOwnProperty(key)) {
                 continue;
             }
-            let split = key.split(":");
-            let x = parseInt(split[0]);
-            let y = parseInt(split[1]);
-            let cell = this._cells[key];
 
-            cell.left = lefts[y] + "px";
-            cell.top = tops[x] + "px";
-            cell.width = widths[y] + "px";
-            cell.height = heights[x] + "px";
+            let child = this._cells[key];
+            child._markMatrixAsDirty();
         }
+    }
 
-        super._additionalProcessing(parentMeasure, context);
+    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+        super._renderHighlightSpecific(context);
+
+        this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
+
+            // Columns
+            for (var index = 0; index < lefts.length; index++) {
+                const left = this._currentMeasure.left + lefts[index] + widths[index];
+                context.beginPath();
+                context.moveTo(left, this._currentMeasure.top);
+                context.lineTo(left, this._currentMeasure.top + this._currentMeasure.height);
+                context.stroke();
+            }
+
+            // Rows
+            for (var index = 0; index < tops.length; index++) {
+                const top = this._currentMeasure.top + tops[index] + heights[index];
+                context.beginPath();
+                context.moveTo(this._currentMeasure.left, top);
+                context.lineTo(this._currentMeasure.left + this._currentMeasure.width, top);
+                context.stroke();
+            }
+        });
+
+        context.restore();
     }
 
     /** Releases associated resources */
@@ -347,5 +473,7 @@ export class Grid extends Container {
         for (var control of this._childControls) {
             control.dispose();
         }
+
+        this._childControls = [];
     }
 }

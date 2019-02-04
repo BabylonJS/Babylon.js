@@ -1,5 +1,8 @@
+import { Nullable } from "babylonjs/types";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Scene } from "babylonjs/scene";
+
 import { Control3D } from "./control3D";
-import { Scene, Nullable, TransformNode } from "babylonjs";
 
 /**
  * Class used to create containers for controls
@@ -96,9 +99,8 @@ export class Container3D extends Control3D {
         return this;
     }
 
-
     /**
-     * This function will be called everytime a new control is added 
+     * This function will be called everytime a new control is added
      */
     protected _arrangeChildren() {
     }

@@ -64,6 +64,16 @@ varying vec2 vMicroSurfaceSamplerUV;
 varying vec2 vBumpUV;
 #endif
 
+#ifdef CLEARCOAT
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+        varying vec2 vClearCoatUV;
+    #endif
+
+    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
+        varying vec2 vClearCoatBumpUV;
+    #endif
+#endif
+
 // Output
 varying vec3 vPositionW;
 #ifdef NORMAL
@@ -98,9 +108,9 @@ varying vec3 vDirectionW;
 #include<logDepthDeclaration>
 
 void main(void) {
-	vec3 positionUpdated = position;
+    vec3 positionUpdated = position;
 #ifdef NORMAL
-	vec3 normalUpdated = normal;
+    vec3 normalUpdated = normal;
 #endif
 #ifdef TANGENT
     vec4 tangentUpdated = tangent;
@@ -109,7 +119,11 @@ void main(void) {
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #ifdef REFLECTIONMAP_SKYBOX
-    vPositionUVW = positionUpdated;
+    #ifdef REFLECTIONMAP_SKYBOX_TRANSFORMED
+        vPositionUVW = (reflectionMatrix * vec4(positionUpdated, 1.0)).xyz;
+    #else
+        vPositionUVW = positionUpdated;
+    #endif
 #endif 
 
 #include<instancesVertex>
@@ -121,13 +135,13 @@ void main(void) {
     vPositionW = vec3(worldPos);
 
 #ifdef NORMAL
-	mat3 normalWorld = mat3(finalWorld);
+    mat3 normalWorld = mat3(finalWorld);
 
-	#ifdef NONUNIFORMSCALING
-		normalWorld = transposeMat3(inverseMat3(normalWorld));
-	#endif
+    #ifdef NONUNIFORMSCALING
+        normalWorld = transposeMat3(inverseMat3(normalWorld));
+    #endif
 
-	vNormalW = normalize(normalWorld * normalUpdated);
+    vNormalW = normalize(normalWorld * normalUpdated);
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
         vec3 reflectionVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
@@ -151,11 +165,11 @@ void main(void) {
 #endif
 
 #ifdef MAINUV1
-	vMainUV1 = uv;
+    vMainUV1 = uv;
 #endif 
 
 #ifdef MAINUV2
-	vMainUV2 = uv2;
+    vMainUV2 = uv2;
 #endif 
 
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0 
@@ -244,6 +258,30 @@ void main(void) {
     {
         vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
     }
+#endif
+
+#ifdef CLEARCOAT
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+        if (vClearCoatInfos.x == 0.)
+        {
+            vClearCoatUV = vec2(clearCoatMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatUV = vec2(clearCoatMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
+        if (vClearCoatBumpInfos.x == 0.)
+        {
+            vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
 #endif
 
     // TBN

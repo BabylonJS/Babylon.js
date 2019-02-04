@@ -8,8 +8,9 @@ attribute vec4 color;
 #include<bonesDeclaration>
 
 // Uniforms
+
+#include<instancesDeclaration>
 uniform mat4 viewProjection;
-uniform mat4 world;
 
 // Output
 #ifdef VERTEXCOLOR
@@ -17,7 +18,7 @@ varying vec4 vColor;
 #endif
 
 void main(void) {
-    mat4 finalWorld = world;
+#include<instancesVertex>
 #include<bonesVertex>
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
