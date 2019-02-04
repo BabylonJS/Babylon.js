@@ -212,7 +212,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         if (scene.activeCamera) {
             if (!pipelines.some(p => p.getClassName() === "DefaultRenderingPipeline")) {
                 pipelineContextMenus.push({
-                    label: "Add new DefaultRenderingPipeline",
+                    label: "Add new Default Rendering Pipeline",
                     action: () => {
                         let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, [scene.activeCamera!]);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);

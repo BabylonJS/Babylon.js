@@ -36034,12 +36034,18 @@ var LineContainerComponent = /** @class */ (function (_super) {
     };
     LineContainerComponent.prototype.componentDidMount = function () {
         var _this = this;
+        if (!this.props.globalState.selectedLineContainerTitle) {
+            return;
+        }
         if (this.props.globalState.selectedLineContainerTitle === this.props.title) {
             this.props.globalState.selectedLineContainerTitle = "";
             this.setState({ isExpanded: true, isHighlighted: true });
             window.setTimeout(function () {
                 _this.setState({ isHighlighted: false });
             }, 5000);
+        }
+        else {
+            this.setState({ isExpanded: false });
         }
     };
     LineContainerComponent.prototype.renderHeader = function () {
@@ -42915,7 +42921,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         if (scene.activeCamera) {
             if (!pipelines.some(function (p) { return p.getClassName() === "DefaultRenderingPipeline"; })) {
                 pipelineContextMenus.push({
-                    label: "Add new DefaultRenderingPipeline",
+                    label: "Add new Default Rendering Pipeline",
                     action: function () {
                         var newPipeline = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["DefaultRenderingPipeline"]("Default rendering pipeline", true, scene, [scene.activeCamera]);
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
