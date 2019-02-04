@@ -43,6 +43,7 @@ vec3 computeAnisotropicSpecularLighting(preLightingInfo info, vec3 V, vec3 N, ve
     return specTerm * info.attenuation * info.NdotL * lightColor;
 }
 
+#ifdef CLEARCOAT
 vec4 computeClearCoatLighting(preLightingInfo info, vec3 Ncc, float geometricRoughnessFactor, float clearCoatIntensity, vec3 lightColor) {
     float NccdotL = clamp(dot(Ncc, info.L), 0.00000000001, 1.0);
     float NccdotH = clamp(dot(Ncc, info.H), 0.000000000001, 1.0);
@@ -54,6 +55,15 @@ vec4 computeClearCoatLighting(preLightingInfo info, vec3 Ncc, float geometricRou
     result.a = clearCoatTerm.y;
     return result;
 }
+
+vec3 computeClearCoatLightingAbsorption(float NdotVRefract, vec3 L, vec3 Ncc, vec3 clearCoatColor, float clearCoatThickness, float clearCoatIntensity) {
+    vec3 LRefract = -refract(L, Ncc, vClearCoatRefractionParams.y);
+    float NdotLRefract = clamp(dot(Ncc, LRefract), 0.00000000001, 1.0);
+
+    vec3 absorption = computeClearCoatAbsorption(NdotVRefract, NdotLRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);
+    return absorption;
+}
+#endif
 
 vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
 	vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);

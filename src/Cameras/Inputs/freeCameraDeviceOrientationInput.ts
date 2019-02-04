@@ -97,6 +97,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     public detachControl(element: Nullable<HTMLElement>): void {
         window.removeEventListener("orientationchange", this._orientationChanged);
         window.removeEventListener("deviceorientation", this._deviceOrientation);
+        this._alpha = 0;
     }
 
     /**

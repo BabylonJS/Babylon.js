@@ -64,6 +64,17 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Define the current local position of the camera in the scene
+     */
+    public get position(): Vector3 {
+        return this._position;
+    }
+
+    public set position(newPosition: Vector3) {
+        this.setPosition(newPosition);
+    }
+
+    /**
      * Current inertia value on the longitudinal axis.
      * The bigger this number the longer it will take for the camera to stop.
      */
@@ -852,7 +863,7 @@ export class ArcRotateCamera extends TargetCamera {
             this.getViewMatrix(); // Force position update
         }
 
-        this.position.subtractToRef(this._getTargetPosition(), this._computationVector);
+        this._position.subtractToRef(this._getTargetPosition(), this._computationVector);
         this.radius = this._computationVector.length();
 
         if (this.radius === 0) {
@@ -877,10 +888,10 @@ export class ArcRotateCamera extends TargetCamera {
      * @param position Defines the position to set the camera at
      */
     public setPosition(position: Vector3): void {
-        if (this.position.equals(position)) {
+        if (this._position.equals(position)) {
             return;
         }
-        this.position.copyFrom(position);
+        this._position.copyFrom(position);
 
         this.rebuildAnglesAndRadius(false);
     }
@@ -960,11 +971,11 @@ export class ArcRotateCamera extends TargetCamera {
                 this._collider = coordinator.createCollider();
             }
             this._collider._radius = this.collisionRadius;
-            this._newPosition.subtractToRef(this.position, this._collisionVelocity);
+            this._newPosition.subtractToRef(this._position, this._collisionVelocity);
             this._collisionTriggered = true;
-            coordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            coordinator.getNewPosition(this._position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         } else {
-            this.position.copyFrom(this._newPosition);
+            this._position.copyFrom(this._newPosition);
 
             var up = this.upVector;
             if (this.allowUpsideDown && sinb < 0) {
@@ -972,7 +983,7 @@ export class ArcRotateCamera extends TargetCamera {
                 up = up.negate();
             }
 
-            this._computeViewMatrix(this.position, target, up);
+            this._computeViewMatrix(this._position, target, up);
 
             this._viewMatrix.addAtIndex(12, this.targetScreenOffset.x);
             this._viewMatrix.addAtIndex(13, this.targetScreenOffset.y);
@@ -984,7 +995,7 @@ export class ArcRotateCamera extends TargetCamera {
     protected _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
 
         if (!collidedMesh) {
-            this._previousPosition.copyFrom(this.position);
+            this._previousPosition.copyFrom(this._position);
         } else {
             this.setPosition(newPosition);
 
@@ -1006,7 +1017,7 @@ export class ArcRotateCamera extends TargetCamera {
         var target = this._getTargetPosition();
         this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
         target.addToRef(this._computationVector, this._newPosition);
-        this.position.copyFrom(this._newPosition);
+        this._position.copyFrom(this._newPosition);
 
         var up = this.upVector;
         if (this.allowUpsideDown && this.beta < 0) {
@@ -1014,7 +1025,7 @@ export class ArcRotateCamera extends TargetCamera {
             up = up.negate();
         }
 
-        this._computeViewMatrix(this.position, target, up);
+        this._computeViewMatrix(this._position, target, up);
         this._viewMatrix.addAtIndex(12, this.targetScreenOffset.x);
         this._viewMatrix.addAtIndex(13, this.targetScreenOffset.y);
 

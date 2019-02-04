@@ -168,6 +168,11 @@ export class DebugLayer {
         this.BJSINSPECTOR.Inspector.Show(this._scene, userOptions);
     }
 
+    /**
+     * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
+     * @param entity defines the entity to select
+     * @param lineContainerTitle defines the specific block to highlight
+     */
     public select(entity: any, lineContainerTitle?: string) {
         if (this.BJSINSPECTOR) {
             this.BJSINSPECTOR.Inspector.MarkLineContainerTitleForHighlighting(lineContainerTitle);
