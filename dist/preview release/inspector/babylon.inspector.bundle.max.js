@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_textBlock__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -36038,7 +36038,9 @@ var LineContainerComponent = /** @class */ (function (_super) {
             return;
         }
         if (this.props.globalState.selectedLineContainerTitle === this.props.title) {
-            this.props.globalState.selectedLineContainerTitle = "";
+            setTimeout(function () {
+                _this.props.globalState.selectedLineContainerTitle = "";
+            });
             this.setState({ isExpanded: true, isHighlighted: true });
             window.setTimeout(function () {
                 _this.setState({ isHighlighted: false });
@@ -36621,7 +36623,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: 0 };
+        _this.state = { value: props.target[props.propertyName] };
         return _this;
     }
     OptionsLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -38482,7 +38484,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
@@ -38685,7 +38687,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
             rows.push(grid.getRowDefinition(index));
         }
         return (rows.map(function (rd, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { key: "r" + i, label: "Row " + i, value: rd.toString(grid.host), underline: i === grid.rowCount - 1 }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { key: "r" + i, label: "Row " + i, value: rd.toString(grid.host, 2), underline: i === grid.rowCount - 1 }));
         }));
     };
     GridPropertyGridComponent.prototype.renderColumns = function () {
@@ -38695,7 +38697,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
             cols.push(grid.getColumnDefinition(index));
         }
         return (cols.map(function (cd, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { key: "c" + i, label: "Column " + i, value: cd.toString(grid.host) }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { key: "c" + i, label: "Column " + i, value: cd.toString(grid.host, 2) }));
         }));
     };
     GridPropertyGridComponent.prototype.render = function () {
@@ -38783,7 +38785,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
@@ -39197,7 +39199,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
@@ -40001,7 +40003,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/valueLineComponent */ "./components/actionTabs/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 
 
@@ -40601,30 +40603,38 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "BLOOM" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "bloomEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Threshold", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Weight", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Kernel", minimum: 0, maximum: 128, step: 1, target: renderPipeline, propertyName: "bloomKernel", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Scale", minimum: 0, maximum: 1, step: 0.25, target: renderPipeline, propertyName: "bloomScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                renderPipeline.bloomEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Threshold", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Weight", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Kernel", minimum: 0, maximum: 128, step: 1, target: renderPipeline, propertyName: "bloomKernel", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Scale", minimum: 0, maximum: 1, step: 0.25, target: renderPipeline, propertyName: "bloomScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "CHROMATIC ABERRATION" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "chromaticAberrationEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "aberrationAmount", minimum: 0, maximum: 128, step: 0.1, target: renderPipeline.chromaticAberration, propertyName: "aberrationAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Radial intensity", minimum: 0, maximum: 1, step: 0.01, target: renderPipeline.chromaticAberration, propertyName: "radialIntensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Center", target: renderPipeline.chromaticAberration, propertyName: "centerPosition", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Direction", target: renderPipeline.chromaticAberration, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                renderPipeline.chromaticAberrationEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "aberrationAmount", minimum: 0, maximum: 128, step: 0.1, target: renderPipeline.chromaticAberration, propertyName: "aberrationAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Radial intensity", minimum: 0, maximum: 1, step: 0.01, target: renderPipeline.chromaticAberration, propertyName: "radialIntensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Center", target: renderPipeline.chromaticAberration, propertyName: "centerPosition", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Direction", target: renderPipeline.chromaticAberration, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEPTH OF FIELD" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "depthOfFieldEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Focal length", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focalLength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "fStop", minimum: 0, maximum: 32, step: 0.1, target: renderPipeline.depthOfField, propertyName: "fStop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distance", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focusDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Lens size", minimum: 0, maximum: 1000, step: 1, target: renderPipeline.depthOfField, propertyName: "lensSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 })),
+                renderPipeline.depthOfFieldEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Focal length", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focalLength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "fStop", minimum: 0, maximum: 32, step: 0.1, target: renderPipeline.depthOfField, propertyName: "fStop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distance", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focusDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Lens size", minimum: 0, maximum: 1000, step: 1, target: renderPipeline.depthOfField, propertyName: "lensSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "FXAA" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "fxaaEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "GLOW LAYER" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "glowLayerEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "GRAIN" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "grainEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Animated", target: renderPipeline.grain, propertyName: "animated", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Intensity", minimum: 0, maximum: 50, step: 0.1, target: renderPipeline.grain, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                renderPipeline.grainEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Animated", target: renderPipeline.grain, propertyName: "animated", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Intensity", minimum: 0, maximum: 50, step: 0.1, target: renderPipeline.grain, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "IMAGE PROCESSING" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "imageProcessingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 renderPipeline.imageProcessing &&
@@ -40643,8 +40653,10 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Vignette blend mode", options: vignetteModeOptions, target: renderPipeline.imageProcessing, propertyName: "vignetteBlendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHARPEN" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "sharpenEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Color amount", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline.sharpen, propertyName: "colorAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Edge amount", minimum: 0, maximum: 5, step: 0.05, target: renderPipeline.sharpen, propertyName: "edgeAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                renderPipeline.sharpenEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Color amount", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline.sharpen, propertyName: "colorAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Edge amount", minimum: 0, maximum: 5, step: 0.05, target: renderPipeline.sharpen, propertyName: "edgeAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable })))));
     };
     return DefaultRenderingPipelinePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43998,14 +44010,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/textBlock":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_textBlock__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 

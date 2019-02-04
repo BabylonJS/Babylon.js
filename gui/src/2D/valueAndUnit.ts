@@ -105,14 +105,18 @@ export class ValueAndUnit {
     /**
      * Gets a string representation of the value
      * @param host defines the root host
+     * @param decimals defines an optional number of decimals to display
      * @returns a string
      */
-    public toString(host: AdvancedDynamicTexture): string {
+    public toString(host: AdvancedDynamicTexture, decimals?: number): string {
         switch (this.unit) {
             case ValueAndUnit.UNITMODE_PERCENTAGE:
-                return (this.getValue(host) * 100) + "%";
+                let percentage = this.getValue(host) * 100;
+
+                return (decimals ? percentage.toFixed(decimals) : percentage) + "%";
             case ValueAndUnit.UNITMODE_PIXEL:
-                return this.getValue(host) + "px";
+                let pixels = this.getValue(host);
+                return (decimals ? pixels.toFixed(decimals) : pixels) + "px";
         }
 
         return this.unit.toString();

@@ -12649,14 +12649,17 @@ var ValueAndUnit = /** @class */ (function () {
     /**
      * Gets a string representation of the value
      * @param host defines the root host
+     * @param decimals defines an optional number of decimals to display
      * @returns a string
      */
-    ValueAndUnit.prototype.toString = function (host) {
+    ValueAndUnit.prototype.toString = function (host, decimals) {
         switch (this.unit) {
             case ValueAndUnit.UNITMODE_PERCENTAGE:
-                return (this.getValue(host) * 100) + "%";
+                var percentage = this.getValue(host) * 100;
+                return (decimals ? percentage.toFixed(decimals) : percentage) + "%";
             case ValueAndUnit.UNITMODE_PIXEL:
-                return this.getValue(host) + "px";
+                var pixels = this.getValue(host);
+                return (decimals ? pixels.toFixed(decimals) : pixels) + "px";
         }
         return this.unit.toString();
     };
