@@ -18,11 +18,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     public abstract camera: Camera;
 
     /**
-     * The class name of the current input. Used by getClassName().
-     */
-    protected abstract _className: string;
-
-    /**
      * Whether keyboard modifier keys are pressed at time of last mouse event.
      */
     protected _altKey: boolean;
@@ -269,7 +264,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * @returns the class name
      */
     public getClassName(): string {
-        return this._className;
+        return "BaseCameraPointersInput";
     }
 
     /**
@@ -306,16 +301,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                            pinchSquaredDistance: number,
                            previousMultiTouchPanPosition: Nullable<PointerTouch>,
                            multiTouchPanPosition: Nullable<PointerTouch>): void {
-        /* if (previousPinchSquaredDistance === 0 && previousMultiTouchPanPosition === null) {
-         *     // First time this method is called when a user starts pinching.
-         *     // pinchSquaredDistance and multiTouchPanPosition are valid.
-         * }
-         * if (pinchSquaredDistance === 0 && multiTouchPanPosition === null) {
-         *     // Last time this method is called at the end of a pinch.
-         *     // previousPinchSquaredDistance and previousMultiTouchPanPosition
-         *     // are still valid.
-         * }
-         */
     }
 
     /**
