@@ -143,6 +143,17 @@ varying vec4 vColor;
         #endif
         uniform sampler2D clearCoatBumpSampler;
     #endif
+
+    #ifdef CLEARCOAT_TINT_TEXTURE
+        #if CLEARCOAT_TINT_TEXTUREDIRECTUV == 1
+            #define vClearCoatTintUV vMainUV1
+        #elif CLEARCOAT_TINT_TEXTUREDIRECTUV == 2
+            #define vClearCoatTintUV vMainUV2
+        #else
+            varying vec2 vClearCoatTintUV;
+        #endif
+        uniform sampler2D clearCoatTintSampler;
+    #endif
 #endif
 
 // Refraction
@@ -690,12 +701,25 @@ void main(void) {
             clearCoatRoughness *= clearCoatMapData.y;
         #endif
 
+        #ifdef CLEARCOAT_TINT
+            vec3 clearCoatColor = vClearCoatTintParams.rgb;
+            float clearCoatThickness = vClearCoatTintParams.a;
+
+            #ifdef CLEARCOAT_TINT_TEXTURE
+                vec4 clearCoatTintMapData = texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset);
+                clearCoatColor *= toLinearSpace(clearCoatTintMapData.rgb);
+                clearCoatThickness *= clearCoatTintMapData.a;
+            #endif
+
+            clearCoatColor = computeColorAtDistanceInMedia(clearCoatColor, clearCoatColorAtDistance);
+        #endif
+
         // remapping and linearization of clear coat roughness
         // Let s see how it ends up in gltf
         // clearCoatRoughness = mix(0.089, 0.6, clearCoatRoughness);
 
         // Remap F0 to account for the change of interface within the material.
-        vec3 specularEnvironmentR0Updated = getR0RemappedForPolyurethaneClearCoat(specularEnvironmentR0);
+        vec3 specularEnvironmentR0Updated = getR0RemappedForClearCoat(specularEnvironmentR0);
         specularEnvironmentR0 = mix(specularEnvironmentR0, specularEnvironmentR0Updated, clearCoatIntensity);
 
         #ifdef CLEARCOAT_BUMP
@@ -801,6 +825,14 @@ void main(void) {
                 environmentClearCoatRadiance.rgb = toLinearSpace(environmentClearCoatRadiance.rgb);
             #endif
 
+            #ifdef CLEARCOAT_TINT
+                vec3 clearCoatVRefract = -refract(vPositionW, clearCoatNormalW, vClearCoatRefractionParams.y);
+                float clearCoatNdotVRefract = clamp(dot(clearCoatNormalW, clearCoatVRefract), 0.00000000001, 1.0);
+
+                // Used later on in the light fragment and ibl.
+                vec3 absorption = vec3(0.);
+            #endif
+
             // _____________________________ Levels _____________________________________
             environmentClearCoatRadiance.rgb *= vReflectionInfos.x;
             environmentClearCoatRadiance.rgb *= vReflectionColor.rgb;
@@ -875,7 +907,7 @@ void main(void) {
             // We can find the scale and offset to apply to the specular value.
             vec4 environmentClearCoatBrdf = texture2D(environmentBrdfSampler, brdfClearCoatSamplerUV);
 
-            vec3 clearCoatEnvironmentReflectance = vec3(CLEARCOATREFLECTANCE0 * environmentClearCoatBrdf.x + environmentClearCoatBrdf.y);
+            vec3 clearCoatEnvironmentReflectance = vec3(vClearCoatRefractionParams.x * environmentClearCoatBrdf.x + environmentClearCoatBrdf.y);
 
             #ifdef RADIANCEOCCLUSION
                 float clearCoatSeo = environmentRadianceOcclusion(ambientMonochrome, clearCoatNdotVUnclamped);
@@ -897,11 +929,22 @@ void main(void) {
 
         clearCoatEnvironmentReflectance *= clearCoatIntensity;
 
+        #ifdef CLEARCOAT_TINT
+            // NdotL = NdotV in IBL
+            absorption = computeClearCoatAbsorption(clearCoatNdotVRefract, clearCoatNdotVRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);
+
+            #ifdef REFLECTION
+                environmentIrradiance *= absorption;
+            #endif
+            specularEnvironmentReflectance *= absorption;
+        #endif
+
         // clear coat energy conservation
-        float fresnelIBLClearCoat = fresnelSchlickGGX(clearCoatNdotV, CLEARCOATREFLECTANCE0, CLEARCOATREFLECTANCE90);
+        float fresnelIBLClearCoat = fresnelSchlickGGX(clearCoatNdotV, vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
         fresnelIBLClearCoat *= clearCoatIntensity;
 
         float conservationFactor = (1. - fresnelIBLClearCoat);
+
         #ifdef REFLECTION
             environmentIrradiance *= conservationFactor;
         #endif
@@ -1001,6 +1044,9 @@ void main(void) {
 
         #ifdef REFRACTION
             finalRefraction *= (conservationFactor * conservationFactor);
+            #ifdef CLEARCOAT_TINT
+                finalRefraction *= absorption;
+            #endif
         #endif
     #endif
 
