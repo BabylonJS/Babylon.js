@@ -1,11 +1,10 @@
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
+
 // AlphaG epsilon to avoid numerical issues
 #define MINIMUMVARIANCE 0.0005
 
-// f0 = 4% based on the IOR of a air-polyurethane interface.
-#define CLEARCOATREFLECTANCE0 0.04
 #define CLEARCOATREFLECTANCE90 1.0
 
 float convertRoughnessToAverageSlope(float roughness)
@@ -50,17 +49,33 @@ vec2 getAARoughnessFactors(vec3 normalVector) {
 //     return (1.0 + s) / (1.0 - s);
 // }
 
-// // Clear coat Remapping
+// f0 Remapping due to layers
 // vec3 getR0RemappedForClearCoat(vec3 f0, vec3 clearCoatF0) {
 //     vec3 iorBase = getIORfromAirToSurfaceR0(f0);
 //     vec3 clearCoatIor = getIORfromAirToSurfaceR0(clearCoatF0);
 //     return getR0fromIOR(iorBase, clearCoatIor);
 // }
 
-vec3 getR0RemappedForPolyurethaneClearCoat(vec3 f0) {
-    vec3 s = sqrt(f0);
-    return (-1.0 + 5.0 * s) / (5.0 + s);
+#ifdef CLEARCOAT
+// Knowing ior clear coat is fix for the material
+// Solving iorbase = 1 + sqrt(fo) / (1 - sqrt(fo)) and f0base = square((iorbase - iorclearcoat) / (iorbase - iorclearcoat))
+// provide f0base = square(A + B * sqrt(fo)) / (B + A * sqrt(fo))
+// where A = 1 - iorclearcoat
+// and   B = 1 + iorclearcoat
+vec3 getR0RemappedForClearCoat(vec3 f0) {
+    #ifdef CLEARCOAT_DEFAULTIOR
+        #ifdef MOBILE
+            return clamp(f0 * (f0 * 0.526868 + 0.529324) - 0.0482256, 0., 1.);
+        #else
+            return clamp(f0 * (f0 * (0.941892 - 0.263008 * f0) + 0.346479) - 0.0285998, 0., 1.);
+        #endif
+    #else
+        vec3 s = sqrt(f0);
+        vec3 t = (vClearCoatRefractionParams.z + vClearCoatRefractionParams.w * s) / (vClearCoatRefractionParams.w + vClearCoatRefractionParams.z * s);
+        return t * t;
+    #endif
 }
+#endif
 
 // From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
 // Keep for references
@@ -81,17 +96,14 @@ vec3 getR0RemappedForPolyurethaneClearCoat(vec3 f0) {
 // torrance denominator :-)
 float smithVisibilityG1_TrowbridgeReitzGGXFast(float dot, float alphaG)
 {
-    float alphaSquared = alphaG * alphaG;
-    return 1.0 / (dot + sqrt(alphaSquared + (1.0 - alphaSquared) * dot * dot));
+    #ifdef MOBILE
+        // Appply simplification as all squared root terms are below 1 and squared
+        return 1.0 / (dot + alphaG + (1.0 - alphaG) * dot ));
+    #else
+        float alphaSquared = alphaG * alphaG;
+        return 1.0 / (dot + sqrt(alphaSquared + (1.0 - alphaSquared) * dot * dot));
+    #endif
 }
-
-// From smithVisibilityG1_TrowbridgeReitzGGXFast
-// Appply simplification as all squared root terms are below 1 and squared
-// Ready to be used
-// float smithVisibilityG1_TrowbridgeReitzGGXMobile(float dot, float alphaG)
-// {
-//     return 1.0 / (dot + alpha + (1.0 - alpha) * dot ));
-// }
 
 float smithVisibility_TrowbridgeReitzGGXFast(float NdotL, float NdotV, float alphaG)
 {
@@ -163,11 +175,22 @@ vec3 fresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectan
     return reflectance0 + weight * (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotN, 0., 1.), 5.0);
 }
 
+// From beer lambert law I1/I0 = e −α′lc
+// c is considered included in alpha
+// https://blog.selfshadow.com/publications/s2017-shading-course/drobot/s2017_pbs_multilayered.pdf page 47
+// where L on a thin constant size layer can be (d * ((NdotLRefract + NdotVRefract) / (NdotLRefract * NdotVRefract))
+vec3 cocaLambert(float NdotVRefract, float NdotLRefract, vec3 alpha, float thickness) {
+    return exp(alpha * -(thickness * ((NdotLRefract + NdotVRefract) / (NdotLRefract * NdotVRefract))));
+}
+// From beerLambert Solves what alpha should be for a given resutlt at a known distance.
+vec3 computeColorAtDistanceInMedia(vec3 color, float distance) {
+    return -log(color) / distance;
+}
+
 // Disney diffuse term
 // https://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf
 // Page 14
-float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
-{
+float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness) {
     // Diffuse fresnel falloff as per Disney principled BRDF, and in the spirit of
     // of general coupled diffuse/specular models e.g. Ashikhmin Shirley.
     float diffuseFresnelNV = pow(clamp(1.0 - NdotL, 0.000001, 1.), 5.0);
@@ -214,10 +237,17 @@ vec2 computeClearCoatTerm(float NdotH, float VdotH, float clearCoatRoughness, fl
     float visibility = kelemenVisibility(VdotH);
     float clearCoatTerm = max(0., visibility * distribution);
 
-    float fresnel = fresnelSchlickGGX(VdotH, CLEARCOATREFLECTANCE0, CLEARCOATREFLECTANCE90);
+    float fresnel = fresnelSchlickGGX(VdotH, vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
     fresnel *= clearCoatIntensity;
     
     return vec2(fresnel * clearCoatTerm, 1.0 - fresnel);
+}
+
+vec3 computeClearCoatAbsorption(float NdotVRefract, float NdotLRefract, vec3 clearCoatColor, float clearCoatThickness, float clearCoatIntensity) {
+    vec3 clearCoatAbsorption = mix(vec3(1.0),
+        cocaLambert(NdotVRefract, NdotLRefract, clearCoatColor, clearCoatThickness),
+        clearCoatIntensity);
+    return clearCoatAbsorption;
 }
 
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
@@ -247,8 +277,8 @@ float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
 // For typical incident reflectance range (between 4% to 100%) set the grazing reflectance to 100% for typical fresnel effect.
 // For very low reflectance range on highly diffuse objects (below 4%), incrementally reduce grazing reflecance to 0%.
 float fresnelGrazingReflectance(float reflectance0) {
-	float reflectance90 = clamp(reflectance0 * 25.0, 0.0, 1.0);
-	return reflectance90;
+    float reflectance90 = clamp(reflectance0 * 25.0, 0.0, 1.0);
+    return reflectance90;
 }
 
 // To enable 8 bit textures to be used we need to pack and unpack the LOD
