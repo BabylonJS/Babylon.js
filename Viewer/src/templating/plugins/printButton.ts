@@ -1,7 +1,7 @@
 import { AbstractViewerNavbarButton } from "../viewerTemplatePlugin";
 import { DefaultViewer } from "../../viewer/defaultViewer";
 import { EventCallback } from "../templateManager";
-import { Tools } from "@babylonjs/core/Misc/tools";
+import { Tools } from "babylonjs/Misc/tools";
 
 export class PrintButtonPlugin extends AbstractViewerNavbarButton {
 

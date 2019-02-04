@@ -3,7 +3,7 @@ import { ViewerConfiguration } from './configuration';
 import { processConfigurationCompatibility } from './configurationCompatibility';
 
 import { deepmerge } from '../helper';
-import { IFileRequest, Tools } from '@babylonjs/core/Misc/tools';
+import { IFileRequest, Tools } from 'babylonjs/Misc/tools';
 import { extendedConfiguration } from './types/extended';
 import { renderOnlyDefaultConfiguration } from './types/renderOnlyDefault';
 

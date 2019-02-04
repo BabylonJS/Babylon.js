@@ -1,6 +1,6 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from '@babylonjs/core/Loading/sceneLoader';
-import { IGLTFLoaderExtension } from '@babylonjs/loaders/glTF/2.0/glTFLoaderExtension';
-import { GLTF2 } from '@babylonjs/loaders/glTF';
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs/Loading/sceneLoader';
+import { IGLTFLoaderExtension } from 'babylonjs-loaders/glTF/2.0/glTFLoaderExtension';
+import { GLTF2 } from 'babylonjs-loaders/glTF/index';
 import { ViewerModel } from '../../model/viewerModel';
 import { ILoaderPlugin } from './loaderPlugin';
 

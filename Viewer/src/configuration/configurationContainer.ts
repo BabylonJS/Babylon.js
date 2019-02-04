@@ -1,6 +1,6 @@
 import { ViewerConfiguration } from './configuration';
-import { Color3 } from '@babylonjs/core/Maths/math';
-import { Scene } from '@babylonjs/core/scene';
+import { Color3 } from 'babylonjs/Maths/math';
+import { Scene } from 'babylonjs/scene';
 
 export class ConfigurationContainer {
 

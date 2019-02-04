@@ -17,10 +17,10 @@ import { registerCustomOptimizer } from './optimizer/custom';
  * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
  */
 
-import * as BABYLON from '@babylonjs/core';
+import * as BABYLON from 'babylonjs';
 
 // load needed modules.
-import '@babylonjs/loaders';
+import 'babylonjs-loaders';
 import 'pepjs';
 
 import { initListeners, InitTags } from './initializer';
