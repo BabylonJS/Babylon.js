@@ -29384,6 +29384,8 @@ declare module BABYLON {
          * Define the input manager associated with the camera.
          */
         inputs: CameraInputsManager<Camera>;
+        /** @hidden */
+        _position: Vector3;
         /**
          * Define the current local position of the camera in the scene
          */
@@ -34008,6 +34010,10 @@ declare module BABYLON {
          */
         target: Vector3;
         /**
+         * Define the current local position of the camera in the scene
+         */
+        position: Vector3;
+        /**
          * Current inertia value on the longitudinal axis.
          * The bigger this number the longer it will take for the camera to stop.
          */
@@ -37099,6 +37105,11 @@ declare module BABYLON {
          * Are clear coat bump textures enabled in the application.
          */
         static ClearCoatBumpTextureEnabled: boolean;
+        private static _ClearCoatTintTextureEnabled;
+        /**
+         * Are clear coat tint textures enabled in the application.
+         */
+        static ClearCoatTintTextureEnabled: boolean;
     }
 }
 declare module BABYLON {
@@ -39758,6 +39769,11 @@ declare module BABYLON {
         constructor(scene: Scene);
         /** Creates the inspector window. */
         private _createInspector;
+        /**
+         * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
+         * @param entity defines the entity to select
+         * @param lineContainerTitle defines the specific block to highlight
+         */
         select(entity: any, lineContainerTitle?: string): void;
         /** Get the inspector from bundle or global */
         private _getGlobalInspector;
@@ -41162,6 +41178,13 @@ declare module BABYLON {
         private _existingMeshScale;
         private _dragMesh;
         private pointerDragBehavior;
+        private coloredMaterial;
+        private hoverColoredMaterial;
+        /**
+         * Sets the color of the bounding box gizmo
+         * @param color the color to set
+         */
+        setColor(color: Color3): void;
         /**
          * Creates an BoundingBoxGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -42261,10 +42284,14 @@ declare module BABYLON {
      */
     export interface IMaterialClearCoatDefines {
         CLEARCOAT: boolean;
+        CLEARCOAT_DEFAULTIOR: boolean;
         CLEARCOAT_TEXTURE: boolean;
         CLEARCOAT_TEXTUREDIRECTUV: number;
         CLEARCOAT_BUMP: boolean;
         CLEARCOAT_BUMPDIRECTUV: number;
+        CLEARCOAT_TINT: boolean;
+        CLEARCOAT_TINT_TEXTURE: boolean;
+        CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -42272,6 +42299,11 @@ declare module BABYLON {
      * Define the code related to the clear coat parameters of the pbr material.
      */
     export class PBRClearCoatConfiguration {
+        /**
+         * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
+         * The default fits with a polyurethane material.
+         */
+        private static readonly _DefaultIndiceOfRefraction;
         private _isEnabled;
         /**
          * Defines if the clear coat is enabled in the material.
@@ -42285,6 +42317,14 @@ declare module BABYLON {
          * Defines the clear coat layer roughness.
          */
         roughness: number;
+        private _indiceOfRefraction;
+        /**
+         * Defines the indice of refraction of the clear coat.
+         * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
+         * The default fits with a polyurethane material.
+         * Changing the default value is more performance intensive.
+         */
+        indiceOfRefraction: number;
         private _texture;
         /**
          * Stores the clear coat values in a texture.
@@ -42295,6 +42335,34 @@ declare module BABYLON {
          * Define the clear coat specific bump texture.
          */
         bumpTexture: Nullable<BaseTexture>;
+        private _isTintEnabled;
+        /**
+         * Defines if the clear coat tint is enabled in the material.
+         */
+        isTintEnabled: boolean;
+        /**
+         * Defines if the clear coat tint is enabled in the material.
+         * This is only use if tint is enabled
+         */
+        tintColor: Color3;
+        /**
+         * Defines if the distance at which the tint color should be found in the
+         * clear coat media.
+         * This is only use if tint is enabled
+         */
+        tintColorAtDistance: number;
+        /**
+         * Defines the clear coat layer thickness.
+         * This is only use if tint is enabled
+         */
+        tintThickness: number;
+        private _tintTexture;
+        /**
+         * Stores the clear tint values in a texture.
+         * rgb is tint
+         * a is a thickness factor
+         */
+        tintTexture: Nullable<BaseTexture>;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         /** @hidden */
