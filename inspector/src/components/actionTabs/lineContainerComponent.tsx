@@ -60,7 +60,9 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         }
 
         if (this.props.globalState.selectedLineContainerTitle === this.props.title) {
-            this.props.globalState.selectedLineContainerTitle = "";
+            setTimeout(() => {
+                this.props.globalState.selectedLineContainerTitle = "";
+            });
 
             this.setState({ isExpanded: true, isHighlighted: true });
 
