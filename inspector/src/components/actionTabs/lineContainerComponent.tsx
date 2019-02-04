@@ -55,6 +55,10 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
     }
 
     componentDidMount() {
+        if (!this.props.globalState.selectedLineContainerTitle) {
+            return;
+        }
+
         if (this.props.globalState.selectedLineContainerTitle === this.props.title) {
             this.props.globalState.selectedLineContainerTitle = "";
 
@@ -63,7 +67,9 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
             window.setTimeout(() => {
                 this.setState({ isHighlighted: false });
             }, 5000);
-        }
+        } else {
+            this.setState({isExpanded: false});
+        }        
     }
 
     renderHeader() {
