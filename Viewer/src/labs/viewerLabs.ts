@@ -1,8 +1,8 @@
 import { PBREnvironment, EnvironmentDeserializer } from "./environmentSerializer";
-import { Scene } from "@babylonjs/core/scene";
-import { Vector3, Quaternion, Axis, Matrix, Tmp } from "@babylonjs/core/Maths/math";
-import { SphericalPolynomial } from "@babylonjs/core/Maths/sphericalPolynomial";
-import { ShadowLight } from "@babylonjs/core/Lights/shadowLight";
+import { Scene } from "babylonjs/scene";
+import { Vector3, Quaternion, Axis, Matrix, Tmp } from "babylonjs/Maths/math";
+import { SphericalPolynomial } from "babylonjs/Maths/sphericalPolynomial";
+import { ShadowLight } from "babylonjs/Lights/shadowLight";
 import { TextureUtils } from "./texture";
 
 

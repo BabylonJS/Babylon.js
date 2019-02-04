@@ -3,7 +3,7 @@ import { ILoaderPlugin } from "./loaderPlugin";
 import { MSFTLodLoaderPlugin } from './msftLodLoaderPlugin';
 import { ApplyMaterialConfigPlugin } from './applyMaterialConfig';
 import { ExtendedMaterialLoaderPlugin } from './extendedMaterialLoaderPlugin';
-import { Tools } from "@babylonjs/core/Misc/tools";
+import { Tools } from "babylonjs/Misc/tools";
 
 const pluginCache: { [key: string]: ILoaderPlugin } = {};
 

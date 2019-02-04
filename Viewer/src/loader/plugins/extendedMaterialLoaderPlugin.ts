@@ -1,6 +1,6 @@
-import { Material } from '@babylonjs/core/Materials/material';
-import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
-import { Engine } from '@babylonjs/core/Engines/engine';
+import { Material } from 'babylonjs/Materials/material';
+import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
+import { Engine } from 'babylonjs/Engines/engine';
 import { ILoaderPlugin } from './loaderPlugin';
 
 /**

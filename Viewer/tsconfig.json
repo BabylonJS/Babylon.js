@@ -28,6 +28,12 @@
             "babylonjs-loaders": [
                 "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
             ],
+            "babylonjs/*": [
+                "../../dist/preview release/babylon.module.d.ts"
+            ],
+            "babylonjs-loaders/*": [
+                "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
+            ],
             "babylonjs-gltf2interface": [
                 "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
             ],
