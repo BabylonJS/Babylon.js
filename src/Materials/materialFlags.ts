@@ -213,4 +213,20 @@ export class MaterialFlags {
         this._ClearCoatBumpTextureEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
+
+    private static _ClearCoatTintTextureEnabled = true;
+    /**
+     * Are clear coat tint textures enabled in the application.
+     */
+    public static get ClearCoatTintTextureEnabled(): boolean {
+        return this._ClearCoatTintTextureEnabled;
+    }
+    public static set ClearCoatTintTextureEnabled(value: boolean) {
+        if (this._ClearCoatTintTextureEnabled === value) {
+            return;
+        }
+
+        this._ClearCoatTintTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
 }
