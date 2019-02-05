@@ -107,6 +107,8 @@
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
+- Add option for silently failing when materials fail to load ([brianzinn](https://github.com/brianzinn))
+- Add option to skip loading materials ([brianzinn](https://github.com/brianzinn))
 
 ### glTF Loader
 
