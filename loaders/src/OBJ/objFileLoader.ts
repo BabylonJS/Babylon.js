@@ -285,8 +285,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
     /**
      * When a material fails to load OBJ loader will silently fail and onSuccess() callback will be triggered.
+     *
+     * Defaults to true for backwards compatibility.
      */
-    public static MATERIAL_LOADING_FAILS_SILENTLY = false;
+    public static MATERIAL_LOADING_FAILS_SILENTLY = true;
     /**
      * Defines the name of the plugin.
      */
@@ -362,18 +364,19 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param onSuccess Callback function to be called when the MTL file is loaded
      * @private
      */
-    private _loadMTL(url: string, rootUrl: string, onSuccess: (response: string | ArrayBuffer, responseUrl?: string) => any, onFailure: (pathOfFile: string) => void) {
+    private _loadMTL(url: string, rootUrl: string, onSuccess: (response: string | ArrayBuffer, responseUrl?: string) => any, onFailure: (pathOfFile: string, exception?: any) => void) {
         //The complete path to the mtl file
         var pathOfFile = Tools.BaseUrl + rootUrl + url;
 
         // Loads through the babylon tools to allow fileInput search.
-        Tools.LoadFile(pathOfFile,
+        Tools.LoadFile(
+            pathOfFile,
             onSuccess,
             undefined,
             undefined,
             false,
-            () => {
-                onFailure(pathOfFile)
+            (request?: XMLHttpRequest | undefined, exception?: any) => {
+                onFailure(pathOfFile, exception);
             }
         );
     }
@@ -1113,11 +1116,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         //Check if we have a file to load
         if (fileToLoad !== "" && this._meshLoadOptions.SkipMaterials === false) {
             //Load the file synchronously
-
-            const silentlyFail = this._meshLoadOptions.MaterialLoadingFailsSilently;
-
             mtlPromises.push(new Promise((resolve, reject) => {
-                this._loadMTL(fileToLoad, rootUrl, function(dataLoaded) {
+                this._loadMTL(fileToLoad, rootUrl, (dataLoaded) => {
                     try {
                         //Create materials thanks MTLLoader function
                         materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
@@ -1148,20 +1148,19 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                         }
                         resolve();
                     } catch (e) {
-                        if (silentlyFail) {
-                            // any error occuring will ensure Promise.all 'onfulfilled' callback is called
+                        Tools.Warn(`Error processing MTL file: '${fileToLoad}'`);
+                        if (this._meshLoadOptions.MaterialLoadingFailsSilently) {
                             resolve();
                         } else {
                             reject(e);
                         }
                     }
-                }, (pathOfFile: string) => { 
-                    if (this._meshLoadOptions.MaterialLoadingFailsSilently === false) {
-                        console.warn("Error - Unable to load " + pathOfFile);
-                        reject();
-                    } else {
-                        console.warn("Could not load: " + pathOfFile + " (silently failing).")
+                }, (pathOfFile: string, exception?: any) => {
+                    Tools.Warn(`Error downloading MTL file: '${fileToLoad}'`);
+                    if (this._meshLoadOptions.MaterialLoadingFailsSilently) {
                         resolve();
+                    } else {
+                        reject(exception);
                     }
                 });
             }));
