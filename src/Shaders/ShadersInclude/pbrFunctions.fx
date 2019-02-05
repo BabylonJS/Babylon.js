@@ -229,6 +229,7 @@ vec3 computeAnisotropicSpecularTerm(float NdotH, float NdotL, float NdotV, float
     return fresnel * specTerm;
 }
 
+#ifdef CLEARCOAT
 vec2 computeClearCoatTerm(float NdotH, float VdotH, float clearCoatRoughness, float geometricRoughnessFactor, float clearCoatIntensity) {
     clearCoatRoughness = max(clearCoatRoughness, geometricRoughnessFactor);
     float alphaG = convertRoughnessToAverageSlope(clearCoatRoughness);
@@ -249,6 +250,7 @@ vec3 computeClearCoatAbsorption(float NdotVRefract, float NdotLRefract, vec3 cle
         clearCoatIntensity);
     return clearCoatAbsorption;
 }
+#endif
 
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
 {
