@@ -126,6 +126,22 @@ export class Skeleton implements IAnimatable {
         this._canUseTextureForBones = engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
     }
 
+    /**
+     * Gets the current object class name.
+     * @return the class name
+     */
+    public getClassName(): string {
+        return "Skeleton";
+    }
+
+    /**
+     * Returns an array containing the root bones    
+     * @returns an array containing the root bones
+     */
+    public getChildren(): Array<Bone> {
+        return this.bones.filter(b => !b.parent);
+    }
+
     // Members
     /**
      * Gets the list of transform matrices to send to shaders (one matrix per bone)
@@ -247,10 +263,8 @@ export class Skeleton implements IAnimatable {
     public getAnimationRanges(): Nullable<AnimationRange>[] {
         var animationRanges: Nullable<AnimationRange>[] = [];
         var name: string;
-        var i: number = 0;
         for (name in this._ranges) {
-            animationRanges[i] = this._ranges[name];
-            i++;
+            animationRanges.push(this._ranges[name]);
         }
         return animationRanges;
     }
