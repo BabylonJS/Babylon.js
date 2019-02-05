@@ -592,7 +592,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     public onMeshImportedObservable = new Observable<AbstractMesh>();
 
     /**
-     * Gets or sets a user defined funtion to select LOD from a mesh and a camera. 
+     * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
      * By default this function is undefined and Babylon.js will select LOD based on distance to camera
      */
     public customLODSelector: (mesh: AbstractMesh, camera: Camera) => Nullable<AbstractMesh>;
