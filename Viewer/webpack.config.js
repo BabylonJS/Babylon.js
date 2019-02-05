@@ -1,6 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 
+const babylonExternals = require('../Tools/WebpackPlugins/babylonExternals');
+
 module.exports = 
     {
         entry: {
@@ -24,6 +26,7 @@ module.exports =
                 "babylonjs-viewer-assets": __dirname + '/src/assets/index.ts'
             }
         },
+        externals: [babylonExternals()],
         mode: "development",
         devtool: 'source-map',
         plugins: [
