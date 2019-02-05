@@ -190,9 +190,6 @@ export interface IFileRequest {
     abort: () => void;
 }
 
-// Screenshots
-var screenshotCanvas: HTMLCanvasElement;
-
 /**
  * Class containing a set of static utilities functions
  */
@@ -1187,6 +1184,8 @@ export class Tools {
         }
     }
 
+    public static _ScreenshotCanvas: HTMLCanvasElement;
+
     /**
      * Dumps the current bound framebuffer
      * @param width defines the rendering width
@@ -1218,12 +1217,12 @@ export class Tools {
         }
 
         // Create a 2D canvas to store the result
-        if (!screenshotCanvas) {
-            screenshotCanvas = document.createElement('canvas');
+        if (!Tools._ScreenshotCanvas) {
+            Tools._ScreenshotCanvas = document.createElement('canvas');
         }
-        screenshotCanvas.width = width;
-        screenshotCanvas.height = height;
-        var context = screenshotCanvas.getContext('2d');
+        Tools._ScreenshotCanvas.width = width;
+        Tools._ScreenshotCanvas.height = height;
+        var context = Tools._ScreenshotCanvas.getContext('2d');
 
         if (context) {
             // Copy the pixels to a 2D canvas
@@ -1273,11 +1272,11 @@ export class Tools {
      */
     static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
         if (successCallback) {
-            var base64Image = screenshotCanvas.toDataURL(mimeType);
+            var base64Image = Tools._ScreenshotCanvas.toDataURL(mimeType);
             successCallback(base64Image);
         }
         else {
-            this.ToBlob(screenshotCanvas, function(blob) {
+            this.ToBlob(Tools._ScreenshotCanvas, function(blob) {
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                 if (("download" in document.createElement("a"))) {
                     if (!fileName) {
