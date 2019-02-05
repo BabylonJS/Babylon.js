@@ -103,6 +103,14 @@ export class Bone extends Node {
         }
     }
 
+    /**
+     * Gets the current object class name.
+     * @return the class name
+     */
+    public getClassName(): string {
+        return "Bone";
+    }
+
     // Members
 
     /**
