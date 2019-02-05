@@ -25550,10 +25550,32 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
+         * Creates a video texture straight from a stream.
+         * @param scene Define the scene the texture should be created in
+         * @param stream Define the stream the texture should be created from
+         * @returns The created video texture as a promise
+         */
+        static CreateFromStreamAsync(scene: Scene, stream: MediaStream): Promise<VideoTexture>;
+        /**
+         * Creates a video texture straight from your WebCam video feed.
+         * @param scene Define the scene the texture should be created in
+         * @param constraints Define the constraints to use to create the web cam feed from WebRTC
+         * @param audioConstaints Define the audio constraints to use to create the web cam feed from WebRTC
+         * @returns The created video texture as a promise
+         */
+        static CreateFromWebCamAsync(scene: Scene, constraints: {
+            minWidth: number;
+            maxWidth: number;
+            minHeight: number;
+            maxHeight: number;
+            deviceId: string;
+        } & MediaTrackConstraints, audioConstaints?: boolean | MediaTrackConstraints): Promise<VideoTexture>;
+        /**
          * Creates a video texture straight from your WebCam video feed.
          * @param scene Define the scene the texture should be created in
          * @param onReady Define a callback to triggered once the texture will be ready
          * @param constraints Define the constraints to use to create the web cam feed from WebRTC
+         * @param audioConstaints Define the audio constraints to use to create the web cam feed from WebRTC
          */
         static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: {
             minWidth: number;
@@ -25561,7 +25583,7 @@ declare module BABYLON {
             minHeight: number;
             maxHeight: number;
             deviceId: string;
-        }): void;
+        } & MediaTrackConstraints, audioConstaints?: boolean | MediaTrackConstraints): void;
     }
 }
 declare module BABYLON {
@@ -52863,6 +52885,8 @@ declare module BABYLON {
         fps: number;
         /** Defines the chunk size for the recording data */
         recordChunckSize: number;
+        /** The audio tracks to attach to the record */
+        audioTracks?: MediaStreamTrack[];
     }
     /**
      * This can helps recording videos from BabylonJS.
