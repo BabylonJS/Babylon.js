@@ -54,9 +54,10 @@ declare module BABYLON.GUI {
         /**
          * Gets a string representation of the value
          * @param host defines the root host
+         * @param decimals defines an optional number of decimals to display
          * @returns a string
          */
-        toString(host: AdvancedDynamicTexture): string;
+        toString(host: AdvancedDynamicTexture, decimals?: number): string;
         /**
          * Store a value parsed from a string
          * @param source defines the source string
