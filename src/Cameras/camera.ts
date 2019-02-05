@@ -103,11 +103,20 @@ export class Camera extends Node {
      */
     public inputs: CameraInputsManager<Camera>;
 
+    /** @hidden */
+    @serializeAsVector3("position")
+    public _position = Vector3.Zero();
+
     /**
      * Define the current local position of the camera in the scene
      */
-    @serializeAsVector3()
-    public position: Vector3;
+    public get position(): Vector3 {
+        return this._position;
+    }
+
+    public set position(newPosition: Vector3) {
+        this._position = newPosition;
+    }
 
     /**
      * The vector the camera should consider as up.
