@@ -1184,6 +1184,9 @@ export class Tools {
         }
     }
 
+    /**
+     * @ignore
+     */
     public static _ScreenshotCanvas: HTMLCanvasElement;
 
     /**
