@@ -135,11 +135,11 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Returns an array containing the root bones    
+     * Returns an array containing the root bones
      * @returns an array containing the root bones
      */
     public getChildren(): Array<Bone> {
-        return this.bones.filter(b => !b.parent);
+        return this.bones.filter((b) => !b.getParent());
     }
 
     // Members
