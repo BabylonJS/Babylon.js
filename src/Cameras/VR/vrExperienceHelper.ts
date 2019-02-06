@@ -279,8 +279,14 @@ class VRExperienceHelperCameraGazer extends VRExperienceHelperGazer {
     }
 }
 
-class OnAfterEnteringVRObservableEvent {
-    success: boolean;
+/**
+ * Event containing information after VR has been entered
+ */
+export class OnAfterEnteringVRObservableEvent {
+    /**
+     * If entering vr was successful
+     */
+    public success: boolean;
 }
 
 /**
