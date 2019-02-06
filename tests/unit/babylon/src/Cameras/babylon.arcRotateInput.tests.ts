@@ -20,116 +20,11 @@ interface MockPointerEvent {
   [propName: string]: any;
 }
 
-class MockCamera /*extends BABYLON.ArcRotateCamera*/ {
-  constructor(name: string, scene: BABYLON.Scene) {
-    //super(name, 0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
-  }
-
-   /**
-   * Allow comparison of Camera's position between calls of verifyChanges()
-   */
-  private _previousValues: {[key: string]: number} = {};
-
-  /**
-   * Reset camera between tests.
-   */
-  /*reset(): void {
-    this.alpha = 10;
-    this.beta = 20;
-    this.radius = 30;
-    this.inertialPanningX = 0;
-    this.inertialPanningY = 0;
-    this.inertialAlphaOffset = 0;
-    this.inertialBetaOffset = 0;
-    this.inertialRadiusOffset = 0;
-    this._panningMouseButton = 2;
-    this.useInputToRestoreState = true;
-    this._useCtrlForPanning = true;
-  }*/
-
-	/**
-	 * Ensure any listed variables have changed since last time this method was run.
-	 * If a variable is not listed, check it has /not/ changed.
-	 */
-  verifyChanges(toCheck: {[key: string]: boolean}): boolean {
-    let result = true;
-    const checkValues = ["alpha", "beta", "radius", "inertialPanningX", "inertialPanningY",
-      "inertialAlphaOffset", "inertialBetaOffset", "inertialRadiusOffset"];
-
-     checkValues.forEach((key) => {
-      let tc = toCheck[key] || false;
-      let pv = this._previousValues[key] || 0;
-      let tmpResult = (tc === ((<any>this)[key] !== pv));
-      console.assert(
-        tmpResult,
-        `Value of "${key}" was "${(<any>this)[key]}". ` +
-        `Expected ${tc ? "it to have changed" : "\"" + pv + "\""}.`
-      );
-      result = result && tmpResult;
-      this._previousValues[key] = (<any>this)[key];
-    });
-
-     return result;
-  }
-
-	/**
-   * Reset values to be compared by verifyChanges().
-   * Run this at the start of any test where verifyChanges() will be used.
-   */
-  verifyPrepare(): void {
-    const checkValues = ["alpha", "beta", "radius", "inertialPanningX", "inertialPanningY",
-      "inertialAlphaOffset", "inertialBetaOffset", "inertialRadiusOffset"];
-
-     checkValues.forEach((key) => {
-      this._previousValues[key] = (<any>this)[key];
-    });
-  }
-}
-
-/**
- * Simulate PointerEvent in ArcRotateCameraPointersInput instance.
- */
-function simulateEvent(camera: any, event: MockPointerEvent) {
-  let pointerInfo = {};
-  switch (event.type) {
-    case "pointerdown":
-      pointerInfo = {type: BABYLON.PointerEventTypes.POINTERDOWN, event};
-      camera._pointerInput(pointerInfo, undefined);
-      break;
-    case "pointerup":
-      pointerInfo = {type: BABYLON.PointerEventTypes.POINTERUP, event};
-      camera._pointerInput(pointerInfo, undefined);
-      break;
-    case "pointermove":
-      pointerInfo = {type: BABYLON.PointerEventTypes.POINTERMOVE, event};
-      camera._pointerInput(pointerInfo, undefined);
-      break;
-    case "blur":
-      camera._onLostFocus();
-      break;
-    case "POINTERDOUBLETAP":
-      // Not a real DOM event. Just a shortcut to trigger
-      // PointerEventTypes.POINTERMOVE on the Input class.
-      pointerInfo = {type: BABYLON.PointerEventTypes.POINTERDOUBLETAP, event};
-      camera._pointerInput(pointerInfo, undefined);
-      break;
-    default:
-      console.error("Invalid pointer event: " + event.type);
-  }
-}
-
-/**
- * Make a mock Event.
- * Many PointerEvent properties are read-only so using real "new PointerEvent()"
- * is unpractical.
- */
-function eventTemplate(): MockPointerEvent {
-  let returnVal = {
-    target: <HTMLElement>this._canvas,
-		button: 0,
-		preventDefault: () => {},
-  };
-  return returnVal;
+enum ValChange {
+  Increase,
+  Same,
+  Decrease,
+  DontCare,
 }
 
 /**
@@ -140,6 +35,112 @@ describe('arcRotateCameraInput', function() {
    * Sets the timeout of all the tests to 10 seconds.
    */
   this.timeout(10000);
+
+  const interestingValues = [
+    "inertialPanningX",
+    "inertialPanningY",
+    "inertialAlphaOffset",
+    "inertialBetaOffset",
+    "inertialRadiusOffset",
+  ];
+
+  function resetCameraPos(camera: BABYLON.ArcRotateCamera, cameraCachePos: {}) {
+    camera.alpha = 10;
+    camera.beta = 20;
+    camera.radius = 30;
+    camera.inertialPanningX = 0;
+    camera.inertialPanningY = 0;
+    camera.inertialAlphaOffset = 0;
+    camera.inertialBetaOffset = 0;
+    camera.inertialRadiusOffset = 0;
+    camera._panningMouseButton = 2;
+    camera.useInputToRestoreState = true;
+    camera._useCtrlForPanning = true;
+    
+    interestingValues.forEach((key) => {
+      cameraCachePos[key] = camera[key];
+    });
+  }
+
+  function verifyChanges(
+    camera: BABYLON.ArcRotateCamera,
+    cameraCachePos: {},
+    toCheck: {[key: string]: ValChange}): boolean {
+      let result = true;
+      interestingValues.forEach((key) => {
+        result = result && (
+          (toCheck[key] === ValChange.Decrease && camera[key] < cameraCachePos[key]) ||
+          (toCheck[key] === ValChange.Same && camera[key] === cameraCachePos[key]) ||
+          (toCheck[key] === ValChange.Increase && camera[key] > cameraCachePos[key]) ||
+          toCheck[key] === undefined || toCheck[key] === ValChange.DontCare);
+      });
+
+    return result;
+  }
+
+  function displayCamera(camera: BABYLON.ArcRotateCamera): void {
+    let info = {
+      inertialPanningX: camera.inertialPanningX,
+      inertialPanningY: camera.inertialPanningY,
+      inertialAlphaOffset: camera.inertialAlphaOffset,
+      inertialBetaOffset: camera.inertialBetaOffset,
+      inertialRadiusOffset: camera.inertialRadiusOffset
+    };
+    console.log(info);
+  };
+
+  /**
+   * Make a mock Event.
+   * Many PointerEvent properties are read-only so using real "new PointerEvent()"
+   * is unpractical.
+   */
+  function eventTemplate(target: HTMLElement): MockPointerEvent {
+    let returnVal = {
+      target,
+      button: 0,
+      preventDefault: () => {},
+    };
+    return returnVal;
+  }
+
+  /**
+   * Simulate PointerEvent in ArcRotateCameraPointersInput instance.
+   */
+  function simulateEvent(cameraInput: BABYLON.ArcRotateCameraPointersInput,
+                         event: MockPointerEvent) {
+    console.log(event);
+    let pointerInfo = {};
+    switch (event.type) {
+      case "pointerdown":
+        pointerInfo = {type: BABYLON.PointerEventTypes.POINTERDOWN, event};
+        // Cast "camera" to <any> to relax "private" classification.
+        (<any>cameraInput)._pointerInput(pointerInfo, undefined);
+        break;
+      case "pointerup":
+        pointerInfo = {type: BABYLON.PointerEventTypes.POINTERUP, event};
+        // Cast "camera" to <any> to relax "private" classification.
+        (<any>cameraInput)._pointerInput(pointerInfo, undefined);
+        break;
+      case "pointermove":
+        pointerInfo = {type: BABYLON.PointerEventTypes.POINTERMOVE, event};
+        // Cast "camera" to <any> to relax "private" classification.
+        (<any>cameraInput)._pointerInput(pointerInfo, undefined);
+        break;
+      case "blur":
+        // Cast "camera" to <any> to relax "private" classification.
+        (<any>cameraInput)._onLostFocus();
+        break;
+      case "POINTERDOUBLETAP":
+        // Not a real DOM event. Just a shortcut to trigger
+        // PointerEventTypes.POINTERMOVE on the Input class.
+        pointerInfo = {type: BABYLON.PointerEventTypes.POINTERDOUBLETAP, event};
+        // Cast "camera" to <any> to relax "private" classification.
+        (<any>cameraInput)._pointerInput(pointerInfo, undefined);
+        break;
+      default:
+        console.error("Invalid pointer event: " + event.type);
+    }
+  }
 
   before(function(done) {
     // runs before all tests in this block
@@ -163,23 +164,126 @@ describe('arcRotateCameraInput', function() {
     this.cameraInput = new BABYLON.ArcRotateCameraPointersInput();
     this.cameraInput.camera = this.camera;
     this.cameraInput.attachControl(this._canvas);
+
+    this.cameraCachePos = {};
   });
 
   beforeEach(function() {
     // runs before each test in this block
-    //this.camera.reset();
+    resetCameraPos(this.camera, this.cameraCachePos);
   });
 
+  describe('Test infrastructure', function() {
+    it('verifyChanges checks Decrease', function() {
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 10.001;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {inertialAlphaOffset: ValChange.Decrease})
+      ).to.be.true;
+      
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 9.999;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {inertialAlphaOffset: ValChange.Decrease})
+      ).to.be.false;
+    });
+  
+    it('verifyChanges checks Same', function() {
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 10;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {inertialAlphaOffset: ValChange.Same})
+      ).to.be.true;
+      
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 10.001;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {inertialAlphaOffset: ValChange.Same})
+      ).to.be.false;
+    });
+  
+    it('verifyChanges checks DontCare', function() {
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 10;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {inertialAlphaOffset: ValChange.DontCare})
+      ).to.be.true;
+      
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 10.001;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {/*inertialAlphaOffset: undefined*/})
+      ).to.be.true;
+    });
+  
+    it('verifyChanges checks Increase', function() {
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 9.999;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {inertialAlphaOffset: ValChange.Increase})
+      ).to.be.true;
+      
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 10.001;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {inertialAlphaOffset: ValChange.Increase})
+      ).to.be.false;
+    });
+  });
+  
+  
   describe('one button drag', function() {
     it('should change inertialAlphaOffset', function() {
-      var event: MockPointerEvent = eventTemplate();
+      var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
 
       // Button down.
       event.type = "pointerdown";
       event.clientX = 100;
       event.clientY = 200;
       event.button = 0;
-      //this.cameraInput.simulateEvent(event);
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+      
+      // Start moving.
+      event.type = "pointermove";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+
+      // Move X coordinate. Drag camera.
+      event.type = "pointermove";
+      event.clientX = 1000;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(
+        this.camera,
+        this.cameraCachePos,
+        {inertialAlphaOffset: ValChange.Decrease})).to.be.true;
+      
       expect(true).to.equal(true);
       expect(true).to.be.true;
     });
