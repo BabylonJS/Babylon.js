@@ -77,13 +77,14 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
     }
 
     render() {
+        let decimalCount = this.props.decimalCount !== undefined ? this.props.decimalCount : 2;
         return (
             <div className="sliderLine">
                 <div className="label">
                     {this.props.label}
                 </div>
                 <div className="slider">
-                    {this.state.value ? this.state.value.toFixed(this.props.decimalCount || 2) : "0"}&nbsp;<input className="range" type="range" step={this.props.step} min={this.props.minimum} max={this.props.maximum} value={this.state.value}
+                    {this.state.value ? this.state.value.toFixed(decimalCount) : "0"}&nbsp;<input className="range" type="range" step={this.props.step} min={this.props.minimum} max={this.props.maximum} value={this.state.value}
                         onInput={evt => this.onInput((evt.target as HTMLInputElement).value)}
                         onChange={evt => this.onChange(evt.target.value)} />
                 </div>
