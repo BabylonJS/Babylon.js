@@ -279,6 +279,10 @@ class VRExperienceHelperCameraGazer extends VRExperienceHelperGazer {
     }
 }
 
+class OnAfterEnteringVRObservableEvent {
+    success: boolean;
+}
+
 /**
  * Helps to quickly add VR support to an existing scene.
  * See http://doc.babylonjs.com/how_to/webvr_helper
@@ -316,9 +320,14 @@ export class VRExperienceHelper {
     private _onVRRequestPresentComplete: (success: boolean) => void;
 
     /**
-     * Observable raised when entering VR.
+     * Observable raised right before entering VR.
      */
     public onEnteringVRObservable = new Observable<VRExperienceHelper>();
+
+    /**
+     * Observable raised when entering VR has completed.
+     */
+    public onAfterEnteringVRObservable = new Observable<OnAfterEnteringVRObservableEvent>();
 
     /**
      * Observable raised when exiting VR.
@@ -966,6 +975,9 @@ export class VRExperienceHelper {
         // If WebVR is supported and a headset is connected
         if (this._webVRready) {
             if (!this._webVRpresenting) {
+                this._scene.getEngine().onVRRequestPresentComplete.addOnce((result) => {
+                    this.onAfterEnteringVRObservable.notifyObservers({success: result});
+                });
                 this._webVRCamera.position = this._position;
                 this._scene.activeCamera = this._webVRCamera;
             }
@@ -978,6 +990,9 @@ export class VRExperienceHelper {
             this._scene.activeCamera = this._vrDeviceOrientationCamera;
             this._scene.getEngine().enterFullscreen(this.requestPointerLockOnFullScreen);
             this.updateButtonVisibility();
+            this._scene.onAfterRenderObservable.addOnce(() => {
+                this.onAfterEnteringVRObservable.notifyObservers({success: true});
+            });
         }
 
         if (this._scene.activeCamera && this._canvas) {
