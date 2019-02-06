@@ -975,9 +975,9 @@ export class VRExperienceHelper {
         // If WebVR is supported and a headset is connected
         if (this._webVRready) {
             if (!this._webVRpresenting) {
-                this._scene.getEngine().onVRRequestPresentComplete.addOnce((result)=>{
+                this._scene.getEngine().onVRRequestPresentComplete.addOnce((result) => {
                     this.onAfterEnteringVRObservable.notifyObservers({success: result});
-                })
+                });
                 this._webVRCamera.position = this._position;
                 this._scene.activeCamera = this._webVRCamera;
             }
@@ -990,9 +990,9 @@ export class VRExperienceHelper {
             this._scene.activeCamera = this._vrDeviceOrientationCamera;
             this._scene.getEngine().enterFullscreen(this.requestPointerLockOnFullScreen);
             this.updateButtonVisibility();
-            this._scene.onAfterRenderObservable.addOnce(()=>{
+            this._vrDeviceOrientationCamera.onViewMatrixChangedObservable.addOnce(() => {
                 this.onAfterEnteringVRObservable.notifyObservers({success: true});
-            })
+            });
         }
 
         if (this._scene.activeCamera && this._canvas) {
