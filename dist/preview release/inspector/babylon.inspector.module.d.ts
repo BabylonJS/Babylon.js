@@ -161,6 +161,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/checkBoxLineComp
         propertyName?: string;
         isSelected?: () => boolean;
         onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
@@ -198,13 +199,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ren
 declare module "babylonjs-inspector/components/actionTabs/tabs/debugTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class DebugTabComponent extends PaneComponent {
-        private _skeletonViewersEnabled;
         private _physicsViewersEnabled;
-        private _skeletonViewers;
         constructor(props: IPaneComponentProps);
         componentWillMount(): void;
         componentWillUnmount(): void;
-        switchSkeletonViewers(): void;
         switchPhysicsViewers(): void;
         render(): JSX.Element | null;
     }
@@ -1428,6 +1426,78 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { Scene } from "babylonjs/scene";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { IAnimatable } from 'babylonjs/Misc/tools';
+    interface IAnimationGridComponentProps {
+        globalState: GlobalState;
+        animatable: IAnimatable;
+        scene: Scene;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class AnimationGridComponent extends React.Component<IAnimationGridComponentProps, {
+        currentFrame: number;
+    }> {
+        private _animations;
+        private _ranges;
+        private _animationControl;
+        private _runningAnimatable;
+        private _onBeforeRenderObserver;
+        private _isPlaying;
+        constructor(props: IAnimationGridComponentProps);
+        playOrPause(): void;
+        componentWillMount(): void;
+        componentWillUnmount(): void;
+        onCurrentFrameChange(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Skeleton } from 'babylonjs/Bones/skeleton';
+    interface ISkeletonPropertyGridComponentProps {
+        globalState: GlobalState;
+        skeleton: Skeleton;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class SkeletonPropertyGridComponent extends React.Component<ISkeletonPropertyGridComponentProps> {
+        private _skeletonViewersEnabled;
+        private _skeletonViewers;
+        constructor(props: ISkeletonPropertyGridComponentProps);
+        switchSkeletonViewers(): void;
+        componentWillMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Bone } from 'babylonjs/Bones/bone';
+    interface IBonePropertyGridComponentProps {
+        globalState: GlobalState;
+        bone: Bone;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class BonePropertyGridComponent extends React.Component<IBonePropertyGridComponentProps> {
+        constructor(props: IBonePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -1754,6 +1824,34 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/renderingP
     }
     export class RenderingPipelineItemComponent extends React.Component<IRenderPipelineItemComponenttProps> {
         constructor(props: IRenderPipelineItemComponenttProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/sceneExplorer/entities/skeletonTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import * as React from "react";
+    import { Skeleton } from 'babylonjs/Bones/skeleton';
+    interface ISkeletonTreeItemComponentProps {
+        skeleton: Skeleton;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SkeletonTreeItemComponent extends React.Component<ISkeletonTreeItemComponentProps> {
+        constructor(props: ISkeletonTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/sceneExplorer/entities/boneTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import * as React from "react";
+    import { Bone } from 'babylonjs/Bones/bone';
+    interface IBoneTreeItemComponenttProps {
+        bone: Bone;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class BoneTreeItemComponent extends React.Component<IBoneTreeItemComponenttProps> {
+        constructor(props: IBoneTreeItemComponenttProps);
         render(): JSX.Element;
     }
 }
@@ -2173,6 +2271,7 @@ declare module INSPECTOR {
         propertyName?: string;
         isSelected?: () => boolean;
         onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
@@ -2206,13 +2305,10 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class DebugTabComponent extends PaneComponent {
-        private _skeletonViewersEnabled;
         private _physicsViewersEnabled;
-        private _skeletonViewers;
         constructor(props: IPaneComponentProps);
         componentWillMount(): void;
         componentWillUnmount(): void;
-        switchSkeletonViewers(): void;
         switchPhysicsViewers(): void;
         render(): JSX.Element | null;
     }
@@ -3130,6 +3226,59 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IAnimationGridComponentProps {
+        globalState: GlobalState;
+        animatable: BABYLON.IAnimatable;
+        scene: BABYLON.Scene;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class AnimationGridComponent extends React.Component<IAnimationGridComponentProps, {
+        currentFrame: number;
+    }> {
+        private _animations;
+        private _ranges;
+        private _animationControl;
+        private _runningAnimatable;
+        private _onBeforeRenderObserver;
+        private _isPlaying;
+        constructor(props: IAnimationGridComponentProps);
+        playOrPause(): void;
+        componentWillMount(): void;
+        componentWillUnmount(): void;
+        onCurrentFrameChange(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISkeletonPropertyGridComponentProps {
+        globalState: GlobalState;
+        skeleton: BABYLON.Skeleton;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SkeletonPropertyGridComponent extends React.Component<ISkeletonPropertyGridComponentProps> {
+        private _skeletonViewersEnabled;
+        private _skeletonViewers;
+        constructor(props: ISkeletonPropertyGridComponentProps);
+        switchSkeletonViewers(): void;
+        componentWillMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IBonePropertyGridComponentProps {
+        globalState: GlobalState;
+        bone: BABYLON.Bone;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class BonePropertyGridComponent extends React.Component<IBonePropertyGridComponentProps> {
+        constructor(props: IBonePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -3405,6 +3554,28 @@ declare module INSPECTOR {
     }
     export class RenderingPipelineItemComponent extends React.Component<IRenderPipelineItemComponenttProps> {
         constructor(props: IRenderPipelineItemComponenttProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISkeletonTreeItemComponentProps {
+        skeleton: BABYLON.Skeleton;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SkeletonTreeItemComponent extends React.Component<ISkeletonTreeItemComponentProps> {
+        constructor(props: ISkeletonTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IBoneTreeItemComponenttProps {
+        bone: BABYLON.Bone;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class BoneTreeItemComponent extends React.Component<IBoneTreeItemComponenttProps> {
+        constructor(props: IBoneTreeItemComponenttProps);
         render(): JSX.Element;
     }
 }

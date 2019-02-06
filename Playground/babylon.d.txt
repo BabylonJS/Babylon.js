@@ -7786,6 +7786,11 @@ declare module BABYLON {
          */
         name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
         /**
+         * Gets the current object class name.
+         * @return the class name
+         */
+        getClassName(): string;
+        /**
          * Gets the parent skeleton
          * @returns a skeleton
          */
@@ -7795,6 +7800,11 @@ declare module BABYLON {
          * @returns a bone or null if the bone is the root of the bone hierarchy
          */
         getParent(): Nullable<Bone>;
+        /**
+         * Returns an array containing the root bones
+         * @returns an array containing the root bones
+         */
+        getChildren(): Array<Bone>;
         /**
          * Sets the parent bone
          * @param parent defines the parent (can be null if the bone is the root)
@@ -18172,6 +18182,16 @@ declare module BABYLON {
         /** defines the skeleton Id */
         id: string, scene: Scene);
         /**
+         * Gets the current object class name.
+         * @return the class name
+         */
+        getClassName(): string;
+        /**
+         * Returns an array containing the root bones
+         * @returns an array containing the root bones
+         */
+        getChildren(): Array<Bone>;
+        /**
          * Gets the list of transform matrices to send to shaders (one matrix per bone)
          * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
          * @returns a Float32Array containing matrices data
@@ -23958,6 +23978,11 @@ declare module BABYLON {
          * @returns null if not found else the requested animation range
          */
         getAnimationRange(name: string): Nullable<AnimationRange>;
+        /**
+         * Gets the list of all animation ranges defined on this node
+         * @returns an array
+         */
+        getAnimationRanges(): Nullable<AnimationRange>[];
         /**
          * Will start the animation sequence
          * @param name defines the range frames for animation sequence
@@ -29801,6 +29826,9 @@ declare module BABYLON {
             name: string;
             handler: Nullable<(e: FocusEvent) => any>;
         }[]): void;
+        /**
+         * @ignore
+         */private static _ScreenshotCanvas: HTMLCanvasElement;
         /**
          * Dumps the current bound framebuffer
          * @param width defines the rendering width

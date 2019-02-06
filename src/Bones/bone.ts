@@ -130,6 +130,14 @@ export class Bone extends Node {
     }
 
     /**
+     * Returns an array containing the root bones
+     * @returns an array containing the root bones
+     */
+    public getChildren(): Array<Bone> {
+        return this.children;
+    }
+
+    /**
      * Sets the parent bone
      * @param parent defines the parent (can be null if the bone is the root)
      * @param updateDifferenceMatrix defines if the difference matrix must be updated

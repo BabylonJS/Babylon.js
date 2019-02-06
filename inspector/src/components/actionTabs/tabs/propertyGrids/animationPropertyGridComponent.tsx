@@ -142,7 +142,9 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 animatableAsAny.animationPropertiesOverride = null;
                             }
                             this.forceUpdate();
-                        }} isSelected={() => animatableAsAny.animationPropertiesOverride != null} />
+                        }} isSelected={() => animatableAsAny.animationPropertiesOverride != null}
+                            onValueChanged={() => this.forceUpdate()}
+                        />
                         {
                             animatableAsAny.animationPropertiesOverride != null &&
                             <div>
