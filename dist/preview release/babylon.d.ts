@@ -7876,6 +7876,11 @@ declare module BABYLON {
          */
         name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
         /**
+         * Gets the current object class name.
+         * @return the class name
+         */
+        getClassName(): string;
+        /**
          * Gets the parent skeleton
          * @returns a skeleton
          */
@@ -7885,6 +7890,11 @@ declare module BABYLON {
          * @returns a bone or null if the bone is the root of the bone hierarchy
          */
         getParent(): Nullable<Bone>;
+        /**
+         * Returns an array containing the root bones
+         * @returns an array containing the root bones
+         */
+        getChildren(): Array<Bone>;
         /**
          * Sets the parent bone
          * @param parent defines the parent (can be null if the bone is the root)
@@ -11847,6 +11857,27 @@ declare module BABYLON {
          * Defines the picking info associated to the info (if any)\
          */
         pickInfo: Nullable<PickingInfo>);
+    }
+    /**
+     * Data relating to a touch event on the screen.
+     */
+    export interface PointerTouch {
+        /**
+         * X coordinate of touch.
+         */
+        x: number;
+        /**
+         * Y coordinate of touch.
+         */
+        y: number;
+        /**
+         * Id of touch. Unique for each finger.
+         */
+        pointerId: number;
+        /**
+         * Event type passed from DOM.
+         */
+        type: any;
     }
 }
 declare module BABYLON {
@@ -18417,6 +18448,16 @@ declare module BABYLON {
         /** defines the skeleton Id */
         id: string, scene: Scene);
         /**
+         * Gets the current object class name.
+         * @return the class name
+         */
+        getClassName(): string;
+        /**
+         * Returns an array containing the root bones
+         * @returns an array containing the root bones
+         */
+        getChildren(): Array<Bone>;
+        /**
          * Gets the list of transform matrices to send to shaders (one matrix per bone)
          * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
          * @returns a Float32Array containing matrices data
@@ -24349,6 +24390,11 @@ declare module BABYLON {
          */
         getAnimationRange(name: string): Nullable<AnimationRange>;
         /**
+         * Gets the list of all animation ranges defined on this node
+         * @returns an array
+         */
+        getAnimationRanges(): Nullable<AnimationRange>[];
+        /**
          * Will start the animation sequence
          * @param name defines the range frames for animation sequence
          * @param loop defines if the animation should loop (false by default)
@@ -25079,7 +25125,7 @@ declare module BABYLON {
          */
         readonly canRescale: boolean;
         /** @hidden */
-        _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number): Nullable<InternalTexture>;
+        _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture>;
         /** @hidden */
         _rebuild(): void;
         /**
@@ -30289,6 +30335,10 @@ declare module BABYLON {
             handler: Nullable<(e: FocusEvent) => any>;
         }[]): void;
         /**
+         * @ignore
+         */
+        static _ScreenshotCanvas: HTMLCanvasElement;
+        /**
          * Dumps the current bound framebuffer
          * @param width defines the rendering width
          * @param height defines the rendering height
@@ -31235,6 +31285,11 @@ declare module BABYLON {
          * This Observable will when a mesh has been imported into the scene.
          */
         onMeshImportedObservable: Observable<AbstractMesh>;
+        /**
+         * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
+         * By default this function is undefined and Babylon.js will select LOD based on distance to camera
+         */
+        customLODSelector: (mesh: AbstractMesh, camera: Camera) => Nullable<AbstractMesh>;
         /** @hidden */
         _registeredForLateAnimationBindings: SmartArrayNoDuplicate<any>;
         /**
@@ -33768,60 +33823,31 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Manage the pointers inputs to control an arc rotate camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * Base class for Camera Pointer Inputs.
+     * See FollowCameraPointersInput in src/Cameras/Inputs/followCameraPointersInput.ts
+     * for example usage.
      */
-    export class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
+    export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         /**
          * Defines the camera the input is attached to.
          */
-        camera: ArcRotateCamera;
+        abstract camera: Camera;
+        /**
+         * Whether keyboard modifier keys are pressed at time of last mouse event.
+         */
+        protected _altKey: boolean;
+        protected _ctrlKey: boolean;
+        protected _metaKey: boolean;
+        protected _shiftKey: boolean;
+        /**
+         * Which mouse buttons were pressed at time of last mouse event.
+         * https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+         */
+        protected _buttonsPressed: number;
         /**
          * Defines the buttons associated with the input to handle camera move.
          */
         buttons: number[];
-        /**
-         * Defines the pointer angular sensibility  along the X axis or how fast is the camera rotating.
-         */
-        angularSensibilityX: number;
-        /**
-         * Defines the pointer angular sensibility along the Y axis or how fast is the camera rotating.
-         */
-        angularSensibilityY: number;
-        /**
-         * Defines the pointer pinch precision or how fast is the camera zooming.
-         */
-        pinchPrecision: number;
-        /**
-         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
-         */
-        pinchDeltaPercentage: number;
-        /**
-         * Defines the pointer panning sensibility or how fast is the camera moving.
-         */
-        panningSensibility: number;
-        /**
-         * Defines whether panning (2 fingers swipe) is enabled through multitouch.
-         */
-        multiTouchPanning: boolean;
-        /**
-         * Defines whether panning is enabled for both pan (2 fingers swipe) and zoom (pinch) through multitouch.
-         */
-        multiTouchPanAndZoom: boolean;
-        /**
-         * Revers pinch action direction.
-         */
-        pinchInwards: boolean;
-        private _isPanClick;
-        private _pointerInput;
-        private _observer;
-        private _onMouseMove;
-        private _onGestureStart;
-        private _onGesture;
-        private _MSGestureHandler;
-        private _onLostFocus;
-        private _onContextMenu;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param element Defines the element the controls should be listened from
@@ -33834,7 +33860,7 @@ declare module BABYLON {
          */
         detachControl(element: Nullable<HTMLElement>): void;
         /**
-         * Gets the class name of the current intput.
+         * Gets the class name of the current input.
          * @returns the class name
          */
         getClassName(): string;
@@ -33843,6 +33869,134 @@ declare module BABYLON {
          * @returns the input friendly name
          */
         getSimpleName(): string;
+        /**
+         * Called on pointer POINTERDOUBLETAP event.
+         * Override this method to provide functionality on POINTERDOUBLETAP event.
+         */
+        protected onDoubleTap(type: string): void;
+        /**
+         * Called on pointer POINTERMOVE event if only a single touch is active.
+         * Override this method to provide functionality.
+         */
+        protected onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void;
+        /**
+         * Called on pointer POINTERMOVE event if multiple touches are active.
+         * Override this method to provide functionality.
+         */
+        protected onMultiTouch(pointA: Nullable<PointerTouch>, pointB: Nullable<PointerTouch>, previousPinchSquaredDistance: number, pinchSquaredDistance: number, previousMultiTouchPanPosition: Nullable<PointerTouch>, multiTouchPanPosition: Nullable<PointerTouch>): void;
+        /**
+         * Called on JS contextmenu event.
+         * Override this method to provide functionality.
+         */
+        protected onContextMenu(evt: PointerEvent): void;
+        /**
+         * Called each time a new POINTERDOWN event occurs. Ie, for each button
+         * press.
+         * Override this method to provide functionality.
+         */
+        protected onButtonDown(evt: PointerEvent, buttonCount: number): void;
+        /**
+         * Called each time a new POINTERUP event occurs. Ie, for each button
+         * release.
+         * Override this method to provide functionality.
+         */
+        protected onButtonUp(evt: PointerEvent): void;
+        /**
+         * Called when window becomes inactive.
+         * Override this method to provide functionality.
+         */
+        protected onLostFocus(): void;
+        private _pointerInput;
+        private _observer;
+        private _onLostFocus;
+    }
+}
+declare module BABYLON {
+    /**
+     * Manage the pointers inputs to control an arc rotate camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: ArcRotateCamera;
+        /**
+         * Gets the class name of the current input.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Defines the buttons associated with the input to handle camera move.
+         */
+        buttons: number[];
+        /**
+         * Defines the pointer angular sensibility  along the X axis or how fast is
+         * the camera rotating.
+         */
+        angularSensibilityX: number;
+        /**
+         * Defines the pointer angular sensibility along the Y axis or how fast is
+         * the camera rotating.
+         */
+        angularSensibilityY: number;
+        /**
+         * Defines the pointer pinch precision or how fast is the camera zooming.
+         */
+        pinchPrecision: number;
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different
+         * from 0.
+         * It defines the percentage of current camera.radius to use as delta when
+         * pinch zoom is used.
+         */
+        pinchDeltaPercentage: number;
+        /**
+         * Defines the pointer panning sensibility or how fast is the camera moving.
+         */
+        panningSensibility: number;
+        /**
+         * Defines whether panning (2 fingers swipe) is enabled through multitouch.
+         */
+        multiTouchPanning: boolean;
+        /**
+         * Defines whether panning is enabled for both pan (2 fingers swipe) and
+         * zoom (pinch) through multitouch.
+         */
+        multiTouchPanAndZoom: boolean;
+        /**
+         * Revers pinch action direction.
+         */
+        pinchInwards: boolean;
+        private _isPanClick;
+        private _twoFingerActivityCount;
+        private _isPinching;
+        /**
+         * Called on pointer POINTERMOVE event if only a single touch is active.
+         */
+        protected onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void;
+        /**
+         * Called on pointer POINTERDOUBLETAP event.
+         */
+        protected onDoubleTap(type: string): void;
+        /**
+         * Called on pointer POINTERMOVE event if multiple touches are active.
+         */
+        protected onMultiTouch(pointA: Nullable<PointerTouch>, pointB: Nullable<PointerTouch>, previousPinchSquaredDistance: number, pinchSquaredDistance: number, previousMultiTouchPanPosition: Nullable<PointerTouch>, multiTouchPanPosition: Nullable<PointerTouch>): void;
+        /**
+         * Called each time a new POINTERDOWN event occurs. Ie, for each button
+         * press.
+         */
+        protected onButtonDown(evt: PointerEvent, buttonCount: number): void;
+        /**
+         * Called each time a new POINTERUP event occurs. Ie, for each button
+         * release.
+         */
+        protected onButtonUp(evt: PointerEvent): void;
+        /**
+         * Called when window becomes inactive.
+         */
+        protected onLostFocus(): void;
     }
 }
 declare module BABYLON {
@@ -35520,6 +35674,458 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Manage the mouse wheel inputs to control a follow camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FollowCamera;
+        /**
+         * Moue wheel controls zoom. (Mouse wheel modifies camera.radius value.)
+         */
+        axisControlRadius: boolean;
+        /**
+         * Moue wheel controls height. (Mouse wheel modifies camera.heightOffset value.)
+         */
+        axisControlHeight: boolean;
+        /**
+         * Moue wheel controls angle. (Mouse wheel modifies camera.rotationOffset value.)
+         */
+        axisControlRotation: boolean;
+        /**
+         * Gets or Set the mouse wheel precision or how fast is the camera moves in
+         * relation to mouseWheel events.
+         */
+        wheelPrecision: number;
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        wheelDeltaPercentage: number;
+        private _wheel;
+        private _observer;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Manage the pointers inputs to control an follow camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FollowCameraPointersInput extends BaseCameraPointersInput {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FollowCamera;
+        /**
+         * Gets the class name of the current input.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Defines the pointer angular sensibility along the X axis or how fast is
+         * the camera rotating.
+         * A negative number will reverse the axis direction.
+         */
+        angularSensibilityX: number;
+        /**
+         * Defines the pointer angular sensibility along the Y axis or how fast is
+         * the camera rotating.
+         * A negative number will reverse the axis direction.
+         */
+        angularSensibilityY: number;
+        /**
+         * Defines the pointer pinch precision or how fast is the camera zooming.
+         * A negative number will reverse the axis direction.
+         */
+        pinchPrecision: number;
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different
+         * from 0.
+         * It defines the percentage of current camera.radius to use as delta when
+         * pinch zoom is used.
+         */
+        pinchDeltaPercentage: number;
+        /**
+         * Pointer X axis controls zoom. (X axis modifies camera.radius value.)
+         */
+        axisXControlRadius: boolean;
+        /**
+         * Pointer X axis controls height. (X axis modifies camera.heightOffset value.)
+         */
+        axisXControlHeight: boolean;
+        /**
+         * Pointer X axis controls angle. (X axis modifies camera.rotationOffset value.)
+         */
+        axisXControlRotation: boolean;
+        /**
+         * Pointer Y axis controls zoom. (Y axis modifies camera.radius value.)
+         */
+        axisYControlRadius: boolean;
+        /**
+         * Pointer Y axis controls height. (Y axis modifies camera.heightOffset value.)
+         */
+        axisYControlHeight: boolean;
+        /**
+         * Pointer Y axis controls angle. (Y axis modifies camera.rotationOffset value.)
+         */
+        axisYControlRotation: boolean;
+        /**
+         * Pinch controls zoom. (Pinch modifies camera.radius value.)
+         */
+        axisPinchControlRadius: boolean;
+        /**
+         * Pinch controls height. (Pinch modifies camera.heightOffset value.)
+         */
+        axisPinchControlHeight: boolean;
+        /**
+         * Pinch controls angle. (Pinch modifies camera.rotationOffset value.)
+         */
+        axisPinchControlRotation: boolean;
+        /**
+         * Log error messages if basic misconfiguration has occurred.
+         */
+        warningEnable: boolean;
+        protected onTouch(pointA: Nullable<PointerTouch>, offsetX: number, offsetY: number): void;
+        protected doMultiTouch(pointA: Nullable<PointerTouch>, pointB: Nullable<PointerTouch>, previousPinchSquaredDistance: number, pinchSquaredDistance: number, previousMultiTouchPanPosition: Nullable<PointerTouch>, multiTouchPanPosition: Nullable<PointerTouch>): void;
+        private _warningCounter;
+        private _warning;
+    }
+}
+declare module BABYLON {
+    /**
+     * Default Inputs manager for the FollowCamera.
+     * It groups all the default supported inputs for ease of use.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FollowCameraInputsManager extends CameraInputsManager<FollowCamera> {
+        /**
+         * Instantiates a new FollowCameraInputsManager.
+         * @param camera Defines the camera the inputs belong to
+         */
+        constructor(camera: FollowCamera);
+        /**
+         * Add keyboard input support to the input manager.
+         * @returns the current input manager
+         */
+        addKeyboard(): FollowCameraInputsManager;
+        /**
+         * Add mouse wheel input support to the input manager.
+         * @returns the current input manager
+         */
+        addMouseWheel(): FollowCameraInputsManager;
+        /**
+         * Add pointers input support to the input manager.
+         * @returns the current input manager
+         */
+        addPointers(): FollowCameraInputsManager;
+        /**
+         * Add orientation input support to the input manager.
+         * @returns the current input manager
+         */
+        addVRDeviceOrientation(): FollowCameraInputsManager;
+    }
+}
+declare module BABYLON {
+    /**
+     * A follow camera takes a mesh as a target and follows it as it moves. Both a free camera version followCamera and
+     * an arc rotate version arcFollowCamera are available.
+     * @see http://doc.babylonjs.com/features/cameras#follow-camera
+     */
+    export class FollowCamera extends TargetCamera {
+        /**
+         * Distance the follow camera should follow an object at
+         */
+        radius: number;
+        /**
+         * Minimum allowed distance of the camera to the axis of rotation
+         * (The camera can not get closer).
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        lowerRadiusLimit: Nullable<number>;
+        /**
+         * Maximum allowed distance of the camera to the axis of rotation
+         * (The camera can not get further).
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        upperRadiusLimit: Nullable<number>;
+        /**
+         * Define a rotation offset between the camera and the object it follows
+         */
+        rotationOffset: number;
+        /**
+         * Minimum allowed angle to camera position relative to target object.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        lowerRotationOffsetLimit: Nullable<number>;
+        /**
+         * Maximum allowed angle to camera position relative to target object.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        upperRotationOffsetLimit: Nullable<number>;
+        /**
+         * Define a height offset between the camera and the object it follows.
+         * It can help following an object from the top (like a car chaing a plane)
+         */
+        heightOffset: number;
+        /**
+         * Minimum allowed height of camera position relative to target object.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        lowerHeightOffsetLimit: Nullable<number>;
+        /**
+         * Maximum allowed height of camera position relative to target object.
+         * This can help limiting how the Camera is able to move in the scene.
+         */
+        upperHeightOffsetLimit: Nullable<number>;
+        /**
+         * Define how fast the camera can accelerate to follow it s target.
+         */
+        cameraAcceleration: number;
+        /**
+         * Define the speed limit of the camera following an object.
+         */
+        maxCameraSpeed: number;
+        /**
+         * Define the target of the camera.
+         */
+        lockedTarget: Nullable<AbstractMesh>;
+        /**
+         * Defines the input associated with the camera.
+         */
+        inputs: FollowCameraInputsManager;
+        /**
+         * Instantiates the follow camera.
+         * @see http://doc.babylonjs.com/features/cameras#follow-camera
+         * @param name Define the name of the camera in the scene
+         * @param position Define the position of the camera
+         * @param scene Define the scene the camera belong to
+         * @param lockedTarget Define the target of the camera
+         */
+        constructor(name: string, position: Vector3, scene: Scene, lockedTarget?: Nullable<AbstractMesh>);
+        private _follow;
+        /**
+         * Attached controls to the current camera.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the camera.
+         * The camera will stop reacting to inputs.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: HTMLElement): void;
+        /** @hidden */
+        _checkInputs(): void;
+        private _checkLimits;
+        /**
+         * Gets the camera class name.
+         * @returns the class name
+         */
+        getClassName(): string;
+    }
+    /**
+     * Arc Rotate version of the follow camera.
+     * It still follows a Defined mesh but in an Arc Rotate Camera fashion.
+     * @see http://doc.babylonjs.com/features/cameras#follow-camera
+     */
+    export class ArcFollowCamera extends TargetCamera {
+        /** The longitudinal angle of the camera */
+        alpha: number;
+        /** The latitudinal angle of the camera */
+        beta: number;
+        /** The radius of the camera from its target */
+        radius: number;
+        /** Define the camera target (the messh it should follow) */
+        target: Nullable<AbstractMesh>;
+        private _cartesianCoordinates;
+        /**
+         * Instantiates a new ArcFollowCamera
+         * @see http://doc.babylonjs.com/features/cameras#follow-camera
+         * @param name Define the name of the camera
+         * @param alpha Define the rotation angle of the camera around the logitudinal axis
+         * @param beta Define the rotation angle of the camera around the elevation axis
+         * @param radius Define the radius of the camera from its target point
+         * @param target Define the target of the camera
+         * @param scene Define the scene the camera belongs to
+         */
+        constructor(name: string, 
+        /** The longitudinal angle of the camera */
+        alpha: number, 
+        /** The latitudinal angle of the camera */
+        beta: number, 
+        /** The radius of the camera from its target */
+        radius: number, 
+        /** Define the camera target (the messh it should follow) */
+        target: Nullable<AbstractMesh>, scene: Scene);
+        private _follow;
+        /** @hidden */
+        _checkInputs(): void;
+        /**
+         * Returns the class name of the object.
+         * It is mostly used internally for serialization purposes.
+         */
+        getClassName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Manage the keyboard inputs to control the movement of a follow camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FollowCamera;
+        /**
+         * Defines the list of key codes associated with the up action (increase heightOffset)
+         */
+        keysHeightOffsetIncr: number[];
+        /**
+         * Defines the list of key codes associated with the down action (decrease heightOffset)
+         */
+        keysHeightOffsetDecr: number[];
+        /**
+         * Defines whether the Alt modifier key is required to move up/down (alter heightOffset)
+         */
+        keysHeightOffsetModifierAlt: boolean;
+        /**
+         * Defines whether the Ctrl modifier key is required to move up/down (alter heightOffset)
+         */
+        keysHeightOffsetModifierCtrl: boolean;
+        /**
+         * Defines whether the Shift modifier key is required to move up/down (alter heightOffset)
+         */
+        keysHeightOffsetModifierShift: boolean;
+        /**
+         * Defines the list of key codes associated with the left action (increase rotationOffset)
+         */
+        keysRotationOffsetIncr: number[];
+        /**
+         * Defines the list of key codes associated with the right action (decrease rotationOffset)
+         */
+        keysRotationOffsetDecr: number[];
+        /**
+         * Defines whether the Alt modifier key is required to move left/right (alter rotationOffset)
+         */
+        keysRotationOffsetModifierAlt: boolean;
+        /**
+         * Defines whether the Ctrl modifier key is required to move left/right (alter rotationOffset)
+         */
+        keysRotationOffsetModifierCtrl: boolean;
+        /**
+         * Defines whether the Shift modifier key is required to move left/right (alter rotationOffset)
+         */
+        keysRotationOffsetModifierShift: boolean;
+        /**
+         * Defines the list of key codes associated with the zoom-in action (decrease radius)
+         */
+        keysRadiusIncr: number[];
+        /**
+         * Defines the list of key codes associated with the zoom-out action (increase radius)
+         */
+        keysRadiusDecr: number[];
+        /**
+         * Defines whether the Alt modifier key is required to zoom in/out (alter radius value)
+         */
+        keysRadiusModifierAlt: boolean;
+        /**
+         * Defines whether the Ctrl modifier key is required to zoom in/out (alter radius value)
+         */
+        keysRadiusModifierCtrl: boolean;
+        /**
+         * Defines whether the Shift modifier key is required to zoom in/out (alter radius value)
+         */
+        keysRadiusModifierShift: boolean;
+        /**
+         * Defines the rate of change of heightOffset.
+         */
+        heightSensibility: number;
+        /**
+         * Defines the rate of change of rotationOffset.
+         */
+        rotationSensibility: number;
+        /**
+         * Defines the rate of change of radius.
+         */
+        radiusSensibility: number;
+        private _keys;
+        private _ctrlPressed;
+        private _altPressed;
+        private _shiftPressed;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current input.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+        /**
+         * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
+         * allow modification of the heightOffset value.
+         */
+        private _modifierHeightOffset;
+        /**
+         * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
+         * allow modification of the rotationOffset value.
+         */
+        private _modifierRotationOffset;
+        /**
+         * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
+         * allow modification of the radius value.
+         */
+        private _modifierRadius;
+    }
+}
+declare module BABYLON {
         interface FreeCameraInputsManager {
             /**
              * Add orientation input support to the input manager.
@@ -35859,373 +36465,6 @@ declare module BABYLON {
          * @param axis The axis to reset
          */
         resetToCurrentRotation(axis?: Axis): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Manage the keyboard inputs to control the movement of a follow camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FollowCamera;
-        /**
-         * Defines the list of key codes associated with the up action (increase heightOffset)
-         */
-        keysHeightOffsetIncr: number[];
-        /**
-         * Defines the list of key codes associated with the down action (decrease heightOffset)
-         */
-        keysHeightOffsetDecr: number[];
-        /**
-         * Defines whether the Alt modifier key is required to move up/down (alter heightOffset)
-         */
-        keysHeightOffsetModifierAlt: boolean;
-        /**
-         * Defines whether the Ctrl modifier key is required to move up/down (alter heightOffset)
-         */
-        keysHeightOffsetModifierCtrl: boolean;
-        /**
-         * Defines whether the Shift modifier key is required to move up/down (alter heightOffset)
-         */
-        keysHeightOffsetModifierShift: boolean;
-        /**
-         * Defines the list of key codes associated with the left action (increase rotationOffset)
-         */
-        keysRotationOffsetIncr: number[];
-        /**
-         * Defines the list of key codes associated with the right action (decrease rotationOffset)
-         */
-        keysRotationOffsetDecr: number[];
-        /**
-         * Defines whether the Alt modifier key is required to move left/right (alter rotationOffset)
-         */
-        keysRotationOffsetModifierAlt: boolean;
-        /**
-         * Defines whether the Ctrl modifier key is required to move left/right (alter rotationOffset)
-         */
-        keysRotationOffsetModifierCtrl: boolean;
-        /**
-         * Defines whether the Shift modifier key is required to move left/right (alter rotationOffset)
-         */
-        keysRotationOffsetModifierShift: boolean;
-        /**
-         * Defines the list of key codes associated with the zoom-in action (decrease radius)
-         */
-        keysRadiusIncr: number[];
-        /**
-         * Defines the list of key codes associated with the zoom-out action (increase radius)
-         */
-        keysRadiusDecr: number[];
-        /**
-         * Defines whether the Alt modifier key is required to zoom in/out (alter radius value)
-         */
-        keysRadiusModifierAlt: boolean;
-        /**
-         * Defines whether the Ctrl modifier key is required to zoom in/out (alter radius value)
-         */
-        keysRadiusModifierCtrl: boolean;
-        /**
-         * Defines whether the Shift modifier key is required to zoom in/out (alter radius value)
-         */
-        keysRadiusModifierShift: boolean;
-        /**
-         * Defines the rate of change of heightOffset.
-         */
-        heightSensibility: number;
-        /**
-         * Defines the rate of change of rotationOffset.
-         */
-        rotationSensibility: number;
-        /**
-         * Defines the rate of change of radius.
-         */
-        radiusSensibility: number;
-        private _keys;
-        private _ctrlPressed;
-        private _altPressed;
-        private _shiftPressed;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Gets the class name of the current input.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-        /**
-         * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
-         * allow modification of the heightOffset value.
-         */
-        private _modifierHeightOffset;
-        /**
-         * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
-         * allow modification of the rotationOffset value.
-         */
-        private _modifierRotationOffset;
-        /**
-         * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
-         * allow modification of the radius value.
-         */
-        private _modifierRadius;
-    }
-}
-declare module BABYLON {
-    /**
-     * Manage the mouse wheel inputs to control a follow camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FollowCamera;
-        /**
-         * Moue wheel controls zoom. (Moue wheel modifies camera.radius value.)
-         */
-        axisControlRadius: boolean;
-        /**
-         * Moue wheel controls height. (Moue wheel modifies camera.heightOffset value.)
-         */
-        axisControlHeight: boolean;
-        /**
-         * Moue wheel controls angle. (Moue wheel modifies camera.rotationOffset value.)
-         */
-        axisControlRotation: boolean;
-        /**
-         * Gets or Set the mouse wheel precision or how fast is the camera moves in
-         * relation to mouseWheel events.
-         */
-        wheelPrecision: number;
-        /**
-         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when wheel is used.
-         */
-        wheelDeltaPercentage: number;
-        private _wheel;
-        private _observer;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Default Inputs manager for the FollowCamera.
-     * It groups all the default supported inputs for ease of use.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    export class FollowCameraInputsManager extends CameraInputsManager<FollowCamera> {
-        /**
-         * Instantiates a new FollowCameraInputsManager.
-         * @param camera Defines the camera the inputs belong to
-         */
-        constructor(camera: FollowCamera);
-        /**
-         * Add keyboard input support to the input manager.
-         * @returns the current input manager
-         */
-        addKeyboard(): FollowCameraInputsManager;
-        /**
-         * Add mouse wheel input support to the input manager.
-         * @returns the current input manager
-         */
-        addMouseWheel(): FollowCameraInputsManager;
-        /**
-         * Add pointers input support to the input manager.
-         * @returns the current input manager
-         */
-        addPointers(): FollowCameraInputsManager;
-        /**
-         * Add orientation input support to the input manager.
-         * @returns the current input manager
-         */
-        addVRDeviceOrientation(): FollowCameraInputsManager;
-    }
-}
-declare module BABYLON {
-    /**
-     * A follow camera takes a mesh as a target and follows it as it moves. Both a free camera version followCamera and
-     * an arc rotate version arcFollowCamera are available.
-     * @see http://doc.babylonjs.com/features/cameras#follow-camera
-     */
-    export class FollowCamera extends TargetCamera {
-        /**
-         * Distance the follow camera should follow an object at
-         */
-        radius: number;
-        /**
-         * Minimum allowed distance of the camera to the axis of rotation
-         * (The camera can not get closer).
-         * This can help limiting how the Camera is able to move in the scene.
-         */
-        lowerRadiusLimit: Nullable<number>;
-        /**
-         * Maximum allowed distance of the camera to the axis of rotation
-         * (The camera can not get further).
-         * This can help limiting how the Camera is able to move in the scene.
-         */
-        upperRadiusLimit: Nullable<number>;
-        /**
-         * Define a rotation offset between the camera and the object it follows
-         */
-        rotationOffset: number;
-        /**
-         * Minimum allowed angle to camera position relative to target object.
-         * This can help limiting how the Camera is able to move in the scene.
-         */
-        lowerRotationOffsetLimit: Nullable<number>;
-        /**
-         * Maximum allowed angle to camera position relative to target object.
-         * This can help limiting how the Camera is able to move in the scene.
-         */
-        upperRotationOffsetLimit: Nullable<number>;
-        /**
-         * Define a height offset between the camera and the object it follows.
-         * It can help following an object from the top (like a car chaing a plane)
-         */
-        heightOffset: number;
-        /**
-         * Minimum allowed height of camera position relative to target object.
-         * This can help limiting how the Camera is able to move in the scene.
-         */
-        lowerHeightOffsetLimit: Nullable<number>;
-        /**
-         * Maximum allowed height of camera position relative to target object.
-         * This can help limiting how the Camera is able to move in the scene.
-         */
-        upperHeightOffsetLimit: Nullable<number>;
-        /**
-         * Define how fast the camera can accelerate to follow it s target.
-         */
-        cameraAcceleration: number;
-        /**
-         * Define the speed limit of the camera following an object.
-         */
-        maxCameraSpeed: number;
-        /**
-         * Define the target of the camera.
-         */
-        lockedTarget: Nullable<AbstractMesh>;
-        /**
-         * Defines the input associated with the camera.
-         */
-        inputs: FollowCameraInputsManager;
-        /**
-         * Instantiates the follow camera.
-         * @see http://doc.babylonjs.com/features/cameras#follow-camera
-         * @param name Define the name of the camera in the scene
-         * @param position Define the position of the camera
-         * @param scene Define the scene the camera belong to
-         * @param lockedTarget Define the target of the camera
-         */
-        constructor(name: string, position: Vector3, scene: Scene, lockedTarget?: Nullable<AbstractMesh>);
-        private _follow;
-        /**
-         * Attached controls to the current camera.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: HTMLElement): void;
-        /** @hidden */
-        _checkInputs(): void;
-        private _checkLimits;
-        /**
-         * Gets the camera class name.
-         * @returns the class name
-         */
-        getClassName(): string;
-    }
-    /**
-     * Arc Rotate version of the follow camera.
-     * It still follows a Defined mesh but in an Arc Rotate Camera fashion.
-     * @see http://doc.babylonjs.com/features/cameras#follow-camera
-     */
-    export class ArcFollowCamera extends TargetCamera {
-        /** The longitudinal angle of the camera */
-        alpha: number;
-        /** The latitudinal angle of the camera */
-        beta: number;
-        /** The radius of the camera from its target */
-        radius: number;
-        /** Define the camera target (the messh it should follow) */
-        target: Nullable<AbstractMesh>;
-        private _cartesianCoordinates;
-        /**
-         * Instantiates a new ArcFollowCamera
-         * @see http://doc.babylonjs.com/features/cameras#follow-camera
-         * @param name Define the name of the camera
-         * @param alpha Define the rotation angle of the camera around the logitudinal axis
-         * @param beta Define the rotation angle of the camera around the elevation axis
-         * @param radius Define the radius of the camera from its target point
-         * @param target Define the target of the camera
-         * @param scene Define the scene the camera belongs to
-         */
-        constructor(name: string, 
-        /** The longitudinal angle of the camera */
-        alpha: number, 
-        /** The latitudinal angle of the camera */
-        beta: number, 
-        /** The radius of the camera from its target */
-        radius: number, 
-        /** Define the camera target (the messh it should follow) */
-        target: Nullable<AbstractMesh>, scene: Scene);
-        private _follow;
-        /** @hidden */
-        _checkInputs(): void;
-        /**
-         * Returns the class name of the object.
-         * It is mostly used internally for serialization purposes.
-         */
-        getClassName(): string;
     }
 }
 declare module BABYLON {

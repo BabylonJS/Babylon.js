@@ -48,7 +48,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         var size = texture.getSize();
         var ratio = size.width / size.height;
         var width = this.props.width;
-        var height = (width / ratio) | 0;
+        var height = (width / ratio) | 1;
 
         let passPostProcess: PostProcess;
 
