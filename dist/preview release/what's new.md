@@ -106,8 +106,9 @@
 - Inspector light gizmo ([TrevorDev](https://github.com/TrevorDev))
 - Added option `multiMultiMaterials` to mesh.mergeMeshes ([danjpar](https://github.com/danjpar))
 - Expose fallback camera distortion metrics option in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
-- Add setColor method to boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
-- Add OnAfterEnteringVRObservable to webVRHelper ([TrevorDev](https://github.com/TrevorDev))
+- Added setColor method to boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
+- Added OnAfterEnteringVRObservable to webVRHelper ([TrevorDev](https://github.com/TrevorDev))
+- Added Support for Side By Side and Top/Bottom VR videos in the video dome ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
