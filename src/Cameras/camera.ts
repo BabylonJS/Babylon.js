@@ -970,9 +970,13 @@ export class Camera extends Node {
         // create the rig cameras, unless none
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             let leftCamera = this.createRigCamera(this.name + "_L", 0);
-            leftCamera._isLeftCamera = true;
+            if (leftCamera) {
+                leftCamera._isLeftCamera = true;
+            }
             let rightCamera = this.createRigCamera(this.name + "_R", 1);
-            rightCamera._isRightCamera = true;
+            if (rightCamera) {
+                rightCamera._isRightCamera = true;
+            }
             if (leftCamera && rightCamera) {
                 this._rigCameras.push(leftCamera);
                 this._rigCameras.push(rightCamera);
