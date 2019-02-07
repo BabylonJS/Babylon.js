@@ -75,6 +75,10 @@ import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pi
 import { SSAORenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent';
 import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
 import { SSAO2RenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent';
+import { Skeleton } from 'babylonjs/Bones/skeleton';
+import { SkeletonPropertyGridComponent } from './propertyGrids/meshes/skeletonPropertyGridComponent';
+import { Bone } from 'babylonjs/Bones/bone';
+import { BonePropertyGridComponent } from './propertyGrids/meshes/bonePropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -273,6 +277,22 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("Texture") !== -1) {
                 const texture = entity as Texture;
                 return (<TexturePropertyGridComponent texture={texture}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("Skeleton") !== -1) {
+                const skeleton = entity as Skeleton;
+                return (<SkeletonPropertyGridComponent skeleton={skeleton}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("Bone") !== -1) {
+                const bone = entity as Bone;
+                return (<BonePropertyGridComponent bone={bone}
                     globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);

@@ -56,6 +56,8 @@ export interface VideoRecorderOptions {
     fps: number;
     /** Defines the chunk size for the recording data */
     recordChunckSize: number;
+    /** The audio tracks to attach to the record */
+    audioTracks?: MediaStreamTrack[];
 }
 
 /**
@@ -123,6 +125,12 @@ export class VideoRecorder {
         };
 
         const stream = this._canvas.captureStream(this._options.fps);
+        if (this._options.audioTracks) {
+            for (let track of this._options.audioTracks) {
+                stream.addTrack(track);
+            }
+        }
+
         this._mediaRecorder = new MediaRecorder(stream, { mimeType: this._options.mimeType });
         this._mediaRecorder.ondataavailable = this._handleDataAvailable.bind(this);
         this._mediaRecorder.onerror = this._handleError.bind(this);

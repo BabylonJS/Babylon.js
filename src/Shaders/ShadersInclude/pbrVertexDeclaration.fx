@@ -70,4 +70,9 @@ uniform float pointSize;
         uniform vec2 vClearCoatBumpInfos;
         uniform mat4 clearCoatBumpMatrix;
     #endif
+
+    #ifdef CLEARCOAT_TINT_TEXTURE
+        uniform vec2 vClearCoatTintInfos;
+        uniform mat4 clearCoatTintMatrix;
+    #endif
 #endif
