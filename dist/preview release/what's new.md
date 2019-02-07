@@ -177,6 +177,7 @@
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBehavior should not let the drag plane get out of sync when rotating the object during dragging ([TrevorDev](https://github.com/TrevorDev))
 - Do not crash the application if webVR submitFrame fails ([TrevorDev](https://github.com/TrevorDev))
+- Fix pinch action on FollowCameraPointersInput ([mrdunk](https://github.com))
 - Tools.CreateScreenshot stopped working ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
