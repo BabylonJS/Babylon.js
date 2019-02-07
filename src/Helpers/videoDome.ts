@@ -78,7 +78,7 @@ export class VideoDome extends TransformNode {
         return this._videoMode;
     }
     public set videoMode(value: number) {
-        if (this._videoMode !== value) {
+        if (this._videoMode === value) {
             return;
         }
 
