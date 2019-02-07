@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 const babylonExternals = require('../Tools/WebpackPlugins/babylonExternals');
+const ViewerResolve = require('../Tools/WebpackPlugins/viewerResolve');
 
 module.exports = 
     {
@@ -24,9 +25,12 @@ module.exports =
                 "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
                 "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
                 "babylonjs-viewer-assets": __dirname + '/src/assets/index.ts'
-            }
+            },
+            plugins: [
+                new ViewerResolve(["babylonjs", "babylonjs-loaders"])
+            ]
         },
-        externals: [babylonExternals()],
+        externals: [],
         mode: "development",
         devtool: 'source-map',
         plugins: [
