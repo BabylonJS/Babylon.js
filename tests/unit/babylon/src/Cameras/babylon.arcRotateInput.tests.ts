@@ -68,15 +68,30 @@ describe('arcRotateCameraInput', function() {
     toCheck: {[key: string]: ValChange}): boolean {
       let result = true;
       interestingValues.forEach((key) => {
-        result = result && (
+        if (toCheck[key] === undefined) {
+          toCheck[key] = ValChange.Same;
+        }
+        let r = (
+          toCheck[key] === ValChange.DontCare ||
           (toCheck[key] === ValChange.Decrease && camera[key] < cameraCachePos[key]) ||
           (toCheck[key] === ValChange.Same && camera[key] === cameraCachePos[key]) ||
-          (toCheck[key] === ValChange.Increase && camera[key] > cameraCachePos[key]) ||
-          toCheck[key] === undefined || toCheck[key] === ValChange.DontCare);
+          (toCheck[key] === ValChange.Increase && camera[key] > cameraCachePos[key])
+        );
+        if (!r) {
+          console.log(
+            `Incorrect value for ${key}, previous: ${cameraCachePos[key]}, current: ${camera[key]}`
+          );
+        }
+        result = result && r;
+
+        cameraCachePos[key] = camera[key];
       });
 
-    return result;
-  }
+      if (!result) {
+        displayCamera(camera);
+      }
+      return result;
+    }
 
   function displayCamera(camera: BABYLON.ArcRotateCamera): void {
     let info = {
@@ -214,6 +229,27 @@ describe('arcRotateCameraInput', function() {
       ).to.be.false;
     });
   
+    it('verifyChanges checks undefined', function() {
+      // If the 'toCheck' field is undefined, treat is as ValChange.Same.
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 10;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {})
+      ).to.be.true;
+      
+      this.camera.inertialAlphaOffset = 10;
+      this.cameraCachePos.inertialAlphaOffset = 10.001;
+      expect(
+        verifyChanges(
+          this.camera,
+          this.cameraCachePos,
+          {})
+      ).to.be.false;
+    });
+  
     it('verifyChanges checks DontCare', function() {
       this.camera.inertialAlphaOffset = 10;
       this.cameraCachePos.inertialAlphaOffset = 10;
@@ -225,12 +261,12 @@ describe('arcRotateCameraInput', function() {
       ).to.be.true;
       
       this.camera.inertialAlphaOffset = 10;
-      this.cameraCachePos.inertialAlphaOffset = 10.001;
+      this.cameraCachePos.inertialAlphaOffset = 1001;
       expect(
         verifyChanges(
           this.camera,
           this.cameraCachePos,
-          {/*inertialAlphaOffset: undefined*/})
+          {inertialAlphaOffset: ValChange.DontCare})
       ).to.be.true;
     });
   
@@ -254,9 +290,9 @@ describe('arcRotateCameraInput', function() {
       ).to.be.false;
     });
   });
-  
-  
+
   describe('one button drag', function() {
+
     it('should change inertialAlphaOffset', function() {
       var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
 
@@ -282,10 +318,208 @@ describe('arcRotateCameraInput', function() {
       expect(verifyChanges(
         this.camera,
         this.cameraCachePos,
-        {inertialAlphaOffset: ValChange.Decrease})).to.be.true;
+        {inertialAlphaOffset: ValChange.Decrease})
+      ).to.be.true;
+
+      // Button up. Primary button.
+      event.type = "pointerup";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+    });
+
+    it('followed by another one button drag', function() {
+      var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
+
+      // Button down.
+      event.type = "pointerdown";
+      event.clientX = 100;
+      event.clientY = 200;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
       
-      expect(true).to.equal(true);
-      expect(true).to.be.true;
+      // Start moving.
+      event.type = "pointermove";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+
+      // Move X coordinate. Drag camera.
+      event.type = "pointermove";
+      event.clientX = 1000;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(
+        this.camera,
+        this.cameraCachePos,
+        {inertialAlphaOffset: ValChange.Decrease})
+      ).to.be.true;
+
+      // Button up. Primary button.
+      event.type = "pointerup";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+
+      // 2nd drag.
+      // Button down.
+      event.type = "pointerdown";
+      event.clientX = 100;
+      event.clientY = 200;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+      
+      // Start moving.
+      event.type = "pointermove";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+
+      // Move Y coordinate. Drag camera.
+      event.type = "pointermove";
+      event.clientY = 1000;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(
+        this.camera,
+        this.cameraCachePos,
+        {inertialBetaOffset: ValChange.Decrease})
+      ).to.be.true;
+
+      // Button up. Primary button.
+      event.type = "pointerup";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+    });
+
+    it('with Ctrl key should change inertialPanningY', function() {
+      this.cameraInput.panningSensibility = 3;
+      this.cameraInput._useCtrlForPanning = true;
+
+      var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
+
+      // Button down.
+      event.type = "pointerdown";
+      event.clientX = 100;
+      event.clientY = 200;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+      
+      // Start moving.
+      event.type = "pointermove";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+
+      // Move Y coordinate. Drag camera. (Not panning yet.)
+      event.type = "pointermove";
+      event.clientY = 1000;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(
+        this.camera,
+        this.cameraCachePos,
+        {inertialBetaOffset: ValChange.Decrease})
+      ).to.be.true;
+
+      // Move X coordinate with Ctrl key depressed. Panning now.
+      event.type = "pointermove";
+      event.clientY = 2000;
+      event.button = 0;
+      event.ctrlKey = true;  // Will cause pan motion.
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(
+        this.camera,
+        this.cameraCachePos,
+        {inertialPanningY: ValChange.Increase})
+      ).to.be.true;
+      
+      // Move X coordinate having released Ctrl.
+      event.type = "pointermove";
+      event.clientY = 3000;
+      event.button = 0;
+      event.ctrlKey = false;  // Will cancel pan motion.
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(
+        this.camera,
+        this.cameraCachePos,
+        {inertialBetaOffset: ValChange.Decrease})
+      ).to.be.true;
+      
+      // Button up. Primary button.
+      event.type = "pointerup";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+    });
+
+    it('with panningSensibility disabled', function() {
+      this.cameraInput.panningSensibility = 0;
+
+      var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
+
+      // Button down.
+      event.type = "pointerdown";
+      event.clientX = 100;
+      event.clientY = 200;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+      
+      // Start moving.
+      event.type = "pointermove";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
+
+      // Move Y coordinate. Drag camera.
+      event.type = "pointermove";
+      event.clientY = 1000;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(
+        this.camera,
+        this.cameraCachePos,
+        {inertialBetaOffset: ValChange.Decrease})
+      ).to.be.true;
+
+      // Move X coordinate with Ctrl key depressed.
+      // Panning disabled so continue regular drag..
+      event.type = "pointermove";
+      event.clientY = 1500;
+      event.button = 0;
+      event.ctrlKey = true;  // Will cause pan motion.
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(
+        this.camera,
+        this.cameraCachePos,
+        {inertialBetaOffset: ValChange.Decrease})
+      ).to.be.true;
+      
+      // Move X coordinate having released Ctrl.
+      event.type = "pointermove";
+      event.clientY = 3000;
+      event.button = 0;
+      event.ctrlKey = false;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(
+        this.camera,
+        this.cameraCachePos,
+        {inertialBetaOffset: ValChange.Decrease})
+      ).to.be.true;
+      
+      // Button up. Primary button.
+      event.type = "pointerup";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(verifyChanges(this.camera, this.cameraCachePos, {})).to.be.true;
     });
   });
+
+  //describe('two button drag', function() {
+  //});
 });
