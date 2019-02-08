@@ -23,6 +23,8 @@ interface IBackgroundMaterialPropertyGridComponentProps {
 }
 
 export class BackgroundMaterialPropertyGridComponent extends React.Component<IBackgroundMaterialPropertyGridComponentProps> {
+    private _onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+
     constructor(props: IBackgroundMaterialPropertyGridComponentProps) {
         super(props);
     }
@@ -30,7 +32,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
     renderTextures() {
         const material = this.props.material;
 
-        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+        const onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
 
         return (
             <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">

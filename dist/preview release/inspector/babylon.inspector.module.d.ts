@@ -403,6 +403,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element | null;
         render(): JSX.Element;
@@ -522,6 +523,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMaterialPropertyGridComponentProps);
         renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>): JSX.Element | null;
         render(): JSX.Element;
@@ -861,6 +863,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class BackgroundMaterialPropertyGridComponent extends React.Component<IBackgroundMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IBackgroundMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
         render(): JSX.Element;
@@ -1228,6 +1231,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Component<IPBRMetallicRoughnessMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMetallicRoughnessMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element | null;
         render(): JSX.Element;
@@ -1248,6 +1252,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Component<IPBRSpecularGlossinessMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IPBRSpecularGlossinessMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element | null;
         render(): JSX.Element;
@@ -2475,6 +2480,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element | null;
         render(): JSX.Element;
@@ -2573,6 +2579,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMaterialPropertyGridComponentProps);
         renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element | null;
         render(): JSX.Element;
@@ -2826,6 +2833,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class BackgroundMaterialPropertyGridComponent extends React.Component<IBackgroundMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IBackgroundMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
         render(): JSX.Element;
@@ -3085,6 +3093,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Component<IPBRMetallicRoughnessMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMetallicRoughnessMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element | null;
         render(): JSX.Element;
@@ -3099,6 +3108,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Component<IPBRSpecularGlossinessMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IPBRSpecularGlossinessMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element | null;
         render(): JSX.Element;
