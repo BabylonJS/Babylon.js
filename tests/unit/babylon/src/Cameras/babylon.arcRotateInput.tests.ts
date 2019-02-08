@@ -28,9 +28,165 @@ enum ValChange {
 }
 
 /**
+ * Make a mock Event.
+ * Many PointerEvent properties are read-only so using real "new PointerEvent()"
+ * is unpractical.
+ */
+function eventTemplate(target: HTMLElement): MockPointerEvent {
+  let returnVal = {
+    target,
+    button: 0,
+    preventDefault: () => {},
+  };
+  return returnVal;
+}
+
+/**
+ * Simulate PointerEvent in ArcRotateCameraPointersInput instance.
+ */
+function simulateEvent(cameraInput: BABYLON.ArcRotateCameraPointersInput,
+                       event: MockPointerEvent) {
+  console.log(event);
+  let pointerInfo = {};
+  switch (event.type) {
+    case "pointerdown":
+      pointerInfo = {type: BABYLON.PointerEventTypes.POINTERDOWN, event};
+      // Cast "camera" to <any> to relax "private" classification.
+      (<any>cameraInput)._pointerInput(pointerInfo, undefined);
+      break;
+    case "pointerup":
+      pointerInfo = {type: BABYLON.PointerEventTypes.POINTERUP, event};
+      // Cast "camera" to <any> to relax "private" classification.
+      (<any>cameraInput)._pointerInput(pointerInfo, undefined);
+      break;
+    case "pointermove":
+      pointerInfo = {type: BABYLON.PointerEventTypes.POINTERMOVE, event};
+      // Cast "camera" to <any> to relax "private" classification.
+      (<any>cameraInput)._pointerInput(pointerInfo, undefined);
+      break;
+    case "blur":
+      // Cast "camera" to <any> to relax "private" classification.
+      (<any>cameraInput)._onLostFocus();
+      break;
+    case "POINTERDOUBLETAP":
+      // Not a real DOM event. Just a shortcut to trigger
+      // PointerEventTypes.POINTERMOVE on the Input class.
+      pointerInfo = {type: BABYLON.PointerEventTypes.POINTERDOUBLETAP, event};
+      // Cast "camera" to <any> to relax "private" classification.
+      (<any>cameraInput)._pointerInput(pointerInfo, undefined);
+      break;
+    default:
+      console.error("Invalid pointer event: " + event.type);
+  }
+}
+
+/**
  * Test the things.
  */
-describe('arcRotateCameraInput', function() {
+describe('BaseRotateCameraInput', function() {
+  /**
+   * Sets the timeout of all the tests to 10 seconds.
+   */
+  this.timeout(10000);
+
+  before(function(done) {
+    // runs before all tests in this block
+    this.timeout(180000);
+    (BABYLONDEVTOOLS).Loader
+      .useDist()
+      .testMode()
+      .load(function() {
+        // Force apply promise polyfill for consistent behavior between
+        // PhantomJS, IE11, and other browsers.
+        BABYLON.PromisePolyfill.Apply(true);
+        done();
+      });
+
+    this._canvas = document.createElement("canvas");
+    this._engine = new BABYLON.NullEngine();
+    this._scene = new BABYLON.Scene(this._engine);
+    
+    // Set up an instance of a Camera with the ArcRotateCameraPointersInput.
+    this.camera = new BABYLON.ArcRotateCamera(
+      "MockCameraOriginal", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), this._scene);
+    this.cameraInput = new BABYLON.MockCameraPointersInput();
+    this.cameraInput.camera = this.camera;
+    this.cameraInput.attachControl(this._canvas);
+  });
+
+  beforeEach(function() {
+    // runs before each test in this block
+    this.cameraInput.reset();
+  });
+
+  describe('one button drag', function() {
+    it('should call "onTouch method"', function() {
+      var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
+
+      // Button down.
+      event.type = "pointerdown";
+      event.clientX = 100;
+      event.clientY = 200;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(0);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+      expect(this.cameraInput.countOnContextMenu).to.equal(0);
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnLostFocus).to.equal(0);
+      
+      // Start moving.
+      event.type = "pointermove";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(1);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+      expect(this.cameraInput.countOnContextMenu).to.equal(0);
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnLostFocus).to.equal(0);
+      // Move just started; No value yet.
+      expect(this.cameraInput.valuesOnTouch[0][1]).to.equal(0);
+      expect(this.cameraInput.valuesOnTouch[0][2]).to.equal(0);
+
+      // Drag.
+      event.type = "pointermove";
+      event.clientX = 1000;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+      expect(this.cameraInput.countOnContextMenu).to.equal(0);
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnLostFocus).to.equal(0);
+      // Pointer dragged in X direction.
+      expect(this.cameraInput.valuesOnTouch[1][1]).to.above(0);
+      expect(this.cameraInput.valuesOnTouch[1][2]).to.equal(0);
+
+      // Button up.
+      event.type = "pointerup";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+      expect(this.cameraInput.countOnContextMenu).to.equal(0);
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(1);
+      expect(this.cameraInput.countOnLostFocus).to.equal(0);
+      // No more dragging.
+      expect(this.cameraInput.valuesOnTouch[0][1]).to.equal(0);
+      expect(this.cameraInput.valuesOnTouch[0][2]).to.equal(0);
+    });
+  });
+});
+
+describe.skip('ArcRotateCameraInput', function() {
   /**
    * Sets the timeout of all the tests to 10 seconds.
    */
@@ -103,59 +259,6 @@ describe('arcRotateCameraInput', function() {
     };
     console.log(info);
   };
-
-  /**
-   * Make a mock Event.
-   * Many PointerEvent properties are read-only so using real "new PointerEvent()"
-   * is unpractical.
-   */
-  function eventTemplate(target: HTMLElement): MockPointerEvent {
-    let returnVal = {
-      target,
-      button: 0,
-      preventDefault: () => {},
-    };
-    return returnVal;
-  }
-
-  /**
-   * Simulate PointerEvent in ArcRotateCameraPointersInput instance.
-   */
-  function simulateEvent(cameraInput: BABYLON.ArcRotateCameraPointersInput,
-                         event: MockPointerEvent) {
-    console.log(event);
-    let pointerInfo = {};
-    switch (event.type) {
-      case "pointerdown":
-        pointerInfo = {type: BABYLON.PointerEventTypes.POINTERDOWN, event};
-        // Cast "camera" to <any> to relax "private" classification.
-        (<any>cameraInput)._pointerInput(pointerInfo, undefined);
-        break;
-      case "pointerup":
-        pointerInfo = {type: BABYLON.PointerEventTypes.POINTERUP, event};
-        // Cast "camera" to <any> to relax "private" classification.
-        (<any>cameraInput)._pointerInput(pointerInfo, undefined);
-        break;
-      case "pointermove":
-        pointerInfo = {type: BABYLON.PointerEventTypes.POINTERMOVE, event};
-        // Cast "camera" to <any> to relax "private" classification.
-        (<any>cameraInput)._pointerInput(pointerInfo, undefined);
-        break;
-      case "blur":
-        // Cast "camera" to <any> to relax "private" classification.
-        (<any>cameraInput)._onLostFocus();
-        break;
-      case "POINTERDOUBLETAP":
-        // Not a real DOM event. Just a shortcut to trigger
-        // PointerEventTypes.POINTERMOVE on the Input class.
-        pointerInfo = {type: BABYLON.PointerEventTypes.POINTERDOUBLETAP, event};
-        // Cast "camera" to <any> to relax "private" classification.
-        (<any>cameraInput)._pointerInput(pointerInfo, undefined);
-        break;
-      default:
-        console.error("Invalid pointer event: " + event.type);
-    }
-  }
 
   before(function(done) {
     // runs before all tests in this block
@@ -520,6 +623,7 @@ describe('arcRotateCameraInput', function() {
     });
   });
 
-  //describe('two button drag', function() {
-  //});
+  describe('two button drag', function() {
+
+  });
 });
