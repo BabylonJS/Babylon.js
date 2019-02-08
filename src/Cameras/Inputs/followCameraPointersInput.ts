@@ -139,7 +139,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         }
     }
 
-    protected doMultiTouch(pointA: Nullable<PointerTouch>,
+    protected onMultiTouch(pointA: Nullable<PointerTouch>,
                            pointB: Nullable<PointerTouch>,
                            previousPinchSquaredDistance: number,
                            pinchSquaredDistance: number,

@@ -26,7 +26,12 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                 value: this.props.directValue
             }
         } else {
-            this.state = { value: this.props.target![this.props.propertyName!] };
+            let value = this.props.target![this.props.propertyName!];
+
+            if (value === undefined) {
+                value = this.props.maximum;
+            }
+            this.state = { value: value };
         }
     }
 
@@ -35,7 +40,11 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
             nextState.value = nextProps.directValue;
             return true;
         }
-        const currentState = nextProps.target![nextProps.propertyName!];
+
+        let currentState = nextProps.target![nextProps.propertyName!];
+        if (currentState === undefined) {
+            currentState = nextProps.maximum;
+        }
 
         if (currentState !== nextState.value || this._localChange) {
             nextState.value = currentState;

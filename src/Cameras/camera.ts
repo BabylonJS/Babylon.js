@@ -885,6 +885,24 @@ export class Camera extends Node {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
+    /** @hidden */
+    public _isLeftCamera = false;
+    /**
+     * Gets the left camera of a rig setup in case of Rigged Camera
+     */
+    public get isLeftCamera(): boolean {
+        return this._isLeftCamera;
+    }
+
+    /** @hidden */
+    public _isRightCamera = true;
+    /**
+     * Gets the right camera of a rig setup in case of Rigged Camera
+     */
+    public get isRightCamera(): boolean {
+        return this._isRightCamera;
+    }
+
     /**
      * Gets the left camera of a rig setup in case of Rigged Camera
      */
@@ -952,7 +970,13 @@ export class Camera extends Node {
         // create the rig cameras, unless none
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             let leftCamera = this.createRigCamera(this.name + "_L", 0);
+            if (leftCamera) {
+                leftCamera._isLeftCamera = true;
+            }
             let rightCamera = this.createRigCamera(this.name + "_R", 1);
+            if (rightCamera) {
+                rightCamera._isRightCamera = true;
+            }
             if (leftCamera && rightCamera) {
                 this._rigCameras.push(leftCamera);
                 this._rigCameras.push(rightCamera);
