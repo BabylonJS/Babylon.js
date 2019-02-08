@@ -14,7 +14,7 @@ function doApply(modulesToResolveToEs5, resolver) {
   var target = resolver.ensureHook("undescribed-raw-file");
   //console.log(resolver.hooks);
   resolver.getHook("resolve")
-    .tapAsync("DirectoryNamedWebpackPlugin", (request, resolveContext, callback) => {
+    .tapAsync("ViewerResolvePlugin", (request, resolveContext, callback) => {
         for(var package of modulesToResolveToEs5){
             if(request.request.indexOf(package+"/") == 0){
                 const newRequest = Object.assign({}, request, { request: package, });
