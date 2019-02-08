@@ -145,6 +145,9 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Specular anti-aliasing" target={material} propertyName="enableSpecularAntiAliasing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="ADVANCED" closed={true}>
+                    <CheckBoxLineComponent label="Energy Conservation" target={material.brdf} propertyName="useEnergyConservation"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Radiance occlusion" target={material} propertyName="useRadianceOcclusion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Horizon occlusion " target={material} propertyName="useHorizonOcclusion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Unlit" target={material} propertyName="unlit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

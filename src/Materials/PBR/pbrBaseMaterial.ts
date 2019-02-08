@@ -16,6 +16,7 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { IMaterialClearCoatDefines, PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
 import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
+import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
@@ -40,7 +41,7 @@ import "../../Shaders/pbr.vertex";
  * @hiddenChildren
  */
 class PBRMaterialDefines extends MaterialDefines
-    implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines {
+    implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines {
     public PBR = true;
 
     public MAINUV1 = false;
@@ -192,6 +193,9 @@ class PBRMaterialDefines extends MaterialDefines
 
     public ANISOTROPIC = false;
 
+    public BRDF_V_HEIGHT_CORRELATED = false;
+    public MS_BRDF_ENERGY_CONSERVATION = false;
+
     public UNLIT = false;
 
     /**
@@ -245,7 +249,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Defines the default value of how much AO map is occluding the analytical lights
      * (point spot...).
      */
-    public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 1;
+    public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 0;
 
     /**
      * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
@@ -667,6 +671,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly anisotropy = new PBRAnisotropicConfiguration(this._markAllSubMeshesAsMiscDirty.bind(this));
 
+    /**
+     * Defines the BRDF parameters for the material.
+     */
+    public readonly brdf = new PBRBRDFConfiguration(this._markAllSubMeshesAsMiscDirty.bind(this));
     /**
      * Instantiates a new PBRMaterial instance.
      *
@@ -1426,6 +1434,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // External config
         this.clearCoat.prepareDefines(defines, scene);
         this.anisotropy.prepareDefines(defines, mesh);
+        this.brdf.prepareDefines(defines);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);
