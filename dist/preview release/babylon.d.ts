@@ -29767,6 +29767,18 @@ declare module BABYLON {
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        /** @hidden */
+        _isLeftCamera: boolean;
+        /**
+         * Gets the left camera of a rig setup in case of Rigged Camera
+         */
+        readonly isLeftCamera: boolean;
+        /** @hidden */
+        _isRightCamera: boolean;
+        /**
+         * Gets the right camera of a rig setup in case of Rigged Camera
+         */
+        readonly isRightCamera: boolean;
         /**
          * Gets the left camera of a rig setup in case of Rigged Camera
          */
@@ -38270,6 +38282,13 @@ declare module BABYLON {
         */
         toneMappingEnabled: boolean;
         /**
+         * Gets the type of tone mapping effect.
+         */
+        /**
+        * Sets the type of tone mapping effect.
+        */
+        toneMappingType: number;
+        /**
          * Gets contrast used in the effect.
          */
         /**
@@ -38673,6 +38692,15 @@ declare module BABYLON {
         vrDeviceOrientationCameraMetrics?: VRCameraMetrics;
     }
     /**
+     * Event containing information after VR has been entered
+     */
+    export class OnAfterEnteringVRObservableEvent {
+        /**
+         * If entering vr was successful
+         */
+        success: boolean;
+    }
+    /**
      * Helps to quickly add VR support to an existing scene.
      * See http://doc.babylonjs.com/how_to/webvr_helper
      */
@@ -38700,9 +38728,13 @@ declare module BABYLON {
         private _onVRRequestPresentStart;
         private _onVRRequestPresentComplete;
         /**
-         * Observable raised when entering VR.
+         * Observable raised right before entering VR.
          */
         onEnteringVRObservable: Observable<VRExperienceHelper>;
+        /**
+         * Observable raised when entering VR has completed.
+         */
+        onAfterEnteringVRObservable: Observable<OnAfterEnteringVRObservableEvent>;
         /**
          * Observable raised when exiting VR.
          */
@@ -43846,6 +43878,18 @@ declare module BABYLON {
      * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
      */
     export class VideoDome extends TransformNode {
+        /**
+         * Define the video source as a Monoscopic panoramic 360 video.
+         */
+        static readonly MODE_MONOSCOPIC: number;
+        /**
+         * Define the video source as a Stereoscopic TopBottom/OverUnder panoramic 360 video.
+         */
+        static readonly MODE_TOPBOTTOM: number;
+        /**
+         * Define the video source as a Stereoscopic Side by Side panoramic 360 video.
+         */
+        static readonly MODE_SIDEBYSIDE: number;
         private _useDirectMapping;
         /**
          * The video texture being displayed on the sphere
@@ -43868,6 +43912,18 @@ declare module BABYLON {
          * Also see the options.resolution property.
          */
         fovMultiplier: number;
+        private _videoMode;
+        /**
+         * Gets or set the current video mode for the video. It can be:
+         * * VideoDome.MODE_MONOSCOPIC : Define the video source as a Monoscopic panoramic 360 video.
+         * * VideoDome.MODE_TOPBOTTOM  : Define the video source as a Stereoscopic TopBottom/OverUnder panoramic 360 video.
+         * * VideoDome.MODE_SIDEBYSIDE : Define the video source as a Stereoscopic Side by Side panoramic 360 video.
+         */
+        videoMode: number;
+        /**
+         * Oberserver used in Stereoscopic VR Mode.
+         */
+        private _onBeforeCameraRenderObserver;
         /**
          * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
          * @param name Element's name, child elements will append suffixes for their own names.
@@ -43883,6 +43939,7 @@ declare module BABYLON {
             poster?: string;
             useDirectMapping?: boolean;
         }, scene: Scene);
+        private _changeVideoMode;
         /**
          * Releases resources associated with this node.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
