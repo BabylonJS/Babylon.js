@@ -7,7 +7,7 @@ import { BaseCameraPointersInput } from "../../Cameras/Inputs/BaseCameraPointers
 /**
  * Mock class to be used by UnitTests.
  */
-export class MockCameraPointersInput extends BaseCameraPointersInput {
+export class StubCameraPointersInput extends BaseCameraPointersInput {
   /**
    * Defines the camera the input is attached to.
    */
@@ -23,6 +23,16 @@ export class MockCameraPointersInput extends BaseCameraPointersInput {
   public countOnButtonDown: number;
   public countOnButtonUp: number;
   public countOnLostFocus: number;
+
+  /**
+   * Store arguments of last callback methods.
+   */
+  public lastOnDoubleTap: any;
+  public lastOnTouch: any;
+  public lastOnMultiTouch: any;
+  public lastOnContextMenu: any;
+  public lastOnButtonDown: any;
+  public lastOnButtonUp: any;
 
   /**
    * Store arguments when callback methods are called.
@@ -49,6 +59,13 @@ export class MockCameraPointersInput extends BaseCameraPointersInput {
     this.valuesOnContextMenu = [];
     this.valuesOnButtonDown = [];
     this.valuesOnButtonUp = [];
+
+    this.lastOnDoubleTap = undefined;
+    this.lastOnTouch = undefined;
+    this.lastOnMultiTouch = undefined;
+    this.lastOnContextMenu = undefined;
+    this.lastOnButtonDown = undefined;
+    this.lastOnButtonUp = undefined;
   }
 
   constructor() {
@@ -59,7 +76,7 @@ export class MockCameraPointersInput extends BaseCameraPointersInput {
   /**
    * The class name of the current input.
    */
-  protected _className = "MockCameraPointersInput";
+  protected _className = "StubCameraPointersInput";
 
   /**
    * Called on pointer POINTERDOUBLETAP event.
@@ -68,39 +85,46 @@ export class MockCameraPointersInput extends BaseCameraPointersInput {
   protected onDoubleTap(type: string) {
     this.countOnDoubleTap++;
     this.valuesOnDoubleTap.push(type);
+    this.lastOnDoubleTap = type;
   }
 
   /**
    * Called on pointer POINTERMOVE event if only a single touch is active.
    * Override this method to provide functionality.
    */
-  protected onTouch(point: Nullable<PointerTouch>,
+  protected onTouch(
+    point: Nullable<PointerTouch>,
     offsetX: number,
-    offsetY: number): void {
-      this.countOnTouch++;
-      this.valuesOnTouch.push([point, offsetX, offsetY]);
-    }
+    offsetY: number):
+  void {
+    this.countOnTouch++;
+    this.lastOnTouch = {point, offsetX, offsetY};
+    this.valuesOnTouch.push(this.lastOnTouch);
+  }
 
   /**
    * Called on pointer POINTERMOVE event if multiple touches are active.
    * Override this method to provide functionality.
    */
-  protected onMultiTouch(pointA: Nullable<PointerTouch>,
+  protected onMultiTouch(
+    pointA: Nullable<PointerTouch>,
     pointB: Nullable<PointerTouch>,
     previousPinchSquaredDistance: number,
     pinchSquaredDistance: number,
     previousMultiTouchPanPosition: Nullable<PointerTouch>,
-    multiTouchPanPosition: Nullable<PointerTouch>): void {
-      this.countOnMultiTouch++;
-      this.valuesOnMultiTouch.push([
-        pointA,
-        pointB,
-        previousPinchSquaredDistance,
-        pinchSquaredDistance,
-        previousMultiTouchPanPosition,
-        multiTouchPanPosition,
-      ]);
-    }
+    multiTouchPanPosition: Nullable<PointerTouch>):
+  void {
+    this.countOnMultiTouch++;
+    this.lastOnMultiTouch = {
+      pointA,
+      pointB,
+      previousPinchSquaredDistance,
+      pinchSquaredDistance,
+      previousMultiTouchPanPosition,
+      multiTouchPanPosition,
+    };
+    this.valuesOnMultiTouch.push(this.lastOnMultiTouch);
+  }
 
   /**
    * Called on JS contextmenu event.
@@ -109,7 +133,8 @@ export class MockCameraPointersInput extends BaseCameraPointersInput {
   protected onContextMenu(evt: PointerEvent): void {
     evt.preventDefault();
     this.countOnContextMenu++;
-    this.valuesOnContextMenu.push([evt,]);
+    this.lastOnContextMenu = evt;
+    this.valuesOnContextMenu.push(evt);
   }
 
   /**
@@ -119,7 +144,8 @@ export class MockCameraPointersInput extends BaseCameraPointersInput {
    */
   protected onButtonDown(evt: PointerEvent, buttonCount: number): void {
     this.countOnButtonDown++;
-    this.valuesOnButtonDown.push([evt, buttonCount]);
+    this.lastOnButtonDown = {evt, buttonCount};
+    this.valuesOnButtonDown.push(this.lastOnButtonDown);
   }
 
   /**
@@ -129,7 +155,8 @@ export class MockCameraPointersInput extends BaseCameraPointersInput {
    */
   protected onButtonUp(evt: PointerEvent): void {
     this.countOnButtonUp++;
-    this.valuesOnButtonUp.push([evt,]);
+    this.lastOnButtonUp = evt;
+    this.valuesOnButtonUp.push(evt);
   }
 
   /**
@@ -140,5 +167,5 @@ export class MockCameraPointersInput extends BaseCameraPointersInput {
     this.countOnLostFocus++;
   }
 }
-(<any>CameraInputTypes)["MockCameraPointersInput"] = MockCameraPointersInput;
+(<any>CameraInputTypes)["StubCameraPointersInput"] = StubCameraPointersInput;
 
