@@ -80,6 +80,8 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         clone.name = name;
 
         this.clearCoat.copyTo(clone.clearCoat);
+        this.anisotropy.copyTo(clone.anisotropy);
+        this.brdf.copyTo(clone.brdf);
 
         return clone;
     }
@@ -92,6 +94,8 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         serializationObject.customType = "BABYLON.PBRSpecularGlossinessMaterial";
 
         serializationObject.clearCoat = this.clearCoat.serialize();
+        serializationObject.anisotropy = this.anisotropy.serialize();
+        serializationObject.brdf = this.brdf.serialize();
 
         return serializationObject;
     }
@@ -103,6 +107,12 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         const material = SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);
         if (source.clearCoat) {
             material.clearCoat.parse(source.clearCoat);
+        }
+        if (source.anisotropy) {
+            material.anisotropy.parse(source.anisotropy);
+        }
+        if (source.brdf) {
+            material.brdf.parse(source.brdf);
         }
         return material;
     }
