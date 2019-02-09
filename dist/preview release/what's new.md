@@ -24,7 +24,7 @@
   - Moved to a measure / draw mechanism ([Deltakosh](https://github.com/deltakosh))
   - Added support for [nine patch stretch](https://www.babylonjs-playground.com/#G5H9IN#2) mode for images. ([Deltakosh](https://github.com/deltakosh))
   - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev)) **** NEED DEMO or DOC LINK)
-- Migrated the code to modules and deploy ES6 npm packages ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+- Migrated the code to modules and deploy [ES6 npm packages](https://doc.babylonjs.com/features/es6_support) ([Sebavan](https://github.com/Sebavan))
 - Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
 - Added anisotropy support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
 - Added `TrailMesh` class. Credit to furcatomasz ([danjpar](https://github.com/danjpar)) **** NEED DEMO or DOC LINK)
@@ -35,7 +35,7 @@
 
 - Added `inputText.onKeyboardEventProcessedObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added `button.image` and `button.textBlock` to simplify access to button internal parts ([Deltakosh](https://github.com/deltakosh))
-- Added `sldier.displayThumb` to show/hide slider's thumb ([Deltakosh](https://github.com/deltakosh))
+- Added `slider.displayThumb` to show/hide slider's thumb ([Deltakosh](https://github.com/deltakosh))
 - Added `grid.rowCount`, `grid.columnCount` and `grid.getChildrenAt()` ([Deltakosh](https://github.com/deltakosh))
 - Added `Control.AllowAlphaInheritance` to let users control the way alpha is used (inherited or not) ([Deltakosh](https://github.com/deltakosh))
 - Added support for performing operations like select all, text highlight, delete selected in `inputText` ([Saket Saurabh](https://github.com/ssaket))
@@ -46,6 +46,7 @@
 
 ### Core Engine
 
+- Added support for `scene.customLODSelector` to let users define their own LOD rules ([Deltakosh](https://github.com/deltakosh))
 - Added `animatable.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added `animationGroup.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added FlyCamera for free navigation in 3D space, with a limited set of settings ([Phuein](https://github.com/phuein))
@@ -105,9 +106,14 @@
 - Inspector light gizmo ([TrevorDev](https://github.com/TrevorDev))
 - Added option `multiMultiMaterials` to mesh.mergeMeshes ([danjpar](https://github.com/danjpar))
 - Expose fallback camera distortion metrics option in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
+- Added setColor method to boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
+- Added OnAfterEnteringVRObservable to webVRHelper ([TrevorDev](https://github.com/TrevorDev))
+- Added Support for Side By Side and Top/Bottom VR videos in the [video dome](https://doc.babylonjs.com/how_to/360videodome#video-types) ([Sebavan](https://github.com/Sebavan))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
+- Add option for silently failing when materials fail to load ([brianzinn](https://github.com/brianzinn))
+- Add option to skip loading materials ([brianzinn](https://github.com/brianzinn))
 
 ### glTF Loader
 
@@ -171,6 +177,8 @@
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBehavior should not let the drag plane get out of sync when rotating the object during dragging ([TrevorDev](https://github.com/TrevorDev))
 - Do not crash the application if webVR submitFrame fails ([TrevorDev](https://github.com/TrevorDev))
+- Fix pinch action on FollowCameraPointersInput ([mrdunk](https://github.com))
+- Tools.CreateScreenshot stopped working ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))

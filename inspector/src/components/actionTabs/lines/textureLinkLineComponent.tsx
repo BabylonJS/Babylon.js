@@ -51,14 +51,14 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         const texture = this.props.texture;
         const material = this.props.material;
 
-        if (!material) {
+        if (!material || !texture) {
             return;
         }
         const scene = material.getScene();
 
         if (material.reservedDataStore && material.reservedDataStore.debugTexture === texture) {
             const debugMaterial = material.reservedDataStore.debugMaterial;
-
+            texture.level = material.reservedDataStore.level;
             for (var mesh of scene.meshes) {
                 if (mesh.material === debugMaterial) {
                     mesh.material = material;
@@ -82,7 +82,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         var debugMaterial = new StandardMaterial("debugMaterial", scene);
         debugMaterial.disableLighting = true;
         debugMaterial.sideOrientation = material.sideOrientation;
-        debugMaterial.emissiveTexture = texture!;
+        debugMaterial.emissiveTexture = texture;
         debugMaterial.forceDepthWrite = true;
         debugMaterial.reservedDataStore = { hidden: true };
 
@@ -98,6 +98,8 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
 
         material.reservedDataStore.debugTexture = texture;
         material.reservedDataStore.debugMaterial = debugMaterial;
+        material.reservedDataStore.level = texture.level;
+        texture.level = 1.0;
 
         if (this.props.onDebugSelectionChangeObservable) {
             this.props.onDebugSelectionChangeObservable.notifyObservers(texture!);

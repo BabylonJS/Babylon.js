@@ -39,11 +39,16 @@ uniform Material
     uniform float pointSize;
 
     uniform vec2 vClearCoatParams;
+    uniform vec4 vClearCoatRefractionParams;
     uniform vec2 vClearCoatInfos;
     uniform mat4 clearCoatMatrix;
     uniform vec2 vClearCoatBumpInfos;
     uniform vec2 vClearCoatTangentSpaceParams;
     uniform mat4 clearCoatBumpMatrix;
+    uniform vec4 vClearCoatTintParams;
+    uniform float clearCoatColorAtDistance;
+    uniform vec2 vClearCoatTintInfos;
+    uniform mat4 clearCoatTintMatrix;
 
     uniform float anisotropy;
 };

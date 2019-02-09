@@ -16,14 +16,24 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
     public camera: FollowCamera;
 
     /**
-     * Defines the pointer angular sensibility along the X axis or how fast is the camera rotating.
+     * Gets the class name of the current input.
+     * @returns the class name
+     */
+    public getClassName(): string {
+        return "FollowCameraPointersInput";
+    }
+
+    /**
+     * Defines the pointer angular sensibility along the X axis or how fast is
+     * the camera rotating.
      * A negative number will reverse the axis direction.
      */
     @serialize()
     public angularSensibilityX = 1;
 
     /**
-     * Defines the pointer angular sensibility along the Y axis or how fast is the camera rotating.
+     * Defines the pointer angular sensibility along the Y axis or how fast is
+     * the camera rotating.
      * A negative number will reverse the axis direction.
      */
     @serialize()
@@ -37,8 +47,10 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
     public pinchPrecision = 10000.0;
 
     /**
-     * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
-     * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+     * pinchDeltaPercentage will be used instead of pinchPrecision if different
+     * from 0.
+     * It defines the percentage of current camera.radius to use as delta when
+     * pinch zoom is used.
      */
     @serialize()
     public pinchDeltaPercentage = 0;
@@ -102,11 +114,6 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
      */
     public warningEnable: boolean = true;
 
-    /**
-     * The class name of the current input.
-     */
-    protected _className = "FollowCameraPointersInput";
-
     protected onTouch(pointA: Nullable<PointerTouch>,
                       offsetX: number,
                       offsetY: number): void
@@ -132,7 +139,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         }
     }
 
-    protected doMultiTouch(pointA: Nullable<PointerTouch>,
+    protected onMultiTouch(pointA: Nullable<PointerTouch>,
                            pointB: Nullable<PointerTouch>,
                            previousPinchSquaredDistance: number,
                            pinchSquaredDistance: number,

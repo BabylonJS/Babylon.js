@@ -8,6 +8,7 @@ import { TextLineComponent } from "../../../lines/textLineComponent";
 import { LockObject } from "../lockObject";
 import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
 import { GlobalState } from '../../../../globalState';
+import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 
 interface ICommonRenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;
@@ -23,11 +24,16 @@ export class CommonRenderingPipelinePropertyGridComponent extends React.Componen
 
     render() {
         const renderPipeline = this.props.renderPipeline;
+        const renderPipelineAsAny = renderPipeline as any;
 
         return (
             <div>
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Class" value={renderPipeline.getClassName()} />
+                    {
+                        renderPipelineAsAny.samples !== undefined &&
+                        <SliderLineComponent label="Samples" minimum={1} maximum={8} step={1} decimalCount={0} target={renderPipeline} propertyName="samples" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                 </LineContainerComponent>
             </div>
         );

@@ -136,6 +136,7 @@ declare module INSPECTOR {
         propertyName?: string;
         isSelected?: () => boolean;
         onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
@@ -169,13 +170,10 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class DebugTabComponent extends PaneComponent {
-        private _skeletonViewersEnabled;
         private _physicsViewersEnabled;
-        private _skeletonViewers;
         constructor(props: IPaneComponentProps);
         componentWillMount(): void;
         componentWillUnmount(): void;
-        switchSkeletonViewers(): void;
         switchPhysicsViewers(): void;
         render(): JSX.Element | null;
     }
@@ -342,6 +340,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element | null;
         render(): JSX.Element;
@@ -440,6 +439,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMaterialPropertyGridComponentProps);
         renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element | null;
         render(): JSX.Element;
@@ -693,6 +693,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class BackgroundMaterialPropertyGridComponent extends React.Component<IBackgroundMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IBackgroundMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
         render(): JSX.Element;
@@ -952,6 +953,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Component<IPBRMetallicRoughnessMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMetallicRoughnessMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element | null;
         render(): JSX.Element;
@@ -966,6 +968,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Component<IPBRSpecularGlossinessMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: IPBRSpecularGlossinessMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element | null;
         render(): JSX.Element;
@@ -1089,6 +1092,59 @@ declare module INSPECTOR {
     }
     export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component<ISSAO2RenderingPipelinePropertyGridComponentProps> {
         constructor(props: ISSAO2RenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IAnimationGridComponentProps {
+        globalState: GlobalState;
+        animatable: BABYLON.IAnimatable;
+        scene: BABYLON.Scene;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class AnimationGridComponent extends React.Component<IAnimationGridComponentProps, {
+        currentFrame: number;
+    }> {
+        private _animations;
+        private _ranges;
+        private _animationControl;
+        private _runningAnimatable;
+        private _onBeforeRenderObserver;
+        private _isPlaying;
+        constructor(props: IAnimationGridComponentProps);
+        playOrPause(): void;
+        componentWillMount(): void;
+        componentWillUnmount(): void;
+        onCurrentFrameChange(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISkeletonPropertyGridComponentProps {
+        globalState: GlobalState;
+        skeleton: BABYLON.Skeleton;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SkeletonPropertyGridComponent extends React.Component<ISkeletonPropertyGridComponentProps> {
+        private _skeletonViewersEnabled;
+        private _skeletonViewers;
+        constructor(props: ISkeletonPropertyGridComponentProps);
+        switchSkeletonViewers(): void;
+        componentWillMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IBonePropertyGridComponentProps {
+        globalState: GlobalState;
+        bone: BABYLON.Bone;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class BonePropertyGridComponent extends React.Component<IBonePropertyGridComponentProps> {
+        constructor(props: IBonePropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -1368,6 +1424,28 @@ declare module INSPECTOR {
     }
     export class RenderingPipelineItemComponent extends React.Component<IRenderPipelineItemComponenttProps> {
         constructor(props: IRenderPipelineItemComponenttProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISkeletonTreeItemComponentProps {
+        skeleton: BABYLON.Skeleton;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SkeletonTreeItemComponent extends React.Component<ISkeletonTreeItemComponentProps> {
+        constructor(props: ISkeletonTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IBoneTreeItemComponenttProps {
+        bone: BABYLON.Bone;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class BoneTreeItemComponent extends React.Component<IBoneTreeItemComponenttProps> {
+        constructor(props: IBoneTreeItemComponenttProps);
         render(): JSX.Element;
     }
 }
