@@ -3995,7 +3995,8 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         var engine = this._engine;
 
-        this.activeCamera = camera;
+        // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
+        this._activeCamera = camera;
 
         if (!this.activeCamera) {
             throw new Error("Active camera not set");
@@ -4124,8 +4125,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             this._renderForCamera(camera._rigCameras[index], camera);
         }
 
-        this.activeCamera = camera;
-        this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+        // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
+        this._activeCamera = camera;
+        this.setTransformMatrix(this._activeCamera.getViewMatrix(), this._activeCamera.getProjectionMatrix());
     }
 
     private _checkIntersections(): void {
