@@ -3,7 +3,7 @@ export * from "./arcRotateCameraKeyboardMoveInput";
 export * from "./arcRotateCameraMouseWheelInput";
 export * from "./arcRotateCameraPointersInput";
 export * from "./arcRotateCameraVRDeviceOrientationInput";
-export * from "./MockCameraPointersInput";
+export * from "./StubCameraPointersInput";
 export * from "./flyCameraKeyboardInput";
 export * from "./flyCameraMouseInput";
 export * from "./followCameraKeyboardMoveInput";
