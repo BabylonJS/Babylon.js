@@ -21,6 +21,11 @@ uniform vec4 vCameraInfos;
 // Input
 varying vec3 vPositionW;
 
+#if DEBUGMODE > 0
+    uniform vec2 vDebugMode;
+    varying vec4 vClipSpacePosition;
+#endif
+
 #ifdef MAINUV1
     varying vec2 vMainUV1;
 #endif 
@@ -1171,63 +1176,5 @@ void main(void) {
 
     gl_FragColor = finalColor;
 
-    // Normal Display.
-    //gl_FragColor = vec4(normalW * 0.5 + 0.5, 1.0);
-
-    // Ambient reflection color.
-    // gl_FragColor = vec4(ambientReflectionColor, 1.0);
-
-    // Reflection color.
-    // gl_FragColor = vec4(reflectionColor, 1.0);
-
-    // Base color.
-    // gl_FragColor = vec4(surfaceAlbedo.rgb, 1.0);
-
-    // Diffuse Direct Lighting
-    // gl_FragColor = vec4(diffuseBase.rgb, 1.0);
-
-    // Specular Lighting
-    // gl_FragColor = vec4(specularBase.rgb, 1.0);
-
-    // Final Specular
-    // gl_FragColor = vec4(finalSpecular.rgb, 1.0);
-
-    // Irradiance
-    //gl_FragColor = vec4(specularEnvironmentReflectance.rgb, 1.0);
-    //gl_FragColor = vec4(environmentIrradiance.rgb / 3.0, 1.0);
-
-    // Specular color.
-    //gl_FragColor = vec4(surfaceReflectivityColor.rgb, 1.0);
-
-    // MicroSurface color.
-    // gl_FragColor = vec4(microSurface, microSurface, microSurface, 1.0);
-
-    // Roughness.
-    // gl_FragColor = vec4(roughness, roughness, roughness, 1.0);
-
-    // Specular Map
-    // gl_FragColor = vec4(reflectivityMapColor.rgb, 1.0);
-
-    // Refractance
-    // gl_FragColor = vec4(refractance.rgb, 1.0);
-
-    //// Emissive Color
-    //vec2 test = vEmissiveUV * 0.5 + 0.5;
-    //gl_FragColor = vec4(test.x, test.y, 1.0, 1.0);
-
-    // Specular Environment Occlusion
-    //gl_FragColor = vec4(seo, seo, seo, 1.0);
-
-    //// Horizon Environment Occlusion
-    //gl_FragColor = vec4(eho, eho, eho, 1.0);
-
-    //gl_FragColor = vec4(seo * eho, seo * eho, seo * eho, 1.0);
-
-    //gl_FragColor = vec4(normalize(-TBN[0]), 1.0);
-
-    //gl_FragColor = vec4(vPositionW * 0.5 + 0.5, 1.0);
-
-    //gl_FragColor = vec4(vMainUV1, 0., 1.0);
-
-    //gl_FragColor = vec4(specularEnvironmentR0, 1.0);
+#include<pbrDebug>
 }
