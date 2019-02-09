@@ -27,6 +27,7 @@
 - Migrated the code to modules and deploy [ES6 npm packages](https://doc.babylonjs.com/features/es6_support) ([Sebavan](https://github.com/Sebavan))
 - Added `TrailMesh` class. Credit to furcatomasz ([danjpar](https://github.com/danjpar)) **** NEED DEMO or DOC LINK)
 - PBR:
+  - Added Inspector Debug Mode ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added Smith Height Correlated Visibility term to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added energy conservation through Multiscattering BRDF support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
