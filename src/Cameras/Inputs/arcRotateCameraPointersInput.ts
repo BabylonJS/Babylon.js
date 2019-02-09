@@ -16,8 +16,8 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     public camera: ArcRotateCamera;
 
     /**
-     * Gets the class name of the current input.
-     * @returns the class name
+    * Gets the class name of the current input.
+    * @returns the class name
      */
     public getClassName(): string {
         return "ArcRotateCameraPointersInput";
@@ -201,7 +201,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
      */
-    protected onButtonUp(evt: PointerEvent): void {
+    protected onButtonUp(evt: PointerEvent, buttonCount: number): void {
         this._twoFingerActivityCount = 0;
         this._isPinching = false;
     }

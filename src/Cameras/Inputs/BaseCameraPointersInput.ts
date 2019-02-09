@@ -164,7 +164,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                   previousMultiTouchPanPosition = null;
                 }
 
-                this.onButtonUp(evt);
+                this.onButtonUp(evt, pointA !== null ? 1 : 0);
 
                 if (!noPreventDefault) {
                     evt.preventDefault();
@@ -324,7 +324,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * release.
      * Override this method to provide functionality.
      */
-    protected onButtonUp(evt: PointerEvent): void {
+    protected onButtonUp(evt: PointerEvent, buttonCount: number): void {
     }
 
     /**

@@ -153,10 +153,10 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
    * release.
    * Override this method to provide functionality.
    */
-  protected onButtonUp(evt: PointerEvent): void {
+  protected onButtonUp(evt: PointerEvent, buttonCount: number): void {
     this.countOnButtonUp++;
-    this.lastOnButtonUp = evt;
-    this.valuesOnButtonUp.push(evt);
+    this.lastOnButtonUp = {evt, buttonCount};
+    this.valuesOnButtonUp.push(this.lastOnButtonUp);
   }
 
   /**
