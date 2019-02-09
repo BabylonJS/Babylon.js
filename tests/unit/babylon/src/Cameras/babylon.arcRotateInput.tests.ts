@@ -108,8 +108,8 @@ describe('BaseRotateCameraInput', function() {
     
     // Set up an instance of a Camera with the ArcRotateCameraPointersInput.
     this.camera = new BABYLON.ArcRotateCamera(
-      "MockCameraOriginal", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), this._scene);
-    this.cameraInput = new BABYLON.MockCameraPointersInput();
+      "StubCamera", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), this._scene);
+    this.cameraInput = new BABYLON.StubCameraPointersInput();
     this.cameraInput.camera = this.camera;
     this.cameraInput.attachControl(this._canvas);
   });
@@ -120,7 +120,7 @@ describe('BaseRotateCameraInput', function() {
   });
 
   describe('one button drag', function() {
-    it('should call "onTouch method"', function() {
+    it('should call "onTouch" method', function() {
       var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
 
       // Button down.
@@ -129,59 +129,352 @@ describe('BaseRotateCameraInput', function() {
       event.clientY = 200;
       event.button = 0;
       simulateEvent(this.cameraInput, event);
-      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
+      // Button down but no movement events have fired yet.
       expect(this.cameraInput.countOnTouch).to.equal(0);
-      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
-      expect(this.cameraInput.countOnContextMenu).to.equal(0);
       expect(this.cameraInput.countOnButtonDown).to.equal(1);
       expect(this.cameraInput.countOnButtonUp).to.equal(0);
-      expect(this.cameraInput.countOnLostFocus).to.equal(0);
       
       // Start moving.
       event.type = "pointermove";
       event.button = 0;
       simulateEvent(this.cameraInput, event);
-      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
       expect(this.cameraInput.countOnTouch).to.equal(1);
-      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
-      expect(this.cameraInput.countOnContextMenu).to.equal(0);
       expect(this.cameraInput.countOnButtonDown).to.equal(1);
       expect(this.cameraInput.countOnButtonUp).to.equal(0);
-      expect(this.cameraInput.countOnLostFocus).to.equal(0);
       // Move just started; No value yet.
-      expect(this.cameraInput.valuesOnTouch[0][1]).to.equal(0);
-      expect(this.cameraInput.valuesOnTouch[0][2]).to.equal(0);
+      expect(this.cameraInput.lastOnTouch.offsetX).to.equal(0);
+      expect(this.cameraInput.lastOnTouch.offsetY).to.equal(0);
 
       // Drag.
       event.type = "pointermove";
       event.clientX = 1000;
       event.button = 0;
       simulateEvent(this.cameraInput, event);
-      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
       expect(this.cameraInput.countOnTouch).to.equal(2);
-      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
-      expect(this.cameraInput.countOnContextMenu).to.equal(0);
       expect(this.cameraInput.countOnButtonDown).to.equal(1);
       expect(this.cameraInput.countOnButtonUp).to.equal(0);
-      expect(this.cameraInput.countOnLostFocus).to.equal(0);
       // Pointer dragged in X direction.
-      expect(this.cameraInput.valuesOnTouch[1][1]).to.above(0);
-      expect(this.cameraInput.valuesOnTouch[1][2]).to.equal(0);
+      expect(this.cameraInput.lastOnTouch.offsetX).to.above(0);
+      expect(this.cameraInput.lastOnTouch.offsetY).to.equal(0);
 
       // Button up.
       event.type = "pointerup";
       event.button = 0;
       simulateEvent(this.cameraInput, event);
-      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
       expect(this.cameraInput.countOnTouch).to.equal(2);
-      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
-      expect(this.cameraInput.countOnContextMenu).to.equal(0);
       expect(this.cameraInput.countOnButtonDown).to.equal(1);
       expect(this.cameraInput.countOnButtonUp).to.equal(1);
+      
+      // These callbacks were never called.
+      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+      expect(this.cameraInput.countOnContextMenu).to.equal(0);
       expect(this.cameraInput.countOnLostFocus).to.equal(0);
-      // No more dragging.
-      expect(this.cameraInput.valuesOnTouch[0][1]).to.equal(0);
-      expect(this.cameraInput.valuesOnTouch[0][2]).to.equal(0);
+    });
+
+    it('should work multiple times in a row', function() {
+      var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
+
+      // Button down.
+      event.type = "pointerdown";
+      event.clientX = 100;
+      event.clientY = 200;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      // Button down but no movement events have fired yet.
+      expect(this.cameraInput.countOnTouch).to.equal(0);
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      
+      // Start moving.
+      event.type = "pointermove";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnTouch).to.equal(1);
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      // Move just started; No value yet.
+      expect(this.cameraInput.lastOnTouch.offsetX).to.equal(0);
+      expect(this.cameraInput.lastOnTouch.offsetY).to.equal(0);
+
+      // Drag.
+      event.type = "pointermove";
+      event.clientX = 1000;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      // Pointer dragged in X direction.
+      expect(this.cameraInput.lastOnTouch.offsetX).to.above(0);
+      expect(this.cameraInput.lastOnTouch.offsetY).to.equal(0);
+
+      // Button up.
+      event.type = "pointerup";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(1);
+      
+      // Button down for 2nd time.
+      event.type = "pointerdown";
+      event.clientX = 100;
+      event.clientY = 200;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      // Button down but no movement events have fired yet.
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(1);
+      
+      // Start moving.
+      event.type = "pointermove";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnTouch).to.equal(3);
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(1);
+      // Move just started; No value yet.
+      expect(this.cameraInput.lastOnTouch.offsetX).to.equal(0);
+      expect(this.cameraInput.lastOnTouch.offsetY).to.equal(0);
+
+      // Drag again.
+      event.type = "pointermove";
+      event.clientY = 2000;
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnTouch).to.equal(4);
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(1);
+      // Pointer dragged in Y direction.
+      expect(this.cameraInput.lastOnTouch.offsetX).to.equal(0);
+      expect(this.cameraInput.lastOnTouch.offsetY).to.above(0);
+
+      // Button up.
+      event.type = "pointerup";
+      event.button = 0;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnTouch).to.equal(4);
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(2);
+      
+      // These callbacks were never called.
+      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+      expect(this.cameraInput.countOnContextMenu).to.equal(0);
+      expect(this.cameraInput.countOnLostFocus).to.equal(0);
+    });
+  });
+  
+  describe('two button drag', function() {
+    it('should call "onMultiTouch" method', function() {
+      var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
+
+      // 1st button down.
+      event.type = "pointerdown";
+      event.pointerType = "touch";
+      event.clientX = 1000;
+      event.clientY = 200;
+      event.button = 0;
+      event.pointerId = 1;
+      simulateEvent(this.cameraInput, event);
+      // Button down but no movement events have fired yet.
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(0);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+
+      // Start moving before 2nd button has been pressed.
+      event.type = "pointermove";
+      event.button = -1;
+      event.pointerId = 1;
+      simulateEvent(this.cameraInput, event);
+      // Moving with one button down will start a drag.
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(1);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+
+      // Move X coordinate.
+      event.type = "pointermove";
+      event.clientX = 1500;
+      event.clientY = 200;
+      event.button = -1;
+      event.pointerId = 1;
+      simulateEvent(this.cameraInput, event);
+      // One button drag.
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+
+      // 2nd button down. (Enter zoom mode.)
+      event.type = "pointerdown";
+      event.pointerType = "touch";
+      event.button = 1;
+      event.pointerId = 2;
+      simulateEvent(this.cameraInput, event);
+      // 2nd button down but hasn't moved yet.
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+
+      // Start move of 2nd pointer.
+      event.type = "pointermove";
+      event.clientX = 2000;
+      event.clientY = 2000;
+      event.button = -1;
+      event.pointerId = 2;
+      simulateEvent(this.cameraInput, event);
+      // Start of drag with 2 buttons down.
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(1);
+      // First time onMultiTouch() is called for a new drag.
+      expect(this.cameraInput.lastOnMultiTouch.pinchSquaredDistance).to.be.above(0);
+      expect(this.cameraInput.lastOnMultiTouch.multiTouchPanPosition).to.not.be.null;
+      // previousPinchSquaredDistance will be null.
+      expect(this.cameraInput.lastOnMultiTouch.previousPinchSquaredDistance).to.be.equal(0);
+      expect(this.cameraInput.lastOnMultiTouch.previousMultiTouchPanPosition).to.be.null;
+
+      // Move Y coordinate. 2nd point is the one moving.
+      event.type = "pointermove";
+      event.clientX = 2000;
+      event.clientY = 2500;
+      event.button = -1;
+      event.pointerId = 2;
+      simulateEvent(this.cameraInput, event);
+      // Moving two button drag.
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(2);
+      // Neither first nor last event in a drag so everything populated.
+      expect(this.cameraInput.lastOnMultiTouch.pinchSquaredDistance).to.be.above(0);
+      expect(this.cameraInput.lastOnMultiTouch.multiTouchPanPosition).to.not.be.null;
+      expect(this.cameraInput.lastOnMultiTouch.previousPinchSquaredDistance).to.be.above(0);
+      expect(this.cameraInput.lastOnMultiTouch.previousMultiTouchPanPosition).to.not.be.null;
+
+      // Move X and Y coordinate. 1st point is the one moving.
+      event.type = "pointermove";
+      event.clientX = 1700;
+      event.clientY = 1700;
+      event.button = -1;
+      event.pointerId = 1;
+      simulateEvent(this.cameraInput, event);
+      // Moving two button drag.
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(3);
+
+      // One of the buttons button up.
+      event.type = "pointerup";
+      event.pointerType = "touch";
+      event.button = 0;
+      event.pointerId = 1;
+      simulateEvent(this.cameraInput, event);
+      // Button up.
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(1);
+      expect(this.cameraInput.countOnTouch).to.equal(2);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(4);
+      // onMultiTouch() is called one last time when drag ends with null value for
+      // multiTouchPanPosition.
+      expect(this.cameraInput.lastOnMultiTouch.pinchSquaredDistance).to.equal(0);
+      expect(this.cameraInput.lastOnMultiTouch.multiTouchPanPosition).to.be.null;
+      // previousPinchSquaredDistance and previousMultiTouchPanPosition are
+      // populated though.
+      expect(this.cameraInput.lastOnMultiTouch.previousPinchSquaredDistance).to.be.above(0);
+      expect(this.cameraInput.lastOnMultiTouch.previousMultiTouchPanPosition).to.not.be.null;
+
+      // Move X and Y coordinate of remaining pressed point.
+      event.type = "pointermove";
+      event.clientX = 2000;
+      event.clientY = 2700;
+      event.button = -1;
+      event.pointerId = 2;
+      simulateEvent(this.cameraInput, event);
+      // Back to one button drag.
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(1);
+      expect(this.cameraInput.countOnTouch).to.equal(3);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(4);
+
+      // Other button button up. (Now moves should have no affect.)
+      event.type = "pointerup";
+      event.pointerType = "touch";
+      event.button = 1;
+      event.pointerId = 2;
+      simulateEvent(this.cameraInput, event);
+      // Button up.
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(2);
+      expect(this.cameraInput.countOnTouch).to.equal(3);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(4);
+
+      // Move X and Y coordinate.
+      event.type = "pointermove";
+      event.clientX = 3000;
+      event.clientY = 4000;
+      event.button = -1;
+      event.pointerId = 1;
+      simulateEvent(this.cameraInput, event);
+      // Not dragging anymore so no change in callbacks.
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(2);
+      expect(this.cameraInput.countOnTouch).to.equal(3);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(4);
+
+      // These callbacks were never called.
+      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
+      expect(this.cameraInput.countOnContextMenu).to.equal(0);
+      expect(this.cameraInput.countOnLostFocus).to.equal(0);
+    });
+  });
+
+  describe('button down', function() {
+    it('should call "onButtonDown" method', function() {
+      var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
+
+      // 1st button down.
+      event.type = "pointerdown";
+      event.pointerType = "touch";
+      event.clientX = 3000;
+      event.clientY = 4000;
+      event.button = 0;
+      event.pointerId = 1;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnButtonDown).to.equal(1);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.lastOnButtonDown.buttonCount).to.be.equal(1);
+
+      // 2nd button down.
+      event.type = "pointerdown";
+      event.pointerType = "touch";
+      event.clientX = 3000;
+      event.clientY = 4000;
+      // The code this is testing does not care if button number and id are
+      // different or not.
+      // If a buggy browser was ever to send multiple pointerdown events for a
+      // single click they would get registered as multiple buttons.
+      event.button = 0;
+      event.pointerId = 1;
+      simulateEvent(this.cameraInput, event);
+      expect(this.cameraInput.countOnButtonDown).to.equal(2);
+      expect(this.cameraInput.countOnButtonUp).to.equal(0);
+      expect(this.cameraInput.lastOnButtonDown.buttonCount).to.be.equal(2);
+      
+      
+      // These callbacks were never called.
+      expect(this.cameraInput.countOnTouch).to.equal(0);
+      expect(this.cameraInput.countOnMultiTouch).to.equal(0);
+      expect(this.cameraInput.countOnDoubleTap).to.equal(0);
+      expect(this.cameraInput.countOnContextMenu).to.equal(0);
+      expect(this.cameraInput.countOnLostFocus).to.equal(0);
     });
   });
 });
@@ -278,7 +571,7 @@ describe.skip('ArcRotateCameraInput', function() {
     
     // Set up an instance of a Camera with the ArcRotateCameraPointersInput.
     this.camera = new BABYLON.ArcRotateCamera(
-      "MockCameraOriginal", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), this._scene);
+      "Camera", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), this._scene);
     this.cameraInput = new BABYLON.ArcRotateCameraPointersInput();
     this.cameraInput.camera = this.camera;
     this.cameraInput.attachControl(this._canvas);
@@ -395,7 +688,6 @@ describe.skip('ArcRotateCameraInput', function() {
   });
 
   describe('one button drag', function() {
-
     it('should change inertialAlphaOffset', function() {
       var event: MockPointerEvent = eventTemplate(<HTMLElement>this._canvas);
 
