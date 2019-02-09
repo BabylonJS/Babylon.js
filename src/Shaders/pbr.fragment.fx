@@ -485,10 +485,7 @@ void main(void) {
     #endif
 
     #ifdef ANISOTROPIC
-        vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
-        vec3 anisotropicFrameTangent = cross(normalize(anisotropicFrameDirection), viewDirectionW);
-        vec3 anisotropicFrameNormal = cross(anisotropicFrameTangent, anisotropicFrameDirection);
-        vec3 anisotropicNormal = normalize(mix(normalW, anisotropicFrameNormal, abs(anisotropy)));
+        vec3 anisotropicNormal = getAnisotropicBentNormals(TBN, viewDirectionW, normalW, anisotropy);
     #endif
 
     // _____________________________ Refraction Info _______________________________________
@@ -751,8 +748,10 @@ void main(void) {
             clearCoatNormalW = gl_FrontFacing ? clearCoatNormalW : -clearCoatNormalW;
         #endif
 
-        // Clear Coat AA
-        vec2 clearCoatAARoughnessFactors = getAARoughnessFactors(clearCoatNormalW.xyz);
+        #ifdef SPECULARAA
+            // Clear Coat AA
+            vec2 clearCoatAARoughnessFactors = getAARoughnessFactors(clearCoatNormalW.xyz);
+        #endif
 
         // Compute N dot V.
         float clearCoatNdotVUnclamped = dot(clearCoatNormalW, viewDirectionW);
@@ -826,16 +825,24 @@ void main(void) {
             #endif
 
             #ifdef CLEARCOAT_TINT
+                // Used later on in the light fragment and ibl.
                 vec3 clearCoatVRefract = -refract(vPositionW, clearCoatNormalW, vClearCoatRefractionParams.y);
                 float clearCoatNdotVRefract = clamp(dot(clearCoatNormalW, clearCoatVRefract), 0.00000000001, 1.0);
-
-                // Used later on in the light fragment and ibl.
                 vec3 absorption = vec3(0.);
             #endif
 
             // _____________________________ Levels _____________________________________
             environmentClearCoatRadiance.rgb *= vReflectionInfos.x;
             environmentClearCoatRadiance.rgb *= vReflectionColor.rgb;
+        #endif
+    #endif
+
+    #if defined(ENVIRONMENTBRDF)
+        // BRDF Lookup
+        vec2 environmentBrdf = getBRDFLookup(NdotV, roughness, environmentBrdfSampler);
+
+        #ifdef MS_BRDF_ENERGY_CONSERVATION
+            vec3 energyConservationFactor = getEnergyConservationFactor(specularEnvironmentR0, environmentBrdf);
         #endif
     #endif
 
@@ -866,13 +873,7 @@ void main(void) {
 
     // _________________________ Specular Environment Oclusion __________________________
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-        // Indexed on cos(theta) and roughness
-        vec2 brdfSamplerUV = vec2(NdotV, roughness);
-        
-        // We can find the scale and offset to apply to the specular value.
-        vec4 environmentBrdf = texture2D(environmentBrdfSampler, brdfSamplerUV);
-
-        vec3 specularEnvironmentReflectance = specularEnvironmentR0 * environmentBrdf.x + environmentBrdf.y;
+        vec3 specularEnvironmentReflectance = getReflectanceFromBRDFLookup(specularEnvironmentR0, environmentBrdf);
 
         #ifdef RADIANCEOCCLUSION
             #ifdef AMBIENTINGRAYSCALE
@@ -901,13 +902,9 @@ void main(void) {
     // _________________________ Clear Coat Environment Oclusion __________________________
     #ifdef CLEARCOAT
         #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-            // Indexed on cos(theta) and roughness
-            vec2 brdfClearCoatSamplerUV = vec2(clearCoatNdotV, clearCoatRoughness);
-            
-            // We can find the scale and offset to apply to the specular value.
-            vec4 environmentClearCoatBrdf = texture2D(environmentBrdfSampler, brdfClearCoatSamplerUV);
-
-            vec3 clearCoatEnvironmentReflectance = vec3(vClearCoatRefractionParams.x * environmentClearCoatBrdf.x + environmentClearCoatBrdf.y);
+            // BRDF Lookup
+            vec2 environmentClearCoatBrdf = getBRDFLookup(clearCoatNdotV, clearCoatRoughness, environmentBrdfSampler);
+            vec3 clearCoatEnvironmentReflectance = getReflectanceFromBRDFLookup(vec3(vClearCoatRefractionParams.x), environmentClearCoatBrdf);
 
             #ifdef RADIANCEOCCLUSION
                 float clearCoatSeo = environmentRadianceOcclusion(ambientMonochrome, clearCoatNdotVUnclamped);
@@ -1008,6 +1005,9 @@ void main(void) {
 
         // Full value needed for alpha.
         vec3 finalSpecularScaled = finalSpecular * vLightingIntensity.x * vLightingIntensity.w;
+        #ifdef MS_BRDF_ENERGY_CONSERVATION
+            finalSpecularScaled *= energyConservationFactor;
+        #endif
     #endif
 
     // _____________________________ Radiance ________________________________________
@@ -1017,6 +1017,9 @@ void main(void) {
 
         // Full value needed for alpha. 
         vec3 finalRadianceScaled = finalRadiance * vLightingIntensity.z;
+        #ifdef MS_BRDF_ENERGY_CONSERVATION
+            finalRadianceScaled *= energyConservationFactor;
+        #endif
     #endif
 
     // _____________________________ Refraction ______________________________________
@@ -1032,6 +1035,9 @@ void main(void) {
 
         // Full value needed for alpha.
         vec3 finalClearCoatScaled = finalClearCoat * vLightingIntensity.x * vLightingIntensity.w;
+        #ifdef MS_BRDF_ENERGY_CONSERVATION
+            finalClearCoatScaled *= energyConservationFactor;
+        #endif
 
     // ____________________________ Clear Coat Radiance _______________________________
         #ifdef REFLECTION
