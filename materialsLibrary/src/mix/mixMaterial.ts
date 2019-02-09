@@ -171,17 +171,18 @@ export class MixMaterial extends PushMaterial {
 
         // Textures
         if (scene.texturesEnabled) {            
-            if (this._mixTexture1 && this._mixTexture1.isReady()) {
+            if (this._mixTexture1 && !this._mixTexture1.isReady()) {
                 return false;
             }
                     
             defines._needUVs = true;
             
-            if (this._mixTexture2 && this._mixTexture2.isReady()) { 
-                return false;
-            } else {
+            if (this._mixTexture2) {
                 defines.MIXMAP2 = true;
             }
+            if (this._mixTexture2 && !this._mixTexture2.isReady()) { 
+                return false;
+            }          
             
             if (MaterialFlags.DiffuseTextureEnabled) {                 
                 if (!this._diffuseTexture1 || !this._diffuseTexture1.isReady()) {
