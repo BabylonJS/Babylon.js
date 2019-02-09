@@ -1,5 +1,5 @@
 import * as Babylon from "../index";
-import * as DebugImort from "../Debug/index";
+import * as DebugImport from "../Debug/index";
 
 declare var global: any;
 
@@ -17,8 +17,8 @@ if (typeof globalObject !== "undefined") {
     BABYLON.Debug = BABYLON.Debug || {};
 
     const keys = [];
-    for (var key in DebugImort) {
-        BABYLON.Debug[key] = (<any>DebugImort)[key];
+    for (var key in DebugImport) {
+        BABYLON.Debug[key] = (<any>DebugImport)[key];
         keys.push(key);
     }
     for (var key in Babylon) {
@@ -28,8 +28,8 @@ if (typeof globalObject !== "undefined") {
 
 export * from "../index";
 export const Debug = {
-    AxesViewer: DebugImort.AxesViewer,
-    BoneAxesViewer: DebugImort.BoneAxesViewer,
-    PhysicsViewer: DebugImort.PhysicsViewer,
-    SkeletonViewer: DebugImort.SkeletonViewer,
+    AxesViewer: DebugImport.AxesViewer,
+    BoneAxesViewer: DebugImport.BoneAxesViewer,
+    PhysicsViewer: DebugImport.PhysicsViewer,
+    SkeletonViewer: DebugImport.SkeletonViewer,
 };
