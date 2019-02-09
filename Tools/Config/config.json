@@ -105,7 +105,8 @@
                             "path": "babylonjs/Debug/skeletonViewer",
                             "namespace": "BABYLON.Debug"
                         }
-                    ]
+                    ],
+                    "hiddenConsts": ["Debug"]
                 },
                 "requiredFiles": [
                     "readme.md"
