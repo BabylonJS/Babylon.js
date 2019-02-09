@@ -16,8 +16,8 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     public camera: ArcRotateCamera;
 
     /**
-    * Gets the class name of the current input.
-    * @returns the class name
+     * Gets the class name of the current input.
+     * @returns the class name
      */
     public getClassName(): string {
         return "ArcRotateCameraPointersInput";
