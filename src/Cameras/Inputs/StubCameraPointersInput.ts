@@ -14,36 +14,103 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
   public camera: Camera;
 
   /**
-   * Count how many times callback methods are called.
+   * Count how many times onDoubleTap method is called.
    */
   public countOnDoubleTap: number;
+
+  /**
+   * Count how many times onTouch method is called.
+   */
   public countOnTouch: number;
+
+  /**
+   * Count how many times onMultiTouch method is called.
+   */
   public countOnMultiTouch: number;
+
+  /**
+   * Count how many times onContextMenu method is called.
+   */
   public countOnContextMenu: number;
+
+  /**
+   * Count how many times onButtonDown method is called.
+   */
   public countOnButtonDown: number;
+
+  /**
+   * Count how many times onButtonUp method is called.
+   */
   public countOnButtonUp: number;
+
+  /**
+   * Count how many times onLostFocus method is called.
+   */
   public countOnLostFocus: number;
 
   /**
-   * Store arguments of last callback methods.
+   * Store arguments of last time onDoubleTap method was called.
    */
   public lastOnDoubleTap: any;
+
+  /**
+   * Store arguments of last time onTouch method was called.
+   */
   public lastOnTouch: any;
+
+  /**
+   * Store arguments of last time onMultiTouch method was called.
+   */
   public lastOnMultiTouch: any;
+
+  /**
+   * Store arguments of last time onContextMenu method was called.
+   */
   public lastOnContextMenu: any;
+
+  /**
+   * Store arguments of last time onButtonDown method was called.
+   */
   public lastOnButtonDown: any;
+
+  /**
+   * Store arguments of last time onButtonUp method was called.
+   */
   public lastOnButtonUp: any;
 
   /**
-   * Store arguments when callback methods are called.
+   * Store arguments when onDoubleTap method is called.
    */
   public valuesOnDoubleTap: any[];
+
+  /**
+   * Store arguments when onTouch method is called.
+   */
   public valuesOnTouch: any[];
+
+  /**
+   * Store arguments when onMultiTouch method is called.
+   */
   public valuesOnMultiTouch: any[];
+
+  /**
+   * Store arguments when onContextMenu method is called.
+   */
   public valuesOnContextMenu: any[];
+
+  /**
+   * Store arguments when onButtonDown method is called.
+   */
   public valuesOnButtonDown: any[];
+
+  /**
+   * Store arguments when onButtonUp method is called.
+   */
   public valuesOnButtonUp: any[];
 
+  /**
+   * Reset instance of this class to default values.
+   */
   public reset(): void {
     this.countOnDoubleTap = 0;
     this.countOnTouch = 0;
@@ -68,19 +135,24 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
     this.lastOnButtonUp = undefined;
   }
 
+  /**
+   * Mock class to be used by UnitTests.
+   */
   constructor() {
     super();
     this.reset();
   }
 
   /**
-   * The class name of the current input.
+   * Gets the class name of the current input.
+   * @returns the class name
    */
-  protected _className = "StubCameraPointersInput";
+  public getClassName(): string {
+    return "StubCameraPointersInput";
+  }
 
   /**
    * Called on pointer POINTERDOUBLETAP event.
-   * Override this method to provide functionality on POINTERDOUBLETAP event.
    */
   protected onDoubleTap(type: string) {
     this.countOnDoubleTap++;
@@ -90,7 +162,6 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
 
   /**
    * Called on pointer POINTERMOVE event if only a single touch is active.
-   * Override this method to provide functionality.
    */
   protected onTouch(
     point: Nullable<PointerTouch>,
@@ -104,7 +175,6 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
 
   /**
    * Called on pointer POINTERMOVE event if multiple touches are active.
-   * Override this method to provide functionality.
    */
   protected onMultiTouch(
     pointA: Nullable<PointerTouch>,
@@ -128,7 +198,6 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
 
   /**
    * Called on JS contextmenu event.
-   * Override this method to provide functionality.
    */
   protected onContextMenu(evt: PointerEvent): void {
     evt.preventDefault();
@@ -140,7 +209,6 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
   /**
    * Called each time a new POINTERDOWN event occurs. Ie, for each button
    * press.
-   * Override this method to provide functionality.
    */
   protected onButtonDown(evt: PointerEvent, buttonCount: number): void {
     this.countOnButtonDown++;
@@ -151,7 +219,6 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
   /**
    * Called each time a new POINTERUP event occurs. Ie, for each button
    * release.
-   * Override this method to provide functionality.
    */
   protected onButtonUp(evt: PointerEvent, buttonCount: number): void {
     this.countOnButtonUp++;
@@ -161,7 +228,6 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
 
   /**
    * Called when window becomes inactive.
-   * Override this method to provide functionality.
    */
   protected onLostFocus(): void {
     this.countOnLostFocus++;
