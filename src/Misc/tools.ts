@@ -760,20 +760,19 @@ export class Tools {
         Tools.SetCorsBehavior(url, img);
 
         const loadHandler = () => {
+            img.removeEventListener("load", loadHandler);
+            img.removeEventListener("error", errorHandler);
+
+            onLoad(img);
+
+            // Must revoke the URL after calling onLoad to avoid security exceptions in
+            // certain scenarios (e.g. when hosted in vscode).
             if (usingObjectURL && img.src) {
                 URL.revokeObjectURL(img.src);
             }
-
-            img.removeEventListener("load", loadHandler);
-            img.removeEventListener("error", errorHandler);
-            onLoad(img);
         };
 
         const errorHandler = (err: any) => {
-            if (usingObjectURL && img.src) {
-                URL.revokeObjectURL(img.src);
-            }
-
             img.removeEventListener("load", loadHandler);
             img.removeEventListener("error", errorHandler);
 
@@ -781,6 +780,10 @@ export class Tools {
 
             if (onError) {
                 onError("Error while trying to load image: " + input, err);
+            }
+
+            if (usingObjectURL && img.src) {
+                URL.revokeObjectURL(img.src);
             }
         };
 
