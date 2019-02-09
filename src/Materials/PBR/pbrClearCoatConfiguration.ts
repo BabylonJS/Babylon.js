@@ -1,6 +1,7 @@
 import { Nullable } from "../../types";
 import { IAnimatable } from "../../Misc/tools";
 import { SerializationHelper, serialize, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
+import { Color3 } from "../../Maths/math";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { EffectFallbacks } from "../../Materials/effect";
 import { MaterialFlags } from "../materialFlags";
@@ -15,10 +16,15 @@ declare type Scene = import("../../scene").Scene;
  */
 export interface IMaterialClearCoatDefines {
     CLEARCOAT: boolean;
+    CLEARCOAT_DEFAULTIOR: boolean;
     CLEARCOAT_TEXTURE: boolean;
     CLEARCOAT_TEXTUREDIRECTUV: number;
     CLEARCOAT_BUMP: boolean;
     CLEARCOAT_BUMPDIRECTUV: number;
+
+    CLEARCOAT_TINT: boolean;
+    CLEARCOAT_TINT_TEXTURE: boolean;
+    CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -28,6 +34,11 @@ export interface IMaterialClearCoatDefines {
  * Define the code related to the clear coat parameters of the pbr material.
  */
 export class PBRClearCoatConfiguration {
+    /**
+     * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
+     * The default fits with a polyurethane material.
+     */
+    private static readonly _DefaultIndiceOfRefraction = 1.5;
 
     @serialize()
     private _isEnabled = false;
@@ -49,6 +60,17 @@ export class PBRClearCoatConfiguration {
     @serialize()
     public roughness: number = 0;
 
+    @serialize()
+    private _indiceOfRefraction = PBRClearCoatConfiguration._DefaultIndiceOfRefraction;
+    /**
+     * Defines the indice of refraction of the clear coat.
+     * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
+     * The default fits with a polyurethane material.
+     * Changing the default value is more performance intensive.
+     */
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public indiceOfRefraction = PBRClearCoatConfiguration._DefaultIndiceOfRefraction;
+
     @serializeAsTexture()
     private _texture: Nullable<BaseTexture> = null;
     /**
@@ -64,6 +86,46 @@ export class PBRClearCoatConfiguration {
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public bumpTexture: Nullable<BaseTexture> = null;
+
+    @serialize()
+    private _isTintEnabled = false;
+    /**
+     * Defines if the clear coat tint is enabled in the material.
+     */
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public isTintEnabled = false;
+
+    /**
+     * Defines if the clear coat tint is enabled in the material.
+     * This is only use if tint is enabled
+     */
+    @serialize()
+    public tintColor = Color3.White();
+
+    /**
+     * Defines if the distance at which the tint color should be found in the
+     * clear coat media.
+     * This is only use if tint is enabled
+     */
+    @serialize()
+    public tintColorAtDistance = 1;
+
+    /**
+     * Defines the clear coat layer thickness.
+     * This is only use if tint is enabled
+     */
+    @serialize()
+    public tintThickness: number = 1;
+
+    @serializeAsTexture()
+    private _tintTexture: Nullable<BaseTexture> = null;
+    /**
+     * Stores the clear tint values in a texture.
+     * rgb is tint
+     * a is a thickness factor
+     */
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public tintTexture: Nullable<BaseTexture> = null;
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
@@ -104,6 +166,12 @@ export class PBRClearCoatConfiguration {
                         return false;
                     }
                 }
+
+                if (this._isTintEnabled && this._tintTexture && MaterialFlags.ClearCoatTintTextureEnabled) {
+                    if (!this._tintTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
             }
         }
 
@@ -132,6 +200,22 @@ export class PBRClearCoatConfiguration {
                     } else {
                         defines.CLEARCOAT_BUMP = false;
                     }
+
+                    defines.CLEARCOAT_DEFAULTIOR = this._indiceOfRefraction === PBRClearCoatConfiguration._DefaultIndiceOfRefraction;
+
+                    if (this._isTintEnabled) {
+                        defines.CLEARCOAT_TINT = true;
+                        if (this._tintTexture && MaterialFlags.ClearCoatTintTextureEnabled) {
+                            MaterialHelper.PrepareDefinesForMergedUV(this._tintTexture, defines, "CLEARCOAT_TINT_TEXTURE");
+                        }
+                        else {
+                            defines.CLEARCOAT_TINT_TEXTURE = false;
+                        }
+                    }
+                    else {
+                        defines.CLEARCOAT_TINT = false;
+                        defines.CLEARCOAT_TINT_TEXTURE = false;
+                    }
                 }
             }
         }
@@ -139,6 +223,8 @@ export class PBRClearCoatConfiguration {
             defines.CLEARCOAT = false;
             defines.CLEARCOAT_TEXTURE = false;
             defines.CLEARCOAT_BUMP = false;
+            defines.CLEARCOAT_TINT = false;
+            defines.CLEARCOAT_TINT_TEXTURE = false;
         }
     }
 
@@ -170,8 +256,29 @@ export class PBRClearCoatConfiguration {
                 }
             }
 
-            // Clear Coat
+            if (this._tintTexture && MaterialFlags.ClearCoatTintTextureEnabled) {
+                uniformBuffer.updateFloat2("vClearCoatTintInfos", this._tintTexture.coordinatesIndex, this._tintTexture.level);
+                MaterialHelper.BindTextureMatrix(this._tintTexture, uniformBuffer, "clearCoatTint");
+            }
+
+            // Clear Coat General params
             uniformBuffer.updateFloat2("vClearCoatParams", this.intensity, this.roughness);
+
+            // Clear Coat Refraction params
+            const a = 1 - this._indiceOfRefraction;
+            const b = 1 + this._indiceOfRefraction;
+            const f0 = Math.pow((-a / b), 2); // Schlicks approx: (ior1 - ior2) / (ior1 + ior2) where ior2 for air is close to vacuum = 1.
+            const eta = 1 / this._indiceOfRefraction;
+            uniformBuffer.updateFloat4("vClearCoatRefractionParams", f0, eta, a,  b);
+
+            if (this._isTintEnabled) {
+                uniformBuffer.updateFloat4("vClearCoatTintParams",
+                    this.tintColor.r,
+                    this.tintColor.g,
+                    this.tintColor.b,
+                    Math.max(0.00001, this.tintThickness));
+                uniformBuffer.updateFloat("clearCoatColorAtDistance", Math.max(0.00001, this.tintColorAtDistance));
+            }
         }
 
         // Textures
@@ -182,6 +289,10 @@ export class PBRClearCoatConfiguration {
 
             if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.ClearCoatBumpTextureEnabled && !disableBumpMap) {
                 uniformBuffer.setTexture("clearCoatBumpSampler", this._bumpTexture);
+            }
+
+            if (this._isTintEnabled && this._tintTexture && MaterialFlags.ClearCoatTintTextureEnabled) {
+                uniformBuffer.setTexture("clearCoatTintSampler", this._tintTexture);
             }
         }
     }
@@ -200,6 +311,10 @@ export class PBRClearCoatConfiguration {
             return true;
         }
 
+        if (this._tintTexture === texture) {
+            return true;
+        }
+
         return false;
     }
 
@@ -215,6 +330,10 @@ export class PBRClearCoatConfiguration {
         if (this._bumpTexture) {
             activeTextures.push(this._bumpTexture);
         }
+
+        if (this._tintTexture) {
+            activeTextures.push(this._tintTexture);
+        }
     }
 
     /**
@@ -228,6 +347,10 @@ export class PBRClearCoatConfiguration {
 
         if (this._bumpTexture && this._bumpTexture.animations && this._bumpTexture.animations.length > 0) {
             animatables.push(this._bumpTexture);
+        }
+
+        if (this._tintTexture && this._tintTexture.animations && this._tintTexture.animations.length > 0) {
+            animatables.push(this._tintTexture);
         }
     }
 
@@ -243,6 +366,10 @@ export class PBRClearCoatConfiguration {
 
             if (this._bumpTexture) {
                 this._bumpTexture.dispose();
+            }
+
+            if (this._tintTexture) {
+                this._tintTexture.dispose();
             }
         }
     }
@@ -290,6 +417,9 @@ export class PBRClearCoatConfiguration {
         if (defines.CLEARCOAT_BUMP) {
             fallbacks.addFallback(currentRank++, "CLEARCOAT_BUMP");
         }
+        if (defines.CLEARCOAT_TINT) {
+            fallbacks.addFallback(currentRank++, "CLEARCOAT_TINT");
+        }
         if (defines.CLEARCOAT) {
             fallbacks.addFallback(currentRank++, "CLEARCOAT");
         }
@@ -301,9 +431,10 @@ export class PBRClearCoatConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("vClearCoatTangentSpaceParams", "vClearCoatParams",
-            "clearCoatMatrix", "clearCoatBumpMatrix",
-            "vClearCoatInfos", "vClearCoatBumpInfos");
+        uniforms.push("vClearCoatTangentSpaceParams", "vClearCoatParams", "vClearCoatRefractionParams",
+            "vClearCoatTintParams", "clearCoatColorAtDistance",
+            "clearCoatMatrix", "clearCoatBumpMatrix", "clearCoatTintMatrix",
+            "vClearCoatInfos", "vClearCoatBumpInfos", "vClearCoatTintInfos");
     }
 
     /**
@@ -311,7 +442,7 @@ export class PBRClearCoatConfiguration {
      * @param samplers defines the current sampler list.
      */
     public static AddSamplers(samplers: string[]): void {
-        samplers.push("clearCoatSampler", "clearCoatBumpSampler");
+        samplers.push("clearCoatSampler", "clearCoatBumpSampler", "clearCoatTintSampler");
     }
 
     /**
@@ -320,10 +451,15 @@ export class PBRClearCoatConfiguration {
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vClearCoatParams", 2);
+        uniformBuffer.addUniform("vClearCoatRefractionParams", 4);
         uniformBuffer.addUniform("vClearCoatInfos", 2);
         uniformBuffer.addUniform("clearCoatMatrix", 16);
         uniformBuffer.addUniform("vClearCoatBumpInfos", 2);
         uniformBuffer.addUniform("vClearCoatTangentSpaceParams", 2);
         uniformBuffer.addUniform("clearCoatBumpMatrix", 16);
+        uniformBuffer.addUniform("vClearCoatTintParams", 4);
+        uniformBuffer.addUniform("clearCoatColorAtDistance", 1);
+        uniformBuffer.addUniform("vClearCoatTintInfos", 2);
+        uniformBuffer.addUniform("clearCoatTintMatrix", 16);
     }
 }
