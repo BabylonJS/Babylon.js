@@ -168,4 +168,3 @@ export class StubCameraPointersInput extends BaseCameraPointersInput {
   }
 }
 (<any>CameraInputTypes)["StubCameraPointersInput"] = StubCameraPointersInput;
-
