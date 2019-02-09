@@ -1098,6 +1098,9 @@ export class Engine {
                 throw new Error("WebGL not supported");
             }
 
+            // Ensures a consistent color space unpacking of textures cross browser.
+            this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
+
             this._onCanvasFocus = () => {
                 this.onCanvasFocusObservable.notifyObservers(this);
             };
