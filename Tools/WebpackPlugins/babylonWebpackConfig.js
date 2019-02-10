@@ -1,6 +1,5 @@
 const webpack = require('webpack');
 const babylonExternals = require('./babylonExternals');
-const hardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 const config = require("../Config/config.js");
 
@@ -54,7 +53,6 @@ module.exports = function defaultConfig(options) {
             hints: false
         },
         plugins: [
-            //new hardSourceWebpackPlugin(),
             new webpack.WatchIgnorePlugin([
                 /\.js$/,
                 /\.d\.ts$/,
