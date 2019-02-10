@@ -86,7 +86,6 @@
         "prompt": "^1.0.0",
         "re-resizable": "~4.9.1",
         "react": "~16.6.3",
-        "react-contextmenu": "~2.10.0",
         "react-dom": "~16.6.3",
         "sass-loader": "^7.1.0",
         "shelljs": "^0.7.8",
