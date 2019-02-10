@@ -42314,6 +42314,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var pbrDebug: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var pbrPixelShader: {
         name: string;
         shader: string;
@@ -42677,6 +42684,30 @@ declare module BABYLON {
          * If set to true, no lighting calculations will be applied.
          */
         private _unlit;
+        private _debugMode;
+        /**
+         * @hidden
+         * This is reserved for the inspector.
+         * Defines the material debug mode.
+         * It helps seeing only some components of the material while troubleshooting.
+         */
+        debugMode: number;
+        /**
+         * @hidden
+         * This is reserved for the inspector.
+         * Specify from where on screen the debug mode should start.
+         * The value goes from -1 (full screen) to 1 (not visible)
+         * It helps with side by side comparison against the final render
+         * This defaults to -1
+         */
+        private debugLimit;
+        /**
+         * @hidden
+         * This is reserved for the inspector.
+         * As the default viewing range might not be enough (if the ambient is really small for instance)
+         * You can use the factor to better multiply the final value.
+         */
+        private debugFactor;
         /**
          * Defines the clear coat layer parameters for the material.
          */
