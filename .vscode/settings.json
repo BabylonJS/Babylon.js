@@ -11,7 +11,6 @@
         "**/node_modules": true,
         "**/temp": true,
         "**/.temp": true,
-        "src/**/*.d.ts": true,
         "gui/**/*.d.ts": true,
         "inspector/**/*.d.ts": true,
         "loaders/**/*.d.ts": true,
