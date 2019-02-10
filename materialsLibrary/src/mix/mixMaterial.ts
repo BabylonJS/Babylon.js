@@ -195,7 +195,7 @@ export class MixMaterial extends PushMaterial {
                 }
 
                 if (this._mixTexture2) {
-                    if (!this._mixTexture2 || !this._mixTexture2.isReady()) {
+                    if (!this._mixTexture2.isReady()) {
                         return false;
                     }
                     
