@@ -303,7 +303,7 @@ export class Texture extends BaseTexture {
             return;
         }
 
-        this._texture = this._getFromCache(this.url, noMipmap, samplingMode);
+        this._texture = this._getFromCache(this.url, noMipmap, samplingMode, invertY);
 
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {
@@ -364,7 +364,7 @@ export class Texture extends BaseTexture {
         }
 
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode);
+        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
             this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);

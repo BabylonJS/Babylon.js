@@ -591,6 +591,12 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public onMeshImportedObservable = new Observable<AbstractMesh>();
 
+    /**
+     * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
+     * By default this function is undefined and Babylon.js will select LOD based on distance to camera
+     */
+    public customLODSelector: (mesh: AbstractMesh, camera: Camera) => Nullable<AbstractMesh>;
+
     // Animations
 
     /** @hidden */
@@ -3891,7 +3897,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshLOD = mesh.getLOD(this.activeCamera);
+            const meshLOD = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
             if (meshLOD === undefined || meshLOD === null) {
                 continue;
             }
@@ -3989,7 +3995,8 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         var engine = this._engine;
 
-        this.activeCamera = camera;
+        // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
+        this._activeCamera = camera;
 
         if (!this.activeCamera) {
             throw new Error("Active camera not set");
@@ -4118,8 +4125,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             this._renderForCamera(camera._rigCameras[index], camera);
         }
 
-        this.activeCamera = camera;
-        this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+        // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
+        this._activeCamera = camera;
+        this.setTransformMatrix(this._activeCamera.getViewMatrix(), this._activeCamera.getProjectionMatrix());
     }
 
     private _checkIntersections(): void {

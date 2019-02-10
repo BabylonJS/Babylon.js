@@ -72,10 +72,17 @@ varying vec2 vBumpUV;
     #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
         varying vec2 vClearCoatBumpUV;
     #endif
+
+    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0 
+        varying vec2 vClearCoatTintUV;
+    #endif
 #endif
 
 // Output
 varying vec3 vPositionW;
+#if DEBUGMODE > 0
+    varying vec4 vClipSpacePosition;
+#endif
 #ifdef NORMAL
     varying vec3 vNormalW;
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
@@ -130,6 +137,9 @@ void main(void) {
 #include<bonesVertex>
 
     gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+    #if DEBUGMODE > 0
+        vClipSpacePosition = gl_Position;
+    #endif
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
@@ -280,6 +290,17 @@ void main(void) {
         else
         {
             vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0 
+        if (vClearCoatTintInfos.x == 0.)
+        {
+            vClearCoatTintUV = vec2(clearCoatTintMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatTintUV = vec2(clearCoatTintMatrix * vec4(uv2, 1.0, 0.0));
         }
     #endif
 #endif

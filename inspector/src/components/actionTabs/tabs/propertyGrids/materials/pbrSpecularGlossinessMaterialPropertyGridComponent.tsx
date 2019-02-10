@@ -22,6 +22,8 @@ interface IPBRSpecularGlossinessMaterialPropertyGridComponentProps {
 }
 
 export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Component<IPBRSpecularGlossinessMaterialPropertyGridComponentProps> {
+    private _onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+
     constructor(props: IPBRSpecularGlossinessMaterialPropertyGridComponentProps) {
         super(props);
     }
@@ -33,7 +35,7 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
             return null;
         }
 
-        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+        const onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
 
         return (
             <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
