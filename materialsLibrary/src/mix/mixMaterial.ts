@@ -177,13 +177,6 @@ export class MixMaterial extends PushMaterial {
 
             defines._needUVs = true;
 
-            if (this._mixTexture2) {
-                defines.MIXMAP2 = true;
-            }
-            if (!this._mixTexture2 || !this._mixTexture2.isReady()) {
-                return false;
-            }
-
             if (MaterialFlags.DiffuseTextureEnabled) {
                 if (!this._diffuseTexture1 || !this._diffuseTexture1.isReady()) {
                     return false;
@@ -202,6 +195,12 @@ export class MixMaterial extends PushMaterial {
                 }
 
                 if (this._mixTexture2) {
+                    if (!this._mixTexture2 || !this._mixTexture2.isReady()) {
+                        return false;
+                    }
+                    
+                    defines.MIXMAP2 = true;
+
                     if (!this._diffuseTexture5 || !this._diffuseTexture5.isReady()) {
                         return false;
                     }
