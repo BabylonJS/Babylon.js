@@ -656,6 +656,19 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
+     * Gets the list of all animation ranges defined on this node
+     * @returns an array
+     */
+    public getAnimationRanges(): Nullable<AnimationRange>[] {
+        var animationRanges: Nullable<AnimationRange>[] = [];
+        var name: string;
+        for (name in this._ranges) {
+            animationRanges.push(this._ranges[name]);
+        }
+        return animationRanges;
+    }
+
+    /**
      * Will start the animation sequence
      * @param name defines the range frames for animation sequence
      * @param loop defines if the animation should loop (false by default)

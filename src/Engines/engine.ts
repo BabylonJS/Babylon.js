@@ -491,7 +491,7 @@ export class Engine {
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.22";
+        return "4.0.0-alpha.25";
     }
 
     /**
@@ -1097,6 +1097,9 @@ export class Engine {
             if (!this._gl) {
                 throw new Error("WebGL not supported");
             }
+
+            // Ensures a consistent color space unpacking of textures cross browser.
+            this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
 
             this._onCanvasFocus = () => {
                 this.onCanvasFocusObservable.notifyObservers(this);
