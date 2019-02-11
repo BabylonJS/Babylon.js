@@ -13792,6 +13792,10 @@ declare module BABYLON {
          */
         beginAnimationLoop: boolean;
         /**
+         * Gets or sets a world offset applied to all particles
+         */
+        worldOffset: Vector3;
+        /**
          * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
          */
         isAnimationSheetEnabled: boolean;
