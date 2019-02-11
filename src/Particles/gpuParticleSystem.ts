@@ -1064,7 +1064,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             return;
         }
 
-        var uniforms = ["view", "projection", "colorDead", "invView", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "sheetInfos", "translationPivot", "eyePosition"];
+        var uniforms = ["worldOffset", "view", "projection", "colorDead", "invView", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "sheetInfos", "translationPivot", "eyePosition"];
         var samplers = ["textureSampler", "colorGradientSampler"];
 
         if (ImageProcessingConfiguration) {
@@ -1295,7 +1295,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._renderEffect.setMatrix("view", viewMatrix);
             this._renderEffect.setMatrix("projection", this._scene.getProjectionMatrix());
             this._renderEffect.setTexture("textureSampler", this.particleTexture);
-            this._renderEffect.setVector2("translationPivot", this.translationPivot);
+            this._renderEffect.setVector2("translationPivot", this.translationPivot);            
+            this._renderEffect.setVector3("worldOffset", this.worldOffset);
             if (this._colorGradientsTexture) {
                 this._renderEffect.setTexture("colorGradientSampler", this._colorGradientsTexture);
             } else {
