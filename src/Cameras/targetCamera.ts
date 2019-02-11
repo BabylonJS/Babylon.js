@@ -216,7 +216,12 @@ export class TargetCamera extends Camera {
     }
 
     // Target
-    /** @hidden */
+    
+    /**
+     * Defines the target the camera should look at.
+     * This will automatically adapt alpha beta and radius to fit within the new target.
+     * @param target Defines the new target as a Vector or a mesh
+     */
     public setTarget(target: Vector3): void {
         this.upVector.normalize();
 
