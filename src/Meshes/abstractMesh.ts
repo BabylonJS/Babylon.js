@@ -24,6 +24,7 @@ import { AbstractActionManager } from '../Actions/abstractActionManager';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
+declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 
 /** @hidden */
 class _FacetDataStorage {
@@ -1447,7 +1448,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the picking info
      * @see http://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
      */
-    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean): PickingInfo {
+    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): PickingInfo {
         var pickingInfo = new PickingInfo();
         const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
         const boundingInfo = this._boundingInfo;
@@ -1471,7 +1472,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 continue;
             }
 
-            var currentIntersectInfo = subMesh.intersects(ray, (<Vector3[]>this._positions), 
+            var currentIntersectInfo = subMesh.intersects(ray, (<Vector3[]>this._positions),
                 (<IndicesArray>this.getIndices()), fastCheck,
                 trianglePredicate);
 

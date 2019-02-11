@@ -534,7 +534,9 @@ export class Ray {
 }
 
 // Picking
-
+/**
+ * Type used to define predicate used to select faces when a mesh intersection is detected
+ */
 export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean;
 
 declare module "../scene" {
@@ -621,7 +623,7 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function(x: number, y: numb
     return this;
 };
 
-Scene.prototype._internalPick = function(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, 
+Scene.prototype._internalPick = function(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean,
     fastCheck?: boolean,
     trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
     if (!PickingInfo) {
@@ -663,7 +665,7 @@ Scene.prototype._internalPick = function(rayFunction: (world: Matrix) => Ray, pr
     return pickingInfo || new PickingInfo();
 };
 
-Scene.prototype._internalMultiPick = function(rayFunction: (world: Matrix) => Ray, 
+Scene.prototype._internalMultiPick = function(rayFunction: (world: Matrix) => Ray,
         predicate?: (mesh: AbstractMesh) => boolean,
         trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
     if (!PickingInfo) {
@@ -696,7 +698,7 @@ Scene.prototype._internalMultiPick = function(rayFunction: (world: Matrix) => Ra
     return pickingInfos;
 };
 
-Scene.prototype.pick = function(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, 
+Scene.prototype.pick = function(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
     fastCheck?: boolean, camera?: Nullable<Camera>,
     trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
     if (!PickingInfo) {
@@ -716,7 +718,7 @@ Scene.prototype.pick = function(x: number, y: number, predicate?: (mesh: Abstrac
     return result;
 };
 
-Scene.prototype.pickWithRay = function(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, 
+Scene.prototype.pickWithRay = function(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean,
     fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
     var result = this._internalPick((world) => {
         if (!this._pickWithRayInverseMatrix) {
@@ -737,12 +739,12 @@ Scene.prototype.pickWithRay = function(ray: Ray, predicate?: (mesh: AbstractMesh
     return result;
 };
 
-Scene.prototype.multiPick = function(x: number, y: number, 
+Scene.prototype.multiPick = function(x: number, y: number,
     predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
     return this._internalMultiPick((world) => this.createPickingRay(x, y, world, camera || null), predicate, trianglePredicate);
 };
 
-Scene.prototype.multiPickWithRay = function(ray: Ray, 
+Scene.prototype.multiPickWithRay = function(ray: Ray,
     predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
     return this._internalMultiPick((world) => {
         if (!this._pickWithRayInverseMatrix) {
