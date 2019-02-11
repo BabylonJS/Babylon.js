@@ -4754,7 +4754,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, 
+    public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
         fastCheck?: boolean, camera?: Nullable<Camera>,
         trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean
         ): Nullable<PickingInfo> {
