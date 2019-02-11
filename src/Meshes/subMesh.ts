@@ -15,6 +15,7 @@ declare type MultiMaterial = import("../Materials/multiMaterial").MultiMaterial;
 declare type AbstractMesh = import("./abstractMesh").AbstractMesh;
 declare type Mesh = import("./mesh").Mesh;
 declare type Ray = import("../Culling/ray").Ray;
+declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 
 /**
  * Base class for submeshes
@@ -341,9 +342,11 @@ export class SubMesh extends BaseSubMesh implements ICullable {
      * @param positions defines mesh's positions array
      * @param indices defines mesh's indices array
      * @param fastCheck defines if only bounding info should be used
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns intersection info or null if no intersection
      */
-    public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+    public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray,
+        fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo> {
         const material = this.getMaterial();
         if (!material) {
             return null;
@@ -364,7 +367,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
             return this._intersectLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
         }
 
-        return this._intersectTriangles(ray, positions, indices, fastCheck);
+        return this._intersectTriangles(ray, positions, indices, fastCheck, trianglePredicate);
     }
 
     /** @hidden */
@@ -393,13 +396,18 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     }
 
     /** @hidden */
-    private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+    private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray,
+        fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo> {
         var intersectInfo: Nullable<IntersectionInfo> = null;
         // Triangles test
         for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
             var p0 = positions[indices[index]];
             var p1 = positions[indices[index + 1]];
             var p2 = positions[indices[index + 2]];
+
+            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
+                continue;
+            }
 
             var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
 
