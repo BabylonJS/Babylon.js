@@ -343,7 +343,8 @@ export class SubMesh extends BaseSubMesh implements ICullable {
      * @param fastCheck defines if only bounding info should be used
      * @returns intersection info or null if no intersection
      */
-    public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+    public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, 
+        fastCheck?: boolean, trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean): Nullable<IntersectionInfo> {
         const material = this.getMaterial();
         if (!material) {
             return null;
@@ -364,7 +365,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
             return this._intersectLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
         }
 
-        return this._intersectTriangles(ray, positions, indices, fastCheck);
+        return this._intersectTriangles(ray, positions, indices, fastCheck, trianglePredicate);
     }
 
     /** @hidden */
@@ -393,13 +394,18 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     }
 
     /** @hidden */
-    private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+    private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray, 
+        fastCheck?: boolean, trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean): Nullable<IntersectionInfo> {
         var intersectInfo: Nullable<IntersectionInfo> = null;
         // Triangles test
         for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
             var p0 = positions[indices[index]];
             var p1 = positions[indices[index + 1]];
             var p2 = positions[indices[index + 2]];
+
+            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
+                continue;
+            }
 
             var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
 
