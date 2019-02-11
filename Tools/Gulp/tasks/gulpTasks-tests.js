@@ -34,7 +34,7 @@ gulp.task("tests-validation-virtualscreen", function(done) {
     var kamaServerOptions = {
         configFile: rootDir + "tests/validation/karma.conf.js",
         singleRun: true,
-        browsers: ['Firefox']
+        browsers: ['FirefoxHeadless']
     };
 
     var server = new karmaServer(kamaServerOptions, done);
@@ -146,7 +146,7 @@ gulp.task("tests-viewer-validation-virtualscreen", gulp.series("tests-viewer-val
     var kamaServerOptions = {
         configFile: rootDir + "Viewer/tests/validation/karma.conf.js",
         singleRun: true,
-        browsers: ['Firefox']
+        browsers: ['FirefoxHeadless']
     };
 
     var server = new karmaServer(kamaServerOptions, done);
