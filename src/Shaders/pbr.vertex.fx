@@ -80,6 +80,9 @@ varying vec2 vBumpUV;
 
 // Output
 varying vec3 vPositionW;
+#if DEBUGMODE > 0
+    varying vec4 vClipSpacePosition;
+#endif
 #ifdef NORMAL
     varying vec3 vNormalW;
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
@@ -134,6 +137,9 @@ void main(void) {
 #include<bonesVertex>
 
     gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+    #if DEBUGMODE > 0
+        vClipSpacePosition = gl_Position;
+    #endif
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);

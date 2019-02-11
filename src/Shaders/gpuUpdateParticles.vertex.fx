@@ -10,6 +10,7 @@ uniform vec2 lifeTime;
 uniform vec2 emitPower;
 uniform vec2 sizeRange;
 uniform vec4 scaleRange;
+
 #ifndef COLORGRADIENTS
 uniform vec4 color1;
 uniform vec4 color2;
