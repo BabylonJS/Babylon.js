@@ -40,6 +40,10 @@ function compare(renderData, referenceCanvas) {
             continue;
         }
 
+        if (differencesCount === 0) {
+            console.log(`First pixel off at ${index}: Value: (${renderData[index]}, ${renderData[index + 1]}, ${renderData[index] + 2}) - Expected: (${referenceData.data[index]}, ${referenceData.data[index + 1]}, ${referenceData.data[index + 2]}) `);
+        }
+
         referenceData.data[index] = 255;
         referenceData.data[index + 1] *= 0.5;
         referenceData.data[index + 2] *= 0.5;
