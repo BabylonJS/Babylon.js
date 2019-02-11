@@ -1,5 +1,5 @@
 import * as Babylon from "../index";
-import * as Debug from "../Debug/index";
+import * as DebugImport from "../Debug/index";
 
 declare var global: any;
 
@@ -17,18 +17,19 @@ if (typeof globalObject !== "undefined") {
     BABYLON.Debug = BABYLON.Debug || {};
 
     const keys = [];
-    for (var key in Debug) {
-        BABYLON.Debug[key] = (<any>Debug)[key];
+    for (var key in DebugImport) {
+        BABYLON.Debug[key] = (<any>DebugImport)[key];
         keys.push(key);
     }
     for (var key in Babylon) {
-        // Prevent Reassignment.
-        // if (keys.indexOf(key) > -1) {
-        // continue;
-        // }
-
         BABYLON[key] = (<any>Babylon)[key];
     }
 }
 
 export * from "../index";
+export const Debug = {
+    AxesViewer: DebugImport.AxesViewer,
+    BoneAxesViewer: DebugImport.BoneAxesViewer,
+    PhysicsViewer: DebugImport.PhysicsViewer,
+    SkeletonViewer: DebugImport.SkeletonViewer,
+};

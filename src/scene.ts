@@ -4562,7 +4562,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             this.meshes[0].dispose(true);
         }
         while (this.transformNodes.length) {
-            this.removeTransformNode(this.transformNodes[0]);
+            this.transformNodes[0].dispose(true);
         }
 
         // Release cameras
