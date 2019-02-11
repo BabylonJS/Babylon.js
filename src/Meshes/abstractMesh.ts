@@ -1622,7 +1622,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         if (disposeMaterialAndTextures) {
             if (this.material) {
-                this.material.dispose(false, true);
+                if (this.material.getClassName() === "MultiMaterial") {
+                    this.material.dispose(false, true, true);
+                } else {
+                    this.material.dispose(false, true);
+                }
             }
         }
 
