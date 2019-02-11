@@ -556,22 +556,40 @@ var MixMaterial = /** @class */ (function (_super) {
         var engine = scene.getEngine();
         // Textures
         if (scene.texturesEnabled) {
+            if (!this._mixTexture1 || !this._mixTexture1.isReady()) {
+                return false;
+            }
+            defines._needUVs = true;
             if (babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialFlags"].DiffuseTextureEnabled) {
-                if (this._mixTexture1) {
-                    if (!this._mixTexture1.isReady()) {
-                        return false;
-                    }
-                    else {
-                        defines._needUVs = true;
-                        defines.DIFFUSE = true;
-                    }
+                if (!this._diffuseTexture1 || !this._diffuseTexture1.isReady()) {
+                    return false;
+                }
+                defines.DIFFUSE = true;
+                if (!this._diffuseTexture2 || !this._diffuseTexture2.isReady()) {
+                    return false;
+                }
+                if (!this._diffuseTexture3 || !this._diffuseTexture3.isReady()) {
+                    return false;
+                }
+                if (!this._diffuseTexture4 || !this._diffuseTexture4.isReady()) {
+                    return false;
                 }
                 if (this._mixTexture2) {
                     if (!this._mixTexture2.isReady()) {
                         return false;
                     }
-                    else {
-                        defines.MIXMAP2 = true;
+                    defines.MIXMAP2 = true;
+                    if (!this._diffuseTexture5 || !this._diffuseTexture5.isReady()) {
+                        return false;
+                    }
+                    if (!this._diffuseTexture6 || !this._diffuseTexture6.isReady()) {
+                        return false;
+                    }
+                    if (!this._diffuseTexture7 || !this._diffuseTexture7.isReady()) {
+                        return false;
+                    }
+                    if (!this._diffuseTexture8 || !this._diffuseTexture8.isReady()) {
+                        return false;
                     }
                 }
             }

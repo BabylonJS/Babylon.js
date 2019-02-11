@@ -11036,12 +11036,16 @@ declare module BABYLON {
           */
         unprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): void;
     }
+    /**
+     * Type used to define predicate used to select faces when a mesh intersection is detected
+     */
+    export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean;
         interface Scene {
             /** @hidden */tempPickingRay: Nullable<Ray>;
             /** @hidden */cachedRayForTransform: Ray;
             /** @hidden */pickWithRayInverseMatrix: Matrix;
-            /** @hidden */internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
-            /** @hidden */internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]>;
+            /** @hidden */internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+            /** @hidden */internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
         }
 }
 declare module BABYLON {
@@ -13791,6 +13795,10 @@ declare module BABYLON {
          * Gets or sets a boolean indicating if animations must loop when beginAnimationOnStart is true
          */
         beginAnimationLoop: boolean;
+        /**
+         * Gets or sets a world offset applied to all particles
+         */
+        worldOffset: Vector3;
         /**
          * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
          */
@@ -21330,9 +21338,10 @@ declare module BABYLON {
          * @param positions defines mesh's positions array
          * @param indices defines mesh's indices array
          * @param fastCheck defines if only bounding info should be used
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns intersection info or null if no intersection
          */
-        intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo>;
+        intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo>;
         /** @hidden */
         private _intersectLines;
         /** @hidden */
@@ -23389,10 +23398,11 @@ declare module BABYLON {
          * Checks if the passed Ray intersects with the mesh
          * @param ray defines the ray to use
          * @param fastCheck defines if fast mode (but less precise) must be used (false by default)
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns the picking info
          * @see http://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
          */
-        intersects(ray: Ray, fastCheck?: boolean): PickingInfo;
+        intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): PickingInfo;
         /**
          * Clones the current mesh
          * @param name defines the mesh name
@@ -32068,32 +32078,36 @@ declare module BABYLON {
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
          * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns a PickingInfo
          */
-        pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo>;
+        pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>, trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean): Nullable<PickingInfo>;
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
          * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns a PickingInfo
          */
-        pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
         /**
          * Launch a ray to try to pick a mesh in the scene
          * @param x X position on screen
          * @param y Y position on screen
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
          * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns an array of PickingInfo
          */
-        multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
+        multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
         /**
          * Launch a ray to try to pick a mesh in the scene
          * @param ray Ray to use
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns an array of PickingInfo
          */
-        multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]>;
+        multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
         /**
          * Force the value of meshUnderPointer
          * @param mesh defines the mesh to use

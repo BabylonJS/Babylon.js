@@ -8183,8 +8183,8 @@ var Line = /** @class */ (function (_super) {
         context.lineWidth = this._lineWidth;
         context.setLineDash(this._dash);
         context.beginPath();
-        context.moveTo(this._x1.getValue(this._host), this._y1.getValue(this._host));
-        context.lineTo(this._effectiveX2, this._effectiveY2);
+        context.moveTo(this._currentMeasure.left, this._currentMeasure.top);
+        context.lineTo(this._currentMeasure.left + this._currentMeasure.width, this._currentMeasure.top + this._currentMeasure.height);
         context.stroke();
         context.restore();
     };
@@ -8194,8 +8194,8 @@ var Line = /** @class */ (function (_super) {
         this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
     };
     Line.prototype._computeAlignment = function (parentMeasure, context) {
-        this._currentMeasure.left = Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
-        this._currentMeasure.top = Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
+        this._currentMeasure.left = parentMeasure.left + Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
+        this._currentMeasure.top = parentMeasure.top + Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
     };
     /**
      * Move one end of the line given 3D cartesian coordinates.
