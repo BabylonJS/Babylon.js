@@ -8308,7 +8308,11 @@ declare module BABYLON {
         /** @hidden */updateCache(ignoreParentClass?: boolean): void;
         /** @hidden */isSynchronizedViewMatrix(): boolean;
         /** @hidden */computeLocalCameraSpeed(): number;
-        /** @hidden */
+        /**
+         * Defines the target the camera should look at.
+         * This will automatically adapt alpha beta and radius to fit within the new target.
+         * @param target Defines the new target as a Vector or a mesh
+         */
         setTarget(target: Vector3): void;
         /**
          * Return the current target position of the camera. This value is expressed in local space.
@@ -10107,6 +10111,14 @@ declare module BABYLON {
          * @returns the serialized object
          */
         serialize(parent: any): any;
+        /**
+        * Internal only
+        * @hidden
+        */prepare(): void;
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */actionManager: AbstractActionManager;
     }
     /**
      * The action to be carried out following a trigger
@@ -10848,13 +10860,13 @@ declare module BABYLON {
          * @param action defines the action to be registered
          * @return the action amended (prepared) after registration
          */
-        registerAction(action: Action): Nullable<Action>;
+        registerAction(action: IAction): Nullable<IAction>;
         /**
          * Unregisters an action to this action manager
          * @param action defines the action to be unregistered
          * @return a boolean indicating whether the action has been unregistered
          */
-        unregisterAction(action: Action): Boolean;
+        unregisterAction(action: IAction): Boolean;
         /**
          * Process a specific trigger
          * @param trigger defines the trigger to process
@@ -23713,11 +23725,23 @@ declare module BABYLON {
          */
         abstract hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean;
         /**
-             * Serialize this manager to a JSON object
-             * @param name defines the property name to store this manager
-             * @returns a JSON representation of this manager
-             */
+         * Serialize this manager to a JSON object
+         * @param name defines the property name to store this manager
+         * @returns a JSON representation of this manager
+         */
         abstract serialize(name: string): any;
+        /**
+         * Registers an action to this action manager
+         * @param action defines the action to be registered
+         * @return the action amended (prepared) after registration
+         */
+        abstract registerAction(action: IAction): Nullable<IAction>;
+        /**
+         * Unregisters an action to this action manager
+         * @param action defines the action to be unregistered
+         * @return a boolean indicating whether the action has been unregistered
+         */
+        abstract unregisterAction(action: IAction): Boolean;
         /**
          * Does exist one action manager with at least one trigger
          **/

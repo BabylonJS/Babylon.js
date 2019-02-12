@@ -117,6 +117,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <SliderLineComponent label="Micro-surface" target={material} propertyName="microSurface" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Ambient" target={material} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Use physical light falloff" target={material} propertyName="usePhysicalLightFalloff " onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                           
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="METALLIC WORKFLOW">
                     <SliderLineComponent label="Metallic" target={material} propertyName="metallic" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
