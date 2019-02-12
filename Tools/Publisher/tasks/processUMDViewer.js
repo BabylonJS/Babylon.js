@@ -16,7 +16,7 @@ const config = require("../../Config/config.js");
  */
 function processUMDViewer(module, version) {
 
-    let projectPath = '../../../Viewer';
+    let projectPath = '../../Viewer';
     let buildPath = path.resolve(__dirname, projectPath + "/build/src/");
 
     if (module.build.umd.requiredFiles) {
