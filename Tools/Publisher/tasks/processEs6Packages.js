@@ -16,7 +16,7 @@ const modules = config.modules.concat(config.viewerModules);
  * Process ES6 Packages.
  */
 function processEs6Packages(version) {
-    config.modules.forEach(moduleName => {
+    config.es6modules.forEach(moduleName => {
         let module = config[moduleName];
         let es6Config = module.build.es6;
 
