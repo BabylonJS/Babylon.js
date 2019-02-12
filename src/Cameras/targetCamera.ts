@@ -216,7 +216,6 @@ export class TargetCamera extends Camera {
     }
 
     // Target
-
     /**
      * Defines the target the camera should look at.
      * This will automatically adapt alpha beta and radius to fit within the new target.
