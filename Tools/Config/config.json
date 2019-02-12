@@ -47,6 +47,17 @@
         "gui",
         "inspector"
     ],
+    "es6modules": [
+        "core",
+        "materialsLibrary",
+        "postProcessesLibrary",
+        "proceduralTexturesLibrary",
+        "loaders",
+        "serializers",
+        "gui",
+        "inspector",
+        "viewer"
+    ],
     "lintModules": [
         "core",
         "materialsLibrary",
@@ -549,12 +560,11 @@
                 }
             },
             "es6": {
-                "webpackBuild": {
-                    "dependencies": [
-                        "node_modules/re-resizable/lib/index.es5.js",
-                        "Tools/**/*"
-                    ]
-                },
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
                 "packageName": "@babylonjs/inspector",
                 "readme": "dist/preview release/inspector/readme-es6.md",
                 "packagesFiles": [
@@ -580,6 +590,7 @@
             }
         ],
         "build": {
+            "mainFolder": "./viewer/",
             "webpack": "../../../Viewer/webpack.gulp.config.js",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
@@ -641,7 +652,14 @@
                     ]
                 }
             ],
-            "legacyPackageOutputDirectory": "../../../Viewer/build/src/"
+            "legacyPackageOutputDirectory": "../../../Viewer/build/src/",
+            "es6": {
+                "buildDependencies": [
+                    "node_modules/handlebars/**/*"
+                ],
+                "packageName": "@babylonjs/viewer",
+                "readme": "Viewer/README-ES6.md"
+            }
         }
     },
     "viewer-assets": {
