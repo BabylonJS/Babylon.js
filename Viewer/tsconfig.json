@@ -35,7 +35,7 @@
                 "./helper/deepmerge.d.ts"
             ],
             "handlebars": [
-                "./templates/handlebars.d.ts"
+                "./templating/handlebars.d.ts"
             ],
             "babylonjs-viewer-assets": [
                 "./assets/"

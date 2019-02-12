@@ -68,8 +68,8 @@ var dep = function(settings) {
         }
     }
 
-    if (settings.build.es6.webpackBuild && settings.build.es6.webpackBuild.dependencies) {
-        for (let pathName of settings.build.es6.webpackBuild.dependencies) {
+    if (settings.build.es6.buildDependencies) {
+        for (let pathName of settings.build.es6.buildDependencies) {
             const dependencyPath = path.join(config.computed.rootFolder, pathName);
             copyPaths.push(dependencyPath);
         }
@@ -91,7 +91,7 @@ var modifySources = function(settings) {
             pathName = pathName.replace("/*", "");
         }
 
-        for (var moduleName of config.modules) {
+        for (var moduleName of config.es6modules) {
             var module = config[moduleName];
             if (module.build.umd.packageName === pathName) {
                 if (module.build.es6.packageName) {
@@ -127,7 +127,7 @@ var modifyTsConfig = function(settings, cb) {
         }
 
         var mapped = false;
-        for (var moduleName of config.modules) {
+        for (var moduleName of config.es6modules) {
             var module = config[moduleName];
             if (module.build.umd.packageName === pathName) {
                 if (module.build.es6.packageName) {
@@ -286,7 +286,7 @@ function buildES6Library(settings, module) {
 /**
  * Dynamic es 6 module creation.
  */
-config.modules.map(function(module) {
+config.es6modules.map(function(module) {
     const settings = config[module];
     gulp.task(module + "-es6", buildES6Library(settings, module));
 });
@@ -294,4 +294,4 @@ config.modules.map(function(module) {
 /**
  * Build all es 6 libs.
  */
-gulp.task("typescript-es6", gulp.series(config.modules.map((module) => module + "-es6")));
+gulp.task("typescript-es6", gulp.series(config.es6modules.map((module) => module + "-es6")));
