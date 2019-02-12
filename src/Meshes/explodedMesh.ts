@@ -111,9 +111,9 @@ export class ExplodedMesh extends Mesh {
 
     /**
      * Explodes mesh a given number of times.
-     * @param explodeSize The size of explosion. Multiplies mesh distance to center of explosion.
+     * @param explodeSize The number of times to move meshes away from center in increments equal to original positions.
      */
-    public explode(explodeSize: number): void {
+    public explode(explodeSize: number = 1): void {
         for (var step = 0; step < explodeSize; step++) {
             for (var index = 0; index < this._meshes.length; index++) {
                 if (this._meshes[index] && this._originsVectors[index]) {
@@ -125,9 +125,9 @@ export class ExplodedMesh extends Mesh {
 
     /**
      * Implodes mesh a given number of times.
-     * @param implodeSize The size of explosion. Multiplies mesh distance to center of explosion.
+     * @param implodeSize The number of times to move meshes towards center, or beyond. Opposite direction of explode.
      */
-    public implode(implodeSize: number): void {
+    public implode(implodeSize: number = 1): void {
         for (var step = 0; step < implodeSize; step++) {
             for (var index = 0; index < this._meshes.length; index++) {
                 if (this._meshes[index] && this._originsVectors[index]) {
