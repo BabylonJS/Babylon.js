@@ -5,7 +5,6 @@ export * from "./csg";
 export * from "./geometry";
 export * from "./groundMesh";
 export * from "./trailMesh";
-export * from "./explodedMesh";
 export * from "./instancedMesh";
 export * from "./linesMesh";
 export * from "./mesh";
