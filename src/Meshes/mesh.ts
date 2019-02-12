@@ -140,15 +140,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @hidden
      */
     public static _GetDefaultSideOrientation(orientation?: number): number {
-        if (orientation == Mesh.DOUBLESIDE) {
-            return Mesh.DOUBLESIDE;
-        }
-
-        if (orientation === undefined || orientation === null) {
-            return Mesh.FRONTSIDE;
-        }
-
-        return orientation;
+        return orientation || Mesh.FRONTSIDE; // works as Mesh.FRONTSIDE is 0
     }
 
     // Events
