@@ -8415,7 +8415,11 @@ declare module BABYLON {
         _isSynchronizedViewMatrix(): boolean;
         /** @hidden */
         _computeLocalCameraSpeed(): number;
-        /** @hidden */
+        /**
+         * Defines the target the camera should look at.
+         * This will automatically adapt alpha beta and radius to fit within the new target.
+         * @param target Defines the new target as a Vector or a mesh
+         */
         setTarget(target: Vector3): void;
         /**
          * Return the current target position of the camera. This value is expressed in local space.
