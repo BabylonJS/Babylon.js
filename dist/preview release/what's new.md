@@ -144,6 +144,7 @@
 - Fixed `GradientMaterial` to consider disableLighting working as emissive ([julien-moreau](https://github.com/julien-moreau))
 - Fixed fresnel term computation in `WaterMaterial` ([julien-moreau](https://github.com/julien-moreau))
 - Fixed `TerrainMaterial.isReadyForSubMesh` to remove WebGL warnings ([julien-moreau](https://github.com/julien-moreau))
+- Fixed `MixMaterial.isReadyForSubMesh` to remove WebGL warnings ([dad72](https://github.com/dad72))
 
 ## Bug fixes
 - Fixed ArcRotateCamera.setTarget (position was sometimes wrong) ([Deltakosh](https://github.com/deltakosh))
