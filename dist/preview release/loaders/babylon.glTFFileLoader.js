@@ -4092,8 +4092,8 @@ var GLTFLoader = /** @class */ (function () {
             if (nodes) {
                 promises.push(_this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
             }
-            else {
-                var scene = ArrayItem.Get("/scene", _this.gltf.scenes, _this.gltf.scene || 0);
+            else if (_this.gltf.scene != undefined) {
+                var scene = ArrayItem.Get("/scene", _this.gltf.scenes, _this.gltf.scene);
                 promises.push(_this.loadSceneAsync("/scenes/" + scene.index, scene));
             }
             if (_this._parent.compileMaterials) {
