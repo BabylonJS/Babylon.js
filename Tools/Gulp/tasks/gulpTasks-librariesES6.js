@@ -187,7 +187,9 @@ var build = function(settings, cb) {
         verbose: true
     };
 
-    let command = `node "${config.computed.tscPath}" --skipLibCheck false --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.distES6Directory}"`;
+    var skipLibCheck = settings.build.es6.skipLibCheck ? 'true' : 'false';
+    let command = `node "${config.computed.tscPath}" --skipLibCheck ${skipLibCheck} --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.distES6Directory}"`;
+
     shelljs.exec(command, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);

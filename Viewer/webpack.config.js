@@ -1,7 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
 
-const babylonExternals = require('../Tools/WebpackPlugins/babylonExternals');
 const ViewerResolve = require('../Tools/WebpackPlugins/viewerResolve');
 
 module.exports = 
