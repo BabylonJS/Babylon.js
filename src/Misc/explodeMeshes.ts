@@ -1,11 +1,10 @@
 import { Mesh } from "../Meshes/mesh";
-import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math";
 
 /**
  * Class used to explode meshes.
  */
-export class ExplodedMesh extends Mesh {
+export class ExplodeMeshes {
     private _centerMesh: Mesh;
     private _centerOrigin: Vector3;
     private _meshes: Array<Mesh>;
@@ -14,13 +13,10 @@ export class ExplodedMesh extends Mesh {
 
     /**
      * @constructor
-     * @param name The value used by scene.getMeshByName() to do a lookup.
      * @param meshes The meshes to explode.
-     * @param scene The scene to add this mesh to.
      * @param centerMesh The mesh to be center of explosion.
      */
-    constructor(name: string, meshes: Array<Mesh>, scene: Scene, centerMesh?: Mesh) {
-        super(name, scene);
+    constructor(meshes: Array<Mesh>, centerMesh?: Mesh) {
 
         this._meshes = meshes;
         this._meshesOrigins = [];
@@ -91,11 +87,11 @@ export class ExplodedMesh extends Mesh {
     }
 
     /**
-     * "ExplodedMesh"
-     * @returns "ExplodedMesh"
+     * "ExplodeMeshes"
+     * @returns "ExplodeMeshes"
      */
     public getClassName(): string {
-        return "ExplodedMesh";
+        return "ExplodeMeshes";
     }
 
     /**
@@ -146,39 +142,5 @@ export class ExplodedMesh extends Mesh {
                 this._meshes[index].position = this._meshesOrigins[index].clone();
             }
         }
-    }
-
-    /**
-     * Returns a new ExplodedMesh object.
-     * @param name is a string, the name given to the new mesh
-     * @returns a new mesh
-     */
-    public clone(name: string = ""): ExplodedMesh {
-        var clonedMeshes: Array<Mesh> = [];
-        for (var index = 0; index < this._meshes.length; index++) {
-            if (this._meshes[index]) {
-                var mesh = this._meshes[index];
-                clonedMeshes.push(mesh.clone());
-            }
-        }
-        return new ExplodedMesh(name, clonedMeshes, this.getScene(), this._centerMesh.clone());
-    }
-
-    /**
-     * Serializes this ExplodedMesh
-     * @param serializationObject object to write serialization to
-     */
-    public serialize(serializationObject: any): void {
-        super.serialize(serializationObject);
-    }
-
-    /**
-     * Parses a serialized ExplodedMesh
-     * @param parsedMesh the serialized ExplodedMesh
-     * @param scene the scene to create the ExplodedMesh in
-     * @returns the created ExplodedMesh
-     */
-    public static Parse(parsedMesh: any, scene: Scene): ExplodedMesh {
-        return new ExplodedMesh(parsedMesh.name, parsedMesh._meshes, scene, parsedMesh._centerMesh);
     }
 }
