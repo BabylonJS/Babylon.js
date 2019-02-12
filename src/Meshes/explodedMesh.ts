@@ -31,6 +31,7 @@ export class ExplodedMesh extends Mesh {
         } else {
             this._setCenterMesh();
         }
+        this._centerMesh.computeWorldMatrix();
         if (this._centerMesh._boundingInfo) {
             this._centerOrigin = this._centerMesh._boundingInfo.boundingBox.centerWorld;
         } else {
@@ -43,6 +44,7 @@ export class ExplodedMesh extends Mesh {
             for (var index = 0; index < this._meshes.length; index++) {
                 if (this._meshes[index]) {
                     var mesh = this._meshes[index];
+                    mesh.computeWorldMatrix();
                     if (mesh._boundingInfo) {
                         var meshCenter = mesh._boundingInfo.boundingBox.centerWorld;
                         this._meshesOrigins.push(meshCenter.clone());
