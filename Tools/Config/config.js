@@ -52,7 +52,7 @@ config.additionalNpmPackages.forEach(package => {
     };
 });
 
-config.modules.map(function(module) {
+config.es6modules.map(function(module) {
     const settings = config[module];
 
     const mainDirectory = path.resolve(rootFolder, settings.build.mainFolder);
@@ -103,11 +103,13 @@ config.modules.map(function(module) {
         const tsGlob = srcDirectory.replace(/\\/g, "/") + "/**/*.ts*";
 
         for (let library of settings.libraries) {
-            const entryPath = path.join(srcDirectory, library.entry);
+            if(library.entry){
+                const entryPath = path.join(srcDirectory, library.entry);
 
-            library.computed = {
-                entryPath
-            };
+                library.computed = {
+                    entryPath
+                };
+            }
         }
 
         settings.computed.srcDirectory = srcDirectory;

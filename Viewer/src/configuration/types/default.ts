@@ -1,13 +1,14 @@
 import { ViewerConfiguration } from '../configuration';
-import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from 'babylonjs-viewer-assets';
-import { babylonFont } from 'babylonjs-viewer-assets';
+import { babylonFont, defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from 'babylonjs-viewer-assets';
 import * as images from 'babylonjs-viewer-assets';
+import { renderOnlyDefaultConfiguration } from './renderOnlyDefault';
+import { deepmerge } from '../../helper';
 
 /**
  * The default configuration of the viewer, including templates (canvas, overly, loading screen)
  * This configuration doesn't hold specific parameters, and only defines objects that are needed for the viewer to fully work correctly.
  */
-export let defaultConfiguration: ViewerConfiguration = {
+export let defaultConfiguration: ViewerConfiguration = deepmerge(renderOnlyDefaultConfiguration, {
     version: "3.2.0-alpha4",
     templates: {
         main: {
@@ -119,4 +120,4 @@ export let defaultConfiguration: ViewerConfiguration = {
     },
     scene: {
     }
-};
+});

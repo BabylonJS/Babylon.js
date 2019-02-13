@@ -22,10 +22,10 @@
         "baseUrl": "./src/",
         "rootDir": "./",
         "paths": {
-            "babylonjs": [
+            "babylonjs/*": [
                 "../../dist/preview release/babylon.module.d.ts"
             ],
-            "babylonjs-loaders": [
+            "babylonjs-loaders/*": [
                 "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
             ],
             "babylonjs-gltf2interface": [
@@ -35,7 +35,7 @@
                 "./helper/deepmerge.d.ts"
             ],
             "handlebars": [
-                "./templates/handlebars.d.ts"
+                "./templating/handlebars.d.ts"
             ],
             "babylonjs-viewer-assets": [
                 "./assets/"
