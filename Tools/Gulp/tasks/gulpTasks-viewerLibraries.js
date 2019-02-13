@@ -10,7 +10,6 @@ var rename = require("gulp-rename");
 // Gulp Helpers
 var processDeclaration = require('../helpers/gulp-processModuleDeclarationToNamespace');
 var addModuleExports = require("../helpers/gulp-addModuleExports");
-const ViewerResolve = require('../../WebpackPlugins/viewerResolve');
 // Import Build Config
 var config = require("../../Config/config.json");
 
@@ -26,8 +25,6 @@ var buildViewerLibrary = function(library, settings) {
         if (!out.minified) {
             wpConfig.mode = "development";
         }
-
-        wpConfig.resolve.plugins = [new ViewerResolve(["babylonjs", "babylonjs-loaders"])];
 
         let wpBuild = webpackStream(wpConfig, require("webpack"));
 

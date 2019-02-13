@@ -1,6 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 
+const ViewerResolve = require('../Tools/WebpackPlugins/viewerResolve');
+
 module.exports = {
     context: __dirname,
     entry: [
@@ -18,7 +20,10 @@ module.exports = {
             "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
             "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
             "babylonjs-viewer-assets": __dirname + '/src/assets/index.ts'
-        }
+        },
+        plugins: [
+            new ViewerResolve(["babylonjs", "babylonjs-loaders"])
+        ]
     },
     mode: "production",
     module: {
