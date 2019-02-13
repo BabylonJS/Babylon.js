@@ -2403,6 +2403,229 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
+    /**
+     * Increase the number of facets and hence vertices in a mesh
+     * Introduced for use with Ammo.JSPlugin soft bodies
+     * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
+     * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
+     */
+    public increaseVertices(numberPerEdge: number): void {
+        var vertex_data = VertexData.ExtractFromMesh(this);
+        var uvs = vertex_data.uvs;
+        var currentIndices = vertex_data.indices;
+        var positions = vertex_data.positions;
+        var normals = vertex_data.normals;
+
+        if (currentIndices === null || positions === null || normals === null || uvs === null) {
+            Logger.Warn("VertexData contains null entries");
+        }
+        else {
+            var segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
+            var tempIndices: Array<Array<number>> = new Array();
+            for (var i = 0; i < segments + 1; i++) {
+                tempIndices[i] = new Array();
+            }
+            var a: number;  //vertex index of one end of a side
+            var b: number; //vertex index of other end of the side
+            var deltaPosition: Vector3 = new Vector3(0, 0, 0);
+            var deltaNormal: Vector3 = new Vector3(0, 0, 0);
+            var deltaUV: Vector2 = new Vector2(0, 0);
+            var indices: number[] = new Array();
+            var vertexIndex: number[] = new Array();
+            var side: Array<Array<Array<number>>> = new Array();
+            var len: number;
+            var positionPtr: number = positions.length;
+            var uvPtr: number = uvs.length;
+
+            for (var i = 0; i < currentIndices.length; i += 3) {
+                vertexIndex[0] = currentIndices[i];
+                vertexIndex[1] = currentIndices[i + 1];
+                vertexIndex[2] = currentIndices[i + 2];
+                for (var j = 0; j < 3; j++) {
+                    a = vertexIndex[j];
+                    b = vertexIndex[(j + 1) % 3];
+                    if (side[a] === undefined  && side[b] ===  undefined) {
+                        side[a] = new Array();
+                        side[b] = new Array();
+                    }
+                    else {
+                        if (side[a] === undefined) {
+                            side[a] = new Array();
+                        }
+                        if (side[b] === undefined) {
+                            side[b] = new Array();
+                        }
+                    }
+                    if (side[a][b]  === undefined  && side[b][a] === undefined) {
+                        side[a][b] = [];
+                        deltaPosition.x = (positions[3 * b] - positions[3 * a]) / segments;
+                        deltaPosition.y = (positions[3 * b + 1] - positions[3 * a + 1]) / segments;
+                        deltaPosition.z = (positions[3 * b + 2] - positions[3 * a + 2]) / segments;
+                        deltaNormal.x = (normals[3 * b] - normals[3 * a]) / segments;
+                        deltaNormal.y = (normals[3 * b + 1] - normals[3 * a + 1]) / segments;
+                        deltaNormal.z = (normals[3 * b + 2] - normals[3 * a + 2]) / segments;
+                        deltaUV.x = (uvs[2 * b] - uvs[2 * a]) / segments;
+                        deltaUV.y = (uvs[2 * b + 1] - uvs[2 * a + 1]) / segments;
+                        side[a][b].push(a);
+                        for (var k = 1; k < segments; k++) {
+                            side[a][b].push(positions.length / 3);
+                            positions[positionPtr] = positions[3 * a] + k * deltaPosition.x;
+                            normals[positionPtr++] = normals[3 * a] + k * deltaNormal.x;
+                            positions[positionPtr] = positions[3 * a + 1] + k * deltaPosition.y;
+                            normals[positionPtr++] = normals[3 * a + 1] + k * deltaNormal.y;
+                            positions[positionPtr] = positions[3 * a + 2] + k * deltaPosition.z;
+                            normals[positionPtr++] = normals[3 * a + 2] + k * deltaNormal.z;
+                            uvs[uvPtr++] = uvs[2 * a] + k * deltaUV.x;
+                            uvs[uvPtr++] = uvs[2 * a + 1] + k * deltaUV.y;
+                        }
+                        side[a][b].push(b);
+                        side[b][a] = new Array();
+                        len = side[a][b].length;
+                        for (var idx = 0; idx < len; idx++) {
+                            side[b][a][idx] = side[a][b][len - 1 - idx];
+                        }
+                    }
+                    else {
+                        if (side[a][b] === undefined) {
+                            side[a][b] = new Array();
+                            len = side[b][a].length;
+                            for (var idx = 0; idx < len; idx++) {
+                                side[a][b][idx] = side[b][a][len - 1 - idx];
+                            }
+                        }
+                        if (side[b][a] === undefined) {
+                            side[b][a] = new Array();
+                            len = side[a][b].length;
+                            for (var idx = 0; idx < len; idx++) {
+                                side[b][a][idx] = side[a][b][len - 1 - idx];
+                            }
+                        }
+                    }
+                }
+                //Calculate positions, normals and uvs of new internal vertices
+                tempIndices[0][0] = currentIndices[i];
+                tempIndices[1][0] = side[currentIndices[i]][currentIndices[i + 1]][1];
+                tempIndices[1][1] = side[currentIndices[i]][currentIndices[i + 2]][1];
+                for (var k = 2; k < segments; k++) {
+                    tempIndices[k][0] = side[currentIndices[i]][currentIndices[i + 1]][k];
+                    tempIndices[k][k] = side[currentIndices[i]][currentIndices[i + 2]][k];
+                    deltaPosition.x = (positions[3 * tempIndices[k][k]] - positions[3 * tempIndices[k][0]]) / k;
+                    deltaPosition.y = (positions[3 * tempIndices[k][k] + 1] - positions[3 * tempIndices[k][0] + 1]) / k;
+                    deltaPosition.z = (positions[3 * tempIndices[k][k] + 2] - positions[3 * tempIndices[k][0] + 2]) / k;
+                    deltaNormal.x = (normals[3 * tempIndices[k][k]] - normals[3 * tempIndices[k][0]]) / k;
+                    deltaNormal.y = (normals[3 * tempIndices[k][k] + 1] - normals[3 * tempIndices[k][0] + 1]) / k;
+                    deltaNormal.z = (normals[3 * tempIndices[k][k] + 2] - normals[3 * tempIndices[k][0] + 2]) / k;
+                    deltaUV.x = (uvs[2 * tempIndices[k][k]] - uvs[2 * tempIndices[k][0]]) / k;
+                    deltaUV.y = (uvs[2 * tempIndices[k][k] + 1] - uvs[2 * tempIndices[k][0] + 1]) / k;
+                    for (var j = 1; j < k; j++) {
+                        tempIndices[k][j] = positions.length / 3;
+                        positions[positionPtr] = positions[3 * tempIndices[k][0]] + j * deltaPosition.x;
+                        normals[positionPtr++] = normals[3 * tempIndices[k][0]] + j * deltaNormal.x;
+                        positions[positionPtr] = positions[3 * tempIndices[k][0] + 1] + j * deltaPosition.y;
+                        normals[positionPtr++] = normals[3 * tempIndices[k][0] + 1] + j * deltaNormal.y;
+                        positions[positionPtr] = positions[3 * tempIndices[k][0] + 2] + j * deltaPosition.z;
+                        normals[positionPtr++] = normals[3 * tempIndices[k][0] + 2] + j * deltaNormal.z;
+                        uvs[uvPtr++] = uvs[2 * tempIndices[k][0]] + j * deltaUV.x;
+                        uvs[uvPtr++] = uvs[2 * tempIndices[k][0] + 1] + j * deltaUV.y;
+                    }
+                }
+                tempIndices[segments] = side[currentIndices[i + 1]][currentIndices[i + 2]];
+
+                // reform indices
+                indices.push(tempIndices[0][0], tempIndices[1][0], tempIndices[1][1]);
+                for (var k = 1; k < segments; k++) {
+                    for (var j = 0; j < k; j++) {
+                        indices.push(tempIndices[k][j], tempIndices[k + 1][j], tempIndices[k + 1][j + 1]);
+                        indices.push(tempIndices[k][j], tempIndices[k + 1][j + 1], tempIndices[k][j + 1]);
+                    }
+                    indices.push(tempIndices[k][j], tempIndices[k + 1][j], tempIndices[k + 1][j + 1]);
+                }
+            }
+
+            vertex_data.indices = indices;
+            vertex_data.applyToMesh(this);
+        }
+    }
+
+    /**
+     * Force adjacent facets to share vertices and remove any facets that have all vertices in a line
+     * This will undo any application of covertToFlatShadedMesh
+     * Introduced for use with Ammo.JSPlugin soft bodies
+     * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
+     */
+    public forceSharedVertices(): void {
+        var vertex_data = VertexData.ExtractFromMesh(this);
+        var currentUVs = vertex_data.uvs;
+        var currentIndices = vertex_data.indices;
+        var currentPositions = vertex_data.positions;
+        var currentNormals = vertex_data.normals;
+
+        if (currentIndices === null || currentPositions === null || currentNormals === null || currentUVs === null) {
+            Logger.Warn("VertexData contains null entries");
+        }
+        else {
+            var positions: Array<number> = new Array();
+            var indices: Array<number> = new Array();
+            var uvs: Array<number> = new Array();
+            var pstring: Array<string> = new Array(); //lists facet vertex positions (a,b,c) as string "a|b|c"
+
+            var indexPtr: number = 0; // pointer to next available index value
+            var uniquePositions: Array<string> = new Array(); // unique vertex positions
+            var ptr: number; // pointer to element in uniquePositions
+            var facet: Array<number>;
+
+            for (var i = 0; i < currentIndices.length; i += 3) {
+                facet = [currentIndices[i], currentIndices[i + 1], currentIndices[i + 2]]; //facet vertex indices
+                pstring = new Array();
+                for (var j = 0; j < 3; j++) {
+                    pstring[j] = "";
+                    for (var k = 0; k < 3; k++) {
+                        //small values make 0
+                        if (Math.abs(currentPositions[3 * facet[j] + k]) < 0.00000001) {
+                            currentPositions[3 * facet[j] + k] = 0;
+                        }
+                        pstring[j] += currentPositions[3 * facet[j] + k] + "|";
+                    }
+                    pstring[j] = pstring[j].slice(0, -1);
+                }
+                //check facet vertices to see that none are repeated
+                // do not process any facet that has a repeated vertex, ie is a line
+                if (!(pstring[0] == pstring[1] || pstring[0] == pstring[2] || pstring[1] == pstring[2])) {
+                    //for each facet position check if already listed in uniquePositions
+                    // if not listed add to uniquePositions and set index pointer
+                    // if listed use its index in uniquePositions and new index pointer
+                    for (var j = 0; j < 3; j++) {
+                        ptr = uniquePositions.indexOf(pstring[j]);
+                        if (ptr < 0) {
+                            uniquePositions.push(pstring[j]);
+                            ptr = indexPtr++;
+                            //not listed so add individual x, y, z coordinates to positions
+                            for (var k = 0; k < 3; k++) {
+                                positions.push(currentPositions[3 * facet[j] + k]);
+                            }
+                            for (var k = 0; k < 2; k++) {
+                                uvs.push(currentUVs[2 * facet[j] + k]);
+                            }
+                        }
+                        // add new index pointer to indices array
+                        indices.push(ptr);
+                    }
+                }
+            }
+
+            var normals: Array<number> = new Array();
+            VertexData.ComputeNormals(positions, indices, normals);
+
+            //create new vertex data object and update
+            vertex_data.positions = positions;
+            vertex_data.indices = indices;
+            vertex_data.normals = normals;
+            vertex_data.uvs = uvs;
+
+            vertex_data.applyToMesh(this);
+        }
+    }
+
     // Instances
     /** @hidden */
     public static _instancedMeshFactory(name: string, mesh: Mesh): InstancedMesh {
