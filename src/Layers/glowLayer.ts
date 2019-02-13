@@ -21,6 +21,7 @@ import { _TypeStore } from '../Misc/typeStore';
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
+import "../Layers/effectLayerSceneComponent";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
