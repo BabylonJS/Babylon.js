@@ -63,24 +63,33 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         }
     }
 
-    componentWillMount() {
-        const scene = this.props.skeleton.getScene();
+    checkSkeletonViewerState(props: ISkeletonPropertyGridComponentProps) {
+        const scene = props.skeleton.getScene();
+        this._skeletonViewers = [];
 
         if (!scene) {
             return;
         }
 
-        if (!scene.reservedDataStore) {
-            scene.reservedDataStore = {};
-        }
-
         for (var mesh of scene.meshes) {
-            if (mesh.skeleton === this.props.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
+            if (mesh.skeleton === props.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
                 this._skeletonViewers.push(mesh.reservedDataStore.skeletonViewer);
             }
         }
 
         this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
+    }
+
+    componentWillMount() {
+        this.checkSkeletonViewerState(this.props);
+    }
+
+    shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps) {
+        if (nextProps.skeleton !== this.props.skeleton) {
+            this.checkSkeletonViewerState(nextProps);
+        }
+
+        return true;
     }
 
     render() {
