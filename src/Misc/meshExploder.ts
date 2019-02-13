@@ -10,6 +10,7 @@ export class MeshExploder {
     private _meshes: Array<Mesh>;
     private _meshesOrigins: Array<Vector3>;
     private _originsVectors: Array<Vector3>;
+    private _scaledDirection: Vector3 = Vector3.Zero();
 
     /**
      * Explodes meshes from a center mesh.
@@ -30,8 +31,6 @@ export class MeshExploder {
         this._centerMesh.computeWorldMatrix();
         if (this._centerMesh._boundingInfo) {
             this._centerOrigin = this._centerMesh._boundingInfo.boundingBox.centerWorld;
-        } else {
-            this._centerOrigin = this._centerMesh.getBoundingInfo().boundingBox.centerWorld;
         }
         if (this._meshes.indexOf(this._centerMesh) >= 0) {
             this._meshes.splice(this._meshes.indexOf(this._centerMesh), 1);
@@ -102,10 +101,11 @@ export class MeshExploder {
      * @param direction Number to multiply distance of each mesh's origin from center. Use a negative number to implode, or zero to reset.
      */
     public explode(direction: number = 1.0): void {
+        this._scaledDirection = Vector3.Zero();
         for (var index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index] && this._originsVectors[index]) {
-                let scaledDirection = this._originsVectors[index].scale(direction);
-                this._meshes[index].position = this._meshesOrigins[index].add(scaledDirection);
+                this._originsVectors[index].scaleToRef(direction, this._scaledDirection);
+                this._meshesOrigins[index].addToRef(this._scaledDirection, this._meshes[index].position);
             }
         }
     }
