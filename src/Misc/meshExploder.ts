@@ -4,7 +4,7 @@ import { Vector3 } from "../Maths/math";
 /**
  * Class used to explode meshes.
  */
-export class ExplodeMeshes {
+export class MeshExploder {
     private _centerMesh: Mesh;
     private _centerOrigin: Vector3;
     private _meshes: Array<Mesh>;
@@ -52,7 +52,6 @@ export class ExplodeMeshes {
     }
 
     private _setCenterMesh(): void {
-        var positionCount: number = 0;
         var averageCenter = Vector3.Zero();
         var totalCenters = Vector3.Zero();
         var shortestToCenter = Number.MAX_VALUE;
@@ -60,23 +59,16 @@ export class ExplodeMeshes {
             if (this._meshes[index]) {
                 var mesh = this._meshes[index];
                 if (mesh._boundingInfo) {
-                    totalCenters.x += mesh._boundingInfo.boundingBox.centerWorld.x;
-                    totalCenters.y += mesh._boundingInfo.boundingBox.centerWorld.y;
-                    totalCenters.z += mesh._boundingInfo.boundingBox.centerWorld.z;
-                    positionCount++;
+                    totalCenters.addInPlace(mesh._boundingInfo.boundingBox.centerWorld);
                 }
             }
         }
-        averageCenter.x = totalCenters.x / positionCount;
-        averageCenter.y = totalCenters.y / positionCount;
-        averageCenter.z = totalCenters.z / positionCount;
+        averageCenter = totalCenters.scale(1 / this._meshes.length);
         for (var index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
                 var mesh = this._meshes[index];
                 if (mesh._boundingInfo) {
-                    var meshCenter = mesh._boundingInfo.boundingBox.centerWorld;
-                    var vectorToCenter = meshCenter.subtract(averageCenter);
-                    var distanceToCenter = vectorToCenter.length();
+                    var distanceToCenter = mesh._boundingInfo.boundingBox.centerWorld.subtract(averageCenter).length();
                     if (distanceToCenter < shortestToCenter) {
                         this._centerMesh = mesh;
                         shortestToCenter = distanceToCenter;
@@ -87,11 +79,11 @@ export class ExplodeMeshes {
     }
 
     /**
-     * "ExplodeMeshes"
-     * @returns "ExplodeMeshes"
+     * "MeshExploder"
+     * @returns "MeshExploder"
      */
     public getClassName(): string {
-        return "ExplodeMeshes";
+        return "MeshExploder";
     }
 
     /**
@@ -107,39 +99,13 @@ export class ExplodeMeshes {
 
     /**
      * Explodes mesh a given number of times.
-     * @param explodeSize The number of times to move meshes away from center in increments equal to original positions.
+     * @param direction Number to multiply distance of each mesh's origin from center. Use a negative number to implode, or zero to reset.
      */
-    public explode(explodeSize: number = 1): void {
-        for (var step = 0; step < explodeSize; step++) {
-            for (var index = 0; index < this._meshes.length; index++) {
-                if (this._meshes[index] && this._originsVectors[index]) {
-                    this._meshes[index].position.addInPlace(this._originsVectors[index]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Implodes mesh a given number of times.
-     * @param implodeSize The number of times to move meshes towards center, or beyond. Opposite direction of explode.
-     */
-    public implode(implodeSize: number = 1): void {
-        for (var step = 0; step < implodeSize; step++) {
-            for (var index = 0; index < this._meshes.length; index++) {
-                if (this._meshes[index] && this._originsVectors[index]) {
-                    this._meshes[index].position.subtractInPlace(this._originsVectors[index]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Resets meshes to original positions.
-     */
-    public reset(): void {
+    public explode(direction: number = 1.0): void {
         for (var index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index] && this._originsVectors[index]) {
-                this._meshes[index].position = this._meshesOrigins[index].clone();
+                let scaledDirection = this._originsVectors[index].scale(direction);
+                this._meshes[index].position = this._meshesOrigins[index].add(scaledDirection);
             }
         }
     }
