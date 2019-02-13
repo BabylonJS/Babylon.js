@@ -50,6 +50,8 @@
 
 ### Core Engine
 
+- Optimized effect reused for shadow maps ([Deltakosh](https://github.com/deltakosh))
+- Added `shadowGenerator.onBeforeShadowMapRenderMeshObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added support for `scene.customLODSelector` to let users define their own LOD rules ([Deltakosh](https://github.com/deltakosh))
 - Added `animatable.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added `animationGroup.onAnimationLoopObservable` ([Deltakosh](https://github.com/deltakosh))

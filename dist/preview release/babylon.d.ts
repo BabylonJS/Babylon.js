@@ -9533,6 +9533,11 @@ declare module BABYLON {
          * Observable triggered before the shadow is rendered. Can be used to update internal effect state
          */
         onBeforeShadowMapRenderObservable: Observable<Effect>;
+        /**
+         * Observable triggered before a mesh is rendered in the shadow map.
+         * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
+         */
+        onBeforeShadowMapRenderMeshObservable: Observable<Mesh>;
         private _bias;
         /**
          * Gets the bias: offset applied on the depth preventing acnea (in light direction).
