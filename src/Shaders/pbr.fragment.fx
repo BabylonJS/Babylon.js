@@ -1010,7 +1010,7 @@ void main(void) {
 
         // Full value needed for alpha.
         vec3 finalSpecularScaled = finalSpecular * vLightingIntensity.x * vLightingIntensity.w;
-        #ifdef MS_BRDF_ENERGY_CONSERVATION
+        #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
             finalSpecularScaled *= energyConservationFactor;
         #endif
     #endif
@@ -1022,7 +1022,7 @@ void main(void) {
 
         // Full value needed for alpha. 
         vec3 finalRadianceScaled = finalRadiance * vLightingIntensity.z;
-        #ifdef MS_BRDF_ENERGY_CONSERVATION
+        #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
             finalRadianceScaled *= energyConservationFactor;
         #endif
     #endif
@@ -1040,7 +1040,7 @@ void main(void) {
 
         // Full value needed for alpha.
         vec3 finalClearCoatScaled = finalClearCoat * vLightingIntensity.x * vLightingIntensity.w;
-        #ifdef MS_BRDF_ENERGY_CONSERVATION
+        #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
             finalClearCoatScaled *= energyConservationFactor;
         #endif
 
