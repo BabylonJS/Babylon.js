@@ -256,8 +256,8 @@ function buildES6Library(settings, module) {
 
     var cleanAndShaderTasks = [ function cleanES6(cb) { return cleanSourceAndDist(settings, cb); } ];
     if (settings.computed.shaderTSGlob) {
-        cleanTasks.push(function cleanES6Shaders() { return cleanShaders(settings); });
-        cleanTasks.push(function() { return buildShaders(settings); });
+        cleanAndShaderTasks.push(function cleanES6Shaders() { return cleanShaders(settings); });
+        cleanAndShaderTasks.push(function() { return buildShaders(settings); });
     }
     var copySource = function() { return source(settings); };
     var dependencies = function() { return dep(settings); };
