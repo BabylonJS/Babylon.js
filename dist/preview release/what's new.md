@@ -139,7 +139,7 @@
 ### Viewer
 
 ### Post-Processes Library
-- Added the `Ocean` post-process ([julien-moreau](https://github.com/julien-moreau))
+- Added the [Ocean](https://doc.babylonjs.com/extensions/oceanpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
 
 ### Materials Library
 - Added the `cameraOffset` vector property in the `SkyMaterial` to get an offset according to the horizon ([julien-moreau](https://github.com/julien-moreau))
