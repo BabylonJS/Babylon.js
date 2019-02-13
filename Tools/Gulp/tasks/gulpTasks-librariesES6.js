@@ -254,11 +254,11 @@ function buildES6Library(settings, module) {
     // Creates the required tasks.
     var tasks = [];
 
-    var cleanTasks = [
-        function cleanES6(cb) { return cleanSourceAndDist(settings, cb); },
-        function cleanES6Shaders() { return cleanShaders(settings); }
-    ];
-    var shaders = function() { return buildShaders(settings); };
+    var cleanAndShaderTasks = [ function cleanES6(cb) { return cleanSourceAndDist(settings, cb); } ];
+    if (settings.computed.shaderTSGlob) {
+        cleanTasks.push(function cleanES6Shaders() { return cleanShaders(settings); });
+        cleanTasks.push(function() { return buildShaders(settings); });
+    }
     var copySource = function() { return source(settings); };
     var dependencies = function() { return dep(settings); };
     var adaptSourceImportPaths = function() { return modifySources(settings); };
@@ -280,7 +280,7 @@ function buildES6Library(settings, module) {
         ];
     }
 
-    tasks.push(...cleanTasks, shaders, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, ...buildSteps);
+    tasks.push(...cleanAndShaderTasks, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, ...buildSteps);
 
     return gulp.series.apply(this, tasks);
 }
