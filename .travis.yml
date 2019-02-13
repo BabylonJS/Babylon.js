@@ -30,6 +30,7 @@ jobs:
   - env: JOB=Tests
     script:
     - export DISPLAY=:99.0
+    - export CHROME_BIN=chromium-browser
     - sh -e /etc/init.d/xvfb start
     - sleep 3
     - set -e
@@ -39,12 +40,14 @@ jobs:
     - travis_retry gulp tests-validation-browserstack
   - env: JOB=ModuleTests
     script:
+    - export CHROME_BIN=chromium-browser
     - gulp typescript-all
     - gulp tests-modules
     - gulp deployAndTests-es6Modules
   - env: JOB=ViewerTests
     script:
     - export DISPLAY=:99.0
+    - export CHROME_BIN=chromium-browser
     - sh -e /etc/init.d/xvfb start
     - sleep 3
     - set -e
