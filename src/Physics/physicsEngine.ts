@@ -33,6 +33,7 @@ export class PhysicsEngine implements IPhysicsEngine {
 
     /**
      * Creates a new Physics Engine
+     * Only AmmoJSPlugin allows soft bodies
      * @param gravity defines the gravity vector used by the simulation
      * @param _physicsPlugin defines the plugin to use (CannonJS by default)
      */

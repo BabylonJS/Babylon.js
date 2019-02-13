@@ -10,6 +10,7 @@ import { Bone } from "../Bones/bone";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { IPhysicsEngine } from "./IPhysicsEngine";
 import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
+
 /**
  * The interface for the physics imposter parameters
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -39,6 +40,23 @@ export interface PhysicsImpostorParameters {
      * Specifies if bi-directional transformations should be disabled
      */
     disableBidirectionalTransformation?: boolean;
+    /**
+     * The pressure inside the physics imposter, softbody only
+     */
+    pressure?: number;
+    /**
+     * The stiffness the physics imposter, softbody only
+     */
+    stiffness?: number;
+    /**
+     * The number of iterations used in maintaining consistent vertex velocities, softbody only
+     */
+    velocityIterations?: number;
+    /**
+     * The number of iterations used in maintaining consistent vertex positions, softbody only
+     */
+    positionIterations?: number;
+
 }
 
 /**
@@ -245,10 +263,95 @@ export class PhysicsImpostor {
     }
 
     /**
+     * Gets the pressure
+     */
+    get pressure(): number {
+        if (!this._physicsEngine) {
+            return 0;
+        }
+        return this._physicsEngine.getPhysicsPlugin().getBodyPressure!(this);
+    }
+
+    /**
+     * Sets pressure
+     */
+    set pressure(value: number) {
+        if (!this._physicsEngine) {
+            return;
+        }
+        this._physicsEngine.getPhysicsPlugin().setBodyPressure!(this, value);
+    }
+
+    /**
+     * Gets the stiffness
+     */
+    get stiffness(): number {
+        if (!this._physicsEngine) {
+            return 0;
+        }
+        return this._physicsEngine.getPhysicsPlugin().getBodyStiffness!(this);
+    }
+
+    /**
+     * Sets the stiffness
+     */
+    set stiffness(value: number) {
+        if (!this._physicsEngine) {
+            return;
+        }
+        this._physicsEngine.getPhysicsPlugin().setBodyStiffness!(this, value);
+    }
+
+    /**
+     * Gets the velocityIterations
+     */
+    get velocityIterations(): number {
+        if (!this._physicsEngine) {
+            return 0;
+        }
+        return this._physicsEngine.getPhysicsPlugin().getBodyVelocityIterations!(this);
+    }
+
+    /**
+     * Sets the velocityIterations
+     */
+    set velocityIterations(value: number) {
+        if (!this._physicsEngine) {
+            return;
+        }
+        this._physicsEngine.getPhysicsPlugin().setBodyVelocityIterations!(this, value);
+    }
+
+    /**
+     * Gets the positionIterations
+     */
+    get positionIterations(): number {
+        if (!this._physicsEngine) {
+            return 0;
+        }
+        return this._physicsEngine.getPhysicsPlugin().getBodyPositionIterations!(this);
+    }
+
+    /**
+     * Sets the positionIterations
+     */
+    set positionIterations(value: number) {
+        if (!this._physicsEngine) {
+            return;
+        }
+        this._physicsEngine.getPhysicsPlugin().setBodyPositionIterations!(this, value);
+    }
+
+    /**
      * The unique id of the physics imposter
      * set by the physics engine when adding this impostor to the array
      */
     public uniqueId: number;
+
+    /**
+     * @hidden
+     */
+    public soft: boolean = false;
 
     private _joints: Array<{
         joint: PhysicsJoint,
@@ -287,6 +390,10 @@ export class PhysicsImpostor {
             return;
         }
 
+        if (this.type > 100) {
+            this.soft = true;
+        }
+
         this._physicsEngine = this._scene.getPhysicsEngine();
         if (!this._physicsEngine) {
             Logger.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
@@ -304,7 +411,15 @@ export class PhysicsImpostor {
             this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
             this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
             this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
-
+            this._options.pressure = (_options.pressure === void 0) ? 0 : _options.pressure;
+            if (this.soft) {
+                //softbody mass must be above 0;
+                this._options.mass = this._options.mass > 0 ? this._options.mass : 1;
+                this._options.pressure = (_options.pressure === void 0) ? 200 : _options.pressure;
+                this._options.stiffness = (_options.stiffness === void 0) ? 1 : _options.stiffness;
+                this._options.velocityIterations = (_options.velocityIterations === void 0) ? 20 : _options.velocityIterations;
+                this._options.positionIterations = (_options.positionIterations === void 0) ? 20 : _options.positionIterations;
+            }
             this._joints = [];
             //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
             if (!this.object.parent || this._options.ignoreParent) {
@@ -1025,4 +1140,16 @@ export class PhysicsImpostor {
      * Heightmap-Imposter type
      */
     public static HeightmapImpostor = 9;
+    /**
+     * Rope-Imposter type
+     */
+    public static RopeImpostor = 101;
+    /**
+     * Cloth-Imposter type
+     */
+    public static ClothImpostor = 102;
+    /**
+     * Softbody-Imposter type
+     */
+    public static SoftbodyImpostor = 103;
 }
