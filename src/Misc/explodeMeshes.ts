@@ -12,7 +12,7 @@ export class ExplodeMeshes {
     private _originsVectors: Array<Vector3>;
 
     /**
-     * @constructor
+     * Explodes meshes from a center mesh.
      * @param meshes The meshes to explode.
      * @param centerMesh The mesh to be center of explosion.
      */
