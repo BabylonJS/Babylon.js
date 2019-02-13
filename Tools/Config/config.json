@@ -590,7 +590,7 @@
             }
         ],
         "build": {
-            "mainFolder": "./viewer/",
+            "mainFolder": "./Viewer/",
             "webpack": "../../../Viewer/webpack.gulp.config.js",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
