@@ -12,7 +12,7 @@ const config = require("../../Config/config.js");
  * Prepare an es6 Dev folder npm linked for test purpose.
  */
 function prepareEs6DevPackages() {
-    config.modules.forEach(moduleName => {
+    config.es6modules.forEach(moduleName => {
         const module = config[moduleName];
 
         colorConsole.log("Prepare " + "ES6Dev".magenta + " Package: " + moduleName.blue.bold);

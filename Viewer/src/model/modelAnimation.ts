@@ -1,4 +1,5 @@
-import { Animatable, AnimationGroup, Vector3 } from 'babylonjs';
+import { Vector3 } from "babylonjs/Maths/math";
+import { AnimationGroup, Animatable } from "babylonjs/Animations/index";
 
 /**
  * Animation play mode enum - is the animation looping or playing once
