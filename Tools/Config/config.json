@@ -661,8 +661,7 @@
                 "packageName": "@babylonjs/viewer",
                 "readme": "Viewer/README-ES6.md",
                 "skipLibCheck": true,
-                "index": "src/index.js",
-                "typings": "src/index.d.ts"
+                "packageBuildFolder": "src"
             }
         }
     },

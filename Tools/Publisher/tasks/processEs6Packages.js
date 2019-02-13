@@ -23,6 +23,9 @@ function processEs6Packages(version) {
         colorConsole.log("Process " + "ES6".magenta + " Package: " + moduleName.blue.bold);
 
         let distPath = module.computed.distES6Directory;
+        if (es6Config.packageBuildFolder) {
+            distPath = path.join(distPath, es6Config.packageBuildFolder);
+        }
         let packagePath = module.computed.packageES6Directory;
         let umdPackageJson = require(module.computed.packageJSONPath);
 
