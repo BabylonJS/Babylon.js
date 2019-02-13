@@ -19,7 +19,7 @@ export type int = number;
 /** Alias type for number array or Float32Array */
 export type FloatArray = number[] | Float32Array;
 /** Alias type for number array or Float32Array or Int32Array or Uint32Array or Uint16Array */
-export type IndicesArray = number[] | Int32Array | Uint32Array | Uint16Array;
+export type IndicesArray = number[] | Float32Array | Int32Array | Uint32Array | Uint16Array;
 
 /**
  * Alias for types that can be used by a Buffer or VertexBuffer.

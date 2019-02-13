@@ -28,13 +28,13 @@ gulp.task("tests-validation-karma", function(done) {
 });
 
 /**
- * Launches the KARMA validation tests in ff or virtual screen ff on travis for a quick analysis during the build.
+ * Launches the KARMA validation tests in Chrome or virtual screen ff on travis for a quick analysis during the build.
  */
 gulp.task("tests-validation-virtualscreen", function(done) {
     var kamaServerOptions = {
         configFile: rootDir + "tests/validation/karma.conf.js",
         singleRun: true,
-        browsers: ['Firefox']
+        browsers: ['Chrome']
     };
 
     var server = new karmaServer(kamaServerOptions, done);
@@ -139,14 +139,14 @@ gulp.task("tests-viewer-validation-karma", gulp.series("tests-viewer-validation-
 }));
 
 /**
- * Launches the KARMA validation tests in ff or virtual screen ff on travis for a quick analysis during the build.
+ * Launches the KARMA validation tests in Chrome or virtual screen ff on travis for a quick analysis during the build.
  * (Can only be launch on any branches.)
  */
 gulp.task("tests-viewer-validation-virtualscreen", gulp.series("tests-viewer-validation-transpile", function(done) {
     var kamaServerOptions = {
         configFile: rootDir + "Viewer/tests/validation/karma.conf.js",
         singleRun: true,
-        browsers: ['Firefox']
+        browsers: ['Chrome']
     };
 
     var server = new karmaServer(kamaServerOptions, done);
