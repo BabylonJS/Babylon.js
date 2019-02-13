@@ -93,7 +93,7 @@ gulp.task("tests-unit-debug", gulp.series("tests-unit-transpile", function(done)
 }));
 
 /**
- * Launches the KARMA unit tests in phantomJS.
+ * Launches the KARMA unit tests in firefox.
  */
 gulp.task("tests-babylon-unit", gulp.series("tests-unit-transpile", function(done) {
     var kamaServerOptions = {
@@ -207,7 +207,7 @@ gulp.task("tests-viewer-unit-debug", gulp.series("tests-viewer-transpile", funct
 }));
 
 /**
- * Launches the KARMA unit tests in phantomJS.
+ * Launches the KARMA unit tests in firefox.
  */
 gulp.task("tests-viewer-unit", gulp.series("tests-viewer-transpile", function(done) {
     var kamaServerOptions = {
@@ -220,12 +220,12 @@ gulp.task("tests-viewer-unit", gulp.series("tests-viewer-transpile", function(do
 }));
 
 /**
- * Launches the KARMA unit tests in phantomJS.
+ * Launches the KARMA unit tests in firefox.
  */
 gulp.task("tests-unit", gulp.series("tests-babylon-unit", "tests-viewer-unit"));
 
 /**
- * Launches the KARMA module tests in phantomJS.
+ * Launches the KARMA module tests in firefox.
  */
 gulp.task("tests-modules", function() {
     let testsToRun = require(relativeRootDir + 'tests/modules/tests.json');
@@ -236,7 +236,7 @@ gulp.task("tests-modules", function() {
         sequencePromise = sequencePromise.then(() => {
             console.log("Running " + test.name);
             let basePath = relativeRootDir + 'tests/modules/' + test.name + '/';
-            
+
             rmDir("../../tests/modules/build/");
             let compilePromise = Promise.resolve();
 
