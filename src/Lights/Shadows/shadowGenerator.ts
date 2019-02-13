@@ -973,8 +973,8 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Observables
-            this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
             this.onBeforeShadowMapRenderMeshObservable.notifyObservers(mesh);
+            this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
 
             // Draw
             mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
