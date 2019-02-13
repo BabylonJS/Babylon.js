@@ -11946,6 +11946,11 @@ declare module BABYLON {
          */
         attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         /**
+         * Called on JS contextmenu event.
+         * Override this method to provide functionality.
+         */
+        protected onContextMenu(evt: PointerEvent): void;
+        /**
          * Detach the current controls from the specified dom element.
          * @param element Defines the element to stop listening the inputs from
          */
