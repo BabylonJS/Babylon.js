@@ -1,5 +1,5 @@
 /**
- * This webGL Support shim will allow running tests using the normal engine in phantomjs.
+ * This webGL Support shim will allow running tests using the normal engine in chrome headless.
  */
 
 //Tests should be in the same condition no matter what environment they are running in.
