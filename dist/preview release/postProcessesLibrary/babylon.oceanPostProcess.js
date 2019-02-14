@@ -423,11 +423,7 @@ var oceanPostProcessPixelShader = { name: name, shader: shader };
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OceanPostProcess", function() { return OceanPostProcess; });
-<<<<<<< HEAD
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
-=======
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
->>>>>>> 818e3fe07aba4c9e29fe98b3fc85b07945a71d09
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _oceanPostProcess_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./oceanPostProcess.fragment */ "./ocean/oceanPostProcess.fragment.ts");
