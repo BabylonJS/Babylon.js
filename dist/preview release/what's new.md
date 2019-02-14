@@ -139,7 +139,7 @@
 ### Viewer
 
 ### Post-Processes Library
-- Added the `Ocean` post-process ([julien-moreau](https://github.com/julien-moreau))
+- Added the [Ocean](https://doc.babylonjs.com/extensions/oceanpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
 
 ### Materials Library
 - Added the `cameraOffset` vector property in the `SkyMaterial` to get an offset according to the horizon ([julien-moreau](https://github.com/julien-moreau))
@@ -187,6 +187,8 @@
 - Do not crash the application if webVR submitFrame fails ([TrevorDev](https://github.com/TrevorDev))
 - Fix pinch action on FollowCameraPointersInput ([mrdunk](https://github.com))
 - Tools.CreateScreenshot stopped working ([TrevorDev](https://github.com/TrevorDev))
+- Inspector showing duplicate nodes when attached to gizmo ([TrevorDev](https://github.com/TrevorDev)))
+- Add missing dependencies for files to support including them from a direct path (eg. import "@babylonjs/core/Helpers/sceneHelpers";) ([TrevorDev](https://github.com/TrevorDev)))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
