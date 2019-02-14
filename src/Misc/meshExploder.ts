@@ -8,7 +8,7 @@ export class MeshExploder {
     private _centerMesh: Mesh;
     private _meshes: Array<Mesh>;
     private _meshesOrigins: Array<Vector3> = [];
-    private _originsVectors: Array<Vector3> = [];
+    private _toCenterVectors: Array<Vector3> = [];
     private _scaledDirection = new Vector3(0.0, 0.0, 0.0);
 
     /**
@@ -35,9 +35,8 @@ export class MeshExploder {
                     var mesh = this._meshes[index];
                     mesh.computeWorldMatrix();
                     if (mesh._boundingInfo) {
-                        var meshCenter = mesh._boundingInfo.boundingBox.centerWorld;
-                        this._meshesOrigins.push(meshCenter.clone());
-                        this._originsVectors.push(meshCenter.subtract(this._centerMesh._boundingInfo.boundingBox.centerWorld));
+                        this._meshesOrigins.push(mesh.position.clone());
+                        this._toCenterVectors.push(mesh._boundingInfo.boundingBox.centerWorld.subtract(this._centerMesh._boundingInfo.boundingBox.centerWorld));
                     }
                 }
             }
@@ -96,8 +95,8 @@ export class MeshExploder {
      */
     public explode(direction: number = 1.0): void {
         for (var index = 0; index < this._meshes.length; index++) {
-            if (this._meshes[index] && this._originsVectors[index]) {
-                this._originsVectors[index].scaleToRef(direction, this._scaledDirection);
+            if (this._meshes[index] && this._toCenterVectors[index]) {
+                this._toCenterVectors[index].scaleToRef(direction, this._scaledDirection);
                 this._meshesOrigins[index].addToRef(this._scaledDirection, this._meshes[index].position);
             }
         }
