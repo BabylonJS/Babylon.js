@@ -188,6 +188,7 @@
 - Fix pinch action on FollowCameraPointersInput ([mrdunk](https://github.com))
 - Tools.CreateScreenshot stopped working ([TrevorDev](https://github.com/TrevorDev))
 - Inspector showing duplicate nodes when attached to gizmo ([TrevorDev](https://github.com/TrevorDev)))
+- Add missing dependencies for files to support including them from a direct path (eg. import "@babylonjs/core/Helpers/sceneHelpers";) ([TrevorDev](https://github.com/TrevorDev)))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
