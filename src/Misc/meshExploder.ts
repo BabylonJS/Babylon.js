@@ -19,7 +19,7 @@ export class MeshExploder {
     constructor(meshes: Array<Mesh>, centerMesh?: Mesh) {
 
         this._meshes = meshes.slice();
-        
+
         if (centerMesh) {
             this._centerMesh = centerMesh;
         } else {
