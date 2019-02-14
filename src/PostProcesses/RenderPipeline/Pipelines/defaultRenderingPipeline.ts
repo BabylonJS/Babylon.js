@@ -24,6 +24,8 @@ import { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from "../../../Engines/engineStore";
 
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+
 declare type Animation = import("../../../Animations/animation").Animation;
 
 /**
