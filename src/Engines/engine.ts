@@ -491,7 +491,7 @@ export class Engine {
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.26";
+        return "4.0.0-alpha.27";
     }
 
     /**
