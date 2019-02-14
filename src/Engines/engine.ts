@@ -491,7 +491,7 @@ export class Engine {
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.26";
+        return "4.0.0-alpha.27";
     }
 
     /**
@@ -5727,8 +5727,12 @@ export class Engine {
 
                 let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
                 for (var index = 0; index < faces.length; index++) {
-                    this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
-                    gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+                    if (imgs[index].width !== width || imgs[index].height !== height) {
+                        this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
+                        gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+                    } else {
+                        gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, imgs[index]);
+                    }
                 }
 
                 if (!noMipmap) {
