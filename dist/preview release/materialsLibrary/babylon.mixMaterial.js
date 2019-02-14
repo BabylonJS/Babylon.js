@@ -96,41 +96,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
-/***/ "../../node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || new Function("return this")();
-} catch (e) {
-	// This works if the window reference is available
-	if (typeof window === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-
-/***/ "../node_modules/tslib/tslib.es6.js":
-/*!******************************************!*\
-  !*** ../node_modules/tslib/tslib.es6.js ***!
-  \******************************************/
+/***/ "../../node_modules/tslib/tslib.es6.js":
+/*!***********************************************************!*\
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -345,6 +314,37 @@ function __importDefault(mod) {
 
 /***/ }),
 
+/***/ "../../node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
 /***/ "./legacy/legacy-mix.ts":
 /*!******************************!*\
   !*** ./legacy/legacy-mix.ts ***!
@@ -467,7 +467,7 @@ var mixVertexShader = { name: name, shader: shader };
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MixMaterial", function() { return MixMaterial; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _mix_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mix.fragment */ "./mix/mix.fragment.ts");
@@ -556,22 +556,40 @@ var MixMaterial = /** @class */ (function (_super) {
         var engine = scene.getEngine();
         // Textures
         if (scene.texturesEnabled) {
+            if (!this._mixTexture1 || !this._mixTexture1.isReady()) {
+                return false;
+            }
+            defines._needUVs = true;
             if (babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialFlags"].DiffuseTextureEnabled) {
-                if (this._mixTexture1) {
-                    if (!this._mixTexture1.isReady()) {
-                        return false;
-                    }
-                    else {
-                        defines._needUVs = true;
-                        defines.DIFFUSE = true;
-                    }
+                if (!this._diffuseTexture1 || !this._diffuseTexture1.isReady()) {
+                    return false;
+                }
+                defines.DIFFUSE = true;
+                if (!this._diffuseTexture2 || !this._diffuseTexture2.isReady()) {
+                    return false;
+                }
+                if (!this._diffuseTexture3 || !this._diffuseTexture3.isReady()) {
+                    return false;
+                }
+                if (!this._diffuseTexture4 || !this._diffuseTexture4.isReady()) {
+                    return false;
                 }
                 if (this._mixTexture2) {
                     if (!this._mixTexture2.isReady()) {
                         return false;
                     }
-                    else {
-                        defines.MIXMAP2 = true;
+                    defines.MIXMAP2 = true;
+                    if (!this._diffuseTexture5 || !this._diffuseTexture5.isReady()) {
+                        return false;
+                    }
+                    if (!this._diffuseTexture6 || !this._diffuseTexture6.isReady()) {
+                        return false;
+                    }
+                    if (!this._diffuseTexture7 || !this._diffuseTexture7.isReady()) {
+                        return false;
+                    }
+                    if (!this._diffuseTexture8 || !this._diffuseTexture8.isReady()) {
+                        return false;
                     }
                 }
             }

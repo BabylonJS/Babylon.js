@@ -119,6 +119,23 @@ var processData = function(data, options) {
         str = str.replace(/^\s*$/gm, "");
     }
 
+    // Hide Exported Consts if necessary
+    if (options.hiddenConsts) {
+        for (let toHide of options.hiddenConsts) {
+            var constStart = str.indexOf(`export const ${toHide}`);
+            if (constStart > -1) {
+                for (let i = constStart; i < str.length; i++) {
+                    if (str[i] === "}") {
+                        // +1 to enroll the last }
+                        // +2 to enroll the trailing ;
+                        str = str.substr(0, constStart) + str.substr(i + 2);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     // Add Entry point.
     str += `
 declare module "${moduleName}" {

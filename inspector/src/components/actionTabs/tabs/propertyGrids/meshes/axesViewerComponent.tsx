@@ -6,9 +6,11 @@ import { AxesViewer } from "babylonjs/Debug/axesViewer";
 
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { UtilityLayerRenderer } from 'babylonjs/Rendering/utilityLayerRenderer';
+import { GlobalState } from '../../../../globalState';
 
 interface IAxisViewerComponentProps {
     node: TransformNode;
+    globalState: GlobalState;
 }
 
 export class AxesViewerComponent extends React.Component<IAxisViewerComponentProps, { displayAxis: boolean }> {

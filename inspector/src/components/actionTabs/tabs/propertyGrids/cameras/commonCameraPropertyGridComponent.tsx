@@ -8,8 +8,10 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
 
 interface ICommonCameraPropertyGridComponentProps {
+    globalState: GlobalState;
     camera: Camera;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -31,7 +33,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
         ];
 
         return (
-            <LineContainerComponent title="GENERAL">
+            <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                 <TextLineComponent label="ID" value={camera.id} />
                 <TextLineComponent label="Unique ID" value={camera.uniqueId.toString()} />
                 <TextLineComponent label="Class" value={camera.getClassName()} />

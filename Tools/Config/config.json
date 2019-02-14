@@ -47,6 +47,17 @@
         "gui",
         "inspector"
     ],
+    "es6modules": [
+        "core",
+        "materialsLibrary",
+        "postProcessesLibrary",
+        "proceduralTexturesLibrary",
+        "loaders",
+        "serializers",
+        "gui",
+        "inspector",
+        "viewer"
+    ],
     "lintModules": [
         "core",
         "materialsLibrary",
@@ -105,7 +116,8 @@
                             "path": "babylonjs/Debug/skeletonViewer",
                             "namespace": "BABYLON.Debug"
                         }
-                    ]
+                    ],
+                    "hiddenConsts": ["Debug"]
                 },
                 "requiredFiles": [
                     "readme.md"
@@ -245,6 +257,11 @@
             {
                 "output": "babylon.digitalRainPostProcess.min.js",
                 "entry": "./legacy/legacy-digitalRain.ts",
+                "preventLoadLibrary": true
+            },
+            {
+                "output": "babylon.oceanPostProcess.min.js",
+                "entry": "./legacy/legacy-ocean.ts",
                 "preventLoadLibrary": true
             }
         ],
@@ -543,12 +560,11 @@
                 }
             },
             "es6": {
-                "webpackBuild": {
-                    "dependencies": [
-                        "node_modules/re-resizable/lib/index.es5.js",
-                        "Tools/**/*"
-                    ]
-                },
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
                 "packageName": "@babylonjs/inspector",
                 "readme": "dist/preview release/inspector/readme-es6.md",
                 "packagesFiles": [
@@ -574,6 +590,7 @@
             }
         ],
         "build": {
+            "mainFolder": "./Viewer/",
             "webpack": "../../../Viewer/webpack.gulp.config.js",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
@@ -635,7 +652,17 @@
                     ]
                 }
             ],
-            "legacyPackageOutputDirectory": "../../../Viewer/build/src/"
+            "legacyPackageOutputDirectory": "../../../Viewer/build/src/",
+            "es6": {
+                "buildDependencies": [
+                    "node_modules/handlebars/**/*",
+                    "node_modules/@types/**/*"
+                ],
+                "packageName": "@babylonjs/viewer",
+                "readme": "Viewer/README-ES6.md",
+                "skipLibCheck": true,
+                "packageBuildFolder": "src"
+            }
         }
     },
     "viewer-assets": {
