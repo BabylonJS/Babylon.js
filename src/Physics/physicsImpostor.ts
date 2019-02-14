@@ -263,80 +263,104 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the pressure
+     * Gets the pressure of a soft body; only supported by the AmmoJSPlugin
      */
     get pressure(): number {
         if (!this._physicsEngine) {
+            return 0;
+        }
+        if (!this._physicsEngine.getPhysicsPlugin().getBodyPressure) {
             return 0;
         }
         return this._physicsEngine.getPhysicsPlugin().getBodyPressure!(this);
     }
 
     /**
-     * Sets pressure
+     * Sets the pressure of a soft body; only supported by the AmmoJSPlugin
      */
     set pressure(value: number) {
         if (!this._physicsEngine) {
+            return;
+        }
+        if (!this._physicsEngine.getPhysicsPlugin().setBodyPressure) {
             return;
         }
         this._physicsEngine.getPhysicsPlugin().setBodyPressure!(this, value);
     }
 
     /**
-     * Gets the stiffness
+     * Gets the stiffness of a soft body; only supported by the AmmoJSPlugin
      */
     get stiffness(): number {
         if (!this._physicsEngine) {
+            return 0;
+        }
+        if (!this._physicsEngine.getPhysicsPlugin().getBodyStiffness) {
             return 0;
         }
         return this._physicsEngine.getPhysicsPlugin().getBodyStiffness!(this);
     }
 
     /**
-     * Sets the stiffness
+     * Sets the stiffness of a soft body; only supported by the AmmoJSPlugin
      */
     set stiffness(value: number) {
         if (!this._physicsEngine) {
+            return;
+        }
+        if (!this._physicsEngine.getPhysicsPlugin().setBodyStiffness) {
             return;
         }
         this._physicsEngine.getPhysicsPlugin().setBodyStiffness!(this, value);
     }
 
     /**
-     * Gets the velocityIterations
+     * Gets the velocityIterations of a soft body; only supported by the AmmoJSPlugin
      */
     get velocityIterations(): number {
         if (!this._physicsEngine) {
+            return 0;
+        }
+        if (!this._physicsEngine.getPhysicsPlugin().getBodyVelocityIterations) {
             return 0;
         }
         return this._physicsEngine.getPhysicsPlugin().getBodyVelocityIterations!(this);
     }
 
     /**
-     * Sets the velocityIterations
+     * Sets the velocityIterations of a soft body; only supported by the AmmoJSPlugin
      */
     set velocityIterations(value: number) {
         if (!this._physicsEngine) {
+            return;
+        }
+        if (!this._physicsEngine.getPhysicsPlugin().setBodyVelocityIterations) {
             return;
         }
         this._physicsEngine.getPhysicsPlugin().setBodyVelocityIterations!(this, value);
     }
 
     /**
-     * Gets the positionIterations
+     * Gets the positionIterations of a soft body; only supported by the AmmoJSPlugin
      */
     get positionIterations(): number {
         if (!this._physicsEngine) {
+            return 0;
+        }
+        if (!this._physicsEngine.getPhysicsPlugin().getBodyPositionIterations) {
             return 0;
         }
         return this._physicsEngine.getPhysicsPlugin().getBodyPositionIterations!(this);
     }
 
     /**
-     * Sets the positionIterations
+     * Sets the positionIterations of a soft body; only supported by the AmmoJSPlugin
      */
     set positionIterations(value: number) {
         if (!this._physicsEngine) {
+            return;
+        }
+        if (!this._physicsEngine.getPhysicsPlugin().setBodyPositionIterations) {
             return;
         }
         this._physicsEngine.getPhysicsPlugin().setBodyPositionIterations!(this, value);
