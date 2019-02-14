@@ -7,8 +7,10 @@ import { Color3LineComponent } from "../../lines/color3LineComponent";
 import { FloatLineComponent } from "../../lines/floatLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";
 import { LockObject } from "./lockObject";
+import { GlobalState } from '../../../globalState';
 
 interface IFogPropertyGridComponentProps {
+    globalState: GlobalState;
     scene: Scene;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;

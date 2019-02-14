@@ -68,6 +68,7 @@ uniform mat4 view;
 // Clear Coat
 #ifdef CLEARCOAT
     uniform vec2 vClearCoatParams;
+    uniform vec4 vClearCoatRefractionParams;
 
     #ifdef CLEARCOAT_TEXTURE
         uniform vec2 vClearCoatInfos;
@@ -78,6 +79,16 @@ uniform mat4 view;
         uniform vec2 vClearCoatBumpInfos;
         uniform vec2 vClearCoatTangentSpaceParams;
         uniform mat4 clearCoatBumpMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_TINT
+        uniform vec4 vClearCoatTintParams;
+        uniform float clearCoatColorAtDistance;
+
+        #ifdef CLEARCOAT_TINT_TEXTURE
+            uniform vec2 vClearCoatTintInfos;
+            uniform mat4 clearCoatTintMatrix;
+        #endif
     #endif
 #endif
 

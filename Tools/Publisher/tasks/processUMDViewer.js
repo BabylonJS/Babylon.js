@@ -49,7 +49,7 @@ function processUMDViewer(module, version) {
     packageJson.main = "babylon.viewer.js";
     packageJson.typings = "index.d.ts";
 
-    fs.writeFileSync(buildPath + 'package.json', JSON.stringify(packageJson, null, 4));
+    fs.writeFileSync(path.join(buildPath, 'package.json'), JSON.stringify(packageJson, null, 4));
 
     publish(version, "viewer", buildPath);
     colorConsole.emptyLine();

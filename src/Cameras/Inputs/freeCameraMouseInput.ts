@@ -151,6 +151,16 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
         element.addEventListener("mousemove", this._onMouseMove, false);
 
+        element.addEventListener("contextmenu",
+            <EventListener>this.onContextMenu.bind(this), false);
+    }
+
+    /**
+     * Called on JS contextmenu event.
+     * Override this method to provide functionality.
+     */
+    protected onContextMenu(evt: PointerEvent): void {
+        evt.preventDefault();
     }
 
     /**
@@ -163,6 +173,10 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
             if (this._onMouseMove) {
                 element.removeEventListener("mousemove", this._onMouseMove);
+            }
+
+            if (this.onContextMenu) {
+                element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
             }
 
             this._observer = null;
