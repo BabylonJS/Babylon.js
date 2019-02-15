@@ -1893,7 +1893,7 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
     import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-    import { ISceneLoaderPluginAsync, SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+    import { ISceneLoaderPluginAsync, SceneLoaderProgressEvent, ISceneLoaderPluginFactory, ISceneLoaderPlugin } from "babylonjs/Loading/sceneLoader";
     import { AssetContainer } from "babylonjs/assetContainer";
     import { Scene } from "babylonjs/scene";
     /**
@@ -1928,10 +1928,39 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
         private static _getTexture;
     }
     /**
+     * Options for loading OBJ/MTL files
+     */
+    type MeshLoadOptions = {
+        /**
+         * Defines if UVs are optimized by default during load.
+         */
+        OptimizeWithUV: boolean;
+        /**
+         * Invert model on y-axis (does a model scaling inversion)
+         */
+        InvertY: boolean;
+        /**
+         * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
+         */
+        ImportVertexColors: boolean;
+        /**
+         * Compute the normals for the model, even if normals are present in the file.
+         */
+        ComputeNormals: boolean;
+        /**
+         * Skip loading the materials even if defined in the OBJ file (materials are ignored).
+         */
+        SkipMaterials: boolean;
+        /**
+         * When a material fails to load OBJ loader will silently fail and onSuccess() callback will be triggered.
+         */
+        MaterialLoadingFailsSilently: boolean;
+    };
+    /**
      * OBJ file type loader.
      * This is a babylon scene loader plugin.
      */
-    export class OBJFileLoader implements ISceneLoaderPluginAsync {
+    export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         /**
          * Defines if UVs are optimized by default during load.
          */
@@ -1945,9 +1974,19 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
          */
         static IMPORT_VERTEX_COLORS: boolean;
         /**
-         * Compute the normals for the model, even if normals are present in the file
+         * Compute the normals for the model, even if normals are present in the file.
          */
         static COMPUTE_NORMALS: boolean;
+        /**
+         * Skip loading the materials even if defined in the OBJ file (materials are ignored).
+         */
+        static SKIP_MATERIALS: boolean;
+        /**
+         * When a material fails to load OBJ loader will silently fail and onSuccess() callback will be triggered.
+         *
+         * Defaults to true for backwards compatibility.
+         */
+        static MATERIAL_LOADING_FAILS_SILENTLY: boolean;
         /**
          * Defines the name of the plugin.
          */
@@ -1982,6 +2021,14 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
         facePattern4: RegExp;
         /** @hidden */
         facePattern5: RegExp;
+        private _meshLoadOptions;
+        /**
+         * Creates loader for .OBJ files
+         *
+         * @param meshLoadOptions options for loading and parsing OBJ/MTL files.
+         */
+        constructor(meshLoadOptions?: MeshLoadOptions);
+        private static readonly currentMeshLoadOptions;
         /**
          * Calls synchronously the MTL file attached to this obj.
          * Load function or importMesh function don't enable to load 2 files in the same time asynchronously.
@@ -1994,6 +2041,18 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
          * @private
          */
         private _loadMTL;
+        /**
+         * Instantiates a OBJ file loader plugin.
+         * @returns the created plugin
+         */
+        createPlugin(): ISceneLoaderPluginAsync | ISceneLoaderPlugin;
+        /**
+         * If the data string can be loaded directly.
+         *
+         * @param data string containing the file data
+         * @returns if the data can be loaded directly
+         */
+        canDirectLoad(data: string): boolean;
         /**
          * Imports one or more meshes from the loaded OBJ data and adds them to the scene
          * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
@@ -3924,10 +3983,39 @@ declare module BABYLON {
         private static _getTexture;
     }
     /**
+     * Options for loading OBJ/MTL files
+     */
+    type MeshLoadOptions = {
+        /**
+         * Defines if UVs are optimized by default during load.
+         */
+        OptimizeWithUV: boolean;
+        /**
+         * Invert model on y-axis (does a model scaling inversion)
+         */
+        InvertY: boolean;
+        /**
+         * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
+         */
+        ImportVertexColors: boolean;
+        /**
+         * Compute the normals for the model, even if normals are present in the file.
+         */
+        ComputeNormals: boolean;
+        /**
+         * Skip loading the materials even if defined in the OBJ file (materials are ignored).
+         */
+        SkipMaterials: boolean;
+        /**
+         * When a material fails to load OBJ loader will silently fail and onSuccess() callback will be triggered.
+         */
+        MaterialLoadingFailsSilently: boolean;
+    };
+    /**
      * OBJ file type loader.
      * This is a babylon scene loader plugin.
      */
-    export class OBJFileLoader implements ISceneLoaderPluginAsync {
+    export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         /**
          * Defines if UVs are optimized by default during load.
          */
@@ -3941,9 +4029,19 @@ declare module BABYLON {
          */
         static IMPORT_VERTEX_COLORS: boolean;
         /**
-         * Compute the normals for the model, even if normals are present in the file
+         * Compute the normals for the model, even if normals are present in the file.
          */
         static COMPUTE_NORMALS: boolean;
+        /**
+         * Skip loading the materials even if defined in the OBJ file (materials are ignored).
+         */
+        static SKIP_MATERIALS: boolean;
+        /**
+         * When a material fails to load OBJ loader will silently fail and onSuccess() callback will be triggered.
+         *
+         * Defaults to true for backwards compatibility.
+         */
+        static MATERIAL_LOADING_FAILS_SILENTLY: boolean;
         /**
          * Defines the name of the plugin.
          */
@@ -3978,6 +4076,14 @@ declare module BABYLON {
         facePattern4: RegExp;
         /** @hidden */
         facePattern5: RegExp;
+        private _meshLoadOptions;
+        /**
+         * Creates loader for .OBJ files
+         *
+         * @param meshLoadOptions options for loading and parsing OBJ/MTL files.
+         */
+        constructor(meshLoadOptions?: MeshLoadOptions);
+        private static readonly currentMeshLoadOptions;
         /**
          * Calls synchronously the MTL file attached to this obj.
          * Load function or importMesh function don't enable to load 2 files in the same time asynchronously.
@@ -3990,6 +4096,18 @@ declare module BABYLON {
          * @private
          */
         private _loadMTL;
+        /**
+         * Instantiates a OBJ file loader plugin.
+         * @returns the created plugin
+         */
+        createPlugin(): ISceneLoaderPluginAsync | ISceneLoaderPlugin;
+        /**
+         * If the data string can be loaded directly.
+         *
+         * @param data string containing the file data
+         * @returns if the data can be loaded directly
+         */
+        canDirectLoad(data: string): boolean;
         /**
          * Imports one or more meshes from the loaded OBJ data and adds them to the scene
          * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file

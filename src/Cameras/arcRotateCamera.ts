@@ -911,6 +911,7 @@ export class ArcRotateCamera extends TargetCamera {
             } else {
                 this._targetBoundingCenter = null;
             }
+            (<AbstractMesh>target).computeWorldMatrix();
             this._targetHost = <AbstractMesh>target;
             this._target = this._getTargetPosition();
 

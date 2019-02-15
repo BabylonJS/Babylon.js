@@ -4,7 +4,7 @@ import { Scene } from "../scene";
 import { Vector3, Vector4, Color3, Color4 } from "../Maths/math";
 
 import { Condition, ValueCondition } from "./condition";
-import { Action } from "./action";
+import { Action, IAction } from "./action";
 import { DoNothingAction } from "./directActions";
 
 import { EngineStore } from "../Engines/engineStore";
@@ -260,7 +260,7 @@ export class ActionManager extends AbstractActionManager {
      * @param action defines the action to be registered
      * @return the action amended (prepared) after registration
      */
-    public registerAction(action: Action): Nullable<Action> {
+    public registerAction(action: IAction): Nullable<IAction> {
         if (action.trigger === ActionManager.OnEveryFrameTrigger) {
             if (this.getScene().actionManager !== this) {
                 Logger.Warn("OnEveryFrameTrigger can only be used with scene.actionManager");
@@ -288,7 +288,7 @@ export class ActionManager extends AbstractActionManager {
      * @param action defines the action to be unregistered
      * @return a boolean indicating whether the action has been unregistered
      */
-    public unregisterAction(action: Action): Boolean {
+    public unregisterAction(action: IAction): Boolean {
         var index = this.actions.indexOf(action);
         if (index !== -1) {
             this.actions.splice(index, 1);

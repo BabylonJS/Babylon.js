@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_textBlock__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2070,9 +2070,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
-  \**********************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: far, prefix, faAddressBook, faAddressCard, faAngry, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faBell, faBellSlash, faBookmark, faBuilding, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faChartBar, faCheckCircle, faCheckSquare, faCircle, faClipboard, faClock, faClone, faClosedCaptioning, faComment, faCommentAlt, faCommentDots, faComments, faCompass, faCopy, faCopyright, faCreditCard, faDizzy, faDotCircle, faEdit, faEnvelope, faEnvelopeOpen, faEye, faEyeSlash, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileExcel, faFileImage, faFilePdf, faFilePowerpoint, faFileVideo, faFileWord, faFlag, faFlushed, faFolder, faFolderOpen, faFontAwesomeLogoFull, faFrown, faFrownOpen, faFutbol, faGem, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHandshake, faHdd, faHeart, faHospital, faHourglass, faIdBadge, faIdCard, faImage, faImages, faKeyboard, faKiss, faKissBeam, faKissWinkHeart, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLemon, faLifeRing, faLightbulb, faListAlt, faMap, faMeh, faMehBlank, faMehRollingEyes, faMinusSquare, faMoneyBillAlt, faMoon, faNewspaper, faObjectGroup, faObjectUngroup, faPaperPlane, faPauseCircle, faPlayCircle, faPlusSquare, faQuestionCircle, faRegistered, faSadCry, faSadTear, faSave, faShareSquare, faSmile, faSmileBeam, faSmileWink, faSnowflake, faSquare, faStar, faStarHalf, faStickyNote, faStopCircle, faSun, faSurprise, faThumbsDown, faThumbsUp, faTimesCircle, faTired, faTrashAlt, faUser, faUserCircle, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2550,9 +2550,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBackspace, faBackward, faBalanceScale, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBinoculars, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookOpen, faBookReader, faBookmark, faBowlingBall, faBox, faBoxOpen, faBoxes, faBraille, faBrain, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCamera, faCameraRetro, faCampground, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCartArrowDown, faCartPlus, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMoon, faCloudSun, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCube, faCubes, faCut, faDatabase, faDeaf, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDungeon, faEdit, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFastBackward, faFastForward, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGlassMartini, faGlassMartiniAlt, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripVertical, faHSquare, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingUsd, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHands, faHandsHelping, faHandshake, faHanukiah, faHashtag, faHatWizard, faHaykal, faHdd, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHome, faHorse, faHospital, faHospitalAlt, faHospitalSymbol, faHotTub, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHryvnia, faICursor, faIdBadge, faIdCard, faIdCardAlt, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMousePointer, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleCarry, faPercent, faPercentage, faPhone, faPhoneSlash, faPhoneSquare, faPhoneVolume, faPiggyBank, faPills, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRandom, faReceipt, faRecycle, faRedo, faRedoAlt, faRegistered, faReply, faReplyAll, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSave, faSchool, faScrewdriver, faScroll, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSitemap, faSkull, faSkullCrossbones, faSlash, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmoking, faSmokingBan, faSnowflake, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaUp, faSortAmountDown, faSortAmountUp, faSortDown, faSortNumericDown, faSortNumericUp, faSortUp, faSpa, faSpaceShuttle, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStore, faStoreAlt, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToiletPaper, faToolbox, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrain, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVrCardboard, faWalking, faWallet, faWarehouse, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5130,9 +5130,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!*****************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \*****************************************************************************************/
+/*!***********************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \***********************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5560,9 +5560,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/classnames/index.js ***!
-  \******************************************************************/
+/*!************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/classnames/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5622,9 +5622,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/actionTabs/actionTabs.scss":
-/*!******************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/actionTabs/actionTabs.scss ***!
-  \******************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/actionTabs/actionTabs.scss ***!
+  \******************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5633,7 +5633,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#__resizable_base__ {\n  display: none; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 1fr;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 5px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 5px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              display: flex;\n              align-items: center; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border {\n            grid-row: 1;\n            grid-column: 1;\n            opacity: 1;\n            border: 3px solid red;\n            transition: opacity 250ms;\n            pointer-events: none; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border.transparent {\n              opacity: 0; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .title {\n                margin-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#__resizable_base__ {\n  display: none; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 1fr;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              display: flex;\n              align-items: center; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList {\n            border-left: 3px solid transparent; }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneList {\n            border-left: 3px solid rgba(51, 122, 183, 0.8); }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneContainer-content .header .title {\n            border-left: 3px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border {\n            grid-row: 1;\n            grid-column: 1;\n            opacity: 1;\n            border: 3px solid red;\n            transition: opacity 250ms;\n            pointer-events: none; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border.transparent {\n              opacity: 0; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
 
 // exports
 
@@ -5641,9 +5641,9 @@ exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/embedHost/embedHost.scss":
-/*!****************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/embedHost/embedHost.scss ***!
-  \****************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/embedHost/embedHost.scss ***!
+  \****************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5660,9 +5660,9 @@ exports.push([module.i, "#embed-host {\n  position: absolute;\n  right: 0px;\n  
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!************************************************************************************************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader!C:/Dev/Babylon/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5671,7 +5671,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 5;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 6;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 7; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 8; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .gizmo {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .gizmo.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 5;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 6;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 7; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 8; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .gizmo {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .gizmo.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .skeletonTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .skeletonTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 
 // exports
 
@@ -5679,9 +5679,9 @@ exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!./index.css":
-/*!*********************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader!./index.css ***!
-  \*********************************************************************/
+/*!***************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!./index.css ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5698,9 +5698,9 @@ exports.push([module.i, "", ""]);
 /***/ }),
 
 /***/ "../../node_modules/css-loader/lib/css-base.js":
-/*!*************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
-  \*************************************************************************/
+/*!*******************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -5785,9 +5785,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!*********************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
-  \*********************************************************************/
+/*!***************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5887,9 +5887,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!***************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \***************************************************************************/
+/*!*********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5990,9 +5990,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \************************************************************************************/
+/*!******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6557,9 +6557,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!******************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
-  \******************************************************************/
+/*!************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6592,9 +6592,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6616,9 +6616,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/re-resizable/lib/index.es5.js":
-/*!****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
-  \****************************************************************************/
+/*!**********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7365,9 +7365,9 @@ module.exports = Resizable;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \************************************************************************************/
+/*!******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -7562,9 +7562,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!***********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \*****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -7872,9 +7872,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!******************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \******************************************************************************************/
+/*!************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8055,9 +8055,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \********************************************************************************/
+/*!**************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \**************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8189,9 +8189,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*******************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \*************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8523,9 +8523,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*******************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \*************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8583,9 +8583,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!***********************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \*****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8681,9 +8681,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*******************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*******************************************************************************************/
+/*!*************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \*************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8743,9 +8743,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*******************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \*************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8792,9 +8792,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \***********************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8830,9 +8830,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -28569,9 +28569,9 @@ module.exports = reactDom;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -28614,9 +28614,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30466,9 +30466,9 @@ module.exports = react;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/react/index.js ***!
-  \*************************************************************/
+/*!*******************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react/index.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30483,9 +30483,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!*********************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \*********************************************************************************************/
+/*!***************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30915,9 +30915,9 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*************************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -31562,9 +31562,9 @@ exports.unstable_shouldYield = unstable_shouldYield;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -31579,9 +31579,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*******************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*******************************************************************/
+/*!*************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -31596,9 +31596,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/split.js/dist/split.es.js":
-/*!************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/split.js/dist/split.es.js ***!
-  \************************************************************************/
+/*!******************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/split.js/dist/split.es.js ***!
+  \******************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -32380,9 +32380,9 @@ var Split = function (idsOption, options) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/lib/addStyles.js":
-/*!****************************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
-  \****************************************************************************/
+/*!**********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -32771,9 +32771,9 @@ function updateLink (link, options, obj) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/lib/urls.js":
-/*!***********************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/style-loader/lib/urls.js ***!
-  \***********************************************************************/
+/*!*****************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/urls.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -32871,9 +32871,9 @@ module.exports = function (css) {
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -33500,6 +33500,9 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
                 });
             }
             this.props.target[this.props.propertyName] = !this.state.isSelected;
+        }
+        if (this.props.onValueChanged) {
+            this.props.onValueChanged();
         }
         this.setState({ isSelected: !this.state.isSelected });
     };
@@ -34154,7 +34157,11 @@ var SliderLineComponent = /** @class */ (function (_super) {
             };
         }
         else {
-            _this.state = { value: _this.props.target[_this.props.propertyName] };
+            var value = _this.props.target[_this.props.propertyName];
+            if (value === undefined) {
+                value = _this.props.maximum;
+            }
+            _this.state = { value: value };
         }
         return _this;
     }
@@ -34164,6 +34171,9 @@ var SliderLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var currentState = nextProps.target[nextProps.propertyName];
+        if (currentState === undefined) {
+            currentState = nextProps.maximum;
+        }
         if (currentState !== nextState.value || this._localChange) {
             nextState.value = currentState;
             this._localChange = false;
@@ -34198,10 +34208,11 @@ var SliderLineComponent = /** @class */ (function (_super) {
     };
     SliderLineComponent.prototype.render = function () {
         var _this = this;
+        var decimalCount = this.props.decimalCount !== undefined ? this.props.decimalCount : 2;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "slider" },
-                this.state.value ? this.state.value.toFixed(this.props.decimalCount || 2) : "0",
+                this.state.value ? this.state.value.toFixed(decimalCount) : "0",
                 "\u00A0",
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.props.minimum, max: this.props.maximum, value: this.state.value, onInput: function (evt) { return _this.onInput(evt.target.value); }, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
     };
@@ -34384,7 +34395,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
         var size = texture.getSize();
         var ratio = size.width / size.height;
         var width = this.props.width;
-        var height = (width / ratio) | 0;
+        var height = (width / ratio) | 1;
         var passPostProcess;
         if (!texture.isCube) {
             passPostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassPostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
@@ -34547,12 +34558,13 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
     TextureLinkLineComponent.prototype.debugTexture = function () {
         var texture = this.props.texture;
         var material = this.props.material;
-        if (!material) {
+        if (!material || !texture) {
             return;
         }
         var scene = material.getScene();
         if (material.reservedDataStore && material.reservedDataStore.debugTexture === texture) {
             var debugMaterial_1 = material.reservedDataStore.debugMaterial;
+            texture.level = material.reservedDataStore.level;
             for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
                 var mesh = _a[_i];
                 if (mesh.material === debugMaterial_1) {
@@ -34588,6 +34600,8 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         }
         material.reservedDataStore.debugTexture = texture;
         material.reservedDataStore.debugMaterial = debugMaterial;
+        material.reservedDataStore.level = texture.level;
+        texture.level = 1.0;
         if (this.props.onDebugSelectionChangeObservable) {
             this.props.onDebugSelectionChangeObservable.notifyObservers(texture);
         }
@@ -34896,9 +34910,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _propertyGrids_renderGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./propertyGrids/renderGridPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/renderGridPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Debug/skeletonViewer */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__);
-
+/* harmony import */ var babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Debug/physicsViewer */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__);
 
 
 
@@ -34911,9 +34924,7 @@ var DebugTabComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DebugTabComponent, _super);
     function DebugTabComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._skeletonViewersEnabled = false;
         _this._physicsViewersEnabled = false;
-        _this._skeletonViewers = new Array();
         return _this;
     }
     DebugTabComponent.prototype.componentWillMount = function () {
@@ -34924,57 +34935,15 @@ var DebugTabComponent = /** @class */ (function (_super) {
         if (!scene.reservedDataStore) {
             scene.reservedDataStore = {};
         }
-        for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
-            var mesh = _a[_i];
-            if (mesh.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
-                this._skeletonViewers.push(mesh.reservedDataStore.skeletonViewer);
-            }
-        }
-        this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
         this._physicsViewersEnabled = scene.reservedDataStore.physicsViewer != null;
     };
     DebugTabComponent.prototype.componentWillUnmount = function () {
-    };
-    DebugTabComponent.prototype.switchSkeletonViewers = function () {
-        this._skeletonViewersEnabled = !this._skeletonViewersEnabled;
-        var scene = this.props.scene;
-        if (this._skeletonViewersEnabled) {
-            for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
-                var mesh = _a[_i];
-                if (mesh.skeleton) {
-                    var found = false;
-                    for (var sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
-                        if (this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found) {
-                        continue;
-                    }
-                    var viewer = new babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["SkeletonViewer"](mesh.skeleton, mesh, scene, true, 0);
-                    viewer.isEnabled = true;
-                    this._skeletonViewers.push(viewer);
-                    if (!mesh.reservedDataStore) {
-                        mesh.reservedDataStore = {};
-                    }
-                    mesh.reservedDataStore.skeletonViewer = viewer;
-                }
-            }
-        }
-        else {
-            for (var index = 0; index < this._skeletonViewers.length; index++) {
-                this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
-                this._skeletonViewers[index].dispose();
-            }
-            this._skeletonViewers = [];
-        }
     };
     DebugTabComponent.prototype.switchPhysicsViewers = function () {
         this._physicsViewersEnabled = !this._physicsViewersEnabled;
         var scene = this.props.scene;
         if (this._physicsViewersEnabled) {
-            var physicsViewer = new babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["PhysicsViewer"](scene);
+            var physicsViewer = new babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["PhysicsViewer"](scene);
             scene.reservedDataStore.physicsViewer = physicsViewer;
             for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
                 var mesh = _a[_i];
@@ -35001,20 +34970,19 @@ var DebugTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "HELPERS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_renderGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["RenderGridPropertyGridComponent"], { globalState: this.props.globalState, scene: scene }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Bones", isSelected: function () { return _this._skeletonViewersEnabled; }, onSelect: function () { return _this.switchSkeletonViewers(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Physics", isSelected: function () { return _this._physicsViewersEnabled; }, onSelect: function () { return _this.switchPhysicsViewers(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURE CHANNELS" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Diffuse", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Ambient", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Specular", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Emissive", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Bump", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Opacity", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Reflection", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Refraction", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "ColorGrading", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Lightmap", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Fresnel", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Diffuse", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Ambient", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Specular", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Emissive", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Bump", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Opacity", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Reflection", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Refraction", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "ColorGrading", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Lightmap", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Fresnel", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "FEATURES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Animations", isSelected: function () { return scene.animationsEnabled; }, onSelect: function () { return scene.animationsEnabled = !scene.animationsEnabled; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Collisions", isSelected: function () { return scene.collisionsEnabled; }, onSelect: function () { return scene.collisionsEnabled = !scene.collisionsEnabled; } }),
@@ -35088,6 +35056,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_postProcesses_defaultRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_postProcesses_ssaoRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_postProcesses_ssao2RenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! ./propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_meshes_skeletonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_39__ = __webpack_require__(/*! ./propertyGrids/meshes/skeletonPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_meshes_bonePropertyGridComponent__WEBPACK_IMPORTED_MODULE_40__ = __webpack_require__(/*! ./propertyGrids/meshes/bonePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_lights_directionalLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_41__ = __webpack_require__(/*! ./propertyGrids/lights/directionalLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_lights_spotLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_42__ = __webpack_require__(/*! ./propertyGrids/lights/spotLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx");
+
+
+
+
 
 
 
@@ -35175,6 +35151,14 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
                 var pointLight = entity;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_lights_pointLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["PointLightPropertyGridComponent"], { globalState: this.props.globalState, light: pointLight, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
+            if (className === "DirectionalLight") {
+                var pointLight = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_lights_directionalLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_41__["DirectionalLightPropertyGridComponent"], { globalState: this.props.globalState, light: pointLight, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className === "SpotLight") {
+                var pointLight = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_lights_spotLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_42__["SpotLightPropertyGridComponent"], { globalState: this.props.globalState, light: pointLight, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
             if (className.indexOf("TransformNode") !== -1 || className.indexOf("Mesh") !== -1) {
                 var transformNode = entity;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_transformNodePropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["TransformNodePropertyGridComponent"], { transformNode: transformNode, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
@@ -35230,6 +35214,14 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
             if (className.indexOf("Texture") !== -1) {
                 var texture = entity;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_texturePropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyGridComponent"], { texture: texture, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className.indexOf("Skeleton") !== -1) {
+                var skeleton = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_skeletonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_39__["SkeletonPropertyGridComponent"], { skeleton: skeleton, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className.indexOf("Bone") !== -1) {
+                var bone = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_bonePropertyGridComponent__WEBPACK_IMPORTED_MODULE_40__["BonePropertyGridComponent"], { bone: bone, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "TextBlock") {
                 var textBlock = entity;
@@ -35428,6 +35420,164 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "To", value: animationGroup.to.toFixed(2) }))));
     };
     return AnimationGroupGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent.tsx":
+/*!*************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent.tsx ***!
+  \*************************************************************************************/
+/*! exports provided: AnimationGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AnimationGridComponent", function() { return AnimationGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Animations/animationPropertiesOverride */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+
+
+
+
+
+
+
+
+
+var AnimationGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AnimationGridComponent, _super);
+    function AnimationGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._animations = null;
+        _this._animationControl = {
+            from: 0,
+            to: 0,
+            loop: false
+        };
+        _this._isPlaying = false;
+        _this.state = { currentFrame: 0 };
+        var animatableAsAny = _this.props.animatable;
+        _this._ranges = animatableAsAny.getAnimationRanges ? animatableAsAny.getAnimationRanges() : [];
+        if (animatableAsAny.getAnimatables) {
+            var animatables = animatableAsAny.getAnimatables();
+            _this._animations = new Array();
+            animatables.forEach(function (animatable) {
+                var _a;
+                (_a = _this._animations).push.apply(_a, animatable.animations);
+            });
+            // Extract from and to
+            if (_this._animations && _this._animations.length) {
+                _this._animations.forEach(function (animation) {
+                    var keys = animation.getKeys();
+                    if (keys && keys.length > 0) {
+                        if (keys[0].frame < _this._animationControl.from) {
+                            _this._animationControl.from = keys[0].frame;
+                        }
+                        var lastKeyIndex = keys.length - 1;
+                        if (keys[lastKeyIndex].frame > _this._animationControl.to) {
+                            _this._animationControl.to = keys[lastKeyIndex].frame;
+                        }
+                    }
+                });
+            }
+        }
+        return _this;
+    }
+    AnimationGridComponent.prototype.playOrPause = function () {
+        var animatable = this.props.animatable;
+        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(animatable).length > 0;
+        if (this._isPlaying) {
+            this.props.scene.stopAnimation(this.props.animatable);
+            this._runningAnimatable = null;
+        }
+        else {
+            this._runningAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
+        }
+        this.forceUpdate();
+    };
+    AnimationGridComponent.prototype.componentWillMount = function () {
+        var _this = this;
+        this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(function () {
+            if (!_this._isPlaying || !_this._runningAnimatable) {
+                return;
+            }
+            _this.setState({ currentFrame: _this._runningAnimatable.masterFrame });
+        });
+    };
+    AnimationGridComponent.prototype.componentWillUnmount = function () {
+        if (this._onBeforeRenderObserver) {
+            this.props.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
+    };
+    AnimationGridComponent.prototype.onCurrentFrameChange = function (value) {
+        if (!this._runningAnimatable) {
+            return;
+        }
+        this._runningAnimatable.goToFrame(value);
+        this.setState({ currentFrame: value });
+    };
+    AnimationGridComponent.prototype.render = function () {
+        var _this = this;
+        var animatable = this.props.animatable;
+        var animatableAsAny = this.props.animatable;
+        var animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
+        this._isPlaying = animatablesForTarget.length > 0;
+        if (this._isPlaying && !this._runningAnimatable) {
+            this._runningAnimatable = animatablesForTarget[0];
+        }
+        if (this._runningAnimatable) {
+            this._animationControl.from = this._runningAnimatable.fromFrame;
+            this._animationControl.to = this._runningAnimatable.toFrame;
+            this._animationControl.loop = this._runningAnimatable.loopAnimation;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            (this._ranges.length > 0 || this._animations && this._animations.length > 0) &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION OVERRIDE" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable override", onSelect: function (value) {
+                            if (value) {
+                                animatableAsAny.animationPropertiesOverride = new babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__["AnimationPropertiesOverride"]();
+                                animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
+                            }
+                            else {
+                                animatableAsAny.animationPropertiesOverride = null;
+                            }
+                            _this.forceUpdate();
+                        }, isSelected: function () { return animatableAsAny.animationPropertiesOverride != null; }, onValueChanged: function () { return _this.forceUpdate(); } }),
+                    animatableAsAny.animationPropertiesOverride != null &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable blending", target: animatableAsAny.animationPropertiesOverride, propertyName: "enableBlending", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Blending speed", target: animatableAsAny.animationPropertiesOverride, propertyName: "blendingSpeed", minimum: 0, maximum: 0.1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
+            this._ranges.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION RANGES" }, this._ranges.map(function (range) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { key: range.name, label: range.name, onClick: function () {
+                            _this._runningAnimatable = null;
+                            _this.props.scene.beginAnimation(animatable, range.from, range.to, true);
+                        } }));
+                })),
+            this._animations && this._animations.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATIONS" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "Count", value: this._animations.length.toString() }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "From", target: this._animationControl, propertyName: "from" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "To", target: this._animationControl, propertyName: "to" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Loop", onSelect: function (value) { return _this._animationControl.loop = value; }, isSelected: function () { return _this._animationControl.loop; } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }),
+                    this._isPlaying &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: "timeline", label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } }))));
+    };
+    return AnimationGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -35779,7 +35929,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
@@ -36080,7 +36230,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
@@ -36494,7 +36644,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
@@ -36634,6 +36784,54 @@ var CommonShadowLightPropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx":
+/*!***************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx ***!
+  \***************************************************************************************************/
+/*! exports provided: DirectionalLightPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DirectionalLightPropertyGridComponent", function() { return DirectionalLightPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/commonLightPropertyGridComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./commonShadowLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx");
+
+
+
+
+
+
+
+var DirectionalLightPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DirectionalLightPropertyGridComponent, _super);
+    function DirectionalLightPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    DirectionalLightPropertyGridComponent.prototype.render = function () {
+        var light = this.props.light;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SETUP" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: light, propertyName: "diffuse", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: light, propertyName: "specular", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Position", target: light, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Direction", target: light, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonShadowLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return DirectionalLightPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/lights/hemisphericLightPropertyGridComponent.tsx":
 /*!***************************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/lights/hemisphericLightPropertyGridComponent.tsx ***!
@@ -36725,6 +36923,58 @@ var PointLightPropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx ***!
+  \********************************************************************************************/
+/*! exports provided: SpotLightPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SpotLightPropertyGridComponent", function() { return SpotLightPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/commonLightPropertyGridComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./commonShadowLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx");
+
+
+
+
+
+
+
+
+var SpotLightPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SpotLightPropertyGridComponent, _super);
+    function SpotLightPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SpotLightPropertyGridComponent.prototype.render = function () {
+        var light = this.props.light;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SETUP" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: light, propertyName: "diffuse", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: light, propertyName: "specular", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Position", target: light, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Direction", target: light, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Angle", target: light, propertyName: "angle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Exponent", target: light, propertyName: "exponent", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CommonShadowLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return SpotLightPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/lockObject.ts":
 /*!****************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/lockObject.ts ***!
@@ -36785,11 +37035,13 @@ __webpack_require__.r(__webpack_exports__);
 var BackgroundMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BackgroundMaterialPropertyGridComponent, _super);
     function BackgroundMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     BackgroundMaterialPropertyGridComponent.prototype.renderTextures = function () {
         var material = this.props.material;
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        var onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Diffuse", texture: material.diffuseTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
@@ -36956,8 +37208,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
-/* harmony import */ var _commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./commonMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx");
-/* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var _commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./commonMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx");
+/* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
+
 
 
 
@@ -36970,7 +37224,9 @@ __webpack_require__.r(__webpack_exports__);
 var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRMaterialPropertyGridComponent, _super);
     function PBRMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     PBRMaterialPropertyGridComponent.prototype.renderTextures = function (onDebugSelectionChangeObservable) {
         var material = this.props.material;
@@ -36978,54 +37234,110 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Metallic", texture: material.metallicTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Micro-surface", texture: material.microSurfaceTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Bump", texture: material.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Ambient", texture: material.ambientTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Metallic", texture: material.metallicTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Micro-surface", texture: material.microSurfaceTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Bump", texture: material.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Ambient", texture: material.ambientTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
     };
     PBRMaterialPropertyGridComponent.prototype.render = function () {
+        var _this = this;
         var material = this.props.material;
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        var debugMode = [
+            { label: "None", value: 0 },
+            // Geometry
+            { label: "Normalized position", value: 1 },
+            { label: "Normals", value: 2 },
+            { label: "Tangents", value: 3 },
+            { label: "Bitangents", value: 4 },
+            { label: "Bump Normals", value: 5 },
+            { label: "UV1", value: 6 },
+            { label: "UV2", value: 7 },
+            { label: "ClearCoat Normals", value: 8 },
+            { label: "ClearCoat Tangents", value: 9 },
+            { label: "ClearCoat Bitangents", value: 10 },
+            { label: "Anisotropic Normals", value: 11 },
+            // Maps
+            { label: "Albdeo Map", value: 20 },
+            { label: "Ambient Map", value: 21 },
+            { label: "Opacity Map", value: 22 },
+            { label: "Emissive Map", value: 23 },
+            { label: "Light Map", value: 24 },
+            { label: "Metallic Map", value: 25 },
+            { label: "Reflectivity Map", value: 26 },
+            { label: "ClearCoat Map", value: 27 },
+            { label: "ClearCoat Tint Map", value: 28 },
+            // Env
+            { label: "Env Refraction", value: 40 },
+            { label: "Env Reflection", value: 41 },
+            { label: "Env Clear Coat", value: 42 },
+            // Lighting
+            { label: "Direct Diffuse", value: 50 },
+            { label: "Direct Specular", value: 51 },
+            { label: "Direct Clear Coat", value: 52 },
+            { label: "Env Irradiance", value: 53 },
+            // Lighting Params
+            { label: "Surface Albedo", value: 60 },
+            { label: "Reflectance 0", value: 61 },
+            { label: "Roughness", value: 62 },
+            { label: "AlphaG", value: 63 },
+            { label: "NdotV", value: 64 },
+            { label: "ClearCoat Color", value: 65 },
+            { label: "ClearCoat Roughness", value: 66 },
+            { label: "ClearCoat NdotV", value: 67 },
+            // Misc
+            { label: "SEO", value: 70 },
+            { label: "EHO", value: 71 },
+            { label: "Energy Factor", value: 72 },
+            { label: "Specular Reflectance", value: 73 },
+            { label: "Clear Coat Reflectance", value: 74 },
+            { label: "Luminance Over Alpha", value: 75 },
+            { label: "Alpha", value: 76 },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            this.renderTextures(onDebugSelectionChangeObservable),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            this.renderTextures(this._onDebugSelectionChangeObservable),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIGHTING & COLORS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Albedo", target: material, propertyName: "albedoColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Reflectivity", target: material, propertyName: "reflectivityColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Micro-surface", target: material, propertyName: "microSurface", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use physical light falloff", target: material, propertyName: "usePhysicalLightFalloff ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "METALLIC WORKFLOW" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Roughness", target: material, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CLEAR COAT" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.clearCoat, propertyName: "isEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Intensity", target: material.clearCoat, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Roughness", target: material.clearCoat, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "IOR", target: material.clearCoat, propertyName: "indiceOfRefraction", minimum: 1.0, maximum: 3, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Texture", texture: material.clearCoat.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Bump", texture: material.clearCoat.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-                material.bumpTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Bump strength", target: material.clearCoat.bumpTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Tint", target: material.clearCoat, propertyName: "isTintEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.clearCoat, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "At Distance", target: material.clearCoat, propertyName: "tintColorAtDistance", minimum: 0, maximum: 20, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Tint Thickness", target: material.clearCoat, propertyName: "tintThickness", minimum: 0, maximum: 20, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Tint Texture", texture: material.clearCoat.tintTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.clearCoat, propertyName: "isEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.clearCoat.isEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Intensity", target: material.clearCoat, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Roughness", target: material.clearCoat, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "IOR", target: material.clearCoat, propertyName: "indiceOfRefraction", minimum: 1.0, maximum: 3, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Texture", texture: material.clearCoat.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Bump", texture: material.clearCoat.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
+                        material.clearCoat.bumpTexture &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Bump strength", target: material.clearCoat.bumpTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Tint", target: material.clearCoat, propertyName: "isTintEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.clearCoat, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "At Distance", target: material.clearCoat, propertyName: "tintColorAtDistance", minimum: 0, maximum: 20, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Tint Thickness", target: material.clearCoat, propertyName: "tintThickness", minimum: 0, maximum: 20, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Tint Texture", texture: material.clearCoat.tintTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANISOTROPIC" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.anisotropy, propertyName: "isEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Intensity", target: material.anisotropy, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Follow tangents", target: material.anisotropy, propertyName: "followTangents", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.anisotropy, propertyName: "isEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.anisotropy.isEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Intensity", target: material.anisotropy, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Follow tangents", target: material.anisotropy, propertyName: "followTangents", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Environment", target: material, propertyName: "environmentIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Specular", target: material, propertyName: "specularIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37046,9 +37358,14 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Specular over alpha", target: material, propertyName: "useSpecularOverAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Specular anti-aliasing", target: material, propertyName: "enableSpecularAntiAliasing", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ADVANCED", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Energy Conservation", target: material.brdf, propertyName: "useEnergyConservation", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Radiance occlusion", target: material, propertyName: "useRadianceOcclusion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Horizon occlusion ", target: material, propertyName: "useHorizonOcclusion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Unlit", target: material, propertyName: "unlit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Unlit", target: material, propertyName: "unlit", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEBUG", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Debug mode", options: debugMode, target: material, propertyName: "debugMode" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Split position", target: material, propertyName: "debugLimit", minimum: -1, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Output factor", target: material, propertyName: "debugFactor", minimum: 0, maximum: 5, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return PBRMaterialPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -37088,17 +37405,20 @@ __webpack_require__.r(__webpack_exports__);
 var PBRMetallicRoughnessMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRMetallicRoughnessMaterialPropertyGridComponent, _super);
     function PBRMetallicRoughnessMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     PBRMetallicRoughnessMaterialPropertyGridComponent.prototype.renderTextures = function () {
         var material = this.props.material;
         if (material.getActiveTextures().length === 0) {
             return null;
         }
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        var onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Base", texture: material.baseTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Metallic roughness", texture: material.metallicRoughnessTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Normal", texture: material.normalTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Environment", texture: material.environmentTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
@@ -37153,17 +37473,20 @@ __webpack_require__.r(__webpack_exports__);
 var PBRSpecularGlossinessMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRSpecularGlossinessMaterialPropertyGridComponent, _super);
     function PBRSpecularGlossinessMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     PBRSpecularGlossinessMaterialPropertyGridComponent.prototype.renderTextures = function () {
         var material = this.props.material;
         if (material.getActiveTextures().length === 0) {
             return null;
         }
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        var onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Diffuse", texture: material.diffuseTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Specular glossiness", texture: material.specularGlossinessTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Normal", texture: material.normalTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Environment", texture: material.environmentTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
@@ -37217,14 +37540,16 @@ __webpack_require__.r(__webpack_exports__);
 var StandardMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](StandardMaterialPropertyGridComponent, _super);
     function StandardMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     StandardMaterialPropertyGridComponent.prototype.renderTextures = function () {
         var material = this.props.material;
         if (material.getActiveTextures().length === 0) {
             return null;
         }
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        var onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Diffuse", texture: material.diffuseTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Specular", texture: material.specularTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
@@ -37298,7 +37623,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/valueLineComponent */ "./components/actionTabs/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/textBlock");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 
 
@@ -37487,6 +37812,55 @@ var AxesViewerComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Display axes", isSelected: function () { return _this.state.displayAxis; }, onSelect: function () { return _this.displayAxes(); } }));
     };
     return AxesViewerComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx":
+/*!***************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx ***!
+  \***************************************************************************************/
+/*! exports provided: BonePropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BonePropertyGridComponent", function() { return BonePropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/quaternionLineComponent */ "./components/actionTabs/lines/quaternionLineComponent.tsx");
+
+
+
+
+
+
+var BonePropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BonePropertyGridComponent, _super);
+    function BonePropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    BonePropertyGridComponent.prototype.render = function () {
+        var bone = this.props.bone;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "ID", value: bone.id }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Unique ID", value: bone.uniqueId.toString() })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMATIONS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: bone, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                !bone.rotationQuaternion &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Rotation", target: bone, propertyName: "rotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                bone.rotationQuaternion &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_5__["QuaternionLineComponent"], { label: "Rotation", target: bone, propertyName: "rotationQuaternion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: bone, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+    };
+    return BonePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -37700,6 +38074,116 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx":
+/*!*******************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx ***!
+  \*******************************************************************************************/
+/*! exports provided: SkeletonPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SkeletonPropertyGridComponent", function() { return SkeletonPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent.tsx");
+/* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Debug/skeletonViewer */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__);
+
+
+
+
+
+
+
+var SkeletonPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SkeletonPropertyGridComponent, _super);
+    function SkeletonPropertyGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._skeletonViewersEnabled = false;
+        _this._skeletonViewers = new Array();
+        return _this;
+    }
+    SkeletonPropertyGridComponent.prototype.switchSkeletonViewers = function () {
+        this._skeletonViewersEnabled = !this._skeletonViewersEnabled;
+        var scene = this.props.skeleton.getScene();
+        if (this._skeletonViewersEnabled) {
+            for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                if (mesh.skeleton === this.props.skeleton) {
+                    var found = false;
+                    for (var sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
+                        if (this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        continue;
+                    }
+                    var viewer = new babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["SkeletonViewer"](mesh.skeleton, mesh, scene, true, 0);
+                    viewer.isEnabled = true;
+                    this._skeletonViewers.push(viewer);
+                    if (!mesh.reservedDataStore) {
+                        mesh.reservedDataStore = {};
+                    }
+                    mesh.reservedDataStore.skeletonViewer = viewer;
+                }
+            }
+        }
+        else {
+            for (var index = 0; index < this._skeletonViewers.length; index++) {
+                this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
+                this._skeletonViewers[index].dispose();
+            }
+            this._skeletonViewers = [];
+        }
+    };
+    SkeletonPropertyGridComponent.prototype.checkSkeletonViewerState = function (props) {
+        var scene = props.skeleton.getScene();
+        this._skeletonViewers = [];
+        if (!scene) {
+            return;
+        }
+        for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
+            var mesh = _a[_i];
+            if (mesh.skeleton === props.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
+                this._skeletonViewers.push(mesh.reservedDataStore.skeletonViewer);
+            }
+        }
+        this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
+    };
+    SkeletonPropertyGridComponent.prototype.componentWillMount = function () {
+        this.checkSkeletonViewerState(this.props);
+    };
+    SkeletonPropertyGridComponent.prototype.shouldComponentUpdate = function (nextProps) {
+        if (nextProps.skeleton !== this.props.skeleton) {
+            this.checkSkeletonViewerState(nextProps);
+        }
+        return true;
+    };
+    SkeletonPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var skeleton = this.props.skeleton;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "ID", value: skeleton.id }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Bone count", value: skeleton.bones.length.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use texture to store matrices", target: skeleton, propertyName: "useTextureToStoreBoneMatrices", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Debug mode", isSelected: function () { return _this._skeletonViewersEnabled; }, onSelect: function () { return _this.switchSkeletonViewers(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: skeleton, scene: skeleton.getScene(), lockObject: this.props.lockObject })));
+    };
+    return SkeletonPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/meshes/transformNodePropertyGridComponent.tsx":
 /*!************************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/meshes/transformNodePropertyGridComponent.tsx ***!
@@ -37799,7 +38283,7 @@ var CommonPostProcessPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { label: "Clear color", target: postProcess, propertyName: "clearColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Pixel perfect", target: postProcess, propertyName: "enablePixelPerfectMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Fullscreen viewport", target: postProcess, propertyName: "forceFullscreenViewport", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Samples", target: postProcess, propertyName: "samples", minimum: 1, maximum: 8, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Samples", target: postProcess, propertyName: "samples", minimum: 1, maximum: 8, step: 1, decimalCount: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonPostProcessPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -37823,6 +38307,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+
 
 
 
@@ -37834,9 +38320,12 @@ var CommonRenderingPipelinePropertyGridComponent = /** @class */ (function (_sup
     }
     CommonRenderingPipelinePropertyGridComponent.prototype.render = function () {
         var renderPipeline = this.props.renderPipeline;
+        var renderPipelineAsAny = renderPipeline;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: renderPipeline.getClassName() }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: renderPipeline.getClassName() }),
+                renderPipelineAsAny.samples !== undefined &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Samples", minimum: 1, maximum: 8, step: 1, decimalCount: 0, target: renderPipeline, propertyName: "samples", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonRenderingPipelinePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -37897,7 +38386,7 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "BLOOM" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "bloomEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "bloomEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 renderPipeline.bloomEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Threshold", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37905,7 +38394,7 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Kernel", minimum: 0, maximum: 128, step: 1, target: renderPipeline, propertyName: "bloomKernel", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Scale", minimum: 0, maximum: 1, step: 0.25, target: renderPipeline, propertyName: "bloomScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "CHROMATIC ABERRATION" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "chromaticAberrationEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "chromaticAberrationEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 renderPipeline.chromaticAberrationEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "aberrationAmount", minimum: 0, maximum: 128, step: 0.1, target: renderPipeline.chromaticAberration, propertyName: "aberrationAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37913,7 +38402,7 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Center", target: renderPipeline.chromaticAberration, propertyName: "centerPosition", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Direction", target: renderPipeline.chromaticAberration, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEPTH OF FIELD" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "depthOfFieldEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "depthOfFieldEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 renderPipeline.depthOfFieldEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Focal length", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focalLength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37925,13 +38414,13 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "GLOW LAYER" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "glowLayerEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "GRAIN" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "grainEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "grainEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 renderPipeline.grainEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Animated", target: renderPipeline.grain, propertyName: "animated", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Intensity", minimum: 0, maximum: 50, step: 0.1, target: renderPipeline.grain, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "IMAGE PROCESSING" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "imageProcessingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "imageProcessingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 renderPipeline.imageProcessing &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Contrast", target: renderPipeline.imageProcessing, propertyName: "contrast", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37947,7 +38436,7 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { label: "Vignette color", target: renderPipeline.imageProcessing, propertyName: "vignetteColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Vignette blend mode", options: vignetteModeOptions, target: renderPipeline.imageProcessing, propertyName: "vignetteBlendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHARPEN" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "sharpenEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "sharpenEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 renderPipeline.sharpenEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Color amount", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline.sharpen, propertyName: "colorAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -39154,6 +39643,46 @@ var AnimationGroupItemComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/sceneExplorer/entities/boneTreeItemComponent.tsx":
+/*!*********************************************************************!*\
+  !*** ./components/sceneExplorer/entities/boneTreeItemComponent.tsx ***!
+  \*********************************************************************/
+/*! exports provided: BoneTreeItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BoneTreeItemComponent", function() { return BoneTreeItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var BoneTreeItemComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BoneTreeItemComponent, _super);
+    function BoneTreeItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    BoneTreeItemComponent.prototype.render = function () {
+        var _this = this;
+        var bone = this.props.bone;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "skeletonTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: bone.name || "no name", onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faBone"], color: "lightgray" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: bone, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return BoneTreeItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/sceneExplorer/entities/cameraTreeItemComponent.tsx":
 /*!***********************************************************************!*\
   !*** ./components/sceneExplorer/entities/cameraTreeItemComponent.tsx ***!
@@ -39510,16 +40039,6 @@ var MeshTreeItemComponent = /** @class */ (function (_super) {
             if (!mesh.reservedDataStore) {
                 mesh.reservedDataStore = {};
             }
-            mesh.reservedDataStore.previousParent = mesh.parent;
-            if (mesh.reservedDataStore.previousParent) {
-                if (!mesh.reservedDataStore.previousParent.reservedDataStore) {
-                    mesh.reservedDataStore.previousParent.reservedDataStore = {};
-                }
-                if (!mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren) {
-                    mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren = [];
-                }
-                mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren.push(mesh);
-            }
             var gizmo = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["BoundingBoxGizmo"](babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromHexString("#0984e3"));
             gizmo.attachedMesh = mesh;
             gizmo.enableDragBehavior();
@@ -39529,15 +40048,8 @@ var MeshTreeItemComponent = /** @class */ (function (_super) {
             this.setState({ isGizmoEnabled: true });
             return;
         }
-        var previousParent = mesh.reservedDataStore.previousParent;
         mesh.reservedDataStore.gizmo.dispose();
         mesh.reservedDataStore.gizmo = null;
-        mesh.setParent(previousParent);
-        if (previousParent && previousParent.reservedDataStore) {
-            previousParent.reservedDataStore.detachedChildren = null;
-        }
-        mesh.reservedDataStore.previousParent = null;
-        mesh.reservedDataStore.pointerDragBehavior = null;
         this.setState({ isGizmoEnabled: false });
     };
     MeshTreeItemComponent.prototype.switchVisibility = function () {
@@ -39862,6 +40374,46 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
     };
     return SceneTreeItemComponent;
 }(react__WEBPACK_IMPORTED_MODULE_5__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/sceneExplorer/entities/skeletonTreeItemComponent.tsx":
+/*!*************************************************************************!*\
+  !*** ./components/sceneExplorer/entities/skeletonTreeItemComponent.tsx ***!
+  \*************************************************************************/
+/*! exports provided: SkeletonTreeItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SkeletonTreeItemComponent", function() { return SkeletonTreeItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var SkeletonTreeItemComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SkeletonTreeItemComponent, _super);
+    function SkeletonTreeItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SkeletonTreeItemComponent.prototype.render = function () {
+        var _this = this;
+        var skeleton = this.props.skeleton;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "skeletonTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: skeleton.name || "no name", onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faSkull"], color: "gray" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: skeleton, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return SkeletonTreeItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
 
 
 
@@ -40240,6 +40792,8 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
+            scene.skeletons.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.skeletons, label: "Skeletons", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.materials, label: "Materials", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: textures, label: "Textures", offset: 1, filter: this.state.filter }),
             postProcessses.length > 0 &&
@@ -40651,6 +41205,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _entities_animationGroupTreeItemComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./entities/animationGroupTreeItemComponent */ "./components/sceneExplorer/entities/animationGroupTreeItemComponent.tsx");
 /* harmony import */ var _entities_postProcessTreeItemComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./entities/postProcessTreeItemComponent */ "./components/sceneExplorer/entities/postProcessTreeItemComponent.tsx");
 /* harmony import */ var _entities_renderingPipelineTreeItemComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./entities/renderingPipelineTreeItemComponent */ "./components/sceneExplorer/entities/renderingPipelineTreeItemComponent.tsx");
+/* harmony import */ var _entities_skeletonTreeItemComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./entities/skeletonTreeItemComponent */ "./components/sceneExplorer/entities/skeletonTreeItemComponent.tsx");
+/* harmony import */ var _entities_boneTreeItemComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./entities/boneTreeItemComponent */ "./components/sceneExplorer/entities/boneTreeItemComponent.tsx");
+
+
 
 
 
@@ -40690,6 +41248,12 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
                 else {
                     return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_transformNodeTreeItemComponent__WEBPACK_IMPORTED_MODULE_8__["TransformNodeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, transformNode: entity, onClick: function () { return _this.onClick(); } }));
                 }
+            }
+            if (className.indexOf("Skeleton") !== -1) {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_skeletonTreeItemComponent__WEBPACK_IMPORTED_MODULE_15__["SkeletonTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, skeleton: entity, onClick: function () { return _this.onClick(); } }));
+            }
+            if (className.indexOf("Bone") !== -1) {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_boneTreeItemComponent__WEBPACK_IMPORTED_MODULE_16__["BoneTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, bone: entity, onClick: function () { return _this.onClick(); } }));
             }
             if (className.indexOf("TransformNode") !== -1) {
                 return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_transformNodeTreeItemComponent__WEBPACK_IMPORTED_MODULE_8__["TransformNodeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, transformNode: entity, onClick: function () { return _this.onClick(); } }));
@@ -41272,7 +41836,7 @@ var Tools = /** @class */ (function () {
                     result.push(m);
                 });
             }
-            else {
+            else if (!i.reservedDataStore || !i.reservedDataStore.hidden) {
                 result.push(i);
             }
         }
@@ -41305,14 +41869,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/textBlock":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_textBlock__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 

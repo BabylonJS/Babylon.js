@@ -22,6 +22,8 @@ interface IStandardMaterialPropertyGridComponentProps {
 }
 
 export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
+    private _onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+
     constructor(props: IStandardMaterialPropertyGridComponentProps) {
         super(props);
     }
@@ -33,7 +35,7 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
             return null;
         }
 
-        const onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+        const onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
 
         return (
             <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">

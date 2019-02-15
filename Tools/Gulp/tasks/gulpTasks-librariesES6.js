@@ -68,8 +68,8 @@ var dep = function(settings) {
         }
     }
 
-    if (settings.build.es6.webpackBuild && settings.build.es6.webpackBuild.dependencies) {
-        for (let pathName of settings.build.es6.webpackBuild.dependencies) {
+    if (settings.build.es6.buildDependencies) {
+        for (let pathName of settings.build.es6.buildDependencies) {
             const dependencyPath = path.join(config.computed.rootFolder, pathName);
             copyPaths.push(dependencyPath);
         }
@@ -91,7 +91,7 @@ var modifySources = function(settings) {
             pathName = pathName.replace("/*", "");
         }
 
-        for (var moduleName of config.modules) {
+        for (var moduleName of config.es6modules) {
             var module = config[moduleName];
             if (module.build.umd.packageName === pathName) {
                 if (module.build.es6.packageName) {
@@ -127,7 +127,7 @@ var modifyTsConfig = function(settings, cb) {
         }
 
         var mapped = false;
-        for (var moduleName of config.modules) {
+        for (var moduleName of config.es6modules) {
             var module = config[moduleName];
             if (module.build.umd.packageName === pathName) {
                 if (module.build.es6.packageName) {
@@ -187,7 +187,9 @@ var build = function(settings, cb) {
         verbose: true
     };
 
-    let command = `node "${config.computed.tscPath}" --skipLibCheck false --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.distES6Directory}"`;
+    var skipLibCheck = settings.build.es6.skipLibCheck ? 'true' : 'false';
+    let command = `node "${config.computed.tscPath}" --skipLibCheck ${skipLibCheck} --inlineSources --sourceMap true -t es5 -m esNext --outDir "${settings.computed.distES6Directory}"`;
+
     shelljs.exec(command, options, function(code, stdout, stderr) {
         if (stderr) {
             console.log(stderr);
@@ -252,11 +254,11 @@ function buildES6Library(settings, module) {
     // Creates the required tasks.
     var tasks = [];
 
-    var cleanTasks = [
-        function cleanES6(cb) { return cleanSourceAndDist(settings, cb); },
-        function cleanES6Shaders() { return cleanShaders(settings); }
-    ];
-    var shaders = function() { return buildShaders(settings); };
+    var cleanAndShaderTasks = [ function cleanES6(cb) { return cleanSourceAndDist(settings, cb); } ];
+    if (settings.computed.shaderTSGlob) {
+        cleanAndShaderTasks.push(function cleanES6Shaders() { return cleanShaders(settings); });
+        cleanAndShaderTasks.push(function() { return buildShaders(settings); });
+    }
     var copySource = function() { return source(settings); };
     var dependencies = function() { return dep(settings); };
     var adaptSourceImportPaths = function() { return modifySources(settings); };
@@ -278,7 +280,7 @@ function buildES6Library(settings, module) {
         ];
     }
 
-    tasks.push(...cleanTasks, shaders, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, ...buildSteps);
+    tasks.push(...cleanAndShaderTasks, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, ...buildSteps);
 
     return gulp.series.apply(this, tasks);
 }
@@ -286,7 +288,7 @@ function buildES6Library(settings, module) {
 /**
  * Dynamic es 6 module creation.
  */
-config.modules.map(function(module) {
+config.es6modules.map(function(module) {
     const settings = config[module];
     gulp.task(module + "-es6", buildES6Library(settings, module));
 });
@@ -294,4 +296,4 @@ config.modules.map(function(module) {
 /**
  * Build all es 6 libs.
  */
-gulp.task("typescript-es6", gulp.series(config.modules.map((module) => module + "-es6")));
+gulp.task("typescript-es6", gulp.series(config.es6modules.map((module) => module + "-es6")));
