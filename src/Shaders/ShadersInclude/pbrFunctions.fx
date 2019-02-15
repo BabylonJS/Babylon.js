@@ -1,5 +1,6 @@
 // Constants
 #define RECIPROCAL_PI2 0.15915494
+#define RECIPROCAL_PI 0.31830988618
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
 
 // AlphaG epsilon to avoid numerical issues
@@ -33,6 +34,34 @@ vec2 getAARoughnessFactors(vec3 normalVector) {
     #endif
 }
 
+
+#ifdef MS_BRDF_ENERGY_CONSERVATION
+    // http://www.jcgt.org/published/0008/01/03/
+    // http://advances.realtimerendering.com/s2018/Siggraph%202018%20HDRP%20talk_with%20notes.pdf
+    vec3 getEnergyConservationFactor(const vec3 specularEnvironmentR0, vec2 environmentBrdf) {
+        return 1.0 + specularEnvironmentR0 * (1.0 / environmentBrdf.y - 1.0);
+    }
+#endif
+
+vec2 getBRDFLookup(float NdotV, float perceptualRoughness, sampler2D brdfSampler) {
+    // Indexed on cos(theta) and roughness
+    vec2 UV = vec2(NdotV, perceptualRoughness);
+    
+    // We can find the scale and offset to apply to the specular value.
+    vec2 brdfLookup = texture2D(brdfSampler, UV).xy;
+
+    return brdfLookup;
+}
+
+vec3 getReflectanceFromBRDFLookup(const vec3 specularEnvironmentR0, vec2 environmentBrdf) {
+    #ifdef BRDF_V_HEIGHT_CORRELATED
+        vec3 reflectance = mix(environmentBrdf.xxx, environmentBrdf.yyy, specularEnvironmentR0);
+    #else
+        vec3 reflectance = specularEnvironmentR0 * environmentBrdf.x + environmentBrdf.y;
+    #endif
+    return reflectance;
+}
+
 // Schlick's approximation for R0 (Fresnel Reflectance Values)
 // Keep for references
 // vec3 getR0fromAirToSurfaceIOR(vec3 ior1) {
@@ -57,24 +86,24 @@ vec2 getAARoughnessFactors(vec3 normalVector) {
 // }
 
 #ifdef CLEARCOAT
-// Knowing ior clear coat is fix for the material
-// Solving iorbase = 1 + sqrt(fo) / (1 - sqrt(fo)) and f0base = square((iorbase - iorclearcoat) / (iorbase - iorclearcoat))
-// provide f0base = square(A + B * sqrt(fo)) / (B + A * sqrt(fo))
-// where A = 1 - iorclearcoat
-// and   B = 1 + iorclearcoat
-vec3 getR0RemappedForClearCoat(vec3 f0) {
-    #ifdef CLEARCOAT_DEFAULTIOR
-        #ifdef MOBILE
-            return clamp(f0 * (f0 * 0.526868 + 0.529324) - 0.0482256, 0., 1.);
+    // Knowing ior clear coat is fix for the material
+    // Solving iorbase = 1 + sqrt(fo) / (1 - sqrt(fo)) and f0base = square((iorbase - iorclearcoat) / (iorbase - iorclearcoat))
+    // provide f0base = square(A + B * sqrt(fo)) / (B + A * sqrt(fo))
+    // where A = 1 - iorclearcoat
+    // and   B = 1 + iorclearcoat
+    vec3 getR0RemappedForClearCoat(vec3 f0) {
+        #ifdef CLEARCOAT_DEFAULTIOR
+            #ifdef MOBILE
+                return clamp(f0 * (f0 * 0.526868 + 0.529324) - 0.0482256, 0., 1.);
+            #else
+                return clamp(f0 * (f0 * (0.941892 - 0.263008 * f0) + 0.346479) - 0.0285998, 0., 1.);
+            #endif
         #else
-            return clamp(f0 * (f0 * (0.941892 - 0.263008 * f0) + 0.346479) - 0.0285998, 0., 1.);
+            vec3 s = sqrt(f0);
+            vec3 t = (vClearCoatRefractionParams.z + vClearCoatRefractionParams.w * s) / (vClearCoatRefractionParams.w + vClearCoatRefractionParams.z * s);
+            return t * t;
         #endif
-    #else
-        vec3 s = sqrt(f0);
-        vec3 t = (vClearCoatRefractionParams.z + vClearCoatRefractionParams.w * s) / (vClearCoatRefractionParams.w + vClearCoatRefractionParams.z * s);
-        return t * t;
-    #endif
-}
+    }
 #endif
 
 // From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
@@ -139,6 +168,18 @@ vec2 getAnisotropicRoughness(float alphaG, float anisotropy) {
     return vec2(alphaT, alphaB);
 }
 
+// Aniso Bent Normals
+// Mc Alley https://www.gdcvault.com/play/1022235/Rendering-the-World-of-Far 
+vec3 getAnisotropicBentNormals(const mat3 TBN, const vec3 V, const vec3 N, float anisotropy) {
+    vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
+    vec3 anisotropicFrameTangent = cross(normalize(anisotropicFrameDirection), V);
+    vec3 anisotropicFrameNormal = cross(anisotropicFrameTangent, anisotropicFrameDirection);
+    vec3 anisotropicNormal = normalize(mix(N, anisotropicFrameNormal, abs(anisotropy)));
+    return anisotropicNormal;
+
+    // should we also do http://advances.realtimerendering.com/s2018/Siggraph%202018%20HDRP%20talk_with%20notes.pdf page 80 ?
+}
+
 // GGX Distribution Anisotropic
 // https://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf Addenda
 float normalDistributionFunction_BurleyGGX_Anisotropic(float NdotH, float TdotH, float BdotH, const vec2 alphaTB) {
@@ -146,7 +187,24 @@ float normalDistributionFunction_BurleyGGX_Anisotropic(float NdotH, float TdotH,
     vec3 v = vec3(alphaTB.y * TdotH, alphaTB.x  * BdotH, a2 * NdotH);
     float v2 = dot(v, v);
     float w2 = a2 / v2;
-    return a2 * w2 * w2 * (1.0 / PI);
+    return a2 * w2 * w2 * RECIPROCAL_PI;
+}
+
+// GGX Mask/Shadowing Isotropic 
+// Heitz http://jcgt.org/published/0003/02/03/paper.pdf
+// https://twvideo01.ubm-us.net/o1/vault/gdc2017/Presentations/Hammon_Earl_PBR_Diffuse_Lighting.pdf
+float smithVisibility_GGXCorrelated(float NdotV, float NdotL, float alphaG) {
+    #ifdef MOBILE
+        // Appply simplification as all squared root terms are below 1 and squared
+        float GGXV = NdotL * (NdotV * (1.0 - alphaG) + alphaG);
+        float GGXL = NdotV * (NdotL * (1.0 - alphaG) + alphaG);
+        return 0.5 / (GGXV + GGXL);
+    #else
+        float a2 = alphaG * alphaG;
+        float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0 - a2) + a2);
+        float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0 - a2) + a2);
+        return 0.5 / (GGXV + GGXL);
+    #endif
 }
 
 // GGX Mask/Shadowing Anisotropic 
@@ -209,7 +267,13 @@ vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, flo
     float alphaG = convertRoughnessToAverageSlope(roughness);
 
     float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
-    float visibility = smithVisibility_TrowbridgeReitzGGXFast(NdotL, NdotV, alphaG);
+
+    #ifdef BRDF_V_HEIGHT_CORRELATED
+        float visibility = smithVisibility_GGXCorrelated(NdotL, NdotV, alphaG);
+    #else
+        float visibility = smithVisibility_TrowbridgeReitzGGXFast(NdotL, NdotV, alphaG);
+    #endif
+
     float specTerm = max(0., visibility * distribution);
 
     vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);

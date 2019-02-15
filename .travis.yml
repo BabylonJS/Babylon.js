@@ -33,6 +33,7 @@ jobs:
     - sh -e /etc/init.d/xvfb start
     - sleep 3
     - set -e
+    - export CHROME_BIN=chromium-browser
     - gulp typescript-all
     - gulp tests-babylon-unit
     - travis_retry gulp tests-validation-virtualscreen
@@ -40,6 +41,7 @@ jobs:
   - env: JOB=ModuleTests
     script:
     - gulp typescript-all
+    - export CHROME_BIN=chromium-browser
     - gulp tests-modules
     - gulp deployAndTests-es6Modules
   - env: JOB=ViewerTests
@@ -48,6 +50,7 @@ jobs:
     - sh -e /etc/init.d/xvfb start
     - sleep 3
     - set -e
+    - export CHROME_BIN=chromium-browser
     - gulp typescript-all
     - gulp tests-viewer-unit
     - travis_retry gulp tests-viewer-validation-virtualscreen
