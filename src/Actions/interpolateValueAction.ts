@@ -144,4 +144,4 @@ export class InterpolateValueAction extends Action {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.InterpolateValueAction"] = Action;
+_TypeStore.RegisteredTypes["BABYLON.InterpolateValueAction"] = InterpolateValueAction;

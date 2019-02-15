@@ -8,6 +8,7 @@ export interface ICheckBoxLineComponentProps {
     propertyName?: string;
     isSelected?: () => boolean;
     onSelect?: (value: boolean) => void;
+    onValueChanged?: () => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
@@ -60,6 +61,11 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
 
             this.props.target[this.props.propertyName!] = !this.state.isSelected;
         }
+
+        if (this.props.onValueChanged) {
+            this.props.onValueChanged();
+        }
+
         this.setState({ isSelected: !this.state.isSelected });
     }
 

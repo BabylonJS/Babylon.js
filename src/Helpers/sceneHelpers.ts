@@ -18,6 +18,9 @@ import { WebXREnterExitUI } from "../Cameras/XR/webXREnterExitUI";
 import { WebXRExperienceHelper } from "../Cameras/XR/webXRExperienceHelper";
 import { VRExperienceHelperOptions, VRExperienceHelper } from "../Cameras/VR/vrExperienceHelper";
 
+import "../Materials/Textures/Loaders/ddsTextureLoader";
+import "../Materials/Textures/Loaders/envTextureLoader";
+import "../Materials/Textures/Loaders/ktxTextureLoader";
 import "../Meshes/Builders/boxBuilder";
 
 /** @hidden */
