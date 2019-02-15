@@ -180,10 +180,9 @@ export class Line extends Control {
         context.setLineDash(this._dash);
 
         context.beginPath();
-        context.moveTo(this._currentMeasure.left, this._currentMeasure.top);
+        context.moveTo(this._cachedParentMeasure.left + this._x1.getValue(this._host), this._cachedParentMeasure.left + this._y1.getValue(this._host));
 
-        context.lineTo(this._currentMeasure.left + this._currentMeasure.width, this._currentMeasure.top + this._currentMeasure.height);
-
+        context.lineTo(this._cachedParentMeasure.left + this._effectiveX2, this._cachedParentMeasure.left + this._effectiveY2);
         context.stroke();
 
         context.restore();

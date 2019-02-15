@@ -57,7 +57,7 @@ export class Boot {
             DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true);
             window.document.dispatchEvent(DOMContentLoaded_event);
 
-            // Disable Webgl2 support in test mode for Phantom/IE compatibility.
+            // Disable Webgl2 support in test mode for chrome headless/IE compatibility.
             viewerGlobals.disableWebGL2Support = true;
             done();
         });
