@@ -197,7 +197,8 @@ class PBRMaterialDefines extends MaterialDefines
     public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
 
     public ANISOTROPIC = false;
-    public ANISOTROPIC_DIRECTION = false;
+    public ANISOTROPIC_TEXTURE = false;
+    public ANISOTROPIC_TEXTUREDIRECTUV = 0;
 
     public BRDF_V_HEIGHT_CORRELATED = false;
     public MS_BRDF_ENERGY_CONSERVATION = false;
@@ -710,7 +711,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the anisotropic parameters for the material.
      */
-    public readonly anisotropy = new PBRAnisotropicConfiguration(this._markAllSubMeshesAsMiscDirty.bind(this));
+    public readonly anisotropy = new PBRAnisotropicConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
      * Defines the BRDF parameters for the material.
@@ -997,6 +998,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return false;
         }
 
+        if (!this.anisotropy.isReadyForSubMesh(defines, scene)) {
+            return false;
+        }
+
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             if (!this._imageProcessingConfiguration.isReady()) {
                 return false;
@@ -1191,6 +1196,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRClearCoatConfiguration.AddSamplers(samplers);
 
         PBRAnisotropicConfiguration.AddUniforms(uniforms);
+        PBRAnisotropicConfiguration.AddSamplers(samplers);
 
         PBRSheenConfiguration.AddUniforms(uniforms);
         PBRSheenConfiguration.AddSamplers(samplers);
@@ -1490,7 +1496,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         // External config
         this.clearCoat.prepareDefines(defines, scene);
-        this.anisotropy.prepareDefines(defines, mesh);
+        this.anisotropy.prepareDefines(defines, mesh, scene);
         this.brdf.prepareDefines(defines);
         this.sheen.prepareDefines(defines, scene);
 
@@ -1835,7 +1841,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             this.clearCoat.bindForSubMesh(this._uniformBuffer, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
-            this.anisotropy.bindForSubMesh(this._uniformBuffer, this.isFrozen);
+            this.anisotropy.bindForSubMesh(this._uniformBuffer, scene, this.isFrozen);
             this.sheen.bindForSubMesh(this._uniformBuffer, scene, this.isFrozen);
 
             // Clip plane
@@ -1935,6 +1941,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this.clearCoat.getAnimatables(results);
         this.sheen.getAnimatables(results);
+        this.anisotropy.getAnimatables(results);
 
         return results;
     }
@@ -2021,6 +2028,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this.clearCoat.getActiveTextures(activeTextures);
         this.sheen.getActiveTextures(activeTextures);
+        this.anisotropy.getActiveTextures(activeTextures);
 
         return activeTextures;
     }
@@ -2072,7 +2080,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         return this.clearCoat.hasTexture(texture) ||
-            this.sheen.hasTexture(texture);
+            this.sheen.hasTexture(texture) ||
+            this.anisotropy.hasTexture(texture);
     }
 
     /**
@@ -2129,6 +2138,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this.clearCoat.dispose(forceDisposeTextures);
         this.sheen.dispose(forceDisposeTextures);
+        this.anisotropy.dispose(forceDisposeTextures);
 
         this._renderTargets.dispose();
 

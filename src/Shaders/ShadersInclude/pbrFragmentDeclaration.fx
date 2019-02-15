@@ -95,6 +95,11 @@ uniform mat4 view;
 // Anisotropy
 #ifdef ANISOTROPIC
     uniform vec3 vAnisotropy;
+
+    #ifdef ANISOTROPIC_TEXTURE
+        uniform vec2 vAnisotropyInfos;
+        uniform mat4 anisotropyMatrix;
+    #endif
 #endif
 
 // Sheen

@@ -40,6 +40,12 @@
     #elif DEBUGMODE == 11 && defined(ANISOTROPIC)
         gl_FragColor.rgb = anisotropicNormal;
         #define DEBUGMODE_NORMALIZE
+    #elif DEBUGMODE == 12 && defined(ANISOTROPIC)
+        gl_FragColor.rgb = anisotropicTangent;
+        #define DEBUGMODE_NORMALIZE
+    #elif DEBUGMODE == 13 && defined(ANISOTROPIC)
+        gl_FragColor.rgb = anisotropicBitangent;
+        #define DEBUGMODE_NORMALIZE
 // Maps
     #elif DEBUGMODE == 20 && defined(ALBEDO)
         gl_FragColor.rgb = albedoTexture.rgb;
@@ -64,6 +70,8 @@
         gl_FragColor.rgb = clearCoatTintMapData.rgb;
     #elif DEBUGMODE == 29 && defined(SHEEN) && defined(SHEEN_TEXTURE)
         gl_FragColor.rgb = sheenMapData.rgb;
+    #elif DEBUGMODE == 30 && defined(ANISOTROPIC) && defined(ANISOTROPIC_TEXTURE)
+        gl_FragColor.rgb = anisotropyMapData.rgb;
 // Env
     #elif DEBUGMODE == 40 && defined(REFRACTION)
         // Base color.

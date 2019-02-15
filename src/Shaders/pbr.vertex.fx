@@ -84,6 +84,12 @@ varying vec2 vBumpUV;
     #endif
 #endif
 
+#ifdef ANISOTROPIC
+    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0 
+        varying vec2 vAnisotropyUV;
+    #endif
+#endif
+
 // Output
 varying vec3 vPositionW;
 #if DEBUGMODE > 0
@@ -320,6 +326,19 @@ void main(void) {
         else
         {
             vSheenUV = vec2(sheenMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+#endif
+
+#ifdef ANISOTROPIC
+    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0 
+        if (vAnisotropyInfos.x == 0.)
+        {
+            vAnisotropyUV = vec2(anisotropyMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vAnisotropyUV = vec2(anisotropyMatrix * vec4(uv2, 1.0, 0.0));
         }
     #endif
 #endif
