@@ -7,8 +7,8 @@ import { Vector3 } from "../Maths/math";
 export class MeshExploder {
     private _centerMesh: Mesh;
     private _meshes: Array<Mesh>;
-    private _meshesOrigins: Array<Vector3>;
-    private _toCenterVectors: Array<Vector3>;
+    private _meshesOrigins: Array<Vector3> = [];
+    private _toCenterVectors: Array<Vector3> = [];
     private _scaledDirection = new Vector3(0.0, 0.0, 0.0);
     private _newPosition = new Vector3(0.0, 0.0, 0.0);
     private _centerPosition = new Vector3(0.0, 0.0, 0.0);
@@ -27,23 +27,10 @@ export class MeshExploder {
         } else {
             this._setCenterMesh();
         }
-        this._centerPosition = this._centerMesh.getAbsolutePosition().clone();
         if (this._meshes.indexOf(this._centerMesh) >= 0) {
             this._meshes.splice(this._meshes.indexOf(this._centerMesh), 1);
         }
-        if (this._meshes.length > 1 && this._centerMesh._boundingInfo) {
-            this._meshesOrigins = [];
-            this._toCenterVectors = [];
-            for (var index = 0; index < this._meshes.length; index++) {
-                if (this._meshes[index]) {
-                    var mesh = this._meshes[index];
-                    if (mesh._boundingInfo) {
-                        this._meshesOrigins.push(mesh.getAbsolutePosition().clone());
-                        this._toCenterVectors.push(mesh._boundingInfo.boundingBox.centerWorld.subtract(this._centerPosition));
-                    }
-                }
-            }
-        }
+        this.udpatePositions();
     }
 
     private _setCenterMesh(): void {
@@ -79,6 +66,23 @@ export class MeshExploder {
      */
     public getClassName(): string {
         return "MeshExploder";
+    }
+
+    /**
+     * "Update Positions"
+     * If meshes have moved, call this to update their stored origins.
+     */
+    public udpatePositions(): void {
+        this._centerPosition = this._centerMesh.getAbsolutePosition().clone();
+        for (var index = 0; index < this._meshes.length; index++) {
+            if (this._meshes[index]) {
+                var mesh = this._meshes[index];
+                this._meshesOrigins[index] = mesh.getAbsolutePosition().clone();
+                if (!this._toCenterVectors[index] && mesh._boundingInfo) {
+                    this._toCenterVectors[index] = mesh._boundingInfo.boundingBox.centerWorld.subtract(this._centerPosition);
+                }
+            }
+        }
     }
 
     /**
