@@ -700,7 +700,7 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
                 buffer = GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
 
                 tempVertexData.indices = new Int32Array(buffer.length);
-                (<Float32Array>tempVertexData.indices).set(buffer);
+                tempVertexData.indices.set(buffer);
                 indexCounts.push(tempVertexData.indices.length);
             }
             else {

@@ -651,7 +651,7 @@ function showError(errorMessage, errorEvent) {
 
         // Zip
         var addContentToZip = function(zip, name, url, replace, buffer, then) {
-            if (url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
+            if (url.substring(0, 5) == "data:" || url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
                 then();
                 return;
             }

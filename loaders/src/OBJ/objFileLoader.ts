@@ -10,7 +10,8 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
-import { SceneLoader, ISceneLoaderPluginAsync, SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+import { SceneLoader, ISceneLoaderPluginAsync, SceneLoaderProgressEvent, ISceneLoaderPluginFactory, ISceneLoaderPlugin } from "babylonjs/Loading/sceneLoader";
+
 import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene } from "babylonjs/scene";
 /**
@@ -225,10 +226,40 @@ type MeshObject = {
 };
 
 /**
+ * Options for loading OBJ/MTL files
+ */
+type MeshLoadOptions = {
+    /**
+     * Defines if UVs are optimized by default during load.
+     */
+    OptimizeWithUV : boolean,
+    /**
+     * Invert model on y-axis (does a model scaling inversion)
+     */
+    InvertY: boolean,
+    /**
+     * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
+     */
+    ImportVertexColors: boolean,
+    /**
+     * Compute the normals for the model, even if normals are present in the file.
+     */
+    ComputeNormals: boolean,
+    /**
+     * Skip loading the materials even if defined in the OBJ file (materials are ignored).
+     */
+    SkipMaterials: boolean,
+    /**
+     * When a material fails to load OBJ loader will silently fail and onSuccess() callback will be triggered.
+     */
+    MaterialLoadingFailsSilently: boolean
+};
+
+/**
  * OBJ file type loader.
  * This is a babylon scene loader plugin.
  */
-export class OBJFileLoader implements ISceneLoaderPluginAsync {
+export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
 
     /**
      * Defines if UVs are optimized by default during load.
@@ -243,9 +274,21 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
      */
     public static IMPORT_VERTEX_COLORS = false;
     /**
-     * Compute the normals for the model, even if normals are present in the file
+     * Compute the normals for the model, even if normals are present in the file.
      */
     public static COMPUTE_NORMALS = false;
+
+    /**
+     * Skip loading the materials even if defined in the OBJ file (materials are ignored).
+     */
+    public static SKIP_MATERIALS = false;
+
+    /**
+     * When a material fails to load OBJ loader will silently fail and onSuccess() callback will be triggered.
+     *
+     * Defaults to true for backwards compatibility.
+     */
+    public static MATERIAL_LOADING_FAILS_SILENTLY = true;
     /**
      * Defines the name of the plugin.
      */
@@ -288,6 +331,28 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
     /** @hidden */
     public facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
 
+    private _meshLoadOptions: MeshLoadOptions;
+
+    /**
+     * Creates loader for .OBJ files
+     *
+     * @param meshLoadOptions options for loading and parsing OBJ/MTL files.
+     */
+    constructor(meshLoadOptions?: MeshLoadOptions) {
+        this._meshLoadOptions = meshLoadOptions || OBJFileLoader.currentMeshLoadOptions;
+    }
+
+    private static get currentMeshLoadOptions() : MeshLoadOptions {
+        return {
+            ComputeNormals: OBJFileLoader.COMPUTE_NORMALS,
+            ImportVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
+            InvertY: OBJFileLoader.INVERT_Y,
+            MaterialLoadingFailsSilently: OBJFileLoader.MATERIAL_LOADING_FAILS_SILENTLY,
+            OptimizeWithUV: OBJFileLoader.OPTIMIZE_WITH_UV,
+            SkipMaterials: OBJFileLoader.SKIP_MATERIALS
+        };
+    }
+
     /**
      * Calls synchronously the MTL file attached to this obj.
      * Load function or importMesh function don't enable to load 2 files in the same time asynchronously.
@@ -299,17 +364,39 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
      * @param onSuccess Callback function to be called when the MTL file is loaded
      * @private
      */
-    private _loadMTL(url: string, rootUrl: string, onSuccess: (response: string | ArrayBuffer, responseUrl?: string) => any) {
+    private _loadMTL(url: string, rootUrl: string, onSuccess: (response: string | ArrayBuffer, responseUrl?: string) => any, onFailure: (pathOfFile: string, exception?: any) => void) {
         //The complete path to the mtl file
         var pathOfFile = Tools.BaseUrl + rootUrl + url;
 
         // Loads through the babylon tools to allow fileInput search.
-        Tools.LoadFile(pathOfFile,
+        Tools.LoadFile(
+            pathOfFile,
             onSuccess,
             undefined,
             undefined,
             false,
-            () => { console.warn("Error - Unable to load " + pathOfFile); });
+            (request?: XMLHttpRequest | undefined, exception?: any) => {
+                onFailure(pathOfFile, exception);
+            }
+        );
+    }
+
+    /**
+     * Instantiates a OBJ file loader plugin.
+     * @returns the created plugin
+     */
+    createPlugin(): ISceneLoaderPluginAsync | ISceneLoaderPlugin {
+        return new OBJFileLoader(OBJFileLoader.currentMeshLoadOptions);
+    }
+
+    /**
+     * If the data string can be loaded directly.
+     *
+     * @param data string containing the file data
+     * @returns if the data can be loaded directly
+     */
+    public canDirectLoad(data: string): boolean {
+        return false;
     }
 
     /**
@@ -381,7 +468,6 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
      * @private
      */
     private _parseSolid(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
-
         var positions: Array<Vector3> = [];      //values for the positions of vertices
         var normals: Array<Vector3> = [];      //Values for the normals
         var uvs: Array<Vector2> = [];      //Values for the textures
@@ -450,7 +536,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
         var setData = (indicePositionFromObj: number, indiceUvsFromObj: number, indiceNormalFromObj: number, positionVectorFromOBJ: Vector3, textureVectorFromOBJ: Vector2, normalsVectorFromOBJ: Vector3, positionColorsFromOBJ?: Color4) => {
             //Check if this tuple already exists in the list of tuples
             var _index: number;
-            if (OBJFileLoader.OPTIMIZE_WITH_UV) {
+            if (this._meshLoadOptions.OptimizeWithUV) {
                 _index = isInArrayUV(
                     tuplePosNorm,
                     [
@@ -495,7 +581,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 //Add the tuple in the comparison list
                 tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                 tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
-                if (OBJFileLoader.OPTIMIZE_WITH_UV) { tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj); }
+                if (this._meshLoadOptions.OptimizeWithUV) { tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj); }
             } else {
                 //The tuple already exists
                 //Add the index of the already existing tuple
@@ -515,7 +601,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 unwrappedNormalsForBabylon.push(wrappedNormalsForBabylon[l].x, wrappedNormalsForBabylon[l].y, wrappedNormalsForBabylon[l].z);
                 unwrappedUVForBabylon.push(wrappedUvsForBabylon[l].x, wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
             }
-            if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+            if (this._meshLoadOptions.ImportVertexColors === true) {
                 //Push the r, g, b, a values of each element in the unwrapped array
                 unwrappedColorsForBabylon.push(wrappedColorsForBabylon[l].r, wrappedColorsForBabylon[l].g, wrappedColorsForBabylon[l].b, wrappedColorsForBabylon[l].a);
             }
@@ -581,7 +667,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                     0, 0,                                           //In the pattern 1, normals and uvs are not defined
                     positions[indicePositionFromObj],               //Get the vectors data
                     Vector2.Zero(), Vector3.Up(),    //Create default vectors
-                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined
+                    this._meshLoadOptions.ImportVertexColors === true ? colors[indicePositionFromObj] : undefined
                 );
             }
             //Reset variable for the next line
@@ -613,7 +699,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                     positions[indicePositionFromObj],   //Get the values for each element
                     uvs[indiceUvsFromObj],
                     Vector3.Up(),                //Default value for normals
-                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined
+                    this._meshLoadOptions.ImportVertexColors === true ? colors[indicePositionFromObj] : undefined
                 );
             }
 
@@ -676,7 +762,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                     positions[indicePositionFromObj], //Get each vector of data
                     Vector2.Zero(),
                     normals[indiceNormalFromObj],
-                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined
+                    this._meshLoadOptions.ImportVertexColors === true ? colors[indicePositionFromObj] : undefined
                 );
             }
             //Reset variable for the next line
@@ -707,7 +793,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 setData(
                     indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj,
                     positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj], //Set the vector for each component
-                    OBJFileLoader.IMPORT_VERTEX_COLORS === true ? colors[indicePositionFromObj] : undefined
+                    this._meshLoadOptions.ImportVertexColors === true ? colors[indicePositionFromObj] : undefined
                 );
 
             }
@@ -735,7 +821,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                 handledMesh.normals = unwrappedNormalsForBabylon.slice();
                 handledMesh.uvs = unwrappedUVForBabylon.slice();
 
-                if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                if (this._meshLoadOptions.ImportVertexColors === true) {
                     handledMesh.colors = unwrappedColorsForBabylon.slice();
                 }
 
@@ -772,7 +858,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                     parseFloat(result[3])
                 ));
 
-                if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+                if (this._meshLoadOptions.ImportVertexColors === true) {
                     if (result.length >= 7) {
                         // TODO: if these numbers are > 1 we can use Color4.FromInts(r,g,b,a)
                         colors.push(new Color4(
@@ -947,7 +1033,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
             handledMesh.normals = unwrappedNormalsForBabylon;
             handledMesh.uvs = unwrappedUVForBabylon;
 
-            if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+            if (this._meshLoadOptions.ImportVertexColors === true) {
                 handledMesh.colors = unwrappedColorsForBabylon;
             }
         }
@@ -1005,19 +1091,19 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
             vertexData.uvs = handledMesh.uvs as FloatArray;
             vertexData.indices = handledMesh.indices as FloatArray;
             vertexData.positions = handledMesh.positions as FloatArray;
-            if (OBJFileLoader.COMPUTE_NORMALS === true) {
+            if (this._meshLoadOptions.ComputeNormals === true) {
                 let normals: Array<number> = new Array<number>();
                 VertexData.ComputeNormals(handledMesh.positions, handledMesh.indices, normals);
                 vertexData.normals = normals;
             } else {
                 vertexData.normals = handledMesh.normals as FloatArray;
             }
-            if (OBJFileLoader.IMPORT_VERTEX_COLORS === true) {
+            if (this._meshLoadOptions.ImportVertexColors === true) {
                 vertexData.colors = handledMesh.colors as FloatArray;
             }
             //Set the data from the VertexBuffer to the current Mesh
             vertexData.applyToMesh(babylonMesh);
-            if (OBJFileLoader.INVERT_Y) {
+            if (this._meshLoadOptions.InvertY) {
                 babylonMesh.scaling.y *= -1;
             }
 
@@ -1028,10 +1114,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
         let mtlPromises: Array<Promise<any>> = [];
         //load the materials
         //Check if we have a file to load
-        if (fileToLoad !== "") {
+        if (fileToLoad !== "" && this._meshLoadOptions.SkipMaterials === false) {
             //Load the file synchronously
             mtlPromises.push(new Promise((resolve, reject) => {
-                this._loadMTL(fileToLoad, rootUrl, function(dataLoaded) {
+                this._loadMTL(fileToLoad, rootUrl, (dataLoaded) => {
                     try {
                         //Create materials thanks MTLLoader function
                         materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
@@ -1062,9 +1148,20 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
                         }
                         resolve();
                     } catch (e) {
-                        reject(e);
+                        Tools.Warn(`Error processing MTL file: '${fileToLoad}'`);
+                        if (this._meshLoadOptions.MaterialLoadingFailsSilently) {
+                            resolve();
+                        } else {
+                            reject(e);
+                        }
                     }
-
+                }, (pathOfFile: string, exception?: any) => {
+                    Tools.Warn(`Error downloading MTL file: '${fileToLoad}'`);
+                    if (this._meshLoadOptions.MaterialLoadingFailsSilently) {
+                        resolve();
+                    } else {
+                        reject(exception);
+                    }
                 });
             }));
 

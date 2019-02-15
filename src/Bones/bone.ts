@@ -103,6 +103,14 @@ export class Bone extends Node {
         }
     }
 
+    /**
+     * Gets the current object class name.
+     * @return the class name
+     */
+    public getClassName(): string {
+        return "Bone";
+    }
+
     // Members
 
     /**
@@ -119,6 +127,14 @@ export class Bone extends Node {
      */
     public getParent(): Nullable<Bone> {
         return this._parent;
+    }
+
+    /**
+     * Returns an array containing the root bones
+     * @returns an array containing the root bones
+     */
+    public getChildren(): Array<Bone> {
+        return this.children;
     }
 
     /**
