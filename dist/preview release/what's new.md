@@ -32,6 +32,7 @@
   - Added energy conservation through Multiscattering BRDF support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added anisotropy support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+  - Added sheen support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
 
 ## Updates
 

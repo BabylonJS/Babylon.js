@@ -94,5 +94,20 @@ uniform mat4 view;
 
 // Anisotropy
 #ifdef ANISOTROPIC
-    uniform float anisotropy;
+    uniform vec3 vAnisotropy;
+
+    #ifdef ANISOTROPIC_TEXTURE
+        uniform vec2 vAnisotropyInfos;
+        uniform mat4 anisotropyMatrix;
+    #endif
+#endif
+
+// Sheen
+#ifdef SHEEN
+    uniform vec4 vSheenColor;
+
+    #ifdef SHEEN_TEXTURE
+        uniform vec2 vSheenInfos;
+        uniform mat4 sheenMatrix;
+    #endif
 #endif

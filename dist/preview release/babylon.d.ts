@@ -37434,6 +37434,16 @@ declare module BABYLON {
          * Are clear coat tint textures enabled in the application.
          */
         static ClearCoatTintTextureEnabled: boolean;
+        private static _SheenTextureEnabled;
+        /**
+         * Are sheen textures enabled in the application.
+         */
+        static SheenTextureEnabled: boolean;
+        private static _AnisotropicTextureEnabled;
+        /**
+         * Are anisotropic textures enabled in the application.
+         */
+        static AnisotropicTextureEnabled: boolean;
     }
 }
 declare module BABYLON {
@@ -42769,21 +42779,6 @@ declare module BABYLON {
         */
         getClassName(): string;
         /**
-         * Makes a duplicate of the current configuration into another one.
-         * @param clearCoatConfiguration define the config where to copy the info
-         */
-        copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void;
-        /**
-         * Serializes this clear coat configuration.
-         * @returns - An object with the serialized config.
-         */
-        serialize(): any;
-        /**
-         * Parses a Clear Coat Configuration from a serialized object.
-         * @param source - Serialized object.
-         */
-        parse(source: any): void;
-        /**
          * Add fallbacks to the effect fallbacks list.
          * @param defines defines the Base texture to use.
          * @param fallbacks defines the current fallback list.
@@ -42806,6 +42801,21 @@ declare module BABYLON {
          * @param uniformBuffer defines the current uniform buffer.
          */
         static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param clearCoatConfiguration define the config where to copy the info
+         */
+        copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void;
+        /**
+         * Serializes this clear coat configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Clear Coat Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
     }
 }
 declare module BABYLON {
@@ -42814,8 +42824,10 @@ declare module BABYLON {
      */
     export interface IMaterialAnisotropicDefines {
         ANISOTROPIC: boolean;
+        ANISOTROPIC_TEXTURE: boolean;
+        ANISOTROPIC_TEXTUREDIRECTUV: number;
         MAINUV1: boolean;
-        _areMiscDirty: boolean;
+        _areTexturesDirty: boolean;
         _needUVs: boolean;
     }
     /**
@@ -42832,51 +42844,73 @@ declare module BABYLON {
          */
         intensity: number;
         /**
-         * Defines if the effect is along the tangents or bitangents.
+         * Defines if the effect is along the tangents, bitangents or in between.
          * By default, the effect is "strectching" the highlights along the tangents.
          */
-        followTangents: boolean;
-        /** @hidden */
-        private _internalMarkAllSubMeshesAsMiscDirty;
-        /** @hidden */
-        _markAllSubMeshesAsMiscDirty(): void;
+        direction: Vector2;
+        private _texture;
         /**
-         * Instantiate a new istance of clear coat configuration.
-         * @param markAllSubMeshesAsMiscDirty Callback to flag the material to dirty
+         * Stores the anisotropy values in a texture.
+         * rg is direction (like normal from -1 to 1)
+         * b is a intensity
          */
-        constructor(markAllSubMeshesAsMiscDirty: () => void);
+        texture: Nullable<BaseTexture>;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsTexturesDirty;
+        /** @hidden */
+        _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Instantiate a new istance of anisotropy configuration.
+         * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsTexturesDirty: () => void);
+        /**
+         * Specifies that the submesh is ready to be used.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
+        isReadyForSubMesh(defines: IMaterialAnisotropicDefines, scene: Scene): boolean;
         /**
          * Checks to see if a texture is used in the material.
          * @param defines the list of "defines" to update.
          * @param mesh the mesh we are preparing the defines for.
+         * @param scene defines the scene the material belongs to.
          */
-        prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh): void;
+        prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh, scene: Scene): void;
         /**
          * Binds the material data.
          * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
          * @param isFrozen defines wether the material is frozen or not.
          */
-        bindForSubMesh(uniformBuffer: UniformBuffer, isFrozen: boolean): void;
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Returns an array of the actively used textures.
+         * @param activeTextures Array of BaseTextures
+         */
+        getActiveTextures(activeTextures: BaseTexture[]): void;
+        /**
+         * Returns the animatable textures.
+         * @param animatables Array of animatable textures.
+         */
+        getAnimatables(animatables: IAnimatable[]): void;
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
         /**
         * Get the current class name of the texture useful for serialization or dynamic coding.
         * @returns "PBRAnisotropicConfiguration"
         */
         getClassName(): string;
-        /**
-         * Makes a duplicate of the current configuration into another one.
-         * @param anisotropicConfiguration define the config where to copy the info
-         */
-        copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void;
-        /**
-         * Serializes this clear coat configuration.
-         * @returns - An object with the serialized config.
-         */
-        serialize(): any;
-        /**
-         * Parses a Clear Coat Configuration from a serialized object.
-         * @param source - Serialized object.
-         */
-        parse(source: any): void;
         /**
          * Add fallbacks to the effect fallbacks list.
          * @param defines defines the Base texture to use.
@@ -42895,6 +42929,26 @@ declare module BABYLON {
          * @param uniformBuffer defines the current uniform buffer.
          */
         static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param anisotropicConfiguration define the config where to copy the info
+         */
+        copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void;
+        /**
+         * Serializes this anisotropy configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a anisotropy Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
     }
 }
 declare module BABYLON {
@@ -42957,6 +43011,142 @@ declare module BABYLON {
         serialize(): any;
         /**
          * Parses a BRDF Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IMaterialSheenDefines {
+        SHEEN: boolean;
+        SHEEN_TEXTURE: boolean;
+        SHEEN_TEXTUREDIRECTUV: number;
+        SHEEN_LINKWITHALBEDO: boolean;
+        /** @hidden */
+        _areTexturesDirty: boolean;
+    }
+    /**
+     * Define the code related to the Sheen parameters of the pbr material.
+     */
+    export class PBRSheenConfiguration {
+        private _isEnabled;
+        /**
+         * Defines if the material uses sheen.
+         */
+        isEnabled: boolean;
+        private _linkSheenWithAlbedo;
+        /**
+         * Defines if the sheen is linked to the sheen color.
+         */
+        linkSheenWithAlbedo: boolean;
+        /**
+         * Defines the sheen intensity.
+         */
+        intensity: number;
+        /**
+         * Defines the sheen color.
+         */
+        color: Color3;
+        private _texture;
+        /**
+         * Stores the sheen tint values in a texture.
+         * rgb is tint
+         * a is a intensity
+         */
+        texture: Nullable<BaseTexture>;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsTexturesDirty;
+        /** @hidden */
+        _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Instantiate a new istance of clear coat configuration.
+         * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsTexturesDirty: () => void);
+        /**
+         * Specifies that the submesh is ready to be used.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
+        isReadyForSubMesh(defines: IMaterialSheenDefines, scene: Scene): boolean;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         */
+        prepareDefines(defines: IMaterialSheenDefines, scene: Scene): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
+         * @param isFrozen defines wether the material is frozen or not.
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Returns an array of the actively used textures.
+         * @param activeTextures Array of BaseTextures
+         */
+        getActiveTextures(activeTextures: BaseTexture[]): void;
+        /**
+         * Returns the animatable textures.
+         * @param animatables Array of animatable textures.
+         */
+        getAnimatables(animatables: IAnimatable[]): void;
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
+        /**
+        * Get the current class name of the texture useful for serialization or dynamic coding.
+        * @returns "PBRSheenConfiguration"
+        */
+        getClassName(): string;
+        /**
+         * Add fallbacks to the effect fallbacks list.
+         * @param defines defines the Base texture to use.
+         * @param fallbacks defines the current fallback list.
+         * @param currentRank defines the current fallback rank.
+         * @returns the new fallback rank.
+         */
+        static AddFallbacks(defines: IMaterialSheenDefines, fallbacks: EffectFallbacks, currentRank: number): number;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param sheenConfiguration define the config where to copy the info
+         */
+        copyTo(sheenConfiguration: PBRSheenConfiguration): void;
+        /**
+         * Serializes this BRDF configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Sheen Configuration from a serialized object.
          * @param source - Serialized object.
          */
         parse(source: any): void;
@@ -43419,6 +43609,10 @@ declare module BABYLON {
          * Defines the BRDF parameters for the material.
          */
         readonly brdf: PBRBRDFConfiguration;
+        /**
+         * Defines the Sheen parameters for the material.
+         */
+        readonly sheen: PBRSheenConfiguration;
         /**
          * Instantiates a new PBRMaterial instance.
          *
