@@ -699,6 +699,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.clearCoat.copyTo(clone.clearCoat);
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
+        this.sheen.copyTo(clone.sheen);
 
         return clone;
     }
@@ -714,6 +715,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         serializationObject.clearCoat = this.clearCoat.serialize();
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();
+        serializationObject.sheen = this.sheen.serialize();
 
         return serializationObject;
     }
@@ -736,6 +738,9 @@ export class PBRMaterial extends PBRBaseMaterial {
         }
         if (source.brdf) {
             material.brdf.parse(source.brdf);
+        }
+        if (source.sheen) {
+            material.sheen.parse(source.brdf);
         }
         return material;
     }

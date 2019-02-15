@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { IAnimatable } from "../../Misc/tools";
-import { SerializationHelper, serialize, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
+import { SerializationHelper, serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
 import { Color3 } from "../../Maths/math";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { EffectFallbacks } from "../../Materials/effect";
@@ -99,7 +99,7 @@ export class PBRClearCoatConfiguration {
      * Defines if the clear coat tint is enabled in the material.
      * This is only use if tint is enabled
      */
-    @serialize()
+    @serializeAsColor3()
     public tintColor = Color3.White();
 
     /**
@@ -383,30 +383,6 @@ export class PBRClearCoatConfiguration {
     }
 
     /**
-     * Makes a duplicate of the current configuration into another one.
-     * @param clearCoatConfiguration define the config where to copy the info
-     */
-    public copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void {
-        SerializationHelper.Clone(() => clearCoatConfiguration, this);
-    }
-
-    /**
-     * Serializes this clear coat configuration.
-     * @returns - An object with the serialized config.
-     */
-    public serialize(): any {
-        return SerializationHelper.Serialize(this);
-    }
-
-    /**
-     * Parses a Clear Coat Configuration from a serialized object.
-     * @param source - Serialized object.
-     */
-    public parse(source: any): void {
-        SerializationHelper.Parse(() => this, source, null);
-    }
-
-    /**
      * Add fallbacks to the effect fallbacks list.
      * @param defines defines the Base texture to use.
      * @param fallbacks defines the current fallback list.
@@ -461,5 +437,29 @@ export class PBRClearCoatConfiguration {
         uniformBuffer.addUniform("clearCoatColorAtDistance", 1);
         uniformBuffer.addUniform("vClearCoatTintInfos", 2);
         uniformBuffer.addUniform("clearCoatTintMatrix", 16);
+    }
+
+    /**
+     * Makes a duplicate of the current configuration into another one.
+     * @param clearCoatConfiguration define the config where to copy the info
+     */
+    public copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void {
+        SerializationHelper.Clone(() => clearCoatConfiguration, this);
+    }
+
+    /**
+     * Serializes this clear coat configuration.
+     * @returns - An object with the serialized config.
+     */
+    public serialize(): any {
+        return SerializationHelper.Serialize(this);
+    }
+
+    /**
+     * Parses a Clear Coat Configuration from a serialized object.
+     * @param source - Serialized object.
+     */
+    public parse(source: any): void {
+        SerializationHelper.Parse(() => this, source, null);
     }
 }

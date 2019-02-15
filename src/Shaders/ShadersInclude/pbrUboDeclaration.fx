@@ -51,6 +51,10 @@ uniform Material
     uniform mat4 clearCoatTintMatrix;
 
     uniform float anisotropy;
+
+    uniform vec4 vSheenColor;
+    uniform vec2 vSheenInfos;
+    uniform mat4 sheenMatrix;
 };
 
 uniform Scene {

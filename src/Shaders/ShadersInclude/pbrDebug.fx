@@ -62,6 +62,8 @@
         gl_FragColor.rgb = clearCoatMapData.rgb;
     #elif DEBUGMODE == 28 && defined(CLEARCOAT) && defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
         gl_FragColor.rgb = clearCoatTintMapData.rgb;
+    #elif DEBUGMODE == 29 && defined(SHEEN) && defined(SHEEN_TEXTURE)
+        gl_FragColor.rgb = sheenMapData.rgb;
 // Env
     #elif DEBUGMODE == 40 && defined(REFRACTION)
         // Base color.
@@ -83,7 +85,10 @@
     #elif DEBUGMODE == 52 && defined(CLEARCOAT)
         gl_FragColor.rgb = clearCoatBase.rgb;
         #define DEBUGMODE_GAMMA
-    #elif DEBUGMODE == 53 && defined(REFLECTION)
+    #elif DEBUGMODE == 53 && defined(SHEEN)
+        gl_FragColor.rgb = sheenBase.rgb;
+        #define DEBUGMODE_GAMMA
+    #elif DEBUGMODE == 54 && defined(REFLECTION)
         gl_FragColor.rgb = environmentIrradiance.rgb;
         #define DEBUGMODE_GAMMA
 // Lighting Params
@@ -119,9 +124,12 @@
     #elif DEBUGMODE == 74 && defined(CLEARCOAT) && defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         gl_FragColor.rgb = clearCoatEnvironmentReflectance;
         #define DEBUGMODE_GAMMA
-    #elif DEBUGMODE == 75 && defined(ALPHABLEND)
+    #elif DEBUGMODE == 75 && defined(SHEEN)
+        gl_FragColor.rgb = sheenEnvironmentReflectance;
+        #define DEBUGMODE_GAMMA
+    #elif DEBUGMODE == 76 && defined(ALPHABLEND)
         gl_FragColor.rgb = vec3(luminanceOverAlpha);
-    #elif DEBUGMODE == 76
+    #elif DEBUGMODE == 77
         gl_FragColor.rgb = vec3(alpha);
     #endif
 
