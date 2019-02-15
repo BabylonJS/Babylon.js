@@ -245,4 +245,20 @@ export class MaterialFlags {
         this._SheenTextureEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
+
+    private static _AnisotropicTextureEnabled = true;
+    /**
+     * Are anisotropic textures enabled in the application.
+     */
+    public static get AnisotropicTextureEnabled(): boolean {
+        return this._AnisotropicTextureEnabled;
+    }
+    public static set AnisotropicTextureEnabled(value: boolean) {
+        if (this._AnisotropicTextureEnabled === value) {
+            return;
+        }
+
+        this._AnisotropicTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
 }

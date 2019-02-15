@@ -70,6 +70,8 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "ClearCoat Tangents", value: 9 },
             { label: "ClearCoat Bitangents", value: 10 },
             { label: "Anisotropic Normals", value: 11 },
+            { label: "Anisotropic Tangents", value: 12 },
+            { label: "Anisotropic Bitangents", value: 13 },
             // Maps
             { label: "Albdeo Map", value: 20 },
             { label: "Ambient Map", value: 21 },
@@ -81,6 +83,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "ClearCoat Map", value: 27 },
             { label: "ClearCoat Tint Map", value: 28 },
             { label: "Sheen Map", value: 29 },
+            { label: "Anisotropic Map", value: 30 },
             // Env
             { label: "Env Refraction", value: 40 },
             { label: "Env Reflection", value: 41 },
@@ -172,6 +175,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         <div>
                             <SliderLineComponent label="Intensity" target={material.anisotropy} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <Vector2LineComponent label="Direction" target={material.anisotropy} propertyName="direction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <TextureLinkLineComponent label="Texture" texture={material.anisotropy.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                         </div>
                     }
                 </LineContainerComponent>

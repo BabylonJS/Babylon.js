@@ -174,6 +174,19 @@ varying vec4 vColor;
     #endif
 #endif
 
+#ifdef ANISOTROPIC
+    #ifdef ANISOTROPIC_TEXTURE
+        #if ANISOTROPIC_TEXTUREDIRECTUV == 1
+            #define vAnisotropyUV vMainUV1
+        #elif ANISOTROPIC_TEXTUREDIRECTUV == 2
+            #define vAnisotropyUV vMainUV2
+        #else
+            varying vec2 vAnisotropyUV;
+        #endif
+        uniform sampler2D anisotropySampler;
+    #endif
+#endif
+
 // Refraction
 #ifdef REFRACTION
     #ifdef REFRACTIONMAP_3D
@@ -504,8 +517,14 @@ void main(void) {
 
     #ifdef ANISOTROPIC
         float anisotropy = vAnisotropy.b;
-
         vec3 anisotropyDirection = vec3(vAnisotropy.xy, 0.);
+
+        #ifdef ANISOTROPIC_TEXTURE
+            vec3 anisotropyMapData = texture2D(anisotropySampler, vAnisotropyUV + uvOffset).rgb * vAnisotropyInfos.y;
+            anisotropy *= anisotropyMapData.b;
+            anisotropyDirection.rg *= anisotropyMapData.rg * 2.0 - 1.0;
+        #endif
+
         mat3 anisoTBN = mat3(normalize(TBN[0]), normalize(TBN[1]), normalize(TBN[2]));
         vec3 anisotropicTangent = normalize(anisoTBN * anisotropyDirection);
         vec3 anisotropicBitangent = normalize(cross(anisoTBN[2], anisotropicTangent));
