@@ -769,12 +769,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param velocity velocity to set
      */
     public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        if (!impostor.soft) {
-            this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z);
-            impostor.physicsBody.setLinearVelocity(this._tmpAmmoVectorA);
+        this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z);
+        if (impostor.soft) {
+            impostor.physicsBody.linearVelocity(this._tmpAmmoVectorA);
         }
         else {
-            Logger.Warn("Linear velocity cannot be applied to a soft body");
+            impostor.physicsBody.setLinearVelocity(this._tmpAmmoVectorA);
         }
     }
 
@@ -784,12 +784,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param velocity velocity to set
      */
     public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        if (!impostor.soft) {
-            this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z);
-            impostor.physicsBody.setAngularVelocity(this._tmpAmmoVectorA);
+        this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z);
+        if (impostor.soft) {
+            impostor.physicsBody.angularVelocity(this._tmpAmmoVectorA);
         }
         else {
-            Logger.Warn("Angular velocity cannot be applied to a soft body");
+            impostor.physicsBody.setAngularVelocity(this._tmpAmmoVectorA);
         }
     }
 
@@ -800,10 +800,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
         if (impostor.soft) {
-            Logger.Warn("Linear velocity is not a property of a soft body");
-            return null;
+            var v = impostor.physicsBody.linearVelocity();
         }
-        var v = impostor.physicsBody.getLinearVelocity();
+        else {
+            var v = impostor.physicsBody.getLinearVelocity();
+        }
         if (!v) {
             return null;
         }
@@ -817,10 +818,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
         if (impostor.soft) {
-            Logger.Warn("Angular velocity is not a property a soft body");
-            return null;
+            var v = impostor.physicsBody.angularVelocity();
         }
-        var v = impostor.physicsBody.getAngularVelocity();
+        else {
+            var v = impostor.physicsBody.getAngularVelocity();
+        }
         if (!v) {
             return null;
         }

@@ -269,10 +269,11 @@ export class PhysicsImpostor {
         if (!this._physicsEngine) {
             return 0;
         }
-        if (!this._physicsEngine.getPhysicsPlugin().getBodyPressure) {
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin .setBodyPressure) {
             return 0;
         }
-        return this._physicsEngine.getPhysicsPlugin().getBodyPressure!(this);
+        return plugin.getBodyPressure!(this);
     }
 
     /**
@@ -282,10 +283,11 @@ export class PhysicsImpostor {
         if (!this._physicsEngine) {
             return;
         }
-        if (!this._physicsEngine.getPhysicsPlugin().setBodyPressure) {
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.setBodyPressure) {
             return;
         }
-        this._physicsEngine.getPhysicsPlugin().setBodyPressure!(this, value);
+        plugin.setBodyPressure!(this, value);
     }
 
     /**
@@ -295,10 +297,11 @@ export class PhysicsImpostor {
         if (!this._physicsEngine) {
             return 0;
         }
-        if (!this._physicsEngine.getPhysicsPlugin().getBodyStiffness) {
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.getBodyStiffness) {
             return 0;
         }
-        return this._physicsEngine.getPhysicsPlugin().getBodyStiffness!(this);
+        return plugin.getBodyStiffness!(this);
     }
 
     /**
@@ -308,10 +311,11 @@ export class PhysicsImpostor {
         if (!this._physicsEngine) {
             return;
         }
-        if (!this._physicsEngine.getPhysicsPlugin().setBodyStiffness) {
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.setBodyStiffness) {
             return;
         }
-        this._physicsEngine.getPhysicsPlugin().setBodyStiffness!(this, value);
+        plugin.setBodyStiffness!(this, value);
     }
 
     /**
@@ -321,10 +325,11 @@ export class PhysicsImpostor {
         if (!this._physicsEngine) {
             return 0;
         }
-        if (!this._physicsEngine.getPhysicsPlugin().getBodyVelocityIterations) {
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.getBodyVelocityIterations) {
             return 0;
         }
-        return this._physicsEngine.getPhysicsPlugin().getBodyVelocityIterations!(this);
+        return plugin.getBodyVelocityIterations!(this);
     }
 
     /**
@@ -334,10 +339,11 @@ export class PhysicsImpostor {
         if (!this._physicsEngine) {
             return;
         }
-        if (!this._physicsEngine.getPhysicsPlugin().setBodyVelocityIterations) {
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.setBodyVelocityIterations) {
             return;
         }
-        this._physicsEngine.getPhysicsPlugin().setBodyVelocityIterations!(this, value);
+        plugin.setBodyVelocityIterations!(this, value);
     }
 
     /**
@@ -347,10 +353,11 @@ export class PhysicsImpostor {
         if (!this._physicsEngine) {
             return 0;
         }
-        if (!this._physicsEngine.getPhysicsPlugin().getBodyPositionIterations) {
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.getBodyPositionIterations) {
             return 0;
         }
-        return this._physicsEngine.getPhysicsPlugin().getBodyPositionIterations!(this);
+        return plugin.getBodyPositionIterations!(this);
     }
 
     /**
@@ -360,10 +367,11 @@ export class PhysicsImpostor {
         if (!this._physicsEngine) {
             return;
         }
-        if (!this._physicsEngine.getPhysicsPlugin().setBodyPositionIterations) {
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.setBodyPositionIterations) {
             return;
         }
-        this._physicsEngine.getPhysicsPlugin().setBodyPositionIterations!(this, value);
+        plugin.setBodyPositionIterations!(this, value);
     }
 
     /**
@@ -435,7 +443,6 @@ export class PhysicsImpostor {
             this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
             this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
             this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
-            this._options.pressure = (_options.pressure === void 0) ? 0 : _options.pressure;
             if (this.soft) {
                 //softbody mass must be above 0;
                 this._options.mass = this._options.mass > 0 ? this._options.mass : 1;

@@ -2400,7 +2400,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Increase the number of facets and hence vertices in a mesh
-     * Introduced for use with Ammo.JSPlugin soft bodies
      * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
      * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
      */
@@ -2545,7 +2544,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Force adjacent facets to share vertices and remove any facets that have all vertices in a line
      * This will undo any application of covertToFlatShadedMesh
-     * Introduced for use with Ammo.JSPlugin soft bodies
      * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
      */
     public forceSharedVertices(): void {
