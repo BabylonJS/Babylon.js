@@ -503,7 +503,14 @@ void main(void) {
     #endif
 
     #ifdef ANISOTROPIC
-        vec3 anisotropicNormal = getAnisotropicBentNormals(TBN, viewDirectionW, normalW, anisotropy);
+        float anisotropy = vAnisotropy.b;
+
+        vec3 anisotropyDirection = vec3(vAnisotropy.xy, 0.);
+        mat3 anisoTBN = mat3(normalize(TBN[0]), normalize(TBN[1]), normalize(TBN[2]));
+        vec3 anisotropicTangent = normalize(anisoTBN * anisotropyDirection);
+        vec3 anisotropicBitangent = normalize(cross(anisoTBN[2], anisotropicTangent));
+        
+        vec3 anisotropicNormal = getAnisotropicBentNormals(anisotropicTangent, anisotropicBitangent, normalW, viewDirectionW, anisotropy);
     #endif
 
     // _____________________________ Refraction Info _______________________________________

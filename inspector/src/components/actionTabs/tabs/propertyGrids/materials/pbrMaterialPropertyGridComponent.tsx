@@ -8,6 +8,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { Color3LineComponent } from "../../../lines/color3LineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { Vector2LineComponent } from "../../../lines/vector2LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
@@ -170,7 +171,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         material.anisotropy.isEnabled &&
                         <div>
                             <SliderLineComponent label="Intensity" target={material.anisotropy} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Follow tangents" target={material.anisotropy} propertyName="followTangents" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <Vector2LineComponent label="Direction" target={material.anisotropy} propertyName="direction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         </div>
                     }
                 </LineContainerComponent>
