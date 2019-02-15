@@ -197,6 +197,7 @@ class PBRMaterialDefines extends MaterialDefines
     public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
 
     public ANISOTROPIC = false;
+    public ANISOTROPIC_DIRECTION = false;
 
     public BRDF_V_HEIGHT_CORRELATED = false;
     public MS_BRDF_ENERGY_CONSERVATION = false;

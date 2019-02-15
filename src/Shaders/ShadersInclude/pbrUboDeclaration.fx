@@ -50,7 +50,7 @@ uniform Material
     uniform vec2 vClearCoatTintInfos;
     uniform mat4 clearCoatTintMatrix;
 
-    uniform float anisotropy;
+    uniform vec3 vAnisotropy;
 
     uniform vec4 vSheenColor;
     uniform vec2 vSheenInfos;

@@ -226,8 +226,8 @@ vec2 getAnisotropicRoughness(float alphaG, float anisotropy) {
 
 // Aniso Bent Normals
 // Mc Alley https://www.gdcvault.com/play/1022235/Rendering-the-World-of-Far 
-vec3 getAnisotropicBentNormals(const mat3 TBN, const vec3 V, const vec3 N, float anisotropy) {
-    vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
+vec3 getAnisotropicBentNormals(const vec3 T, const vec3 B, const vec3 N, const vec3 V, float anisotropy) {
+    vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? B : T;
     vec3 anisotropicFrameTangent = cross(normalize(anisotropicFrameDirection), V);
     vec3 anisotropicFrameNormal = cross(anisotropicFrameTangent, anisotropicFrameDirection);
     vec3 anisotropicNormal = normalize(mix(N, anisotropicFrameNormal, abs(anisotropy)));

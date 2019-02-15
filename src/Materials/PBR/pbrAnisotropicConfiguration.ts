@@ -1,8 +1,9 @@
-import { SerializationHelper, serialize, expandToProperty } from "../../Misc/decorators";
+import { SerializationHelper, serialize, expandToProperty, serializeAsVector2 } from "../../Misc/decorators";
 import { EffectFallbacks } from "../../Materials/effect";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../Meshes/buffer";
+import { Vector2 } from "../../Maths/math";
 
 /**
  * @hidden
@@ -35,11 +36,11 @@ export class PBRAnisotropicConfiguration {
     public intensity: number = 1;
 
     /**
-     * Defines if the effect is along the tangents or bitangents.
+     * Defines if the effect is along the tangents, bitangents or in between.
      * By default, the effect is "strectching" the highlights along the tangents.
      */
-    @serialize()
-    public followTangents = true;
+    @serializeAsVector2()
+    public direction = new Vector2(1, 0);
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsMiscDirty: () => void;
@@ -78,7 +79,7 @@ export class PBRAnisotropicConfiguration {
     public bindForSubMesh(uniformBuffer: UniformBuffer, isFrozen: boolean): void {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             // Clear Coat
-            uniformBuffer.updateFloat("anisotropy", this.followTangents ? this.intensity : -this.intensity);
+            uniformBuffer.updateFloat3("vAnisotropy", this.direction.x, this.direction.y, this.intensity);
         }
     }
 
@@ -133,7 +134,7 @@ export class PBRAnisotropicConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("anisotropy");
+        uniforms.push("vAnisotropy");
     }
 
     /**
@@ -141,6 +142,6 @@ export class PBRAnisotropicConfiguration {
      * @param uniformBuffer defines the current uniform buffer.
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("anisotropy", 1);
+        uniformBuffer.addUniform("vAnisotropy", 3);
     }
 }
