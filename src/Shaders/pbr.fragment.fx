@@ -874,10 +874,8 @@ void main(void) {
             clearCoatNormalW = gl_FrontFacing ? clearCoatNormalW : -clearCoatNormalW;
         #endif
 
-        #ifdef SPECULARAA
-            // Clear Coat AA
-            vec2 clearCoatAARoughnessFactors = getAARoughnessFactors(clearCoatNormalW.xyz);
-        #endif
+        // Clear Coat AA
+        vec2 clearCoatAARoughnessFactors = getAARoughnessFactors(clearCoatNormalW.xyz);
 
         // Compute N dot V.
         float clearCoatNdotVUnclamped = dot(clearCoatNormalW, viewDirectionW);
