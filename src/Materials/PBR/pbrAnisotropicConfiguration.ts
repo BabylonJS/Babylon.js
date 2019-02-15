@@ -8,7 +8,7 @@ import { Scene } from "../../scene";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { IAnimatable } from "../../Misc";
+import { IAnimatable } from "../../Misc/tools";
 import { Nullable } from "../../types";
 
 /**
