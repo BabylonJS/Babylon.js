@@ -39,6 +39,7 @@ uniform Material
 };
 
 uniform Scene {
-	mat4 viewProjection;
+    mat4 viewProjection;
+	mat4 viewProjectionR;
 	mat4 view;
 };

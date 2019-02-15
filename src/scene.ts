@@ -1090,6 +1090,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     public _activeAnimatables = new Array<Animatable>();
 
     private _transformMatrix = Matrix.Zero();
+    private _transformMatrixR = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
     private _alternateSceneUbo: UniformBuffer;
 
@@ -1581,6 +1582,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _createUbo(): void {
         this._sceneUbo = new UniformBuffer(this._engine, undefined, true);
         this._sceneUbo.addUniform("viewProjection", 16);
+        this._sceneUbo.addUniform("viewProjectionR", 16);
         this._sceneUbo.addUniform("view", 16);
     }
 
@@ -2539,16 +2541,23 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param projection defines the Projection matrix to use
      */
     public setTransformMatrix(view: Matrix, projection: Matrix): void {
-        if (this._viewUpdateFlag === view.updateFlag && this._projectionUpdateFlag === projection.updateFlag) {
+        this._setMultiviewTransformMatrix(view, projection);
+    }
+
+    private _setMultiviewTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
+        if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
 
-        this._viewUpdateFlag = view.updateFlag;
-        this._projectionUpdateFlag = projection.updateFlag;
-        this._viewMatrix = view;
-        this._projectionMatrix = projection;
+        this._viewUpdateFlag = viewL.updateFlag;
+        this._projectionUpdateFlag = projectionL.updateFlag;
+        this._viewMatrix = viewL;
+        this._projectionMatrix = projectionL;
 
         this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+        if (viewR && projectionR) {
+            viewR.multiplyToRef(projectionR, this._transformMatrixR);
+        }
 
         // Update frustum
         if (!this._frustumPlanes) {
@@ -2565,6 +2574,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+            this._sceneUbo.updateMatrix("viewProjectionR", this._transformMatrixR);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
             this._sceneUbo.update();
         }
@@ -3980,6 +3990,24 @@ export class Scene extends AbstractScene implements IAnimatable {
     public updateAlternateTransformMatrix(alternateCamera: Camera): void {
         this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
     }
+
+    private _bindFrameBuffer() {
+        if (this.activeCamera && this.activeCamera.outputRenderTarget) {
+            var useMultiview = this.getEngine().getCaps().multiview && this.activeCamera.outputRenderTarget && this.activeCamera.outputRenderTarget.getViewCount() > 1;
+            if (useMultiview) {
+                this.activeCamera.outputRenderTarget._bindFrameBuffer();
+            }else {
+                var internalTexture = this.activeCamera.outputRenderTarget.getInternalTexture();
+                if (internalTexture) {
+                    this.getEngine().bindFramebuffer(internalTexture);
+                } else {
+                    Logger.Error("Camera contains invalid customDefaultRenderTarget");
+                }
+            }
+        } else {
+            this.getEngine().restoreDefaultFramebuffer(); // Restore back buffer if needed
+        }
+    }
     /** @hidden */
     public _allowPostProcessClearColor = true;
     private _renderForCamera(camera: Camera, rigParent?: Camera): void {
@@ -4001,11 +4029,19 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Camera
         this.resetCachedMaterial();
         this._renderId++;
-        this.updateTransformMatrix();
 
-        if (camera._alternateCamera) {
-            this.updateAlternateTransformMatrix(camera._alternateCamera);
-            this._alternateRendering = true;
+        // Bind outputRenderTarget before setting transform if needed
+        this._bindFrameBuffer();
+        var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
+        if (useMultiview) {
+            this._setMultiviewTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
+        }else {
+            this.updateTransformMatrix();
+
+            if (camera._alternateCamera) {
+                this.updateAlternateTransformMatrix(camera._alternateCamera);
+                this._alternateRendering = true;
+            }
         }
 
         this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
@@ -4060,16 +4096,8 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._intermediateRendering = false;
 
-            if (this.activeCamera.outputRenderTarget) {
-                var internalTexture = this.activeCamera.outputRenderTarget.getInternalTexture();
-                if (internalTexture) {
-                    engine.bindFramebuffer(internalTexture);
-                } else {
-                    Logger.Error("Camera contains invalid customDefaultRenderTarget");
-                }
-            } else {
-                engine.restoreDefaultFramebuffer(); // Restore back buffer if needed
-            }
+            // Restore framebuffer after rendering to targets
+            this._bindFrameBuffer();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4108,7 +4136,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _processSubCameras(camera: Camera): void {
-        if (camera.cameraRigMode === Camera.RIG_MODE_NONE) {
+        if (camera.cameraRigMode === Camera.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
             this._renderForCamera(camera);
             return;
         }
