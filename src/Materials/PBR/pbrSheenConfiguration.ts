@@ -1,9 +1,7 @@
-import { SerializationHelper, serialize, expandToProperty, serializeAsVector2, serializeAsTexture } from "../../Misc/decorators";
+import { SerializationHelper, serialize, expandToProperty, serializeAsColor3, serializeAsTexture } from "../../Misc/decorators";
 import { EffectFallbacks } from "../../Materials/effect";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { VertexBuffer } from "../../Meshes/buffer";
-import { Vector2 } from "../../Maths/math";
+import { Color3 } from "../../Maths/math";
 import { Scene } from "../../scene";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -14,48 +12,55 @@ import { Nullable } from "../../types";
 /**
  * @hidden
  */
-export interface IMaterialAnisotropicDefines {
-    ANISOTROPIC: boolean;
-    ANISOTROPIC_TEXTURE: boolean;
-    ANISOTROPIC_TEXTUREDIRECTUV: number;
-    MAINUV1: boolean;
+export interface IMaterialSheenDefines {
+    SHEEN: boolean;
+    SHEEN_TEXTURE: boolean;
+    SHEEN_TEXTUREDIRECTUV: number;
+    SHEEN_LINKWITHALBEDO: boolean;
 
+    /** @hidden */
     _areTexturesDirty: boolean;
-    _needUVs: boolean;
 }
 
 /**
- * Define the code related to the anisotropic parameters of the pbr material.
+ * Define the code related to the Sheen parameters of the pbr material.
  */
-export class PBRAnisotropicConfiguration {
+export class PBRSheenConfiguration {
 
     @serialize()
     private _isEnabled = false;
     /**
-     * Defines if the anisotropy is enabled in the material.
+     * Defines if the material uses sheen.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
-    /**
-     * Defines the anisotropy strength (between 0 and 1) it defaults to 1.
-     */
     @serialize()
-    public intensity: number = 1;
+    private _linkSheenWithAlbedo = false;
+    /**
+     * Defines if the sheen is linked to the sheen color.
+     */
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public linkSheenWithAlbedo = false;
 
     /**
-     * Defines if the effect is along the tangents, bitangents or in between.
-     * By default, the effect is "strectching" the highlights along the tangents.
+     * Defines the sheen intensity.
      */
-    @serializeAsVector2()
-    public direction = new Vector2(1, 0);
+    @serialize()
+    public intensity = 1;
+
+    /**
+     * Defines the sheen color.
+     */
+    @serializeAsColor3()
+    public color = Color3.White();
 
     @serializeAsTexture()
     private _texture: Nullable<BaseTexture> = null;
     /**
-     * Stores the anisotropy values in a texture.
-     * rg is direction (like normal from -1 to 1)
-     * b is a intensity
+     * Stores the sheen tint values in a texture.
+     * rgb is tint
+     * a is a intensity
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
@@ -69,7 +74,7 @@ export class PBRAnisotropicConfiguration {
     }
 
     /**
-     * Instantiate a new istance of anisotropy configuration.
+     * Instantiate a new istance of clear coat configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
     constructor(markAllSubMeshesAsTexturesDirty: () => void) {
@@ -82,10 +87,10 @@ export class PBRAnisotropicConfiguration {
      * @param scene defines the scene the material belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: IMaterialAnisotropicDefines, scene: Scene): boolean {
+    public isReadyForSubMesh(defines: IMaterialSheenDefines, scene: Scene): boolean {
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
-                if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
+                if (this._texture && MaterialFlags.SheenTextureEnabled) {
                     if (!this._texture.isReadyOrNotBlocking()) {
                         return false;
                     }
@@ -99,30 +104,27 @@ export class PBRAnisotropicConfiguration {
     /**
      * Checks to see if a texture is used in the material.
      * @param defines the list of "defines" to update.
-     * @param mesh the mesh we are preparing the defines for.
      * @param scene defines the scene the material belongs to.
      */
-    public prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh, scene: Scene): void {
+    public prepareDefines(defines: IMaterialSheenDefines, scene: Scene): void {
         if (this._isEnabled) {
-            defines.ANISOTROPIC = this._isEnabled;
-            if (this._isEnabled && !mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-                defines._needUVs = true;
-                defines.MAINUV1 = true;
-            }
+            defines.SHEEN = this._isEnabled;
+            defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
-                    if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "ANISOTROPIC_TEXTURE");
+                    if (this._texture && MaterialFlags.SheenTextureEnabled) {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "SHEEN_TEXTURE");
                     } else {
-                        defines.ANISOTROPIC_TEXTURE = false;
+                        defines.SHEEN_TEXTURE = false;
                     }
                 }
             }
         }
         else {
-            defines.ANISOTROPIC = false;
-            defines.ANISOTROPIC_TEXTURE = false;
+            defines.SHEEN = false;
+            defines.SHEEN_TEXTURE = false;
+            defines.SHEEN_LINKWITHALBEDO = false;
         }
     }
 
@@ -134,19 +136,23 @@ export class PBRAnisotropicConfiguration {
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
-                uniformBuffer.updateFloat2("vAnisotropyInfos", this._texture.coordinatesIndex, this._texture.level);
-                MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "anisotropy");
+            if (this._texture && MaterialFlags.SheenTextureEnabled) {
+                uniformBuffer.updateFloat2("vSheenInfos", this._texture.coordinatesIndex, this._texture.level);
+                MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "sheen");
             }
 
-            // Anisotropy
-            uniformBuffer.updateFloat3("vAnisotropy", this.direction.x, this.direction.y, this.intensity);
+            // Sheen
+            uniformBuffer.updateFloat4("vSheenColor",
+                this.color.r,
+                this.color.g,
+                this.color.b,
+                this.intensity);
         }
 
         // Textures
         if (scene.texturesEnabled) {
-            if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
-                uniformBuffer.setTexture("anisotropySampler", this._texture);
+            if (this._texture && MaterialFlags.SheenTextureEnabled) {
+                uniformBuffer.setTexture("sheenSampler", this._texture);
             }
         }
     }
@@ -198,10 +204,10 @@ export class PBRAnisotropicConfiguration {
 
     /**
     * Get the current class name of the texture useful for serialization or dynamic coding.
-    * @returns "PBRAnisotropicConfiguration"
+    * @returns "PBRSheenConfiguration"
     */
     public getClassName(): string {
-        return "PBRAnisotropicConfiguration";
+        return "PBRSheenConfiguration";
     }
 
     /**
@@ -211,9 +217,9 @@ export class PBRAnisotropicConfiguration {
      * @param currentRank defines the current fallback rank.
      * @returns the new fallback rank.
      */
-    public static AddFallbacks(defines: IMaterialAnisotropicDefines, fallbacks: EffectFallbacks, currentRank: number): number {
-        if (defines.ANISOTROPIC) {
-            fallbacks.addFallback(currentRank++, "ANISOTROPIC");
+    public static AddFallbacks(defines: IMaterialSheenDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+        if (defines.SHEEN) {
+            fallbacks.addFallback(currentRank++, "SHEEN");
         }
         return currentRank;
     }
@@ -223,7 +229,7 @@ export class PBRAnisotropicConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("vAnisotropy", "vAnisotropyInfos", "anisotropyMatrix");
+        uniforms.push("vSheenColor", "vSheenInfos", "sheenMatrix");
     }
 
     /**
@@ -231,9 +237,9 @@ export class PBRAnisotropicConfiguration {
      * @param uniformBuffer defines the current uniform buffer.
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vAnisotropy", 3);
-        uniformBuffer.addUniform("vAnisotropyInfos", 2);
-        uniformBuffer.addUniform("anisotropyMatrix", 16);
+        uniformBuffer.addUniform("vSheenColor", 4);
+        uniformBuffer.addUniform("vSheenInfos", 2);
+        uniformBuffer.addUniform("sheenMatrix", 16);
     }
 
     /**
@@ -241,19 +247,19 @@ export class PBRAnisotropicConfiguration {
      * @param samplers defines the current sampler list.
      */
     public static AddSamplers(samplers: string[]): void {
-        samplers.push("anisotropySampler");
+        samplers.push("sheenSampler");
     }
 
     /**
      * Makes a duplicate of the current configuration into another one.
-     * @param anisotropicConfiguration define the config where to copy the info
+     * @param sheenConfiguration define the config where to copy the info
      */
-    public copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void {
-        SerializationHelper.Clone(() => anisotropicConfiguration, this);
+    public copyTo(sheenConfiguration: PBRSheenConfiguration): void {
+        SerializationHelper.Clone(() => sheenConfiguration, this);
     }
 
     /**
-     * Serializes this anisotropy configuration.
+     * Serializes this BRDF configuration.
      * @returns - An object with the serialized config.
      */
     public serialize(): any {
@@ -261,7 +267,7 @@ export class PBRAnisotropicConfiguration {
     }
 
     /**
-     * Parses a anisotropy Configuration from a serialized object.
+     * Parses a Sheen Configuration from a serialized object.
      * @param source - Serialized object.
      */
     public parse(source: any): void {
