@@ -102,7 +102,7 @@ export class MeshExploder {
                 this._toCenterVectors[index].scaleToRef(direction, this._scaledDirection);
                 this._meshesOrigins[index].addToRef(this._scaledDirection, this._newPosition);
                 this._meshes[index].setAbsolutePosition(this._newPosition);
-                this._meshes[index].computeWorldMatrix();
+                this._meshes[index].computeWorldMatrix(true);
             }
         }
         this._centerMesh.setAbsolutePosition(this._centerPosition);
