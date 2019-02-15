@@ -124,6 +124,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public MULTIVIEW = false;
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
@@ -792,6 +793,10 @@ export class StandardMaterial extends PushMaterial {
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
+        if (scene.activeCamera) {
+            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
+            defines.markAsUnprocessed();
+        }
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1078,6 +1083,10 @@ export class StandardMaterial extends PushMaterial {
 
             if (defines.FRESNEL) {
                 fallbacks.addFallback(4, "FRESNEL");
+            }
+
+            if (defines.MULTIVIEW) {
+                fallbacks.addFallback(0, "MULTIVIEW");
             }
 
             //Attributes
