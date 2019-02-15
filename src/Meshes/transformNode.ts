@@ -100,6 +100,7 @@ export class TransformNode extends Node {
     private _pivotMatrix = Matrix.Identity();
     private _pivotMatrixInverse: Matrix;
     protected _postMultiplyPivotMatrix = false;
+    private _tempMatrix = Matrix.Identity();
 
     protected _isWorldMatrixFrozen = false;
 
@@ -911,7 +912,7 @@ export class TransformNode extends Node {
 
         // Composing transformations
         this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
-        Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
+        Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], this._tempMatrix);
 
         // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
         if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE && camera) {
@@ -953,30 +954,30 @@ export class TransformNode extends Node {
                 Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
             }
 
-            Tmp.Matrix[1].copyFrom(Tmp.Matrix[5]);
-            Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
+            Tmp.Matrix[1].copyFrom(this._tempMatrix);
+            Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[0], this._tempMatrix);
         }
 
         // Post multiply inverse of pivotMatrix
         if (this._postMultiplyPivotMatrix) {
-            Tmp.Matrix[5].multiplyToRef(this._pivotMatrixInverse, Tmp.Matrix[5]);
+            this._tempMatrix.multiplyToRef(this._pivotMatrixInverse, this._tempMatrix);
         }
 
         // Local world
-        Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localMatrix);
+        this._tempMatrix.multiplyToRef(Tmp.Matrix[2], this._localMatrix);
 
         // Parent
         if (this.parent && this.parent.getWorldMatrix) {
             if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
                 if (this._transformToBoneReferal) {
                     this.parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
-                    Tmp.Matrix[5].copyFrom(Tmp.Matrix[6]);
+                    Tmp.Matrix[7].copyFrom(Tmp.Matrix[6]);
                 } else {
-                    Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
+                    Tmp.Matrix[7].copyFrom(this.parent.getWorldMatrix());
                 }
 
                 this._localMatrix.getTranslationToRef(Tmp.Vector3[5]);
-                Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[5], Tmp.Vector3[5]);
+                Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[7], Tmp.Vector3[5]);
                 this._worldMatrix.copyFrom(this._localMatrix);
                 this._worldMatrix.setTranslation(Tmp.Vector3[5]);
 
