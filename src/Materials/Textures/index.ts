@@ -3,6 +3,7 @@ export * from "./colorGradingTexture";
 export * from "./cubeTexture";
 export * from "./dynamicTexture";
 export * from "./hdrCubeTexture";
+export * from "./imageCubeTexture";
 export * from "./internalTexture";
 export * from "./internalTextureLoader";
 export * from "./internalTextureTracker";
