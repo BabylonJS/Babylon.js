@@ -675,17 +675,19 @@ export class Tools {
      * Asks the browser to exit fullscreen mode
      */
     public static ExitFullscreen(): void {
+        let anyDoc = document as any;
+
         if (document.exitFullscreen) {
             document.exitFullscreen();
         }
-        else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
+        else if (anyDoc.mozCancelFullScreen) {
+            anyDoc.mozCancelFullScreen();
         }
-        else if (document.webkitCancelFullScreen) {
-            document.webkitCancelFullScreen();
+        else if (anyDoc.webkitCancelFullScreen) {
+            anyDoc.webkitCancelFullScreen();
         }
-        else if (document.msCancelFullScreen) {
-            document.msCancelFullScreen();
+        else if (anyDoc.msCancelFullScreen) {
+            anyDoc.msCancelFullScreen();
         }
     }
 
