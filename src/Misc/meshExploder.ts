@@ -30,7 +30,7 @@ export class MeshExploder {
         if (this._meshes.indexOf(this._centerMesh) >= 0) {
             this._meshes.splice(this._meshes.indexOf(this._centerMesh), 1);
         }
-        this.udpatePositions();
+        this.updatePositions();
     }
 
     private _setCenterMesh(): void {
@@ -72,7 +72,7 @@ export class MeshExploder {
      * "Update Positions"
      * If meshes have moved, call this to update their stored origins.
      */
-    public udpatePositions(): void {
+    public updatePositions(): void {
         this._centerPosition = this._centerMesh.getAbsolutePosition().clone();
         for (var index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
