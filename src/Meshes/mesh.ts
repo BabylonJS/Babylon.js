@@ -1238,14 +1238,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Update the current index buffer
      * @param indices defines the source data
      * @param offset defines the offset in the index buffer where to store the new data (can be null)
+     * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
      * @returns the current mesh
      */
-    public updateIndices(indices: IndicesArray, offset?: number): Mesh {
+    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): Mesh {
         if (!this._geometry) {
             return this;
         }
 
-        this._geometry.updateIndices(indices, offset);
+        this._geometry.updateIndices(indices, offset, gpuMemoryOnly);
         return this;
     }
 
