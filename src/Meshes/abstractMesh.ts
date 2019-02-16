@@ -1793,7 +1793,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 data.depthSortedIndices[f * 3 + 1] = indices![sind + 1];
                 data.depthSortedIndices[f * 3 + 2] = indices![sind + 2];
             }
-            this.updateIndices(data.depthSortedIndices);
+            this.updateIndices(data.depthSortedIndices, undefined, true);
         }
 
         return this;
@@ -2032,9 +2032,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Updates the AbstractMesh indices array
      * @param indices defines the data source
+     * @param offset defines the offset in the index buffer where to store the new data (can be null)
+     * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
      * @returns the current mesh
      */
-    public updateIndices(indices: IndicesArray): AbstractMesh {
+    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): AbstractMesh {
         return this;
     }
 
