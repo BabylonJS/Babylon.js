@@ -30,7 +30,17 @@ export class MeshExploder {
         if (this._meshes.indexOf(this._centerMesh) >= 0) {
             this._meshes.splice(this._meshes.indexOf(this._centerMesh), 1);
         }
-        this.updatePositions();
+        this._centerPosition = this._centerMesh.getAbsolutePosition().clone();
+        for (var index = 0; index < this._meshes.length; index++) {
+            if (this._meshes[index]) {
+                var mesh = this._meshes[index];
+                this._meshesOrigins[index] = mesh.getAbsolutePosition().clone();
+                this._toCenterVectors[index] = new Vector3(0.0, 0.0, 0.0);
+                if (mesh._boundingInfo && this._centerMesh._boundingInfo) {
+                    mesh._boundingInfo.boundingBox.centerWorld.subtractToRef(this._centerMesh._boundingInfo.boundingBox.centerWorld, this._toCenterVectors[index]);
+                }
+            }
+        }
     }
 
     private _setCenterMesh(): void {
@@ -69,23 +79,6 @@ export class MeshExploder {
     }
 
     /**
-     * "Update Positions"
-     * If meshes have moved, call this to update their stored origins.
-     */
-    public updatePositions(): void {
-        this._centerPosition = this._centerMesh.getAbsolutePosition().clone();
-        for (var index = 0; index < this._meshes.length; index++) {
-            if (this._meshes[index]) {
-                var mesh = this._meshes[index];
-                this._meshesOrigins[index] = mesh.getAbsolutePosition().clone();
-                if (!this._toCenterVectors[index] && mesh._boundingInfo) {
-                    this._toCenterVectors[index] = mesh._boundingInfo.boundingBox.centerWorld.subtract(this._centerPosition);
-                }
-            }
-        }
-    }
-
-    /**
      * "Exploded meshes"
      * @returns Array of meshes with the centerMesh at index 0.
      */
@@ -102,7 +95,7 @@ export class MeshExploder {
      */
     public explode(direction: number = 1.0): void {
         for (var index = 0; index < this._meshes.length; index++) {
-            if (this._meshes[index] && this._toCenterVectors[index]) {
+            if (this._meshes[index] && this._meshesOrigins[index] && this._toCenterVectors[index]) {
                 this._toCenterVectors[index].scaleToRef(direction, this._scaledDirection);
                 this._meshesOrigins[index].addToRef(this._scaledDirection, this._newPosition);
                 this._meshes[index].setAbsolutePosition(this._newPosition);
@@ -110,5 +103,6 @@ export class MeshExploder {
             }
         }
         this._centerMesh.setAbsolutePosition(this._centerPosition);
+        this._centerMesh.computeWorldMatrix(true);
     }
 }
