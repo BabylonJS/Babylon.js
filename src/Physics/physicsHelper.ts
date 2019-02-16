@@ -178,7 +178,6 @@ export class PhysicsHelper {
 export class PhysicsRadialExplosionEvent {
 
     private _sphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
-    private _sphereOptions: { segments: number, diameter: number } = { segments: 32, diameter: 1 }; // TODO: make configurable
     private _dataFetched: boolean = false; // check if the data has been fetched. If not, do cleanup
 
     /**
@@ -266,7 +265,7 @@ export class PhysicsRadialExplosionEvent {
 
     private _prepareSphere(): void {
         if (!this._sphere) {
-            this._sphere = SphereBuilder.CreateSphere("radialExplosionEventSphere", this._sphereOptions, this._scene);
+            this._sphere = SphereBuilder.CreateSphere("radialExplosionEventSphere", this._options.sphere, this._scene);
             this._sphere.isVisible = false;
         }
     }
@@ -611,17 +610,16 @@ export class PhysicsVortexEvent {
             directionToOrigin = directionToOrigin.negate();
         }
 
-        // TODO: find a more physics based solution
         if (absoluteDistanceFromOrigin > this._options.centripetalForceThreshold) {
-            var forceX = directionToOrigin.x * this._options.strength / 8;
-            var forceY = directionToOrigin.y * this._options.updraftMultiplier;
-            var forceZ = directionToOrigin.z * this._options.strength / 8;
+            var forceX = directionToOrigin.x * this._options.centripetalForceMultiplier;
+            var forceY = directionToOrigin.y * this._options.updraftForceMultiplier;
+            var forceZ = directionToOrigin.z * this._options.centripetalForceMultiplier;
         } else {
             var perpendicularDirection = Vector3.Cross(originOnPlane, impostorObjectCenter).normalize();
 
-            var forceX = (perpendicularDirection.x + directionToOrigin.x) / 2;
-            var forceY = this._originTop.y * this._options.updraftMultiplier;
-            var forceZ = (perpendicularDirection.z + directionToOrigin.z) / 2;
+            var forceX = (perpendicularDirection.x + directionToOrigin.x) * this._options.centrifugalForceMultiplier;
+            var forceY = this._originTop.y * this._options.updraftForceMultiplier;
+            var forceZ = (perpendicularDirection.z + directionToOrigin.z) * this._options.centrifugalForceMultiplier;
         }
 
         var force = new Vector3(forceX, forceY, forceZ);
@@ -682,6 +680,11 @@ export class PhysicsRadialExplosionEventOptions {
      * The strenght of the force in correspondence to the distance of the affected object
      */
     falloff: PhysicsRadialImpulseFalloff = PhysicsRadialImpulseFalloff.Constant;
+
+    /**
+     * Sphere options for the radial explosion.
+     */
+    sphere: { segments: number, diameter: number } = { segments: 32, diameter: 1 };
 }
 
 /**
@@ -731,14 +734,24 @@ export class PhysicsVortexEventOptions {
     height: number = 10;
 
     /**
-     * At which distance, relative to the radius the centripetal forces should kick in?
+     * At which distance, relative to the radius the centripetal forces should kick in? Range: 0-1
      */
     centripetalForceThreshold: number = 0.7;
 
     /**
-     * The updraft multiplier.
+     * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when below the treshold.
      */
-    updraftMultiplier: number = 0.02;
+    centripetalForceMultiplier: number = 5;
+
+    /**
+     * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when above the treshold.
+     */
+    centrifugalForceMultiplier: number = 0.5;
+
+    /**
+     * This multiplier determines with how much force the objects will be pushed upwards, when in the vortex.
+     */
+    updraftForceMultiplier: number = 0.02;
 }
 
 /**
