@@ -20343,9 +20343,10 @@ declare module BABYLON {
          * Update the current index buffer
          * @param indices defines the source data
          * @param offset defines the offset in the index buffer where to store the new data (can be null)
+         * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          * @returns the current mesh
          */
-        updateIndices(indices: IndicesArray, offset?: number): Mesh;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): Mesh;
         /**
          * Invert the geometry to move from a right handed system to a left handed one.
          * @returns the current mesh
@@ -21924,8 +21925,9 @@ declare module BABYLON {
          * Update index buffer
          * @param indices defines the indices to store in the index buffer
          * @param offset defines the offset in the target buffer where to store the data
+         * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          */
-        updateIndices(indices: IndicesArray, offset?: number): void;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): void;
         /**
          * Creates a new index buffer
          * @param indices defines the indices to store in the index buffer
@@ -23962,9 +23964,11 @@ declare module BABYLON {
         /**
          * Updates the AbstractMesh indices array
          * @param indices defines the data source
+         * @param offset defines the offset in the index buffer where to store the new data (can be null)
+         * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          * @returns the current mesh
          */
-        updateIndices(indices: IndicesArray): AbstractMesh;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): AbstractMesh;
         /**
          * Creates new normals data for the mesh
          * @param updatable defines if the normal vertex buffer must be flagged as updatable
