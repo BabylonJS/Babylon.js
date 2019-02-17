@@ -3,6 +3,7 @@ import { Vector3 } from "../Maths/math";
 import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IPhysicsEngine";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
+import { PhysicsRaycastResult } from "./physicsRaycastResult";
 import { _DevTools } from '../Misc/devTools';
 
 /**
@@ -224,5 +225,13 @@ export class PhysicsEngine implements IPhysicsEngine {
         }
 
         return null;
+    }
+
+    /**
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     */
+    public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
+        return this._physicsPlugin.raycast(from, to);
     }
 }

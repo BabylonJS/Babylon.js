@@ -474,4 +474,12 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     public dispose() {
         this.world.clear();
     }
+
+    /**
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     */
+    public raycast(from: Vector3, to: Vector3) {
+        Logger.Warn("raycast is not currently supported by the Oimo physics plugin");
+    }
 }
