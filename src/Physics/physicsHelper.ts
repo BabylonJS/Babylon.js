@@ -186,7 +186,7 @@ export class PhysicsRadialExplosionEvent {
      * @param _options The options for the vortex event
      */
     constructor(private _scene: Scene, private _options: PhysicsRadialExplosionEventOptions) {
-        this._options = {...(new PhysicsRadialExplosionEventOptions), ...this._options};
+        this._options = {...(new PhysicsRadialExplosionEventOptions()), ...this._options};
     }
 
     /**
@@ -303,7 +303,7 @@ export class PhysicsGravitationalFieldEvent {
      * @param _options The options for the vortex event
      */
     constructor(private _physicsHelper: PhysicsHelper, private _scene: Scene, private _origin: Vector3, private _options: PhysicsRadialExplosionEventOptions) {
-        this._options = {...(new PhysicsRadialExplosionEventOptions), ...this._options};
+        this._options = {...(new PhysicsRadialExplosionEventOptions()), ...this._options};
 
         this._tickCallback = this._tick.bind(this);
 
@@ -389,7 +389,7 @@ export class PhysicsUpdraftEvent {
      */
     constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsUpdraftEventOptions) {
         this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
-        this._options = {...(new PhysicsUpdraftEventOptions), ...this._options};
+        this._options = {...(new PhysicsUpdraftEventOptions()), ...this._options};
 
         this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
         this._origin.addToRef(new Vector3(0, this._options.height, 0), this._originTop);
@@ -527,7 +527,7 @@ export class PhysicsVortexEvent {
      */
     constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsVortexEventOptions) {
         this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
-        this._options = {...(new PhysicsVortexEventOptions), ...this._options};
+        this._options = {...(new PhysicsVortexEventOptions()), ...this._options};
 
         this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
         this._origin.addToRef(new Vector3(0, this._options.height, 0), this._originTop);
