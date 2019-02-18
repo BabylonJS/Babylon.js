@@ -7454,6 +7454,7 @@ declare module BABYLON {
         private _pivotMatrixInverse;
         protected _postMultiplyPivotMatrix: boolean;
         private _tempMatrix;
+        private _tempMatrix2;
         protected _isWorldMatrixFrozen: boolean;
         /** @hidden */
         _indexInSceneTransformNodesArray: number;
