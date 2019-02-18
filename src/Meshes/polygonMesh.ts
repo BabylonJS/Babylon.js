@@ -236,9 +236,8 @@ export class PolygonMeshBuilder {
     
     /**
      * Creates the polygon
-     * @param updatable If the mesh should be updatable
      * @param depth The depth of the mesh created
-     * @returns the created mesh
+     * @returns the created VertexData
      */
     buildVertexData(depth: number = 0): VertexData {
         var result = new VertexData();
