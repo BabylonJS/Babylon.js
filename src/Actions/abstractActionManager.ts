@@ -1,7 +1,8 @@
-import { IDisposable } from '../scene';
-import { IActionEvent } from './actionEvent';
-import { IAction } from './action';
+import { IDisposable } from "../scene";
+import { IActionEvent } from "./actionEvent";
+import { IAction } from "./action";
 import { Constants } from "../Engines/constants";
+import { Nullable } from "../types";
 
 /**
  * Abstract class used to decouple action Manager from scene and meshes.
@@ -71,11 +72,25 @@ export abstract class AbstractActionManager implements IDisposable {
     public abstract hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean;
 
     /**
-         * Serialize this manager to a JSON object
-         * @param name defines the property name to store this manager
-         * @returns a JSON representation of this manager
-         */
+     * Serialize this manager to a JSON object
+     * @param name defines the property name to store this manager
+     * @returns a JSON representation of this manager
+     */
     public abstract serialize(name: string): any;
+
+    /**
+     * Registers an action to this action manager
+     * @param action defines the action to be registered
+     * @return the action amended (prepared) after registration
+     */
+    public abstract registerAction(action: IAction): Nullable<IAction>;
+
+    /**
+     * Unregisters an action to this action manager
+     * @param action defines the action to be unregistered
+     * @return a boolean indicating whether the action has been unregistered
+     */
+    public abstract unregisterAction(action: IAction): Boolean;
 
     /**
      * Does exist one action manager with at least one trigger
