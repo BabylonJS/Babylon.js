@@ -57,6 +57,7 @@ export class PhysicsRaycastResult {
     }
 
     /**
+     * Sets the hit data (normal & point in world space)
      * @param hitNormalWorld
      * @param hitPointWorld
      */
@@ -67,6 +68,7 @@ export class PhysicsRaycastResult {
     }
 
     /**
+     * Sets the distance from the start point to the hit point
      * @param distance
      */
     public setHitDistance(distance: number) {
@@ -74,13 +76,14 @@ export class PhysicsRaycastResult {
     }
 
     /**
-     * Calculates the distance
+     * Calculates the distance manually
      */
     public calculateHitDistance() {
         this._hitDistance = Vector3.Distance(this._rayFromWorld, this._hitPointWorld);
     }
 
     /**
+     * Resets all the values to default
      * @param from The from point on world space
      * @param to The to point on world space
      */
