@@ -271,6 +271,11 @@ export class BaseParticleSystem {
     public beginAnimationLoop = false;
 
     /**
+     * Gets or sets a world offset applied to all particles
+     */
+    public worldOffset = new Vector3(0, 0, 0);
+
+    /**
      * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
      */
     public get isAnimationSheetEnabled(): boolean {
