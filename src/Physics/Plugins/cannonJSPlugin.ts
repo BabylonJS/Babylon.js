@@ -683,6 +683,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     /**
      * @param from when should the ray start?
      * @param to when should the ray end?
+     * @returns the raycast result
      */
     public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
         this._cannonRaycastResult.reset();

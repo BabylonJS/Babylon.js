@@ -795,6 +795,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     /**
      * @param from when should the ray start?
      * @param to when should the ray end?
+     * @returns the raycast result
      */
     public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
         this._tmpAmmoVectorRCA = new this.bjsAMMO.btVector3(from.x, from.y, from.z);
