@@ -405,7 +405,7 @@ export class Container extends Control {
 
     /** @hidden */
     public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
 

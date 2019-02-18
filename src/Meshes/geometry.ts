@@ -523,8 +523,9 @@ export class Geometry implements IGetSetVerticesData {
      * Update index buffer
      * @param indices defines the indices to store in the index buffer
      * @param offset defines the offset in the target buffer where to store the data
+     * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
      */
-    public updateIndices(indices: IndicesArray, offset?: number): void {
+    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): void {
         if (!this._indexBuffer) {
             return;
         }
@@ -534,7 +535,9 @@ export class Geometry implements IGetSetVerticesData {
         } else {
             const needToUpdateSubMeshes = indices.length !== this._indices.length;
 
-            this._indices = indices;
+            if (!gpuMemoryOnly) {
+                this._indices = indices.slice();
+            }
             this._engine.updateDynamicIndexBuffer(this._indexBuffer, indices, offset);
             if (needToUpdateSubMeshes) {
                 for (const mesh of this._meshes) {

@@ -16,13 +16,16 @@ const modules = config.modules.concat(config.viewerModules);
  * Process ES6 Packages.
  */
 function processEs6Packages(version) {
-    config.modules.forEach(moduleName => {
+    config.es6modules.forEach(moduleName => {
         let module = config[moduleName];
         let es6Config = module.build.es6;
 
         colorConsole.log("Process " + "ES6".magenta + " Package: " + moduleName.blue.bold);
 
         let distPath = module.computed.distES6Directory;
+        if (es6Config.packageBuildFolder) {
+            distPath = path.join(distPath, es6Config.packageBuildFolder);
+        }
         let packagePath = module.computed.packageES6Directory;
         let umdPackageJson = require(module.computed.packageJSONPath);
 

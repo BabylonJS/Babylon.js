@@ -79,6 +79,10 @@ import { Skeleton } from 'babylonjs/Bones/skeleton';
 import { SkeletonPropertyGridComponent } from './propertyGrids/meshes/skeletonPropertyGridComponent';
 import { Bone } from 'babylonjs/Bones/bone';
 import { BonePropertyGridComponent } from './propertyGrids/meshes/bonePropertyGridComponent';
+import { DirectionalLightPropertyGridComponent } from './propertyGrids/lights/directionalLightPropertyGridComponent';
+import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
+import { SpotLight } from 'babylonjs/Lights/spotLight';
+import { SpotLightPropertyGridComponent } from './propertyGrids/lights/spotLightPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -126,7 +130,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 }
             }
 
-            if (className.indexOf("FreeCamera") !== -1) {
+            if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1) {
                 const freeCamera = entity as FreeCamera;
                 return (<FreeCameraPropertyGridComponent globalState={this.props.globalState} camera={freeCamera}
                     lockObject={this._lockObject}
@@ -152,6 +156,24 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "PointLight") {
                 const pointLight = entity as PointLight;
                 return (<PointLightPropertyGridComponent
+                    globalState={this.props.globalState}
+                    light={pointLight}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "DirectionalLight") {
+                const pointLight = entity as DirectionalLight;
+                return (<DirectionalLightPropertyGridComponent
+                    globalState={this.props.globalState}
+                    light={pointLight}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "SpotLight") {
+                const pointLight = entity as SpotLight;
+                return (<SpotLightPropertyGridComponent
                     globalState={this.props.globalState}
                     light={pointLight}
                     lockObject={this._lockObject}
