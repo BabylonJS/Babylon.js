@@ -684,7 +684,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
      * @param from when should the ray start?
      * @param to when should the ray end?
      */
-    public raycast(from: Vector3, to: Vector3) {
+    public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
         this._cannonRaycastResult.reset();
         this.world.raycastClosest(from, to, {}, this._cannonRaycastResult);
 
