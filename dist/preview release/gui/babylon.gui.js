@@ -1467,7 +1467,7 @@ var Button = /** @class */ (function (_super) {
     // While being a container, the button behaves like a control.
     /** @hidden */
     Button.prototype._processPicking = function (x, y, type, pointerId, buttonIndex) {
-        if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
+        if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
         if (!_super.prototype.contains.call(this, x, y)) {
@@ -3596,7 +3596,7 @@ var Container = /** @class */ (function (_super) {
     };
     /** @hidden */
     Container.prototype._processPicking = function (x, y, type, pointerId, buttonIndex) {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
         if (!_super.prototype.contains.call(this, x, y)) {
