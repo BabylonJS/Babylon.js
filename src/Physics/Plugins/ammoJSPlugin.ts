@@ -45,6 +45,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpAmmoVectorA: any;
     private _tmpAmmoVectorB: any;
     private _tmpAmmoVectorC: any;
+    private _tmpAmmoVectorD: any;
     private _tmpContactCallbackResult = false;
 
     private static readonly DISABLE_COLLISION_FLAG = 4;
@@ -96,6 +97,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this._tmpAmmoVectorA = new this.bjsAMMO.btVector3(0, 0, 0);
         this._tmpAmmoVectorB = new this.bjsAMMO.btVector3(0, 0, 0);
         this._tmpAmmoVectorC = new this.bjsAMMO.btVector3(0, 0, 0);
+        this._tmpAmmoVectorD = new this.bjsAMMO.btVector3(0, 0, 0);
     }
 
     /**
@@ -526,13 +528,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Create an impostor's soft body
      * Initialise the soft body vertices to match its object's (mesh) vertices
      * Softbody vertices (nodes) are in world space and to match this
      * The object's position and rotation is set to zero and so its vertices are also then set in world space
      * @param impostor to create the softbody for
      */
-    private _createSoftbody(impostor: PhysicsImpostor) {
+    private _softVertexData(impostor: PhysicsImpostor) : VertexData {
         var object = impostor.object;
         if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
             var indices = object.getIndices();
@@ -548,8 +549,6 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 vertexNormals = [];
             }
             object.computeWorldMatrix(false);
-            var triPoints = [];
-            var triNorms = [];
             var newPoints = [];
             var newNorms = [];
             for (var i = 0; i < vertexPositions.length; i += 3) {
@@ -557,8 +556,6 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     var n = new Vector3(vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]);
                     v = Vector3.TransformCoordinates(v, object.getWorldMatrix());
                     n = Vector3.TransformNormal(n, object.getWorldMatrix());
-                    triPoints.push(v.x, v.y, -v.z);
-                    triNorms.push(n.x, n.y, -n.z);
                     newPoints.push(v.x, v.y, v.z);
                     newNorms.push(n.x, n.y, n.z);
             }
@@ -580,10 +577,39 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             object.rotation = Vector3.Zero();
             object.computeWorldMatrix(true);
 
-            if (vertexPositions.length === 0) {
+            return vertex_data;
+        }
+        return VertexData.ExtractFromMesh(<Mesh>object);
+    }
+
+    /**
+     * Create an impostor's soft body
+     * @param impostor to create the softbody for
+     */
+    private _createSoftbody(impostor: PhysicsImpostor) {
+        var object = impostor.object;
+        if (object && object.getIndices) {
+            var indices = object.getIndices();
+            if (!indices) {
+                indices = [];
+            }
+            
+            var vertex_data = this._softVertexData(impostor);
+            var vertexPositions = vertex_data.positions;
+            var vertexNormals = vertex_data.normals;
+
+            if (vertexPositions === null  || vertexNormals === null) {
                 return new Ammo.btCompoundShape();
             }
             else {
+                var triPoints = [];
+                var triNorms = [];
+                for (var i = 0; i < vertexPositions.length; i += 3) {
+                    var v = new Vector3(vertexPositions[i], vertexPositions[i + 1], vertexPositions[i + 2]);
+                    var n = new Vector3(vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]);
+                    triPoints.push(v.x, v.y, -v.z);
+                    triNorms.push(n.x, n.y, -n.z);
+                }
                 var softBody = new Ammo.btSoftBodyHelpers().CreateFromTriMesh(
                     this.world.getWorldInfo(),
                     triPoints,
@@ -605,6 +631,60 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 }
                 softBody.get_m_cfg().set_collisions(0x11);
                 return softBody;
+            }
+        }
+    }
+
+    /**
+     * Create cloth for an impostor
+     * @param impostor to create the softbody for
+     */
+    private _createCloth(impostor: PhysicsImpostor) {
+        var object = impostor.object;
+        if (object && object.getIndices) {
+            var indices = object.getIndices();
+            if (!indices) {
+                indices = [];
+            }
+            
+            var vertex_data = this._softVertexData(impostor);
+            var vertexPositions = vertex_data.positions;
+            var vertexNormals = vertex_data.normals;
+
+            if (vertexPositions === null  || vertexNormals === null) {
+                return new Ammo.btCompoundShape();
+            }
+            else {
+                var len = vertexPositions.length;
+                var segments = Math.sqrt(len / 3);
+                //cornerSum is 0 when object is a plane
+                var cornerSum = vertexPositions[0] + vertexPositions[3] + vertexPositions[6] + vertexPositions[9];
+                if (Math.abs(cornerSum) < Math.pow(10, -10)) {
+                    this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], -vertexPositions[2]);
+                    this._tmpAmmoVectorB.setValue(vertexPositions[3], vertexPositions[4], -vertexPositions[5]);
+                    this._tmpAmmoVectorC.setValue(vertexPositions[6], vertexPositions[7], -vertexPositions[8]);
+                    this._tmpAmmoVectorD.setValue(vertexPositions[9], vertexPositions[10], -vertexPositions[11]);
+                }
+                else { // object is ground
+                    this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], -vertexPositions[2]);
+                    this._tmpAmmoVectorB.setValue(vertexPositions[3 * segments] , vertexPositions[3* segments + 1] , -vertexPositions[3*segments + 2]);
+                    this._tmpAmmoVectorC.setValue(vertexPositions[len - 3] , vertexPositions[len - 2] , -vertexPositions[len - 1]);
+                    this._tmpAmmoVectorD.setValue(vertexPositions[len - 3 - 3 * segments] , vertexPositions[len - 2 - 3 * segments] , -vertexPositions[len - 1 - 3 * segments]);
+                }               
+
+                var clothBody = new Ammo.btSoftBodyHelpers().CreatePatch(
+                    this.world.getWorldInfo(),
+                    this._tmpAmmoVectorA,
+                    this._tmpAmmoVectorB,
+                    this._tmpAmmoVectorC,
+                    this._tmpAmmoVectorD,
+                    segments,
+                    segments,
+                    0,
+                    true
+                );
+                clothBody.get_m_cfg().set_collisions(0x11);
+                return clothBody;
             }
         }
     }
@@ -690,6 +770,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             case PhysicsImpostor.SoftbodyImpostor:
                 // Only usable with a mesh that has sufficient and shared vertices
                 returnValue = this._createSoftbody(impostor);
+                break;
+            case PhysicsImpostor.ClothImpostor:
+                // Only usable with a mesh that has sufficient and shared vertices
+                returnValue = this._createCloth(impostor);
                 break;
             default:
                 Logger.Warn("The impostor type is not currently supported by the ammo plugin.");
