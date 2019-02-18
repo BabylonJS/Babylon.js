@@ -221,6 +221,12 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public onBeforeShadowMapRenderObservable = new Observable<Effect>();
 
+    /**
+     * Observable triggered before a mesh is rendered in the shadow map.
+     * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
+     */
+    public onBeforeShadowMapRenderMeshObservable = new Observable<Mesh>();
+
     private _bias = 0.00005;
     /**
      * Gets the bias: offset applied on the depth preventing acnea (in light direction).
@@ -966,7 +972,8 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setState(true, 0, false, true);
             }
 
-            // Observable
+            // Observables
+            this.onBeforeShadowMapRenderMeshObservable.notifyObservers(mesh);
             this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
 
             // Draw

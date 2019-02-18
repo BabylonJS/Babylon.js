@@ -431,6 +431,31 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newvalue: BABYLON.Vector2) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector2;
+    }> {
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IPBRMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: BABYLON.PBRMaterial;
@@ -1035,31 +1060,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface IVector2LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        onChange?: (newvalue: BABYLON.Vector2) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector2;
-    }> {
-        private _localChange;
-        constructor(props: IVector2LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector2;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
     interface IDefaultRenderingPipelinePropertyGridComponentProps {
         globalState: GlobalState;
         renderPipeline: BABYLON.DefaultRenderingPipeline;
@@ -1132,7 +1132,9 @@ declare module INSPECTOR {
         private _skeletonViewers;
         constructor(props: ISkeletonPropertyGridComponentProps);
         switchSkeletonViewers(): void;
+        checkSkeletonViewerState(props: ISkeletonPropertyGridComponentProps): void;
         componentWillMount(): void;
+        shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
         render(): JSX.Element;
     }
 }
@@ -1145,6 +1147,30 @@ declare module INSPECTOR {
     }
     export class BonePropertyGridComponent extends React.Component<IBonePropertyGridComponentProps> {
         constructor(props: IBonePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IDirectionalLightPropertyGridComponentProps {
+        globalState: GlobalState;
+        light: BABYLON.DirectionalLight;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class DirectionalLightPropertyGridComponent extends React.Component<IDirectionalLightPropertyGridComponentProps> {
+        constructor(props: IDirectionalLightPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISpotLightPropertyGridComponentProps {
+        globalState: GlobalState;
+        light: BABYLON.SpotLight;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SpotLightPropertyGridComponent extends React.Component<ISpotLightPropertyGridComponentProps> {
+        constructor(props: ISpotLightPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -1652,29 +1678,5 @@ declare module INSPECTOR {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
-    }
-}
-declare module INSPECTOR {
-    interface IDirectionalLightPropertyGridComponentProps {
-        globalState: GlobalState;
-        light: BABYLON.DirectionalLight;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class DirectionalLightPropertyGridComponent extends React.Component<IDirectionalLightPropertyGridComponentProps> {
-        constructor(props: IDirectionalLightPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface ISpotLightPropertyGridComponentProps {
-        globalState: GlobalState;
-        light: BABYLON.SpotLight;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class SpotLightPropertyGridComponent extends React.Component<ISpotLightPropertyGridComponentProps> {
-        constructor(props: ISpotLightPropertyGridComponentProps);
-        render(): JSX.Element;
     }
 }

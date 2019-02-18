@@ -7453,6 +7453,8 @@ declare module BABYLON {
         private _pivotMatrix;
         private _pivotMatrixInverse;
         protected _postMultiplyPivotMatrix: boolean;
+        private _tempMatrix;
+        private _tempMatrix2;
         protected _isWorldMatrixFrozen: boolean;
         /** @hidden */
         _indexInSceneTransformNodesArray: number;
@@ -8249,7 +8251,7 @@ declare module BABYLON {
          * @param scene defines the scene the texture is attached to
          * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
          * @param noMipmap defines if mipmaps should be created or not
-         * @param files defines the six files to load for the different faces
+         * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
          * @param onLoad defines a callback triggered at the end of the file load if no errors occured
          * @param onError defines a callback triggered in case of error during load
          * @param format defines the internal format to use for the texture once loaded
@@ -9533,6 +9535,11 @@ declare module BABYLON {
          * Observable triggered before the shadow is rendered. Can be used to update internal effect state
          */
         onBeforeShadowMapRenderObservable: Observable<Effect>;
+        /**
+         * Observable triggered before a mesh is rendered in the shadow map.
+         * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
+         */
+        onBeforeShadowMapRenderMeshObservable: Observable<Mesh>;
         private _bias;
         /**
          * Gets the bias: offset applied on the depth preventing acnea (in light direction).
@@ -11940,6 +11947,11 @@ declare module BABYLON {
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
         attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Called on JS contextmenu event.
+         * Override this method to provide functionality.
+         */
+        protected onContextMenu(evt: PointerEvent): void;
         /**
          * Detach the current controls from the specified dom element.
          * @param element Defines the element to stop listening the inputs from
@@ -20332,9 +20344,10 @@ declare module BABYLON {
          * Update the current index buffer
          * @param indices defines the source data
          * @param offset defines the offset in the index buffer where to store the new data (can be null)
+         * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          * @returns the current mesh
          */
-        updateIndices(indices: IndicesArray, offset?: number): Mesh;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): Mesh;
         /**
          * Invert the geometry to move from a right handed system to a left handed one.
          * @returns the current mesh
@@ -21913,8 +21926,9 @@ declare module BABYLON {
          * Update index buffer
          * @param indices defines the indices to store in the index buffer
          * @param offset defines the offset in the target buffer where to store the data
+         * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          */
-        updateIndices(indices: IndicesArray, offset?: number): void;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): void;
         /**
          * Creates a new index buffer
          * @param indices defines the indices to store in the index buffer
@@ -23951,9 +23965,11 @@ declare module BABYLON {
         /**
          * Updates the AbstractMesh indices array
          * @param indices defines the data source
+         * @param offset defines the offset in the index buffer where to store the new data (can be null)
+         * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          * @returns the current mesh
          */
-        updateIndices(indices: IndicesArray): AbstractMesh;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): AbstractMesh;
         /**
          * Creates new normals data for the mesh
          * @param updatable defines if the normal vertex buffer must be flagged as updatable
@@ -37423,6 +37439,16 @@ declare module BABYLON {
          * Are clear coat tint textures enabled in the application.
          */
         static ClearCoatTintTextureEnabled: boolean;
+        private static _SheenTextureEnabled;
+        /**
+         * Are sheen textures enabled in the application.
+         */
+        static SheenTextureEnabled: boolean;
+        private static _AnisotropicTextureEnabled;
+        /**
+         * Are anisotropic textures enabled in the application.
+         */
+        static AnisotropicTextureEnabled: boolean;
     }
 }
 declare module BABYLON {
@@ -42758,21 +42784,6 @@ declare module BABYLON {
         */
         getClassName(): string;
         /**
-         * Makes a duplicate of the current configuration into another one.
-         * @param clearCoatConfiguration define the config where to copy the info
-         */
-        copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void;
-        /**
-         * Serializes this clear coat configuration.
-         * @returns - An object with the serialized config.
-         */
-        serialize(): any;
-        /**
-         * Parses a Clear Coat Configuration from a serialized object.
-         * @param source - Serialized object.
-         */
-        parse(source: any): void;
-        /**
          * Add fallbacks to the effect fallbacks list.
          * @param defines defines the Base texture to use.
          * @param fallbacks defines the current fallback list.
@@ -42795,6 +42806,21 @@ declare module BABYLON {
          * @param uniformBuffer defines the current uniform buffer.
          */
         static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param clearCoatConfiguration define the config where to copy the info
+         */
+        copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void;
+        /**
+         * Serializes this clear coat configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Clear Coat Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
     }
 }
 declare module BABYLON {
@@ -42803,8 +42829,10 @@ declare module BABYLON {
      */
     export interface IMaterialAnisotropicDefines {
         ANISOTROPIC: boolean;
+        ANISOTROPIC_TEXTURE: boolean;
+        ANISOTROPIC_TEXTUREDIRECTUV: number;
         MAINUV1: boolean;
-        _areMiscDirty: boolean;
+        _areTexturesDirty: boolean;
         _needUVs: boolean;
     }
     /**
@@ -42821,51 +42849,73 @@ declare module BABYLON {
          */
         intensity: number;
         /**
-         * Defines if the effect is along the tangents or bitangents.
+         * Defines if the effect is along the tangents, bitangents or in between.
          * By default, the effect is "strectching" the highlights along the tangents.
          */
-        followTangents: boolean;
-        /** @hidden */
-        private _internalMarkAllSubMeshesAsMiscDirty;
-        /** @hidden */
-        _markAllSubMeshesAsMiscDirty(): void;
+        direction: Vector2;
+        private _texture;
         /**
-         * Instantiate a new istance of clear coat configuration.
-         * @param markAllSubMeshesAsMiscDirty Callback to flag the material to dirty
+         * Stores the anisotropy values in a texture.
+         * rg is direction (like normal from -1 to 1)
+         * b is a intensity
          */
-        constructor(markAllSubMeshesAsMiscDirty: () => void);
+        texture: Nullable<BaseTexture>;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsTexturesDirty;
+        /** @hidden */
+        _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Instantiate a new istance of anisotropy configuration.
+         * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsTexturesDirty: () => void);
+        /**
+         * Specifies that the submesh is ready to be used.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
+        isReadyForSubMesh(defines: IMaterialAnisotropicDefines, scene: Scene): boolean;
         /**
          * Checks to see if a texture is used in the material.
          * @param defines the list of "defines" to update.
          * @param mesh the mesh we are preparing the defines for.
+         * @param scene defines the scene the material belongs to.
          */
-        prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh): void;
+        prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh, scene: Scene): void;
         /**
          * Binds the material data.
          * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
          * @param isFrozen defines wether the material is frozen or not.
          */
-        bindForSubMesh(uniformBuffer: UniformBuffer, isFrozen: boolean): void;
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Returns an array of the actively used textures.
+         * @param activeTextures Array of BaseTextures
+         */
+        getActiveTextures(activeTextures: BaseTexture[]): void;
+        /**
+         * Returns the animatable textures.
+         * @param animatables Array of animatable textures.
+         */
+        getAnimatables(animatables: IAnimatable[]): void;
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
         /**
         * Get the current class name of the texture useful for serialization or dynamic coding.
         * @returns "PBRAnisotropicConfiguration"
         */
         getClassName(): string;
-        /**
-         * Makes a duplicate of the current configuration into another one.
-         * @param anisotropicConfiguration define the config where to copy the info
-         */
-        copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void;
-        /**
-         * Serializes this clear coat configuration.
-         * @returns - An object with the serialized config.
-         */
-        serialize(): any;
-        /**
-         * Parses a Clear Coat Configuration from a serialized object.
-         * @param source - Serialized object.
-         */
-        parse(source: any): void;
         /**
          * Add fallbacks to the effect fallbacks list.
          * @param defines defines the Base texture to use.
@@ -42884,6 +42934,26 @@ declare module BABYLON {
          * @param uniformBuffer defines the current uniform buffer.
          */
         static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param anisotropicConfiguration define the config where to copy the info
+         */
+        copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void;
+        /**
+         * Serializes this anisotropy configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a anisotropy Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
     }
 }
 declare module BABYLON {
@@ -42946,6 +43016,142 @@ declare module BABYLON {
         serialize(): any;
         /**
          * Parses a BRDF Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IMaterialSheenDefines {
+        SHEEN: boolean;
+        SHEEN_TEXTURE: boolean;
+        SHEEN_TEXTUREDIRECTUV: number;
+        SHEEN_LINKWITHALBEDO: boolean;
+        /** @hidden */
+        _areTexturesDirty: boolean;
+    }
+    /**
+     * Define the code related to the Sheen parameters of the pbr material.
+     */
+    export class PBRSheenConfiguration {
+        private _isEnabled;
+        /**
+         * Defines if the material uses sheen.
+         */
+        isEnabled: boolean;
+        private _linkSheenWithAlbedo;
+        /**
+         * Defines if the sheen is linked to the sheen color.
+         */
+        linkSheenWithAlbedo: boolean;
+        /**
+         * Defines the sheen intensity.
+         */
+        intensity: number;
+        /**
+         * Defines the sheen color.
+         */
+        color: Color3;
+        private _texture;
+        /**
+         * Stores the sheen tint values in a texture.
+         * rgb is tint
+         * a is a intensity
+         */
+        texture: Nullable<BaseTexture>;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsTexturesDirty;
+        /** @hidden */
+        _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Instantiate a new istance of clear coat configuration.
+         * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsTexturesDirty: () => void);
+        /**
+         * Specifies that the submesh is ready to be used.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
+        isReadyForSubMesh(defines: IMaterialSheenDefines, scene: Scene): boolean;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         */
+        prepareDefines(defines: IMaterialSheenDefines, scene: Scene): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
+         * @param isFrozen defines wether the material is frozen or not.
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Returns an array of the actively used textures.
+         * @param activeTextures Array of BaseTextures
+         */
+        getActiveTextures(activeTextures: BaseTexture[]): void;
+        /**
+         * Returns the animatable textures.
+         * @param animatables Array of animatable textures.
+         */
+        getAnimatables(animatables: IAnimatable[]): void;
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
+        /**
+        * Get the current class name of the texture useful for serialization or dynamic coding.
+        * @returns "PBRSheenConfiguration"
+        */
+        getClassName(): string;
+        /**
+         * Add fallbacks to the effect fallbacks list.
+         * @param defines defines the Base texture to use.
+         * @param fallbacks defines the current fallback list.
+         * @param currentRank defines the current fallback rank.
+         * @returns the new fallback rank.
+         */
+        static AddFallbacks(defines: IMaterialSheenDefines, fallbacks: EffectFallbacks, currentRank: number): number;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param sheenConfiguration define the config where to copy the info
+         */
+        copyTo(sheenConfiguration: PBRSheenConfiguration): void;
+        /**
+         * Serializes this BRDF configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Sheen Configuration from a serialized object.
          * @param source - Serialized object.
          */
         parse(source: any): void;
@@ -43408,6 +43614,10 @@ declare module BABYLON {
          * Defines the BRDF parameters for the material.
          */
         readonly brdf: PBRBRDFConfiguration;
+        /**
+         * Defines the Sheen parameters for the material.
+         */
+        readonly sheen: PBRSheenConfiguration;
         /**
          * Instantiates a new PBRMaterial instance.
          *
@@ -43953,6 +44163,444 @@ declare module BABYLON {
          * @returns - PBRMaterial
          */
         static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial;
+    }
+}
+declare module BABYLON {
+    /**
+     * Direct draw surface info
+     * @see https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dx-graphics-dds-pguide
+     */
+    export interface DDSInfo {
+        /**
+         * Width of the texture
+         */
+        width: number;
+        /**
+         * Width of the texture
+         */
+        height: number;
+        /**
+         * Number of Mipmaps for the texture
+         * @see https://en.wikipedia.org/wiki/Mipmap
+         */
+        mipmapCount: number;
+        /**
+         * If the textures format is a known fourCC format
+         * @see https://www.fourcc.org/
+         */
+        isFourCC: boolean;
+        /**
+         * If the texture is an RGB format eg. DXGI_FORMAT_B8G8R8X8_UNORM format
+         */
+        isRGB: boolean;
+        /**
+         * If the texture is a lumincance format
+         */
+        isLuminance: boolean;
+        /**
+         * If this is a cube texture
+         * @see https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dds-file-layout-for-cubic-environment-maps
+         */
+        isCube: boolean;
+        /**
+         * If the texture is a compressed format eg. FOURCC_DXT1
+         */
+        isCompressed: boolean;
+        /**
+         * The dxgiFormat of the texture
+         * @see https://docs.microsoft.com/en-us/windows/desktop/api/dxgiformat/ne-dxgiformat-dxgi_format
+         */
+        dxgiFormat: number;
+        /**
+         * Texture type eg. Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT
+         */
+        textureType: number;
+        /**
+         * Sphericle polynomial created for the dds texture
+         */
+        sphericalPolynomial?: SphericalPolynomial;
+    }
+    /**
+     * Class used to provide DDS decompression tools
+     */
+    export class DDSTools {
+        /**
+         * Gets or sets a boolean indicating that LOD info is stored in alpha channel (false by default)
+         */
+        static StoreLODInAlphaChannel: boolean;
+        /**
+         * Gets DDS information from an array buffer
+         * @param arrayBuffer defines the array buffer to read data from
+         * @returns the DDS information
+         */
+        static GetDDSInfo(arrayBuffer: any): DDSInfo;
+        private static _FloatView;
+        private static _Int32View;
+        private static _ToHalfFloat;
+        private static _FromHalfFloat;
+        private static _GetHalfFloatAsFloatRGBAArrayBuffer;
+        private static _GetHalfFloatRGBAArrayBuffer;
+        private static _GetFloatRGBAArrayBuffer;
+        private static _GetFloatAsUIntRGBAArrayBuffer;
+        private static _GetHalfFloatAsUIntRGBAArrayBuffer;
+        private static _GetRGBAArrayBuffer;
+        private static _ExtractLongWordOrder;
+        private static _GetRGBArrayBuffer;
+        private static _GetLuminanceArrayBuffer;
+        /**
+         * Uploads DDS Levels to a Babylon Texture
+         * @hidden
+         */
+        static UploadDDSLevels(engine: Engine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex?: number, currentFace?: number): void;
+    }
+        interface Engine {
+            /**
+             * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
+             * @param rootUrl defines the url where the file to load is located
+             * @param scene defines the current scene
+             * @param lodScale defines scale to apply to the mip map selection
+             * @param lodOffset defines offset to apply to the mip map selection
+             * @param onLoad defines an optional callback raised when the texture is loaded
+             * @param onError defines an optional callback raised if there is an issue to load the texture
+             * @param format defines the format of the data
+             * @param forcedExtension defines the extension to use to pick the right loader
+             * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
+             * @returns the cube texture as an InternalTexture
+             */
+            createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number, onLoad?: Nullable<(internalTexture: Nullable<InternalTexture>) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean): InternalTexture;
+        }
+}
+declare module BABYLON {
+    /**
+     * Implementation of the DDS Texture Loader.
+     * @hidden
+     */
+    export class _DDSTextureLoader implements IInternalTextureLoader {
+        /**
+         * Defines wether the loader supports cascade loading the different faces.
+         */
+        readonly supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @param fallback defines the fallback internal texture if any
+         * @param isBase64 defines whether the texture is encoded as a base64
+         * @param isBuffer defines whether the texture data are stored as a buffer
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        /**
+         * Transform the url before loading if required.
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the transformed texture
+         */
+        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
+        /**
+         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the fallback texture
+         */
+        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
+        /**
+         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         */
+        loadCubeData(imgs: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        /**
+         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         */
+        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var rgbdEncodePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var rgbdDecodePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Raw texture data and descriptor sufficient for WebGL texture upload
+     */
+    export interface EnvironmentTextureInfo {
+        /**
+         * Version of the environment map
+         */
+        version: number;
+        /**
+         * Width of image
+         */
+        width: number;
+        /**
+         * Irradiance information stored in the file.
+         */
+        irradiance: any;
+        /**
+         * Specular information stored in the file.
+         */
+        specular: any;
+    }
+    /**
+     * Sets of helpers addressing the serialization and deserialization of environment texture
+     * stored in a BabylonJS env file.
+     * Those files are usually stored as .env files.
+     */
+    export class EnvironmentTextureTools {
+        /**
+         * Magic number identifying the env file.
+         */
+        private static _MagicBytes;
+        /**
+         * Gets the environment info from an env file.
+         * @param data The array buffer containing the .env bytes.
+         * @returns the environment file info (the json header) if successfully parsed.
+         */
+        static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo>;
+        /**
+         * Creates an environment texture from a loaded cube texture.
+         * @param texture defines the cube texture to convert in env file
+         * @return a promise containing the environment data if succesfull.
+         */
+        static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer>;
+        /**
+         * Creates a JSON representation of the spherical data.
+         * @param texture defines the texture containing the polynomials
+         * @return the JSON representation of the spherical info
+         */
+        private static _CreateEnvTextureIrradiance;
+        /**
+         * Uploads the texture info contained in the env file to the GPU.
+         * @param texture defines the internal texture to upload to
+         * @param arrayBuffer defines the buffer cotaining the data to load
+         * @param info defines the texture info retrieved through the GetEnvInfo method
+         * @returns a promise
+         */
+        static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void>;
+        /**
+         * Uploads the levels of image data to the GPU.
+         * @param texture defines the internal texture to upload to
+         * @param imageData defines the array buffer views of image data [mipmap][face]
+         * @returns a promise
+         */
+        static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][]): Promise<void>;
+        /**
+         * Uploads spherical polynomials information to the texture.
+         * @param texture defines the texture we are trying to upload the information to
+         * @param info defines the environment texture info retrieved through the GetEnvInfo method
+         */
+        static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void;
+        /** @hidden */
+        static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
+    }
+}
+declare module BABYLON {
+    /**
+     * Implementation of the ENV Texture Loader.
+     * @hidden
+     */
+    export class _ENVTextureLoader implements IInternalTextureLoader {
+        /**
+         * Defines wether the loader supports cascade loading the different faces.
+         */
+        readonly supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @param fallback defines the fallback internal texture if any
+         * @param isBase64 defines whether the texture is encoded as a base64
+         * @param isBuffer defines whether the texture data are stored as a buffer
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        /**
+         * Transform the url before loading if required.
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the transformed texture
+         */
+        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
+        /**
+         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the fallback texture
+         */
+        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
+        /**
+         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         */
+        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        /**
+         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         */
+        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
+     * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+     */
+    export class KhronosTextureContainer {
+        /** contents of the KTX container file */
+        arrayBuffer: any;
+        private static HEADER_LEN;
+        private static COMPRESSED_2D;
+        private static COMPRESSED_3D;
+        private static TEX_2D;
+        private static TEX_3D;
+        /**
+         * Gets the openGL type
+         */
+        glType: number;
+        /**
+         * Gets the openGL type size
+         */
+        glTypeSize: number;
+        /**
+         * Gets the openGL format
+         */
+        glFormat: number;
+        /**
+         * Gets the openGL internal format
+         */
+        glInternalFormat: number;
+        /**
+         * Gets the base internal format
+         */
+        glBaseInternalFormat: number;
+        /**
+         * Gets image width in pixel
+         */
+        pixelWidth: number;
+        /**
+         * Gets image height in pixel
+         */
+        pixelHeight: number;
+        /**
+         * Gets image depth in pixels
+         */
+        pixelDepth: number;
+        /**
+         * Gets the number of array elements
+         */
+        numberOfArrayElements: number;
+        /**
+         * Gets the number of faces
+         */
+        numberOfFaces: number;
+        /**
+         * Gets the number of mipmap levels
+         */
+        numberOfMipmapLevels: number;
+        /**
+         * Gets the bytes of key value data
+         */
+        bytesOfKeyValueData: number;
+        /**
+         * Gets the load type
+         */
+        loadType: number;
+        /**
+         * If the container has been made invalid (eg. constructor failed to correctly load array buffer)
+         */
+        isInvalid: boolean;
+        /**
+         * Creates a new KhronosTextureContainer
+         * @param arrayBuffer contents of the KTX container file
+         * @param facesExpected should be either 1 or 6, based whether a cube texture or or
+         * @param threeDExpected provision for indicating that data should be a 3D texture, not implemented
+         * @param textureArrayExpected provision for indicating that data should be a texture array, not implemented
+         */
+        constructor(
+        /** contents of the KTX container file */
+        arrayBuffer: any, facesExpected: number, threeDExpected?: boolean, textureArrayExpected?: boolean);
+        /**
+         * Uploads KTX content to a Babylon Texture.
+         * It is assumed that the texture has already been created & is currently bound
+         * @hidden
+         */
+        uploadLevels(texture: InternalTexture, loadMipmaps: boolean): void;
+        private _upload2DCompressedLevels;
+    }
+}
+declare module BABYLON {
+    /**
+     * Implementation of the KTX Texture Loader.
+     * @hidden
+     */
+    export class _KTXTextureLoader implements IInternalTextureLoader {
+        /**
+         * Defines wether the loader supports cascade loading the different faces.
+         */
+        readonly supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @param fallback defines the fallback internal texture if any
+         * @param isBase64 defines whether the texture is encoded as a base64
+         * @param isBuffer defines whether the texture data are stored as a buffer
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        /**
+         * Transform the url before loading if required.
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the transformed texture
+         */
+        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
+        /**
+         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the fallback texture
+         */
+        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
+        /**
+         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         */
+        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        /**
+         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         */
+        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void;
     }
 }
 declare module BABYLON {
@@ -46540,444 +47188,6 @@ declare module BABYLON {
          * Serializes the LUT texture to json format.
          */
         serialize(): any;
-    }
-}
-declare module BABYLON {
-    /**
-     * Direct draw surface info
-     * @see https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dx-graphics-dds-pguide
-     */
-    export interface DDSInfo {
-        /**
-         * Width of the texture
-         */
-        width: number;
-        /**
-         * Width of the texture
-         */
-        height: number;
-        /**
-         * Number of Mipmaps for the texture
-         * @see https://en.wikipedia.org/wiki/Mipmap
-         */
-        mipmapCount: number;
-        /**
-         * If the textures format is a known fourCC format
-         * @see https://www.fourcc.org/
-         */
-        isFourCC: boolean;
-        /**
-         * If the texture is an RGB format eg. DXGI_FORMAT_B8G8R8X8_UNORM format
-         */
-        isRGB: boolean;
-        /**
-         * If the texture is a lumincance format
-         */
-        isLuminance: boolean;
-        /**
-         * If this is a cube texture
-         * @see https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dds-file-layout-for-cubic-environment-maps
-         */
-        isCube: boolean;
-        /**
-         * If the texture is a compressed format eg. FOURCC_DXT1
-         */
-        isCompressed: boolean;
-        /**
-         * The dxgiFormat of the texture
-         * @see https://docs.microsoft.com/en-us/windows/desktop/api/dxgiformat/ne-dxgiformat-dxgi_format
-         */
-        dxgiFormat: number;
-        /**
-         * Texture type eg. Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT
-         */
-        textureType: number;
-        /**
-         * Sphericle polynomial created for the dds texture
-         */
-        sphericalPolynomial?: SphericalPolynomial;
-    }
-    /**
-     * Class used to provide DDS decompression tools
-     */
-    export class DDSTools {
-        /**
-         * Gets or sets a boolean indicating that LOD info is stored in alpha channel (false by default)
-         */
-        static StoreLODInAlphaChannel: boolean;
-        /**
-         * Gets DDS information from an array buffer
-         * @param arrayBuffer defines the array buffer to read data from
-         * @returns the DDS information
-         */
-        static GetDDSInfo(arrayBuffer: any): DDSInfo;
-        private static _FloatView;
-        private static _Int32View;
-        private static _ToHalfFloat;
-        private static _FromHalfFloat;
-        private static _GetHalfFloatAsFloatRGBAArrayBuffer;
-        private static _GetHalfFloatRGBAArrayBuffer;
-        private static _GetFloatRGBAArrayBuffer;
-        private static _GetFloatAsUIntRGBAArrayBuffer;
-        private static _GetHalfFloatAsUIntRGBAArrayBuffer;
-        private static _GetRGBAArrayBuffer;
-        private static _ExtractLongWordOrder;
-        private static _GetRGBArrayBuffer;
-        private static _GetLuminanceArrayBuffer;
-        /**
-         * Uploads DDS Levels to a Babylon Texture
-         * @hidden
-         */
-        static UploadDDSLevels(engine: Engine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex?: number, currentFace?: number): void;
-    }
-        interface Engine {
-            /**
-             * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
-             * @param rootUrl defines the url where the file to load is located
-             * @param scene defines the current scene
-             * @param lodScale defines scale to apply to the mip map selection
-             * @param lodOffset defines offset to apply to the mip map selection
-             * @param onLoad defines an optional callback raised when the texture is loaded
-             * @param onError defines an optional callback raised if there is an issue to load the texture
-             * @param format defines the format of the data
-             * @param forcedExtension defines the extension to use to pick the right loader
-             * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
-             * @returns the cube texture as an InternalTexture
-             */
-            createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number, onLoad?: Nullable<(internalTexture: Nullable<InternalTexture>) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean): InternalTexture;
-        }
-}
-declare module BABYLON {
-    /**
-     * Implementation of the DDS Texture Loader.
-     * @hidden
-     */
-    export class _DDSTextureLoader implements IInternalTextureLoader {
-        /**
-         * Defines wether the loader supports cascade loading the different faces.
-         */
-        readonly supportCascades: boolean;
-        /**
-         * This returns if the loader support the current file information.
-         * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
-         * @returns true if the loader can load the specified file
-         */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
-        /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param createPolynomials will be true if polynomials have been requested
-         * @param onLoad defines the callback to trigger once the texture is ready
-         * @param onError defines the callback to trigger in case of error
-         */
-        loadCubeData(imgs: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
-        /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param callback defines the method to call once ready to upload
-         */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var rgbdEncodePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var rgbdDecodePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Raw texture data and descriptor sufficient for WebGL texture upload
-     */
-    export interface EnvironmentTextureInfo {
-        /**
-         * Version of the environment map
-         */
-        version: number;
-        /**
-         * Width of image
-         */
-        width: number;
-        /**
-         * Irradiance information stored in the file.
-         */
-        irradiance: any;
-        /**
-         * Specular information stored in the file.
-         */
-        specular: any;
-    }
-    /**
-     * Sets of helpers addressing the serialization and deserialization of environment texture
-     * stored in a BabylonJS env file.
-     * Those files are usually stored as .env files.
-     */
-    export class EnvironmentTextureTools {
-        /**
-         * Magic number identifying the env file.
-         */
-        private static _MagicBytes;
-        /**
-         * Gets the environment info from an env file.
-         * @param data The array buffer containing the .env bytes.
-         * @returns the environment file info (the json header) if successfully parsed.
-         */
-        static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo>;
-        /**
-         * Creates an environment texture from a loaded cube texture.
-         * @param texture defines the cube texture to convert in env file
-         * @return a promise containing the environment data if succesfull.
-         */
-        static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer>;
-        /**
-         * Creates a JSON representation of the spherical data.
-         * @param texture defines the texture containing the polynomials
-         * @return the JSON representation of the spherical info
-         */
-        private static _CreateEnvTextureIrradiance;
-        /**
-         * Uploads the texture info contained in the env file to the GPU.
-         * @param texture defines the internal texture to upload to
-         * @param arrayBuffer defines the buffer cotaining the data to load
-         * @param info defines the texture info retrieved through the GetEnvInfo method
-         * @returns a promise
-         */
-        static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void>;
-        /**
-         * Uploads the levels of image data to the GPU.
-         * @param texture defines the internal texture to upload to
-         * @param imageData defines the array buffer views of image data [mipmap][face]
-         * @returns a promise
-         */
-        static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][]): Promise<void>;
-        /**
-         * Uploads spherical polynomials information to the texture.
-         * @param texture defines the texture we are trying to upload the information to
-         * @param info defines the environment texture info retrieved through the GetEnvInfo method
-         */
-        static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void;
-        /** @hidden */
-        static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
-    }
-}
-declare module BABYLON {
-    /**
-     * Implementation of the ENV Texture Loader.
-     * @hidden
-     */
-    export class _ENVTextureLoader implements IInternalTextureLoader {
-        /**
-         * Defines wether the loader supports cascade loading the different faces.
-         */
-        readonly supportCascades: boolean;
-        /**
-         * This returns if the loader support the current file information.
-         * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
-         * @returns true if the loader can load the specified file
-         */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
-        /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param createPolynomials will be true if polynomials have been requested
-         * @param onLoad defines the callback to trigger once the texture is ready
-         * @param onError defines the callback to trigger in case of error
-         */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
-        /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param callback defines the method to call once ready to upload
-         */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
-     * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-     */
-    export class KhronosTextureContainer {
-        /** contents of the KTX container file */
-        arrayBuffer: any;
-        private static HEADER_LEN;
-        private static COMPRESSED_2D;
-        private static COMPRESSED_3D;
-        private static TEX_2D;
-        private static TEX_3D;
-        /**
-         * Gets the openGL type
-         */
-        glType: number;
-        /**
-         * Gets the openGL type size
-         */
-        glTypeSize: number;
-        /**
-         * Gets the openGL format
-         */
-        glFormat: number;
-        /**
-         * Gets the openGL internal format
-         */
-        glInternalFormat: number;
-        /**
-         * Gets the base internal format
-         */
-        glBaseInternalFormat: number;
-        /**
-         * Gets image width in pixel
-         */
-        pixelWidth: number;
-        /**
-         * Gets image height in pixel
-         */
-        pixelHeight: number;
-        /**
-         * Gets image depth in pixels
-         */
-        pixelDepth: number;
-        /**
-         * Gets the number of array elements
-         */
-        numberOfArrayElements: number;
-        /**
-         * Gets the number of faces
-         */
-        numberOfFaces: number;
-        /**
-         * Gets the number of mipmap levels
-         */
-        numberOfMipmapLevels: number;
-        /**
-         * Gets the bytes of key value data
-         */
-        bytesOfKeyValueData: number;
-        /**
-         * Gets the load type
-         */
-        loadType: number;
-        /**
-         * If the container has been made invalid (eg. constructor failed to correctly load array buffer)
-         */
-        isInvalid: boolean;
-        /**
-         * Creates a new KhronosTextureContainer
-         * @param arrayBuffer contents of the KTX container file
-         * @param facesExpected should be either 1 or 6, based whether a cube texture or or
-         * @param threeDExpected provision for indicating that data should be a 3D texture, not implemented
-         * @param textureArrayExpected provision for indicating that data should be a texture array, not implemented
-         */
-        constructor(
-        /** contents of the KTX container file */
-        arrayBuffer: any, facesExpected: number, threeDExpected?: boolean, textureArrayExpected?: boolean);
-        /**
-         * Uploads KTX content to a Babylon Texture.
-         * It is assumed that the texture has already been created & is currently bound
-         * @hidden
-         */
-        uploadLevels(texture: InternalTexture, loadMipmaps: boolean): void;
-        private _upload2DCompressedLevels;
-    }
-}
-declare module BABYLON {
-    /**
-     * Implementation of the KTX Texture Loader.
-     * @hidden
-     */
-    export class _KTXTextureLoader implements IInternalTextureLoader {
-        /**
-         * Defines wether the loader supports cascade loading the different faces.
-         */
-        readonly supportCascades: boolean;
-        /**
-         * This returns if the loader support the current file information.
-         * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
-         * @returns true if the loader can load the specified file
-         */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
-        /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param createPolynomials will be true if polynomials have been requested
-         * @param onLoad defines the callback to trigger once the texture is ready
-         * @param onError defines the callback to trigger in case of error
-         */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
-        /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param callback defines the method to call once ready to upload
-         */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void;
     }
 }
 declare module BABYLON {
@@ -50963,6 +51173,59 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface Scene {
+            /** @hidden (Backing field) */
+            _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+            /**
+             * Gets or Sets the current geometry buffer associated to the scene.
+             */
+            geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+            /**
+             * Enables a GeometryBufferRender and associates it with the scene
+             * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
+             * @returns the GeometryBufferRenderer
+             */
+            enableGeometryBufferRenderer(ratio?: number): Nullable<GeometryBufferRenderer>;
+            /**
+             * Disables the GeometryBufferRender associated with the scene
+             */
+            disableGeometryBufferRenderer(): void;
+        }
+    /**
+     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
+     * in several rendering techniques.
+     */
+    export class GeometryBufferRendererSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpful to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+        private _gatherRenderTargets;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var motionBlurPixelShader: {
         name: string;
@@ -51171,6 +51434,110 @@ declare module BABYLON {
          * Disposes of the pipeline
          */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * PostProcessRenderPipelineManager class
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+     */
+    export class PostProcessRenderPipelineManager {
+        private _renderPipelines;
+        /**
+         * Initializes a PostProcessRenderPipelineManager
+         * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+         */
+        constructor();
+        /**
+         * Gets the list of supported render pipelines
+         */
+        readonly supportedPipelines: PostProcessRenderPipeline[];
+        /**
+         * Adds a pipeline to the manager
+         * @param renderPipeline The pipeline to add
+         */
+        addPipeline(renderPipeline: PostProcessRenderPipeline): void;
+        /**
+         * Attaches a camera to the pipeline
+         * @param renderPipelineName The name of the pipeline to attach to
+         * @param cameras the camera to attach
+         * @param unique if the camera can be attached multiple times to the pipeline
+         */
+        attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera, unique?: boolean): void;
+        /**
+         * Detaches a camera from the pipeline
+         * @param renderPipelineName The name of the pipeline to detach from
+         * @param cameras the camera to detach
+         */
+        detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera): void;
+        /**
+         * Enables an effect by name on a pipeline
+         * @param renderPipelineName the name of the pipeline to enable the effect in
+         * @param renderEffectName the name of the effect to enable
+         * @param cameras the cameras that the effect should be enabled on
+         */
+        enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void;
+        /**
+         * Disables an effect by name on a pipeline
+         * @param renderPipelineName the name of the pipeline to disable the effect in
+         * @param renderEffectName the name of the effect to disable
+         * @param cameras the cameras that the effect should be disabled on
+         */
+        disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void;
+        /**
+         * Updates the state of all contained render pipelines and disposes of any non supported pipelines
+         */
+        update(): void;
+        /** @hidden */
+        _rebuild(): void;
+        /**
+         * Disposes of the manager and pipelines
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+        interface Scene {
+            /** @hidden (Backing field) */
+            _postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
+            /**
+             * Gets the postprocess render pipeline manager
+             * @see http://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+             * @see http://doc.babylonjs.com/how_to/using_default_rendering_pipeline
+             */
+            readonly postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
+        }
+    /**
+     * Defines the Render Pipeline scene component responsible to rendering pipelines
+     */
+    export class PostProcessRenderPipelineManagerSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+        private _gatherRenderTargets;
     }
 }
 declare module BABYLON {
@@ -52127,110 +52494,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * PostProcessRenderPipelineManager class
-     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
-     */
-    export class PostProcessRenderPipelineManager {
-        private _renderPipelines;
-        /**
-         * Initializes a PostProcessRenderPipelineManager
-         * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
-         */
-        constructor();
-        /**
-         * Gets the list of supported render pipelines
-         */
-        readonly supportedPipelines: PostProcessRenderPipeline[];
-        /**
-         * Adds a pipeline to the manager
-         * @param renderPipeline The pipeline to add
-         */
-        addPipeline(renderPipeline: PostProcessRenderPipeline): void;
-        /**
-         * Attaches a camera to the pipeline
-         * @param renderPipelineName The name of the pipeline to attach to
-         * @param cameras the camera to attach
-         * @param unique if the camera can be attached multiple times to the pipeline
-         */
-        attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera, unique?: boolean): void;
-        /**
-         * Detaches a camera from the pipeline
-         * @param renderPipelineName The name of the pipeline to detach from
-         * @param cameras the camera to detach
-         */
-        detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera): void;
-        /**
-         * Enables an effect by name on a pipeline
-         * @param renderPipelineName the name of the pipeline to enable the effect in
-         * @param renderEffectName the name of the effect to enable
-         * @param cameras the cameras that the effect should be enabled on
-         */
-        enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void;
-        /**
-         * Disables an effect by name on a pipeline
-         * @param renderPipelineName the name of the pipeline to disable the effect in
-         * @param renderEffectName the name of the effect to disable
-         * @param cameras the cameras that the effect should be disabled on
-         */
-        disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void;
-        /**
-         * Updates the state of all contained render pipelines and disposes of any non supported pipelines
-         */
-        update(): void;
-        /** @hidden */
-        _rebuild(): void;
-        /**
-         * Disposes of the manager and pipelines
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-        interface Scene {
-            /** @hidden (Backing field) */
-            _postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
-            /**
-             * Gets the postprocess render pipeline manager
-             * @see http://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
-             * @see http://doc.babylonjs.com/how_to/using_default_rendering_pipeline
-             */
-            readonly postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
-        }
-    /**
-     * Defines the Render Pipeline scene component responsible to rendering pipelines
-     */
-    export class PostProcessRenderPipelineManagerSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources
-         */
-        dispose(): void;
-        private _gatherRenderTargets;
-    }
-}
-declare module BABYLON {
     /** @hidden */
     export var tonemapPixelShader: {
         name: string;
@@ -52595,59 +52858,6 @@ declare module BABYLON {
         dispose(): void;
         private _gatherRenderTargets;
         private _gatherActiveCameraRenderTargets;
-    }
-}
-declare module BABYLON {
-        interface Scene {
-            /** @hidden (Backing field) */
-            _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
-            /**
-             * Gets or Sets the current geometry buffer associated to the scene.
-             */
-            geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
-            /**
-             * Enables a GeometryBufferRender and associates it with the scene
-             * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
-             * @returns the GeometryBufferRenderer
-             */
-            enableGeometryBufferRenderer(ratio?: number): Nullable<GeometryBufferRenderer>;
-            /**
-             * Disables the GeometryBufferRender associated with the scene
-             */
-            disableGeometryBufferRenderer(): void;
-        }
-    /**
-     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
-     * in several rendering techniques.
-     */
-    export class GeometryBufferRendererSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpful to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources
-         */
-        dispose(): void;
-        private _gatherRenderTargets;
     }
 }
 declare module BABYLON {
@@ -54278,20 +54488,6 @@ interface Window {
     VRFrameData: any; // WebVR, from specs 1.1
     DracoDecoderModule: any;
     setImmediate(handler: (...args: any[]) => void): number;
-}
-interface Document {
-    mozCancelFullScreen(): void;
-    msCancelFullScreen(): void;
-    webkitCancelFullScreen(): void;
-    requestPointerLock(): void;
-    exitPointerLock(): void;
-    mozFullScreen: boolean;
-    msIsFullScreen: boolean;
-    readonly webkitIsFullScreen: boolean;
-    readonly pointerLockElement: Element;
-    mozPointerLockElement: HTMLElement;
-    msPointerLockElement: HTMLElement;
-    webkitPointerLockElement: HTMLElement;
 }
 interface HTMLCanvasElement {
     requestPointerLock(): void;

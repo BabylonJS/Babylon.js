@@ -1,4 +1,9 @@
-import { Scene, CubeTexture, InternalTexture, Scalar, BaseTexture, Texture } from "babylonjs";
+import { Scene } from "babylonjs/scene";
+import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
+import { InternalTexture } from "babylonjs/Materials/Textures/internalTexture";
+import { Scalar } from "babylonjs/Maths/math.scalar";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
 
 /**
  * WebGL Pixel Formats
