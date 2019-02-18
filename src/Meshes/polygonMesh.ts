@@ -223,6 +223,25 @@ export class PolygonMeshBuilder {
      */
     build(updatable: boolean = false, depth: number = 0): Mesh {
         var result = new Mesh(this._name, this._scene);
+        
+        var vertexData = this.buildVertexData(depth);
+        
+        result.setVerticesData(VertexBuffer.PositionKind, vertexData.positions, updatable);
+        result.setVerticesData(VertexBuffer.NormalKind, vertexData.normals, updatable);
+        result.setVerticesData(VertexBuffer.UVKind, vertexData.uvs, updatable);
+        result.setIndices(vertexData.indices);
+
+        return result;
+    }
+    
+    /**
+     * Creates the polygon
+     * @param updatable If the mesh should be updatable
+     * @param depth The depth of the mesh created
+     * @returns the created mesh
+     */
+    buildVertexData(depth: number = 0): VertexData {
+        var result = new VertexData();
 
         var normals = new Array<number>();
         var positions = new Array<number>();
@@ -271,10 +290,10 @@ export class PolygonMeshBuilder {
             });
         }
 
-        result.setVerticesData(VertexBuffer.PositionKind, positions, updatable);
-        result.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
-        result.setVerticesData(VertexBuffer.UVKind, uvs, updatable);
-        result.setIndices(indices);
+        result.indices = indices;
+        result.positions = positions;
+        result.normals = normals;
+        result.uvs = uvs;
 
         return result;
     }
