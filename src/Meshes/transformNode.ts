@@ -981,7 +981,7 @@ export class TransformNode extends Node {
                 Tmp.Matrix[7].decompose(scale, undefined, translation);
                 Matrix.ScalingToRef(scale.x, scale.y, scale.z, Tmp.Matrix[7]);
                 Tmp.Matrix[7].setTranslation(translation);
-                
+
                 this._localMatrix.multiplyToRef(Tmp.Matrix[7], this._worldMatrix);
 
             } else {
