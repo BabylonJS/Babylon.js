@@ -75,9 +75,86 @@ function simulateEvent(cameraInput: BABYLON.ICameraInput<BABYLON.Camera>,
 }
 
 /**
+ * Override the methods of an existing camera to use when testing BaseCameraPointersInput.
+ */
+function StubCameraInput() {
+  let cameraInput: any = (<any>new BABYLON.ArcRotateCameraPointersInput());
+
+  cameraInput.reset = ((): void => {
+    cameraInput.countOnDoubleTap = 0;
+    cameraInput.countOnTouch = 0;
+    cameraInput.countOnMultiTouch = 0;
+    cameraInput.countOnContextMenu = 0;
+    cameraInput.countOnButtonDown = 0;
+    cameraInput.countOnButtonUp = 0;
+    cameraInput.countOnLostFocus = 0;
+
+    cameraInput.lastOnDoubleTap = undefined;
+    cameraInput.lastOnTouch = undefined;
+    cameraInput.lastOnMultiTouch = undefined;
+    cameraInput.lastOnContextMenu = undefined;
+    cameraInput.lastOnButtonDown = undefined;
+    cameraInput.lastOnButtonUp = undefined;
+  });
+
+  cameraInput.reset();
+
+  cameraInput.onTouch = 
+    ((point: BABYLON.Nullable<BABYLON.PointerTouch>, offsetX: number, offsetY: number) => {
+      cameraInput.countOnTouch++;
+      cameraInput.lastOnTouch = {point, offsetX, offsetY};
+    });
+
+  cameraInput.onDoubleTap = ((type: string) => {
+    cameraInput.countOnDoubleTap++;
+    cameraInput.lastOnDoubleTap = type;
+  });
+
+  cameraInput.onMultiTouch = (
+    (pointA: BABYLON.Nullable<BABYLON.PointerTouch>,
+      pointB: BABYLON.Nullable<BABYLON.PointerTouch>,
+      previousPinchSquaredDistance: number,
+      pinchSquaredDistance: number,
+      previousMultiTouchPanPosition: BABYLON.Nullable<BABYLON.PointerTouch>,
+      multiTouchPanPosition: BABYLON.Nullable<BABYLON.PointerTouch>) => 
+    {
+      cameraInput.countOnMultiTouch++;
+      cameraInput.lastOnMultiTouch = {
+        pointA,
+        pointB,
+        previousPinchSquaredDistance,
+        pinchSquaredDistance,
+        previousMultiTouchPanPosition,
+        multiTouchPanPosition,
+      };
+    });
+
+  cameraInput.onButtonDown = ((evt: PointerEvent, buttonCount: number) => {
+    cameraInput.countOnButtonDown++;
+    cameraInput.lastOnButtonDown = {evt, buttonCount};
+  });
+
+  cameraInput.onButtonUp = ((evt: PointerEvent, buttonCount: number) => {
+    cameraInput.countOnButtonUp++;
+    cameraInput.lastOnButtonUp = {evt, buttonCount};
+  });
+
+  cameraInput.onContextMenu = ((evt: PointerEvent) => {
+    cameraInput.countOnContextMenu++;
+    cameraInput.lastOnContextMenu = evt;
+  });
+
+  cameraInput.onLostFocus = (() => {
+    cameraInput.countOnLostFocus++;
+  });
+
+  return cameraInput;
+}
+
+/**
  * Test the things.
  */
-describe('BaseRotateCameraInput', function() {
+describe('BaseCameraPointersInput', function() {
   /**
    * Sets the timeout of all the tests to 10 seconds.
    */
@@ -103,7 +180,7 @@ describe('BaseRotateCameraInput', function() {
     // Set up an instance of a Camera with the ArcRotateCameraPointersInput.
     this.camera = new BABYLON.ArcRotateCamera(
       "StubCamera", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), this._scene);
-    this.cameraInput = new BABYLON.StubCameraPointersInput();
+    this.cameraInput = StubCameraInput();
     this.cameraInput.camera = this.camera;
     this.cameraInput.attachControl(this._canvas);
   });
