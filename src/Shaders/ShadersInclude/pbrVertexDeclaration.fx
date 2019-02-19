@@ -76,3 +76,19 @@ uniform float pointSize;
         uniform mat4 clearCoatTintMatrix;
     #endif
 #endif
+
+// Anisotropy
+#ifdef ANISOTROPIC
+    #ifdef ANISOTROPIC_TEXTURE
+        uniform vec2 vAnisotropyInfos;
+        uniform mat4 anisotropyMatrix;
+    #endif
+#endif
+
+// Sheen
+#ifdef SHEEN
+    #ifdef SHEEN_TEXTURE
+        uniform vec2 vSheenInfos;
+        uniform mat4 sheenMatrix;
+    #endif
+#endif
