@@ -729,7 +729,7 @@ export class AssetsManager {
     public onTaskErrorObservable = new Observable<AbstractAssetTask>();
 
     /**
-     * Observable called when a task is successful
+     * Observable called when all tasks were executed
      */
     public onTasksDoneObservable = new Observable<AbstractAssetTask[]>();
 
@@ -992,5 +992,21 @@ export class AssetsManager {
         }
 
         return this;
+    }
+
+    /**
+     * Start the loading process as an async operation
+     * @return a promise returning the list of failed tasks
+     */
+    public loadAsync(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.onTasksDoneObservable.addOnce((remainingTasks) => {
+                if (remainingTasks && remainingTasks.length) {
+                    reject(remainingTasks);
+                } else {
+                    resolve();
+                }
+            });
+        });
     }
 }

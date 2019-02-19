@@ -1,4 +1,4 @@
-import { Nullable, FloatArray } from "babylonjs/types";
+import { Nullable, FloatArray, IndicesArray } from "babylonjs/types";
 import { Vector3, Vector2, Color3, Color4 } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
@@ -232,7 +232,7 @@ type MeshLoadOptions = {
     /**
      * Defines if UVs are optimized by default during load.
      */
-    OptimizeWithUV : boolean,
+    OptimizeWithUV: boolean,
     /**
      * Invert model on y-axis (does a model scaling inversion)
      */
@@ -342,7 +342,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         this._meshLoadOptions = meshLoadOptions || OBJFileLoader.currentMeshLoadOptions;
     }
 
-    private static get currentMeshLoadOptions() : MeshLoadOptions {
+    private static get currentMeshLoadOptions(): MeshLoadOptions {
         return {
             ComputeNormals: OBJFileLoader.COMPUTE_NORMALS,
             ImportVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
@@ -1089,7 +1089,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             var vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh
             vertexData.uvs = handledMesh.uvs as FloatArray;
-            vertexData.indices = handledMesh.indices as FloatArray;
+            vertexData.indices = handledMesh.indices as IndicesArray;
             vertexData.positions = handledMesh.positions as FloatArray;
             if (this._meshLoadOptions.ComputeNormals === true) {
                 let normals: Array<number> = new Array<number>();

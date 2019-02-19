@@ -4,6 +4,7 @@ import { Logger } from "../Misc/logger";
 import { TGATools } from '../Misc/tga';
 import { Engine } from "../Engines/engine";
 import { IOfflineProvider } from "./IOfflineProvider";
+import { WebRequest } from '../Misc/webRequest';
 
 // Sets the default offline provider to Babylon.js
 Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) => { return new Database(urlToScene, callbackManifestChecked, disableManifestCheck); };
@@ -109,7 +110,7 @@ export class Database implements IOfflineProvider {
         var timeStampUsed = false;
         var manifestURL = this._currentSceneUrl + ".manifest";
 
-        var xhr: XMLHttpRequest = new XMLHttpRequest();
+        var xhr: XMLHttpRequest = new WebRequest();
 
         if (navigator.onLine) {
             // Adding a timestamp to by-pass browsers' cache
@@ -147,9 +148,6 @@ export class Database implements IOfflineProvider {
                 // It could fail when coupled with HTML5 Offline API
                 var retryManifestURL = this._currentSceneUrl + ".manifest";
                 xhr.open("GET", retryManifestURL, true);
-                if (Tools.UseCustomRequestHeaders) {
-                    Tools.InjectCustomRequestHeaders(xhr);
-                }
                 xhr.send();
             }
             else {
@@ -158,10 +156,6 @@ export class Database implements IOfflineProvider {
         }, false);
 
         try {
-            if (Tools.UseCustomRequestHeaders) {
-                Tools.InjectCustomRequestHeaders(xhr);
-            }
-
             xhr.send();
         }
         catch (ex) {
@@ -327,10 +321,10 @@ export class Database implements IOfflineProvider {
             };
 
             if (Database.IsUASupportingBlobStorage) { // Create XHR
-                var xhr = new XMLHttpRequest(),
+                var xhr = new WebRequest(),
                     blob: Blob;
 
-                xhr.open("GET", url, true);
+                xhr.open("GET", url);
                 xhr.responseType = "blob";
 
                 xhr.addEventListener("load", () => {
@@ -387,10 +381,6 @@ export class Database implements IOfflineProvider {
                     Logger.Error("Error in XHR request in BABYLON.Database.");
                     image.src = url;
                 }, false);
-
-                if (Tools.CustomRequestHeaders) {
-                    Tools.InjectCustomRequestHeaders(xhr);
-                }
 
                 xhr.send();
             }
@@ -590,9 +580,9 @@ export class Database implements IOfflineProvider {
             }
 
             // Create XHR
-            var xhr = new XMLHttpRequest();
+            var xhr = new WebRequest();
             var fileData: any;
-            xhr.open("GET", url + "?" + Date.now(), true);
+            xhr.open("GET", url + "?" + Date.now());
 
             if (useArrayBuffer) {
                 xhr.responseType = "arraybuffer";
@@ -666,10 +656,6 @@ export class Database implements IOfflineProvider {
                 Logger.Error("error on XHR request.");
                 callback();
             }, false);
-
-            if (Tools.UseCustomRequestHeaders) {
-                Tools.InjectCustomRequestHeaders(xhr);
-            }
 
             xhr.send();
         }
