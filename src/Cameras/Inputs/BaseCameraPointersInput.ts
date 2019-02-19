@@ -38,12 +38,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     public buttons = [0, 1, 2];
 
     /**
-     * Last event on up to 2 Touch events.
-     */
-    protected pointA: Nullable<PointerTouch>;
-    protected pointB: Nullable<PointerTouch>;
-
-    /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -346,4 +340,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     private _pointerInput: (p: PointerInfo, s: EventState) => void;
     private _observer: Nullable<Observer<PointerInfo>>;
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
+    private pointA: Nullable<PointerTouch>;
+    private pointB: Nullable<PointerTouch>;
 }

@@ -81,6 +81,8 @@ function simulateEvent(cameraInput: BABYLON.ICameraInput<BABYLON.Camera>,
  *   methods stubbed out.
  */
 function StubCameraInput() {
+  // Force our CameraPointersInput instance to type "any" so we can access
+  // protected methods from within this function.
   let cameraInput: any = (<any>new BABYLON.ArcRotateCameraPointersInput());
 
   /**
