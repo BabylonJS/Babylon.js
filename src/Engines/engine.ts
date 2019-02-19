@@ -1198,16 +1198,19 @@ export class Engine {
         this._initGLContext();
 
         if (canvas) {
+            let anyDoc = document as any;
+
             // Fullscreen
             this._onFullscreenChange = () => {
-                if ((<any>document).fullscreen !== undefined) {
-                    this.isFullscreen = (<any>document).fullscreen;
-                } else if (document.mozFullScreen !== undefined) {
-                    this.isFullscreen = document.mozFullScreen;
-                } else if (document.webkitIsFullScreen !== undefined) {
-                    this.isFullscreen = document.webkitIsFullScreen;
-                } else if (document.msIsFullScreen !== undefined) {
-                    this.isFullscreen = document.msIsFullScreen;
+
+                if (anyDoc.fullscreen !== undefined) {
+                    this.isFullscreen = anyDoc.fullscreen;
+                } else if (anyDoc.mozFullScreen !== undefined) {
+                    this.isFullscreen = anyDoc.mozFullScreen;
+                } else if (anyDoc.webkitIsFullScreen !== undefined) {
+                    this.isFullscreen = anyDoc.webkitIsFullScreen;
+                } else if (anyDoc.msIsFullScreen !== undefined) {
+                    this.isFullscreen = anyDoc.msIsFullScreen;
                 }
 
                 // Pointer lock
@@ -1230,10 +1233,10 @@ export class Engine {
 
             // Pointer lock
             this._onPointerLockChange = () => {
-                this.isPointerLock = (document.mozPointerLockElement === canvas ||
-                    document.webkitPointerLockElement === canvas ||
-                    document.msPointerLockElement === canvas ||
-                    document.pointerLockElement === canvas
+                this.isPointerLock = (anyDoc.mozPointerLockElement === canvas ||
+                    anyDoc.webkitPointerLockElement === canvas ||
+                    anyDoc.msPointerLockElement === canvas ||
+                    anyDoc.pointerLockElement === canvas
                 );
             };
 
@@ -1249,7 +1252,10 @@ export class Engine {
             };
 
             this._onVRDisplayPointerUnrestricted = () => {
-                document.exitPointerLock();
+                if (!anyDoc.exitPointerLock) {
+                    return;
+                }
+                anyDoc.exitPointerLock();
             };
 
             if (DomManagement.IsWindowObjectExist()) {

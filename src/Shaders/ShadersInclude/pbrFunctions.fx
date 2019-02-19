@@ -53,12 +53,52 @@ vec2 getBRDFLookup(float NdotV, float perceptualRoughness, sampler2D brdfSampler
     return brdfLookup;
 }
 
+/**
+ * Special thanks to @romainguy for all the support :-)
+ * Analytical approximation of the pre-filtered DFG terms for the cloth shading
+ * model. This approximation is based on the Estevez & Kulla distribution term
+ * ("Charlie" sheen) and the Neubelt visibility term. See brdf.fs for more
+ * details.
+ */
+vec2 getCharlieSheenAnalyticalBRDFLookup_RomainGuy(float NoV, float roughness) {
+    const vec3 c0 = vec3(0.95, 1250.0, 0.0095);
+    const vec4 c1 = vec4(0.04, 0.2, 0.3, 0.2);
+
+    float a = 1.0 - NoV;
+    float b = 1.0 - roughness;
+
+    float n = pow(c1.x + a, 64.0);
+    float e = b - c0.x;
+    float g = exp2(-(e * e) * c0.y);
+    float f = b + c1.y;
+    float a2 = a * a;
+    float a3 = a2 * a;
+    float c = n * g + c1.z * (a + c1.w) * roughness + f * f * a3 * a3 * a2;
+    float r = min(c, 18.0);
+
+    return vec2(r, r * c0.z);
+}
+
 vec3 getReflectanceFromBRDFLookup(const vec3 specularEnvironmentR0, vec2 environmentBrdf) {
     #ifdef BRDF_V_HEIGHT_CORRELATED
         vec3 reflectance = mix(environmentBrdf.xxx, environmentBrdf.yyy, specularEnvironmentR0);
     #else
         vec3 reflectance = specularEnvironmentR0 * environmentBrdf.x + environmentBrdf.y;
     #endif
+    return reflectance;
+}
+
+vec3 getReflectanceFromAnalyticalBRDFLookup_Jones(float VdotN, vec3 reflectance0, vec3 reflectance90, float smoothness)
+{
+    // Schlick fresnel approximation, extended with basic smoothness term so that rough surfaces do not approach reflectance90 at grazing angle
+    float weight = mix(FRESNEL_MAXIMUM_ON_ROUGH, 1.0, smoothness);
+    return reflectance0 + weight * (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotN, 0., 1.), 5.0);
+}
+
+vec3 getSheenReflectanceFromBRDFLookup(const vec3 reflectance0, float NdotV, float sheenAlphaG) {
+    vec2 environmentSheenBrdf = getCharlieSheenAnalyticalBRDFLookup_RomainGuy(NdotV, sheenAlphaG);
+    vec3 reflectance = reflectance0 * environmentSheenBrdf.x + environmentSheenBrdf.y;
+
     return reflectance;
 }
 
@@ -141,11 +181,27 @@ float smithVisibility_TrowbridgeReitzGGXFast(float NdotL, float NdotV, float alp
     return visibility;
 }
 
-float kelemenVisibility(float VdotH) {
+float visibility_Kelemen(float VdotH) {
     // Simplified form integration the cook torrance denminator.
     // Expanded is nl * nv / vh2 which factor with 1 / (4 * nl * nv)
     // giving 1 / (4 * vh2))
     return 0.25 / (VdotH * VdotH); 
+}
+
+// https://knarkowicz.wordpress.com/2018/01/04/cloth-shading/
+// https://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf
+// http://www.cs.utah.edu/~premoze/dbrdf/dBRDF.pdf
+float visibility_Ashikhmin(float NdotL, float NdotV)
+{
+    return 1. / (4. * (NdotL + NdotV - NdotL * NdotV));
+}
+
+float normalDistributionFunction_CharlieSheen(float NdotH, float alphaG)
+{
+    float invR = 1. / alphaG;
+    float cos2h = NdotH * NdotH;
+    float sin2h = 1. - cos2h;
+    return (2. + invR) * pow(sin2h, invR * .5) / (2. * PI);
 }
 
 // Trowbridge-Reitz (GGX)
@@ -170,8 +226,8 @@ vec2 getAnisotropicRoughness(float alphaG, float anisotropy) {
 
 // Aniso Bent Normals
 // Mc Alley https://www.gdcvault.com/play/1022235/Rendering-the-World-of-Far 
-vec3 getAnisotropicBentNormals(const mat3 TBN, const vec3 V, const vec3 N, float anisotropy) {
-    vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
+vec3 getAnisotropicBentNormals(const vec3 T, const vec3 B, const vec3 N, const vec3 V, float anisotropy) {
+    vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? B : T;
     vec3 anisotropicFrameTangent = cross(normalize(anisotropicFrameDirection), V);
     vec3 anisotropicFrameNormal = cross(anisotropicFrameTangent, anisotropicFrameDirection);
     vec3 anisotropicNormal = normalize(mix(N, anisotropicFrameNormal, abs(anisotropy)));
@@ -226,13 +282,6 @@ float fresnelSchlickGGX(float VdotH, float reflectance0, float reflectance90)
     return reflectance0 + (reflectance90 - reflectance0) * pow(1.0 - VdotH, 5.0);
 }
 
-vec3 fresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectance90, float smoothness)
-{
-    // Schlick fresnel approximation, extended with basic smoothness term so that rough surfaces do not approach reflectance90 at grazing angle
-    float weight = mix(FRESNEL_MAXIMUM_ON_ROUGH, 1.0, smoothness);
-    return reflectance0 + weight * (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotN, 0., 1.), 5.0);
-}
-
 // From beer lambert law I1/I0 = e −α′lc
 // c is considered included in alpha
 // https://blog.selfshadow.com/publications/s2017-shading-course/drobot/s2017_pbs_multilayered.pdf page 47
@@ -280,40 +329,57 @@ vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, flo
     return fresnel * specTerm;
 }
 
-vec3 computeAnisotropicSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float TdotH, float BdotH, float TdotV, float BdotV, float TdotL, float BdotL, float roughness, float anisotropy, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor) {
-    float alphaG = convertRoughnessToAverageSlope(roughness);
-    vec2 alphaTB = getAnisotropicRoughness(alphaG, anisotropy);
-    alphaTB = max(alphaTB, geometricRoughnessFactor * geometricRoughnessFactor);
+#ifdef SHEEN
+    vec3 computeSheenTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor) {
+        roughness = max(roughness, geometricRoughnessFactor);
+        float alphaG = convertRoughnessToAverageSlope(roughness);
 
-    float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
-    float visibility = smithVisibility_GGXCorrelated_Anisotropic(NdotV, NdotL, TdotV, BdotV, TdotL, BdotL, alphaTB);
-    float specTerm = max(0., visibility * distribution);
+        float distribution = normalDistributionFunction_CharlieSheen(NdotH, alphaG);
+        float visibility = visibility_Ashikhmin(NdotL, NdotV);
 
-    vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);
-    return fresnel * specTerm;
-}
+        float specTerm = max(0., visibility * distribution);
+
+        vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);
+        return vec3(specTerm);
+    }
+#endif
+
+#ifdef ANISOTROPIC
+    vec3 computeAnisotropicSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float TdotH, float BdotH, float TdotV, float BdotV, float TdotL, float BdotL, float roughness, float anisotropy, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor) {
+        float alphaG = convertRoughnessToAverageSlope(roughness);
+        vec2 alphaTB = getAnisotropicRoughness(alphaG, anisotropy);
+        alphaTB = max(alphaTB, geometricRoughnessFactor * geometricRoughnessFactor);
+
+        float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
+        float visibility = smithVisibility_GGXCorrelated_Anisotropic(NdotV, NdotL, TdotV, BdotV, TdotL, BdotL, alphaTB);
+        float specTerm = max(0., visibility * distribution);
+
+        vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);
+        return fresnel * specTerm;
+    }
+#endif
 
 #ifdef CLEARCOAT
-vec2 computeClearCoatTerm(float NdotH, float VdotH, float clearCoatRoughness, float geometricRoughnessFactor, float clearCoatIntensity) {
-    clearCoatRoughness = max(clearCoatRoughness, geometricRoughnessFactor);
-    float alphaG = convertRoughnessToAverageSlope(clearCoatRoughness);
+    vec2 computeClearCoatTerm(float NdotH, float VdotH, float clearCoatRoughness, float geometricRoughnessFactor, float clearCoatIntensity) {
+        clearCoatRoughness = max(clearCoatRoughness, geometricRoughnessFactor);
+        float alphaG = convertRoughnessToAverageSlope(clearCoatRoughness);
 
-    float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
-    float visibility = kelemenVisibility(VdotH);
-    float clearCoatTerm = max(0., visibility * distribution);
+        float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
+        float visibility = visibility_Kelemen(VdotH);
+        float clearCoatTerm = max(0., visibility * distribution);
 
-    float fresnel = fresnelSchlickGGX(VdotH, vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
-    fresnel *= clearCoatIntensity;
-    
-    return vec2(fresnel * clearCoatTerm, 1.0 - fresnel);
-}
+        float fresnel = fresnelSchlickGGX(VdotH, vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
+        fresnel *= clearCoatIntensity;
+        
+        return vec2(fresnel * clearCoatTerm, 1.0 - fresnel);
+    }
 
-vec3 computeClearCoatAbsorption(float NdotVRefract, float NdotLRefract, vec3 clearCoatColor, float clearCoatThickness, float clearCoatIntensity) {
-    vec3 clearCoatAbsorption = mix(vec3(1.0),
-        cocaLambert(NdotVRefract, NdotLRefract, clearCoatColor, clearCoatThickness),
-        clearCoatIntensity);
-    return clearCoatAbsorption;
-}
+    vec3 computeClearCoatAbsorption(float NdotVRefract, float NdotLRefract, vec3 clearCoatColor, float clearCoatThickness, float clearCoatIntensity) {
+        vec3 clearCoatAbsorption = mix(vec3(1.0),
+            cocaLambert(NdotVRefract, NdotLRefract, clearCoatColor, clearCoatThickness),
+            clearCoatIntensity);
+        return clearCoatAbsorption;
+    }
 #endif
 
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
