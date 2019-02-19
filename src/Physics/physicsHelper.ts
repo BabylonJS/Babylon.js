@@ -35,9 +35,9 @@ export class PhysicsHelper {
 
         this.options = {...(new PhysicsHelperOptions()), ...options};
 
-        if (this.options.useNativePhysicsRaycastingIfPresent) {
+        if (this.options.useNativePhysicsRaycastingIfAvailable) {
           if (this._physicsEngine.getPhysicsPluginName() === 'OimoJSPlugin') {
-            this.options.useNativePhysicsRaycastingIfPresent = false;
+            this.options.useNativePhysicsRaycastingIfAvailable = false;
             Logger.Warn('Native raycasting not available on the OimoJSPlugin.');
           }
         }
@@ -185,7 +185,7 @@ export class PhysicsHelperOptions {
     /**
      * If set to true, it will use the native raycasting
      */
-    public useNativePhysicsRaycastingIfPresent: boolean = true;
+    public useNativePhysicsRaycastingIfAvailable: boolean = true;
 }
 
 /**
@@ -244,7 +244,7 @@ export class PhysicsRadialExplosionEvent {
         var impostorObjectCenter = impostor.getObjectCenter();
         var direction = impostorObjectCenter.subtract(origin);
 
-        if (this._physicsHelper.options.useNativePhysicsRaycastingIfPresent) {
+        if (this._physicsHelper.options.useNativePhysicsRaycastingIfAvailable) {
           var to = origin.clone().addInPlace(
             direction.clone().normalize().multiplyInPlace(new Vector3(
               this._options.radius,
@@ -637,7 +637,7 @@ export class PhysicsVortexEvent {
         var originOnPlane = new Vector3(this._origin.x, impostorObjectCenter.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
         var originToImpostorDirection = impostorObjectCenter.subtract(originOnPlane);
 
-        if (this._physicsHelper.options.useNativePhysicsRaycastingIfPresent) {
+        if (this._physicsHelper.options.useNativePhysicsRaycastingIfAvailable) {
           var to = originOnPlane.clone().addInPlace(
             originToImpostorDirection.normalize().multiplyInPlace(new Vector3(
               this._options.radius,
