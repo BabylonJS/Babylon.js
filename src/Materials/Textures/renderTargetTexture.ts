@@ -987,7 +987,7 @@ export class RenderTargetTexture extends Texture {
     }
 
     /**
-     * Gets the number of views the corrisponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+     * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
      */
     public getViewCount() {
         return 1;
@@ -1013,24 +1013,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
      */
     constructor(public scene: Scene, size: number | { width: number, height: number } | { ratio: number } = 512) {
         super("multiview rtt", size, scene, false, true, InternalTexture.DATASOURCE_UNKNOWN, false, undefined, false, false, true, undefined, true);
-        if (!this.scene.getEngine().getCaps().multiview) {
-            this.dispose();
-            throw "Multiview is not supported";
-        }
-        var gl = scene.getEngine()._gl;
-
-        this._multiviewColorTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._multiviewColorTexture);
-        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, this.getRenderWidth(), this.getRenderHeight(), 2);
-
-        this._multivewDepthStencilTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._multivewDepthStencilTexture);
-        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH32F_STENCIL8, this.getRenderWidth(), this.getRenderHeight(), 2);
-
-        var internalTexture = new InternalTexture(scene.getEngine(), InternalTexture.DATASOURCE_UNKNOWN, true);
-        internalTexture.width = this.getRenderWidth();
-        internalTexture.height = this.getRenderHeight();
-        internalTexture._framebuffer = gl.createFramebuffer();
+        var internalTexture = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
         this._texture = internalTexture;
     }
 
@@ -1042,17 +1025,11 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
         if (!this._texture) {
             return;
         }
-        var gl: any = this.scene.getEngine()._gl;
-        var ext = this.scene.getEngine().getCaps().multiview;
-
-        this.scene.getEngine().bindFramebuffer(this._texture, undefined, undefined, undefined, this.ignoreCameraViewport);
-        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this._texture._framebuffer);
-        ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, this._multiviewColorTexture, 0, 0, 2);
-        ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, this._multivewDepthStencilTexture, 0, 0, 2);
+        this.scene.getEngine().bindMultiviewFramebuffer(this._texture);
     }
 
     /**
-     * Gets the number of views the corrisponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+     * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
      */
     public getViewCount() {
         return 2;

@@ -2537,14 +2537,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Sets the current transform matrix
-     * @param view defines the View matrix to use
-     * @param projection defines the Projection matrix to use
+     * @param viewL defines the View matrix to use
+     * @param projectionL defines the Projection matrix to use
+     * @param viewR defines the right View matrix to use (if provided)
+     * @param projectionR defines the right Projection matrix to use (if provided)
      */
-    public setTransformMatrix(view: Matrix, projection: Matrix): void {
-        this._setMultiviewTransformMatrix(view, projection);
-    }
-
-    private _setMultiviewTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
+    public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
         if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
@@ -2569,6 +2567,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (this.activeCamera && this.activeCamera._alternateCamera) {
             let otherCamera = this.activeCamera._alternateCamera;
             otherCamera.getViewMatrix().multiplyToRef(otherCamera.getProjectionMatrix(), Tmp.Matrix[0]);
+            Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
+        } else if(viewR && projectionR){
+            viewR.multiplyToRef(projectionR, Tmp.Matrix[0]);
             Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
         }
 
@@ -4034,7 +4035,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._bindFrameBuffer();
         var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
         if (useMultiview) {
-            this._setMultiviewTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
+            this.setTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
         }else {
             this.updateTransformMatrix();
 

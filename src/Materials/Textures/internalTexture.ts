@@ -217,6 +217,12 @@ export class InternalTexture implements IInternalTextureTracker {
     /** @hidden */
     public _lodGenerationOffset: number = 0;
 
+    // Multiview
+    /** @hidden */
+    public _colorTextureArray: Nullable<WebGLTexture>;
+    /** @hidden */
+    public _depthStencilTextureArray:  Nullable<WebGLTexture>;
+
     // The following three fields helps sharing generated fixed LODs for texture filtering
     // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
     // They are at the level of the gl texture to benefit from the cache.
