@@ -19,17 +19,27 @@ export class PhysicsHelper {
 
     private _scene: Scene;
     private _physicsEngine: Nullable<IPhysicsEngine>;
+    public options: PhysicsHelperOptions;
 
     /**
      * Initializes the Physics helper
      * @param scene Babylon.js scene
      */
-    constructor(scene: Scene) {
+    constructor(scene: Scene, options: PhysicsHelperOptions) {
         this._scene = scene;
         this._physicsEngine = this._scene.getPhysicsEngine();
 
         if (!this._physicsEngine) {
             Logger.Warn('Physics engine not enabled. Please enable the physics before you can use the methods.');
+        }
+
+        this.options = {...(new PhysicsHelperOptions()), ...options};
+
+        if (this.options.useNativePhysicsRaycastingIfPresent) {
+          if (this._physicsEngine.getPhysicsPluginName() === 'OimoJSPlugin') {
+            this.options.useNativePhysicsRaycastingIfPresent = false;
+            Logger.Warn('Native raycasting not available on the OimoJSPlugin.');
+          }
         }
     }
 
@@ -50,7 +60,7 @@ export class PhysicsHelper {
             return null;
         }
 
-        var event = new PhysicsRadialExplosionEvent(this._scene, eventOptions);
+        var event = new PhysicsRadialExplosionEvent(this, this._scene, eventOptions);
 
         impostors.forEach((impostor) => {
             var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin);
@@ -83,7 +93,7 @@ export class PhysicsHelper {
             return null;
         }
 
-        var event = new PhysicsRadialExplosionEvent(this._scene, eventOptions);
+        var event = new PhysicsRadialExplosionEvent(this, this._scene, eventOptions);
 
         impostors.forEach((impostor) => {
             var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin);
@@ -139,7 +149,7 @@ export class PhysicsHelper {
             return null;
         }
 
-        var event = new PhysicsUpdraftEvent(this._scene, origin, eventOptions);
+        var event = new PhysicsUpdraftEvent(this, this._scene, origin, eventOptions);
 
         event.dispose(false);
 
@@ -163,12 +173,19 @@ export class PhysicsHelper {
             return null;
         }
 
-        var event = new PhysicsVortexEvent(this._scene, origin, eventOptions);
+        var event = new PhysicsVortexEvent(this, this._scene, origin, eventOptions);
 
         event.dispose(false);
 
         return event;
     }
+}
+
+export class PhysicsHelperOptions {
+    /**
+     * If set to true, it will use the native raycasting
+     */
+    public useNativePhysicsRaycastingIfPresent: boolean = true;
 }
 
 /**
@@ -177,16 +194,20 @@ export class PhysicsHelper {
  */
 export class PhysicsRadialExplosionEvent {
 
+    private _physicsEngine: PhysicsEngine;
     private _sphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
     private _dataFetched: boolean = false; // check if the data has been fetched. If not, do cleanup
 
     /**
      * Initializes a radial explosioin event
+     * @param _physicsHelper A physics helper
      * @param _scene BabylonJS scene
      * @param _options The options for the vortex event
      */
-    constructor(private _scene: Scene, private _options: PhysicsRadialExplosionEventOptions) {
+    constructor(private _physicsHelper: PhysicsHelper, private _scene: Scene, private _options: PhysicsRadialExplosionEventOptions) {
         this._options = {...(new PhysicsRadialExplosionEventOptions()), ...this._options};
+
+        this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
     }
 
     /**
@@ -223,15 +244,32 @@ export class PhysicsRadialExplosionEvent {
         var impostorObjectCenter = impostor.getObjectCenter();
         var direction = impostorObjectCenter.subtract(origin);
 
-        var ray = new Ray(origin, direction, this._options.radius);
-        var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
+        if (this._physicsHelper.options.useNativePhysicsRaycastingIfPresent) {
+          var to = origin.clone().addInPlace(
+            direction.clone().normalize().multiplyInPlace(new Vector3(
+              this._options.radius,
+              this._options.radius,
+              this._options.radius
+            ))
+          );
+          var raycastResult = this._physicsEngine.raycast(origin, to);
+          if (!raycastResult.hasHit) {
+              return null;
+          }
+          var contactPoint = raycastResult.hitPointWorld;
+          var distanceFromOrigin = raycastResult.hitDistance;
+        } else {
+          var ray = new Ray(origin, direction, this._options.radius);
+          var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
 
-        var contactPoint = hit.pickedPoint;
-        if (!contactPoint) {
-            return null;
+          var contactPoint = hit.pickedPoint;
+          if (!contactPoint) {
+              return null;
+          }
+
+          var distanceFromOrigin = Vector3.Distance(origin, contactPoint);
         }
 
-        var distanceFromOrigin = Vector3.Distance(origin, contactPoint);
         if (distanceFromOrigin > this._options.radius) {
             return null;
         }
@@ -383,11 +421,12 @@ export class PhysicsUpdraftEvent {
 
     /**
      * Initializes the physics updraft event
+     * @param _physicsHelper A physics helper
      * @param _scene BabylonJS scene
      * @param _origin The origin position of the updraft
      * @param _options The options for the updraft event
      */
-    constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsUpdraftEventOptions) {
+    constructor(private _physicsHelper: PhysicsHelper, private _scene: Scene, private _origin: Vector3, private _options: PhysicsUpdraftEventOptions) {
         this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
         this._options = {...(new PhysicsUpdraftEventOptions()), ...this._options};
 
@@ -521,11 +560,12 @@ export class PhysicsVortexEvent {
 
     /**
      * Initializes the physics vortex event
+     * @param _physicsHelper A physics helper
      * @param _scene The BabylonJS scene
      * @param _origin The origin position of the vortex
      * @param _options The options for the vortex event
      */
-    constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsVortexEventOptions) {
+    constructor(private _physicsHelper: PhysicsHelper, private _scene: Scene, private _origin: Vector3, private _options: PhysicsVortexEventOptions) {
         this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
         this._options = {...(new PhysicsVortexEventOptions()), ...this._options};
 
@@ -597,14 +637,30 @@ export class PhysicsVortexEvent {
         var originOnPlane = new Vector3(this._origin.x, impostorObjectCenter.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
         var originToImpostorDirection = impostorObjectCenter.subtract(originOnPlane);
 
-        var ray = new Ray(originOnPlane, originToImpostorDirection, this._options.radius);
-        var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
-        var contactPoint = hit.pickedPoint;
-        if (!contactPoint) {
-            return null;
+        if (this._physicsHelper.options.useNativePhysicsRaycastingIfPresent) {
+          var to = originOnPlane.clone().addInPlace(
+            originToImpostorDirection.normalize().multiplyInPlace(new Vector3(
+              this._options.radius,
+              this._options.radius,
+              this._options.radius
+            ))
+          );
+          var raycastResult = this._physicsEngine.raycast(originOnPlane, to);
+          if (!raycastResult.hasHit) {
+              return null;
+          }
+          var contactPoint = raycastResult.hitPointWorld;
+          var absoluteDistanceFromOrigin = raycastResult.hitDistance / this._options.radius;
+        } else {
+          var ray = new Ray(originOnPlane, originToImpostorDirection, this._options.radius);
+          var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
+          var contactPoint = hit.pickedPoint;
+          if (!contactPoint) {
+              return null;
+          }
+          var absoluteDistanceFromOrigin = hit.distance / this._options.radius;
         }
 
-        var absoluteDistanceFromOrigin = hit.distance / this._options.radius;
         var directionToOrigin = contactPoint.normalize();
         if (absoluteDistanceFromOrigin > this._options.centripetalForceThreshold) {
             directionToOrigin = directionToOrigin.negate();
