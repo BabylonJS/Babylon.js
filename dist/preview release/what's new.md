@@ -51,6 +51,7 @@
 
 ### Core Engine
 
+- Added new `WebRequest` class to centralize all network requests ([Deltakosh](https://github.com/deltakosh))
 - Added support for user clip planes to LineMeshes ([Deltakosh](https://github.com/deltakosh))
 - Optimized effect reused for shadow maps ([Deltakosh](https://github.com/deltakosh))
 - Added `shadowGenerator.onBeforeShadowMapRenderMeshObservable` ([Deltakosh](https://github.com/deltakosh))

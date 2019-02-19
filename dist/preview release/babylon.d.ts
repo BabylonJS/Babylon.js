@@ -4963,6 +4963,26 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Extended version of XMLHttpRequest with support for customizations (headers, ...)
+     */
+    export class WebRequest extends XMLHttpRequest {
+        /**
+         * Custom HTTP Request Headers to be sent with XMLHttpRequests
+         * i.e. when loading files, where the server/service expects an Authorization header
+         */
+        static CustomRequestHeaders: {
+            [key: string]: string;
+        };
+        /**
+         * Add callback functions in this array to update all the requests before they get sent to the network
+         */
+        static CustomRequestModifiers: ((request: WebRequest) => void)[];
+        private _injectCustomRequestHeaders;
+        open(method: string, url: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to evalaute queries containing `and` and `or` operators
      */
     export class AndOrNotEvaluator {
@@ -30093,8 +30113,7 @@ declare module BABYLON {
         static UseCustomRequestHeaders: boolean;
         /**
          * Custom HTTP Request Headers to be sent with XMLHttpRequests
-         * i.e. when loading files, where the server/service expects an Authorization header.
-         * @see InjectCustomRequestHeaders injects them to an XMLHttpRequest
+         * i.e. when loading files, where the server/service expects an Authorization header
          */
         static CustomRequestHeaders: {
             [key: string]: string;
@@ -30586,11 +30605,6 @@ declare module BABYLON {
         private static _EndUserMark;
         private static _StartPerformanceConsole;
         private static _EndPerformanceConsole;
-        /**
-         * Injects the @see CustomRequestHeaders into the given request
-         * @param request the request that should be used for injection
-         */
-        static InjectCustomRequestHeaders(request: XMLHttpRequest): void;
         /**
          * Starts a performance counter
          */
@@ -53592,7 +53606,7 @@ declare module BABYLON {
          */
         onTaskErrorObservable: Observable<AbstractAssetTask>;
         /**
-         * Observable called when a task is successful
+         * Observable called when all tasks were executed
          */
         onTasksDoneObservable: Observable<AbstractAssetTask[]>;
         /**
@@ -53689,6 +53703,11 @@ declare module BABYLON {
          * @return the current instance of the AssetsManager
          */
         load(): AssetsManager;
+        /**
+         * Start the loading process as an async operation
+         * @return a promise returning the list of failed tasks
+         */
+        loadAsync(): Promise<void>;
     }
 }
 declare module BABYLON {
