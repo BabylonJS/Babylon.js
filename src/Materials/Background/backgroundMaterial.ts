@@ -119,6 +119,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
+    public MULTIVIEW = false;
 
     // Reflection.
     public REFLECTION = false;
@@ -675,6 +676,12 @@ export class BackgroundMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
         defines._needNormals = true;
 
+        // Multiview
+        if (scene.activeCamera) {
+            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
+            defines.markAsUnprocessed();
+        }
+
         // Textures
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
@@ -836,6 +843,10 @@ export class BackgroundMaterial extends PushMaterial {
 
             if (defines.POINTSIZE) {
                 fallbacks.addFallback(1, "POINTSIZE");
+            }
+
+            if (defines.MULTIVIEW) {
+                fallbacks.addFallback(0, "MULTIVIEW");
             }
 
             MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
