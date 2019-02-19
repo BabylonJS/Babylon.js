@@ -16425,6 +16425,11 @@ declare module BABYLON {
          */
         constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>);
         /**
+         * Gets the options used to compile the shader.
+         * They can be modified to trigger a new compilation
+         */
+        readonly options: IShaderMaterialOptions;
+        /**
          * Gets the current class name of the material e.g. "ShaderMaterial"
          * Mainly use in serialization.
          * @returns the class name
@@ -16675,6 +16680,9 @@ declare module BABYLON {
          * If vertex alpha should be applied to the mesh
          */
         useVertexAlpha?: boolean | undefined);
+        private _addClipPlaneDefine;
+        private _removeClipPlaneDefine;
+        isReady(): boolean;
         /**
          * Returns the string "LineMesh"
          */

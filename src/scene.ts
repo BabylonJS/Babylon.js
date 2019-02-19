@@ -2036,7 +2036,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             if (!this.pointerMovePredicate) {
-                this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
+                this.pointerMovePredicate = (mesh: AbstractMesh): boolean => (mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)) && (!this.cameraToUseForPointers || (this.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0));
             }
 
             // Meshes
@@ -2074,7 +2074,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             if (!this.pointerDownPredicate) {
                 this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
-                    return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
+                    return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (!this.cameraToUseForPointers || (this.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
                 };
             }
 
@@ -2130,7 +2130,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
                 if (!this.pointerUpPredicate) {
                     this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (!this.cameraToUseForPointers || (this.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
                     };
                 }
 

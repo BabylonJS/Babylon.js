@@ -51,6 +51,7 @@
 
 ### Core Engine
 
+- Added support for user clip planes to LineMeshes ([Deltakosh](https://github.com/deltakosh))
 - Optimized effect reused for shadow maps ([Deltakosh](https://github.com/deltakosh))
 - Added `shadowGenerator.onBeforeShadowMapRenderMeshObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added support for `scene.customLODSelector` to let users define their own LOD rules ([Deltakosh](https://github.com/deltakosh))
