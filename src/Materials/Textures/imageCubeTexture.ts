@@ -171,6 +171,14 @@ export class ImageCubeTexture extends BaseTexture {
     }
 
     /**
+     * Get the current class name of the texture useful for serialization or dynamic coding.
+     * @returns "ImageCubeTexture"
+     */
+    public getClassName(): string {
+        return "ImageCubeTexture";
+    }
+
+    /**
      * Create a clone of the current ImageCubeTexture and return it.
      * @returns A clone of the current ImageCubeTexture.
      */
