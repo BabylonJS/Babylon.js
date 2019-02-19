@@ -3,6 +3,7 @@ import { Scene } from "../scene";
 import { Vector3, Vector2, Path2 } from "../Maths/math";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Mesh } from "../Meshes/mesh";
+import { VertexData } from "../Meshes/mesh.vertexData";
 
 declare var earcut: any;
 /**
@@ -223,17 +224,17 @@ export class PolygonMeshBuilder {
      */
     build(updatable: boolean = false, depth: number = 0): Mesh {
         var result = new Mesh(this._name, this._scene);
-        
+
         var vertexData = this.buildVertexData(depth);
-        
-        result.setVerticesData(VertexBuffer.PositionKind, vertexData.positions, updatable);
-        result.setVerticesData(VertexBuffer.NormalKind, vertexData.normals, updatable);
-        result.setVerticesData(VertexBuffer.UVKind, vertexData.uvs, updatable);
-        result.setIndices(vertexData.indices);
+
+        result.setVerticesData(VertexBuffer.PositionKind, <number[]>vertexData.positions, updatable);
+        result.setVerticesData(VertexBuffer.NormalKind, <number[]>vertexData.normals, updatable);
+        result.setVerticesData(VertexBuffer.UVKind, <number[]>vertexData.uvs, updatable);
+        result.setIndices(<number[]>vertexData.indices);
 
         return result;
     }
-    
+
     /**
      * Creates the polygon
      * @param depth The depth of the mesh created
