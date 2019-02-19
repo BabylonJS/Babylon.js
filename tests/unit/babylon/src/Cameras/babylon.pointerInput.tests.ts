@@ -75,11 +75,17 @@ function simulateEvent(cameraInput: BABYLON.ICameraInput<BABYLON.Camera>,
 }
 
 /**
- * Override the methods of an existing camera to use when testing BaseCameraPointersInput.
+ * Override the methods of an existing camera to create a stub for testing
+ * BaseCameraPointersInput.
+ * @returns An instance of ArcRotateCameraPointersInput with the interesting
+ *   methods stubbed out.
  */
 function StubCameraInput() {
   let cameraInput: any = (<any>new BABYLON.ArcRotateCameraPointersInput());
 
+  /**
+   * Reset all counters.
+   */
   cameraInput.reset = ((): void => {
     cameraInput.countOnDoubleTap = 0;
     cameraInput.countOnTouch = 0;
@@ -99,6 +105,10 @@ function StubCameraInput() {
 
   cameraInput.reset();
 
+  /**
+   * Stub out all mothods we want to test as part of the BaseCameraPointersInput testing.
+   * These stubs keep track of how many times they were called and 
+   */
   cameraInput.onTouch = 
     ((point: BABYLON.Nullable<BABYLON.PointerTouch>, offsetX: number, offsetY: number) => {
       cameraInput.countOnTouch++;
@@ -129,13 +139,15 @@ function StubCameraInput() {
       };
     });
 
-  cameraInput.onButtonDown = ((evt: PointerEvent, buttonCount: number) => {
+  cameraInput.onButtonDown = ((evt: PointerEvent) => {
     cameraInput.countOnButtonDown++;
+    let buttonCount = cameraInput.pointB !== null ? 2 : 1;
     cameraInput.lastOnButtonDown = {evt, buttonCount};
   });
 
-  cameraInput.onButtonUp = ((evt: PointerEvent, buttonCount: number) => {
+  cameraInput.onButtonUp = ((evt: PointerEvent) => {
     cameraInput.countOnButtonUp++;
+    let buttonCount = cameraInput.pointA !== null ? 1 : 0;
     cameraInput.lastOnButtonUp = {evt, buttonCount};
   });
 

@@ -193,7 +193,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * Called each time a new POINTERDOWN event occurs. Ie, for each button
      * press.
      */
-    protected onButtonDown(evt: PointerEvent, buttonCount: number): void {
+    protected onButtonDown(evt: PointerEvent): void {
         this._isPanClick = evt.button === this.camera._panningMouseButton;
     }
 
@@ -201,7 +201,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
      */
-    protected onButtonUp(evt: PointerEvent, buttonCount: number): void {
+    protected onButtonUp(evt: PointerEvent): void {
         this._twoFingerActivityCount = 0;
         this._isPinching = false;
     }
