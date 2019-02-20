@@ -8,7 +8,7 @@ import { Nullable } from "../../types";
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
  */
-export class EquirectangularCubeTexture extends BaseTexture {
+export class EquiRectangularCubeTexture extends BaseTexture {
     /** The six faces of the cube. */
     private static _FacesMapping = ['right', 'left', 'up', 'down', 'front', 'back'];
 
