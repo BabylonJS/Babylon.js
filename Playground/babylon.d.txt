@@ -47241,10 +47241,10 @@ declare module BABYLON {
          * Creates a PolygonMeshBuilder
          * @param name name of the builder
          * @param contours Path of the polygon
-         * @param scene scene to add to when creating the mesh
+         * @param scene scene to add to
          * @param earcutInjection can be used to inject your own earcut reference
          */
-        constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection?: any);
+        constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene, earcutInjection?: any);
         /**
          * Adds a whole within the polygon
          * @param hole Array of points defining the hole
@@ -47258,12 +47258,6 @@ declare module BABYLON {
          * @returns the created mesh
          */
         build(updatable?: boolean, depth?: number): Mesh;
-        /**
-         * Creates the polygon
-         * @param depth The depth of the mesh created
-         * @returns the created VertexData
-         */
-        buildVertexData(depth?: number): VertexData;
         /**
          * Adds a side to the polygon
          * @param positions points that make the polygon
@@ -53720,109 +53714,6 @@ declare module BABYLON {
          * @returns This path cursor
          */
         onchange(f: (cursor: PathCursor) => void): PathCursor;
-    }
-}
-declare module BABYLON {
-    /**
-     * Options for the HeightMapUtil
-     */
-    export interface IHeightMapUtilOptions {
-        width: number;
-        height: number;
-        subdivisions?: number;
-        subdivisionsX: number;
-        subdivisionsY: number;
-        minHeight: number;
-        maxHeight: number;
-        colorFilter: Color3;
-        buffer: Uint8Array;
-        bufferWidth: number;
-        bufferHeight: number;
-        alphaFilter: number;
-        debug?: {
-            vertexCornerIncluded?: (col: number, row: number, flatPosition: number, flatPositionMatrix: number[], heightMatrix: number[]) => void;
-            vertexExcluded?: (col: number, row: number, flatPosition: number, flatPositionMatrix: number[], heightMatrix: number[]) => void;
-            vertexIncluded?: (col: number, row: number, flatPosition: number, flatPositionMatrix: number[], heightMatrix: number[]) => void;
-            polygonBoundsDefined?: (polygonIds: number[], polygonAreas: {
-                [key: number]: IHeightMapPolygonArea;
-            }) => void;
-            polygonEdgeDefined?: (polygonId: number, polygonArea: IHeightMapPolygonArea) => void;
-            polygonHoleDefined?: (polygonId: number, polygonArea: IHeightMapPolygonArea, pts: Vector2[]) => void;
-            polygonDefined?: (polygonId: number, polygonArea: IHeightMapPolygonArea, pts: Vector2[]) => void;
-            debugPolygonPoints?: boolean;
-            scene: Scene;
-        };
-    }
-    /**
-     * Internal object used to track polygon areas
-     */
-    interface IHeightMapPolygonArea {
-        flat: boolean;
-        totalPoints: number;
-        minX: number;
-        minY: number;
-        maxX: number;
-        maxY: number;
-        start: Vector2;
-        edgePts: Vector2[];
-        holes?: null | Vector2[][];
-        debugPoints?: Vector2[];
-    }
-    /**
-     * Utility used to convert a 2D height map image into a mesh, while optimizing flat areas
-     */
-    export class HeightMapUtil {
-        private options;
-        private data;
-        private positions;
-        private normals;
-        private uvs;
-        private indices;
-        private isPointInPoly;
-        /**
-         * Calculate the x,y,z access of the given row/column on the heightmap
-         * @param col column
-         * @param row row
-         * @param positionRef result is assigned to this reference
-         */
-        private getPixelHeight;
-        /**
-         * Find the minimum flatPosition in the matrix with the matching height type(flat or variable heights), assigns the position to the neighboring pixels
-         * @param flatHeight true, to expect a matrix of all matching heights(flat), false to expect variable heights
-         * @param flatPositionMatrix 3x3 matrix containing the flatPositions of the pixels
-         * @returns the minimum position value
-         */
-        private findAndAssignMinPosition;
-        /**
-         * Detects if the last directions form a straight line
-         * @param direction current walking direction
-         * @param sameEdgePointLastDirection last walking direction on the same pixel
-         * @param sameEdgePointNext2LastDirection previous to last walking direction on the same pixel
-         * @param diffEdgePointLastDirection last walking direction on the previous pixel
-         */
-        private static isStraight;
-        /**
-         * Adds a positive value to the walking direction in clockwise order
-         * @param dir the current direction
-         * @param value a positive value to be added
-         */
-        private static addClockwise;
-        /**
-         * Adds a positive value to the walking direction in counter clockwise order
-         * @param dir the current direction
-         * @param value a positive value to be added
-         */
-        private static addCounterClockwise;
-        /**
-         * Initializes the height map util and calculates the resulting positions, normals, uvs, and indices
-         * @param options options used by the height map util
-         */
-        constructor(options: IHeightMapUtilOptions);
-        /**
-         * Makes a new VertexData object with the generated heightmap
-         * @retruns created VertexData object
-         */
-        getVertexData(): VertexData;
     }
 }
 declare module BABYLON {
