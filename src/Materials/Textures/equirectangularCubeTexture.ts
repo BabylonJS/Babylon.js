@@ -35,7 +35,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
     public coordinatesMode = Texture.CUBIC_MODE;
 
     /**
-     * Instantiates an EquirectangularCubeTexture from the following parameters.
+     * Instantiates an EquiRectangularCubeTexture from the following parameters.
      * @param url The location of the image
      * @param scene The scene the texture will be used in
      * @param size The cubemap desired size (the more it increases the longer the generation will be)
