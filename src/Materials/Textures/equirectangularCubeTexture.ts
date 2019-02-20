@@ -1,14 +1,14 @@
 import { PanoramaToCubeMapTools } from '../../Misc/HighDynamicRange/panoramaToCubemap';
 import { Engine } from "../../Engines/engine";
-import { BaseTexture } from '../../Materials/Textures/baseTexture';
-import { Texture } from '../../Materials/Textures/texture';
+import { BaseTexture } from './baseTexture';
+import { Texture } from './texture';
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 
 /**
  * This represents a texture coming from an image supported by the web browser canvas.
  */
-export class ImageCubeTexture extends BaseTexture {
+export class EquirectangularCubeTexture extends BaseTexture {
     /** The six faces of the cube. */
     private static _FacesMapping = ['right', 'left', 'up', 'down', 'front', 'back'];
 
@@ -35,7 +35,7 @@ export class ImageCubeTexture extends BaseTexture {
     public coordinatesMode = Texture.CUBIC_MODE;
 
     /**
-     * Instantiates an ImageCubeTexture from the following parameters.
+     * Instantiates an EquirectangularCubeTexture from the following parameters.
      * @param url The location of the image
      * @param scene The scene the texture will be used in
      * @param size The cubemap desired size (the more it increases the longer the generation will be)
@@ -122,7 +122,7 @@ export class ImageCubeTexture extends BaseTexture {
 
             // Push each faces.
             for (let i = 0; i < 6; i++) {
-                const dataFace = (data as any)[ImageCubeTexture._FacesMapping[i]];
+                const dataFace = (data as any)[EquirectangularCubeTexture._FacesMapping[i]];
                 results.push(dataFace);
             }
 
@@ -172,23 +172,23 @@ export class ImageCubeTexture extends BaseTexture {
 
     /**
      * Get the current class name of the texture useful for serialization or dynamic coding.
-     * @returns "ImageCubeTexture"
+     * @returns "EquirectangularCubeTexture"
      */
     public getClassName(): string {
-        return "ImageCubeTexture";
+        return "EquirectangularCubeTexture";
     }
 
     /**
-     * Create a clone of the current ImageCubeTexture and return it.
-     * @returns A clone of the current ImageCubeTexture.
+     * Create a clone of the current EquirectangularCubeTexture and return it.
+     * @returns A clone of the current EquirectangularCubeTexture.
      */
-    public clone(): ImageCubeTexture {
+    public clone(): EquirectangularCubeTexture {
         const scene = this.getScene();
         if (!scene) {
             return this;
         }
 
-        const newTexture = new ImageCubeTexture(this.url, scene, this._size, this._noMipmap, this.gammaSpace);
+        const newTexture = new EquirectangularCubeTexture(this.url, scene, this._size, this._noMipmap, this.gammaSpace);
 
         // Base texture
         newTexture.level = this.level;
