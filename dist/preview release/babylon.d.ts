@@ -47281,6 +47281,66 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This represents a texture coming from an equirectangular image supported by the web browser canvas.
+     */
+    export class EquiRectangularCubeTexture extends BaseTexture {
+        /** The six faces of the cube. */
+        private static _FacesMapping;
+        private _noMipmap;
+        private _onLoad;
+        private _onError;
+        /** The size of the cubemap. */
+        private _size;
+        /** The buffer of the image. */
+        private _buffer;
+        /** The width of the input image. */
+        private _width;
+        /** The height of the input image. */
+        private _height;
+        /** The URL to the image. */
+        url: string;
+        /** The texture coordinates mode. As this texture is stored in a cube format, please modify carefully. */
+        coordinatesMode: number;
+        /**
+         * Instantiates an EquiRectangularCubeTexture from the following parameters.
+         * @param url The location of the image
+         * @param scene The scene the texture will be used in
+         * @param size The cubemap desired size (the more it increases the longer the generation will be)
+         * @param noMipmap Forces to not generate the mipmap if true
+         * @param gammaSpace Specifies if the texture will be used in gamma or linear space
+         * (the PBR material requires those textures in linear space, but the standard material would require them in Gamma space)
+         * @param onLoad — defines a callback called when texture is loaded
+         * @param onError — defines a callback called if there is an error
+         */
+        constructor(url: string, scene: Scene, size: number, noMipmap?: boolean, gammaSpace?: boolean, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>);
+        /**
+         * Load the image data, by putting the image on a canvas and extracting its buffer.
+         */
+        private loadImage;
+        /**
+         * Convert the image buffer into a cubemap and create a CubeTexture.
+         */
+        private loadTexture;
+        /**
+         * Convert the ArrayBuffer into a Float32Array and drop the transparency channel.
+         * @param buffer The ArrayBuffer that should be converted.
+         * @returns The buffer as Float32Array.
+         */
+        private getFloat32ArrayFromArrayBuffer;
+        /**
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "EquiRectangularCubeTexture"
+         */
+        getClassName(): string;
+        /**
+         * Create a clone of the current EquiRectangularCubeTexture and return it.
+         * @returns A clone of the current EquiRectangularCubeTexture.
+         */
+        clone(): EquiRectangularCubeTexture;
+    }
+}
+declare module BABYLON {
+    /**
      * Based on jsTGALoader - Javascript loader for TGA file
      * By Vincent Thibault
      * @see http://blog.robrowser.com/javascript-tga-loader.html
