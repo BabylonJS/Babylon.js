@@ -154,7 +154,7 @@ export class PolygonMeshBuilder {
     private _holes = new Array<PolygonPoints>();
 
     private _name: string;
-    private _scene: Scene;
+    private _scene: Scene | undefined;
 
     private _epoints: number[] = new Array<number>();
     private _eholes: number[] = new Array<number>();
