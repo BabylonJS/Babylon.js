@@ -156,7 +156,11 @@ export class PolygonMeshBuilder {
     private _holes = new Array<PolygonPoints>();
 
     private _name: string;
+<<<<<<< HEAD
     private _scene: Nullable<Scene>;
+=======
+    private _scene: Scene;
+>>>>>>> parent of c4dbc00cf... Update polygonMesh.ts
 
     private _epoints: number[] = new Array<number>();
     private _eholes: number[] = new Array<number>();
