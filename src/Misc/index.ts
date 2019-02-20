@@ -30,3 +30,4 @@ export * from "./pivotTools";
 export * from "./precisionDate";
 export * from "./screenshotTools";
 export * from "./typeStore";
+export * from "./webRequest";

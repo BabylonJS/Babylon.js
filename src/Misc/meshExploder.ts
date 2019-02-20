@@ -2,16 +2,16 @@ import { Mesh } from "../Meshes/mesh";
 import { Vector3 } from "../Maths/math";
 
 /**
- * Class used to explode meshes.
+ * Class used to explode meshes (ie. to have a center and move them away from that center to better see the overall organization)
  */
 export class MeshExploder {
     private _centerMesh: Mesh;
     private _meshes: Array<Mesh>;
     private _meshesOrigins: Array<Vector3> = [];
     private _toCenterVectors: Array<Vector3> = [];
-    private _scaledDirection = new Vector3(0.0, 0.0, 0.0);
-    private _newPosition = new Vector3(0.0, 0.0, 0.0);
-    private _centerPosition = new Vector3(0.0, 0.0, 0.0);
+    private _scaledDirection = Vector3.Zero();
+    private _newPosition = Vector3.Zero();
+    private _centerPosition = Vector3.Zero();
 
     /**
      * Explodes meshes from a center mesh.
@@ -27,15 +27,16 @@ export class MeshExploder {
         } else {
             this._setCenterMesh();
         }
-        if (this._meshes.indexOf(this._centerMesh) >= 0) {
-            this._meshes.splice(this._meshes.indexOf(this._centerMesh), 1);
+        const centerMeshIndex = this._meshes.indexOf(this._centerMesh);
+        if (centerMeshIndex >= 0) {
+            this._meshes.splice(centerMeshIndex, 1);
         }
         this._centerPosition = this._centerMesh.getAbsolutePosition().clone();
         for (var index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
                 var mesh = this._meshes[index];
                 this._meshesOrigins[index] = mesh.getAbsolutePosition().clone();
-                this._toCenterVectors[index] = new Vector3(0.0, 0.0, 0.0);
+                this._toCenterVectors[index] = Vector3.Zero();
                 if (mesh._boundingInfo && this._centerMesh._boundingInfo) {
                     mesh._boundingInfo.boundingBox.centerWorld.subtractToRef(this._centerMesh._boundingInfo.boundingBox.centerWorld, this._toCenterVectors[index]);
                 }
@@ -44,14 +45,15 @@ export class MeshExploder {
     }
 
     private _setCenterMesh(): void {
-        var averageCenter = new Vector3(0.0, 0.0, 0.0);
-        var totalCenters = new Vector3(0.0, 0.0, 0.0);
+        var averageCenter = Vector3.Zero();
+        var totalCenters = Vector3.Zero();
         var shortestToCenter = Number.MAX_VALUE;
         for (var index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
                 var mesh = this._meshes[index];
-                if (mesh._boundingInfo) {
-                    totalCenters.addInPlace(mesh._boundingInfo.boundingBox.centerWorld);
+                const boundingInfo = mesh.getBoundingInfo();
+                if (boundingInfo) {
+                    totalCenters.addInPlace(boundingInfo.boundingBox.centerWorld);
                 }
             }
         }
@@ -59,8 +61,9 @@ export class MeshExploder {
         for (var index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
                 var mesh = this._meshes[index];
-                if (mesh._boundingInfo) {
-                    var distanceToCenter = mesh._boundingInfo.boundingBox.centerWorld.subtract(averageCenter).length();
+                const boundingInfo = mesh.getBoundingInfo();
+                if (boundingInfo) {
+                    var distanceToCenter = boundingInfo.boundingBox.centerWorld.subtract(averageCenter).lengthSquared();
                     if (distanceToCenter < shortestToCenter) {
                         this._centerMesh = mesh;
                         shortestToCenter = distanceToCenter;
@@ -71,7 +74,7 @@ export class MeshExploder {
     }
 
     /**
-     * "MeshExploder"
+     * Get class name
      * @returns "MeshExploder"
      */
     public getClassName(): string {
@@ -83,14 +86,13 @@ export class MeshExploder {
      * @returns Array of meshes with the centerMesh at index 0.
      */
     public getMeshes(): Array<Mesh> {
-        var meshArray: Array<Mesh>;
-        meshArray = this._meshes.slice();
+        var meshArray = this._meshes.slice();
         meshArray.unshift(this._centerMesh);
         return meshArray;
     }
 
     /**
-     * Explodes mesh a given number of times.
+     * Explodes meshes giving a specific direction
      * @param direction Number to multiply distance of each mesh's origin from center. Use a negative number to implode, or zero to reset.
      */
     public explode(direction: number = 1.0): void {
@@ -99,10 +101,8 @@ export class MeshExploder {
                 this._toCenterVectors[index].scaleToRef(direction, this._scaledDirection);
                 this._meshesOrigins[index].addToRef(this._scaledDirection, this._newPosition);
                 this._meshes[index].setAbsolutePosition(this._newPosition);
-                this._meshes[index].computeWorldMatrix(true);
             }
         }
         this._centerMesh.setAbsolutePosition(this._centerPosition);
-        this._centerMesh.computeWorldMatrix(true);
     }
 }

@@ -110,14 +110,14 @@ export class Database implements IOfflineProvider {
         var timeStampUsed = false;
         var manifestURL = this._currentSceneUrl + ".manifest";
 
-        var xhr: XMLHttpRequest = new WebRequest();
+        var xhr = new WebRequest();
 
         if (navigator.onLine) {
             // Adding a timestamp to by-pass browsers' cache
             timeStampUsed = true;
             manifestURL = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + Date.now();
         }
-        xhr.open("GET", manifestURL, true);
+        xhr.open("GET", manifestURL);
 
         xhr.addEventListener("load", () => {
             if (xhr.status === 200 || Database._ValidateXHRData(xhr, 1)) {
@@ -147,7 +147,7 @@ export class Database implements IOfflineProvider {
                 // Let's retry without the timeStamp
                 // It could fail when coupled with HTML5 Offline API
                 var retryManifestURL = this._currentSceneUrl + ".manifest";
-                xhr.open("GET", retryManifestURL, true);
+                xhr.open("GET", retryManifestURL);
                 xhr.send();
             }
             else {
@@ -671,7 +671,7 @@ export class Database implements IOfflineProvider {
      * @param dataType defines the expected data type
      * @returns true if data is correct
      */
-    private static _ValidateXHRData(xhr: XMLHttpRequest, dataType = 7): boolean {
+    private static _ValidateXHRData(xhr: WebRequest, dataType = 7): boolean {
         // 1 for text (.babylon, manifest and shaders), 2 for TGA, 4 for DDS, 7 for all
 
         try {

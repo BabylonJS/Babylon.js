@@ -51,7 +51,7 @@
 
 ### Core Engine
 
-- Added new `WebRequest` class to centralize all network requests ([Deltakosh](https://github.com/deltakosh))
+- Added new `WebRequest` class to centralize all network requests. Can be used to configure headers of all network requests ([Deltakosh](https://github.com/deltakosh))
 - Added support for user clip planes to LineMeshes ([Deltakosh](https://github.com/deltakosh))
 - Optimized effect reused for shadow maps ([Deltakosh](https://github.com/deltakosh))
 - Added `shadowGenerator.onBeforeShadowMapRenderMeshObservable` ([Deltakosh](https://github.com/deltakosh))
@@ -225,6 +225,7 @@
 
 ## Breaking changes
 
+- All references to XmlHttpRequest were replace by `WebRequest` (which provides the same signatures) ([Deltakosh](https://github.com/deltakosh))
 - `Database.IDBStorageEnabled` is now false by default ([Deltakosh](https://github.com/deltakosh))
 - `Database.openAsync` was renamed by `Database.open` ([Deltakosh](https://github.com/deltakosh))
 - `scene.database` was renamed to `scene.offlineProvider` ([Deltakosh](https://github.com/deltakosh))

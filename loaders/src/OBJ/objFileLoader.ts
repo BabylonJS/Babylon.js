@@ -14,6 +14,7 @@ import { SceneLoader, ISceneLoaderPluginAsync, SceneLoaderProgressEvent, ISceneL
 
 import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene } from "babylonjs/scene";
+import { WebRequest } from 'babylonjs/Misc/webRequest';
 /**
  * Class reading and parsing the MTL file bundled with the obj file.
  */
@@ -375,7 +376,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             undefined,
             undefined,
             false,
-            (request?: XMLHttpRequest | undefined, exception?: any) => {
+            (request?: WebRequest | undefined, exception?: any) => {
                 onFailure(pathOfFile, exception);
             }
         );

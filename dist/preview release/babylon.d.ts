@@ -4965,7 +4965,8 @@ declare module BABYLON {
     /**
      * Extended version of XMLHttpRequest with support for customizations (headers, ...)
      */
-    export class WebRequest extends XMLHttpRequest {
+    export class WebRequest {
+        private _xhr;
         /**
          * Custom HTTP Request Headers to be sent with XMLHttpRequests
          * i.e. when loading files, where the server/service expects an Authorization header
@@ -4976,8 +4977,58 @@ declare module BABYLON {
         /**
          * Add callback functions in this array to update all the requests before they get sent to the network
          */
-        static CustomRequestModifiers: ((request: WebRequest) => void)[];
+        static CustomRequestModifiers: ((request: XMLHttpRequest) => void)[];
         private _injectCustomRequestHeaders;
+        /**
+         * Gets or sets a function to be called when loading progress changes
+         */
+        onprogress: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+        /**
+         * Returns client's state
+         */
+        readonly readyState: number;
+        /**
+         * Returns client's status
+         */
+        readonly status: number;
+        /**
+         * Returns client's status as a text
+         */
+        readonly statusText: string;
+        /**
+         * Returns client's response
+         */
+        readonly response: any;
+        /**
+         * Returns client's response url
+         */
+        readonly responseURL: string;
+        /**
+         * Returns client's response as text
+         */
+        readonly responseText: string;
+        /**
+         * Gets or sets the expected response type
+         */
+        responseType: XMLHttpRequestResponseType;
+        /** @hidden */
+        addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        /** @hidden */
+        removeEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        /**
+         * Cancels any network activity
+         */
+        abort(): void;
+        /**
+         * Initiates the request. The optional argument provides the request body. The argument is ignored if request method is GET or HEAD
+         * @param body defines an optional request body
+         */
+        send(body?: Document | BodyInit | null): void;
+        /**
+         * Sets the request method, request URL
+         * @param method defines the method to use (GET, POST, etc..)
+         * @param url defines the url to connect with
+         */
         open(method: string, url: string): void;
     }
 }
@@ -28250,7 +28301,7 @@ declare module BABYLON {
         /** @hidden */
         _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */
-        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest;
+        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /** @hidden */
         _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
         private _partialLoadFile;
@@ -30060,17 +30111,17 @@ declare module BABYLON {
      * Application error to support additional information when loading a file
      */
     export class LoadFileError extends Error {
-        /** defines the optional XHR request */
-        request?: XMLHttpRequest | undefined;
+        /** defines the optional web request */
+        request?: WebRequest | undefined;
         private static _setPrototypeOf;
         /**
          * Creates a new LoadFileError
          * @param message defines the message of the error
-         * @param request defines the optional XHR request
+         * @param request defines the optional web request
          */
         constructor(message: string, 
-        /** defines the optional XHR request */
-        request?: XMLHttpRequest | undefined);
+        /** defines the optional web request */
+        request?: WebRequest | undefined);
     }
     /**
      * Class used to define a retry strategy when error happens while loading assets
@@ -30082,7 +30133,7 @@ declare module BABYLON {
          * @param baseInterval defines the interval between retries
          * @returns the strategy function to use
          */
-        static ExponentialBackoff(maxRetries?: number, baseInterval?: number): (url: string, request: XMLHttpRequest, retryIndex: number) => number;
+        static ExponentialBackoff(maxRetries?: number, baseInterval?: number): (url: string, request: WebRequest, retryIndex: number) => number;
     }
     /**
      * File request interface
@@ -30121,7 +30172,7 @@ declare module BABYLON {
         /**
          * Gets or sets the retry strategy to apply when an error happens while loading an asset
          */
-        static DefaultRetryStrategy: (url: string, request: XMLHttpRequest, retryIndex: number) => number;
+        static DefaultRetryStrategy: (url: string, request: WebRequest, retryIndex: number) => number;
         /**
          * Default behaviour for cors in the application.
          * It can be a string if the expected behavior is identical in the entire app.
@@ -30349,7 +30400,7 @@ declare module BABYLON {
          * @param onError callback called when the file fails to load
          * @returns a file request object
          */
-        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest;
+        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /**
          * Load a script (identified by an url). When the url returns, the
          * content of this file is added into a new script element, attached to the DOM (body element)
@@ -32817,7 +32868,7 @@ declare module BABYLON {
          */
         markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
         /** @hidden */
-        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest;
+        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /** @hidden */
         _loadFileAsync(url: string, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
     }
@@ -53733,6 +53784,42 @@ declare module BABYLON {
          * Constructor for this deferred object.
          */
         constructor();
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to explode meshes (ie. to have a center and move them away from that center to better see the overall organization)
+     */
+    export class MeshExploder {
+        private _centerMesh;
+        private _meshes;
+        private _meshesOrigins;
+        private _toCenterVectors;
+        private _scaledDirection;
+        private _newPosition;
+        private _centerPosition;
+        /**
+         * Explodes meshes from a center mesh.
+         * @param meshes The meshes to explode.
+         * @param centerMesh The mesh to be center of explosion.
+         */
+        constructor(meshes: Array<Mesh>, centerMesh?: Mesh);
+        private _setCenterMesh;
+        /**
+         * Get class name
+         * @returns "MeshExploder"
+         */
+        getClassName(): string;
+        /**
+         * "Exploded meshes"
+         * @returns Array of meshes with the centerMesh at index 0.
+         */
+        getMeshes(): Array<Mesh>;
+        /**
+         * Explodes meshes giving a specific direction
+         * @param direction Number to multiply distance of each mesh's origin from center. Use a negative number to implode, or zero to reset.
+         */
+        explode(direction?: number): void;
     }
 }
 declare module BABYLON {

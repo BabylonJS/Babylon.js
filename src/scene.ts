@@ -45,6 +45,7 @@ import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
+import { WebRequest } from './Misc/webRequest';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -4757,7 +4758,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
         fastCheck?: boolean, camera?: Nullable<Camera>,
         trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean
-        ): Nullable<PickingInfo> {
+    ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
         pi._pickingUnavailable = true;
@@ -5012,7 +5013,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
         let request = Tools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
