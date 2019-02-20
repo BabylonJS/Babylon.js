@@ -29,7 +29,7 @@ function Validate(validationBaselineFileName, namespaceName, validateNamingConve
     };
 }
 
-Validate.hasTag = function (node, tagName) {
+Validate.hasTag = function(node, tagName) {
     tagName = tagName.trim().toLowerCase();
 
     if (node.comment && node.comment.tags) {
@@ -43,7 +43,7 @@ Validate.hasTag = function (node, tagName) {
     return false;
 }
 
-Validate.position = function (node) {
+Validate.position = function(node) {
     if (!node.sources) {
         log(node);
     }
@@ -56,7 +56,7 @@ Validate.camelCase = new RegExp("^[a-z][a-zA-Z0-9_]*$");
 Validate.underscoreCamelCase = new RegExp("^_[a-z][a-zA-Z0-9_]*$");
 Validate.underscorePascalCase = new RegExp("^_[A-Z][a-zA-Z0-9_]*$");
 
-Validate.prototype.errorCallback = function (parent, node, nodeKind, category, type, msg, position) {
+Validate.prototype.errorCallback = function(parent, node, nodeKind, category, type, msg, position) {
     this.results[this.filePath] = this.results[this.filePath] || { errors: 0 };
     var results = this.results[this.filePath];
 
@@ -136,10 +136,10 @@ Validate.prototype.errorCallback = function (parent, node, nodeKind, category, t
     }
 }
 
-Validate.prototype.init = function (cb) {
+Validate.prototype.init = function(cb) {
     var self = this;
     if (!this.generateBaseLine && fs.existsSync(this.validationBaselineFileName)) {
-        fs.readFile(this.validationBaselineFileName, "utf-8", function (err, data) {
+        fs.readFile(this.validationBaselineFileName, "utf-8", function(err, data) {
             self.previousResults = JSON.parse(data);
             cb();
         });
@@ -149,7 +149,7 @@ Validate.prototype.init = function (cb) {
     }
 }
 
-Validate.prototype.add = function (filePath, content) {
+Validate.prototype.add = function(filePath, content) {
     this.filePath = filePath && unixStylePath(filePath);
 
     if (!Buffer.isBuffer(content)) {
@@ -165,18 +165,18 @@ Validate.prototype.add = function (filePath, content) {
     }
 }
 
-Validate.prototype.getResults = function () {
+Validate.prototype.getResults = function() {
     return this.results;
 }
 
-Validate.prototype.getContents = function () {
+Validate.prototype.getContents = function() {
     return Buffer.from(JSON.stringify(this.results));
 }
 
 /**
  * Validate a TypeDoc JSON file
  */
-Validate.prototype.validateTypedoc = function (json) {
+Validate.prototype.validateTypedoc = function(json) {
     for (var i = 0; i < json.children.length; i++) {
         var namespaces = json.children[i].children;
         this.validateTypedocNamespaces(namespaces);
@@ -185,7 +185,7 @@ Validate.prototype.validateTypedoc = function (json) {
 /**
  * Validate namespaces attach to a declaration file from a TypeDoc JSON file
  */
-Validate.prototype.validateTypedocNamespaces = function (namespaces) {
+Validate.prototype.validateTypedocNamespaces = function(namespaces) {
     var namespace = null;
 
     // Check for BABYLON namespace
@@ -208,7 +208,7 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
 /**
  * Validate classes and modules attach to a declaration file from a TypeDoc JSON file
  */
-Validate.prototype.validateTypedocNamespace = function (namespace) {
+Validate.prototype.validateTypedocNamespace = function(namespace) {
     var containerNode;
     var childNode;
     var children;
@@ -305,7 +305,7 @@ Validate.prototype.validateTypedocNamespace = function (namespace) {
                                         "Unrecognized tag " + tags + " at " + signatureNode.name + " (id: " + signatureNode.id + ") in " + containerNode.name + " (id: " + containerNode.id + ")", Validate.position(childNode));
                                 }
 
-                                if (signatureNode.kindString !== "Constructor" && 
+                                if (signatureNode.kindString !== "Constructor" &&
                                     signatureNode.kindString !== "Constructor signature") {
                                     if (signatureNode.type.name !== "void" && signatureNode.comment && !signatureNode.comment.returns) {
                                         this.errorCallback(containerNode.name,
@@ -315,7 +315,7 @@ Validate.prototype.validateTypedocNamespace = function (namespace) {
                                             "MissingReturn",
                                             "No Return Comment at " + signatureNode.name + " (id: " + signatureNode.id + ") in " + containerNode.name + " (id: " + containerNode.id + ")", Validate.position(childNode));
                                     }
-    
+
                                     if (signatureNode.type.name === "void" && signatureNode.comment && signatureNode.comment.returns) {
                                         this.errorCallback(containerNode.name,
                                             signatureNode.name,
@@ -348,7 +348,7 @@ Validate.prototype.validateTypedocNamespace = function (namespace) {
 /**
  * Validate that tags are recognized
  */
-Validate.prototype.validateTags = function (node) {
+Validate.prototype.validateTags = function(node) {
     var tags;
     var errorTags = [];
 
@@ -373,7 +373,13 @@ Validate.prototype.validateTags = function (node) {
 /**
  * Validate that a JSON node has the correct TypeDoc comments
  */
-Validate.prototype.validateComment = function (node) {
+Validate.prototype.validateComment = function(node) {
+
+    // Return true for all contents coming from the TS d.ts
+    if (node.sources && node.sources[0].fileName.indexOf("lib.dom.d.ts") > -1) {
+        return true;
+    }
+
     // Return-only methods are allowed to just have a @return tag
     if ((node.kindString === "Call signature" || node.kindString === "Accessor") && !node.parameters && node.comment && node.comment.returns) {
         return true;
@@ -407,14 +413,13 @@ Validate.prototype.validateComment = function (node) {
     if (node.kindString === "Function") {
         return true;
     }
-
     return false;
 }
 
 /**
  * Validate comments for paramters on a node
  */
-Validate.prototype.validateParameters = function (containerNode, method, signature, parameters, isPublic) {
+Validate.prototype.validateParameters = function(containerNode, method, signature, parameters, isPublic) {
     var parametersNode;
     for (var parameter in parameters) {
         parametersNode = parameters[parameter];
@@ -432,10 +437,10 @@ Validate.prototype.validateParameters = function (containerNode, method, signatu
         if (this.validateNamingConvention && !Validate.camelCase.test(parametersNode.name)) {
             if (containerNode.kindString === "Constructor" ||
                 containerNode.kindString !== "Constructor signature") {
-                    if (Validate.underscoreCamelCase.test(parametersNode.name)) {
-                        continue;
-                    }
+                if (Validate.underscoreCamelCase.test(parametersNode.name)) {
+                    continue;
                 }
+            }
             this.errorCallback([containerNode.name, method.kindString, signature.name],
                 parametersNode.name,
                 parametersNode.kindString,
@@ -449,7 +454,7 @@ Validate.prototype.validateParameters = function (containerNode, method, signatu
 /**
  * Validate naming conventions of a node
  */
-Validate.prototype.validateNaming = function (parent, node) {
+Validate.prototype.validateNaming = function(parent, node) {
     if (!this.validateNamingConvention) {
         return;
     }
@@ -614,7 +619,7 @@ function gulpValidateTypedoc(validationBaselineFileName, namespaceName, validate
         latestFile = file;
 
         // What will happen once all set.
-        var done = function () {
+        var done = function() {
             // add file to concat instance
             validate.add(file.relative, file.contents);
 
@@ -657,7 +662,7 @@ function gulpValidateTypedoc(validationBaselineFileName, namespaceName, validate
 
         var action = generateBaseLine ? "baseline generation" : "validation";
         var self = this;
-        var error = function (message) {
+        var error = function(message) {
             generateBaseLine ? warn : err;
             if (generateBaseLine) {
                 warn(message);

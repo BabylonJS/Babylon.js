@@ -11,6 +11,7 @@ import { _TypeStore } from "./typeStore";
 import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from './precisionDate';
 import { _DevTools } from './devTools';
+import { WebRequest } from './webRequest';
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -140,12 +141,12 @@ export class LoadFileError extends Error {
     /**
      * Creates a new LoadFileError
      * @param message defines the message of the error
-     * @param request defines the optional XHR request
+     * @param request defines the optional web request
      */
     constructor(
         message: string,
-        /** defines the optional XHR request */
-        public request?: XMLHttpRequest
+        /** defines the optional web request */
+        public request?: WebRequest
     ) {
         super(message);
         this.name = "LoadFileError";
@@ -165,7 +166,7 @@ export class RetryStrategy {
      * @returns the strategy function to use
      */
     public static ExponentialBackoff(maxRetries = 3, baseInterval = 500) {
-        return (url: string, request: XMLHttpRequest, retryIndex: number): number => {
+        return (url: string, request: WebRequest, retryIndex: number): number => {
             if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
                 return -1;
             }
@@ -208,10 +209,9 @@ export class Tools {
 
     /**
      * Custom HTTP Request Headers to be sent with XMLHttpRequests
-     * i.e. when loading files, where the server/service expects an Authorization header.
-     * @see InjectCustomRequestHeaders injects them to an XMLHttpRequest
+     * i.e. when loading files, where the server/service expects an Authorization header
      */
-    public static CustomRequestHeaders: { [key: string]: string } = {};
+    public static CustomRequestHeaders = WebRequest.CustomRequestHeaders;
 
     /**
      * Gets or sets the retry strategy to apply when an error happens while loading an asset
@@ -844,7 +844,7 @@ export class Tools {
      * @param onError callback called when the file fails to load
      * @returns a file request object
      */
-    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
         url = Tools.CleanUrl(url);
 
         url = Tools.PreprocessUrl(url);
@@ -866,7 +866,7 @@ export class Tools {
         };
 
         const requestFile = () => {
-            let request = new XMLHttpRequest();
+            let request = new WebRequest();
             let retryHandle: Nullable<number> = null;
 
             fileRequest.abort = () => {
@@ -883,7 +883,7 @@ export class Tools {
             };
 
             const retryLoop = (retryIndex: number) => {
-                request.open('GET', loadUrl, true);
+                request.open('GET', loadUrl);
 
                 if (useArrayBuffer) {
                     request.responseType = "arraybuffer";
@@ -922,7 +922,7 @@ export class Tools {
                             if (waitTime !== -1) {
                                 // Prevent the request from completing for retry.
                                 request.removeEventListener("loadend", onLoadEnd);
-                                request = new XMLHttpRequest();
+                                request = new WebRequest();
                                 retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
                                 return;
                             }
@@ -938,10 +938,6 @@ export class Tools {
                 };
 
                 request.addEventListener("readystatechange", onReadyStateChange);
-
-                if (Tools.UseCustomRequestHeaders) {
-                    Tools.InjectCustomRequestHeaders(request);
-                }
 
                 request.send();
             };
@@ -1599,19 +1595,6 @@ export class Tools {
 
         if (console.time) {
             console.timeEnd(counterName);
-        }
-    }
-
-    /**
-     * Injects the @see CustomRequestHeaders into the given request
-     * @param request the request that should be used for injection
-     */
-    public static InjectCustomRequestHeaders(request: XMLHttpRequest): void {
-        for (let key in Tools.CustomRequestHeaders) {
-            const val = Tools.CustomRequestHeaders[key];
-            if (val) {
-                request.setRequestHeader(key, val);
-            }
         }
     }
 

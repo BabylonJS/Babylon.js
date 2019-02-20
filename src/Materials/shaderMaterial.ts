@@ -110,6 +110,14 @@ export class ShaderMaterial extends Material {
     }
 
     /**
+     * Gets the options used to compile the shader.
+     * They can be modified to trigger a new compilation
+     */
+    public get options(): IShaderMaterialOptions {
+        return this._options;
+    }
+
+    /**
      * Gets the current class name of the material e.g. "ShaderMaterial"
      * Mainly use in serialization.
      * @returns the class name
