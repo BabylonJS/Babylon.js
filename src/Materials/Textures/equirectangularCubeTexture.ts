@@ -6,7 +6,7 @@ import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 
 /**
- * This represents a texture coming from an image supported by the web browser canvas.
+ * This represents a texture coming from an equirectangular image supported by the web browser canvas.
  */
 export class EquirectangularCubeTexture extends BaseTexture {
     /** The six faces of the cube. */
