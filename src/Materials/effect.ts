@@ -739,14 +739,16 @@ export class Effect {
     }
 
     private _processPrecision(source: string): string {
+        const shouldUseHighPrecisionShader = this._engine._shouldUseHighPrecisionShader;
+
         if (source.indexOf("precision highp float") === -1) {
-            if (!this._engine.getCaps().highPrecisionShaderSupported) {
+            if (!shouldUseHighPrecisionShader) {
                 source = "precision mediump float;\n" + source;
             } else {
                 source = "precision highp float;\n" + source;
             }
         } else {
-            if (!this._engine.getCaps().highPrecisionShaderSupported) { // Moving highp to mediump
+            if (!shouldUseHighPrecisionShader) { // Moving highp to mediump
                 source = source.replace("precision highp float", "precision mediump float");
             }
         }

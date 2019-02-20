@@ -25926,6 +25926,10 @@ declare module BABYLON {
          * If not handle, you might need to set it up on your side for expected touch devices behavior.
          */
         doNotHandleTouchAction?: boolean;
+        /**
+         * Defines that engine should compile shaders with high precision floats (if supported). False by default
+         */
+        useHighPrecisionFloats?: boolean;
     }
     /**
      * Defines the interface used by display changed events
@@ -26296,6 +26300,8 @@ declare module BABYLON {
         private _renderingCanvas;
         private _windowIsBackground;
         private _webGLVersion;
+        private _highPrecisionShadersAllowed;
+        /** @hidden */protected readonly _shouldUseHighPrecisionShader: boolean;
         /**
          * Gets a boolean indicating that only power of 2 textures are supported
          * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
@@ -47341,6 +47347,12 @@ declare module BABYLON {
          * @returns the created mesh
          */
         build(updatable?: boolean, depth?: number): Mesh;
+        /**
+         * Creates the polygon
+         * @param depth The depth of the mesh created
+         * @returns the created VertexData
+         */
+        buildVertexData(depth?: number): VertexData;
         /**
          * Adds a side to the polygon
          * @param positions points that make the polygon
