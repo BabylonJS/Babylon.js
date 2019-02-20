@@ -141,12 +141,12 @@ export class LoadFileError extends Error {
     /**
      * Creates a new LoadFileError
      * @param message defines the message of the error
-     * @param request defines the optional XHR request
+     * @param request defines the optional web request
      */
     constructor(
         message: string,
-        /** defines the optional XHR request */
-        public request?: XMLHttpRequest
+        /** defines the optional web request */
+        public request?: WebRequest
     ) {
         super(message);
         this.name = "LoadFileError";
@@ -166,7 +166,7 @@ export class RetryStrategy {
      * @returns the strategy function to use
      */
     public static ExponentialBackoff(maxRetries = 3, baseInterval = 500) {
-        return (url: string, request: XMLHttpRequest, retryIndex: number): number => {
+        return (url: string, request: WebRequest, retryIndex: number): number => {
             if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
                 return -1;
             }
@@ -844,7 +844,7 @@ export class Tools {
      * @param onError callback called when the file fails to load
      * @returns a file request object
      */
-    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
         url = Tools.CleanUrl(url);
 
         url = Tools.PreprocessUrl(url);

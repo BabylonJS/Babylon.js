@@ -50,9 +50,9 @@ export class CustomProceduralTexture extends ProceduralTexture {
         };
 
         var configFileUrl = jsonUrl + "/config.json";
-        var xhr: XMLHttpRequest = new WebRequest();
+        var xhr = new WebRequest();
 
-        xhr.open("GET", configFileUrl, true);
+        xhr.open("GET", configFileUrl);
         xhr.addEventListener("load", () => {
             if (xhr.status === 200 || (xhr.responseText && xhr.responseText.length > 0)) {
                 try {
