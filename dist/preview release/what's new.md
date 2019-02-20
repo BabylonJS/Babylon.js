@@ -51,6 +51,8 @@
 
 ### Core Engine
 
+- Added new `WebRequest` class to centralize all network requests. Can be used to configure headers of all network requests ([Deltakosh](https://github.com/deltakosh))
+- Added support for user clip planes to LineMeshes ([Deltakosh](https://github.com/deltakosh))
 - Optimized effect reused for shadow maps ([Deltakosh](https://github.com/deltakosh))
 - Added `shadowGenerator.onBeforeShadowMapRenderMeshObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added support for `scene.customLODSelector` to let users define their own LOD rules ([Deltakosh](https://github.com/deltakosh))
@@ -117,6 +119,7 @@
 - Added OnAfterEnteringVRObservable to webVRHelper ([TrevorDev](https://github.com/TrevorDev))
 - Added Support for Side By Side and Top/Bottom VR videos in the [video dome](https://doc.babylonjs.com/how_to/360videodome#video-types) ([Sebavan](https://github.com/Sebavan))
 - onActiveCameraChanged shouldn't be fired when rendering rig cameras ([TrevorDev](https://github.com/TrevorDev))
+- Added `MeshExploder` class ([danjpar](https://github.com/danjpar))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
@@ -222,6 +225,7 @@
 
 ## Breaking changes
 
+- All references to XmlHttpRequest were replace by `WebRequest` (which provides the same signatures) ([Deltakosh](https://github.com/deltakosh))
 - `Database.IDBStorageEnabled` is now false by default ([Deltakosh](https://github.com/deltakosh))
 - `Database.openAsync` was renamed by `Database.open` ([Deltakosh](https://github.com/deltakosh))
 - `scene.database` was renamed to `scene.offlineProvider` ([Deltakosh](https://github.com/deltakosh))
