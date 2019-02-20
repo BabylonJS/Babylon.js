@@ -154,7 +154,7 @@ export class PolygonMeshBuilder {
     private _holes = new Array<PolygonPoints>();
 
     private _name: string;
-    private _scene: Scene;
+    private _scene: Scene | undefined;
 
     private _epoints: number[] = new Array<number>();
     private _eholes: number[] = new Array<number>();
@@ -180,7 +180,7 @@ export class PolygonMeshBuilder {
     constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection = earcut) {
         this.bjsEarcut = earcutInjection;
         this._name = name;
-        this._scene = scene || Engine.GetLastCreatedScene();
+        this._scene = scene;
 
         var points: Vector2[];
         if (contours instanceof Path2) {
