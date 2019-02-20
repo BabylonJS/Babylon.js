@@ -528,6 +528,16 @@ export class Scene extends AbstractScene implements IAnimatable {
     public onMeshRemovedObservable = new Observable<AbstractMesh>();
 
     /**
+     * An event triggered when a skeleton is created
+     */
+    public onNewSkeletonAddedObservable = new Observable<Skeleton>();
+
+    /**
+    * An event triggered when a skeleton is removed
+    */
+    public onSkeletonRemovedObservable = new Observable<Skeleton>();
+
+    /**
     * An event triggered when a material is created
     */
     public onNewMaterialAddedObservable = new Observable<Material>();
@@ -2710,6 +2720,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             // Remove from the scene if found
             this.skeletons.splice(index, 1);
+            this.onSkeletonRemovedObservable.notifyObservers(toRemove);
         }
 
         return index;
@@ -2926,6 +2937,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public addSkeleton(newSkeleton: Skeleton): void {
         this.skeletons.push(newSkeleton);
+        this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
     }
 
     /**
@@ -4527,6 +4539,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.onTransformNodeRemovedObservable.clear();
         this.onNewMeshAddedObservable.clear();
         this.onMeshRemovedObservable.clear();
+        this.onNewSkeletonAddedObservable.clear();
+        this.onSkeletonRemovedObservable.clear();
         this.onNewMaterialAddedObservable.clear();
         this.onMaterialRemovedObservable.clear();
         this.onNewTextureAddedObservable.clear();
