@@ -31,8 +31,14 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
             <div>
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Class" value={postProcess.getClassName()} />
-                    <TextLineComponent label="Width" value={postProcess.width.toString()} />
-                    <TextLineComponent label="Height" value={postProcess.height.toString()} />
+                    {
+                        postProcess.width &&
+                        <TextLineComponent label="Width" value={postProcess.width.toString()} />
+                    }
+                    {
+                        postProcess.height &&
+                        <TextLineComponent label="Height" value={postProcess.height.toString()} />
+                    }
                     <CheckBoxLineComponent label="Auto clear" target={postProcess} propertyName="autoClear" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         postProcess.clearColor &&

@@ -51983,6 +51983,59 @@ declare module BABYLON {
          */
         constructor(name: string, parameters: any, scene: Scene, ratio?: number, cameras?: Camera[]);
         /**
+         * Get the class name
+         * @returns "LensRenderingPipeline"
+         */
+        getClassName(): string;
+        /**
+         * Gets associated scene
+         */
+        readonly scene: Scene;
+        /**
+         * Gets or sets the edge blur
+         */
+        edgeBlur: number;
+        /**
+         * Gets or sets the grain amount
+         */
+        grainAmount: number;
+        /**
+         * Gets or sets the chromatic aberration amount
+         */
+        chromaticAberration: number;
+        /**
+         * Gets or sets the depth of field aperture
+         */
+        dofAperture: number;
+        /**
+         * Gets or sets the edge distortion
+         */
+        edgeDistortion: number;
+        /**
+         * Gets or sets the depth of field distortion
+         */
+        dofDistortion: number;
+        /**
+         * Gets or sets the darken out of focus amount
+         */
+        darkenOutOfFocus: number;
+        /**
+         * Gets or sets a boolean indicating if blur noise is enabled
+         */
+        blurNoise: boolean;
+        /**
+         * Gets or sets a boolean indicating if pentagon bokeh is enabled
+         */
+        pentagonBokeh: boolean;
+        /**
+         * Gets or sets the highlight grain amount
+         */
+        highlightsGain: number;
+        /**
+         * Gets or sets the highlight threshold
+         */
+        highlightsThreshold: number;
+        /**
          * Sets the amount of blur at the edges
          * @param amount blur amount
          */
@@ -52037,6 +52090,7 @@ declare module BABYLON {
          * @param amount amount of DarkenOutOfFocus
          */
         setDarkenOutOfFocus(amount: number): void;
+        private _pentagonBokehIsEnabled;
         /**
          * Creates a pentagon bokeh effect
          */
