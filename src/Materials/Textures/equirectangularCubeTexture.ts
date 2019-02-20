@@ -175,7 +175,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      * @returns "EquiRectangularCubeTexture"
      */
     public getClassName(): string {
-        return "EquirectangularCubeTexture";
+        return "EquiRectangularCubeTexture";
     }
 
     /**
