@@ -46,7 +46,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         var engine = this.camera.getEngine();
         var previousPinchSquaredDistance = 0;
         var previousMultiTouchPanPosition: Nullable<PointerTouch> = null;
-      
+
         this.pointA = null;
         this.pointB = null;
 
