@@ -157,7 +157,11 @@ export class PolygonMeshBuilder {
 
     private _name: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
     private _scene: Nullable<Scene>;
+=======
+    private _scene: Scene;
+>>>>>>> parent of c4dbc00cf... Update polygonMesh.ts
 =======
     private _scene: Scene;
 >>>>>>> parent of c4dbc00cf... Update polygonMesh.ts
