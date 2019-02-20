@@ -179,16 +179,16 @@ export class EquiRectangularCubeTexture extends BaseTexture {
     }
 
     /**
-     * Create a clone of the current EquirectangularCubeTexture and return it.
-     * @returns A clone of the current EquirectangularCubeTexture.
+     * Create a clone of the current EquiRectangularCubeTexture and return it.
+     * @returns A clone of the current EquiRectangularCubeTexture.
      */
-    public clone(): EquirectangularCubeTexture {
+    public clone(): EquiRectangularCubeTexture {
         const scene = this.getScene();
         if (!scene) {
             return this;
         }
 
-        const newTexture = new EquirectangularCubeTexture(this.url, scene, this._size, this._noMipmap, this.gammaSpace);
+        const newTexture = new EquiRectangularCubeTexture(this.url, scene, this._size, this._noMipmap, this.gammaSpace);
 
         // Base texture
         newTexture.level = this.level;
