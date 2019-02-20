@@ -135,7 +135,7 @@
 - Skinned meshes now behave as intended by glTF ([bghgary](https://github.com/bghgary))
   - Skinned meshes now set an override mesh instead of reparenting to the `__root__` transform node
   - Loaded bones are linked with the transform node created for the corresponding glTF node
-- Add `EquirectangularCubeTexture` class to enable the usage of browser-canvas supported images as `CubeTexture`'s ([Dennis Dervisis](https://github.com/ddervisis))
+- Add `EquiRectangularCubeTexture` class to enable the usage of browser-canvas supported images as `CubeTexture`'s ([Dennis Dervisis](https://github.com/ddervisis))
 
 ### glTF Serializer
 
