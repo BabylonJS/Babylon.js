@@ -2,7 +2,7 @@ export * from "./baseTexture";
 export * from "./colorGradingTexture";
 export * from "./cubeTexture";
 export * from "./dynamicTexture";
-export * from "./equirectangularCubeTexture";
+export * from "./equiRectangularCubeTexture";
 export * from "./hdrCubeTexture";
 export * from "./internalTexture";
 export * from "./internalTextureLoader";

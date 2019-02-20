@@ -122,7 +122,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
 
             // Push each faces.
             for (let i = 0; i < 6; i++) {
-                const dataFace = (data as any)[EquirectangularCubeTexture._FacesMapping[i]];
+                const dataFace = (data as any)[EquiRectangularCubeTexture._FacesMapping[i]];
                 results.push(dataFace);
             }
 
