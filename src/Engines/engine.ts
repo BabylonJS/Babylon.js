@@ -221,6 +221,10 @@ export interface EngineOptions extends WebGLContextAttributes {
      * If not handle, you might need to set it up on your side for expected touch devices behavior.
      */
     doNotHandleTouchAction?: boolean;
+    /**
+     * Defines that engine should compile shaders with high precision floats (if supported). False by default
+     */
+    useHighPrecisionFloats?: boolean;
 }
 
 /**
@@ -696,6 +700,12 @@ export class Engine {
     private _renderingCanvas: Nullable<HTMLCanvasElement>;
     private _windowIsBackground = false;
     private _webGLVersion = 1.0;
+
+    private _highPrecisionShadersAllowed = false;
+    /** @hidden */
+    public get _shouldUseHighPrecisionShader(): boolean {
+        return this._caps.highPrecisionShaderSupported && this._highPrecisionShadersAllowed;
+    }
 
     /**
      * Gets a boolean indicating that only power of 2 textures are supported
@@ -1187,6 +1197,8 @@ export class Engine {
                 options.stencil = attributes.stencil;
             }
         }
+
+        this._highPrecisionShadersAllowed = options.useHighPrecisionFloats || false;
 
         // Viewport
         const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
