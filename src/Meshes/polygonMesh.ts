@@ -156,19 +156,7 @@ export class PolygonMeshBuilder {
     private _holes = new Array<PolygonPoints>();
 
     private _name: string;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     private _scene: Nullable<Scene>;
-=======
-    private _scene: Scene | undefined;
->>>>>>> parent of df2c2232d... Updated polygonMesh.ts
-=======
-    private _scene: Scene;
->>>>>>> parent of c4dbc00cf... Update polygonMesh.ts
-=======
-    private _scene: Scene;
->>>>>>> parent of c4dbc00cf... Update polygonMesh.ts
 
     private _epoints: number[] = new Array<number>();
     private _eholes: number[] = new Array<number>();
@@ -194,11 +182,7 @@ export class PolygonMeshBuilder {
     constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection = earcut) {
         this.bjsEarcut = earcutInjection;
         this._name = name;
-<<<<<<< HEAD
         this._scene = scene || Engine.LastCreatedScene;
-=======
-        this._scene = scene;
->>>>>>> parent of df2c2232d... Updated polygonMesh.ts
 
         var points: Vector2[];
         if (contours instanceof Path2) {
