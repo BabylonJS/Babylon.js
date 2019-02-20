@@ -172,7 +172,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
 
     /**
      * Get the current class name of the texture useful for serialization or dynamic coding.
-     * @returns "EquirectangularCubeTexture"
+     * @returns "EquiRectangularCubeTexture"
      */
     public getClassName(): string {
         return "EquirectangularCubeTexture";
