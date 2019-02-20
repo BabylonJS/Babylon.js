@@ -174,10 +174,10 @@ export class PolygonMeshBuilder {
      * Creates a PolygonMeshBuilder
      * @param name name of the builder
      * @param contours Path of the polygon
-     * @param scene scene to add to
+     * @param scene scene to add to when creating the mesh
      * @param earcutInjection can be used to inject your own earcut reference
      */
-    constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene, earcutInjection = earcut) {
+    constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection = earcut) {
         this.bjsEarcut = earcutInjection;
         this._name = name;
         this._scene = scene;
