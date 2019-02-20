@@ -167,6 +167,7 @@ function StubCameraInput() {
 
 /**
  * Test the things.
+ * The BaseCameraPointersInput class first.
  */
 describe('BaseCameraPointersInput', function() {
   /**
@@ -629,6 +630,10 @@ describe('BaseCameraPointersInput', function() {
   });
 });
 
+/**
+ * Test the things.
+ * The ArcRotateCameraInput class.
+ */
 describe('ArcRotateCameraInput', function() {
   /**
    * Sets the timeout of all the tests to 10 seconds.
