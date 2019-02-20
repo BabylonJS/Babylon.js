@@ -18531,6 +18531,7 @@ declare module BABYLON {
          * Specifies if the skeleton should be serialized
          */
         doNotSerialize: boolean;
+        private _useTextureToStoreBoneMatrices;
         /**
          * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
          * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
@@ -31368,6 +31369,14 @@ declare module BABYLON {
         * An event triggered when a mesh is removed
         */
         onMeshRemovedObservable: Observable<AbstractMesh>;
+        /**
+         * An event triggered when a skeleton is created
+         */
+        onNewSkeletonAddedObservable: Observable<Skeleton>;
+        /**
+        * An event triggered when a skeleton is removed
+        */
+        onSkeletonRemovedObservable: Observable<Skeleton>;
         /**
         * An event triggered when a material is created
         */
