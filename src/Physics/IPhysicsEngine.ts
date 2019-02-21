@@ -157,7 +157,8 @@ export interface IPhysicsEngine {
 
     /**
      * Does a raycast in the physics world
-     * @param from defines physics body used by the impostor
+     * @param from when should the ray start?
+     * @param to when should the ray end?
      * @returns PhysicsRaycastResult
      */
     raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;

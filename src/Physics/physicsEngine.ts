@@ -228,8 +228,10 @@ export class PhysicsEngine implements IPhysicsEngine {
     }
 
     /**
+     * Does a raycast in the physics world
      * @param from when should the ray start?
      * @param to when should the ray end?
+     * @returns PhysicsRaycastResult
      */
     public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
         return this._physicsPlugin.raycast(from, to);

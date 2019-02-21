@@ -58,8 +58,8 @@ export class PhysicsRaycastResult {
 
     /**
      * Sets the hit data (normal & point in world space)
-     * @param hitNormalWorld
-     * @param hitPointWorld
+     * @param hitNormalWorld defines the normal in world space
+     * @param hitPointWorld defines the point in world space
      */
     public setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ) {
         this._hasHit = true;
