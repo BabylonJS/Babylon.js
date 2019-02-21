@@ -13,7 +13,7 @@ import { PhysicsImpostor } from "./physicsImpostor";
 
 /**
  * A helper for physics simulations
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export class PhysicsHelper {
 
@@ -221,7 +221,6 @@ export class PhysicsHelper {
 
 /**
  * Represents a physics radial explosion event
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 class PhysicsRadialExplosionEvent {
 
@@ -340,7 +339,6 @@ class PhysicsRadialExplosionEvent {
 
 /**
  * Represents a gravitational field event
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 class PhysicsGravitationalFieldEvent {
 
@@ -422,7 +420,6 @@ class PhysicsGravitationalFieldEvent {
 
 /**
  * Represents a physics updraft event
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 class PhysicsUpdraftEvent {
 
@@ -562,7 +559,6 @@ class PhysicsUpdraftEvent {
 
 /**
  * Represents a physics vortex event
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 class PhysicsVortexEvent {
 
@@ -718,7 +714,7 @@ class PhysicsVortexEvent {
 
 /**
  * Options fot the radial explosion event
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export class PhysicsRadialExplosionEventOptions {
     /**
@@ -744,7 +740,7 @@ export class PhysicsRadialExplosionEventOptions {
 
 /**
  * Options fot the updraft event
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export class PhysicsUpdraftEventOptions {
     /**
@@ -770,7 +766,7 @@ export class PhysicsUpdraftEventOptions {
 
 /**
  * Options fot the vortex event
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export class PhysicsVortexEventOptions {
     /**
@@ -811,7 +807,7 @@ export class PhysicsVortexEventOptions {
 
 /**
 * The strenght of the force in correspondence to the distance of the affected object
-* @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+* @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
 */
 export enum PhysicsRadialImpulseFalloff {
     /** Defines that impulse is constant in strength across it's whole radius */
@@ -822,7 +818,7 @@ export enum PhysicsRadialImpulseFalloff {
 
 /**
  * The strength of the force in correspondence to the distance of the affected object
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export enum PhysicsUpdraftMode {
     /** Defines that the upstream forces will pull towards the top center of the cylinder */
@@ -833,7 +829,7 @@ export enum PhysicsUpdraftMode {
 
 /**
  * Interface for a physics force and contact point
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export interface PhysicsForceAndContactPoint {
     /**
@@ -848,7 +844,7 @@ export interface PhysicsForceAndContactPoint {
 
 /**
  * Interface for radial explosion event data
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export interface PhysicsRadialExplosionEventData {
     /**
@@ -859,7 +855,7 @@ export interface PhysicsRadialExplosionEventData {
 
 /**
  * Interface for gravitational field event data
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export interface PhysicsGravitationalFieldEventData {
     /**
@@ -870,7 +866,7 @@ export interface PhysicsGravitationalFieldEventData {
 
 /**
  * Interface for updraft event data
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export interface PhysicsUpdraftEventData {
     /**
@@ -881,7 +877,7 @@ export interface PhysicsUpdraftEventData {
 
 /**
  * Interface for vortex event data
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export interface PhysicsVortexEventData {
     /**
