@@ -223,7 +223,7 @@ export class PhysicsHelper {
  * Represents a physics radial explosion event
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
-export class PhysicsRadialExplosionEvent {
+class PhysicsRadialExplosionEvent {
 
     private _physicsEngine: PhysicsEngine;
     private _sphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
@@ -342,7 +342,7 @@ export class PhysicsRadialExplosionEvent {
  * Represents a gravitational field event
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
-export class PhysicsGravitationalFieldEvent {
+class PhysicsGravitationalFieldEvent {
 
     private _tickCallback: any;
     private _sphere: Mesh;
@@ -424,7 +424,7 @@ export class PhysicsGravitationalFieldEvent {
  * Represents a physics updraft event
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
-export class PhysicsUpdraftEvent {
+class PhysicsUpdraftEvent {
 
     private _physicsEngine: PhysicsEngine;
     private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
@@ -564,7 +564,7 @@ export class PhysicsUpdraftEvent {
  * Represents a physics vortex event
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
-export class PhysicsVortexEvent {
+class PhysicsVortexEvent {
 
     private _physicsEngine: PhysicsEngine;
     private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
