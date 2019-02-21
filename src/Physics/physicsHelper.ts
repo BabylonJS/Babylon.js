@@ -19,28 +19,18 @@ export class PhysicsHelper {
 
     private _scene: Scene;
     private _physicsEngine: Nullable<IPhysicsEngine>;
-    public options: PhysicsHelperOptions;
 
     /**
      * Initializes the Physics helper
      * @param scene Babylon.js scene
      */
-    constructor(scene: Scene, options: PhysicsHelperOptions) {
+    constructor(scene: Scene) {
         this._scene = scene;
         this._physicsEngine = this._scene.getPhysicsEngine();
 
         if (!this._physicsEngine) {
             Logger.Warn('Physics engine not enabled. Please enable the physics before you can use the methods.');
             return;
-        }
-
-        this.options = {...(new PhysicsHelperOptions()), ...options};
-
-        if (this.options.useNativePhysicsRaycastingIfAvailable) {
-          if (this._physicsEngine.getPhysicsPluginName() === 'OimoJSPlugin') {
-            this.options.useNativePhysicsRaycastingIfAvailable = false;
-            Logger.Warn('Native raycasting not available on the OimoJSPlugin.');
-          }
         }
     }
 
@@ -229,13 +219,6 @@ export class PhysicsHelper {
     }
 }
 
-export class PhysicsHelperOptions {
-    /**
-     * If set to true, it will use the native raycasting
-     */
-    public useNativePhysicsRaycastingIfAvailable: boolean = true;
-}
-
 /**
  * Represents a physics radial explosion event
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -292,31 +275,15 @@ export class PhysicsRadialExplosionEvent {
         var impostorObjectCenter = impostor.getObjectCenter();
         var direction = impostorObjectCenter.subtract(origin);
 
-        if (this._physicsHelper.options.useNativePhysicsRaycastingIfAvailable) {
-          var to = origin.clone().addInPlace(
-            direction.clone().normalize().multiplyInPlace(new Vector3(
-              this._options.radius,
-              this._options.radius,
-              this._options.radius
-            ))
-          );
-          var raycastResult = this._physicsEngine.raycast(origin, to);
-          if (!raycastResult.hasHit) {
-              return null;
-          }
-          var contactPoint = raycastResult.hitPointWorld;
-          var distanceFromOrigin = raycastResult.hitDistance;
-        } else {
-          var ray = new Ray(origin, direction, this._options.radius);
-          var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
+        var ray = new Ray(origin, direction, this._options.radius);
+        var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
 
-          var contactPoint = hit.pickedPoint;
-          if (!contactPoint) {
-              return null;
-          }
-
-          var distanceFromOrigin = Vector3.Distance(origin, contactPoint);
+        var contactPoint = hit.pickedPoint;
+        if (!contactPoint) {
+            return null;
         }
+
+        var distanceFromOrigin = Vector3.Distance(origin, contactPoint);
 
         if (distanceFromOrigin > this._options.radius) {
             return null;
@@ -685,29 +652,13 @@ export class PhysicsVortexEvent {
         var originOnPlane = new Vector3(this._origin.x, impostorObjectCenter.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
         var originToImpostorDirection = impostorObjectCenter.subtract(originOnPlane);
 
-        if (this._physicsHelper.options.useNativePhysicsRaycastingIfAvailable) {
-          var to = originOnPlane.clone().addInPlace(
-            originToImpostorDirection.normalize().multiplyInPlace(new Vector3(
-              this._options.radius,
-              this._options.radius,
-              this._options.radius
-            ))
-          );
-          var raycastResult = this._physicsEngine.raycast(originOnPlane, to);
-          if (!raycastResult.hasHit) {
-              return null;
-          }
-          var contactPoint = raycastResult.hitPointWorld;
-          var absoluteDistanceFromOrigin = raycastResult.hitDistance / this._options.radius;
-        } else {
-          var ray = new Ray(originOnPlane, originToImpostorDirection, this._options.radius);
-          var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
-          var contactPoint = hit.pickedPoint;
-          if (!contactPoint) {
-              return null;
-          }
-          var absoluteDistanceFromOrigin = hit.distance / this._options.radius;
+        var ray = new Ray(originOnPlane, originToImpostorDirection, this._options.radius);
+        var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
+        var contactPoint = hit.pickedPoint;
+        if (!contactPoint) {
+            return null;
         }
+        var absoluteDistanceFromOrigin = hit.distance / this._options.radius;
 
         var directionToOrigin = contactPoint.normalize();
         if (absoluteDistanceFromOrigin > this._options.centripetalForceThreshold) {
