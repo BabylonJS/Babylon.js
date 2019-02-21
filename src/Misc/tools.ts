@@ -190,9 +190,6 @@ export interface IFileRequest {
     abort: () => void;
 }
 
-// Screenshots
-var screenshotCanvas: HTMLCanvasElement;
-
 /**
  * Class containing a set of static utilities functions
  */
@@ -678,17 +675,19 @@ export class Tools {
      * Asks the browser to exit fullscreen mode
      */
     public static ExitFullscreen(): void {
+        let anyDoc = document as any;
+
         if (document.exitFullscreen) {
             document.exitFullscreen();
         }
-        else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
+        else if (anyDoc.mozCancelFullScreen) {
+            anyDoc.mozCancelFullScreen();
         }
-        else if (document.webkitCancelFullScreen) {
-            document.webkitCancelFullScreen();
+        else if (anyDoc.webkitCancelFullScreen) {
+            anyDoc.webkitCancelFullScreen();
         }
-        else if (document.msCancelFullScreen) {
-            document.msCancelFullScreen();
+        else if (anyDoc.msCancelFullScreen) {
+            anyDoc.msCancelFullScreen();
         }
     }
 
@@ -763,20 +762,19 @@ export class Tools {
         Tools.SetCorsBehavior(url, img);
 
         const loadHandler = () => {
+            img.removeEventListener("load", loadHandler);
+            img.removeEventListener("error", errorHandler);
+
+            onLoad(img);
+
+            // Must revoke the URL after calling onLoad to avoid security exceptions in
+            // certain scenarios (e.g. when hosted in vscode).
             if (usingObjectURL && img.src) {
                 URL.revokeObjectURL(img.src);
             }
-
-            img.removeEventListener("load", loadHandler);
-            img.removeEventListener("error", errorHandler);
-            onLoad(img);
         };
 
         const errorHandler = (err: any) => {
-            if (usingObjectURL && img.src) {
-                URL.revokeObjectURL(img.src);
-            }
-
             img.removeEventListener("load", loadHandler);
             img.removeEventListener("error", errorHandler);
 
@@ -784,6 +782,10 @@ export class Tools {
 
             if (onError) {
                 onError("Error while trying to load image: " + input, err);
+            }
+
+            if (usingObjectURL && img.src) {
+                URL.revokeObjectURL(img.src);
             }
         };
 
@@ -1188,6 +1190,11 @@ export class Tools {
     }
 
     /**
+     * @ignore
+     */
+    public static _ScreenshotCanvas: HTMLCanvasElement;
+
+    /**
      * Dumps the current bound framebuffer
      * @param width defines the rendering width
      * @param height defines the rendering height
@@ -1218,12 +1225,12 @@ export class Tools {
         }
 
         // Create a 2D canvas to store the result
-        if (!screenshotCanvas) {
-            screenshotCanvas = document.createElement('canvas');
+        if (!Tools._ScreenshotCanvas) {
+            Tools._ScreenshotCanvas = document.createElement('canvas');
         }
-        screenshotCanvas.width = width;
-        screenshotCanvas.height = height;
-        var context = screenshotCanvas.getContext('2d');
+        Tools._ScreenshotCanvas.width = width;
+        Tools._ScreenshotCanvas.height = height;
+        var context = Tools._ScreenshotCanvas.getContext('2d');
 
         if (context) {
             // Copy the pixels to a 2D canvas
@@ -1273,11 +1280,11 @@ export class Tools {
      */
     static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
         if (successCallback) {
-            var base64Image = screenshotCanvas.toDataURL(mimeType);
+            var base64Image = Tools._ScreenshotCanvas.toDataURL(mimeType);
             successCallback(base64Image);
         }
         else {
-            this.ToBlob(screenshotCanvas, function(blob) {
+            this.ToBlob(Tools._ScreenshotCanvas, function(blob) {
                 //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                 if (("download" in document.createElement("a"))) {
                     if (!fileName) {

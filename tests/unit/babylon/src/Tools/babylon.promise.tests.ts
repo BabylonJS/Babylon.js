@@ -12,7 +12,7 @@ describe('Babylon.Promise', function() {
             .useDist()
             .testMode()
             .load(function() {
-                // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
+                // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 done();
             });

@@ -39,6 +39,8 @@
         "webpack-dev-server": "^3.1.4"
     },
     "dependencies": {
+        "@babylonjs/core": "^4.0.0-alpha.18",
+        "@babylonjs/loaders": "^4.0.0-alpha.18",
         "pepjs": "^0.4.3"
     }
 }

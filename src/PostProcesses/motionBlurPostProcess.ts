@@ -8,6 +8,8 @@ import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 import { Scene } from "../scene";
 
+import "../Animations/animatable";
+import '../Rendering/geometryBufferRendererSceneComponent';
 import "../Shaders/motionBlur.fragment";
 
 declare type Engine = import("../Engines/engine").Engine;

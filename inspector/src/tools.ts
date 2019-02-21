@@ -24,7 +24,7 @@ export class Tools {
                 Tools._RecursiveRemoveHiddenMeshesAndHoistChildren(i.getChildMeshes()).forEach((m) => {
                     result.push(m);
                 });
-            } else {
+            } else if (!i.reservedDataStore || !i.reservedDataStore.hidden) {
                 result.push(i);
             }
         }

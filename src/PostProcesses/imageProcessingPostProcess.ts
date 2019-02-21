@@ -177,6 +177,19 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
+     * Gets the type of tone mapping effect.
+     */
+    public get toneMappingType(): number {
+        return this._imageProcessingConfiguration.toneMappingType;
+    }
+    /**
+     * Sets the type of tone mapping effect.
+     */
+    public set toneMappingType(value: number) {
+        this._imageProcessingConfiguration.toneMappingType = value;
+    }
+
+    /**
      * Gets contrast used in the effect.
      */
     public get contrast(): number {

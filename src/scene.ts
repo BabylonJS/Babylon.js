@@ -47,6 +47,7 @@ import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
 
 declare type Ray = import("./Culling/ray").Ray;
+declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
 declare type Animation = import("./Animations/animation").Animation;
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
@@ -590,6 +591,12 @@ export class Scene extends AbstractScene implements IAnimatable {
      * This Observable will when a mesh has been imported into the scene.
      */
     public onMeshImportedObservable = new Observable<AbstractMesh>();
+
+    /**
+     * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
+     * By default this function is undefined and Babylon.js will select LOD based on distance to camera
+     */
+    public customLODSelector: (mesh: AbstractMesh, camera: Camera) => Nullable<AbstractMesh>;
 
     // Animations
 
@@ -3902,7 +3909,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshLOD = mesh.getLOD(this.activeCamera);
+            const meshLOD = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
             if (meshLOD === undefined || meshLOD === null) {
                 continue;
             }
@@ -4018,7 +4025,8 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         var engine = this._engine;
 
-        this.activeCamera = camera;
+        // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
+        this._activeCamera = camera;
 
         if (!this.activeCamera) {
             throw new Error("Active camera not set");
@@ -4145,8 +4153,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             this._renderForCamera(camera._rigCameras[index], camera);
         }
 
-        this.activeCamera = camera;
-        this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+        // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
+        this._activeCamera = camera;
+        this.setTransformMatrix(this._activeCamera.getViewMatrix(), this._activeCamera.getProjectionMatrix());
     }
 
     private _checkIntersections(): void {
@@ -4578,7 +4587,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             this.meshes[0].dispose(true);
         }
         while (this.transformNodes.length) {
-            this.removeTransformNode(this.transformNodes[0]);
+            this.transformNodes[0].dispose(true);
         }
 
         // Release cameras
@@ -4766,9 +4775,13 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
      * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+    public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
+        fastCheck?: boolean, camera?: Nullable<Camera>,
+        trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean
+        ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
         pi._pickingUnavailable = true;
@@ -4779,9 +4792,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param ray The ray to use to pick meshes
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
      * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
+    public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean,
+        trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
         throw _DevTools.WarnImport("Ray");
     }
 
@@ -4791,9 +4806,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param y Y position on screen
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
      * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
+    public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera,
+        trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _DevTools.WarnImport("Ray");
     }
 
@@ -4801,9 +4818,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Launch a ray to try to pick a mesh in the scene
      * @param ray Ray to use
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
+    public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _DevTools.WarnImport("Ray");
     }
 
