@@ -121,6 +121,7 @@
 - Added setColor method to boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
 - Added OnAfterEnteringVRObservable to webVRHelper ([TrevorDev](https://github.com/TrevorDev))
 - Added Support for Side By Side and Top/Bottom VR videos in the [video dome](https://doc.babylonjs.com/how_to/360videodome#video-types) ([Sebavan](https://github.com/Sebavan))
+- Added UnitTests for BaseCameraPointersInput and ArcRotateCameraPointersInput. ([mrdunk](https://github.com))
 - onActiveCameraChanged shouldn't be fired when rendering rig cameras ([TrevorDev](https://github.com/TrevorDev))
 - Added `MeshExploder` class ([danjpar](https://github.com/danjpar))
 

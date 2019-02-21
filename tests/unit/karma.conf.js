@@ -26,6 +26,7 @@ module.exports = function (config) {
             './tests/unit/babylon/src/Mesh/babylon.geometry.tests.js',
             './tests/unit/babylon/src/Mesh/babylon.mesh.vertexData.tests.js',
             './tests/unit/babylon/src/Tools/babylon.promise.tests.js',
+            './tests/unit/babylon/src/Cameras/babylon.pointerInput.tests.js',
             { pattern: 'dist/preview release/**/*.js', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
             //{ pattern: 'tests/**/*', watched: false, included: false, served: true },
