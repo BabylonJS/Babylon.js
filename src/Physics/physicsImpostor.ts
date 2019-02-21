@@ -36,6 +36,10 @@ export interface PhysicsImpostorParameters {
      */
     ignoreParent?: boolean;
     /**
+     * Specifies if the mesh imposter should use a convex hull shape (Ammo.js plugin only)
+     */
+    useConvexHullShape?: boolean;
+    /**
      * Specifies if bi-directional transformations should be disabled
      */
     disableBidirectionalTransformation?: boolean;

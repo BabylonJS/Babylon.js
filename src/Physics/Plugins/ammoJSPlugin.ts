@@ -422,6 +422,51 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         return triangleCount;
     }
 
+    // adds all verticies (including child verticies) to the convex hull shape
+    private _addHullVerts(btConvexHullShape: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject) {
+        var triangleCount = 0;
+        if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
+            var indices = object.getIndices();
+            if (!indices) {
+                indices = [];
+            }
+            var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
+            if (!vertexPositions) {
+                vertexPositions = [];
+            }
+            object.computeWorldMatrix(false);
+            var faceCount = indices.length / 3;
+            for (var i = 0; i < faceCount; i++) {
+                var triPoints = [];
+                for (var point = 0; point < 3; point++) {
+                    var v = new Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
+                    v = Vector3.TransformCoordinates(v, object.getWorldMatrix());
+                    v.subtractInPlace(topLevelObject.position);
+                    var vec: any;
+                    if (point == 0) {
+                        vec = this._tmpAmmoVectorA;
+                    } else if (point == 1) {
+                        vec = this._tmpAmmoVectorB;
+                    } else {
+                        vec = this._tmpAmmoVectorC;
+                    }
+                    vec.setValue(v.x, v.y, v.z);
+
+                    triPoints.push(vec);
+                }
+                btConvexHullShape.addPoint(triPoints[0], true);
+                btConvexHullShape.addPoint(triPoints[1], true);
+                btConvexHullShape.addPoint(triPoints[2], true);
+                triangleCount++;
+            }
+
+            object.getChildMeshes().forEach((m) => {
+                triangleCount += this._addHullVerts(btConvexHullShape, topLevelObject, m);
+            });
+        }
+        return triangleCount;
+    }
+
     private _createShape(impostor: PhysicsImpostor, ignoreChildren = false) {
         var object = impostor.object;
 
@@ -487,15 +532,27 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 returnValue = new Ammo.btBoxShape(this._tmpAmmoVectorA);
                 break;
             case PhysicsImpostor.MeshImpostor:
-                var tetraMesh = new Ammo.btTriangleMesh();
-                impostor._pluginData.toDispose.concat([tetraMesh]);
-                var triangeCount = this._addMeshVerts(tetraMesh, object, object);
-                if (triangeCount == 0) {
-                    returnValue = new Ammo.btCompoundShape();
+                if ((<any>impostor)._options.useConvexHullShape) {
+                    var convexMesh = new Ammo.btConvexHullShape();
+                    var triangeCount = this._addHullVerts(convexMesh, object, object);
+                    if (triangeCount == 0) {
+                        // Cleanup Unused Convex Hull Shape
+                        impostor._pluginData.toDispose.concat([convexMesh]);
+                        returnValue = new Ammo.btCompoundShape();
+                    } else {
+                        returnValue = convexMesh;
+                    }
                 } else {
-                    returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
+                    var tetraMesh = new Ammo.btTriangleMesh();
+                    impostor._pluginData.toDispose.concat([tetraMesh]);
+                    var triangeCount = this._addMeshVerts(tetraMesh, object, object);
+                    if (triangeCount == 0) {
+                        returnValue = new Ammo.btCompoundShape();
+                    } else {
+                        returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
+                    }
                 }
-                break;
+            break;
             case PhysicsImpostor.NoImpostor:
                 // Fill with sphere but collision is disabled on the rigid body in generatePhysicsBody, using an empty shape caused unexpected movement with joints
                 returnValue = new Ammo.btSphereShape(extendSize.x / 2);
