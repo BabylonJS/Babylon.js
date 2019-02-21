@@ -36,10 +36,6 @@ export interface PhysicsImpostorParameters {
      */
     ignoreParent?: boolean;
     /**
-     * Specifies if the mesh imposter should use a convex hull shape (Ammo.js plugin only)
-     */
-    useConvexHullShape?: boolean;
-    /**
      * Specifies if bi-directional transformations should be disabled
      */
     disableBidirectionalTransformation?: boolean;
@@ -1029,4 +1025,8 @@ export class PhysicsImpostor {
      * Heightmap-Imposter type
      */
     public static HeightmapImpostor = 9;
+    /**
+     * ConvexHull-Impostor type (Ammo.js plugin only)
+     */
+    public static ConvexHullImpostor = 10;
 }
