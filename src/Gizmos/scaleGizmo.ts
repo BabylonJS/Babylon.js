@@ -34,6 +34,9 @@ export class ScaleGizmo extends Gizmo {
     /** Fires an event when any of it's sub gizmos are released from dragging */
     public onDragEndObservable = new Observable();
 
+    public get attachedMesh() {
+        return this.xGizmo.attachedMesh;
+    }
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
         if (this.xGizmo) {
             this.xGizmo.attachedMesh = mesh;
