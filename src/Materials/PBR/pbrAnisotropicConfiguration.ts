@@ -1,17 +1,26 @@
-import { SerializationHelper, serialize, expandToProperty } from "../../Misc/decorators";
+import { SerializationHelper, serialize, expandToProperty, serializeAsVector2, serializeAsTexture } from "../../Misc/decorators";
 import { EffectFallbacks } from "../../Materials/effect";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../Meshes/buffer";
+import { Vector2 } from "../../Maths/math";
+import { Scene } from "../../scene";
+import { MaterialFlags } from "../../Materials/materialFlags";
+import { MaterialHelper } from "../../Materials/materialHelper";
+import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { IAnimatable } from "../../Misc/tools";
+import { Nullable } from "../../types";
 
 /**
  * @hidden
  */
 export interface IMaterialAnisotropicDefines {
     ANISOTROPIC: boolean;
+    ANISOTROPIC_TEXTURE: boolean;
+    ANISOTROPIC_TEXTUREDIRECTUV: number;
     MAINUV1: boolean;
 
-    _areMiscDirty: boolean;
+    _areTexturesDirty: boolean;
     _needUVs: boolean;
 }
 
@@ -25,7 +34,7 @@ export class PBRAnisotropicConfiguration {
     /**
      * Defines if the anisotropy is enabled in the material.
      */
-    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
     /**
@@ -35,50 +44,155 @@ export class PBRAnisotropicConfiguration {
     public intensity: number = 1;
 
     /**
-     * Defines if the effect is along the tangents or bitangents.
+     * Defines if the effect is along the tangents, bitangents or in between.
      * By default, the effect is "strectching" the highlights along the tangents.
      */
-    @serialize()
-    public followTangents = true;
+    @serializeAsVector2()
+    public direction = new Vector2(1, 0);
+
+    @serializeAsTexture()
+    private _texture: Nullable<BaseTexture> = null;
+    /**
+     * Stores the anisotropy values in a texture.
+     * rg is direction (like normal from -1 to 1)
+     * b is a intensity
+     */
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public texture: Nullable<BaseTexture> = null;
 
     /** @hidden */
-    private _internalMarkAllSubMeshesAsMiscDirty: () => void;
+    private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
     /** @hidden */
-    public _markAllSubMeshesAsMiscDirty(): void {
-        this._internalMarkAllSubMeshesAsMiscDirty();
+    public _markAllSubMeshesAsTexturesDirty(): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
     /**
-     * Instantiate a new istance of clear coat configuration.
-     * @param markAllSubMeshesAsMiscDirty Callback to flag the material to dirty
+     * Instantiate a new istance of anisotropy configuration.
+     * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
-    constructor(markAllSubMeshesAsMiscDirty: () => void) {
-        this._internalMarkAllSubMeshesAsMiscDirty = markAllSubMeshesAsMiscDirty;
+    constructor(markAllSubMeshesAsTexturesDirty: () => void) {
+        this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
+    }
+
+    /**
+     * Specifies that the submesh is ready to be used.
+     * @param defines the list of "defines" to update.
+     * @param scene defines the scene the material belongs to.
+     * @returns - boolean indicating that the submesh is ready or not.
+     */
+    public isReadyForSubMesh(defines: IMaterialAnisotropicDefines, scene: Scene): boolean {
+        if (defines._areTexturesDirty) {
+            if (scene.texturesEnabled) {
+                if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
+                    if (!this._texture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
      * Checks to see if a texture is used in the material.
      * @param defines the list of "defines" to update.
      * @param mesh the mesh we are preparing the defines for.
+     * @param scene defines the scene the material belongs to.
      */
-    public prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh): void {
-        defines.ANISOTROPIC = this._isEnabled;
-        if (this._isEnabled && !mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-            defines._needUVs = true;
-            defines.MAINUV1 = true;
+    public prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh, scene: Scene): void {
+        if (this._isEnabled) {
+            defines.ANISOTROPIC = this._isEnabled;
+            if (this._isEnabled && !mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                defines._needUVs = true;
+                defines.MAINUV1 = true;
+            }
+
+            if (defines._areTexturesDirty) {
+                if (scene.texturesEnabled) {
+                    if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "ANISOTROPIC_TEXTURE");
+                    } else {
+                        defines.ANISOTROPIC_TEXTURE = false;
+                    }
+                }
+            }
+        }
+        else {
+            defines.ANISOTROPIC = false;
+            defines.ANISOTROPIC_TEXTURE = false;
         }
     }
 
     /**
      * Binds the material data.
      * @param uniformBuffer defines the Uniform buffer to fill in.
+     * @param scene defines the scene the material belongs to.
      * @param isFrozen defines wether the material is frozen or not.
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, isFrozen: boolean): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            // Clear Coat
-            uniformBuffer.updateFloat("anisotropy", this.followTangents ? this.intensity : -this.intensity);
+            if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
+                uniformBuffer.updateFloat2("vAnisotropyInfos", this._texture.coordinatesIndex, this._texture.level);
+                MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "anisotropy");
+            }
+
+            // Anisotropy
+            uniformBuffer.updateFloat3("vAnisotropy", this.direction.x, this.direction.y, this.intensity);
+        }
+
+        // Textures
+        if (scene.texturesEnabled) {
+            if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
+                uniformBuffer.setTexture("anisotropySampler", this._texture);
+            }
+        }
+    }
+
+    /**
+     * Checks to see if a texture is used in the material.
+     * @param texture - Base texture to use.
+     * @returns - Boolean specifying if a texture is used in the material.
+     */
+    public hasTexture(texture: BaseTexture): boolean {
+        if (this._texture === texture) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns an array of the actively used textures.
+     * @param activeTextures Array of BaseTextures
+     */
+    public getActiveTextures(activeTextures: BaseTexture[]): void {
+        if (this._texture) {
+            activeTextures.push(this._texture);
+        }
+    }
+
+    /**
+     * Returns the animatable textures.
+     * @param animatables Array of animatable textures.
+     */
+    public getAnimatables(animatables: IAnimatable[]): void {
+        if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
+            animatables.push(this._texture);
+        }
+    }
+
+    /**
+     * Disposes the resources of the material.
+     * @param forceDisposeTextures - Forces the disposal of all textures.
+     */
+    public dispose(forceDisposeTextures?: boolean): void {
+        if (forceDisposeTextures) {
+            if (this._texture) {
+                this._texture.dispose();
+            }
         }
     }
 
@@ -88,30 +202,6 @@ export class PBRAnisotropicConfiguration {
     */
     public getClassName(): string {
         return "PBRAnisotropicConfiguration";
-    }
-
-    /**
-     * Makes a duplicate of the current configuration into another one.
-     * @param anisotropicConfiguration define the config where to copy the info
-     */
-    public copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void {
-        SerializationHelper.Clone(() => anisotropicConfiguration, this);
-    }
-
-    /**
-     * Serializes this clear coat configuration.
-     * @returns - An object with the serialized config.
-     */
-    public serialize(): any {
-        return SerializationHelper.Serialize(this);
-    }
-
-    /**
-     * Parses a Clear Coat Configuration from a serialized object.
-     * @param source - Serialized object.
-     */
-    public parse(source: any): void {
-        SerializationHelper.Parse(() => this, source, null);
     }
 
     /**
@@ -133,7 +223,7 @@ export class PBRAnisotropicConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("anisotropy");
+        uniforms.push("vAnisotropy", "vAnisotropyInfos", "anisotropyMatrix");
     }
 
     /**
@@ -141,6 +231,40 @@ export class PBRAnisotropicConfiguration {
      * @param uniformBuffer defines the current uniform buffer.
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("anisotropy", 1);
+        uniformBuffer.addUniform("vAnisotropy", 3);
+        uniformBuffer.addUniform("vAnisotropyInfos", 2);
+        uniformBuffer.addUniform("anisotropyMatrix", 16);
+    }
+
+    /**
+     * Add the required samplers to the current list.
+     * @param samplers defines the current sampler list.
+     */
+    public static AddSamplers(samplers: string[]): void {
+        samplers.push("anisotropySampler");
+    }
+
+    /**
+     * Makes a duplicate of the current configuration into another one.
+     * @param anisotropicConfiguration define the config where to copy the info
+     */
+    public copyTo(anisotropicConfiguration: PBRAnisotropicConfiguration): void {
+        SerializationHelper.Clone(() => anisotropicConfiguration, this);
+    }
+
+    /**
+     * Serializes this anisotropy configuration.
+     * @returns - An object with the serialized config.
+     */
+    public serialize(): any {
+        return SerializationHelper.Serialize(this);
+    }
+
+    /**
+     * Parses a anisotropy Configuration from a serialized object.
+     * @param source - Serialized object.
+     */
+    public parse(source: any): void {
+        SerializationHelper.Parse(() => this, source, null);
     }
 }

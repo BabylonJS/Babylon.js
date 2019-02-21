@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - Basic usage</title>
+        <style>
+            babylon {
+                max-width: 800px;
+                max-height: 500px;
+                width: 100%;
+                height: 600px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <canvas id="babylon-viewer" camera.behaviors.auto-rotate="0" style="max-width: 800px; max-height: 500px; width: 100%; height: 600px;"></canvas>
+        <script src="renderOnlyViewer.js"></script>
+        <script>
+
+            var config = {
+                "Renderer.ClearColorR": 0.2706,
+                "Renderer.ClearColorG": 0.2902,
+                "Renderer.ClearColorB": 0.3137,
+                "Renderer.ClearColorA": 1.0,
+                "Renderer.ClearColorOverride": false,
+                "GroundPlane.BottomVisible": false,
+                "GroundPlane.BottomGridOpacity": 1.0,
+                "Lighting.Light0_Enabled": true,
+                "Lighting.Light0_PositionX": -4.0,
+                "Lighting.Light0_PositionY": 4.5,
+                "Lighting.Light0_PositionZ": -4.0,
+                "Lighting.Light0_TargetX": 0.0,
+                "Lighting.Light0_TargetY": 0.0,
+                "Lighting.Light0_TargetZ": 0.0,
+                "Lighting.Light0_ColorR": 1.0,
+                "Lighting.Light0_ColorG": 1.0,
+                "Lighting.Light0_ColorB": 1.0,
+                "Lighting.Light0_Intensity": 80.0,
+                "Lighting.Light0_IntensityMode": 0,
+                "Lighting.Light0_Type": 0,
+                "Lighting.Light0_Radius": 0.3,
+                "Lighting.Light0_SpotAngle": 60.0,
+                "Lighting.Light0_CameraRelative": false,
+                "Lighting.Light0_ShadowEnabled": true,
+                "Lighting.Light0_ShadowBufferSize": 512.0,
+                "Lighting.Light0_ShadowFrustumSize": 2.0,
+                "Lighting.Light0_ShadowFieldOfView": 15.0,
+                "Lighting.Light0_ShadowNearClip": 1.0,
+                "Lighting.Light0_ShadowFarClip": 10.0,
+                "Lighting.Light0_FrustumEdgeFalloff": 1.0,
+                "Lighting.Light0_CameraOrientationTracking": 0,
+                "Lighting.Light1_Enabled": true,
+                "Lighting.Light1_PositionX": 5.0,
+                "Lighting.Light1_PositionY": 1.3,
+                "Lighting.Light1_PositionZ": 0.26,
+                "Lighting.Light1_TargetX": 0.0,
+                "Lighting.Light1_TargetY": 0.0,
+                "Lighting.Light1_TargetZ": 0.0,
+                "Lighting.Light1_ColorR": 1.0,
+                "Lighting.Light1_ColorG": 1.0,
+                "Lighting.Light1_ColorB": 1.0,
+                "Lighting.Light1_Intensity": 20.0,
+                "Lighting.Light1_IntensityMode": 0,
+                "Lighting.Light1_Type": 0,
+                "Lighting.Light1_Radius": 0.3,
+                "Lighting.Light1_SpotAngle": 35.0,
+                "Lighting.Light1_CameraRelative": false,
+                "Lighting.Light1_ShadowEnabled": false,
+                "Lighting.Light1_ShadowBufferSize": 512.0,
+                "Lighting.Light1_ShadowFrustumSize": 2.0,
+                "Lighting.Light1_ShadowFieldOfView": 15.0,
+                "Lighting.Light1_ShadowNearClip": 0.2,
+                "Lighting.Light1_ShadowFarClip": 10.0,
+                "Lighting.Light1_FrustumEdgeFalloff": 1.0,
+                "Lighting.Light1_CameraOrientationTracking": 0,
+                "Lighting.Light2_Enabled": true,
+                "Lighting.Light2_PositionX": 0.5,
+                "Lighting.Light2_PositionY": 0.0,
+                "Lighting.Light2_PositionZ": 4.5,
+                "Lighting.Light2_TargetX": 0.0,
+                "Lighting.Light2_TargetY": 0.0,
+                "Lighting.Light2_TargetZ": 0.0,
+                "Lighting.Light2_ColorR": 1.0,
+                "Lighting.Light2_ColorG": 1.0,
+                "Lighting.Light2_ColorB": 1.0,
+                "Lighting.Light2_Intensity": 3.0,
+                "Lighting.Light2_IntensityMode": 0,
+                "Lighting.Light2_Type": 0,
+                "Lighting.Light2_Radius": 0.3,
+                "Lighting.Light2_SpotAngle": 42.0,
+                "Lighting.Light2_CameraRelative": false,
+                "Lighting.Light2_ShadowEnabled": false,
+                "Lighting.Light2_ShadowBufferSize": 512.0,
+                "Lighting.Light2_ShadowFrustumSize": 2.0,
+                "Lighting.Light2_ShadowFieldOfView": 15.0,
+                "Lighting.Light2_ShadowNearClip": 0.2,
+                "Lighting.Light2_ShadowFarClip": 10.0,
+                "Lighting.Light2_FrustumEdgeFalloff": 1.0,
+                "Lighting.Light2_CameraOrientationTracking": 0,
+                "Lighting.MasterEnabled": true,
+                "Lighting.DirectEnabled": true,
+                "Lighting.DirectIntensity": 1.0,
+                "Lighting.EmissiveIntensity": 1.0,
+                "Lighting.EnvironmentEnabled": true,
+                "Lighting.EnvironmentIntensity": 1.5,
+                "Lighting.EnvironmentColorR": 1.0,
+                "Lighting.EnvironmentColorG": 1.0,
+                "Lighting.EnvironmentColorB": 1.0,
+                "Lighting.EnvironmentRotation": -30.0,
+                "Lighting.EnvironmentIndex": 0,
+                "Lighting.BackgroundColorR": 1.0,
+                "Lighting.BackgroundColorG": 1.0,
+                "Lighting.BackgroundColorB": 1.0,
+                "Lighting.BackgroundColorAmount": 1.0,
+                "Lighting.BackgroundLighting": 0.75,
+                "Lighting.BackgroundShadowFalloff": 1.0,
+                "Lighting.BackgroundShadowAmount": 0.075,
+                "ImageProcessing.Enabled": true,
+                "ImageProcessing.PlanarReflectionEnabled": true,
+                "ImageProcessing.PlanarReflectionWeight": 0.8,
+                "ImageProcessing.PlanarReflectionQuality": 2,
+                "ImageProcessing.PlanarReflectionBlur": true,
+                "ImageProcessing.PlanarReflectionDirect": false,
+                "ImageProcessing.BloomEnabled": false,
+                "ImageProcessing.BloomWeight": 0.0,
+                "ImageProcessing.BloomQuality": 2,
+                "ImageProcessing.VignetteWeight": 0.0,
+                "ImageProcessing.VignetteCentreX": 0.0,
+                "ImageProcessing.VignetteCentreY": 0.0,
+                "ImageProcessing.VignetteStretch": 0.5,
+                "ImageProcessing.VignetteColorR": 1.0,
+                "ImageProcessing.VignetteColorG": 1.0,
+                "ImageProcessing.VignetteColorB": 1.0,
+                "ImageProcessing.VignetteColorA": 1.0,
+                "ImageProcessing.VignetteBlendMode": 0,
+                "ColorGrading.TransformWeight": 1.0,
+                "ColorGrading.TransformData": "",
+                "ColorGrading.TransformDataFormat": "",
+                "ColorGrading.ColorFilterHueGlobal": 1.0,
+                "ColorGrading.ColorFilterHueShadows": 0.0,
+                "ColorGrading.ColorFilterHueMidtones": 0.0,
+                "ColorGrading.ColorFilterHueHighlights": 0.0,
+                "ColorGrading.ColorFilterDensityGlobal": 1.0,
+                "ColorGrading.ColorFilterDensityShadows": 1.0,
+                "ColorGrading.ColorFilterDensityMidtones": 1.0,
+                "ColorGrading.ColorFilterDensityHighlights": 1.0,
+                "ColorGrading.SaturationGlobal": 1.0,
+                "ColorGrading.SaturationShadows": 1.0,
+                "ColorGrading.SaturationMidtones": 1.0,
+                "ColorGrading.SaturationHighlights": 1.0,
+                "ColorGrading.ExposureShadows": 1.0,
+                "ColorGrading.ExposureMidtones": 1.0,
+                "ColorGrading.ExposureHighlights": 1.0,
+                "Camera.State.Position.X": 0.0,
+                "Camera.State.Position.Y": 0.0,
+                "Camera.State.Position.Z": 0.0,
+                "Camera.State.Rotation.X": 0.0,
+                "Camera.State.Rotation.Y": 0.0,
+                "Camera.State.Rotation.Z": 0.0,
+                "Camera.State.Rotation.W": 1.0,
+                "Camera.ExposureValue": 1.0,
+                "Camera.ExposureValueIsBrightness": false,
+                "Camera.ToneMappingEnabled": false,
+                "Camera.Contrast": 1.0,
+                "Camera.FieldOfView (Degrees)": 45.0,
+                "Camera.ElevationReturnTime (s)": 2.0,
+                "Camera.ElevationReturnWaitTime (s)": 3.0,
+                "Camera.DefaultElevation": 15.0,
+                "Camera.ElevationUpperLimit (degrees)": 80.0,
+                "Camera.ElevationLowerLimit (degrees)": -85.0,
+                "Camera.IdleRotationSpeed (degrees/s)": 0.0,
+                "Camera.IdleRotationWaitTime (s)": 4.0,
+                "Camera.IdleRotationSpinupTime (s)": 2.5,
+                "Camera.FramingPositionY": 0.5,
+                "Camera.FramingRadius": 0.866,
+                "Camera.FramingTime": 0.5,
+                "Camera.FramingRotation": -90.0,
+                "Camera.FramingElevation": 15.0,
+                "Camera.FramingBehaviour": 0,
+                "Camera.FrameOnModelLoad": true,
+                "Camera.ZoomStopsAnimation": false,
+                "Camera.Behaviour": 1,
+                "Camera.MinDistance": 0.5,
+                "Camera.MaxDistance": 5.0,
+                "Model.RelativeModelLoadScale": 1.0,
+                "Model.PositionAlignBase": true,
+                "Model.PositionOffsetX": 0.0,
+                "Model.PositionOffsetY": 0.0,
+                "Model.PositionOffsetZ": 0.0,
+                "Model.RotationOffsetAxisX": 0.0,
+                "Model.RotationOffsetAxisY": 1.0,
+                "Model.RotationOffsetAxisZ": 0.0,
+                "Model.RotationOffsetAngle": 210.0,
+
+                "Environment.RotationAroundY": 0.0,
+                "Environment.BackgroundClearColorFallback": [0.2706, 0.2902, 0.3137],
+                
+                "Environment.Ground_Texture": "Ground_1.0-1024.png",
+                "Environment.Ground_TextureInGamma": false,
+                "Environment.Ground_UseRGBColor": false,
+                "Environment.Ground_Noise": false,
+                "Environment.Ground_PrimaryColor": [1,1,1],
+                "Environment.Ground_SecondaryColor": [0, 0, 0],
+                "Environment.Ground_TertiaryColor": [0, 0, 0],
+                "Environment.Ground_PrimaryLevel": 1.55,
+                "Environment.Ground_SecondaryLevel": 0,
+                "Environment.Ground_TertiaryLevel": 0,
+                
+                "Environment.Ground_OpacityLevel": 0.8,
+                "Environment.Ground_ReflectionLevel": 1,
+                "Environment.Ground_ShadowLevel": 0.8,
+                
+                "Environment.Skybox_Texture": "Skybox_1.0-128.dds",
+                "Environment.Skybox_TextureInGamma": false,
+                "Environment.Skybox_UseRGBColor": false,
+                "Environment.Skybox_Noise": false,
+                "Environment.Skybox_PrimaryColor": [1, 1, 1],
+                "Environment.Skybox_SecondaryColor": [0, 0, 0],
+                "Environment.Skybox_TertiaryColor": [0, 0, 0],
+                "Environment.Skybox_PrimaryLevel": 1.5,
+                "Environment.Skybox_SecondaryLevel": 0,
+                "Environment.Skybox_TertiaryLevel": 0
+            }
+            
+            // Create viewer with a canvas element
+            var viewer = new BabylonViewer.RenderOnlyViewer(document.getElementById("babylon-viewer"), config);
+
+            // Initialize the viewer (this will setup the scene and load a model if its not)
+            viewer.initialize().then(()=>{
+                // Load a model
+                return viewer.loadModel({
+                    title: "Helmet",
+                    subtitle: "BabylonJS",
+                    thumbnail: "https://www.babylonjs.com/img/favicon/apple-icon-144x144.png",
+                    url: "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf"
+                });
+            }).then(()=>{
+                // 1st model has been loaded, wait a second and swap to another model
+                setTimeout(() => {
+                    viewer.loadModel({
+                        title: "Helmet",
+                        subtitle: "BabylonJS",
+                        thumbnail: "https://www.babylonjs.com/img/favicon/apple-icon-144x144.png",
+                        url: "https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf"
+                    });
+                }, 1000);
+            });
+        </script>
+    </body>
+
+</html>

@@ -280,6 +280,16 @@ class VRExperienceHelperCameraGazer extends VRExperienceHelperGazer {
 }
 
 /**
+ * Event containing information after VR has been entered
+ */
+export class OnAfterEnteringVRObservableEvent {
+    /**
+     * If entering vr was successful
+     */
+    public success: boolean;
+}
+
+/**
  * Helps to quickly add VR support to an existing scene.
  * See http://doc.babylonjs.com/how_to/webvr_helper
  */
@@ -316,9 +326,14 @@ export class VRExperienceHelper {
     private _onVRRequestPresentComplete: (success: boolean) => void;
 
     /**
-     * Observable raised when entering VR.
+     * Observable raised right before entering VR.
      */
     public onEnteringVRObservable = new Observable<VRExperienceHelper>();
+
+    /**
+     * Observable raised when entering VR has completed.
+     */
+    public onAfterEnteringVRObservable = new Observable<OnAfterEnteringVRObservableEvent>();
 
     /**
      * Observable raised when exiting VR.
@@ -832,14 +847,15 @@ export class VRExperienceHelper {
     }
 
     private _onFullscreenChange = () => {
-        if ((<any>document).fullscreen !== undefined) {
+        let anyDoc = document as any;
+        if (anyDoc.fullscreen !== undefined) {
             this._fullscreenVRpresenting = (<any>document).fullscreen;
-        } else if (document.mozFullScreen !== undefined) {
-            this._fullscreenVRpresenting = document.mozFullScreen;
-        } else if (document.webkitIsFullScreen !== undefined) {
-            this._fullscreenVRpresenting = document.webkitIsFullScreen;
-        } else if (document.msIsFullScreen !== undefined) {
-            this._fullscreenVRpresenting = document.msIsFullScreen;
+        } else if (anyDoc.mozFullScreen !== undefined) {
+            this._fullscreenVRpresenting = anyDoc.mozFullScreen;
+        } else if (anyDoc.webkitIsFullScreen !== undefined) {
+            this._fullscreenVRpresenting = anyDoc.webkitIsFullScreen;
+        } else if (anyDoc.msIsFullScreen !== undefined) {
+            this._fullscreenVRpresenting = anyDoc.msIsFullScreen;
         } else if ((<any>document).msFullscreenElement !== undefined) {
             this._fullscreenVRpresenting = (<any>document).msFullscreenElement;
         }
@@ -966,6 +982,9 @@ export class VRExperienceHelper {
         // If WebVR is supported and a headset is connected
         if (this._webVRready) {
             if (!this._webVRpresenting) {
+                this._scene.getEngine().onVRRequestPresentComplete.addOnce((result) => {
+                    this.onAfterEnteringVRObservable.notifyObservers({success: result});
+                });
                 this._webVRCamera.position = this._position;
                 this._scene.activeCamera = this._webVRCamera;
             }
@@ -978,6 +997,9 @@ export class VRExperienceHelper {
             this._scene.activeCamera = this._vrDeviceOrientationCamera;
             this._scene.getEngine().enterFullscreen(this.requestPointerLockOnFullScreen);
             this.updateButtonVisibility();
+            this._vrDeviceOrientationCamera.onViewMatrixChangedObservable.addOnce(() => {
+                this.onAfterEnteringVRObservable.notifyObservers({success: true});
+            });
         }
 
         if (this._scene.activeCamera && this._canvas) {

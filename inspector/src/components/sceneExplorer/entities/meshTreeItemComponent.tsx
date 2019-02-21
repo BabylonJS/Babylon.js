@@ -34,19 +34,6 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
             if (!mesh.reservedDataStore) {
                 mesh.reservedDataStore = {};
             }
-            mesh.reservedDataStore.previousParent = mesh.parent;
-
-            if (mesh.reservedDataStore.previousParent) {
-                if (!mesh.reservedDataStore.previousParent.reservedDataStore) {
-                    mesh.reservedDataStore.previousParent.reservedDataStore = {};
-                }
-
-                if (!mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren) {
-                    mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren = [];
-                }
-
-                mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren.push(mesh);
-            }
 
             const gizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"));
             gizmo.attachedMesh = mesh;
@@ -60,17 +47,8 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
             return;
         }
 
-        const previousParent = mesh.reservedDataStore.previousParent;
         mesh.reservedDataStore.gizmo.dispose();
         mesh.reservedDataStore.gizmo = null;
-        mesh.setParent(previousParent);
-
-        if (previousParent && previousParent.reservedDataStore) {
-            previousParent.reservedDataStore.detachedChildren = null;
-        }
-
-        mesh.reservedDataStore.previousParent = null;
-        mesh.reservedDataStore.pointerDragBehavior = null;
 
         this.setState({ isGizmoEnabled: false });
     }

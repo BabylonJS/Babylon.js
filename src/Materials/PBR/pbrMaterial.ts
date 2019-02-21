@@ -496,8 +496,12 @@ export class PBRMaterial extends PBRBaseMaterial {
     public useLinearAlphaFresnel = false;
 
     /**
-     * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-     * And/Or occlude the blended part.
+     * Let user defines the brdf lookup texture used for IBL.
+     * A default 8bit version is embedded but you could point at :
+     * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.png
+     * * Default 16bit pixel depth texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
+     * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF.png
+     * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -693,6 +697,9 @@ export class PBRMaterial extends PBRBaseMaterial {
         clone.name = name;
 
         this.clearCoat.copyTo(clone.clearCoat);
+        this.anisotropy.copyTo(clone.anisotropy);
+        this.brdf.copyTo(clone.brdf);
+        this.sheen.copyTo(clone.sheen);
 
         return clone;
     }
@@ -706,6 +713,9 @@ export class PBRMaterial extends PBRBaseMaterial {
         serializationObject.customType = "BABYLON.PBRMaterial";
 
         serializationObject.clearCoat = this.clearCoat.serialize();
+        serializationObject.anisotropy = this.anisotropy.serialize();
+        serializationObject.brdf = this.brdf.serialize();
+        serializationObject.sheen = this.sheen.serialize();
 
         return serializationObject;
     }
@@ -722,6 +732,15 @@ export class PBRMaterial extends PBRBaseMaterial {
         const material = SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
         if (source.clearCoat) {
             material.clearCoat.parse(source.clearCoat);
+        }
+        if (source.anisotropy) {
+            material.anisotropy.parse(source.anisotropy);
+        }
+        if (source.brdf) {
+            material.brdf.parse(source.brdf);
+        }
+        if (source.sheen) {
+            material.sheen.parse(source.brdf);
         }
         return material;
     }

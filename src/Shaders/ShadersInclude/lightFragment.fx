@@ -63,10 +63,19 @@
             // Specular contribution
             #ifdef SPECULARTERM
                 #ifdef ANISOTROPIC
-                    info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, normalize(TBN[0]), normalize(TBN[1]), anisotropy, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
+                    info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, anisotropicTangent, anisotropicBitangent, anisotropy, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
                 #else
                     info.specular = computeSpecularLighting(preInfo, normalW, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
                 #endif
+            #endif
+
+            // Sheen contribution
+            #ifdef SHEEN
+                #ifdef SHEEN_LINKWITHALBEDO
+                    // BE Carefull: Sheen intensity is replacing the roughness value.
+                    preInfo.roughness = sheenIntensity;
+                #endif
+                info.sheen = computeSheenLighting(preInfo, normalW, sheenColor, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
             #endif
 
             // Clear Coat contribution
@@ -93,6 +102,9 @@
                 info.diffuse *= info.clearCoat.w;
                 #ifdef SPECULARTERM
                     info.specular *= info.clearCoat.w * info.clearCoat.w;
+                #endif
+                #ifdef SHEEN
+                    info.sheen *= info.clearCoat.w * info.clearCoat.w;
                 #endif
             #endif
         #else
@@ -182,6 +194,11 @@
                     clearCoatBase += info.clearCoat.rgb * shadow * lightmapColor;
                 #endif
             #endif
+            #ifdef SHEEN
+                #ifndef LIGHTMAPNOSPECULAR{X}
+                    sheenBase += info.sheen.rgb * shadow;
+                #endif
+            #endif
         #else
             diffuseBase += info.diffuse * shadow;
             #ifdef SPECULARTERM
@@ -189,6 +206,9 @@
             #endif
             #ifdef CLEARCOAT
                 clearCoatBase += info.clearCoat.rgb * shadow;
+            #endif
+            #ifdef SHEEN
+                sheenBase += info.sheen.rgb * shadow;
             #endif
         #endif
     #endif

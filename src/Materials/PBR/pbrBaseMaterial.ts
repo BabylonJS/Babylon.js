@@ -1,4 +1,4 @@
-import { serialize, serializeAsImageProcessingConfiguration } from "../../Misc/decorators";
+import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
 import { Observer } from "../../Misc/observable";
 import { IAnimatable } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
@@ -16,6 +16,8 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { IMaterialClearCoatDefines, PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
 import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
+import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
+import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
@@ -40,7 +42,11 @@ import "../../Shaders/pbr.vertex";
  * @hiddenChildren
  */
 class PBRMaterialDefines extends MaterialDefines
-    implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines {
+    implements IImageProcessingConfigurationDefines,
+    IMaterialClearCoatDefines,
+    IMaterialAnisotropicDefines,
+    IMaterialBRDFDefines,
+    IMaterialSheenDefines {
     public PBR = true;
 
     public MAINUV1 = false;
@@ -192,8 +198,20 @@ class PBRMaterialDefines extends MaterialDefines
     public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
 
     public ANISOTROPIC = false;
+    public ANISOTROPIC_TEXTURE = false;
+    public ANISOTROPIC_TEXTUREDIRECTUV = 0;
+
+    public BRDF_V_HEIGHT_CORRELATED = false;
+    public MS_BRDF_ENERGY_CONSERVATION = false;
+
+    public SHEEN = false;
+    public SHEEN_TEXTURE = false;
+    public SHEEN_TEXTUREDIRECTUV = 0;
+    public SHEEN_LINKWITHALBEDO = false;
 
     public UNLIT = false;
+
+    public DEBUGMODE = 0;
 
     /**
      * Initializes the PBR Material defines.
@@ -246,7 +264,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Defines the default value of how much AO map is occluding the analytical lights
      * (point spot...).
      */
-    public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 1;
+    public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 0;
 
     /**
      * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
@@ -658,6 +676,34 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     private _unlit = false;
 
+    private _debugMode = 0;
+    /**
+     * @hidden
+     * This is reserved for the inspector.
+     * Defines the material debug mode.
+     * It helps seeing only some components of the material while troubleshooting.
+     */
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public debugMode = 0;
+
+    /**
+     * @hidden
+     * This is reserved for the inspector.
+     * Specify from where on screen the debug mode should start.
+     * The value goes from -1 (full screen) to 1 (not visible)
+     * It helps with side by side comparison against the final render
+     * This defaults to -1
+     */
+    private debugLimit = -1;
+
+    /**
+     * @hidden
+     * This is reserved for the inspector.
+     * As the default viewing range might not be enough (if the ambient is really small for instance)
+     * You can use the factor to better multiply the final value.
+     */
+    private debugFactor = 1;
+
     /**
      * Defines the clear coat layer parameters for the material.
      */
@@ -666,7 +712,17 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the anisotropic parameters for the material.
      */
-    public readonly anisotropy = new PBRAnisotropicConfiguration(this._markAllSubMeshesAsMiscDirty.bind(this));
+    public readonly anisotropy = new PBRAnisotropicConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+
+    /**
+     * Defines the BRDF parameters for the material.
+     */
+    public readonly brdf = new PBRBRDFConfiguration(this._markAllSubMeshesAsMiscDirty.bind(this));
+
+    /**
+     * Defines the Sheen parameters for the material.
+     */
+    public readonly sheen = new PBRSheenConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
      * Instantiates a new PBRMaterial instance.
@@ -939,6 +995,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return false;
         }
 
+        if (!this.sheen.isReadyForSubMesh(defines, scene)) {
+            return false;
+        }
+
+        if (!this.anisotropy.isReadyForSubMesh(defines, scene)) {
+            return false;
+        }
+
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             if (!this._imageProcessingConfiguration.isReady()) {
                 return false;
@@ -1026,6 +1090,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         fallbackRank = PBRAnisotropicConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
         fallbackRank = PBRClearCoatConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
+        fallbackRank = PBRSheenConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
 
         if (defines.ENVIRONMENTBRDF) {
             fallbacks.addFallback(fallbackRank++, "ENVIRONMENTBRDF");
@@ -1120,7 +1185,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vSphericalXX", "vSphericalYY", "vSphericalZZ",
             "vSphericalXY", "vSphericalYZ", "vSphericalZX",
             "vReflectionMicrosurfaceInfos", "vRefractionMicrosurfaceInfos",
-            "vTangentSpaceParams", "boneTextureWidth"
+            "vTangentSpaceParams", "boneTextureWidth",
+            "vDebugMode"
         ];
 
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
@@ -1135,6 +1201,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRClearCoatConfiguration.AddSamplers(samplers);
 
         PBRAnisotropicConfiguration.AddUniforms(uniforms);
+        PBRAnisotropicConfiguration.AddSamplers(samplers);
+
+        PBRSheenConfiguration.AddUniforms(uniforms);
+        PBRSheenConfiguration.AddSamplers(samplers);
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1432,11 +1502,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (defines._areMiscDirty) {
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+            defines.DEBUGMODE = this._debugMode;
         }
 
         // External config
         this.clearCoat.prepareDefines(defines, scene);
-        this.anisotropy.prepareDefines(defines, mesh);
+        this.anisotropy.prepareDefines(defines, mesh, scene);
+        this.brdf.prepareDefines(defines);
+        this.sheen.prepareDefines(defines, scene);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);
@@ -1512,6 +1585,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         PBRClearCoatConfiguration.PrepareUniformBuffer(this._uniformBuffer);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(this._uniformBuffer);
+        PBRSheenConfiguration.PrepareUniformBuffer(this._uniformBuffer);
 
         this._uniformBuffer.create();
     }
@@ -1778,7 +1852,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             this.clearCoat.bindForSubMesh(this._uniformBuffer, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
-            this.anisotropy.bindForSubMesh(this._uniformBuffer, this.isFrozen);
+            this.anisotropy.bindForSubMesh(this._uniformBuffer, scene, this.isFrozen);
+            this.sheen.bindForSubMesh(this._uniformBuffer, scene, this.isFrozen);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
@@ -1794,6 +1869,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 eyePosition.z,
                 invertNormal ? -1 : 1);
             effect.setColor3("vAmbientColor", this._globalAmbientColor);
+
+            effect.setFloat2("vDebugMode", this.debugLimit, this.debugFactor);
         }
 
         if (mustRebind || !this.isFrozen) {
@@ -1874,6 +1951,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this.clearCoat.getAnimatables(results);
+        this.sheen.getAnimatables(results);
+        this.anisotropy.getAnimatables(results);
 
         return results;
     }
@@ -1959,6 +2038,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this.clearCoat.getActiveTextures(activeTextures);
+        this.sheen.getActiveTextures(activeTextures);
+        this.anisotropy.getActiveTextures(activeTextures);
 
         return activeTextures;
     }
@@ -2009,7 +2090,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        return this.clearCoat.hasTexture(texture);
+        return this.clearCoat.hasTexture(texture) ||
+            this.sheen.hasTexture(texture) ||
+            this.anisotropy.hasTexture(texture);
     }
 
     /**
@@ -2065,6 +2148,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this.clearCoat.dispose(forceDisposeTextures);
+        this.sheen.dispose(forceDisposeTextures);
+        this.anisotropy.dispose(forceDisposeTextures);
 
         this._renderTargets.dispose();
 
