@@ -4031,8 +4031,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.resetCachedMaterial();
         this._renderId++;
 
-        // Bind outputRenderTarget before setting transform if needed
-        this._bindFrameBuffer();
         var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
         if (useMultiview) {
             this.setTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
@@ -4354,13 +4352,10 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Restore back buffer
-        if (this.customRenderTargets.length > 0) {
-            engine.restoreDefaultFramebuffer();
-        }
-
-        this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
         this.activeCamera = currentActiveCamera;
-
+        this._bindFrameBuffer();
+        this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
+        
         for (let step of this._beforeClearStage) {
             step.action();
         }

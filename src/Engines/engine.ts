@@ -5572,7 +5572,7 @@ export class Engine {
         internalTexture._depthStencilTextureArray = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._depthStencilTextureArray);
         (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH32F_STENCIL8, width, height, 2);
-
+        internalTexture.isReady = true;
         return internalTexture;
     }
 
@@ -6446,7 +6446,12 @@ export class Engine {
 
             this._activateCurrentTexture();
 
-            this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+            if(texture && texture.isMultiview){
+                this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
+            }else{
+                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+            }
+            
             this._boundTexturesCache[this._activeChannel] = texture;
 
             if (texture) {
@@ -6637,8 +6642,11 @@ export class Engine {
         }
 
         this._activeChannel = channel;
-
-        if (internalTexture && internalTexture.is3D) {
+        if (internalTexture && internalTexture.isMultiview) {
+            if (needToBind) {
+                this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
+            }
+        }else if (internalTexture && internalTexture.is3D) {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
             }

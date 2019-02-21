@@ -1014,6 +1014,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
     constructor(public scene: Scene, size: number | { width: number, height: number } | { ratio: number } = 512) {
         super("multiview rtt", size, scene, false, true, InternalTexture.DATASOURCE_UNKNOWN, false, undefined, false, false, true, undefined, true);
         var internalTexture = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
+        internalTexture.isMultiview = true;
         this._texture = internalTexture;
     }
 
