@@ -31,6 +31,7 @@ export class PhysicsHelper {
 
         if (!this._physicsEngine) {
             Logger.Warn('Physics engine not enabled. Please enable the physics before you can use the methods.');
+            return;
         }
 
         this.options = {...(new PhysicsHelperOptions()), ...options};
@@ -46,10 +47,12 @@ export class PhysicsHelper {
     /**
      * Applies a radial explosion impulse
      * @param origin the origin of the explosion
-     * @param eventOptions the options of radial explosion
+     * @param radiusOrEventOptions the radius or the options of radial explosion
+     * @param strength the explosion strength
+     * @param falloff possible options: Constant & Linear. Defaults to Constant
      * @returns A physics radial explosion event, or null
      */
-    public applyRadialExplosionImpulse(origin: Vector3, eventOptions: PhysicsRadialExplosionEventOptions): Nullable<PhysicsRadialExplosionEvent> {
+    public applyRadialExplosionImpulse(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent> {
         if (!this._physicsEngine) {
             Logger.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
             return null;
@@ -60,7 +63,14 @@ export class PhysicsHelper {
             return null;
         }
 
-        var event = new PhysicsRadialExplosionEvent(this, this._scene, eventOptions);
+        if (typeof radiusOrEventOptions === 'number') {
+          radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
+          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+          radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+        }
+
+        var event = new PhysicsRadialExplosionEvent(this, this._scene, radiusOrEventOptions);
 
         impostors.forEach((impostor) => {
             var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin);
@@ -79,10 +89,12 @@ export class PhysicsHelper {
     /**
      * Applies a radial explosion force
      * @param origin the origin of the explosion
-     * @param eventOptions the options of radial explosion
+     * @param radiusOrEventOptions the radius or the options of radial explosion
+     * @param strength the explosion strength
+     * @param falloff possible options: Constant & Linear. Defaults to Constant
      * @returns A physics radial explosion event, or null
      */
-    public applyRadialExplosionForce(origin: Vector3, eventOptions: PhysicsRadialExplosionEventOptions): Nullable<PhysicsRadialExplosionEvent> {
+    public applyRadialExplosionForce(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent> {
         if (!this._physicsEngine) {
             Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
             return null;
@@ -93,7 +105,14 @@ export class PhysicsHelper {
             return null;
         }
 
-        var event = new PhysicsRadialExplosionEvent(this, this._scene, eventOptions);
+        if (typeof radiusOrEventOptions === 'number') {
+          radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
+          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+          radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+        }
+
+        var event = new PhysicsRadialExplosionEvent(this, this._scene, radiusOrEventOptions);
 
         impostors.forEach((impostor) => {
             var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin);
@@ -112,10 +131,12 @@ export class PhysicsHelper {
     /**
      * Creates a gravitational field
      * @param origin the origin of the explosion
-     * @param eventOptions the options of gravitational field
+     * @param radiusOrEventOptions the radius or the options of radial explosion
+     * @param strength the explosion strength
+     * @param falloff possible options: Constant & Linear. Defaults to Constant
      * @returns A physics gravitational field event, or null
      */
-    public gravitationalField(origin: Vector3, eventOptions: PhysicsRadialExplosionEventOptions): Nullable<PhysicsGravitationalFieldEvent> {
+    public gravitationalField(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent> {
         if (!this._physicsEngine) {
             Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
             return null;
@@ -126,7 +147,14 @@ export class PhysicsHelper {
             return null;
         }
 
-        var event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, eventOptions);
+        if (typeof radiusOrEventOptions === 'number') {
+          radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
+          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+          radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+        }
+
+        var event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radiusOrEventOptions);
 
         event.dispose(false);
 
@@ -136,10 +164,13 @@ export class PhysicsHelper {
     /**
      * Creates a physics updraft event
      * @param origin the origin of the updraft
-     * @param eventOptions the options of updraft
+     * @param radiusOrEventOptions the radius or the options of the updraft
+     * @param strength the strength of the updraft
+     * @param height the height of the updraft
+     * @param updraftMode possible options: Center & Perpendicular. Defaults to Center
      * @returns A physics updraft event, or null
      */
-    public updraft(origin: Vector3, eventOptions: PhysicsUpdraftEventOptions): Nullable<PhysicsUpdraftEvent> {
+    public updraft(origin: Vector3, radiusOrEventOptions: number | PhysicsUpdraftEventOptions, strength?: number, height?: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent> {
         if (!this._physicsEngine) {
             Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
             return null;
@@ -149,7 +180,15 @@ export class PhysicsHelper {
             return null;
         }
 
-        var event = new PhysicsUpdraftEvent(this, this._scene, origin, eventOptions);
+        if (typeof radiusOrEventOptions === 'number') {
+          radiusOrEventOptions = new PhysicsUpdraftEventOptions();
+          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+          radiusOrEventOptions.height = height || radiusOrEventOptions.height;
+          radiusOrEventOptions.updraftMode = updraftMode || radiusOrEventOptions.updraftMode;
+        }
+
+        var event = new PhysicsUpdraftEvent(this, this._scene, origin, radiusOrEventOptions);
 
         event.dispose(false);
 
@@ -159,11 +198,13 @@ export class PhysicsHelper {
     /**
      * Creates a physics vortex event
      * @param origin the of the vortex
-     * @param eventOptions the options of vortex
+     * @param radiusOrEventOptions the radius or the options of the vortex
+     * @param strength the strength of the vortex
+     * @param height   the height of the vortex
      * @returns a Physics vortex event, or null
      * A physics vortex event or null
      */
-    public vortex(origin: Vector3, eventOptions: PhysicsVortexEventOptions): Nullable<PhysicsVortexEvent> {
+    public vortex(origin: Vector3, radiusOrEventOptions: number | PhysicsVortexEventOptions, strength?: number, height?: number): Nullable<PhysicsVortexEvent> {
         if (!this._physicsEngine) {
             Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
             return null;
@@ -173,7 +214,14 @@ export class PhysicsHelper {
             return null;
         }
 
-        var event = new PhysicsVortexEvent(this, this._scene, origin, eventOptions);
+        if (typeof radiusOrEventOptions === 'number') {
+          radiusOrEventOptions = new PhysicsVortexEventOptions();
+          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+          radiusOrEventOptions.height = height || radiusOrEventOptions.height;
+        }
+
+        var event = new PhysicsVortexEvent(this, this._scene, origin, radiusOrEventOptions);
 
         event.dispose(false);
 
@@ -463,14 +511,14 @@ export class PhysicsUpdraftEvent {
     }
 
     /**
-     * Disables the cortex.
+     * Disables the updraft.
      */
     public disable() {
         this._scene.unregisterBeforeRender(this._tickCallback);
     }
 
     /**
-     * Disposes the sphere.
+     * Disposes the cylinder.
      * @param force Specifies if the updraft should be disposed by force
      */
     public dispose(force: boolean = true) {
@@ -722,9 +770,9 @@ export class PhysicsVortexEvent {
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class PhysicsRadialExplosionEventOptions {
-  /**
-   * The radius of the sphere for the radial explosion.
-   */
+    /**
+     * The radius of the sphere for the radial explosion.
+     */
     radius: number = 5;
 
     /**
@@ -748,9 +796,9 @@ export class PhysicsRadialExplosionEventOptions {
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class PhysicsUpdraftEventOptions {
-  /**
-   * The radius of the cylinder for the vortex
-   */
+    /**
+     * The radius of the cylinder for the vortex
+     */
     radius: number = 5;
 
     /**
@@ -774,9 +822,9 @@ export class PhysicsUpdraftEventOptions {
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class PhysicsVortexEventOptions {
-  /**
-   * The radius of the cylinder for the vortex
-   */
+    /**
+     * The radius of the cylinder for the vortex
+     */
     radius: number = 5;
 
     /**
