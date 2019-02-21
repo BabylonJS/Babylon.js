@@ -4350,6 +4350,16 @@ declare module BABYLON {
         private _deferUnregister;
         private _remove;
         /**
+         * Moves the observable to the top of the observer list making it get called first when notified
+         * @param observer the observer to move
+         */
+        makeObserverTopPriority(observer: Observer<T>): void;
+        /**
+         * Moves the observable to the bottom of the observer list making it get called last when notified
+         * @param observer the observer to move
+         */
+        makeObserverBottomPriority(observer: Observer<T>): void;
+        /**
          * Notify all Observers by calling their respective callback with the given data
          * Will return true if all observers were executed, false if an observer set skipNextObservers to true, then prevent the subsequent ones to execute
          * @param eventData defines the data to send to all observers
@@ -19287,6 +19297,82 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Holds the data for the raycast result
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     */
+    export class PhysicsRaycastResult {
+        private _hasHit;
+        private _hitDistance;
+        private _hitNormalWorld;
+        private _hitPointWorld;
+        private _rayFromWorld;
+        private _rayToWorld;
+        /**
+         * Gets if there was a hit
+         */
+        readonly hasHit: boolean;
+        /**
+         * Gets the distance from the hit
+         */
+        readonly hitDistance: number;
+        /**
+         * Gets the hit normal/direction in the world
+         */
+        readonly hitNormalWorld: Vector3;
+        /**
+         * Gets the hit point in the world
+         */
+        readonly hitPointWorld: Vector3;
+        /**
+         * Gets the ray "start point" of the ray in the world
+         */
+        readonly rayFromWorld: Vector3;
+        /**
+         * Gets the ray "end point" of the ray in the world
+         */
+        readonly rayToWorld: Vector3;
+        /**
+         * Sets the hit data (normal & point in world space)
+         * @param hitNormalWorld
+         * @param hitPointWorld
+         */
+        setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ): void;
+        /**
+         * Sets the distance from the start point to the hit point
+         * @param distance
+         */
+        setHitDistance(distance: number): void;
+        /**
+         * Calculates the distance manually
+         */
+        calculateHitDistance(): void;
+        /**
+         * Resets all the values to default
+         * @param from The from point on world space
+         * @param to The to point on world space
+         */
+        reset(from?: Vector3, to?: Vector3): void;
+    }
+    /**
+     * Interface for the size containing width and height
+     */
+    interface IXYZ {
+        /**
+         * X
+         */
+        x: number;
+        /**
+         * Y
+         */
+        y: number;
+        /**
+         * Z
+         */
+        z: number;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to describe a physics joint
      */
     export interface PhysicsImpostorJoint {
@@ -19326,6 +19412,7 @@ declare module BABYLON {
         setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
         updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
         setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
         setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
@@ -19418,6 +19505,13 @@ declare module BABYLON {
          * @returns the PhysicsImpostor or null if not found
          */
         getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
         /**
          * Called by the scene. No need to call it.
          * @param delta defines the timespam between frames
@@ -19917,6 +20011,10 @@ declare module BABYLON {
          * Heightmap-Imposter type
          */
         static HeightmapImpostor: number;
+        /**
+         * ConvexHull-Impostor type (Ammo.js plugin only)
+         */
+        static ConvexHullImpostor: number;
     }
 }
 declare module BABYLON {
@@ -34051,7 +34149,7 @@ declare module BABYLON {
          * press.
          * Override this method to provide functionality.
          */
-        protected onButtonDown(evt: PointerEvent, buttonCount: number): void;
+        protected onButtonDown(evt: PointerEvent): void;
         /**
          * Called each time a new POINTERUP event occurs. Ie, for each button
          * release.
@@ -34066,6 +34164,8 @@ declare module BABYLON {
         private _pointerInput;
         private _observer;
         private _onLostFocus;
+        private pointA;
+        private pointB;
     }
 }
 declare module BABYLON {
@@ -34144,7 +34244,7 @@ declare module BABYLON {
          * Called each time a new POINTERDOWN event occurs. Ie, for each button
          * press.
          */
-        protected onButtonDown(evt: PointerEvent, buttonCount: number): void;
+        protected onButtonDown(evt: PointerEvent): void;
         /**
          * Called each time a new POINTERUP event occurs. Ie, for each button
          * release.
@@ -46817,6 +46917,13 @@ declare module BABYLON {
          * @returns the PhysicsImpostor or null if not found
          */
         getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
     }
 }
 declare module BABYLON {
@@ -46827,6 +46934,8 @@ declare module BABYLON {
         name: string;
         private _physicsMaterials;
         private _fixedTimeStep;
+        private _cannonRaycastResult;
+        private _raycastResult;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
@@ -46873,6 +46982,13 @@ declare module BABYLON {
         getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
         dispose(): void;
         private _extendNamespace;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
     }
 }
 declare module BABYLON {
@@ -46881,6 +46997,7 @@ declare module BABYLON {
         world: any;
         name: string;
         BJSOIMO: any;
+        private _raycastResult;
         constructor(iterations?: number, oimoInjection?: any);
         setGravity(gravity: Vector3): void;
         setTimeStep(timeStep: number): void;
@@ -46916,6 +47033,13 @@ declare module BABYLON {
         getRadius(impostor: PhysicsImpostor): number;
         getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
         dispose(): void;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
     }
 }
 declare module BABYLON {
@@ -49908,7 +50032,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * A helper for physics simulations
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export class PhysicsHelper {
         private _scene;
@@ -49921,68 +50045,67 @@ declare module BABYLON {
         /**
          * Applies a radial explosion impulse
          * @param origin the origin of the explosion
-         * @param radius the explosion radius
+         * @param radiusOrEventOptions the radius or the options of radial explosion
          * @param strength the explosion strength
          * @param falloff possible options: Constant & Linear. Defaults to Constant
          * @returns A physics radial explosion event, or null
          */
-        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        applyRadialExplosionImpulse(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
         /**
          * Applies a radial explosion force
          * @param origin the origin of the explosion
-         * @param radius the explosion radius
+         * @param radiusOrEventOptions the radius or the options of radial explosion
          * @param strength the explosion strength
          * @param falloff possible options: Constant & Linear. Defaults to Constant
          * @returns A physics radial explosion event, or null
          */
-        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        applyRadialExplosionForce(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
         /**
          * Creates a gravitational field
          * @param origin the origin of the explosion
-         * @param radius the explosion radius
+         * @param radiusOrEventOptions the radius or the options of radial explosion
          * @param strength the explosion strength
          * @param falloff possible options: Constant & Linear. Defaults to Constant
          * @returns A physics gravitational field event, or null
          */
-        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
+        gravitationalField(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
         /**
          * Creates a physics updraft event
          * @param origin the origin of the updraft
-         * @param radius the radius of the updraft
+         * @param radiusOrEventOptions the radius or the options of the updraft
          * @param strength the strength of the updraft
          * @param height the height of the updraft
          * @param updraftMode possible options: Center & Perpendicular. Defaults to Center
          * @returns A physics updraft event, or null
          */
-        updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
+        updraft(origin: Vector3, radiusOrEventOptions: number | PhysicsUpdraftEventOptions, strength?: number, height?: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
         /**
          * Creates a physics vortex event
          * @param origin the of the vortex
-         * @param radius the radius of the vortex
+         * @param radiusOrEventOptions the radius or the options of the vortex
          * @param strength the strength of the vortex
          * @param height   the height of the vortex
          * @returns a Physics vortex event, or null
          * A physics vortex event or null
          */
-        vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent>;
+        vortex(origin: Vector3, radiusOrEventOptions: number | PhysicsVortexEventOptions, strength?: number, height?: number): Nullable<PhysicsVortexEvent>;
     }
     /**
      * Represents a physics radial explosion event
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
-    export class PhysicsRadialExplosionEvent {
+    class PhysicsRadialExplosionEvent {
         private _scene;
+        private _options;
         private _sphere;
-        private _sphereOptions;
-        private _rays;
         private _dataFetched;
         /**
          * Initializes a radial explosioin event
-         * @param scene BabylonJS scene
+         * @param _scene BabylonJS scene
+         * @param _options The options for the vortex event
          */
-        constructor(scene: Scene);
+        constructor(_scene: Scene, _options: PhysicsRadialExplosionEventOptions);
         /**
-         * Returns the data related to the radial explosion event (sphere & rays).
+         * Returns the data related to the radial explosion event (sphere).
          * @returns The radial explosion event data
          */
         getData(): PhysicsRadialExplosionEventData;
@@ -49990,12 +50113,9 @@ declare module BABYLON {
          * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
          * @param impostor A physics imposter
          * @param origin the origin of the explosion
-         * @param radius the explosion radius
-         * @param strength the explosion strength
-         * @param falloff possible options: Constant & Linear
          * @returns {Nullable<PhysicsForceAndContactPoint>} A physics force and contact point, or null
          */
-        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint>;
+        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsForceAndContactPoint>;
         /**
          * Disposes the sphere.
          * @param force Specifies if the sphere should be disposed by force
@@ -50007,28 +50127,23 @@ declare module BABYLON {
     }
     /**
      * Represents a gravitational field event
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
-    export class PhysicsGravitationalFieldEvent {
+    class PhysicsGravitationalFieldEvent {
         private _physicsHelper;
         private _scene;
         private _origin;
-        private _radius;
-        private _strength;
-        private _falloff;
+        private _options;
         private _tickCallback;
         private _sphere;
         private _dataFetched;
         /**
          * Initializes the physics gravitational field event
-         * @param physicsHelper A physics helper
-         * @param scene BabylonJS scene
-         * @param origin The origin position of the gravitational field event
-         * @param radius The radius of the gravitational field event
-         * @param strength The strength of the gravitational field event
-         * @param falloff The falloff for the gravitational field event
+         * @param _physicsHelper A physics helper
+         * @param _scene BabylonJS scene
+         * @param _origin The origin position of the gravitational field event
+         * @param _options The options for the vortex event
          */
-        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff);
+        constructor(_physicsHelper: PhysicsHelper, _scene: Scene, _origin: Vector3, _options: PhysicsRadialExplosionEventOptions);
         /**
          * Returns the data related to the gravitational field event (sphere).
          * @returns A gravitational field event
@@ -50051,15 +50166,11 @@ declare module BABYLON {
     }
     /**
      * Represents a physics updraft event
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
-    export class PhysicsUpdraftEvent {
+    class PhysicsUpdraftEvent {
         private _scene;
         private _origin;
-        private _radius;
-        private _strength;
-        private _height;
-        private _updraftMode;
+        private _options;
         private _physicsEngine;
         private _originTop;
         private _originDirection;
@@ -50071,12 +50182,9 @@ declare module BABYLON {
          * Initializes the physics updraft event
          * @param _scene BabylonJS scene
          * @param _origin The origin position of the updraft
-         * @param _radius The radius of the updraft
-         * @param _strength The strength of the updraft
-         * @param _height The height of the updraft
-         * @param _updraftMode The mode of the updraft
+         * @param _options The options for the updraft event
          */
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number, _updraftMode: PhysicsUpdraftMode);
+        constructor(_scene: Scene, _origin: Vector3, _options: PhysicsUpdraftEventOptions);
         /**
          * Returns the data related to the updraft event (cylinder).
          * @returns A physics updraft event
@@ -50087,11 +50195,11 @@ declare module BABYLON {
          */
         enable(): void;
         /**
-         * Disables the cortex.
+         * Disables the updraft.
          */
         disable(): void;
         /**
-         * Disposes the sphere.
+         * Disposes the cylinder.
          * @param force Specifies if the updraft should be disposed by force
          */
         dispose(force?: boolean): void;
@@ -50103,18 +50211,13 @@ declare module BABYLON {
     }
     /**
      * Represents a physics vortex event
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
-    export class PhysicsVortexEvent {
+    class PhysicsVortexEvent {
         private _scene;
         private _origin;
-        private _radius;
-        private _strength;
-        private _height;
+        private _options;
         private _physicsEngine;
         private _originTop;
-        private _centripetalForceThreshold;
-        private _updraftMultiplier;
         private _tickCallback;
         private _cylinder;
         private _cylinderPosition;
@@ -50123,11 +50226,9 @@ declare module BABYLON {
          * Initializes the physics vortex event
          * @param _scene The BabylonJS scene
          * @param _origin The origin position of the vortex
-         * @param _radius The radius of the vortex
-         * @param _strength The strength of the vortex
-         * @param _height The height of the vortex
+         * @param _options The options for the vortex event
          */
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number);
+        constructor(_scene: Scene, _origin: Vector3, _options: PhysicsVortexEventOptions);
         /**
          * Returns the data related to the vortex event (cylinder).
          * @returns The physics vortex event data
@@ -50153,18 +50254,99 @@ declare module BABYLON {
         private _intersectsWithCylinder;
     }
     /**
+     * Options fot the radial explosion event
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
+     */
+    export class PhysicsRadialExplosionEventOptions {
+        /**
+         * The radius of the sphere for the radial explosion.
+         */
+        radius: number;
+        /**
+         * The strenth of the explosion.
+         */
+        strength: number;
+        /**
+         * The strenght of the force in correspondence to the distance of the affected object
+         */
+        falloff: PhysicsRadialImpulseFalloff;
+        /**
+         * Sphere options for the radial explosion.
+         */
+        sphere: {
+            segments: number;
+            diameter: number;
+        };
+    }
+    /**
+     * Options fot the updraft event
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
+     */
+    export class PhysicsUpdraftEventOptions {
+        /**
+         * The radius of the cylinder for the vortex
+         */
+        radius: number;
+        /**
+         * The strenth of the updraft.
+         */
+        strength: number;
+        /**
+         * The height of the cylinder for the updraft.
+         */
+        height: number;
+        /**
+         * The mode for the the updraft.
+         */
+        updraftMode: PhysicsUpdraftMode;
+    }
+    /**
+     * Options fot the vortex event
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
+     */
+    export class PhysicsVortexEventOptions {
+        /**
+         * The radius of the cylinder for the vortex
+         */
+        radius: number;
+        /**
+         * The strenth of the vortex.
+         */
+        strength: number;
+        /**
+         * The height of the cylinder for the vortex.
+         */
+        height: number;
+        /**
+         * At which distance, relative to the radius the centripetal forces should kick in? Range: 0-1
+         */
+        centripetalForceThreshold: number;
+        /**
+         * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when below the treshold.
+         */
+        centripetalForceMultiplier: number;
+        /**
+         * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when above the treshold.
+         */
+        centrifugalForceMultiplier: number;
+        /**
+         * This multiplier determines with how much force the objects will be pushed upwards, when in the vortex.
+         */
+        updraftForceMultiplier: number;
+    }
+    /**
     * The strenght of the force in correspondence to the distance of the affected object
-    * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+    * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
     */
     export enum PhysicsRadialImpulseFalloff {
         /** Defines that impulse is constant in strength across it's whole radius */
         Constant = 0,
-        /** DEfines that impulse gets weaker if it's further from the origin */
+        /** Defines that impulse gets weaker if it's further from the origin */
         Linear = 1
     }
     /**
      * The strength of the force in correspondence to the distance of the affected object
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export enum PhysicsUpdraftMode {
         /** Defines that the upstream forces will pull towards the top center of the cylinder */
@@ -50174,7 +50356,7 @@ declare module BABYLON {
     }
     /**
      * Interface for a physics force and contact point
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsForceAndContactPoint {
         /**
@@ -50188,21 +50370,17 @@ declare module BABYLON {
     }
     /**
      * Interface for radial explosion event data
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsRadialExplosionEventData {
         /**
          * A sphere used for the radial explosion event
          */
         sphere: Mesh;
-        /**
-         * An array of rays for the radial explosion event
-         */
-        rays: Array<Ray>;
     }
     /**
      * Interface for gravitational field event data
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsGravitationalFieldEventData {
         /**
@@ -50212,7 +50390,7 @@ declare module BABYLON {
     }
     /**
      * Interface for updraft event data
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsUpdraftEventData {
         /**
@@ -50222,7 +50400,7 @@ declare module BABYLON {
     }
     /**
      * Interface for vortex event data
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsVortexEventData {
         /**
@@ -50266,6 +50444,9 @@ declare module BABYLON {
         private _tmpAmmoVectorB;
         private _tmpAmmoVectorC;
         private _tmpContactCallbackResult;
+        private _tmpAmmoVectorRCA;
+        private _tmpAmmoVectorRCB;
+        private _raycastResult;
         private static readonly DISABLE_COLLISION_FLAG;
         private static readonly KINEMATIC_FLAG;
         private static readonly DISABLE_DEACTIVATION_FLAG;
@@ -50348,6 +50529,7 @@ declare module BABYLON {
          */
         removeJoint(impostorJoint: PhysicsImpostorJoint): void;
         private _addMeshVerts;
+        private _addHullVerts;
         private _createShape;
         /**
          * Sets the physics body position/rotation from the babylon mesh's position/rotation
@@ -50480,6 +50662,13 @@ declare module BABYLON {
          * Disposes of the impostor
          */
         dispose(): void;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
     }
 }
 declare module BABYLON {
