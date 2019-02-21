@@ -532,27 +532,26 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 returnValue = new Ammo.btBoxShape(this._tmpAmmoVectorA);
                 break;
             case PhysicsImpostor.MeshImpostor:
-                if ((<any>impostor)._options.useConvexHullShape) {
-                    var convexMesh = new Ammo.btConvexHullShape();
-                    var triangeCount = this._addHullVerts(convexMesh, object, object);
-                    if (triangeCount == 0) {
-                        // Cleanup Unused Convex Hull Shape
-                        impostor._pluginData.toDispose.concat([convexMesh]);
-                        returnValue = new Ammo.btCompoundShape();
-                    } else {
-                        returnValue = convexMesh;
-                    }
+                var tetraMesh = new Ammo.btTriangleMesh();
+                impostor._pluginData.toDispose.concat([tetraMesh]);
+                var triangeCount = this._addMeshVerts(tetraMesh, object, object);
+                if (triangeCount == 0) {
+                    returnValue = new Ammo.btCompoundShape();
                 } else {
-                    var tetraMesh = new Ammo.btTriangleMesh();
-                    impostor._pluginData.toDispose.concat([tetraMesh]);
-                    var triangeCount = this._addMeshVerts(tetraMesh, object, object);
-                    if (triangeCount == 0) {
-                        returnValue = new Ammo.btCompoundShape();
-                    } else {
-                        returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
-                    }
+                    returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
                 }
-            break;
+                break;
+            case PhysicsImpostor.ConvexHullImpostor:
+                var convexMesh = new Ammo.btConvexHullShape();
+                var triangeCount = this._addHullVerts(convexMesh, object, object);
+                if (triangeCount == 0) {
+                    // Cleanup Unused Convex Hull Shape
+                    impostor._pluginData.toDispose.concat([convexMesh]);
+                    returnValue = new Ammo.btCompoundShape();
+                } else {
+                    returnValue = convexMesh;
+                }
+                break;
             case PhysicsImpostor.NoImpostor:
                 // Fill with sphere but collision is disabled on the rigid body in generatePhysicsBody, using an empty shape caused unexpected movement with joints
                 returnValue = new Ammo.btSphereShape(extendSize.x / 2);
