@@ -6,6 +6,7 @@ import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData } from "../../Physi
 import { VertexBuffer } from "../../Meshes/buffer";
 import { Nullable } from "../../types";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { PhysicsRaycastResult } from "../physicsRaycastResult";
 
 declare var Ammo: any;
 
@@ -43,6 +44,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpAmmoVectorB: any;
     private _tmpAmmoVectorC: any;
     private _tmpContactCallbackResult = false;
+    private _tmpAmmoVectorRCA: any;
+    private _tmpAmmoVectorRCB: any;
+    private _raycastResult: PhysicsRaycastResult;
 
     private static readonly DISABLE_COLLISION_FLAG = 4;
     private static readonly KINEMATIC_FLAG = 2;
@@ -786,5 +790,44 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         Ammo.destroy(this._tmpAmmoConcreteContactResultCallback);
 
         this.world = null;
+    }
+
+    /**
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @returns the raycast result
+     */
+    public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
+        this._tmpAmmoVectorRCA = new this.bjsAMMO.btVector3(from.x, from.y, from.z);
+        this._tmpAmmoVectorRCB = new this.bjsAMMO.btVector3(to.x, to.y, to.z);
+
+        var rayCallback = new this.bjsAMMO.ClosestRayResultCallback(this._tmpAmmoVectorRCA, this._tmpAmmoVectorRCB);
+        this.world.rayTest(this._tmpAmmoVectorRCA, this._tmpAmmoVectorRCB, rayCallback);
+
+        this._raycastResult.reset(from, to);
+        if (rayCallback.hasHit()) {
+            // TODO: do we want/need the body? If so, set all the data
+            /*
+            var rigidBody = this.bjsAMMO.btRigidBody.prototype.upcast(
+                rayCallback.get_m_collisionObject()
+            );
+            var body = {};
+            */
+            this._raycastResult.setHitData(
+                {
+                    x: rayCallback.get_m_hitNormalWorld().x(),
+                    y: rayCallback.get_m_hitNormalWorld().y(),
+                    z: rayCallback.get_m_hitNormalWorld().z(),
+                },
+                {
+                    x: rayCallback.get_m_hitPointWorld().x(),
+                    y: rayCallback.get_m_hitPointWorld().y(),
+                    z: rayCallback.get_m_hitPointWorld().z(),
+                }
+            );
+            this._raycastResult.calculateHitDistance();
+        }
+
+        return this._raycastResult;
     }
 }
