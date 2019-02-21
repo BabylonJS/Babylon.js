@@ -126,6 +126,8 @@ export class NullEngine extends Engine {
         this._caps.vertexArrayObject = false;
         this._caps.instancedArrays = false;
 
+        this._highPrecisionShadersAllowed = true;
+
         Logger.Log(`Babylon.js v${Engine.Version} - Null engine`);
 
         // Wrappers

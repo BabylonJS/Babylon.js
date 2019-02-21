@@ -26731,7 +26731,7 @@ declare module BABYLON {
         private _renderingCanvas;
         private _windowIsBackground;
         private _webGLVersion;
-        private _highPrecisionShadersAllowed;
+        protected _highPrecisionShadersAllowed: boolean;
         /** @hidden */
         readonly _shouldUseHighPrecisionShader: boolean;
         /**
@@ -42694,6 +42694,7 @@ declare module BABYLON {
             resolution?: number;
             size?: number;
             useDirectMapping?: boolean;
+            faceForward?: boolean;
         }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
         /**
          * Releases resources associated with this node.
@@ -44818,6 +44819,7 @@ declare module BABYLON {
             loop?: boolean;
             size?: number;
             poster?: string;
+            faceForward?: boolean;
             useDirectMapping?: boolean;
         }, scene: Scene);
         private _changeVideoMode;
@@ -48058,10 +48060,10 @@ declare module BABYLON {
          * Creates a PolygonMeshBuilder
          * @param name name of the builder
          * @param contours Path of the polygon
-         * @param scene scene to add to
+         * @param scene scene to add to when creating the mesh
          * @param earcutInjection can be used to inject your own earcut reference
          */
-        constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene, earcutInjection?: any);
+        constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection?: any);
         /**
          * Adds a whole within the polygon
          * @param hole Array of points defining the hole
