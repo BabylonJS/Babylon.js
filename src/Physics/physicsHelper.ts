@@ -54,10 +54,10 @@ export class PhysicsHelper {
         }
 
         if (typeof radiusOrEventOptions === 'number') {
-          radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
-          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
-          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-          radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+            radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
+            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+            radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
         }
 
         var event = new PhysicsRadialExplosionEvent(this, this._scene, radiusOrEventOptions);
@@ -96,10 +96,10 @@ export class PhysicsHelper {
         }
 
         if (typeof radiusOrEventOptions === 'number') {
-          radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
-          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
-          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-          radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+            radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
+            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+            radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
         }
 
         var event = new PhysicsRadialExplosionEvent(this, this._scene, radiusOrEventOptions);
@@ -138,10 +138,10 @@ export class PhysicsHelper {
         }
 
         if (typeof radiusOrEventOptions === 'number') {
-          radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
-          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
-          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-          radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+            radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
+            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+            radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
         }
 
         var event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radiusOrEventOptions);
@@ -171,11 +171,11 @@ export class PhysicsHelper {
         }
 
         if (typeof radiusOrEventOptions === 'number') {
-          radiusOrEventOptions = new PhysicsUpdraftEventOptions();
-          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
-          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-          radiusOrEventOptions.height = height || radiusOrEventOptions.height;
-          radiusOrEventOptions.updraftMode = updraftMode || radiusOrEventOptions.updraftMode;
+            radiusOrEventOptions = new PhysicsUpdraftEventOptions();
+            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+            radiusOrEventOptions.height = height || radiusOrEventOptions.height;
+            radiusOrEventOptions.updraftMode = updraftMode || radiusOrEventOptions.updraftMode;
         }
 
         var event = new PhysicsUpdraftEvent(this, this._scene, origin, radiusOrEventOptions);
@@ -205,10 +205,10 @@ export class PhysicsHelper {
         }
 
         if (typeof radiusOrEventOptions === 'number') {
-          radiusOrEventOptions = new PhysicsVortexEventOptions();
-          radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
-          radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-          radiusOrEventOptions.height = height || radiusOrEventOptions.height;
+            radiusOrEventOptions = new PhysicsVortexEventOptions();
+            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
+            radiusOrEventOptions.height = height || radiusOrEventOptions.height;
         }
 
         var event = new PhysicsVortexEvent(this, this._scene, origin, radiusOrEventOptions);
