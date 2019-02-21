@@ -224,7 +224,6 @@ export class PhysicsHelper {
  */
 class PhysicsRadialExplosionEvent {
 
-    private _physicsEngine: PhysicsEngine;
     private _sphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
     private _dataFetched: boolean = false; // check if the data has been fetched. If not, do cleanup
 
@@ -236,8 +235,6 @@ class PhysicsRadialExplosionEvent {
      */
     constructor(private _physicsHelper: PhysicsHelper, private _scene: Scene, private _options: PhysicsRadialExplosionEventOptions) {
         this._options = {...(new PhysicsRadialExplosionEventOptions()), ...this._options};
-
-        this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
     }
 
     /**
