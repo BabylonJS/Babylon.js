@@ -2568,7 +2568,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             let otherCamera = this.activeCamera._alternateCamera;
             otherCamera.getViewMatrix().multiplyToRef(otherCamera.getProjectionMatrix(), Tmp.Matrix[0]);
             Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
-        } else if(viewR && projectionR){
+        } else if (viewR && projectionR) {
             viewR.multiplyToRef(projectionR, Tmp.Matrix[0]);
             Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
         }
@@ -4355,7 +4355,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.activeCamera = currentActiveCamera;
         this._bindFrameBuffer();
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
-        
+
         for (let step of this._beforeClearStage) {
             step.action();
         }
