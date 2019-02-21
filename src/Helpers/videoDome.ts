@@ -9,6 +9,7 @@ import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import "../Meshes/Builders/sphereBuilder";
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
+import { Vector3 } from '../Maths/math';
 
 declare type Camera = import("../Cameras/camera").Camera;
 
@@ -103,9 +104,12 @@ export class VideoDome extends TransformNode {
         loop?: boolean,
         size?: number,
         poster?: string,
+        faceForward?: boolean,
         useDirectMapping?: boolean
     }, scene: Scene) {
         super(name, scene);
+
+        scene = this.getScene();
 
         // set defaults and manage values
         name = name || "videoDome";
@@ -119,6 +123,10 @@ export class VideoDome extends TransformNode {
             this._useDirectMapping = true;
         } else {
             this._useDirectMapping = options.useDirectMapping;
+        }
+
+        if (options.faceForward === undefined) {
+            options.faceForward = true;
         }
 
         this._setReady(false);
@@ -158,6 +166,17 @@ export class VideoDome extends TransformNode {
                 this._videoTexture.video.play();
             };
         }
+
+        // Initial rotation
+        if (options.faceForward && scene.activeCamera) {
+            let camera = scene.activeCamera;
+
+            let forward = Vector3.Forward();
+            var direction = Vector3.TransformNormal(forward, camera.getViewMatrix());
+            direction.normalize();
+
+            this.rotation.y = Math.acos(Vector3.Dot(forward, direction));
+        }
     }
 
     private _changeVideoMode(value: number): void {
@@ -176,7 +195,7 @@ export class VideoDome extends TransformNode {
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
                     this._videoTexture.uOffset = camera.isRightCamera ? 0.5 : 0.0;
                 });
-            break;
+                break;
             case VideoDome.MODE_TOPBOTTOM:
                 this._videoTexture.vScale = 0.5;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
