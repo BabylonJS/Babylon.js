@@ -187,8 +187,12 @@ export class UtilityLayerRenderer implements IDisposable {
                         }
                     }
                 }
-
             });
+
+            // As a newly added utility layer will be rendered over the screen last, it's pointer events should be processed first
+            if (this._originalPointerObserver) {
+                originalScene.onPrePointerObservable.makeObserverTopPriority(this._originalPointerObserver);
+            }
         }
 
         // Render directly on top of existing scene without clearing
