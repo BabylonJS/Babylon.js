@@ -88,6 +88,10 @@ export class InternalTexture implements IInternalTextureTracker {
      */
     public is3D: boolean;
     /**
+     * Defines if the texture contains multiview data
+     */
+    public isMultiview: boolean;
+    /**
      * Gets the URL used to load this texture
      */
     public url: string;
