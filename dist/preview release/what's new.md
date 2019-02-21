@@ -269,3 +269,4 @@
 (https://github.com/Sebavan))
 - No more `Primitive Geometries` as they were not in use since 2.0 ([Sebavan](https://github.com/Sebavan))
 - Change `shouldExportTransformNode` callback in glTF serializer options to `shouldExportNode`([kcoley](https://github.com/kcoley))
+- Changed `PhysicsHelper` method parameters for event calls ([bobalazek](https://github.com/bobalazek))
