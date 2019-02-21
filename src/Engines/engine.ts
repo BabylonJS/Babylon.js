@@ -5553,9 +5553,9 @@ export class Engine {
      * @param width defines the width of the texture
      * @param height defines the height of the texture
      */
-    public createMultiviewRenderTargetTexture(width:number, height:number){
+    public createMultiviewRenderTargetTexture(width: number, height: number) {
         var gl = this._gl;
-        
+
         if (!this.getCaps().multiview) {
             throw "Multiview is not supported";
         }
@@ -5576,16 +5576,16 @@ export class Engine {
         return internalTexture;
     }
 
-    public bindMultiviewFramebuffer(multiviewTexture: InternalTexture){
+    public bindMultiviewFramebuffer(multiviewTexture: InternalTexture) {
         var gl: any = this._gl;
         var ext = this.getCaps().multiview;
 
         this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, multiviewTexture._framebuffer);
-        if(multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray){
+        if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
             ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
             ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
-        }else{
+        }else {
             throw "Invalid multiview frame buffer";
         }
     }
@@ -6446,12 +6446,12 @@ export class Engine {
 
             this._activateCurrentTexture();
 
-            if(texture && texture.isMultiview){
+            if (texture && texture.isMultiview) {
                 this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
-            }else{
+            }else {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
             }
-            
+
             this._boundTexturesCache[this._activeChannel] = texture;
 
             if (texture) {

@@ -1003,9 +1003,6 @@ Texture._CreateRenderTargetTexture = (name: string, renderTargetSize: number, sc
  * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
  */
 export class MultiviewRenderTarget extends RenderTargetTexture {
-    private _multiviewColorTexture: Nullable<WebGLTexture>;
-    private _multivewDepthStencilTexture: Nullable<WebGLTexture>;
-
     /**
      * Creates a multiview render target
      * @param scene scene used with the render target
