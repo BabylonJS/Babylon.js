@@ -129,7 +129,7 @@ $line-padding-left: 2px;
             grid-row: 2;
 
             display: grid;
-            grid-template-rows: 1fr;
+            grid-template-rows: 100%;
 
             overflow: hidden;
 
@@ -145,6 +145,7 @@ $line-padding-left: 2px;
 
                 overflow-x: hidden;
                 overflow-y: auto;
+                height: 100%;
 
                 -webkit-user-select: none; 
                 -moz-user-select: none;   

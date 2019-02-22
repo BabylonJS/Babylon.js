@@ -15,6 +15,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
+import { IInspectable } from '../Misc/iInspectable';
 
 /**
  * Class used to handle skinning animations
@@ -95,6 +96,12 @@ export class Skeleton implements IAnimatable {
     public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
         this._animationPropertiesOverride = value;
     }
+
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
 
     // Events
 

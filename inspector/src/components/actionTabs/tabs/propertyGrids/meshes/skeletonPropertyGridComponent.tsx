@@ -11,6 +11,7 @@ import { GlobalState } from '../../../../globalState';
 import { Skeleton } from 'babylonjs/Bones/skeleton';
 import { AnimationGridComponent } from '../animationPropertyGridComponent';
 import { SkeletonViewer } from 'babylonjs/Debug/skeletonViewer';
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
 interface ISkeletonPropertyGridComponentProps {
     globalState: GlobalState;
@@ -97,6 +98,8 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
 
         return (
             <div className="pane">
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={skeleton}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={skeleton.id} />
                     <TextLineComponent label="Bone count" value={skeleton.bones.length.toString()} />
