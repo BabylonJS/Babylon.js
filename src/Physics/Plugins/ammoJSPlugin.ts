@@ -8,6 +8,7 @@ import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Nullable } from "../../types";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
+import { PhysicsRaycastResult } from "../physicsRaycastResult";
 
 declare var Ammo: any;
 
@@ -47,6 +48,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpAmmoVectorC: any;
     private _tmpAmmoVectorD: any;
     private _tmpContactCallbackResult = false;
+    private _tmpAmmoVectorRCA: any;
+    private _tmpAmmoVectorRCB: any;
+    private _raycastResult: PhysicsRaycastResult;
 
     private static readonly DISABLE_COLLISION_FLAG = 4;
     private static readonly KINEMATIC_FLAG = 2;
@@ -60,7 +64,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public constructor(private _useDeltaForWorldStep: boolean = true, ammoInjection: any = Ammo) {
         if (typeof ammoInjection === "function") {
             ammoInjection(this.bjsAMMO);
-        }else {
+        } else {
             this.bjsAMMO = ammoInjection;
         }
 
@@ -671,6 +675,51 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         }
     }
 
+    // adds all verticies (including child verticies) to the convex hull shape
+    private _addHullVerts(btConvexHullShape: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject) {
+        var triangleCount = 0;
+        if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
+            var indices = object.getIndices();
+            if (!indices) {
+                indices = [];
+            }
+            var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
+            if (!vertexPositions) {
+                vertexPositions = [];
+            }
+            object.computeWorldMatrix(false);
+            var faceCount = indices.length / 3;
+            for (var i = 0; i < faceCount; i++) {
+                var triPoints = [];
+                for (var point = 0; point < 3; point++) {
+                    var v = new Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
+                    v = Vector3.TransformCoordinates(v, object.getWorldMatrix());
+                    v.subtractInPlace(topLevelObject.position);
+                    var vec: any;
+                    if (point == 0) {
+                        vec = this._tmpAmmoVectorA;
+                    } else if (point == 1) {
+                        vec = this._tmpAmmoVectorB;
+                    } else {
+                        vec = this._tmpAmmoVectorC;
+                    }
+                    vec.setValue(v.x, v.y, v.z);
+
+                    triPoints.push(vec);
+                }
+                btConvexHullShape.addPoint(triPoints[0], true);
+                btConvexHullShape.addPoint(triPoints[1], true);
+                btConvexHullShape.addPoint(triPoints[2], true);
+                triangleCount++;
+            }
+
+            object.getChildMeshes().forEach((m) => {
+                triangleCount += this._addHullVerts(btConvexHullShape, topLevelObject, m);
+            });
+        }
+        return triangleCount;
+    }
+
     private _createShape(impostor: PhysicsImpostor, ignoreChildren = false) {
         var object = impostor.object;
 
@@ -743,6 +792,17 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     returnValue = new Ammo.btCompoundShape();
                 } else {
                     returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
+                }
+                break;
+            case PhysicsImpostor.ConvexHullImpostor:
+                var convexMesh = new Ammo.btConvexHullShape();
+                var triangeCount = this._addHullVerts(convexMesh, object, object);
+                if (triangeCount == 0) {
+                    // Cleanup Unused Convex Hull Shape
+                    impostor._pluginData.toDispose.concat([convexMesh]);
+                    returnValue = new Ammo.btCompoundShape();
+                } else {
+                    returnValue = convexMesh;
                 }
                 break;
             case PhysicsImpostor.NoImpostor:
@@ -1196,5 +1256,45 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         Ammo.destroy(this._tmpAmmoConcreteContactResultCallback);
 
         this.world = null;
+    }
+
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @returns PhysicsRaycastResult
+     */
+    public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
+        this._tmpAmmoVectorRCA = new this.bjsAMMO.btVector3(from.x, from.y, from.z);
+        this._tmpAmmoVectorRCB = new this.bjsAMMO.btVector3(to.x, to.y, to.z);
+
+        var rayCallback = new this.bjsAMMO.ClosestRayResultCallback(this._tmpAmmoVectorRCA, this._tmpAmmoVectorRCB);
+        this.world.rayTest(this._tmpAmmoVectorRCA, this._tmpAmmoVectorRCB, rayCallback);
+
+        this._raycastResult.reset(from, to);
+        if (rayCallback.hasHit()) {
+            // TODO: do we want/need the body? If so, set all the data
+            /*
+            var rigidBody = this.bjsAMMO.btRigidBody.prototype.upcast(
+                rayCallback.get_m_collisionObject()
+            );
+            var body = {};
+            */
+            this._raycastResult.setHitData(
+                {
+                    x: rayCallback.get_m_hitNormalWorld().x(),
+                    y: rayCallback.get_m_hitNormalWorld().y(),
+                    z: rayCallback.get_m_hitNormalWorld().z(),
+                },
+                {
+                    x: rayCallback.get_m_hitPointWorld().x(),
+                    y: rayCallback.get_m_hitPointWorld().y(),
+                    z: rayCallback.get_m_hitPointWorld().z(),
+                }
+            );
+            this._raycastResult.calculateHitDistance();
+        }
+
+        return this._raycastResult;
     }
 }
