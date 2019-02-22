@@ -647,7 +647,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (!scene) {
                 return;
             }
-
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
             let engine = scene.getEngine();
 

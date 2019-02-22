@@ -12,6 +12,7 @@ import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent"
 import { AxesViewerComponent } from "./axesViewerComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
@@ -30,6 +31,8 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
 
         return (
             <div className="pane">
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={transformNode}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={transformNode.id} />
                     <TextLineComponent label="Unique ID" value={transformNode.uniqueId.toString()} />

@@ -22,6 +22,7 @@ import { GlobalState } from "../../../../../components/globalState";
 
 import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
@@ -96,6 +97,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextureLineComponent texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
