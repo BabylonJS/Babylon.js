@@ -701,7 +701,7 @@ export class Engine {
     private _windowIsBackground = false;
     private _webGLVersion = 1.0;
 
-    protected _highPrecisionShadersAllowed = false;
+    protected _highPrecisionShadersAllowed = true;
     /** @hidden */
     public get _shouldUseHighPrecisionShader(): boolean {
         return this._caps.highPrecisionShaderSupported && this._highPrecisionShadersAllowed;
@@ -1198,7 +1198,9 @@ export class Engine {
             }
         }
 
-        this._highPrecisionShadersAllowed = options.useHighPrecisionFloats || false;
+        if (options.useHighPrecisionFloats !== undefined) {
+            this._highPrecisionShadersAllowed = options.useHighPrecisionFloats;
+        }
 
         // Viewport
         const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
