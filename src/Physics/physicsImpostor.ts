@@ -1025,4 +1025,8 @@ export class PhysicsImpostor {
      * Heightmap-Imposter type
      */
     public static HeightmapImpostor = 9;
+    /**
+     * ConvexHull-Impostor type (Ammo.js plugin only)
+     */
+    public static ConvexHullImpostor = 10;
 }

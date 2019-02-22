@@ -701,7 +701,7 @@ export class Engine {
     private _windowIsBackground = false;
     private _webGLVersion = 1.0;
 
-    private _highPrecisionShadersAllowed = false;
+    protected _highPrecisionShadersAllowed = false;
     /** @hidden */
     public get _shouldUseHighPrecisionShader(): boolean {
         return this._caps.highPrecisionShaderSupported && this._highPrecisionShadersAllowed;
