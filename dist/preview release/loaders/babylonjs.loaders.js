@@ -1094,7 +1094,7 @@ var OBJFileLoader = /** @class */ (function () {
                 //Get information about one position possible for the vertices
             }
             else if (this.vertexPattern.test(line)) {
-                result = line.split(' ');
+                result = line.match(/\S+/g); // match will return non-null due to passing regex pattern
                 //Value of result with line: "v 1.0 2.0 3.0"
                 // ["v", "1.0", "2.0", "3.0"]
                 //Create a Vector3 with the position x, y, z

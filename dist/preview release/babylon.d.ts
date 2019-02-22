@@ -19333,8 +19333,8 @@ declare module BABYLON {
         readonly rayToWorld: Vector3;
         /**
          * Sets the hit data (normal & point in world space)
-         * @param hitNormalWorld
-         * @param hitPointWorld
+         * @param hitNormalWorld defines the normal in world space
+         * @param hitPointWorld defines the point in world space
          */
         setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ): void;
         /**
