@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!************************************************************!*\
-  !*** F:/gitHUB/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1094,7 +1094,7 @@ var OBJFileLoader = /** @class */ (function () {
                 //Get information about one position possible for the vertices
             }
             else if (this.vertexPattern.test(line)) {
-                result = line.split(' ');
+                result = line.match(/\S+/g); // match will return non-null due to passing regex pattern
                 //Value of result with line: "v 1.0 2.0 3.0"
                 // ["v", "1.0", "2.0", "3.0"]
                 //Create a Vector3 with the position x, y, z

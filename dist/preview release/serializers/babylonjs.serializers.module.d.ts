@@ -1134,29 +1134,9 @@ declare module "babylonjs-serializers/glTF/index" {
     export * from "babylonjs-serializers/glTF/glTFFileExporter";
     export * from "babylonjs-serializers/glTF/2.0/index";
 }
-declare module "babylonjs-serializers/stl/stlSerializer" {
-    import { Mesh } from "babylonjs/Meshes/mesh";
-    /**
-     * Class for generating STL data from a Babylon scene.
-     */
-    export class STLExport {
-        /**
-        * Exports the geometry of a Mesh array in .STL file format (ASCII)
-        * @param mesh defines the list of meshes to serialize
-        * @param fileName Name of the file when downloaded.
-        * @param download triggers the automatic download of the file.
-        * @returns the STL content
-        */
-        static STL(mesh: Mesh, download?: boolean, fileName?: string): string;
-    }
-}
-declare module "babylonjs-serializers/stl/index" {
-    export * from "babylonjs-serializers/stl/stlSerializer";
-}
 declare module "babylonjs-serializers/index" {
     export * from "babylonjs-serializers/OBJ/index";
     export * from "babylonjs-serializers/glTF/index";
-    export * from "babylonjs-serializers/stl/index";
 }
 declare module "babylonjs-serializers/legacy/legacy-glTF2Serializer" {
     export * from "babylonjs-serializers/glTF/glTFFileExporter";
@@ -2229,20 +2209,5 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @returns nullable INode promise
          */
         postExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class for generating STL data from a Babylon scene.
-     */
-    export class STLExport {
-        /**
-        * Exports the geometry of a Mesh array in .STL file format (ASCII)
-        * @param mesh defines the list of meshes to serialize
-        * @param fileName Name of the file when downloaded.
-        * @param download triggers the automatic download of the file.
-        * @returns the STL content
-        */
-        static STL(mesh: Mesh, download?: boolean, fileName?: string): string;
     }
 }
