@@ -1030,14 +1030,13 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {
-    import { extendedUpgrade } from "babylonjs-viewer/optimizer/custom/extended";
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
@@ -1354,29 +1353,7 @@ declare module 'babylonjs-viewer/configuration/configurationContainer' {
 }
 
 declare module 'babylonjs-viewer/configuration/renderOnlyLoader' {
-    import { ViewerConfiguration } from 'babylonjs-viewer/configuration/configuration';
-    /**
-        * The configuration loader will load the configuration object from any source and will use the defined mapper to
-        * parse the object and return a conform ViewerConfiguration.
-        * It is a private member of the scene.
-        */
-    export class RenderOnlyConfigurationLoader {
-            constructor(_enableCache?: boolean);
-            protected getExtendedConfig(type: string | undefined): ViewerConfiguration;
-            /**
-                * load a configuration object that is defined in the initial configuration provided.
-                * The viewer configuration can extend different types of configuration objects and have an extra configuration defined.
-                *
-                * @param initConfig the initial configuration that has the definitions of further configuration to load.
-                * @param callback an optional callback that will be called sync, if noconfiguration needs to be loaded or configuration is payload-only
-                * @returns A promise that delivers the extended viewer configuration, when done.
-                */
-            loadConfiguration(initConfig?: ViewerConfiguration, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration>;
-            /**
-                * Dispose the configuration loader. This will cancel file requests, if active.
-                */
-            dispose(): void;
-    }
+    
 }
 
 declare module 'babylonjs-viewer/managers/observablesManager' {
@@ -1737,22 +1714,6 @@ declare module 'babylonjs-viewer/loader/plugins' {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 
-declare module 'babylonjs-viewer/optimizer/custom/extended' {
-    import { SceneManager } from 'babylonjs-viewer/managers/sceneManager';
-    /**
-        * A custom upgrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedUpgrade(sceneManager: SceneManager): boolean;
-    /**
-        * A custom degrade-oriented function configuration for the scene optimizer.
-        *
-        * @param viewer the viewer to optimize
-        */
-    export function extendedDegrade(sceneManager: SceneManager): boolean;
-}
-
 declare module 'babylonjs-viewer/configuration/interfaces' {
     export * from 'babylonjs-viewer/configuration/interfaces/cameraConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/colorGradingConfiguration';
@@ -1797,7 +1758,38 @@ declare module 'babylonjs-viewer/configuration/interfaces/environmentMapConfigur
 }
 
 declare module 'babylonjs-viewer/templating/eventManager' {
-    
+    import { EventCallback, TemplateManager } from "babylonjs-viewer/templating/templateManager";
+    /**
+        * The EventManager is in charge of registering user interctions with the viewer.
+        * It is used in the TemplateManager
+        */
+    export class EventManager {
+            constructor(_templateManager: TemplateManager);
+            /**
+                * Register a new callback to a specific template.
+                * The best example for the usage can be found in the DefaultViewer
+                *
+                * @param templateName the templateName to register the event to
+                * @param callback The callback to be executed
+                * @param eventType the type of event to register
+                * @param selector an optional selector. if not defined the parent object in the template will be selected
+                */
+            registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
+            /**
+                * This will remove a registered event from the defined template.
+                * Each one of the variables apart from the template name are optional, but one must be provided.
+                *
+                * @param templateName the templateName
+                * @param callback the callback to remove (optional)
+                * @param eventType the event type to remove (optional)
+                * @param selector the selector from which to remove the event (optional)
+                */
+            unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
+            /**
+                * Dispose the event manager
+                */
+            dispose(): void;
+    }
 }
 
 declare module 'babylonjs-viewer/configuration/loader' {
