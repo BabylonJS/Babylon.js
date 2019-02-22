@@ -35,7 +35,7 @@
   - Added sheen support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
 
 ## Optimizations
-- Moved all shaders to mediump by default. High precision is still available under an engine options ([Deltakosh](https://github.com/deltakosh))
+- Added an engine creation option to compile all shaders with medium precision ([Deltakosh](https://github.com/deltakosh))
 - Optimized effect reused for shadow maps ([Deltakosh](https://github.com/deltakosh))
 - Added support for Scissor testing ([Deltakosh](https://github.com/deltakosh))
 - Improved shader precision detection ([Deltakosh](https://github.com/deltakosh))

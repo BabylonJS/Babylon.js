@@ -328,12 +328,14 @@ export class SpriteManager implements ISpriteManager {
         var rowSize = baseSize.width / this.cellWidth;
 
         var offset = 0;
+        let noSprite = true;
         for (var index = 0; index < max; index++) {
             var sprite = this.sprites[index];
             if (!sprite || !sprite.isVisible) {
                 continue;
             }
 
+            noSprite = false;
             sprite._animate(deltaTime);
 
             this._appendSpriteVertex(offset++, sprite, 0, 0, rowSize);
@@ -341,6 +343,11 @@ export class SpriteManager implements ISpriteManager {
             this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
             this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
         }
+
+        if (noSprite) {
+            return;
+        }
+
         this._buffer.update(this._vertexData);
 
         // Render
