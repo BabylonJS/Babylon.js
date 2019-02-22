@@ -61344,6 +61344,21 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         postExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
     }
 }
+declare module BABYLON {
+    /**
+     * Class for generating STL data from a Babylon scene.
+     */
+    export class STLExport {
+        /**
+        * Exports the geometry of a Mesh array in .STL file format (ASCII)
+        * @param mesh defines the mesh to serialize
+        * @param fileName Name of the file when downloaded.
+        * @param download triggers the automatic download of the file.
+        * @returns the ASCII STL format
+        */
+        static ASCII(mesh: Mesh, download?: boolean, fileName?: string): string;
+    }
+}
 /**
  * @ignoreChildren
  * @ignore
