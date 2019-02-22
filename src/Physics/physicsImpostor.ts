@@ -41,22 +41,35 @@ export interface PhysicsImpostorParameters {
      */
     disableBidirectionalTransformation?: boolean;
     /**
-     * The pressure inside the physics imposter, softbody only
+     * The pressure inside the physics imposter, soft object only
      */
     pressure?: number;
     /**
-     * The stiffness the physics imposter, softbody only
+     * The stiffness the physics imposter, soft object only
      */
     stiffness?: number;
     /**
-     * The number of iterations used in maintaining consistent vertex velocities, softbody only
+     * The number of iterations used in maintaining consistent vertex velocities, soft object only
      */
     velocityIterations?: number;
     /**
-     * The number of iterations used in maintaining consistent vertex positions, softbody only
+     * The number of iterations used in maintaining consistent vertex positions, soft object only
      */
     positionIterations?: number;
-
+    /**
+     * The number used to fix points on a cloth (0, 1, 2, 4, 8) or rope (0, 1, 2) only
+     * 0 None, 1, back left or top, 2, back right or bottom, 4, front left, 8, front right
+     * Add to fix multiple points
+     */
+    fixedPoints?: number;
+    /**
+     * The collision margin around a soft object
+     */
+    margin?: number;
+    /**
+     * The collision margin around a soft object
+     */
+    damping?: number;
 }
 
 /**
@@ -385,6 +398,11 @@ export class PhysicsImpostor {
      */
     public soft: boolean = false;
 
+    /**
+     * @hidden
+     */
+    public segments: number = 0;
+
     private _joints: Array<{
         joint: PhysicsJoint,
         otherImpostor: PhysicsImpostor
@@ -450,6 +468,9 @@ export class PhysicsImpostor {
                 this._options.stiffness = (_options.stiffness === void 0) ? 1 : _options.stiffness;
                 this._options.velocityIterations = (_options.velocityIterations === void 0) ? 20 : _options.velocityIterations;
                 this._options.positionIterations = (_options.positionIterations === void 0) ? 20 : _options.positionIterations;
+                this._options.fixedPoints = (_options.fixedPoints === void 0) ? 0 : _options.fixedPoints;
+                this._options.margin = (_options.margin === void 0) ? 0 : _options.margin;
+                this._options.damping = (_options.damping === void 0) ? 0 : _options.damping;
             }
             this._joints = [];
             //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
