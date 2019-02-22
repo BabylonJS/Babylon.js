@@ -558,6 +558,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         _this._renderAtIdealSize = false;
         _this._blockNextFocusCheck = false;
         _this._renderScale = 1;
+        _this._cursorChanged = false;
         /**
         * Define type to string to ensure compatibility across browsers
         * Safari doesn't support DataTransfer constructor
@@ -1108,6 +1109,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     AdvancedDynamicTexture.prototype._changeCursor = function (cursor) {
         if (this._rootCanvas) {
             this._rootCanvas.style.cursor = cursor;
+            this._cursorChanged = true;
         }
     };
     /** @hidden */
@@ -1132,6 +1134,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
             return;
         }
+        this._cursorChanged = false;
         if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex)) {
             this._changeCursor("");
             if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
@@ -1140,6 +1143,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                     delete this._lastControlOver[pointerId];
                 }
             }
+        }
+        if (!this._cursorChanged) {
+            this._changeCursor("");
         }
         this._manageFocus();
     };

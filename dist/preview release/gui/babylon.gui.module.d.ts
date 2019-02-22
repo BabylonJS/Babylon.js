@@ -381,6 +381,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         private _blockNextFocusCheck;
         private _renderScale;
         private _rootCanvas;
+        private _cursorChanged;
         /**
         * Define type to string to ensure compatibility across browsers
         * Safari doesn't support DataTransfer constructor
@@ -4207,6 +4208,7 @@ declare module BABYLON.GUI {
         private _blockNextFocusCheck;
         private _renderScale;
         private _rootCanvas;
+        private _cursorChanged;
         /**
         * Define type to string to ensure compatibility across browsers
         * Safari doesn't support DataTransfer constructor
