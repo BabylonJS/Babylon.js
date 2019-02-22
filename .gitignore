@@ -197,4 +197,3 @@ gui/dist/
 /Viewer/tests/tsc.cmd
 /Viewer/tests/tsserver
 /Viewer/tests/tsserver.cmd
-dist/preview release/babylon.max.js.map
