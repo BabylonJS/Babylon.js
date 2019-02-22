@@ -44,6 +44,14 @@ export interface IPhysicsEnginePlugin {
     setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
     getBodyRestitution(impostor: PhysicsImpostor): number;
     setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+    getBodyPressure?(impostor: PhysicsImpostor): number;
+    setBodyPressure?(impostor: PhysicsImpostor, pressure: number): void;
+    getBodyStiffness?(impostor: PhysicsImpostor): number;
+    setBodyStiffness?(impostor: PhysicsImpostor, stiffness: number): void;
+    getBodyVelocityIterations?(impostor: PhysicsImpostor): number;
+    setBodyVelocityIterations?(impostor: PhysicsImpostor, velocityIterations: number): void;
+    getBodyPositionIterations?(impostor: PhysicsImpostor): number;
+    setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
     sleepBody(impostor: PhysicsImpostor): void;
     wakeUpBody(impostor: PhysicsImpostor): void;
     raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
