@@ -4275,7 +4275,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, OBJExport, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, OBJExport, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, STLExport, KHR_texture_transform, KHR_lights_punctual */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4305,6 +4305,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["KHR_texture_transform"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights_punctual", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["KHR_lights_punctual"]; });
+
+/* harmony import */ var _stl__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stl */ "./stl/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return _stl__WEBPACK_IMPORTED_MODULE_2__["STLExport"]; });
+
 
 
 
@@ -4463,6 +4467,93 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+/***/ }),
+
+/***/ "./stl/index.ts":
+/*!**********************!*\
+  !*** ./stl/index.ts ***!
+  \**********************/
+/*! exports provided: STLExport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _stlSerializer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./stlSerializer */ "./stl/stlSerializer.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return _stlSerializer__WEBPACK_IMPORTED_MODULE_0__["STLExport"]; });
+
+
+
+
+/***/ }),
+
+/***/ "./stl/stlSerializer.ts":
+/*!******************************!*\
+  !*** ./stl/stlSerializer.ts ***!
+  \******************************/
+/*! exports provided: STLExport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return STLExport; });
+/* harmony import */ var babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Meshes/buffer */ "babylonjs/Maths/math");
+/* harmony import */ var babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__);
+
+
+/**
+ * Class for generating STL data from a Babylon scene.
+ */
+var STLExport = /** @class */ (function () {
+    function STLExport() {
+    }
+    /**
+    * Exports the geometry of a Mesh array in .STL file format (ASCII)
+    * @param mesh defines the list of meshes to serialize
+    * @param fileName Name of the file when downloaded.
+    * @param download triggers the automatic download of the file.
+    * @returns the STL content
+    */
+    STLExport.STL = function (mesh, download, fileName) {
+        if (download === void 0) { download = false; }
+        var data = 'solid exportedMesh\r\n';
+        var vertices = mesh.getVerticesData(babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind) || [];
+        var indices = mesh.getIndices() || [];
+        for (var i = 0; i < indices.length; i += 3) {
+            var id = [indices[i] * 3, indices[i + 1] * 3, indices[i + 2] * 3];
+            var v = [
+                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[0]], vertices[id[0] + 1], vertices[id[0] + 2]),
+                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[1]], vertices[id[1] + 1], vertices[id[1] + 2]),
+                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[2]], vertices[id[2] + 1], vertices[id[2] + 2])
+            ];
+            var p1p2 = v[0].subtract(v[1]);
+            var p3p2 = v[2].subtract(v[1]);
+            var n = (babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Cross(p1p2, p3p2)).normalize();
+            data += 'facet normal ' + n.x + ' ' + n.y + ' ' + n.z + '\r\n';
+            data += '\touter loop\r\n';
+            data += '\t\tvertex ' + v[0].x + ' ' + v[0].y + ' ' + v[0].z + '\r\n';
+            data += '\t\tvertex ' + v[1].x + ' ' + v[1].y + ' ' + v[1].z + '\r\n';
+            data += '\t\tvertex ' + v[2].x + ' ' + v[2].y + ' ' + v[2].z + '\r\n';
+            data += '\tendloop\r\n';
+            data += 'endfacet\r\n';
+        }
+        data += 'endsolid exportedMesh';
+        if (download) {
+            var a = document.createElement('a');
+            var blob = new Blob([data], { 'type': 'application/octet-stream' });
+            a.href = window.URL.createObjectURL(blob);
+            if (!fileName) {
+                fileName = "STL_Mesh";
+            }
+            a.download = fileName + ".stl";
+            a.click();
+        }
+        return data;
+    };
+    return STLExport;
+}());
 
 
 
