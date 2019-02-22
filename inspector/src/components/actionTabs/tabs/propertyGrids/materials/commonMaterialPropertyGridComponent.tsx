@@ -13,6 +13,7 @@ import { TextLineComponent } from "../../../lines/textLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
 interface ICommonMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -53,6 +54,8 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
 
         return (
             <div>
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={material}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={material.id} />
                     <TextLineComponent label="Unique ID" value={material.uniqueId.toString()} />

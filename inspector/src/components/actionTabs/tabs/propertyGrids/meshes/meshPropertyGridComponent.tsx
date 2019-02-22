@@ -20,6 +20,7 @@ import { AxesViewerComponent } from "./axesViewerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -154,6 +155,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
 
         return (
             <div className="pane">
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={mesh}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={mesh.id} />
                     <TextLineComponent label="Unique ID" value={mesh.uniqueId.toString()} />

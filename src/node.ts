@@ -8,6 +8,7 @@ import { Observable, Observer } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
 import { _DevTools } from './Misc/devTools';
 import { AbstractActionManager } from './Actions/abstractActionManager';
+import { IInspectable } from './Misc/iInspectable';
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -92,6 +93,12 @@ export class Node implements IBehaviorAware<Node> {
      * For internal use only. Please do not use.
      */
     public reservedDataStore: any = null;
+
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
 
     /**
      * Gets or sets a boolean used to define if the node must be serialized
