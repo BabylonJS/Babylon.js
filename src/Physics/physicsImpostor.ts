@@ -10,6 +10,7 @@ import { Bone } from "../Bones/bone";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { IPhysicsEngine } from "./IPhysicsEngine";
 import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
+
 /**
  * The interface for the physics imposter parameters
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -39,6 +40,36 @@ export interface PhysicsImpostorParameters {
      * Specifies if bi-directional transformations should be disabled
      */
     disableBidirectionalTransformation?: boolean;
+    /**
+     * The pressure inside the physics imposter, soft object only
+     */
+    pressure?: number;
+    /**
+     * The stiffness the physics imposter, soft object only
+     */
+    stiffness?: number;
+    /**
+     * The number of iterations used in maintaining consistent vertex velocities, soft object only
+     */
+    velocityIterations?: number;
+    /**
+     * The number of iterations used in maintaining consistent vertex positions, soft object only
+     */
+    positionIterations?: number;
+    /**
+     * The number used to fix points on a cloth (0, 1, 2, 4, 8) or rope (0, 1, 2) only
+     * 0 None, 1, back left or top, 2, back right or bottom, 4, front left, 8, front right
+     * Add to fix multiple points
+     */
+    fixedPoints?: number;
+    /**
+     * The collision margin around a soft object
+     */
+    margin?: number;
+    /**
+     * The collision margin around a soft object
+     */
+    damping?: number;
 }
 
 /**
@@ -245,10 +276,132 @@ export class PhysicsImpostor {
     }
 
     /**
+     * Gets the pressure of a soft body; only supported by the AmmoJSPlugin
+     */
+    get pressure(): number {
+        if (!this._physicsEngine) {
+            return 0;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin .setBodyPressure) {
+            return 0;
+        }
+        return plugin.getBodyPressure!(this);
+    }
+
+    /**
+     * Sets the pressure of a soft body; only supported by the AmmoJSPlugin
+     */
+    set pressure(value: number) {
+        if (!this._physicsEngine) {
+            return;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.setBodyPressure) {
+            return;
+        }
+        plugin.setBodyPressure!(this, value);
+    }
+
+    /**
+     * Gets the stiffness of a soft body; only supported by the AmmoJSPlugin
+     */
+    get stiffness(): number {
+        if (!this._physicsEngine) {
+            return 0;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.getBodyStiffness) {
+            return 0;
+        }
+        return plugin.getBodyStiffness!(this);
+    }
+
+    /**
+     * Sets the stiffness of a soft body; only supported by the AmmoJSPlugin
+     */
+    set stiffness(value: number) {
+        if (!this._physicsEngine) {
+            return;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.setBodyStiffness) {
+            return;
+        }
+        plugin.setBodyStiffness!(this, value);
+    }
+
+    /**
+     * Gets the velocityIterations of a soft body; only supported by the AmmoJSPlugin
+     */
+    get velocityIterations(): number {
+        if (!this._physicsEngine) {
+            return 0;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.getBodyVelocityIterations) {
+            return 0;
+        }
+        return plugin.getBodyVelocityIterations!(this);
+    }
+
+    /**
+     * Sets the velocityIterations of a soft body; only supported by the AmmoJSPlugin
+     */
+    set velocityIterations(value: number) {
+        if (!this._physicsEngine) {
+            return;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.setBodyVelocityIterations) {
+            return;
+        }
+        plugin.setBodyVelocityIterations!(this, value);
+    }
+
+    /**
+     * Gets the positionIterations of a soft body; only supported by the AmmoJSPlugin
+     */
+    get positionIterations(): number {
+        if (!this._physicsEngine) {
+            return 0;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.getBodyPositionIterations) {
+            return 0;
+        }
+        return plugin.getBodyPositionIterations!(this);
+    }
+
+    /**
+     * Sets the positionIterations of a soft body; only supported by the AmmoJSPlugin
+     */
+    set positionIterations(value: number) {
+        if (!this._physicsEngine) {
+            return;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.setBodyPositionIterations) {
+            return;
+        }
+        plugin.setBodyPositionIterations!(this, value);
+    }
+
+    /**
      * The unique id of the physics imposter
      * set by the physics engine when adding this impostor to the array
      */
     public uniqueId: number;
+
+    /**
+     * @hidden
+     */
+    public soft: boolean = false;
+
+    /**
+     * @hidden
+     */
+    public segments: number = 0;
 
     private _joints: Array<{
         joint: PhysicsJoint,
@@ -287,6 +440,10 @@ export class PhysicsImpostor {
             return;
         }
 
+        if (this.type > 100) {
+            this.soft = true;
+        }
+
         this._physicsEngine = this._scene.getPhysicsEngine();
         if (!this._physicsEngine) {
             Logger.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
@@ -304,7 +461,17 @@ export class PhysicsImpostor {
             this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
             this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
             this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
-
+            if (this.soft) {
+                //softbody mass must be above 0;
+                this._options.mass = this._options.mass > 0 ? this._options.mass : 1;
+                this._options.pressure = (_options.pressure === void 0) ? 200 : _options.pressure;
+                this._options.stiffness = (_options.stiffness === void 0) ? 1 : _options.stiffness;
+                this._options.velocityIterations = (_options.velocityIterations === void 0) ? 20 : _options.velocityIterations;
+                this._options.positionIterations = (_options.positionIterations === void 0) ? 20 : _options.positionIterations;
+                this._options.fixedPoints = (_options.fixedPoints === void 0) ? 0 : _options.fixedPoints;
+                this._options.margin = (_options.margin === void 0) ? 0 : _options.margin;
+                this._options.damping = (_options.damping === void 0) ? 0 : _options.damping;
+            }
             this._joints = [];
             //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
             if (!this.object.parent || this._options.ignoreParent) {
@@ -1029,4 +1196,16 @@ export class PhysicsImpostor {
      * ConvexHull-Impostor type (Ammo.js plugin only)
      */
     public static ConvexHullImpostor = 10;
+    /**
+     * Rope-Imposter type
+     */
+    public static RopeImpostor = 101;
+    /**
+     * Cloth-Imposter type
+     */
+    public static ClothImpostor = 102;
+    /**
+     * Softbody-Imposter type
+     */
+    public static SoftbodyImpostor = 103;
 }
