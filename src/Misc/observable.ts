@@ -268,6 +268,24 @@ export class Observable<T> {
     }
 
     /**
+     * Moves the observable to the top of the observer list making it get called first when notified
+     * @param observer the observer to move
+     */
+    public makeObserverTopPriority(observer: Observer<T>) {
+           this._remove(observer);
+           this._observers.unshift(observer);
+    }
+
+    /**
+     * Moves the observable to the bottom of the observer list making it get called last when notified
+     * @param observer the observer to move
+     */
+    public makeObserverBottomPriority(observer: Observer<T>) {
+        this._remove(observer);
+        this._observers.push(observer);
+    }
+
+    /**
      * Notify all Observers by calling their respective callback with the given data
      * Will return true if all observers were executed, false if an observer set skipNextObservers to true, then prevent the subsequent ones to execute
      * @param eventData defines the data to send to all observers

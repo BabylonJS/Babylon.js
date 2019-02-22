@@ -1,9 +1,9 @@
 # 4.0.0
 
 ## Major updates
-
 - New [fancy forum](https://forum.babylonjs.com)!! ([Deltakosh](https://github.com/deltakosh))
 - [Inspector v2.0](https://doc.babylonjs.com/features/playground_debuglayer). [Dev log](https://medium.com/@babylonjs/dev-log-creating-the-new-inspector-b15c50900205) ([Deltakosh](https://github.com/deltakosh))
+- Added support for [Convex Hull Impostor][https://github.com/kripken/ammo.js/blob/master/bullet/src/BulletCollision/CollisionShapes/btConvexHullShape.h] using Ammo.js plugin ([MackeyK24](https://github.com/mackeyk24))
 - Added support for [parallel shader compilation](https://www.khronos.org/registry/webgl/extensions/KHR_parallel_shader_compile/) ([Deltakosh](https://github.com/deltakosh))
 - Added [Object Based Motion Blur](http://doc.babylonjs.com/how_to/using_motionblurpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
 - Added [support for AmmoJS](https://doc.babylonjs.com/how_to/using_the_physics_engine) as a physics plugin (Composite objects, motors, joints) ([TrevorDev](https://github.com/TrevorDev))
@@ -121,8 +121,10 @@
 - Added setColor method to boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
 - Added OnAfterEnteringVRObservable to webVRHelper ([TrevorDev](https://github.com/TrevorDev))
 - Added Support for Side By Side and Top/Bottom VR videos in the [video dome](https://doc.babylonjs.com/how_to/360videodome#video-types) ([Sebavan](https://github.com/Sebavan))
+- Added UnitTests for BaseCameraPointersInput and ArcRotateCameraPointersInput. ([mrdunk](https://github.com))
 - onActiveCameraChanged shouldn't be fired when rendering rig cameras ([TrevorDev](https://github.com/TrevorDev))
 - Added `MeshExploder` class ([danjpar](https://github.com/danjpar))
+- Observables can now make observers top or bottom priority ([TrevorDev](https://github.com/TrevorDev))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
@@ -269,3 +271,4 @@
 (https://github.com/Sebavan))
 - No more `Primitive Geometries` as they were not in use since 2.0 ([Sebavan](https://github.com/Sebavan))
 - Change `shouldExportTransformNode` callback in glTF serializer options to `shouldExportNode`([kcoley](https://github.com/kcoley))
+- Changed `PhysicsHelper` method parameters for event calls ([bobalazek](https://github.com/bobalazek))

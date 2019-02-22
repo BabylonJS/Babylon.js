@@ -83,6 +83,8 @@ import { DirectionalLightPropertyGridComponent } from './propertyGrids/lights/di
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 import { SpotLight } from 'babylonjs/Lights/spotLight';
 import { SpotLightPropertyGridComponent } from './propertyGrids/lights/spotLightPropertyGridComponent';
+import { LensRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline';
+import { LensRenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -259,6 +261,14 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("DefaultRenderingPipeline") !== -1) {
                 const renderPipeline = entity as DefaultRenderingPipeline;
                 return (<DefaultRenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("LensRenderingPipeline") !== -1) {
+                const renderPipeline = entity as LensRenderingPipeline;
+                return (<LensRenderingPipelinePropertyGridComponent renderPipeline={renderPipeline}
                     globalState={this.props.globalState}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);

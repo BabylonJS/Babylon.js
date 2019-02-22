@@ -1175,6 +1175,18 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ILenstRenderingPipelinePropertyGridComponentProps {
+        globalState: GlobalState;
+        renderPipeline: BABYLON.LensRenderingPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class LensRenderingPipelinePropertyGridComponent extends React.Component<ILenstRenderingPipelinePropertyGridComponentProps> {
+        constructor(props: ILenstRenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
