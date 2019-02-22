@@ -371,7 +371,7 @@ function init() {
     canvas = document.createElement("canvas");
     canvas.className = "renderCanvas";
     document.body.appendChild(canvas);
-    engine = new BABYLON.Engine(canvas, false);
+    engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true });
     engine.enableOfflineSupport = false;
     engine.setDitheringState(false);
 }

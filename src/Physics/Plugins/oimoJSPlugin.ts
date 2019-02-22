@@ -6,6 +6,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Vector3, Quaternion } from "../../Maths/math";
 import { Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
+import { PhysicsRaycastResult } from "../physicsRaycastResult";
 
 declare var OIMO: any;
 
@@ -15,6 +16,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "OimoJSPlugin";
     public BJSOIMO: any;
+    private _raycastResult: PhysicsRaycastResult;
 
     constructor(iterations?: number, oimoInjection = OIMO) {
         this.BJSOIMO = oimoInjection;
@@ -22,6 +24,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             iterations: iterations
         });
         this.world.clear();
+        this._raycastResult = new PhysicsRaycastResult();
     }
 
     public setGravity(gravity: Vector3) {
@@ -425,7 +428,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     public setMotor(joint: IMotorEnabledJoint, speed: number, force?: number, motorIndex?: number) {
         if (force !== undefined) {
             Logger.Warn("OimoJS plugin currently has unexpected behavior when using setMotor with force parameter");
-        }else {
+        } else {
             force = 1e6;
         }
         speed *= -1;
@@ -473,5 +476,19 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
     public dispose() {
         this.world.clear();
+    }
+
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @returns PhysicsRaycastResult
+     */
+    public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
+        Logger.Warn("raycast is not currently supported by the Oimo physics plugin");
+
+        this._raycastResult.reset(from, to);
+
+        return this._raycastResult;
     }
 }

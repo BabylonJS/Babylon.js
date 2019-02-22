@@ -45,6 +45,7 @@ import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
+import { WebRequest } from './Misc/webRequest';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -525,6 +526,16 @@ export class Scene extends AbstractScene implements IAnimatable {
     * An event triggered when a mesh is removed
     */
     public onMeshRemovedObservable = new Observable<AbstractMesh>();
+
+    /**
+     * An event triggered when a skeleton is created
+     */
+    public onNewSkeletonAddedObservable = new Observable<Skeleton>();
+
+    /**
+    * An event triggered when a skeleton is removed
+    */
+    public onSkeletonRemovedObservable = new Observable<Skeleton>();
 
     /**
     * An event triggered when a material is created
@@ -2036,7 +2047,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             if (!this.pointerMovePredicate) {
-                this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined));
+                this.pointerMovePredicate = (mesh: AbstractMesh): boolean => (mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || this.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)) && (!this.cameraToUseForPointers || (this.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0));
             }
 
             // Meshes
@@ -2074,7 +2085,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             if (!this.pointerDownPredicate) {
                 this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
-                    return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
+                    return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (!this.cameraToUseForPointers || (this.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
                 };
             }
 
@@ -2130,7 +2141,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
                 if (!this.pointerUpPredicate) {
                     this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled();
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (!this.cameraToUseForPointers || (this.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
                     };
                 }
 
@@ -2709,6 +2720,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             // Remove from the scene if found
             this.skeletons.splice(index, 1);
+            this.onSkeletonRemovedObservable.notifyObservers(toRemove);
         }
 
         return index;
@@ -2925,6 +2937,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public addSkeleton(newSkeleton: Skeleton): void {
         this.skeletons.push(newSkeleton);
+        this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
     }
 
     /**
@@ -4526,6 +4539,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.onTransformNodeRemovedObservable.clear();
         this.onNewMeshAddedObservable.clear();
         this.onMeshRemovedObservable.clear();
+        this.onNewSkeletonAddedObservable.clear();
+        this.onSkeletonRemovedObservable.clear();
         this.onNewMaterialAddedObservable.clear();
         this.onMaterialRemovedObservable.clear();
         this.onNewTextureAddedObservable.clear();
@@ -4757,7 +4772,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
         fastCheck?: boolean, camera?: Nullable<Camera>,
         trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean
-        ): Nullable<PickingInfo> {
+    ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
         pi._pickingUnavailable = true;
@@ -5012,7 +5027,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
         let request = Tools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {

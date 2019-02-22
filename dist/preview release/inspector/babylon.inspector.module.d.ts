@@ -1541,6 +1541,24 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lig
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { LensRenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    interface ILenstRenderingPipelinePropertyGridComponentProps {
+        globalState: GlobalState;
+        renderPipeline: LensRenderingPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class LensRenderingPipelinePropertyGridComponent extends React.Component<ILenstRenderingPipelinePropertyGridComponentProps> {
+        constructor(props: ILenstRenderingPipelinePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -3313,6 +3331,18 @@ declare module INSPECTOR {
     }
     export class SpotLightPropertyGridComponent extends React.Component<ISpotLightPropertyGridComponentProps> {
         constructor(props: ISpotLightPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ILenstRenderingPipelinePropertyGridComponentProps {
+        globalState: GlobalState;
+        renderPipeline: BABYLON.LensRenderingPipeline;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class LensRenderingPipelinePropertyGridComponent extends React.Component<ILenstRenderingPipelinePropertyGridComponentProps> {
+        constructor(props: ILenstRenderingPipelinePropertyGridComponentProps);
         render(): JSX.Element;
     }
 }

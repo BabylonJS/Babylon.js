@@ -29,6 +29,7 @@ import { Logger } from "../Misc/logger";
 import { EngineStore } from "./engineStore";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { _DevTools } from '../Misc/devTools';
+import { WebRequest } from '../Misc/webRequest';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
@@ -220,6 +221,10 @@ export interface EngineOptions extends WebGLContextAttributes {
      * If not handle, you might need to set it up on your side for expected touch devices behavior.
      */
     doNotHandleTouchAction?: boolean;
+    /**
+     * Defines that engine should compile shaders with high precision floats (if supported). False by default
+     */
+    useHighPrecisionFloats?: boolean;
 }
 
 /**
@@ -491,7 +496,7 @@ export class Engine {
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.27";
+        return "4.0.0-alpha.28";
     }
 
     /**
@@ -695,6 +700,12 @@ export class Engine {
     private _renderingCanvas: Nullable<HTMLCanvasElement>;
     private _windowIsBackground = false;
     private _webGLVersion = 1.0;
+
+    protected _highPrecisionShadersAllowed = false;
+    /** @hidden */
+    public get _shouldUseHighPrecisionShader(): boolean {
+        return this._caps.highPrecisionShaderSupported && this._highPrecisionShadersAllowed;
+    }
 
     /**
      * Gets a boolean indicating that only power of 2 textures are supported
@@ -1186,6 +1197,8 @@ export class Engine {
                 options.stencil = attributes.stencil;
             }
         }
+
+        this._highPrecisionShadersAllowed = options.useHighPrecisionFloats || false;
 
         // Viewport
         const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
@@ -2157,7 +2170,7 @@ export class Engine {
             // TODO: We should only submit the frame if we read frameData successfully.
             try {
                 this._vrDisplay.submitFrame();
-            }catch (e) {
+            } catch (e) {
                 Tools.Warn("webVR submitFrame has had an unexpected failure: " + e);
             }
         }
@@ -4411,7 +4424,7 @@ export class Engine {
             };
 
             if (!buffer) {
-                this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
+                this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: WebRequest, exception?: any) => {
                     onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                 });
             } else {
@@ -5671,7 +5684,7 @@ export class Engine {
             }
         }
 
-        let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
+        let onInternalError = (request?: WebRequest, exception?: any) => {
             if (loader) {
                 const fallbackUrl = loader.getFallbackTextureUrl(texture.url, this._textureFormatInUse);
                 Logger.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
@@ -5960,7 +5973,7 @@ export class Engine {
         texture.url = url;
         this._internalTexturesCache.push(texture);
 
-        var onerror = (request?: XMLHttpRequest, exception?: any) => {
+        var onerror = (request?: WebRequest, exception?: any) => {
             scene._removePendingData(texture);
             if (onError && request) {
                 onError(request.status + " " + request.statusText, exception);
@@ -7468,7 +7481,7 @@ export class Engine {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
         let request = Tools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
@@ -7498,7 +7511,7 @@ export class Engine {
             }
         };
 
-        const onerror = (request?: XMLHttpRequest, exception?: any) => {
+        const onerror = (request?: WebRequest, exception?: any) => {
             if (onErrorCallBack && request) {
                 onErrorCallBack(request.status + " " + request.statusText, exception);
             }
