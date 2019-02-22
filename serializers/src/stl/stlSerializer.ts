@@ -8,7 +8,7 @@ import { Vector3 } from "babylonjs/Maths/math";
 export class STLExport {
      /**
      * Exports the geometry of a Mesh array in .STL file format (ASCII)
-     * @param mesh defines the list of meshes to serialize
+     * @param mesh defines the meshe to serialize
      * @param fileName Name of the file when downloaded.
      * @param download triggers the automatic download of the file.
      * @returns the ASCII STL format
