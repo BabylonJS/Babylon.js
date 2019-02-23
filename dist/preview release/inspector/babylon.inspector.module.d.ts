@@ -868,9 +868,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
     }
     export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
         displayNormals: boolean;
-        renderNormalVectors: boolean;
     }> {
         constructor(props: IMeshPropertyGridComponentProps);
+        renderWireframeOver(): void;
         renderNormalVectors(): void;
         displayNormals(): void;
         onMaterialLink(): void;
@@ -2880,9 +2880,9 @@ declare module INSPECTOR {
     }
     export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
         displayNormals: boolean;
-        renderNormalVectors: boolean;
     }> {
         constructor(props: IMeshPropertyGridComponentProps);
+        renderWireframeOver(): void;
         renderNormalVectors(): void;
         displayNormals(): void;
         onMaterialLink(): void;

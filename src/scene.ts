@@ -2134,6 +2134,10 @@ export class Scene extends AbstractScene implements IAnimatable {
                     }
                 }
 
+                if (!this._pointerCaptures[evt.pointerId]) {
+                    return;
+                }
+
                 this._pointerCaptures[evt.pointerId] = false;
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;

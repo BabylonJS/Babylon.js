@@ -38016,21 +38016,53 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var MeshPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MeshPropertyGridComponent, _super);
     function MeshPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        var mesh = _this.props.mesh;
-        _this.state = { displayNormals: false, renderNormalVectors: mesh.reservedDataStore && mesh.reservedDataStore.normalLines };
+        _this.state = {
+            displayNormals: false
+        };
         return _this;
     }
+    MeshPropertyGridComponent.prototype.renderWireframeOver = function () {
+        var mesh = this.props.mesh;
+        var scene = mesh.getScene();
+        if (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) {
+            mesh.reservedDataStore.wireframeOver.dispose(false, true);
+            mesh.reservedDataStore.wireframeOver = null;
+            this.forceUpdate();
+            return;
+        }
+        var wireframeOver = mesh.clone();
+        wireframeOver.reservedDataStore = { hidden: true };
+        wireframeOver.position = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+        wireframeOver.scaling = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, 1, 1);
+        wireframeOver.rotation = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+        wireframeOver.rotationQuaternion = null;
+        wireframeOver.parent = mesh;
+        var material = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("wireframeOver", scene);
+        material.reservedDataStore = { hidden: true };
+        wireframeOver.material = material;
+        material.zOffset = 1;
+        material.disableLighting = true;
+        material.backFaceCulling = false;
+        material.emissiveColor = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Color3"].White();
+        material.wireframe = true;
+        if (!mesh.reservedDataStore) {
+            mesh.reservedDataStore = {};
+        }
+        mesh.reservedDataStore.wireframeOver = wireframeOver;
+        this.forceUpdate();
+    };
     MeshPropertyGridComponent.prototype.renderNormalVectors = function () {
         var mesh = this.props.mesh;
         var scene = mesh.getScene();
         if (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) {
             mesh.reservedDataStore.normalLines.dispose();
             mesh.reservedDataStore.normalLines = null;
-            this.setState({ renderNormalVectors: false });
+            this.forceUpdate();
             return;
         }
         var normals = mesh.getVerticesData(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind);
@@ -38050,7 +38082,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             mesh.reservedDataStore = {};
         }
         mesh.reservedDataStore.normalLines = normalLines;
-        this.setState({ renderNormalVectors: true });
+        this.forceUpdate();
     };
     MeshPropertyGridComponent.prototype.displayNormals = function () {
         var _this = this;
@@ -38111,6 +38143,12 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 return "Particle";
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["PhysicsImpostor"].HeightmapImpostor:
                 return "Heightmap";
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["PhysicsImpostor"].ConvexHullImpostor:
+                return "Convex hull";
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["PhysicsImpostor"].RopeImpostor:
+                return "Rope";
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["PhysicsImpostor"].SoftbodyImpostor:
+                return "Soft body";
         }
         return "Unknown";
     };
@@ -38120,6 +38158,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var scene = mesh.getScene();
         var displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
         var renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
+        var renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: mesh, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
@@ -38176,7 +38215,8 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display normals", isSelected: function () { return displayNormals; }, onSelect: function () { return _this.displayNormals(); } }),
                 mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render vertex normals", isSelected: function () { return renderNormalVectors; }, onSelect: function () { return _this.renderNormalVectors(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_axesViewerComponent__WEBPACK_IMPORTED_MODULE_9__["AxesViewerComponent"], { globalState: this.props.globalState, node: mesh }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_axesViewerComponent__WEBPACK_IMPORTED_MODULE_9__["AxesViewerComponent"], { globalState: this.props.globalState, node: mesh }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render wireframe over mesh", isSelected: function () { return renderWireframeOver; }, onSelect: function () { return _this.renderWireframeOver(); } }))));
     };
     return MeshPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
