@@ -25,7 +25,7 @@ export class STLExport {
                 new Vector3(vertices[id[0]], vertices[id[0] + 1], vertices[id[0] + 2]),
                 new Vector3(vertices[id[1]], vertices[id[1] + 1], vertices[id[1] + 2]),
                 new Vector3(vertices[id[2]], vertices[id[2] + 1], vertices[id[2] + 2])
-                ];                
+                ];
                 let p1p2 = v[0].subtract(v[1]);
                 let p3p2 = v[2].subtract(v[1]);
                 let n = (Vector3.Cross(p1p2, p3p2)).normalize();
@@ -37,7 +37,7 @@ export class STLExport {
                 data += '\t\tvertex ' + v[2].x + ' ' + v[2].y + ' ' + v[2].z + '\r\n';
                 data += '\tendloop\r\n';
                 data += 'endfacet\r\n';
-            }            
+            }
             data += 'endsolid exportedMesh';
 
             if (download) {
