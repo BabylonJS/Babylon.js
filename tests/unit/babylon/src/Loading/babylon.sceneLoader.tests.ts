@@ -550,6 +550,34 @@ describe('Babylon Scene Loader', function() {
                 assert.isNull(colors, 'expecting colors vertex buffer to be null')
             })
         })
+
+        it('should parse leniently allowing extra spaces with vertex definitions', () => {
+            var fileContents = `               
+                g tetrahedron
+                
+                v  1.00 1.00 1.00 0.666 0 0
+                v  2.00 1.00 1.00 0.666 0 0
+                v  1.00 2.00 1.00 0.666 0 0
+                v  1.00 1.00 2.00 0.666 0 0
+                # ^
+                # └── allow extra spaces before position/color
+
+                f 1 3 2
+                f 1 4 3
+                f 1 2 4
+                f 2 3 4
+            `;
+
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+                expect(container.meshes.length).to.eq(1);
+                let tetrahedron = container.meshes[0];
+
+                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+
+                expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
+            })
+        })
     })
 
     describe('#AssetContainer', () => {
