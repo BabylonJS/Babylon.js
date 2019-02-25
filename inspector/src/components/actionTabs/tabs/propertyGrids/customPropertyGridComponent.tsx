@@ -27,28 +27,28 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
         switch (inspectable.type) {
             case InspectableType.Checkbox:
                 return (
-                    <CheckBoxLineComponent label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <CheckBoxLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
             case InspectableType.Slider:
                 return (
-                    <SliderLineComponent label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <SliderLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
                         step={inspectable.step !== undefined ? inspectable.step : 0.1}
                         minimum={inspectable.min !== undefined ? inspectable.min : 0} maximum={inspectable.max !== undefined ? inspectable.max : 1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
             case InspectableType.Vector3:
                 return (
-                    <Vector3LineComponent label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <Vector3LineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
             case InspectableType.Quaternion:
                 return (
-                    <QuaternionLineComponent label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <QuaternionLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
             case InspectableType.Color3:
                 return (
-                    <Color3LineComponent label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <Color3LineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
         }
