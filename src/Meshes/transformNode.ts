@@ -955,6 +955,11 @@ export class TransformNode extends Node {
                 Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
             }
 
+            if (this._scene.useRightHandedSystem) {
+                Matrix.ScalingToRef(1, 1, -1, Tmp.Matrix[1]);
+                Tmp.Matrix[0].multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[0]);
+            }
+
             this._tempMatrix.multiplyToRef(Tmp.Matrix[0], this._tempMatrix);
         }
 
