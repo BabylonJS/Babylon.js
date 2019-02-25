@@ -91,6 +91,19 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             { label: "Linear", value: Texture.LINEAR_LINEAR_MIPLINEAR },
         ];
 
+        var coordinatesMode = [
+            { label: "Explicit", value: Texture.EXPLICIT_MODE },
+            { label: "Cubic", value: Texture.CUBIC_MODE },
+            { label: "Inverse cubic", value: Texture.INVCUBIC_MODE },
+            { label: "Equirectangular", value: Texture.EQUIRECTANGULAR_MODE },
+            { label: "Fixed equirectangular", value: Texture.FIXED_EQUIRECTANGULAR_MODE },
+            { label: "Fixed equirectangular mirrored", value: Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE },
+            { label: "Planar", value: Texture.PLANAR_MODE },
+            { label: "Projection", value: Texture.PROJECTION_MODE },
+            { label: "Skybox", value: Texture.SKYBOX_MODE },
+            { label: "Spherical", value: Texture.SPHERICAL_MODE },
+        ];
+
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
@@ -108,6 +121,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={0} />
+                    <OptionsLineComponent label="Mode" options={coordinatesMode} target={texture} propertyName="coordinatesMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
                     <SliderLineComponent label="Level" target={texture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         texture.updateSamplingMode &&
