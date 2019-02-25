@@ -1165,10 +1165,14 @@ declare module "babylonjs-serializers/legacy/legacy-glTF2Serializer" {
 declare module "babylonjs-serializers/legacy/legacy-objSerializer" {
     export * from "babylonjs-serializers/OBJ/index";
 }
+declare module "babylonjs-serializers/legacy/legacy-stlSerializer" {
+    export * from "babylonjs-serializers/stl/index";
+}
 declare module "babylonjs-serializers/legacy/legacy" {
     import "babylonjs-serializers/index";
     export * from "babylonjs-serializers/legacy/legacy-glTF2Serializer";
     export * from "babylonjs-serializers/legacy/legacy-objSerializer";
+    export * from "babylonjs-serializers/legacy/legacy-stlSerializer";
 }
 declare module "babylonjs-serializers" {
     export * from "babylonjs-serializers/legacy/legacy";

@@ -1094,10 +1094,10 @@ var OBJFileLoader = /** @class */ (function () {
                 //Get information about one position possible for the vertices
             }
             else if (this.vertexPattern.test(line)) {
-                result = line.match(/\S+/g); // match will return non-null due to passing regex pattern
-                //Value of result with line: "v 1.0 2.0 3.0"
+                result = line.match(/[^ ]+/g); // match will return non-null due to passing regex pattern
+                // Value of result with line: "v 1.0 2.0 3.0"
                 // ["v", "1.0", "2.0", "3.0"]
-                //Create a Vector3 with the position x, y, z
+                // Create a Vector3 with the position x, y, z
                 positions.push(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"](parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])));
                 if (this._meshLoadOptions.ImportVertexColors === true) {
                     if (result.length >= 7) {
@@ -1222,7 +1222,7 @@ var OBJFileLoader = /** @class */ (function () {
             }
             else if (this.smooth.test(line)) {
                 // smooth shading => apply smoothing
-                //Toda  y I don't know it work with babylon and with obj.
+                //Today I don't know it work with babylon and with obj.
                 //With the obj file  an integer is set
             }
             else {
