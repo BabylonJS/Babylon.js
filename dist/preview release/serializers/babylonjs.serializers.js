@@ -4429,11 +4429,40 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
+/***/ "./legacy/legacy-stlSerializer.ts":
+/*!****************************************!*\
+  !*** ./legacy/legacy-stlSerializer.ts ***!
+  \****************************************/
+/*! exports provided: STLExport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _stl__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../stl */ "./stl/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return _stl__WEBPACK_IMPORTED_MODULE_0__["STLExport"]; });
+
+
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var serializer in _stl__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[serializer] = _stl__WEBPACK_IMPORTED_MODULE_0__[serializer];
+    }
+}
+
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
 /***/ "./legacy/legacy.ts":
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, OBJExport, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, OBJExport, STLExport, KHR_texture_transform, KHR_lights_punctual */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4464,6 +4493,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _legacy_objSerializer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./legacy-objSerializer */ "./legacy/legacy-objSerializer.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJExport", function() { return _legacy_objSerializer__WEBPACK_IMPORTED_MODULE_2__["OBJExport"]; });
+
+/* harmony import */ var _legacy_stlSerializer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./legacy-stlSerializer */ "./legacy/legacy-stlSerializer.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return _legacy_stlSerializer__WEBPACK_IMPORTED_MODULE_3__["STLExport"]; });
+
 
 
 

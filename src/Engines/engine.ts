@@ -222,7 +222,7 @@ export interface EngineOptions extends WebGLContextAttributes {
      */
     doNotHandleTouchAction?: boolean;
     /**
-     * Defines that engine should compile shaders with high precision floats (if supported). False by default
+     * Defines that engine should compile shaders with high precision floats (if supported). True by default
      */
     useHighPrecisionFloats?: boolean;
 }
