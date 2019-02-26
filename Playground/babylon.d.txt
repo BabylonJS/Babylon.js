@@ -26443,6 +26443,10 @@ declare module BABYLON {
         /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
         static readonly SCALEMODE_CEILING: number;
         /**
+         * Returns the current npm package of the sdk
+         */
+        static readonly NpmPackage: string;
+        /**
          * Returns the current version of the framework
          */
         static readonly Version: string;
