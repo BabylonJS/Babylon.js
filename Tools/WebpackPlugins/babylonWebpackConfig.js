@@ -31,7 +31,8 @@ module.exports = function defaultConfig(options) {
                 amd: settings.build.umd.packageName,
                 commonjs: settings.build.umd.packageName
             },
-            umdNamedDefine: true
+            umdNamedDefine: true,
+            globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)'
         },
         resolve: options.resolve || {
             extensions: [".ts", ...options.resolveExtensions]
