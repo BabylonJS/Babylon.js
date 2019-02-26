@@ -119,6 +119,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <BooleanLineComponent label="Vertex array object" value={caps.vertexArrayObject} />
                     <BooleanLineComponent label="Timer query" value={caps.timerQuery !== undefined} />
                     <BooleanLineComponent label="Stencil" value={engine.isStencilEnable} />
+                    <BooleanLineComponent label="Parallel shader compilation" value={caps.parallelShaderCompile != null} />
                     <ValueLineComponent label="Max textures units" value={caps.maxTexturesImageUnits} fractionDigits={0} />
                     <ValueLineComponent label="Max textures size" value={caps.maxTextureSize} fractionDigits={0} />
                     <ValueLineComponent label="Max anisotropy" value={caps.maxAnisotropy} fractionDigits={0} />
