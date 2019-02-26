@@ -232,7 +232,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         if (!vertexNormals) {
             vertexNormals = [];
         }
-
+        var normalDirection = (impostor.type === PhysicsImpostor.ClothImpostor) ? -1 : 1;
         var nbVertices = vertexPositions.length / 3;
         var bodyVertices = impostor.physicsBody.get_m_nodes();
         var node: any;
@@ -254,9 +254,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             vertexPositions[3 * n] = x;
             vertexPositions[3 * n + 1] = y;
             vertexPositions[3 * n + 2] = z;
-            vertexNormals[3 * n] = nx;
-            vertexNormals[3 * n + 1] = ny;
-            vertexNormals[3 * n + 2] = nz;
+            vertexNormals[3 * n] = nx * normalDirection;
+            vertexNormals[3 * n + 1] = ny * normalDirection;
+            vertexNormals[3 * n + 2] = nz * normalDirection;
         }
 
         var vertex_data = new VertexData();
@@ -648,7 +648,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             var vertex_data = this._softVertexData(impostor);
             var vertexPositions = vertex_data.positions;
             var vertexNormals = vertex_data.normals;
-
+            
             if (vertexPositions === null  || vertexNormals === null) {
                 return new Ammo.btCompoundShape();
             }
@@ -661,7 +661,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 this._tmpAmmoVectorB.setValue(vertexPositions[3 * segs], vertexPositions[3 * segs + 1], -vertexPositions[3 * segs + 2]);
                 this._tmpAmmoVectorD.setValue(vertexPositions[len - 3], vertexPositions[len - 2], -vertexPositions[len - 1]);
                 this._tmpAmmoVectorC.setValue(vertexPositions[len - 3 - 3 * segs], vertexPositions[len - 2 - 3 * segs], -vertexPositions[len - 1 - 3 * segs]);
-
+                
                 var clothBody = new Ammo.btSoftBodyHelpers().CreatePatch(
                     this.world.getWorldInfo(),
                     this._tmpAmmoVectorA,
