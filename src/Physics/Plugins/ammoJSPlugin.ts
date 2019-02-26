@@ -1156,7 +1156,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param otherImpostor, rigid impostor as the anchor
      * @param width, ratio across width from 0 to 1
      * @param height, ratio up height from 0 to 1
-     * @param influenece, the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
+     * @param influence, the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
      * @param noCollisionBetweenLinkedBodies, when true collisions between soft impostor and anchor are ignored; default false
      */
     public appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
