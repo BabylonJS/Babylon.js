@@ -46,12 +46,13 @@ export class STLExport {
                 data += '\tendloop\r\n';
                 data += 'endfacet\r\n';
             }			
-		}		
+		}	
+		
 		data += 'endsolid exportedMesh';
-		}else{			
-			//Adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
-			
-			//get faceCount
+		
+		}else{	
+		
+			//Adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61			
 			let faceCount = 0;
 			for(let i=0; i<meshes.length; i++){
 				let mesh = meshes[i];
@@ -103,9 +104,8 @@ export class STLExport {
 					offset = writeVector(data, offset, v[1], isLittleEndian);
 					offset = writeVector(data, offset, v[2], isLittleEndian);
 					offset += 2;
-				}		
-			}			
-		
+				}	
+			}		
 		}	
 
         if (download) {
