@@ -948,6 +948,29 @@ export class PhysicsImpostor {
     }
 
     /**
+     * Add an anchor to a soft impostor
+     * @param otherImpostor, rigid impostor as the anchor
+     * @param noCollisionBetweenLinkedBodies, when true collisions between soft impostor and anchor are ignored; default false
+     * @param influenece, the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech.
+     * @param width, ratio across width from 0 to 1
+     * @param height, ratio up height from 0 to 1
+     * @returns the soft imposter
+     */
+    public addAnchor(otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor {
+        if (!this._physicsEngine) {
+            return this;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.appendAnchor) {
+            return this;
+        }
+        if (this._physicsEngine) {
+            plugin.appendAnchor!(this, otherImpostor, width, height, influence, noCollisionBetweenLinkedBodies);
+        }
+        return this;
+    }
+
+    /**
      * Will keep this body still, in a sleep mode.
      * @returns the physics imposter
      */
