@@ -493,6 +493,14 @@ export class Engine {
     public static readonly SCALEMODE_CEILING = Constants.SCALEMODE_CEILING;
 
     /**
+     * Returns the current npm package of the sdk
+     */
+    // Not mixed with Version for tooling purpose.
+    public static get NpmPackage(): string {
+        return "babylonjs@4.0.0-alpha.29";
+    }
+
+    /**
      * Returns the current version of the framework
      */
     public static get Version(): string {

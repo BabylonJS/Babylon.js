@@ -34,7 +34,8 @@ function updateEngineVersion(newVersion) {
     colorConsole.log("Updating version in engine.ts to: " + newVersion.green);
     let engineContent = fs.readFileSync(enginePath).toString();
     let replaced = engineContent.replace(/(public static get Version\(\): string {\s*return ")(.*)(";\s*})/g, "$1" + newVersion + "$3");
-    fs.writeFileSync(enginePath, replaced);    
+    replaced = replaced.replace(/(public static get NpmPackage\(\): string {\s*return ")(.*)(";\s*})/g, "$1" + "babylonjs@" + newVersion + "$3");
+    fs.writeFileSync(enginePath, replaced);
     colorConsole.emptyLine();
 }
 
