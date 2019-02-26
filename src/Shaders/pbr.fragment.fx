@@ -1028,7 +1028,7 @@ void main(void) {
     #endif
 
     // _____________________________ Sheen Environment Oclusion __________________________
-    #ifdef SHEEN
+    #if defined(SHEEN) && defined(REFLECTION)
         vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, NdotV, sheenAlphaG);
 
         #ifdef RADIANCEOCCLUSION
