@@ -10,6 +10,9 @@ import { Effect } from "../Materials/effect";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Constants } from "./constants";
+
+declare const global: any;
+
 /**
  * Options to create the null engine
  */
@@ -129,15 +132,15 @@ export class NullEngine extends Engine {
         Logger.Log(`Babylon.js v${Engine.Version} - Null engine`);
 
         // Wrappers
+        const theCurrentGlobal = (typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : window);
         if (typeof URL === "undefined") {
-            (<any>URL) = {
+            theCurrentGlobal.URL = {
                 createObjectURL: function() { },
                 revokeObjectURL: function() { }
             };
         }
-
         if (typeof Blob === "undefined") {
-            (<any>Blob) = function() { };
+            theCurrentGlobal.Blob = function() { };
         }
     }
 
