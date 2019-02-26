@@ -8262,6 +8262,64 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum that determines the text-wrapping mode to use.
+     */
+    export enum InspectableType {
+        /**
+         * Checkbox for booleans
+         */
+        Checkbox = 0,
+        /**
+         * Sliders for numbers
+         */
+        Slider = 1,
+        /**
+         * Vector3
+         */
+        Vector3 = 2,
+        /**
+         * Quaternions
+         */
+        Quaternion = 3,
+        /**
+         * Color3
+         */
+        Color3 = 4
+    }
+    /**
+     * Interface used to define custom inspectable properties.
+     * This interface is used by the inspector to display custom property grids
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    export interface IInspectable {
+        /**
+         * Gets the label to display
+         */
+        label: string;
+        /**
+         * Gets the name of the property to edit
+         */
+        propertyName: string;
+        /**
+         * Gets the type of the editor to use
+         */
+        type: InspectableType;
+        /**
+         * Gets the minimum value of the property when using in "slider" mode
+         */
+        min?: number;
+        /**
+         * Gets the maximum value of the property when using in "slider" mode
+         */
+        max?: number;
+        /**
+         * Gets the setp to use when using in "slider" mode
+         */
+        step?: number;
+    }
+}
+declare module BABYLON {
+    /**
      * Class for creating a cube texture
      */
     export class CubeTexture extends BaseTexture {
@@ -13191,15 +13249,20 @@ declare module BABYLON {
          */
         forceFullscreenViewport: boolean;
         /**
-        * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
-    *
-    * | Value | Type                                | Description |
-        * | ----- | ----------------------------------- | ----------- |
-        * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
-        * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
-        * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
-    *
-        */
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
+        /**
+         * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
+         *
+         * | Value | Type                                | Description |
+         * | ----- | ----------------------------------- | ----------- |
+         * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
+         * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
+         * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
+         *
+         */
         scaleMode: number;
         /**
         * Force textures to be a power of two (default: false)
@@ -17783,6 +17846,11 @@ declare module BABYLON {
          * Are mip maps generated for this texture or not.
          */
         readonly noMipmap: boolean;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
         private _noMipmap;
         /** @hidden */
         _invertY: boolean;
@@ -18552,6 +18620,11 @@ declare module BABYLON {
          * Gets or sets the animation properties override
          */
         animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
         /**
          * An observable triggered before computing the skeleton's matrices
          */
@@ -19333,8 +19406,8 @@ declare module BABYLON {
         readonly rayToWorld: Vector3;
         /**
          * Sets the hit data (normal & point in world space)
-         * @param hitNormalWorld
-         * @param hitPointWorld
+         * @param hitNormalWorld defines the normal in world space
+         * @param hitPointWorld defines the point in world space
          */
         setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ): void;
         /**
@@ -19410,6 +19483,14 @@ declare module BABYLON {
         setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
         getBodyRestitution(impostor: PhysicsImpostor): number;
         setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        getBodyPressure?(impostor: PhysicsImpostor): number;
+        setBodyPressure?(impostor: PhysicsImpostor, pressure: number): void;
+        getBodyStiffness?(impostor: PhysicsImpostor): number;
+        setBodyStiffness?(impostor: PhysicsImpostor, stiffness: number): void;
+        getBodyVelocityIterations?(impostor: PhysicsImpostor): number;
+        setBodyVelocityIterations?(impostor: PhysicsImpostor, velocityIterations: number): void;
+        getBodyPositionIterations?(impostor: PhysicsImpostor): number;
+        setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
         raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
@@ -19549,6 +19630,36 @@ declare module BABYLON {
          * Specifies if bi-directional transformations should be disabled
          */
         disableBidirectionalTransformation?: boolean;
+        /**
+         * The pressure inside the physics imposter, soft object only
+         */
+        pressure?: number;
+        /**
+         * The stiffness the physics imposter, soft object only
+         */
+        stiffness?: number;
+        /**
+         * The number of iterations used in maintaining consistent vertex velocities, soft object only
+         */
+        velocityIterations?: number;
+        /**
+         * The number of iterations used in maintaining consistent vertex positions, soft object only
+         */
+        positionIterations?: number;
+        /**
+         * The number used to fix points on a cloth (0, 1, 2, 4, 8) or rope (0, 1, 2) only
+         * 0 None, 1, back left or top, 2, back right or bottom, 4, front left, 8, front right
+         * Add to fix multiple points
+         */
+        fixedPoints?: number;
+        /**
+         * The collision margin around a soft object
+         */
+        margin?: number;
+        /**
+         * The collision margin around a soft object
+         */
+        damping?: number;
     }
     /**
      * Interface for a physics-enabled object
@@ -19716,10 +19827,46 @@ declare module BABYLON {
         */
         restitution: number;
         /**
+         * Gets the pressure of a soft body; only supported by the AmmoJSPlugin
+         */
+        /**
+        * Sets the pressure of a soft body; only supported by the AmmoJSPlugin
+        */
+        pressure: number;
+        /**
+         * Gets the stiffness of a soft body; only supported by the AmmoJSPlugin
+         */
+        /**
+        * Sets the stiffness of a soft body; only supported by the AmmoJSPlugin
+        */
+        stiffness: number;
+        /**
+         * Gets the velocityIterations of a soft body; only supported by the AmmoJSPlugin
+         */
+        /**
+        * Sets the velocityIterations of a soft body; only supported by the AmmoJSPlugin
+        */
+        velocityIterations: number;
+        /**
+         * Gets the positionIterations of a soft body; only supported by the AmmoJSPlugin
+         */
+        /**
+        * Sets the positionIterations of a soft body; only supported by the AmmoJSPlugin
+        */
+        positionIterations: number;
+        /**
          * The unique id of the physics imposter
          * set by the physics engine when adding this impostor to the array
          */
         uniqueId: number;
+        /**
+         * @hidden
+         */
+        soft: boolean;
+        /**
+         * @hidden
+         */
+        segments: number;
         private _joints;
         /**
          * Initializes the physics imposter
@@ -20015,6 +20162,18 @@ declare module BABYLON {
          * ConvexHull-Impostor type (Ammo.js plugin only)
          */
         static ConvexHullImpostor: number;
+        /**
+         * Rope-Imposter type
+         */
+        static RopeImpostor: number;
+        /**
+         * Cloth-Imposter type
+         */
+        static ClothImpostor: number;
+        /**
+         * Softbody-Imposter type
+         */
+        static SoftbodyImpostor: number;
     }
 }
 declare module BABYLON {
@@ -20706,6 +20865,18 @@ declare module BABYLON {
          * @returns current mesh
          */
         flipFaces(flipNormals?: boolean): Mesh;
+        /**
+         * Increase the number of facets and hence vertices in a mesh
+         * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
+         * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
+         */
+        increaseVertices(numberPerEdge: number): void;
+        /**
+         * Force adjacent facets to share vertices and remove any facets that have all vertices in a line
+         * This will undo any application of covertToFlatShadedMesh
+         * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
+         */
+        forceSharedVertices(): void;
         /** @hidden */
         static _instancedMeshFactory(name: string, mesh: Mesh): InstancedMesh;
         /** @hidden */
@@ -21252,6 +21423,11 @@ declare module BABYLON {
          * The alpha value of the material
          */
         protected _alpha: number;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
         /**
          * Sets the alpha value of the material
          */
@@ -24400,6 +24576,11 @@ declare module BABYLON {
          */
         reservedDataStore: any;
         /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
+        /**
          * Gets or sets a boolean used to define if the node must be serialized
          */
         doNotSerialize: boolean;
@@ -26452,7 +26633,7 @@ declare module BABYLON {
          */
         doNotHandleTouchAction?: boolean;
         /**
-         * Defines that engine should compile shaders with high precision floats (if supported). False by default
+         * Defines that engine should compile shaders with high precision floats (if supported). True by default
          */
         useHighPrecisionFloats?: boolean;
     }
@@ -50440,9 +50621,11 @@ declare module BABYLON {
         private _dispatcher;
         private _overlappingPairCache;
         private _solver;
+        private _softBodySolver;
         private _tmpAmmoVectorA;
         private _tmpAmmoVectorB;
         private _tmpAmmoVectorC;
+        private _tmpAmmoVectorD;
         private _tmpContactCallbackResult;
         private _tmpAmmoVectorRCA;
         private _tmpAmmoVectorRCB;
@@ -50492,11 +50675,16 @@ declare module BABYLON {
          * @param impostors array of imposters to update before/after the step
          */
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        /**
+         * Update babylon mesh vertices vertices to match physics world object
+         * @param impostor imposter to match
+         */
+        afterSoftStep(impostor: PhysicsImpostor): void;
         private _tmpVector;
         private _tmpMatrix;
         /**
-         * Applies an implulse on the imposter
-         * @param impostor imposter to apply impulse
+         * Applies an impulse on the imposter
+         * @param impostor imposter to apply impulse to
          * @param force amount of force to be applied to the imposter
          * @param contactPoint the location to apply the impulse on the imposter
          */
@@ -50529,6 +50717,23 @@ declare module BABYLON {
          */
         removeJoint(impostorJoint: PhysicsImpostorJoint): void;
         private _addMeshVerts;
+        /**
+         * Initialise the soft body vertices to match its object's (mesh) vertices
+         * Softbody vertices (nodes) are in world space and to match this
+         * The object's position and rotation is set to zero and so its vertices are also then set in world space
+         * @param impostor to create the softbody for
+         */
+        private _softVertexData;
+        /**
+         * Create an impostor's soft body
+         * @param impostor to create the softbody for
+         */
+        private _createSoftbody;
+        /**
+         * Create cloth for an impostor
+         * @param impostor to create the softbody for
+         */
+        private _createCloth;
         private _addHullVerts;
         private _createShape;
         /**
@@ -50608,6 +50813,55 @@ declare module BABYLON {
          * @param restitution resitution value
          */
         setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        /**
+         * Gets pressure inside the impostor
+         * @param impostor impostor to get pressure from
+         * @returns pressure value
+         */
+        getBodyPressure(impostor: PhysicsImpostor): number;
+        /**
+         * Sets pressure inside a soft body impostor
+         * Cloth and rope must remain 0 pressure
+         * @param impostor impostor to set pressure on
+         * @param pressure pressure value
+         */
+        setBodyPressure(impostor: PhysicsImpostor, pressure: number): void;
+        /**
+         * Gets stiffness of the impostor
+         * @param impostor impostor to get stiffness from
+         * @returns pressure value
+         */
+        getBodyStiffness(impostor: PhysicsImpostor): number;
+        /**
+         * Sets stiffness of the impostor
+         * @param impostor impostor to set stiffness on
+         * @param stiffness stiffness value from 0 to 1
+         */
+        setBodyStiffness(impostor: PhysicsImpostor, stiffness: number): void;
+        /**
+         * Gets velocityIterations of the impostor
+         * @param impostor impostor to get velocity iterations from
+         * @returns velocityIterations value
+         */
+        getBodyVelocityIterations(impostor: PhysicsImpostor): number;
+        /**
+         * Sets velocityIterations of the impostor
+         * @param impostor impostor to set velocity iterations on
+         * @param velocityIterations velocityIterations value
+         */
+        setBodyVelocityIterations(impostor: PhysicsImpostor, velocityIterations: number): void;
+        /**
+         * Gets positionIterations of the impostor
+         * @param impostor impostor to get position iterations from
+         * @returns positionIterations value
+         */
+        getBodyPositionIterations(impostor: PhysicsImpostor): number;
+        /**
+         * Sets positionIterations of the impostor
+         * @param impostor impostor to set position on
+         * @param positionIterations positionIterations value
+         */
+        setBodyPositionIterations(impostor: PhysicsImpostor, positionIterations: number): void;
         /**
          * Sleeps the physics body and stops it from being active
          * @param impostor impostor to sleep
@@ -51723,6 +51977,11 @@ declare module BABYLON {
         private engine;
         private _renderEffects;
         private _renderEffectsForIsolatedPass;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
         /**
          * @hidden
          */

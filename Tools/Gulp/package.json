@@ -11,5 +11,8 @@
     "scripts": {
         "install": "cd ../../ && npm install && cd Playground/ && npm install && cd ../Viewer && npm install && cd ../Tools/Gulp/",
         "build": "gulp --max-old-space-size=8192 --tsLintFix"
+    },
+    "dependencies": {
+        "typescript": "^3.3.3333"
     }
 }
