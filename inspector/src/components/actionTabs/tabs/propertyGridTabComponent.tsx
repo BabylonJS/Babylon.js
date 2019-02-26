@@ -125,10 +125,14 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("Mesh") !== -1) {
                 const mesh = entity as Mesh;
                 if (mesh.getTotalVertices() > 0) {
-                    return (<MeshPropertyGridComponent globalState={this.props.globalState} mesh={mesh}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+                    return (
+                        <div>
+                            <MeshPropertyGridComponent globalState={this.props.globalState} mesh={mesh}
+                                lockObject={this._lockObject}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        </div>
+                    );
                 }
             }
 

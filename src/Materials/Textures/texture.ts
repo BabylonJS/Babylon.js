@@ -9,6 +9,7 @@ import { Constants } from "../../Engines/constants";
 import { _AlphaState } from "../../States/index";
 import { _TypeStore } from '../../Misc/typeStore';
 import { _DevTools } from '../../Misc/devTools';
+import { IInspectable } from '../../Misc/iInspectable';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -178,6 +179,12 @@ export class Texture extends BaseTexture {
     get noMipmap(): boolean {
         return this._noMipmap;
     }
+
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
 
     private _noMipmap: boolean;
     /** @hidden */

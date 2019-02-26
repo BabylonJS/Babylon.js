@@ -743,16 +743,16 @@ export class Sound {
                 } else {
                     this._streamingSource.disconnect();
                 }
+                this.isPlaying = false;
             }
             else if (Engine.audioEngine.audioContext && this._soundSource) {
                 var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                 this._soundSource.stop(stopTime);
-                this._soundSource.onended = () => { };
+                this._soundSource.onended = () => { this.isPlaying = false; };
                 if (!this.isPaused) {
                     this._startOffset = 0;
                 }
             }
-            this.isPlaying = false;
         }
     }
 

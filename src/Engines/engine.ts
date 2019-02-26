@@ -222,7 +222,7 @@ export interface EngineOptions extends WebGLContextAttributes {
      */
     doNotHandleTouchAction?: boolean;
     /**
-     * Defines that engine should compile shaders with high precision floats (if supported). False by default
+     * Defines that engine should compile shaders with high precision floats (if supported). True by default
      */
     useHighPrecisionFloats?: boolean;
 }
@@ -493,10 +493,18 @@ export class Engine {
     public static readonly SCALEMODE_CEILING = Constants.SCALEMODE_CEILING;
 
     /**
+     * Returns the current npm package of the sdk
+     */
+    // Not mixed with Version for tooling purpose.
+    public static get NpmPackage(): string {
+        return "babylonjs@4.0.0-alpha.29";
+    }
+
+    /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-alpha.28";
+        return "4.0.0-alpha.29";
     }
 
     /**
@@ -701,7 +709,7 @@ export class Engine {
     private _windowIsBackground = false;
     private _webGLVersion = 1.0;
 
-    protected _highPrecisionShadersAllowed = false;
+    protected _highPrecisionShadersAllowed = true;
     /** @hidden */
     public get _shouldUseHighPrecisionShader(): boolean {
         return this._caps.highPrecisionShaderSupported && this._highPrecisionShadersAllowed;
@@ -1198,7 +1206,9 @@ export class Engine {
             }
         }
 
-        this._highPrecisionShadersAllowed = options.useHighPrecisionFloats || false;
+        if (options.useHighPrecisionFloats !== undefined) {
+            this._highPrecisionShadersAllowed = options.useHighPrecisionFloats;
+        }
 
         // Viewport
         const devicePixelRatio = DomManagement.IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
