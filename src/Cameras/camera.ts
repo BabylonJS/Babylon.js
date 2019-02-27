@@ -94,12 +94,6 @@ export class Camera extends Node {
     public static ForceAttachControlToAlwaysPreventDefault = false;
 
     /**
-     * @hidden
-     * Might be removed once multiview will be a thing
-     */
-    public static UseAlternateWebVRRendering = false;
-
-    /**
      * Define the input manager associated with the camera.
      */
     public inputs: CameraInputsManager<Camera>;
@@ -257,7 +251,7 @@ export class Camera extends Node {
      * @param width height to set on the multiview texture
      * @param height width to set on the multiview texture
      */
-    public _resizeorCreateMultiviewTexture(width: number, height: number) {
+    public _resizeOrCreateMultiviewTexture(width: number, height: number) {
         if (!this._multiviewTexture) {
             this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), {width: width, height: height});
         }else if (this._multiviewTexture.getRenderWidth() != width || this._multiviewTexture.getRenderHeight() != height) {
@@ -293,8 +287,6 @@ export class Camera extends Node {
     protected _webvrViewMatrix = Matrix.Identity();
     /** @hidden */
     public _skipRendering = false;
-    /** @hidden */
-    public _alternateCamera: Camera;
 
     /** @hidden */
     public _projectionMatrix = new Matrix();

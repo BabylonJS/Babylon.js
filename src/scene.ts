@@ -1078,8 +1078,6 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     private _viewUpdateFlag = -1;
     private _projectionUpdateFlag = -1;
-    private _alternateViewUpdateFlag = -1;
-    private _alternateProjectionUpdateFlag = -1;
 
     /** @hidden */
     public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
@@ -1110,23 +1108,13 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _transformMatrix = Matrix.Zero();
     private _transformMatrixR = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
-    private _alternateSceneUbo: UniformBuffer;
+    private _multiviewSceneUbo: UniformBuffer;
 
     private _viewMatrix: Matrix;
     private _projectionMatrix: Matrix;
-    private _alternateViewMatrix: Matrix;
-    private _alternateProjectionMatrix: Matrix;
-    private _alternateTransformMatrix: Matrix;
-    private _useAlternateCameraConfiguration = false;
-    private _alternateRendering = false;
     private _wheelEventName = "";
     /** @hidden */
     public _forcedViewPosition: Nullable<Vector3>;
-
-    /** @hidden */
-    public get _isAlternateRenderingEnabled(): boolean {
-        return this._alternateRendering;
-    }
 
     private _frustumPlanes: Plane[];
     /**
@@ -1600,14 +1588,14 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _createUbo(): void {
         this._sceneUbo = new UniformBuffer(this._engine, undefined, true);
         this._sceneUbo.addUniform("viewProjection", 16);
-        this._sceneUbo.addUniform("viewProjectionR", 16);
         this._sceneUbo.addUniform("view", 16);
     }
 
-    private _createAlternateUbo(): void {
-        this._alternateSceneUbo = new UniformBuffer(this._engine, undefined, true);
-        this._alternateSceneUbo.addUniform("viewProjection", 16);
-        this._alternateSceneUbo.addUniform("view", 16);
+    private _createMultiviewUbo(): void {
+        this._multiviewSceneUbo = new UniformBuffer(this._engine, undefined, true);
+        this._multiviewSceneUbo.addUniform("viewProjection", 16);
+        this._multiviewSceneUbo.addUniform("viewProjectionR", 16);
+        this._multiviewSceneUbo.addUniform("view", 16);
     }
 
     // Pointers handling
@@ -2528,17 +2516,13 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     // Matrix
-    /** @hidden */
-    public _switchToAlternateCameraConfiguration(active: boolean): void {
-        this._useAlternateCameraConfiguration = active;
-    }
 
     /**
      * Gets the current view matrix
      * @returns a Matrix
      */
     public getViewMatrix(): Matrix {
-        return this._useAlternateCameraConfiguration ? this._alternateViewMatrix : this._viewMatrix;
+        return this._viewMatrix;
     }
 
     /**
@@ -2546,7 +2530,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a Matrix
      */
     public getProjectionMatrix(): Matrix {
-        return this._useAlternateCameraConfiguration ? this._alternateProjectionMatrix : this._projectionMatrix;
+        return this._projectionMatrix;
     }
 
     /**
@@ -2554,7 +2538,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a Matrix made of View * Projection
      */
     public getTransformMatrix(): Matrix {
-        return this._useAlternateCameraConfiguration ? this._alternateTransformMatrix : this._transformMatrix;
+        return this._transformMatrix;
     }
 
     /**
@@ -2586,48 +2570,20 @@ export class Scene extends AbstractScene implements IAnimatable {
             Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
         }
 
-        if (this.activeCamera && this.activeCamera._alternateCamera) {
-            let otherCamera = this.activeCamera._alternateCamera;
-            otherCamera.getViewMatrix().multiplyToRef(otherCamera.getProjectionMatrix(), Tmp.Matrix[0]);
-            Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
-        } else if (viewR && projectionR) {
+        if (viewR && projectionR) {
             viewR.multiplyToRef(projectionR, Tmp.Matrix[0]);
             Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
         }
 
-        if (this._sceneUbo.useUbo) {
+        if (this._multiviewSceneUbo && this._multiviewSceneUbo.useUbo) {
+            this._multiviewSceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+            this._multiviewSceneUbo.updateMatrix("viewProjectionR", this._transformMatrixR);
+            this._multiviewSceneUbo.updateMatrix("view", this._viewMatrix);
+            this._multiviewSceneUbo.update();
+        }else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
-            this._sceneUbo.updateMatrix("viewProjectionR", this._transformMatrixR);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
             this._sceneUbo.update();
-        }
-    }
-
-    /** @hidden */
-    public _setAlternateTransformMatrix(view: Matrix, projection: Matrix): void {
-        if (this._alternateViewUpdateFlag === view.updateFlag && this._alternateProjectionUpdateFlag === projection.updateFlag) {
-            return;
-        }
-
-        this._alternateViewUpdateFlag = view.updateFlag;
-        this._alternateProjectionUpdateFlag = projection.updateFlag;
-        this._alternateViewMatrix = view;
-        this._alternateProjectionMatrix = projection;
-
-        if (!this._alternateTransformMatrix) {
-            this._alternateTransformMatrix = Matrix.Zero();
-        }
-
-        this._alternateViewMatrix.multiplyToRef(this._alternateProjectionMatrix, this._alternateTransformMatrix);
-
-        if (!this._alternateSceneUbo) {
-            this._createAlternateUbo();
-        }
-
-        if (this._alternateSceneUbo.useUbo) {
-            this._alternateSceneUbo.updateMatrix("viewProjection", this._alternateTransformMatrix);
-            this._alternateSceneUbo.updateMatrix("view", this._alternateViewMatrix);
-            this._alternateSceneUbo.update();
         }
     }
 
@@ -2636,7 +2592,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns a UniformBuffer
      */
     public getSceneUniformBuffer(): UniformBuffer {
-        return this._useAlternateCameraConfiguration ? this._alternateSceneUbo : this._sceneUbo;
+        return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
     }
 
     /**
@@ -4008,14 +3964,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
     }
 
-    /**
-     * Defines an alternate camera (used mostly in VR-like scenario where two cameras can render the same scene from a slightly different point of view)
-     * @param alternateCamera defines the camera to use
-     */
-    public updateAlternateTransformMatrix(alternateCamera: Camera): void {
-        this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
-    }
-
     private _bindFrameBuffer() {
         if (this.activeCamera && this.activeCamera._multiviewTexture) {
             this.activeCamera._multiviewTexture._bindFrameBuffer();
@@ -4063,11 +4011,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             this.setTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
         }else {
             this.updateTransformMatrix();
-
-            if (camera._alternateCamera) {
-                this.updateAlternateTransformMatrix(camera._alternateCamera);
-                this._alternateRendering = true;
-            }
         }
 
         this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
@@ -4156,8 +4099,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Reset some special arrays
         this._renderTargets.reset();
 
-        this._alternateRendering = false;
-
         this.onAfterCameraRenderObservable.notifyObservers(this.activeCamera);
     }
 
@@ -4173,7 +4114,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             // copying the result into the sub cameras instead of rendering them and proceeding as normal from there
 
             // Render to a multiview texture
-            camera._resizeorCreateMultiviewTexture(this.getEngine().getRenderWidth(true) / 2, this.getEngine().getRenderHeight(true));
+            camera._resizeOrCreateMultiviewTexture(this.getEngine().getRenderWidth(true) / 2, this.getEngine().getRenderHeight(true));
+            if (!this._multiviewSceneUbo) {
+                this._createMultiviewUbo();
+            }
             camera.outputRenderTarget = camera._multiviewTexture;
             this._renderForCamera(camera);
             camera.outputRenderTarget = null;
@@ -4670,8 +4614,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Release UBO
         this._sceneUbo.dispose();
 
-        if (this._alternateSceneUbo) {
-            this._alternateSceneUbo.dispose();
+        if (this._multiviewSceneUbo) {
+            this._multiviewSceneUbo.dispose();
         }
 
         // Post-processes
