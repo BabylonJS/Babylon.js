@@ -4000,7 +4000,9 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _bindFrameBuffer() {
-        if (this.activeCamera && this.activeCamera.outputRenderTarget) {
+        if (this.activeCamera && this.activeCamera._multiviewTexture) {
+            this.activeCamera._multiviewTexture._bindFrameBuffer();
+        } else if (this.activeCamera && this.activeCamera.outputRenderTarget) {
             var useMultiview = this.getEngine().getCaps().multiview && this.activeCamera.outputRenderTarget && this.activeCamera.outputRenderTarget.getViewCount() > 1;
             if (useMultiview) {
                 this.activeCamera.outputRenderTarget._bindFrameBuffer();
@@ -4110,7 +4112,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
         // Prepare Frame
-        if (this.postProcessManager) {
+        if (this.postProcessManager && !camera._multiviewTexture) {
             this.postProcessManager._prepareFrame();
         }
 
@@ -4130,7 +4132,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Finalize frame
-        if (this.postProcessManager) {
+        if (this.postProcessManager  && !camera._multiviewTexture) {
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
         }
 
@@ -4148,9 +4150,34 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
 
-        // rig cameras
-        for (var index = 0; index < camera._rigCameras.length; index++) {
-            this._renderForCamera(camera._rigCameras[index], camera);
+        if (camera._rigCameras[0]._cameraRigParams && camera._rigCameras[0]._cameraRigParams.vrMetrics && camera._rigCameras[0]._cameraRigParams.vrMetrics.multiviewEnabled) {
+            // Multiview is only able to be displayed directly for API's such as webXR
+            // This displays a multiview image by rendering to the multiview image and then
+            // copying the result into the sub cameras instead of rendering them and proceeding as normal from there
+
+            // Render to a multiview texture
+            camera._resizeorCreateMultiviewTexture(this.getEngine().getRenderWidth(true) / 2, this.getEngine().getRenderHeight(true));
+            camera.outputRenderTarget = camera._multiviewTexture;
+            this._renderForCamera(camera);
+            camera.outputRenderTarget = null;
+
+            // Consume the multiview texture through a shader for each eye
+            for (var index = 0; index < camera._rigCameras.length; index++) {
+                var engine = this._engine;
+                this._activeCamera = camera._rigCameras[index];
+                engine.setViewport(this._activeCamera.viewport);
+                if (this.postProcessManager) {
+                    this.postProcessManager._prepareFrame();
+                }
+                if (this.postProcessManager) {
+                    this.postProcessManager._finalizeFrame(this._activeCamera.isIntermediate);
+                }
+            }
+        } else {
+            // rig cameras
+            for (var index = 0; index < camera._rigCameras.length; index++) {
+                this._renderForCamera(camera._rigCameras[index], camera);
+            }
         }
 
         // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
