@@ -3,6 +3,9 @@ import { Scene } from "../scene";
 import { Vector3, Vector2, Path2 } from "../Maths/math";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Mesh } from "../Meshes/mesh";
+import { VertexData } from "../Meshes/mesh.vertexData";
+import { Engine } from "../Engines/engine";
+import { Nullable } from "../types";
 
 declare var earcut: any;
 /**
@@ -153,7 +156,7 @@ export class PolygonMeshBuilder {
     private _holes = new Array<PolygonPoints>();
 
     private _name: string;
-    private _scene: Scene;
+    private _scene: Nullable<Scene>;
 
     private _epoints: number[] = new Array<number>();
     private _eholes: number[] = new Array<number>();
@@ -173,13 +176,13 @@ export class PolygonMeshBuilder {
      * Creates a PolygonMeshBuilder
      * @param name name of the builder
      * @param contours Path of the polygon
-     * @param scene scene to add to
+     * @param scene scene to add to when creating the mesh
      * @param earcutInjection can be used to inject your own earcut reference
      */
-    constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene, earcutInjection = earcut) {
+    constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection = earcut) {
         this.bjsEarcut = earcutInjection;
         this._name = name;
-        this._scene = scene;
+        this._scene = scene || Engine.LastCreatedScene;
 
         var points: Vector2[];
         if (contours instanceof Path2) {
@@ -223,6 +226,24 @@ export class PolygonMeshBuilder {
      */
     build(updatable: boolean = false, depth: number = 0): Mesh {
         var result = new Mesh(this._name, this._scene);
+
+        var vertexData = this.buildVertexData(depth);
+
+        result.setVerticesData(VertexBuffer.PositionKind, <number[]>vertexData.positions, updatable);
+        result.setVerticesData(VertexBuffer.NormalKind, <number[]>vertexData.normals, updatable);
+        result.setVerticesData(VertexBuffer.UVKind, <number[]>vertexData.uvs, updatable);
+        result.setIndices(<number[]>vertexData.indices);
+
+        return result;
+    }
+
+    /**
+     * Creates the polygon
+     * @param depth The depth of the mesh created
+     * @returns the created VertexData
+     */
+    buildVertexData(depth: number = 0): VertexData {
+        var result = new VertexData();
 
         var normals = new Array<number>();
         var positions = new Array<number>();
@@ -271,10 +292,10 @@ export class PolygonMeshBuilder {
             });
         }
 
-        result.setVerticesData(VertexBuffer.PositionKind, positions, updatable);
-        result.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
-        result.setVerticesData(VertexBuffer.UVKind, uvs, updatable);
-        result.setIndices(indices);
+        result.indices = indices;
+        result.positions = positions;
+        result.normals = normals;
+        result.uvs = uvs;
 
         return result;
     }

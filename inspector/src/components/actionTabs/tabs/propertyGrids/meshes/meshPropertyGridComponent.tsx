@@ -20,6 +20,8 @@ import { AxesViewerComponent } from "./axesViewerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
+import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -29,12 +31,53 @@ interface IMeshPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
-export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, { displayNormals: boolean, renderNormalVectors: boolean }> {
+export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
+    displayNormals: boolean
+}> {
     constructor(props: IMeshPropertyGridComponentProps) {
         super(props);
-        const mesh = this.props.mesh;
 
-        this.state = { displayNormals: false, renderNormalVectors: mesh.reservedDataStore && mesh.reservedDataStore.normalLines };
+        this.state = {
+            displayNormals: false
+        };
+    }
+
+    renderWireframeOver() {
+        const mesh = this.props.mesh;
+        const scene = mesh.getScene();
+
+        if (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) {
+            mesh.reservedDataStore.wireframeOver.dispose(false, true);
+            mesh.reservedDataStore.wireframeOver = null;
+
+            this.forceUpdate();
+            return;
+        }
+
+        var wireframeOver = mesh.clone();
+        wireframeOver.reservedDataStore = { hidden: true };
+        wireframeOver.position = Vector3.Zero();
+        wireframeOver.scaling = new Vector3(1, 1, 1);
+        wireframeOver.rotation = Vector3.Zero();
+        wireframeOver.rotationQuaternion = null;
+        wireframeOver.parent = mesh;
+        var material = new StandardMaterial("wireframeOver", scene);
+        material.reservedDataStore = { hidden: true };
+        wireframeOver.material = material;
+        material.zOffset = 1;
+        material.disableLighting = true;
+        material.backFaceCulling = false;
+        material.emissiveColor = Color3.White();
+
+        material.wireframe = true;
+
+        if (!mesh.reservedDataStore) {
+            mesh.reservedDataStore = {};
+        }
+
+        mesh.reservedDataStore.wireframeOver = wireframeOver;
+
+        this.forceUpdate();
     }
 
     renderNormalVectors() {
@@ -45,7 +88,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             mesh.reservedDataStore.normalLines.dispose();
             mesh.reservedDataStore.normalLines = null;
 
-            this.setState({ renderNormalVectors: false });
+            this.forceUpdate();
             return;
         }
 
@@ -72,7 +115,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
 
         mesh.reservedDataStore.normalLines = normalLines;
 
-        this.setState({ renderNormalVectors: true });
+        this.forceUpdate();
     }
 
     displayNormals() {
@@ -140,6 +183,12 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 return "Particle";
             case PhysicsImpostor.HeightmapImpostor:
                 return "Heightmap";
+            case PhysicsImpostor.ConvexHullImpostor:
+                return "Convex hull";
+            case PhysicsImpostor.RopeImpostor:
+                return "Rope";
+            case PhysicsImpostor.SoftbodyImpostor:
+                return "Soft body";
         }
 
         return "Unknown";
@@ -151,9 +200,12 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
 
         const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
         const renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
+        const renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
 
         return (
             <div className="pane">
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={mesh}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={mesh.id} />
                     <TextLineComponent label="Unique ID" value={mesh.uniqueId.toString()} />
@@ -234,6 +286,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <CheckBoxLineComponent label="Render vertex normals" isSelected={() => renderNormalVectors} onSelect={() => this.renderNormalVectors()} />
                     }
                     <AxesViewerComponent globalState={this.props.globalState} node={mesh} />
+                    <CheckBoxLineComponent label="Render wireframe over mesh" isSelected={() => renderWireframeOver} onSelect={() => this.renderWireframeOver()} />
                 </LineContainerComponent>
             </div>
         );

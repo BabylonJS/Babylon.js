@@ -15,6 +15,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
+import { IInspectable } from '../Misc/iInspectable';
 
 /**
  * Class used to handle skinning animations
@@ -66,11 +67,19 @@ export class Skeleton implements IAnimatable {
      */
     public doNotSerialize = false;
 
+    private _useTextureToStoreBoneMatrices = true;
     /**
      * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
      * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
      */
-    public useTextureToStoreBoneMatrices = true;
+    public get useTextureToStoreBoneMatrices(): boolean {
+        return this._useTextureToStoreBoneMatrices;
+    }
+
+    public set useTextureToStoreBoneMatrices(value: boolean) {
+        this._useTextureToStoreBoneMatrices = value;
+        this._markAsDirty();
+    }
 
     private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
@@ -87,6 +96,12 @@ export class Skeleton implements IAnimatable {
     public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
         this._animationPropertiesOverride = value;
     }
+
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
 
     // Events
 
@@ -117,7 +132,7 @@ export class Skeleton implements IAnimatable {
 
         this._scene = scene || EngineStore.LastCreatedScene;
 
-        this._scene.skeletons.push(this);
+        this._scene.addSkeleton(this);
 
         //make sure it will recalculate the matrix next time prepare is called.
         this._isDirty = true;

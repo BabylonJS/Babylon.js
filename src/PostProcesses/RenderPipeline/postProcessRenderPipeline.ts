@@ -4,6 +4,7 @@ import { serialize } from "../../Misc/decorators";
 import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
 import { PostProcessRenderEffect } from "./postProcessRenderEffect";
+import { IInspectable } from '../../Misc/iInspectable';
 /**
  * PostProcessRenderPipeline
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
@@ -12,6 +13,12 @@ export class PostProcessRenderPipeline {
 
     private _renderEffects: { [key: string]: PostProcessRenderEffect };
     private _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
+
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
 
     /**
      * @hidden
@@ -196,14 +203,17 @@ export class PostProcessRenderPipeline {
     protected _enableMSAAOnFirstPostProcess(sampleCount: number): boolean {
         // Set samples of the very first post process to 4 to enable native anti-aliasing in browsers that support webGL 2.0 (See: https://github.com/BabylonJS/Babylon.js/issues/3754)
         var effectKeys = Object.keys(this._renderEffects);
-        if (this.engine.webGLVersion >= 2 && effectKeys.length > 0) {
+        if (this.engine.webGLVersion === 1) {
+            return false;
+        }
+
+        if (effectKeys.length > 0) {
             var postProcesses = this._renderEffects[effectKeys[0]].getPostProcesses();
             if (postProcesses) {
                 postProcesses[0].samples = sampleCount;
-                return true;
             }
         }
-        return false;
+        return true;
     }
 
     /**

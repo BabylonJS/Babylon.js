@@ -1,4 +1,4 @@
-import { Nullable, FloatArray } from "babylonjs/types";
+import { Nullable, FloatArray, IndicesArray } from "babylonjs/types";
 import { Vector3, Vector2, Color3, Color4 } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
@@ -14,6 +14,7 @@ import { SceneLoader, ISceneLoaderPluginAsync, SceneLoaderProgressEvent, ISceneL
 
 import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene } from "babylonjs/scene";
+import { WebRequest } from 'babylonjs/Misc/webRequest';
 /**
  * Class reading and parsing the MTL file bundled with the obj file.
  */
@@ -232,7 +233,7 @@ type MeshLoadOptions = {
     /**
      * Defines if UVs are optimized by default during load.
      */
-    OptimizeWithUV : boolean,
+    OptimizeWithUV: boolean,
     /**
      * Invert model on y-axis (does a model scaling inversion)
      */
@@ -342,7 +343,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         this._meshLoadOptions = meshLoadOptions || OBJFileLoader.currentMeshLoadOptions;
     }
 
-    private static get currentMeshLoadOptions() : MeshLoadOptions {
+    private static get currentMeshLoadOptions(): MeshLoadOptions {
         return {
             ComputeNormals: OBJFileLoader.COMPUTE_NORMALS,
             ImportVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
@@ -375,7 +376,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             undefined,
             undefined,
             false,
-            (request?: XMLHttpRequest | undefined, exception?: any) => {
+            (request?: WebRequest | undefined, exception?: any) => {
                 onFailure(pathOfFile, exception);
             }
         );
@@ -846,12 +847,13 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             if (line.length === 0 || line.charAt(0) === '#') {
                 continue;
 
-                //Get information about one position possible for the vertices
+            //Get information about one position possible for the vertices
             } else if (this.vertexPattern.test(line)) {
-                result = line.split(' ');
-                //Value of result with line: "v 1.0 2.0 3.0"
+                result = line.match(/[^ ]+/g)!;  // match will return non-null due to passing regex pattern
+
+                // Value of result with line: "v 1.0 2.0 3.0"
                 // ["v", "1.0", "2.0", "3.0"]
-                //Create a Vector3 with the position x, y, z
+                // Create a Vector3 with the position x, y, z
                 positions.push(new Vector3(
                     parseFloat(result[1]),
                     parseFloat(result[2]),
@@ -1010,7 +1012,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 //Apply smoothing
             } else if (this.smooth.test(line)) {
                 // smooth shading => apply smoothing
-                //Toda  y I don't know it work with babylon and with obj.
+                //Today I don't know it work with babylon and with obj.
                 //With the obj file  an integer is set
             } else {
                 //If there is another possibility
@@ -1089,7 +1091,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             var vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh
             vertexData.uvs = handledMesh.uvs as FloatArray;
-            vertexData.indices = handledMesh.indices as FloatArray;
+            vertexData.indices = handledMesh.indices as IndicesArray;
             vertexData.positions = handledMesh.positions as FloatArray;
             if (this._meshLoadOptions.ComputeNormals === true) {
                 let normals: Array<number> = new Array<number>();
