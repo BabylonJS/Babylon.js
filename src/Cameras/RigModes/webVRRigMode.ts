@@ -29,10 +29,5 @@ Camera._setWebVRRigMode = function(camera: Camera, rigParams: any) {
         camera._rigCameras[1].getProjectionMatrix = camera._getWebVRProjectionMatrix;
         camera._rigCameras[1].parent = camera;
         camera._rigCameras[1]._getViewMatrix = camera._getWebVRViewMatrix;
-
-        if (Camera.UseAlternateWebVRRendering) {
-            camera._rigCameras[1]._skipRendering = true;
-            camera._rigCameras[0]._alternateCamera = camera._rigCameras[1];
-        }
     }
 };
