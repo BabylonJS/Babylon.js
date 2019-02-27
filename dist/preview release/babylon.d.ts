@@ -26588,8 +26588,6 @@ declare module BABYLON {
         canUseTimestampForTimerQuery: boolean;
         /** Function used to let the system compiles shaders in background */
         parallelShaderCompile: {
-            MAX_SHADER_COMPILER_THREADS_KHR: number;
-            maxShaderCompilerThreadsKHR: (thread: number) => void;
             COMPLETION_STATUS_KHR: number;
         };
     }
