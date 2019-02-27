@@ -17,6 +17,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
+import { IInspectable } from '../Misc/iInspectable';
 
 declare type Animation = import("../Animations/animation").Animation;
 
@@ -154,6 +155,12 @@ export class Material implements IAnimatable {
      */
     @serialize("alpha")
     protected _alpha = 1.0;
+
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
 
     /**
      * Sets the alpha value of the material

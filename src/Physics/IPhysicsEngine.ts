@@ -3,6 +3,8 @@ import { Vector3, Quaternion } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint, IMotorEnabledJoint } from "./physicsJoint";
+import { PhysicsRaycastResult } from "./physicsRaycastResult";
+
 /**
  * Interface used to describe a physics joint
  */
@@ -42,8 +44,17 @@ export interface IPhysicsEnginePlugin {
     setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
     getBodyRestitution(impostor: PhysicsImpostor): number;
     setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+    getBodyPressure?(impostor: PhysicsImpostor): number;
+    setBodyPressure?(impostor: PhysicsImpostor, pressure: number): void;
+    getBodyStiffness?(impostor: PhysicsImpostor): number;
+    setBodyStiffness?(impostor: PhysicsImpostor, stiffness: number): void;
+    getBodyVelocityIterations?(impostor: PhysicsImpostor): number;
+    setBodyVelocityIterations?(impostor: PhysicsImpostor, velocityIterations: number): void;
+    getBodyPositionIterations?(impostor: PhysicsImpostor): number;
+    setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
     sleepBody(impostor: PhysicsImpostor): void;
     wakeUpBody(impostor: PhysicsImpostor): void;
+    raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
     //Joint Update
     updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
     setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
@@ -151,6 +162,14 @@ export interface IPhysicsEngine {
      * @returns the PhysicsImpostor or null if not found
      */
     getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
+
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @returns PhysicsRaycastResult
+     */
+    raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
 
     /**
      * Called by the scene. No need to call it.

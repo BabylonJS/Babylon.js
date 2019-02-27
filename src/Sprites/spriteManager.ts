@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 import { Observable, Observer } from "../Misc/observable";
 import { Buffer } from "../Meshes/buffer";
 import { VertexBuffer } from "../Meshes/buffer";
-import { Vector3 } from "../Maths/math";
+import { Vector3, Tmp } from "../Maths/math";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";
 import { PickingInfo } from "../Collisions/pickingInfo";
@@ -249,6 +249,7 @@ export class SpriteManager implements ISpriteManager {
         var max = Vector3.Zero();
         var distance = Number.MAX_VALUE;
         var currentSprite: Nullable<Sprite> = null;
+        var pickedPoint = Vector3.Zero();
         var cameraSpacePosition = Vector3.Zero();
         var cameraView = camera.getViewMatrix();
 
@@ -288,9 +289,19 @@ export class SpriteManager implements ISpriteManager {
         if (currentSprite) {
             var result = new PickingInfo();
 
+            cameraView.invertToRef(Tmp.Matrix[0]);
             result.hit = true;
             result.pickedSprite = currentSprite;
             result.distance = distance;
+
+            // Get picked point
+            let direction = Tmp.Vector3[0];
+            direction.copyFrom(ray.direction);
+            direction.normalize();
+            direction.scaleInPlace(distance);
+
+            ray.origin.addToRef(direction, pickedPoint);
+            result.pickedPoint = Vector3.TransformCoordinates(pickedPoint, Tmp.Matrix[0]);
 
             return result;
         }
@@ -317,12 +328,14 @@ export class SpriteManager implements ISpriteManager {
         var rowSize = baseSize.width / this.cellWidth;
 
         var offset = 0;
+        let noSprite = true;
         for (var index = 0; index < max; index++) {
             var sprite = this.sprites[index];
             if (!sprite || !sprite.isVisible) {
                 continue;
             }
 
+            noSprite = false;
             sprite._animate(deltaTime);
 
             this._appendSpriteVertex(offset++, sprite, 0, 0, rowSize);
@@ -330,6 +343,11 @@ export class SpriteManager implements ISpriteManager {
             this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
             this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
         }
+
+        if (noSprite) {
+            return;
+        }
+
         this._buffer.update(this._vertexData);
 
         // Render

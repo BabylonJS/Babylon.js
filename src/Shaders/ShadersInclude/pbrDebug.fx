@@ -132,7 +132,7 @@
     #elif DEBUGMODE == 74 && defined(CLEARCOAT) && defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         gl_FragColor.rgb = clearCoatEnvironmentReflectance;
         #define DEBUGMODE_GAMMA
-    #elif DEBUGMODE == 75 && defined(SHEEN)
+    #elif DEBUGMODE == 75 && defined(SHEEN) && defined(REFLECTION)
         gl_FragColor.rgb = sheenEnvironmentReflectance;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 76 && defined(ALPHABLEND)

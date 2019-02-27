@@ -9,6 +9,7 @@ import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/postprocess.vertex";
+import { IInspectable } from '../Misc/iInspectable';
 
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
 declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
@@ -83,15 +84,21 @@ export class PostProcess {
     public forceFullscreenViewport = true;
 
     /**
-    * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
-*
-* | Value | Type                                | Description |
-    * | ----- | ----------------------------------- | ----------- |
-    * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
-    * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
-    * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
-*
-    */
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
+
+    /**
+     * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
+     *
+     * | Value | Type                                | Description |
+     * | ----- | ----------------------------------- | ----------- |
+     * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
+     * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
+     * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
+     *
+     */
     public scaleMode = Constants.SCALEMODE_FLOOR;
     /**
     * Force textures to be a power of two (default: false)

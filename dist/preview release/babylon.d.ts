@@ -4350,6 +4350,16 @@ declare module BABYLON {
         private _deferUnregister;
         private _remove;
         /**
+         * Moves the observable to the top of the observer list making it get called first when notified
+         * @param observer the observer to move
+         */
+        makeObserverTopPriority(observer: Observer<T>): void;
+        /**
+         * Moves the observable to the bottom of the observer list making it get called last when notified
+         * @param observer the observer to move
+         */
+        makeObserverBottomPriority(observer: Observer<T>): void;
+        /**
          * Notify all Observers by calling their respective callback with the given data
          * Will return true if all observers were executed, false if an observer set skipNextObservers to true, then prevent the subsequent ones to execute
          * @param eventData defines the data to send to all observers
@@ -4959,6 +4969,77 @@ declare module BABYLON {
     /** @hidden */
     export class _DevTools {
         static WarnImport(name: string): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Extended version of XMLHttpRequest with support for customizations (headers, ...)
+     */
+    export class WebRequest {
+        private _xhr;
+        /**
+         * Custom HTTP Request Headers to be sent with XMLHttpRequests
+         * i.e. when loading files, where the server/service expects an Authorization header
+         */
+        static CustomRequestHeaders: {
+            [key: string]: string;
+        };
+        /**
+         * Add callback functions in this array to update all the requests before they get sent to the network
+         */
+        static CustomRequestModifiers: ((request: XMLHttpRequest) => void)[];
+        private _injectCustomRequestHeaders;
+        /**
+         * Gets or sets a function to be called when loading progress changes
+         */
+        onprogress: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+        /**
+         * Returns client's state
+         */
+        readonly readyState: number;
+        /**
+         * Returns client's status
+         */
+        readonly status: number;
+        /**
+         * Returns client's status as a text
+         */
+        readonly statusText: string;
+        /**
+         * Returns client's response
+         */
+        readonly response: any;
+        /**
+         * Returns client's response url
+         */
+        readonly responseURL: string;
+        /**
+         * Returns client's response as text
+         */
+        readonly responseText: string;
+        /**
+         * Gets or sets the expected response type
+         */
+        responseType: XMLHttpRequestResponseType;
+        /** @hidden */
+        addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        /** @hidden */
+        removeEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        /**
+         * Cancels any network activity
+         */
+        abort(): void;
+        /**
+         * Initiates the request. The optional argument provides the request body. The argument is ignored if request method is GET or HEAD
+         * @param body defines an optional request body
+         */
+        send(body?: Document | BodyInit | null): void;
+        /**
+         * Sets the request method, request URL
+         * @param method defines the method to use (GET, POST, etc..)
+         * @param url defines the url to connect with
+         */
+        open(method: string, url: string): void;
     }
 }
 declare module BABYLON {
@@ -7454,6 +7535,7 @@ declare module BABYLON {
         private _pivotMatrixInverse;
         protected _postMultiplyPivotMatrix: boolean;
         private _tempMatrix;
+        private _tempMatrix2;
         protected _isWorldMatrixFrozen: boolean;
         /** @hidden */
         _indexInSceneTransformNodesArray: number;
@@ -8176,6 +8258,64 @@ declare module BABYLON {
          * @param result The vector3 that the local position should be copied to
          */
         getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum that determines the text-wrapping mode to use.
+     */
+    export enum InspectableType {
+        /**
+         * Checkbox for booleans
+         */
+        Checkbox = 0,
+        /**
+         * Sliders for numbers
+         */
+        Slider = 1,
+        /**
+         * Vector3
+         */
+        Vector3 = 2,
+        /**
+         * Quaternions
+         */
+        Quaternion = 3,
+        /**
+         * Color3
+         */
+        Color3 = 4
+    }
+    /**
+     * Interface used to define custom inspectable properties.
+     * This interface is used by the inspector to display custom property grids
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    export interface IInspectable {
+        /**
+         * Gets the label to display
+         */
+        label: string;
+        /**
+         * Gets the name of the property to edit
+         */
+        propertyName: string;
+        /**
+         * Gets the type of the editor to use
+         */
+        type: InspectableType;
+        /**
+         * Gets the minimum value of the property when using in "slider" mode
+         */
+        min?: number;
+        /**
+         * Gets the maximum value of the property when using in "slider" mode
+         */
+        max?: number;
+        /**
+         * Gets the setp to use when using in "slider" mode
+         */
+        step?: number;
     }
 }
 declare module BABYLON {
@@ -13109,15 +13249,20 @@ declare module BABYLON {
          */
         forceFullscreenViewport: boolean;
         /**
-        * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
-    *
-    * | Value | Type                                | Description |
-        * | ----- | ----------------------------------- | ----------- |
-        * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
-        * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
-        * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
-    *
-        */
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
+        /**
+         * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
+         *
+         * | Value | Type                                | Description |
+         * | ----- | ----------------------------------- | ----------- |
+         * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
+         * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
+         * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
+         *
+         */
         scaleMode: number;
         /**
         * Force textures to be a power of two (default: false)
@@ -16424,6 +16569,11 @@ declare module BABYLON {
          */
         constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>);
         /**
+         * Gets the options used to compile the shader.
+         * They can be modified to trigger a new compilation
+         */
+        readonly options: IShaderMaterialOptions;
+        /**
          * Gets the current class name of the material e.g. "ShaderMaterial"
          * Mainly use in serialization.
          * @returns the class name
@@ -16674,6 +16824,9 @@ declare module BABYLON {
          * If vertex alpha should be applied to the mesh
          */
         useVertexAlpha?: boolean | undefined);
+        private _addClipPlaneDefine;
+        private _removeClipPlaneDefine;
+        isReady(): boolean;
         /**
          * Returns the string "LineMesh"
          */
@@ -17693,6 +17846,11 @@ declare module BABYLON {
          * Are mip maps generated for this texture or not.
          */
         readonly noMipmap: boolean;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
         private _noMipmap;
         /** @hidden */
         _invertY: boolean;
@@ -18451,6 +18609,7 @@ declare module BABYLON {
          * Specifies if the skeleton should be serialized
          */
         doNotSerialize: boolean;
+        private _useTextureToStoreBoneMatrices;
         /**
          * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
          * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
@@ -18461,6 +18620,11 @@ declare module BABYLON {
          * Gets or sets the animation properties override
          */
         animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
         /**
          * An observable triggered before computing the skeleton's matrices
          */
@@ -19206,6 +19370,82 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Holds the data for the raycast result
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     */
+    export class PhysicsRaycastResult {
+        private _hasHit;
+        private _hitDistance;
+        private _hitNormalWorld;
+        private _hitPointWorld;
+        private _rayFromWorld;
+        private _rayToWorld;
+        /**
+         * Gets if there was a hit
+         */
+        readonly hasHit: boolean;
+        /**
+         * Gets the distance from the hit
+         */
+        readonly hitDistance: number;
+        /**
+         * Gets the hit normal/direction in the world
+         */
+        readonly hitNormalWorld: Vector3;
+        /**
+         * Gets the hit point in the world
+         */
+        readonly hitPointWorld: Vector3;
+        /**
+         * Gets the ray "start point" of the ray in the world
+         */
+        readonly rayFromWorld: Vector3;
+        /**
+         * Gets the ray "end point" of the ray in the world
+         */
+        readonly rayToWorld: Vector3;
+        /**
+         * Sets the hit data (normal & point in world space)
+         * @param hitNormalWorld defines the normal in world space
+         * @param hitPointWorld defines the point in world space
+         */
+        setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ): void;
+        /**
+         * Sets the distance from the start point to the hit point
+         * @param distance
+         */
+        setHitDistance(distance: number): void;
+        /**
+         * Calculates the distance manually
+         */
+        calculateHitDistance(): void;
+        /**
+         * Resets all the values to default
+         * @param from The from point on world space
+         * @param to The to point on world space
+         */
+        reset(from?: Vector3, to?: Vector3): void;
+    }
+    /**
+     * Interface for the size containing width and height
+     */
+    interface IXYZ {
+        /**
+         * X
+         */
+        x: number;
+        /**
+         * Y
+         */
+        y: number;
+        /**
+         * Z
+         */
+        z: number;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to describe a physics joint
      */
     export interface PhysicsImpostorJoint {
@@ -19243,8 +19483,17 @@ declare module BABYLON {
         setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
         getBodyRestitution(impostor: PhysicsImpostor): number;
         setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        getBodyPressure?(impostor: PhysicsImpostor): number;
+        setBodyPressure?(impostor: PhysicsImpostor, pressure: number): void;
+        getBodyStiffness?(impostor: PhysicsImpostor): number;
+        setBodyStiffness?(impostor: PhysicsImpostor, stiffness: number): void;
+        getBodyVelocityIterations?(impostor: PhysicsImpostor): number;
+        setBodyVelocityIterations?(impostor: PhysicsImpostor, velocityIterations: number): void;
+        getBodyPositionIterations?(impostor: PhysicsImpostor): number;
+        setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
         updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
         setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
         setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
@@ -19338,6 +19587,13 @@ declare module BABYLON {
          */
         getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
         /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
+        /**
          * Called by the scene. No need to call it.
          * @param delta defines the timespam between frames
          */
@@ -19374,6 +19630,36 @@ declare module BABYLON {
          * Specifies if bi-directional transformations should be disabled
          */
         disableBidirectionalTransformation?: boolean;
+        /**
+         * The pressure inside the physics imposter, soft object only
+         */
+        pressure?: number;
+        /**
+         * The stiffness the physics imposter, soft object only
+         */
+        stiffness?: number;
+        /**
+         * The number of iterations used in maintaining consistent vertex velocities, soft object only
+         */
+        velocityIterations?: number;
+        /**
+         * The number of iterations used in maintaining consistent vertex positions, soft object only
+         */
+        positionIterations?: number;
+        /**
+         * The number used to fix points on a cloth (0, 1, 2, 4, 8) or rope (0, 1, 2) only
+         * 0 None, 1, back left or top, 2, back right or bottom, 4, front left, 8, front right
+         * Add to fix multiple points
+         */
+        fixedPoints?: number;
+        /**
+         * The collision margin around a soft object
+         */
+        margin?: number;
+        /**
+         * The collision margin around a soft object
+         */
+        damping?: number;
     }
     /**
      * Interface for a physics-enabled object
@@ -19541,10 +19827,46 @@ declare module BABYLON {
         */
         restitution: number;
         /**
+         * Gets the pressure of a soft body; only supported by the AmmoJSPlugin
+         */
+        /**
+        * Sets the pressure of a soft body; only supported by the AmmoJSPlugin
+        */
+        pressure: number;
+        /**
+         * Gets the stiffness of a soft body; only supported by the AmmoJSPlugin
+         */
+        /**
+        * Sets the stiffness of a soft body; only supported by the AmmoJSPlugin
+        */
+        stiffness: number;
+        /**
+         * Gets the velocityIterations of a soft body; only supported by the AmmoJSPlugin
+         */
+        /**
+        * Sets the velocityIterations of a soft body; only supported by the AmmoJSPlugin
+        */
+        velocityIterations: number;
+        /**
+         * Gets the positionIterations of a soft body; only supported by the AmmoJSPlugin
+         */
+        /**
+        * Sets the positionIterations of a soft body; only supported by the AmmoJSPlugin
+        */
+        positionIterations: number;
+        /**
          * The unique id of the physics imposter
          * set by the physics engine when adding this impostor to the array
          */
         uniqueId: number;
+        /**
+         * @hidden
+         */
+        soft: boolean;
+        /**
+         * @hidden
+         */
+        segments: number;
         private _joints;
         /**
          * Initializes the physics imposter
@@ -19836,6 +20158,22 @@ declare module BABYLON {
          * Heightmap-Imposter type
          */
         static HeightmapImpostor: number;
+        /**
+         * ConvexHull-Impostor type (Ammo.js plugin only)
+         */
+        static ConvexHullImpostor: number;
+        /**
+         * Rope-Imposter type
+         */
+        static RopeImpostor: number;
+        /**
+         * Cloth-Imposter type
+         */
+        static ClothImpostor: number;
+        /**
+         * Softbody-Imposter type
+         */
+        static SoftbodyImpostor: number;
     }
 }
 declare module BABYLON {
@@ -20343,9 +20681,10 @@ declare module BABYLON {
          * Update the current index buffer
          * @param indices defines the source data
          * @param offset defines the offset in the index buffer where to store the new data (can be null)
+         * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          * @returns the current mesh
          */
-        updateIndices(indices: IndicesArray, offset?: number): Mesh;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): Mesh;
         /**
          * Invert the geometry to move from a right handed system to a left handed one.
          * @returns the current mesh
@@ -20526,6 +20865,18 @@ declare module BABYLON {
          * @returns current mesh
          */
         flipFaces(flipNormals?: boolean): Mesh;
+        /**
+         * Increase the number of facets and hence vertices in a mesh
+         * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
+         * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
+         */
+        increaseVertices(numberPerEdge: number): void;
+        /**
+         * Force adjacent facets to share vertices and remove any facets that have all vertices in a line
+         * This will undo any application of covertToFlatShadedMesh
+         * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
+         */
+        forceSharedVertices(): void;
         /** @hidden */
         static _instancedMeshFactory(name: string, mesh: Mesh): InstancedMesh;
         /** @hidden */
@@ -21072,6 +21423,11 @@ declare module BABYLON {
          * The alpha value of the material
          */
         protected _alpha: number;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
         /**
          * Sets the alpha value of the material
          */
@@ -21924,8 +22280,9 @@ declare module BABYLON {
          * Update index buffer
          * @param indices defines the indices to store in the index buffer
          * @param offset defines the offset in the target buffer where to store the data
+         * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          */
-        updateIndices(indices: IndicesArray, offset?: number): void;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): void;
         /**
          * Creates a new index buffer
          * @param indices defines the indices to store in the index buffer
@@ -23962,9 +24319,11 @@ declare module BABYLON {
         /**
          * Updates the AbstractMesh indices array
          * @param indices defines the data source
+         * @param offset defines the offset in the index buffer where to store the new data (can be null)
+         * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          * @returns the current mesh
          */
-        updateIndices(indices: IndicesArray): AbstractMesh;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): AbstractMesh;
         /**
          * Creates new normals data for the mesh
          * @param updatable defines if the normal vertex buffer must be flagged as updatable
@@ -24216,6 +24575,11 @@ declare module BABYLON {
          * For internal use only. Please do not use.
          */
         reservedDataStore: any;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
         /**
          * Gets or sets a boolean used to define if the node must be serialized
          */
@@ -26224,8 +26588,6 @@ declare module BABYLON {
         canUseTimestampForTimerQuery: boolean;
         /** Function used to let the system compiles shaders in background */
         parallelShaderCompile: {
-            MAX_SHADER_COMPILER_THREADS_KHR: number;
-            maxShaderCompilerThreadsKHR: (thread: number) => void;
             COMPLETION_STATUS_KHR: number;
         };
     }
@@ -26268,6 +26630,10 @@ declare module BABYLON {
          * If not handle, you might need to set it up on your side for expected touch devices behavior.
          */
         doNotHandleTouchAction?: boolean;
+        /**
+         * Defines that engine should compile shaders with high precision floats (if supported). True by default
+         */
+        useHighPrecisionFloats?: boolean;
     }
     /**
      * Defines the interface used by display changed events
@@ -26503,6 +26869,10 @@ declare module BABYLON {
         /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
         static readonly SCALEMODE_CEILING: number;
         /**
+         * Returns the current npm package of the sdk
+         */
+        static readonly NpmPackage: string;
+        /**
          * Returns the current version of the framework
          */
         static readonly Version: string;
@@ -26642,6 +27012,9 @@ declare module BABYLON {
         private _renderingCanvas;
         private _windowIsBackground;
         private _webGLVersion;
+        protected _highPrecisionShadersAllowed: boolean;
+        /** @hidden */
+        readonly _shouldUseHighPrecisionShader: boolean;
         /**
          * Gets a boolean indicating that only power of 2 textures are supported
          * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
@@ -28217,7 +28590,7 @@ declare module BABYLON {
         /** @hidden */
         _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */
-        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest;
+        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /** @hidden */
         _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
         private _partialLoadFile;
@@ -30027,17 +30400,17 @@ declare module BABYLON {
      * Application error to support additional information when loading a file
      */
     export class LoadFileError extends Error {
-        /** defines the optional XHR request */
-        request?: XMLHttpRequest | undefined;
+        /** defines the optional web request */
+        request?: WebRequest | undefined;
         private static _setPrototypeOf;
         /**
          * Creates a new LoadFileError
          * @param message defines the message of the error
-         * @param request defines the optional XHR request
+         * @param request defines the optional web request
          */
         constructor(message: string, 
-        /** defines the optional XHR request */
-        request?: XMLHttpRequest | undefined);
+        /** defines the optional web request */
+        request?: WebRequest | undefined);
     }
     /**
      * Class used to define a retry strategy when error happens while loading assets
@@ -30049,7 +30422,7 @@ declare module BABYLON {
          * @param baseInterval defines the interval between retries
          * @returns the strategy function to use
          */
-        static ExponentialBackoff(maxRetries?: number, baseInterval?: number): (url: string, request: XMLHttpRequest, retryIndex: number) => number;
+        static ExponentialBackoff(maxRetries?: number, baseInterval?: number): (url: string, request: WebRequest, retryIndex: number) => number;
     }
     /**
      * File request interface
@@ -30080,8 +30453,7 @@ declare module BABYLON {
         static UseCustomRequestHeaders: boolean;
         /**
          * Custom HTTP Request Headers to be sent with XMLHttpRequests
-         * i.e. when loading files, where the server/service expects an Authorization header.
-         * @see InjectCustomRequestHeaders injects them to an XMLHttpRequest
+         * i.e. when loading files, where the server/service expects an Authorization header
          */
         static CustomRequestHeaders: {
             [key: string]: string;
@@ -30089,7 +30461,7 @@ declare module BABYLON {
         /**
          * Gets or sets the retry strategy to apply when an error happens while loading an asset
          */
-        static DefaultRetryStrategy: (url: string, request: XMLHttpRequest, retryIndex: number) => number;
+        static DefaultRetryStrategy: (url: string, request: WebRequest, retryIndex: number) => number;
         /**
          * Default behaviour for cors in the application.
          * It can be a string if the expected behavior is identical in the entire app.
@@ -30317,7 +30689,7 @@ declare module BABYLON {
          * @param onError callback called when the file fails to load
          * @returns a file request object
          */
-        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest;
+        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /**
          * Load a script (identified by an url). When the url returns, the
          * content of this file is added into a new script element, attached to the DOM (body element)
@@ -30573,11 +30945,6 @@ declare module BABYLON {
         private static _EndUserMark;
         private static _StartPerformanceConsole;
         private static _EndPerformanceConsole;
-        /**
-         * Injects the @see CustomRequestHeaders into the given request
-         * @param request the request that should be used for injection
-         */
-        static InjectCustomRequestHeaders(request: XMLHttpRequest): void;
         /**
          * Starts a performance counter
          */
@@ -31290,6 +31657,14 @@ declare module BABYLON {
         * An event triggered when a mesh is removed
         */
         onMeshRemovedObservable: Observable<AbstractMesh>;
+        /**
+         * An event triggered when a skeleton is created
+         */
+        onNewSkeletonAddedObservable: Observable<Skeleton>;
+        /**
+        * An event triggered when a skeleton is removed
+        */
+        onSkeletonRemovedObservable: Observable<Skeleton>;
         /**
         * An event triggered when a material is created
         */
@@ -32790,7 +33165,7 @@ declare module BABYLON {
          */
         markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
         /** @hidden */
-        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest;
+        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /** @hidden */
         _loadFileAsync(url: string, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
     }
@@ -33957,7 +34332,7 @@ declare module BABYLON {
          * press.
          * Override this method to provide functionality.
          */
-        protected onButtonDown(evt: PointerEvent, buttonCount: number): void;
+        protected onButtonDown(evt: PointerEvent): void;
         /**
          * Called each time a new POINTERUP event occurs. Ie, for each button
          * release.
@@ -33972,6 +34347,8 @@ declare module BABYLON {
         private _pointerInput;
         private _observer;
         private _onLostFocus;
+        private pointA;
+        private pointB;
     }
 }
 declare module BABYLON {
@@ -34050,7 +34427,7 @@ declare module BABYLON {
          * Called each time a new POINTERDOWN event occurs. Ie, for each button
          * press.
          */
-        protected onButtonDown(evt: PointerEvent, buttonCount: number): void;
+        protected onButtonDown(evt: PointerEvent): void;
         /**
          * Called each time a new POINTERUP event occurs. Ie, for each button
          * release.
@@ -42600,6 +42977,7 @@ declare module BABYLON {
             resolution?: number;
             size?: number;
             useDirectMapping?: boolean;
+            faceForward?: boolean;
         }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
         /**
          * Releases resources associated with this node.
@@ -44724,6 +45102,7 @@ declare module BABYLON {
             loop?: boolean;
             size?: number;
             poster?: string;
+            faceForward?: boolean;
             useDirectMapping?: boolean;
         }, scene: Scene);
         private _changeVideoMode;
@@ -46721,6 +47100,13 @@ declare module BABYLON {
          * @returns the PhysicsImpostor or null if not found
          */
         getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
     }
 }
 declare module BABYLON {
@@ -46731,6 +47117,8 @@ declare module BABYLON {
         name: string;
         private _physicsMaterials;
         private _fixedTimeStep;
+        private _cannonRaycastResult;
+        private _raycastResult;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
@@ -46777,6 +47165,13 @@ declare module BABYLON {
         getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
         dispose(): void;
         private _extendNamespace;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
     }
 }
 declare module BABYLON {
@@ -46785,6 +47180,7 @@ declare module BABYLON {
         world: any;
         name: string;
         BJSOIMO: any;
+        private _raycastResult;
         constructor(iterations?: number, oimoInjection?: any);
         setGravity(gravity: Vector3): void;
         setTimeStep(timeStep: number): void;
@@ -46820,6 +47216,13 @@ declare module BABYLON {
         getRadius(impostor: PhysicsImpostor): number;
         getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
         dispose(): void;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
     }
 }
 declare module BABYLON {
@@ -47183,6 +47586,66 @@ declare module BABYLON {
          * Serializes the LUT texture to json format.
          */
         serialize(): any;
+    }
+}
+declare module BABYLON {
+    /**
+     * This represents a texture coming from an equirectangular image supported by the web browser canvas.
+     */
+    export class EquiRectangularCubeTexture extends BaseTexture {
+        /** The six faces of the cube. */
+        private static _FacesMapping;
+        private _noMipmap;
+        private _onLoad;
+        private _onError;
+        /** The size of the cubemap. */
+        private _size;
+        /** The buffer of the image. */
+        private _buffer;
+        /** The width of the input image. */
+        private _width;
+        /** The height of the input image. */
+        private _height;
+        /** The URL to the image. */
+        url: string;
+        /** The texture coordinates mode. As this texture is stored in a cube format, please modify carefully. */
+        coordinatesMode: number;
+        /**
+         * Instantiates an EquiRectangularCubeTexture from the following parameters.
+         * @param url The location of the image
+         * @param scene The scene the texture will be used in
+         * @param size The cubemap desired size (the more it increases the longer the generation will be)
+         * @param noMipmap Forces to not generate the mipmap if true
+         * @param gammaSpace Specifies if the texture will be used in gamma or linear space
+         * (the PBR material requires those textures in linear space, but the standard material would require them in Gamma space)
+         * @param onLoad — defines a callback called when texture is loaded
+         * @param onError — defines a callback called if there is an error
+         */
+        constructor(url: string, scene: Scene, size: number, noMipmap?: boolean, gammaSpace?: boolean, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>);
+        /**
+         * Load the image data, by putting the image on a canvas and extracting its buffer.
+         */
+        private loadImage;
+        /**
+         * Convert the image buffer into a cubemap and create a CubeTexture.
+         */
+        private loadTexture;
+        /**
+         * Convert the ArrayBuffer into a Float32Array and drop the transparency channel.
+         * @param buffer The ArrayBuffer that should be converted.
+         * @returns The buffer as Float32Array.
+         */
+        private getFloat32ArrayFromArrayBuffer;
+        /**
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "EquiRectangularCubeTexture"
+         */
+        getClassName(): string;
+        /**
+         * Create a clone of the current EquiRectangularCubeTexture and return it.
+         * @returns A clone of the current EquiRectangularCubeTexture.
+         */
+        clone(): EquiRectangularCubeTexture;
     }
 }
 declare module BABYLON {
@@ -47904,10 +48367,10 @@ declare module BABYLON {
          * Creates a PolygonMeshBuilder
          * @param name name of the builder
          * @param contours Path of the polygon
-         * @param scene scene to add to
+         * @param scene scene to add to when creating the mesh
          * @param earcutInjection can be used to inject your own earcut reference
          */
-        constructor(name: string, contours: Path2 | Vector2[] | any, scene: Scene, earcutInjection?: any);
+        constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection?: any);
         /**
          * Adds a whole within the polygon
          * @param hole Array of points defining the hole
@@ -47921,6 +48384,12 @@ declare module BABYLON {
          * @returns the created mesh
          */
         build(updatable?: boolean, depth?: number): Mesh;
+        /**
+         * Creates the polygon
+         * @param depth The depth of the mesh created
+         * @returns the created VertexData
+         */
+        buildVertexData(depth?: number): VertexData;
         /**
          * Adds a side to the polygon
          * @param positions points that make the polygon
@@ -49746,7 +50215,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * A helper for physics simulations
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export class PhysicsHelper {
         private _scene;
@@ -49759,68 +50228,67 @@ declare module BABYLON {
         /**
          * Applies a radial explosion impulse
          * @param origin the origin of the explosion
-         * @param radius the explosion radius
+         * @param radiusOrEventOptions the radius or the options of radial explosion
          * @param strength the explosion strength
          * @param falloff possible options: Constant & Linear. Defaults to Constant
          * @returns A physics radial explosion event, or null
          */
-        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        applyRadialExplosionImpulse(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
         /**
          * Applies a radial explosion force
          * @param origin the origin of the explosion
-         * @param radius the explosion radius
+         * @param radiusOrEventOptions the radius or the options of radial explosion
          * @param strength the explosion strength
          * @param falloff possible options: Constant & Linear. Defaults to Constant
          * @returns A physics radial explosion event, or null
          */
-        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        applyRadialExplosionForce(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
         /**
          * Creates a gravitational field
          * @param origin the origin of the explosion
-         * @param radius the explosion radius
+         * @param radiusOrEventOptions the radius or the options of radial explosion
          * @param strength the explosion strength
          * @param falloff possible options: Constant & Linear. Defaults to Constant
          * @returns A physics gravitational field event, or null
          */
-        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
+        gravitationalField(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
         /**
          * Creates a physics updraft event
          * @param origin the origin of the updraft
-         * @param radius the radius of the updraft
+         * @param radiusOrEventOptions the radius or the options of the updraft
          * @param strength the strength of the updraft
          * @param height the height of the updraft
          * @param updraftMode possible options: Center & Perpendicular. Defaults to Center
          * @returns A physics updraft event, or null
          */
-        updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
+        updraft(origin: Vector3, radiusOrEventOptions: number | PhysicsUpdraftEventOptions, strength?: number, height?: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
         /**
          * Creates a physics vortex event
          * @param origin the of the vortex
-         * @param radius the radius of the vortex
+         * @param radiusOrEventOptions the radius or the options of the vortex
          * @param strength the strength of the vortex
          * @param height   the height of the vortex
          * @returns a Physics vortex event, or null
          * A physics vortex event or null
          */
-        vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent>;
+        vortex(origin: Vector3, radiusOrEventOptions: number | PhysicsVortexEventOptions, strength?: number, height?: number): Nullable<PhysicsVortexEvent>;
     }
     /**
      * Represents a physics radial explosion event
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
-    export class PhysicsRadialExplosionEvent {
+    class PhysicsRadialExplosionEvent {
         private _scene;
+        private _options;
         private _sphere;
-        private _sphereOptions;
-        private _rays;
         private _dataFetched;
         /**
          * Initializes a radial explosioin event
-         * @param scene BabylonJS scene
+         * @param _scene BabylonJS scene
+         * @param _options The options for the vortex event
          */
-        constructor(scene: Scene);
+        constructor(_scene: Scene, _options: PhysicsRadialExplosionEventOptions);
         /**
-         * Returns the data related to the radial explosion event (sphere & rays).
+         * Returns the data related to the radial explosion event (sphere).
          * @returns The radial explosion event data
          */
         getData(): PhysicsRadialExplosionEventData;
@@ -49828,12 +50296,9 @@ declare module BABYLON {
          * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
          * @param impostor A physics imposter
          * @param origin the origin of the explosion
-         * @param radius the explosion radius
-         * @param strength the explosion strength
-         * @param falloff possible options: Constant & Linear
          * @returns {Nullable<PhysicsForceAndContactPoint>} A physics force and contact point, or null
          */
-        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint>;
+        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsForceAndContactPoint>;
         /**
          * Disposes the sphere.
          * @param force Specifies if the sphere should be disposed by force
@@ -49845,28 +50310,23 @@ declare module BABYLON {
     }
     /**
      * Represents a gravitational field event
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
-    export class PhysicsGravitationalFieldEvent {
+    class PhysicsGravitationalFieldEvent {
         private _physicsHelper;
         private _scene;
         private _origin;
-        private _radius;
-        private _strength;
-        private _falloff;
+        private _options;
         private _tickCallback;
         private _sphere;
         private _dataFetched;
         /**
          * Initializes the physics gravitational field event
-         * @param physicsHelper A physics helper
-         * @param scene BabylonJS scene
-         * @param origin The origin position of the gravitational field event
-         * @param radius The radius of the gravitational field event
-         * @param strength The strength of the gravitational field event
-         * @param falloff The falloff for the gravitational field event
+         * @param _physicsHelper A physics helper
+         * @param _scene BabylonJS scene
+         * @param _origin The origin position of the gravitational field event
+         * @param _options The options for the vortex event
          */
-        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff);
+        constructor(_physicsHelper: PhysicsHelper, _scene: Scene, _origin: Vector3, _options: PhysicsRadialExplosionEventOptions);
         /**
          * Returns the data related to the gravitational field event (sphere).
          * @returns A gravitational field event
@@ -49889,15 +50349,11 @@ declare module BABYLON {
     }
     /**
      * Represents a physics updraft event
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
-    export class PhysicsUpdraftEvent {
+    class PhysicsUpdraftEvent {
         private _scene;
         private _origin;
-        private _radius;
-        private _strength;
-        private _height;
-        private _updraftMode;
+        private _options;
         private _physicsEngine;
         private _originTop;
         private _originDirection;
@@ -49909,12 +50365,9 @@ declare module BABYLON {
          * Initializes the physics updraft event
          * @param _scene BabylonJS scene
          * @param _origin The origin position of the updraft
-         * @param _radius The radius of the updraft
-         * @param _strength The strength of the updraft
-         * @param _height The height of the updraft
-         * @param _updraftMode The mode of the updraft
+         * @param _options The options for the updraft event
          */
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number, _updraftMode: PhysicsUpdraftMode);
+        constructor(_scene: Scene, _origin: Vector3, _options: PhysicsUpdraftEventOptions);
         /**
          * Returns the data related to the updraft event (cylinder).
          * @returns A physics updraft event
@@ -49925,11 +50378,11 @@ declare module BABYLON {
          */
         enable(): void;
         /**
-         * Disables the cortex.
+         * Disables the updraft.
          */
         disable(): void;
         /**
-         * Disposes the sphere.
+         * Disposes the cylinder.
          * @param force Specifies if the updraft should be disposed by force
          */
         dispose(force?: boolean): void;
@@ -49941,18 +50394,13 @@ declare module BABYLON {
     }
     /**
      * Represents a physics vortex event
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
      */
-    export class PhysicsVortexEvent {
+    class PhysicsVortexEvent {
         private _scene;
         private _origin;
-        private _radius;
-        private _strength;
-        private _height;
+        private _options;
         private _physicsEngine;
         private _originTop;
-        private _centripetalForceThreshold;
-        private _updraftMultiplier;
         private _tickCallback;
         private _cylinder;
         private _cylinderPosition;
@@ -49961,11 +50409,9 @@ declare module BABYLON {
          * Initializes the physics vortex event
          * @param _scene The BabylonJS scene
          * @param _origin The origin position of the vortex
-         * @param _radius The radius of the vortex
-         * @param _strength The strength of the vortex
-         * @param _height The height of the vortex
+         * @param _options The options for the vortex event
          */
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number);
+        constructor(_scene: Scene, _origin: Vector3, _options: PhysicsVortexEventOptions);
         /**
          * Returns the data related to the vortex event (cylinder).
          * @returns The physics vortex event data
@@ -49991,18 +50437,99 @@ declare module BABYLON {
         private _intersectsWithCylinder;
     }
     /**
+     * Options fot the radial explosion event
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
+     */
+    export class PhysicsRadialExplosionEventOptions {
+        /**
+         * The radius of the sphere for the radial explosion.
+         */
+        radius: number;
+        /**
+         * The strenth of the explosion.
+         */
+        strength: number;
+        /**
+         * The strenght of the force in correspondence to the distance of the affected object
+         */
+        falloff: PhysicsRadialImpulseFalloff;
+        /**
+         * Sphere options for the radial explosion.
+         */
+        sphere: {
+            segments: number;
+            diameter: number;
+        };
+    }
+    /**
+     * Options fot the updraft event
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
+     */
+    export class PhysicsUpdraftEventOptions {
+        /**
+         * The radius of the cylinder for the vortex
+         */
+        radius: number;
+        /**
+         * The strenth of the updraft.
+         */
+        strength: number;
+        /**
+         * The height of the cylinder for the updraft.
+         */
+        height: number;
+        /**
+         * The mode for the the updraft.
+         */
+        updraftMode: PhysicsUpdraftMode;
+    }
+    /**
+     * Options fot the vortex event
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
+     */
+    export class PhysicsVortexEventOptions {
+        /**
+         * The radius of the cylinder for the vortex
+         */
+        radius: number;
+        /**
+         * The strenth of the vortex.
+         */
+        strength: number;
+        /**
+         * The height of the cylinder for the vortex.
+         */
+        height: number;
+        /**
+         * At which distance, relative to the radius the centripetal forces should kick in? Range: 0-1
+         */
+        centripetalForceThreshold: number;
+        /**
+         * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when below the treshold.
+         */
+        centripetalForceMultiplier: number;
+        /**
+         * This multiplier determines with how much force the objects will be pushed sideways/around the vortex, when above the treshold.
+         */
+        centrifugalForceMultiplier: number;
+        /**
+         * This multiplier determines with how much force the objects will be pushed upwards, when in the vortex.
+         */
+        updraftForceMultiplier: number;
+    }
+    /**
     * The strenght of the force in correspondence to the distance of the affected object
-    * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+    * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
     */
     export enum PhysicsRadialImpulseFalloff {
         /** Defines that impulse is constant in strength across it's whole radius */
         Constant = 0,
-        /** DEfines that impulse gets weaker if it's further from the origin */
+        /** Defines that impulse gets weaker if it's further from the origin */
         Linear = 1
     }
     /**
      * The strength of the force in correspondence to the distance of the affected object
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export enum PhysicsUpdraftMode {
         /** Defines that the upstream forces will pull towards the top center of the cylinder */
@@ -50012,7 +50539,7 @@ declare module BABYLON {
     }
     /**
      * Interface for a physics force and contact point
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsForceAndContactPoint {
         /**
@@ -50026,21 +50553,17 @@ declare module BABYLON {
     }
     /**
      * Interface for radial explosion event data
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsRadialExplosionEventData {
         /**
          * A sphere used for the radial explosion event
          */
         sphere: Mesh;
-        /**
-         * An array of rays for the radial explosion event
-         */
-        rays: Array<Ray>;
     }
     /**
      * Interface for gravitational field event data
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsGravitationalFieldEventData {
         /**
@@ -50050,7 +50573,7 @@ declare module BABYLON {
     }
     /**
      * Interface for updraft event data
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsUpdraftEventData {
         /**
@@ -50060,7 +50583,7 @@ declare module BABYLON {
     }
     /**
      * Interface for vortex event data
-     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
     export interface PhysicsVortexEventData {
         /**
@@ -50100,10 +50623,15 @@ declare module BABYLON {
         private _dispatcher;
         private _overlappingPairCache;
         private _solver;
+        private _softBodySolver;
         private _tmpAmmoVectorA;
         private _tmpAmmoVectorB;
         private _tmpAmmoVectorC;
+        private _tmpAmmoVectorD;
         private _tmpContactCallbackResult;
+        private _tmpAmmoVectorRCA;
+        private _tmpAmmoVectorRCB;
+        private _raycastResult;
         private static readonly DISABLE_COLLISION_FLAG;
         private static readonly KINEMATIC_FLAG;
         private static readonly DISABLE_DEACTIVATION_FLAG;
@@ -50149,11 +50677,16 @@ declare module BABYLON {
          * @param impostors array of imposters to update before/after the step
          */
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        /**
+         * Update babylon mesh vertices vertices to match physics world object
+         * @param impostor imposter to match
+         */
+        afterSoftStep(impostor: PhysicsImpostor): void;
         private _tmpVector;
         private _tmpMatrix;
         /**
-         * Applies an implulse on the imposter
-         * @param impostor imposter to apply impulse
+         * Applies an impulse on the imposter
+         * @param impostor imposter to apply impulse to
          * @param force amount of force to be applied to the imposter
          * @param contactPoint the location to apply the impulse on the imposter
          */
@@ -50186,6 +50719,24 @@ declare module BABYLON {
          */
         removeJoint(impostorJoint: PhysicsImpostorJoint): void;
         private _addMeshVerts;
+        /**
+         * Initialise the soft body vertices to match its object's (mesh) vertices
+         * Softbody vertices (nodes) are in world space and to match this
+         * The object's position and rotation is set to zero and so its vertices are also then set in world space
+         * @param impostor to create the softbody for
+         */
+        private _softVertexData;
+        /**
+         * Create an impostor's soft body
+         * @param impostor to create the softbody for
+         */
+        private _createSoftbody;
+        /**
+         * Create cloth for an impostor
+         * @param impostor to create the softbody for
+         */
+        private _createCloth;
+        private _addHullVerts;
         private _createShape;
         /**
          * Sets the physics body position/rotation from the babylon mesh's position/rotation
@@ -50265,6 +50816,55 @@ declare module BABYLON {
          */
         setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
         /**
+         * Gets pressure inside the impostor
+         * @param impostor impostor to get pressure from
+         * @returns pressure value
+         */
+        getBodyPressure(impostor: PhysicsImpostor): number;
+        /**
+         * Sets pressure inside a soft body impostor
+         * Cloth and rope must remain 0 pressure
+         * @param impostor impostor to set pressure on
+         * @param pressure pressure value
+         */
+        setBodyPressure(impostor: PhysicsImpostor, pressure: number): void;
+        /**
+         * Gets stiffness of the impostor
+         * @param impostor impostor to get stiffness from
+         * @returns pressure value
+         */
+        getBodyStiffness(impostor: PhysicsImpostor): number;
+        /**
+         * Sets stiffness of the impostor
+         * @param impostor impostor to set stiffness on
+         * @param stiffness stiffness value from 0 to 1
+         */
+        setBodyStiffness(impostor: PhysicsImpostor, stiffness: number): void;
+        /**
+         * Gets velocityIterations of the impostor
+         * @param impostor impostor to get velocity iterations from
+         * @returns velocityIterations value
+         */
+        getBodyVelocityIterations(impostor: PhysicsImpostor): number;
+        /**
+         * Sets velocityIterations of the impostor
+         * @param impostor impostor to set velocity iterations on
+         * @param velocityIterations velocityIterations value
+         */
+        setBodyVelocityIterations(impostor: PhysicsImpostor, velocityIterations: number): void;
+        /**
+         * Gets positionIterations of the impostor
+         * @param impostor impostor to get position iterations from
+         * @returns positionIterations value
+         */
+        getBodyPositionIterations(impostor: PhysicsImpostor): number;
+        /**
+         * Sets positionIterations of the impostor
+         * @param impostor impostor to set position on
+         * @param positionIterations positionIterations value
+         */
+        setBodyPositionIterations(impostor: PhysicsImpostor, positionIterations: number): void;
+        /**
          * Sleeps the physics body and stops it from being active
          * @param impostor impostor to sleep
          */
@@ -50318,6 +50918,13 @@ declare module BABYLON {
          * Disposes of the impostor
          */
         dispose(): void;
+        /**
+         * Does a raycast in the physics world
+         * @param from when should the ray start?
+         * @param to when should the ray end?
+         * @returns PhysicsRaycastResult
+         */
+        raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
     }
 }
 declare module BABYLON {
@@ -51373,6 +51980,11 @@ declare module BABYLON {
         private _renderEffects;
         private _renderEffectsForIsolatedPass;
         /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
+        /**
          * @hidden
          */
         protected _cameras: Camera[];
@@ -51823,6 +52435,59 @@ declare module BABYLON {
          */
         constructor(name: string, parameters: any, scene: Scene, ratio?: number, cameras?: Camera[]);
         /**
+         * Get the class name
+         * @returns "LensRenderingPipeline"
+         */
+        getClassName(): string;
+        /**
+         * Gets associated scene
+         */
+        readonly scene: Scene;
+        /**
+         * Gets or sets the edge blur
+         */
+        edgeBlur: number;
+        /**
+         * Gets or sets the grain amount
+         */
+        grainAmount: number;
+        /**
+         * Gets or sets the chromatic aberration amount
+         */
+        chromaticAberration: number;
+        /**
+         * Gets or sets the depth of field aperture
+         */
+        dofAperture: number;
+        /**
+         * Gets or sets the edge distortion
+         */
+        edgeDistortion: number;
+        /**
+         * Gets or sets the depth of field distortion
+         */
+        dofDistortion: number;
+        /**
+         * Gets or sets the darken out of focus amount
+         */
+        darkenOutOfFocus: number;
+        /**
+         * Gets or sets a boolean indicating if blur noise is enabled
+         */
+        blurNoise: boolean;
+        /**
+         * Gets or sets a boolean indicating if pentagon bokeh is enabled
+         */
+        pentagonBokeh: boolean;
+        /**
+         * Gets or sets the highlight grain amount
+         */
+        highlightsGain: number;
+        /**
+         * Gets or sets the highlight threshold
+         */
+        highlightsThreshold: number;
+        /**
          * Sets the amount of blur at the edges
          * @param amount blur amount
          */
@@ -51877,6 +52542,7 @@ declare module BABYLON {
          * @param amount amount of DarkenOutOfFocus
          */
         setDarkenOutOfFocus(amount: number): void;
+        private _pentagonBokehIsEnabled;
         /**
          * Creates a pentagon bokeh effect
          */
@@ -53579,7 +54245,7 @@ declare module BABYLON {
          */
         onTaskErrorObservable: Observable<AbstractAssetTask>;
         /**
-         * Observable called when a task is successful
+         * Observable called when all tasks were executed
          */
         onTasksDoneObservable: Observable<AbstractAssetTask[]>;
         /**
@@ -53676,6 +54342,11 @@ declare module BABYLON {
          * @return the current instance of the AssetsManager
          */
         load(): AssetsManager;
+        /**
+         * Start the loading process as an async operation
+         * @return a promise returning the list of failed tasks
+         */
+        loadAsync(): Promise<void>;
     }
 }
 declare module BABYLON {
@@ -53701,6 +54372,42 @@ declare module BABYLON {
          * Constructor for this deferred object.
          */
         constructor();
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to explode meshes (ie. to have a center and move them away from that center to better see the overall organization)
+     */
+    export class MeshExploder {
+        private _centerMesh;
+        private _meshes;
+        private _meshesOrigins;
+        private _toCenterVectors;
+        private _scaledDirection;
+        private _newPosition;
+        private _centerPosition;
+        /**
+         * Explodes meshes from a center mesh.
+         * @param meshes The meshes to explode.
+         * @param centerMesh The mesh to be center of explosion.
+         */
+        constructor(meshes: Array<Mesh>, centerMesh?: Mesh);
+        private _setCenterMesh;
+        /**
+         * Get class name
+         * @returns "MeshExploder"
+         */
+        getClassName(): string;
+        /**
+         * "Exploded meshes"
+         * @returns Array of meshes with the centerMesh at index 0.
+         */
+        getMeshes(): Array<Mesh>;
+        /**
+         * Explodes meshes giving a specific direction
+         * @param direction Number to multiply distance of each mesh's origin from center. Use a negative number to implode, or zero to reset.
+         */
+        explode(direction?: number): void;
     }
 }
 declare module BABYLON {

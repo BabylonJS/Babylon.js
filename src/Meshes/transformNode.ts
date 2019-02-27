@@ -101,6 +101,7 @@ export class TransformNode extends Node {
     private _pivotMatrixInverse: Matrix;
     protected _postMultiplyPivotMatrix = false;
     private _tempMatrix = Matrix.Identity();
+    private _tempMatrix2 = Matrix.Identity();
 
     protected _isWorldMatrixFrozen = false;
 
@@ -905,9 +906,9 @@ export class TransformNode extends Node {
             var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
             Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
-                this.position.z + cameraGlobalPosition.z, Tmp.Matrix[2]);
+                this.position.z + cameraGlobalPosition.z, this._tempMatrix2);
         } else {
-            Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, Tmp.Matrix[2]);
+            Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._tempMatrix2);
         }
 
         // Composing transformations
@@ -954,8 +955,12 @@ export class TransformNode extends Node {
                 Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
             }
 
-            Tmp.Matrix[1].copyFrom(this._tempMatrix);
-            Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[0], this._tempMatrix);
+            if (this._scene.useRightHandedSystem) {
+                Matrix.ScalingToRef(1, 1, -1, Tmp.Matrix[1]);
+                Tmp.Matrix[0].multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[0]);
+            }
+
+            this._tempMatrix.multiplyToRef(Tmp.Matrix[0], this._tempMatrix);
         }
 
         // Post multiply inverse of pivotMatrix
@@ -964,22 +969,25 @@ export class TransformNode extends Node {
         }
 
         // Local world
-        this._tempMatrix.multiplyToRef(Tmp.Matrix[2], this._localMatrix);
+        this._tempMatrix.multiplyToRef(this._tempMatrix2, this._localMatrix);
 
         // Parent
         if (this.parent && this.parent.getWorldMatrix) {
             if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
                 if (this._transformToBoneReferal) {
-                    this.parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
-                    Tmp.Matrix[7].copyFrom(Tmp.Matrix[6]);
+                    this.parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), Tmp.Matrix[7]);
                 } else {
                     Tmp.Matrix[7].copyFrom(this.parent.getWorldMatrix());
                 }
 
-                this._localMatrix.getTranslationToRef(Tmp.Vector3[5]);
-                Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[7], Tmp.Vector3[5]);
-                this._worldMatrix.copyFrom(this._localMatrix);
-                this._worldMatrix.setTranslation(Tmp.Vector3[5]);
+                // Extract scaling and translation from parent
+                let translation = Tmp.Vector3[5];
+                let scale = Tmp.Vector3[6];
+                Tmp.Matrix[7].decompose(scale, undefined, translation);
+                Matrix.ScalingToRef(scale.x, scale.y, scale.z, Tmp.Matrix[7]);
+                Tmp.Matrix[7].setTranslation(translation);
+
+                this._localMatrix.multiplyToRef(Tmp.Matrix[7], this._worldMatrix);
 
             } else {
                 if (this._transformToBoneReferal) {
