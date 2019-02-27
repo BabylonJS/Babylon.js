@@ -13,6 +13,7 @@ import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
+import { MultiviewRenderTarget } from '../Materials/Textures/renderTargetTexture';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -243,6 +244,27 @@ export class Camera extends Node {
      * When set, the camera will render to this render target instead of the default canvas
      */
     public outputRenderTarget: Nullable<RenderTargetTexture> = null;
+
+    /**
+     * @hidden
+     * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+     */
+    public _multiviewTexture: Nullable<RenderTargetTexture> = null;
+
+    /**
+     * @hidden
+     * ensures the multiview texture of the camera exists and has the specified width/height
+     * @param width height to set on the multiview texture
+     * @param height width to set on the multiview texture
+     */
+    public _resizeorCreateMultiviewTexture(width: number, height: number) {
+        if (!this._multiviewTexture) {
+            this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), {width: width, height: height});
+        }else if (this._multiviewTexture.getRenderWidth() != width || this._multiviewTexture.getRenderHeight() != height) {
+            this._multiviewTexture.dispose();
+            this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), {width: width, height: height});
+        }
+    }
 
     /**
      * Observable triggered when the camera view matrix has changed.
