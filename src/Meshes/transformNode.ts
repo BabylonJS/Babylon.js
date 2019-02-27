@@ -622,6 +622,7 @@ export class TransformNode extends Node {
     /**
      * Defines the passed node as the parent of the current node.
      * The node will remain exactly where it is and its position / rotation will be updated accordingly
+     * @see https://doc.babylonjs.com/how_to/parenting
      * @param node the node ot set as the parent
      * @returns this TransformNode.
      */

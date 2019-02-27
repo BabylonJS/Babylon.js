@@ -154,7 +154,8 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * Gets or sets the parent of the node
+     * Gets or sets the parent of the node (without keeping the current position in the scene) 
+     * @see https://doc.babylonjs.com/how_to/parenting
      */
     public set parent(parent: Nullable<Node>) {
         if (this._parentNode === parent) {
