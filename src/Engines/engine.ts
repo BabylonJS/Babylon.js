@@ -5595,6 +5595,10 @@ export class Engine {
         return internalTexture;
     }
 
+    /**
+     * Binds a multiview framebuffer to be drawn to
+     * @param multiviewTexture texture to bind
+     */
     public bindMultiviewFramebuffer(multiviewTexture: InternalTexture) {
         var gl: any = this._gl;
         var ext = this.getCaps().multiview;
