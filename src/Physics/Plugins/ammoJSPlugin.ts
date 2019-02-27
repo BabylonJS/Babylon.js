@@ -223,10 +223,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor imposter to match
      */
     public afterSoftStep(impostor: PhysicsImpostor): void {
-        var multiplier = 1;
-        if (impostor.type === PhysicsImpostor.SoftbodyImpostor) {
-            multiplier = -1;
-        }
+        var normalDirection = (impostor.type === PhysicsImpostor.ClothImpostor) ? 1 : -1;
         var object = impostor.object;
         var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
         if (!vertexPositions) {
@@ -249,11 +246,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             nodePositions = node.get_m_x();
             x = nodePositions.x();
             y = nodePositions.y();
-            z = multiplier * nodePositions.z();
+            z = nodePositions.z() * normalDirection;
             var nodeNormals = node.get_m_n();
             nx = nodeNormals.x();
             ny = nodeNormals.y();
-            nz = multiplier * nodeNormals.z();
+            nz = nodeNormals.z() * normalDirection;
 
             vertexPositions[3 * n] = x;
             vertexPositions[3 * n + 1] = y;
