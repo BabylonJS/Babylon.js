@@ -656,7 +656,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             else {
                 var len = vertexPositions.length;
                 var segments = Math.sqrt(len / 3);
-                impostor.segments = segments - 1;
+                impostor.segments = segments;
                 var segs = segments - 1;
                 this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], vertexPositions[2]);
                 this._tmpAmmoVectorB.setValue(vertexPositions[3 * segs], vertexPositions[3 * segs + 1], vertexPositions[3 * segs + 2]);
@@ -1169,9 +1169,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
         var segs = impostor.segments;
-        var nbAcross = Math.round(segs * width);
-        var nbUp = Math.round(segs * height);
-        var nbDown = segs - nbUp;
+        var nbAcross = Math.round((segs - 1) * width);
+        var nbUp = Math.round((segs - 1) * height);
+        var nbDown = segs - 1 - nbUp;
         var node = nbAcross + segs * nbDown;
         impostor.physicsBody.appendAnchor(node, otherImpostor.physicsBody, noCollisionBetweenLinkedBodies, influence);
     }
