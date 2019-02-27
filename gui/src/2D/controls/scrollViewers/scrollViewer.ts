@@ -340,7 +340,7 @@ export class ScrollViewer extends Rectangle {
 
     /** @hidden */
     private _attachWheel() {
-        if (this._onPointerObserver) {
+        if (!this._host || this._onPointerObserver) {
             return;
         }
 
