@@ -2,6 +2,7 @@ import { Camera } from "../camera";
 import { Matrix, Viewport } from "../../Maths/math";
 import { VRDistortionCorrectionPostProcess, VRMultiviewToSingleview } from "../../PostProcesses/vrDistortionCorrectionPostProcess";
 import { VRCameraMetrics } from "../VR/vrCameraMetrics";
+import { Logger } from '../../Misc/logger';
 
 Camera._setVRRigMode = function(camera: Camera, rigParams: any) {
     var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
@@ -24,7 +25,12 @@ Camera._setVRRigMode = function(camera: Camera, rigParams: any) {
     // First multiview will be rendered to camera._multiviewTexture
     // Then this postprocess will run on each eye to copy the right texture to each eye
     if (metrics.multiviewEnabled) {
-        camera._rigPostProcess = new VRMultiviewToSingleview("VRMultiviewToSingleview", camera, 1.0);
+        if (!camera.getScene().getEngine().getCaps().multiview) {
+            Logger.Warn("Multiview is not supported, falling back to standard rendering");
+            metrics.multiviewEnabled = false;
+        }else {
+            camera._rigPostProcess = new VRMultiviewToSingleview("VRMultiviewToSingleview", camera, 1.0);
+        }
     }
 
     if (metrics.compensateDistortion) {
