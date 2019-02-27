@@ -176,8 +176,6 @@ export class EngineCapabilities {
     public canUseTimestampForTimerQuery: boolean;
     /** Function used to let the system compiles shaders in background */
     public parallelShaderCompile: {
-        MAX_SHADER_COMPILER_THREADS_KHR: number;
-        maxShaderCompilerThreadsKHR: (thread: number) => void;
         COMPLETION_STATUS_KHR: number;
     };
 }
@@ -1476,10 +1474,6 @@ export class Engine {
 
         // Shader compiler threads
         this._caps.parallelShaderCompile = this._gl.getExtension('KHR_parallel_shader_compile');
-        if (this._caps.parallelShaderCompile) {
-            const threads = this._gl.getParameter(this._caps.parallelShaderCompile.MAX_SHADER_COMPILER_THREADS_KHR);
-            this._caps.parallelShaderCompile.maxShaderCompilerThreadsKHR(threads);
-        }
 
         // Depth Texture
         if (this._webGLVersion > 1) {
