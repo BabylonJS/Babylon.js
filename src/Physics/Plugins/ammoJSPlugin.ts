@@ -498,8 +498,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 var triPoints = [];
                 for (var point = 0; point < 3; point++) {
                     var v = new Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
-                    v = Vector3.TransformCoordinates(v, object.getWorldMatrix());
-                    v.subtractInPlace(topLevelObject.position);
+
+                    // Adjust for initial scaling
+                    Matrix.ScalingToRef(object.scaling.x, object.scaling.y, object.scaling.z, this._tmpMatrix);
+                    v = Vector3.TransformCoordinates(v, this._tmpMatrix);
+
                     var vec: any;
                     if (point == 0) {
                         vec = this._tmpAmmoVectorA;
@@ -695,8 +698,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 var triPoints = [];
                 for (var point = 0; point < 3; point++) {
                     var v = new Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
-                    v = Vector3.TransformCoordinates(v, object.getWorldMatrix());
-                    v.subtractInPlace(topLevelObject.position);
+
+                    // Adjust for initial scaling
+                    Matrix.ScalingToRef(object.scaling.x, object.scaling.y, object.scaling.z, this._tmpMatrix);
+                    v = Vector3.TransformCoordinates(v, this._tmpMatrix);
+
                     var vec: any;
                     if (point == 0) {
                         vec = this._tmpAmmoVectorA;
@@ -787,15 +793,20 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 returnValue = new Ammo.btBoxShape(this._tmpAmmoVectorA);
                 break;
             case PhysicsImpostor.MeshImpostor:
-                var tetraMesh = new Ammo.btTriangleMesh();
-                impostor._pluginData.toDispose.concat([tetraMesh]);
-                var triangeCount = this._addMeshVerts(tetraMesh, object, object);
-                if (triangeCount == 0) {
-                    returnValue = new Ammo.btCompoundShape();
-                } else {
-                    returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
+                if (impostor.getParam("mass") == 0) {
+                    // Only create btBvhTriangleMeshShape impostor is static
+                    // See https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=7283
+                    var tetraMesh = new Ammo.btTriangleMesh();
+                    impostor._pluginData.toDispose.concat([tetraMesh]);
+                    var triangeCount = this._addMeshVerts(tetraMesh, object, object);
+                    if (triangeCount == 0) {
+                        returnValue = new Ammo.btCompoundShape();
+                    } else {
+                        returnValue = new Ammo.btBvhTriangleMeshShape(tetraMesh);
+                    }
+                    break;
                 }
-                break;
+                // Otherwise create convexHullImpostor
             case PhysicsImpostor.ConvexHullImpostor:
                 var convexMesh = new Ammo.btConvexHullShape();
                 var triangeCount = this._addHullVerts(convexMesh, object, object);
