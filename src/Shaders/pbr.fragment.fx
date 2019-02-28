@@ -506,6 +506,7 @@ void main(void) {
 
     // _____________________________ Compute Geometry info _________________________________
     float NdotVUnclamped = dot(normalW, viewDirectionW);
+    // The order 1886 page 3.
     float NdotV = absEps(NdotVUnclamped);
     float alphaG = convertRoughnessToAverageSlope(roughness);
     vec2 AARoughnessFactors = getAARoughnessFactors(normalW.xyz);
@@ -879,6 +880,7 @@ void main(void) {
 
         // Compute N dot V.
         float clearCoatNdotVUnclamped = dot(clearCoatNormalW, viewDirectionW);
+        // The order 1886 page 3.
         float clearCoatNdotV = absEps(clearCoatNdotVUnclamped);
 
         // Clear Coat Reflection
@@ -951,6 +953,7 @@ void main(void) {
             #ifdef CLEARCOAT_TINT
                 // Used later on in the light fragment and ibl.
                 vec3 clearCoatVRefract = -refract(vPositionW, clearCoatNormalW, vClearCoatRefractionParams.y);
+                // The order 1886 page 3.
                 float clearCoatNdotVRefract = absEps(dot(clearCoatNormalW, clearCoatVRefract));
                 vec3 absorption = vec3(0.);
             #endif
