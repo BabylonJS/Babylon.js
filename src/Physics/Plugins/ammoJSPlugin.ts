@@ -223,6 +223,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor imposter to match
      */
     public afterSoftStep(impostor: PhysicsImpostor): void {
+        var normalDirection = (impostor.type === PhysicsImpostor.ClothImpostor) ? 1 : -1;
         var object = impostor.object;
         var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
         if (!vertexPositions) {
@@ -245,11 +246,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             nodePositions = node.get_m_x();
             x = nodePositions.x();
             y = nodePositions.y();
-            z = -nodePositions.z();
+            z = nodePositions.z() * normalDirection;
             var nodeNormals = node.get_m_n();
             nx = nodeNormals.x();
             ny = nodeNormals.y();
-            nz = -nodeNormals.z();
+            nz = nodeNormals.z() * normalDirection;
 
             vertexPositions[3 * n] = x;
             vertexPositions[3 * n + 1] = y;
@@ -655,12 +656,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             else {
                 var len = vertexPositions.length;
                 var segments = Math.sqrt(len / 3);
-                impostor.segments = segments - 1;
+                impostor.segments = segments;
                 var segs = segments - 1;
-                this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], -vertexPositions[2]);
-                this._tmpAmmoVectorB.setValue(vertexPositions[3 * segs], vertexPositions[3 * segs + 1], -vertexPositions[3 * segs + 2]);
-                this._tmpAmmoVectorD.setValue(vertexPositions[len - 3], vertexPositions[len - 2], -vertexPositions[len - 1]);
-                this._tmpAmmoVectorC.setValue(vertexPositions[len - 3 - 3 * segs], vertexPositions[len - 2 - 3 * segs], -vertexPositions[len - 1 - 3 * segs]);
+                this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], vertexPositions[2]);
+                this._tmpAmmoVectorB.setValue(vertexPositions[3 * segs], vertexPositions[3 * segs + 1], vertexPositions[3 * segs + 2]);
+                this._tmpAmmoVectorD.setValue(vertexPositions[len - 3], vertexPositions[len - 2], vertexPositions[len - 1]);
+                this._tmpAmmoVectorC.setValue(vertexPositions[len - 3 - 3 * segs], vertexPositions[len - 2 - 3 * segs], vertexPositions[len - 1 - 3 * segs]);
 
                 var clothBody = new Ammo.btSoftBodyHelpers().CreatePatch(
                     this.world.getWorldInfo(),
@@ -673,6 +674,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     impostor.getParam("fixedPoints"),
                     true
                 );
+                clothBody.get_m_cfg().set_collisions(0x11);
                 return clothBody;
             }
         }
@@ -1154,6 +1156,24 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         else {
             Logger.Warn("Position iterations cannot be applied to a rigid body");
         }
+    }
+
+     /**
+     * Append an anchor to a soft object
+     * @param impostor soft impostor to add anchor to
+     * @param otherImpostor rigid impostor as the anchor
+     * @param width ratio across width from 0 to 1
+     * @param height ratio up height from 0 to 1
+     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
+     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+     */
+    public appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
+        var segs = impostor.segments;
+        var nbAcross = Math.round((segs - 1) * width);
+        var nbUp = Math.round((segs - 1) * height);
+        var nbDown = segs - 1 - nbUp;
+        var node = nbAcross + segs * nbDown;
+        impostor.physicsBody.appendAnchor(node, otherImpostor.physicsBody, noCollisionBetweenLinkedBodies, influence);
     }
 
     /**

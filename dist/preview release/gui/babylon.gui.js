@@ -9178,7 +9178,7 @@ var ScrollViewer = /** @class */ (function (_super) {
     /** @hidden */
     ScrollViewer.prototype._attachWheel = function () {
         var _this = this;
-        if (this._onPointerObserver) {
+        if (!this._host || this._onPointerObserver) {
             return;
         }
         var scene = this._host.getScene();
