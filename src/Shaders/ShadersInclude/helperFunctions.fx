@@ -68,6 +68,11 @@ float square(float value)
     return value * value;
 }
 
+float pow5(float value) {
+    float sq = value * value;
+    return sq * sq * value;
+}
+
 float getLuminance(vec3 color)
 {
     return clamp(dot(color, LuminanceEncodeApprox), 0., 1.);
