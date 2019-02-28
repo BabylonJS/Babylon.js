@@ -3092,6 +3092,21 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
+     * Get a material using its unique id
+     * @param uniqueId defines the material's unique id
+     * @return the material or null if none found.
+     */
+    public getMaterialByUniqueID(uniqueId: number): Nullable<Material> {
+        for (var index = 0; index < this.materials.length; index++) {
+            if (this.materials[index].uniqueId === uniqueId) {
+                return this.materials[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * get a material using its id
      * @param id defines the material's ID
      * @return the material or null if none found.
@@ -3398,6 +3413,21 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
+     * Gets a transform node with its auto-generated unique id
+     * @param uniqueId efines the unique id to search for
+     * @return the found transform node or null if not found at all.
+     */
+    public getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode> {
+        for (var index = 0; index < this.transformNodes.length; index++) {
+            if (this.transformNodes[index].uniqueId === uniqueId) {
+                return this.transformNodes[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Gets a list of transform nodes using their id
      * @param id defines the id to search for
      * @returns a list of transform nodes
@@ -3578,6 +3608,21 @@ export class Scene extends AbstractScene implements IAnimatable {
     public getLastSkeletonByID(id: string): Nullable<Skeleton> {
         for (var index = this.skeletons.length - 1; index >= 0; index--) {
             if (this.skeletons[index].id === id) {
+                return this.skeletons[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets a skeleton using a given auto generated unique id
+     * @param  uniqueId defines the unique id to search for
+     * @return the found skeleton or null if not found at all.
+     */
+    public getSkeletonByUniqueId(uniqueId: number): Nullable<Skeleton> {
+        for (var index = 0; index < this.skeletons.length; index++) {
+            if (this.skeletons[index].uniqueId === uniqueId) {
                 return this.skeletons[index];
             }
         }
