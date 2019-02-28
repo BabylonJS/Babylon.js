@@ -741,7 +741,7 @@ void main(void) {
         #endif
 
         #ifdef SHEEN_LINKWITHALBEDO
-            float sheenFactor = pow(1.0-sheenIntensity, 5.0);
+            float sheenFactor = pow5(1.0-sheenIntensity);
             vec3 sheenColor = baseColor.rgb*(1.0-sheenFactor);
             float sheenRoughness = sheenIntensity;
             // remap albedo.

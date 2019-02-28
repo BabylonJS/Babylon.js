@@ -92,7 +92,7 @@ vec3 getReflectanceFromAnalyticalBRDFLookup_Jones(float VdotN, vec3 reflectance0
 {
     // Schlick fresnel approximation, extended with basic smoothness term so that rough surfaces do not approach reflectance90 at grazing angle
     float weight = mix(FRESNEL_MAXIMUM_ON_ROUGH, 1.0, smoothness);
-    return reflectance0 + weight * (reflectance90 - reflectance0) * pow(saturate(1.0 - VdotN), 5.0);
+    return reflectance0 + weight * (reflectance90 - reflectance0) * pow5(saturate(1.0 - VdotN));
 }
 
 vec3 getSheenReflectanceFromBRDFLookup(const vec3 reflectance0, float NdotV, float sheenAlphaG) {
@@ -274,12 +274,12 @@ float smithVisibility_GGXCorrelated_Anisotropic(float NdotL, float NdotV, float 
 
 vec3 fresnelSchlickGGX(float VdotH, vec3 reflectance0, vec3 reflectance90)
 {
-    return reflectance0 + (reflectance90 - reflectance0) * pow(1.0 - VdotH, 5.0);
+    return reflectance0 + (reflectance90 - reflectance0) * pow5(1.0 - VdotH);
 }
 
 float fresnelSchlickGGX(float VdotH, float reflectance0, float reflectance90)
 {
-    return reflectance0 + (reflectance90 - reflectance0) * pow(1.0 - VdotH, 5.0);
+    return reflectance0 + (reflectance90 - reflectance0) * pow5(1.0 - VdotH);
 }
 
 // From beer lambert law I1/I0 = e −α′lc
@@ -300,8 +300,8 @@ vec3 computeColorAtDistanceInMedia(vec3 color, float distance) {
 float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness) {
     // Diffuse fresnel falloff as per Disney principled BRDF, and in the spirit of
     // of general coupled diffuse/specular models e.g. Ashikhmin Shirley.
-    float diffuseFresnelNV = pow(saturateEps(1.0 - NdotL), 5.0);
-    float diffuseFresnelNL = pow(saturateEps(1.0 - NdotV), 5.0);
+    float diffuseFresnelNV = pow5(saturateEps(1.0 - NdotL));
+    float diffuseFresnelNL = pow5(saturateEps(1.0 - NdotV));
     float diffuseFresnel90 = 0.5 + 2.0 * VdotH * VdotH * roughness;
     float fresnel =
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNL) *
