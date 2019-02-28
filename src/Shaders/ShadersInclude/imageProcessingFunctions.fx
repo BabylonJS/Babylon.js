@@ -28,13 +28,13 @@
 		sliceUV.x *= sliceSize;
 		sliceUV.x += sliceInteger * sliceSize;
 
-		sliceUV = clamp(sliceUV, 0., 1.);
+		sliceUV = saturate(sliceUV);
 
 		vec4 slice0Color = texture2D(colorTransform, sliceUV);
 
 		sliceUV.x += sliceSize;
 		
-		sliceUV = clamp(sliceUV, 0., 1.);
+		sliceUV = saturate(sliceUV);
 		vec4 slice1Color = texture2D(colorTransform, sliceUV);
 
 		vec3 result = mix(slice0Color.rgb, slice1Color.rgb, sliceFraction);
@@ -86,7 +86,7 @@
 		color = ACESOutputMat * color;
 
 		// Clamp to [0, 1]
-		color = clamp(color, 0.0, 1.0);
+		color = saturate(color);
 
 		return color;
 	}
@@ -130,7 +130,7 @@ vec4 applyImageProcessing(vec4 result) {
 
 	// Going back to gamma space
 	result.rgb = toGammaSpace(result.rgb);
-	result.rgb = clamp(result.rgb, 0.0, 1.0);
+	result.rgb = saturate(result.rgb);
 
 #ifdef CONTRAST
 	// Contrast

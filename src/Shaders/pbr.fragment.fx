@@ -468,7 +468,7 @@ void main(void) {
     #endif
 
     // Adapt microSurface.
-    microSurface = clamp(microSurface, 0., 1.);
+    microSurface = saturate(microSurface);
     // Compute roughness.
     float roughness = 1. - microSurface;
 
@@ -490,7 +490,7 @@ void main(void) {
             vec3 normalForward = faceforward(normalW, -viewDirectionW, normalW);
 
             // Calculate the appropriate linear opacity for the current viewing angle (formally, this quantity is the "directional absorptance").
-            alpha = getReflectanceFromAnalyticalBRDFLookup_Jones(clamp(dot(viewDirectionW, normalForward), 0.0, 1.0), vec3(opacity0), vec3(opacity90), sqrt(microSurface)).x;
+            alpha = getReflectanceFromAnalyticalBRDFLookup_Jones(saturate(dot(viewDirectionW, normalForward)), vec3(opacity0), vec3(opacity90), sqrt(microSurface)).x;
 
             #ifdef ALPHATEST
                 if (alpha < ALPHATESTVALUE)
@@ -506,7 +506,7 @@ void main(void) {
 
     // _____________________________ Compute Geometry info _________________________________
     float NdotVUnclamped = dot(normalW, viewDirectionW);
-    float NdotV = clamp(NdotVUnclamped,0., 1.) + 0.00001;
+    float NdotV = absEps(NdotVUnclamped);
     float alphaG = convertRoughnessToAverageSlope(roughness);
     vec2 AARoughnessFactors = getAARoughnessFactors(normalW.xyz);
 
@@ -560,7 +560,7 @@ void main(void) {
         #ifdef LODINREFRACTIONALPHA
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
         #else
-            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, 1.0);
+            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG);
         #endif
 
         #ifdef LODBASEDMICROSFURACE
@@ -586,7 +586,7 @@ void main(void) {
 
             environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
         #else
-            float lodRefractionNormalized = clamp(refractionLOD / log2(vRefractionMicrosurfaceInfos.x), 0., 1.);
+            float lodRefractionNormalized = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
             float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
 
             vec4 environmentRefractionMid = sampleRefraction(refractionSampler, refractionCoords);
@@ -646,7 +646,7 @@ void main(void) {
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
             float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
         #else
-            float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, 1.);
+            float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG);
         #endif
 
         #ifdef LODBASEDMICROSFURACE
@@ -672,7 +672,7 @@ void main(void) {
 
             environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, requestedReflectionLOD);
         #else
-            float lodReflectionNormalized = clamp(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x), 0., 1.);
+            float lodReflectionNormalized = saturate(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
 
             vec4 environmentSpecularMid = sampleReflection(reflectionSampler, reflectionCoords);
@@ -771,7 +771,7 @@ void main(void) {
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
                 float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG, NdotVUnclamped);
             #else
-                float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG, 1.);
+                float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG);
             #endif
 
             #ifdef LODBASEDMICROSFURACE
@@ -779,7 +779,7 @@ void main(void) {
                 sheenReflectionLOD = sheenReflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
                 environmentSheenRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, sheenReflectionLOD);
             #else
-                float lodSheenReflectionNormalized = clamp(sheenReflectionLOD / log2(vReflectionMicrosurfaceInfos.x), 0., 1.);
+                float lodSheenReflectionNormalized = saturate(sheenReflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
                 float lodSheenReflectionNormalizedDoubled = lodSheenReflectionNormalized * 2.0;
 
                 vec4 environmentSheenMid = sampleReflection(reflectionSampler, reflectionCoords);
@@ -879,7 +879,7 @@ void main(void) {
 
         // Compute N dot V.
         float clearCoatNdotVUnclamped = dot(clearCoatNormalW, viewDirectionW);
-        float clearCoatNdotV = clamp(clearCoatNdotVUnclamped,0., 1.) + 0.00001;
+        float clearCoatNdotV = absEps(clearCoatNdotVUnclamped);
 
         // Clear Coat Reflection
         #if defined(REFLECTION)
@@ -911,7 +911,7 @@ void main(void) {
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
                 float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, clearCoatNdotVUnclamped);
             #else
-                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, 1.);
+                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG);
             #endif
 
             #ifdef LODBASEDMICROSFURACE
@@ -921,7 +921,7 @@ void main(void) {
 
                 environmentClearCoatRadiance = sampleReflectionLod(reflectionSampler, clearCoatReflectionCoords, requestedClearCoatReflectionLOD);
             #else
-                float lodClearCoatReflectionNormalized = clamp(clearCoatReflectionLOD / log2(vReflectionMicrosurfaceInfos.x), 0., 1.);
+                float lodClearCoatReflectionNormalized = saturate(clearCoatReflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
                 float lodClearCoatReflectionNormalizedDoubled = lodClearCoatReflectionNormalized * 2.0;
 
                 vec4 environmentClearCoatMid = sampleReflection(reflectionSampler, reflectionCoords);
@@ -951,7 +951,7 @@ void main(void) {
             #ifdef CLEARCOAT_TINT
                 // Used later on in the light fragment and ibl.
                 vec3 clearCoatVRefract = -refract(vPositionW, clearCoatNormalW, vClearCoatRefractionParams.y);
-                float clearCoatNdotVRefract = clamp(dot(clearCoatNormalW, clearCoatVRefract), 0.00000000001, 1.0);
+                float clearCoatNdotVRefract = absEps(dot(clearCoatNormalW, clearCoatVRefract));
                 vec3 absorption = vec3(0.);
             #endif
 
@@ -1115,7 +1115,7 @@ void main(void) {
             // TODO. PBR Tinting.
             vec3 mixedAlbedo = surfaceAlbedo;
             float maxChannel = max(max(mixedAlbedo.r, mixedAlbedo.g), mixedAlbedo.b);
-            vec3 tint = clamp(maxChannel * mixedAlbedo, 0.0, 1.0);
+            vec3 tint = saturate(maxChannel * mixedAlbedo);
 
             // Decrease Albedo Contribution
             surfaceAlbedo *= alpha;
@@ -1252,7 +1252,7 @@ void main(void) {
         #endif
 
         #if defined(RADIANCEOVERALPHA) || defined(SPECULAROVERALPHA)
-            alpha = clamp(alpha + luminanceOverAlpha * luminanceOverAlpha, 0., 1.);
+            alpha = saturate(alpha + luminanceOverAlpha * luminanceOverAlpha);
         #endif
     #endif
 #endif

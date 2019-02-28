@@ -21,7 +21,7 @@ vec2 getAARoughnessFactors(vec3 normalVector) {
         float slopeSquare = max(dot(nDfdx, nDfdx), dot(nDfdy, nDfdy));
 
         // Vive analytical lights roughness factor.
-        float geometricRoughnessFactor = pow(clamp(slopeSquare , 0., 1.), 0.333);
+        float geometricRoughnessFactor = pow(saturate(slopeSquare), 0.333);
 
         // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
         float geometricAlphaGFactor = sqrt(slopeSquare);
@@ -92,7 +92,7 @@ vec3 getReflectanceFromAnalyticalBRDFLookup_Jones(float VdotN, vec3 reflectance0
 {
     // Schlick fresnel approximation, extended with basic smoothness term so that rough surfaces do not approach reflectance90 at grazing angle
     float weight = mix(FRESNEL_MAXIMUM_ON_ROUGH, 1.0, smoothness);
-    return reflectance0 + weight * (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotN, 0., 1.), 5.0);
+    return reflectance0 + weight * (reflectance90 - reflectance0) * pow(saturate(1.0 - VdotN), 5.0);
 }
 
 vec3 getSheenReflectanceFromBRDFLookup(const vec3 reflectance0, float NdotV, float sheenAlphaG) {
@@ -134,9 +134,9 @@ vec3 getSheenReflectanceFromBRDFLookup(const vec3 reflectance0, float NdotV, flo
     vec3 getR0RemappedForClearCoat(vec3 f0) {
         #ifdef CLEARCOAT_DEFAULTIOR
             #ifdef MOBILE
-                return clamp(f0 * (f0 * 0.526868 + 0.529324) - 0.0482256, 0., 1.);
+                return saturate(f0 * (f0 * 0.526868 + 0.529324) - 0.0482256);
             #else
-                return clamp(f0 * (f0 * (0.941892 - 0.263008 * f0) + 0.346479) - 0.0285998, 0., 1.);
+                return saturate(f0 * (f0 * (0.941892 - 0.263008 * f0) + 0.346479) - 0.0285998);
             #endif
         #else
             vec3 s = sqrt(f0);
@@ -249,7 +249,7 @@ float normalDistributionFunction_BurleyGGX_Anisotropic(float NdotH, float TdotH,
 // GGX Mask/Shadowing Isotropic 
 // Heitz http://jcgt.org/published/0003/02/03/paper.pdf
 // https://twvideo01.ubm-us.net/o1/vault/gdc2017/Presentations/Hammon_Earl_PBR_Diffuse_Lighting.pdf
-float smithVisibility_GGXCorrelated(float NdotV, float NdotL, float alphaG) {
+float smithVisibility_GGXCorrelated(float NdotL, float NdotV, float alphaG) {
     #ifdef MOBILE
         // Appply simplification as all squared root terms are below 1 and squared
         float GGXV = NdotL * (NdotV * (1.0 - alphaG) + alphaG);
@@ -257,15 +257,15 @@ float smithVisibility_GGXCorrelated(float NdotV, float NdotL, float alphaG) {
         return 0.5 / (GGXV + GGXL);
     #else
         float a2 = alphaG * alphaG;
-        float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0 - a2) + a2);
-        float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0 - a2) + a2);
+        float GGXV = NdotL * sqrt(NdotV * (NdotV - a2 * NdotV) + a2);
+        float GGXL = NdotV * sqrt(NdotL * (NdotL - a2 * NdotL) + a2);
         return 0.5 / (GGXV + GGXL);
     #endif
 }
 
 // GGX Mask/Shadowing Anisotropic 
 // Heitz http://jcgt.org/published/0003/02/03/paper.pdf
-float smithVisibility_GGXCorrelated_Anisotropic(float NdotV, float NdotL, float TdotV, float BdotV, float TdotL, float BdotL, const vec2 alphaTB) {
+float smithVisibility_GGXCorrelated_Anisotropic(float NdotL, float NdotV, float TdotV, float BdotV, float TdotL, float BdotL, const vec2 alphaTB) {
     float lambdaV = NdotL * length(vec3(alphaTB.x * TdotV, alphaTB.y * BdotV, NdotV));
     float lambdaL = NdotV * length(vec3(alphaTB.x * TdotL, alphaTB.y * BdotL, NdotL));
     float v = 0.5 / (lambdaV + lambdaL);
@@ -300,8 +300,8 @@ vec3 computeColorAtDistanceInMedia(vec3 color, float distance) {
 float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness) {
     // Diffuse fresnel falloff as per Disney principled BRDF, and in the spirit of
     // of general coupled diffuse/specular models e.g. Ashikhmin Shirley.
-    float diffuseFresnelNV = pow(clamp(1.0 - NdotL, 0.000001, 1.), 5.0);
-    float diffuseFresnelNL = pow(clamp(1.0 - NdotV, 0.000001, 1.), 5.0);
+    float diffuseFresnelNV = pow(saturateEps(1.0 - NdotL), 5.0);
+    float diffuseFresnelNL = pow(saturateEps(1.0 - NdotV), 5.0);
     float diffuseFresnel90 = 0.5 + 2.0 * VdotH * VdotH * roughness;
     float fresnel =
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNL) *
@@ -351,7 +351,7 @@ vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, flo
         alphaTB = max(alphaTB, geometricRoughnessFactor * geometricRoughnessFactor);
 
         float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
-        float visibility = smithVisibility_GGXCorrelated_Anisotropic(NdotV, NdotL, TdotV, BdotV, TdotL, BdotL, alphaTB);
+        float visibility = smithVisibility_GGXCorrelated_Anisotropic(NdotL, NdotV, TdotV, BdotV, TdotL, BdotL, alphaTB);
         float specTerm = max(0., visibility * distribution);
 
         vec3 fresnel = fresnelSchlickGGX(VdotH, reflectance0, reflectance90);
@@ -388,7 +388,7 @@ float adjustRoughnessFromLightProperties(float roughness, float lightRadius, flo
         // At small angle this approximation works. 
         float lightRoughness = lightRadius / lightDistance;
         // Distribution can sum.
-        float totalRoughness = clamp(lightRoughness + roughness, 0., 1.);
+        float totalRoughness = saturate(lightRoughness + roughness);
         return totalRoughness;
     #else
         return roughness;
@@ -409,13 +409,19 @@ float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
 // For typical incident reflectance range (between 4% to 100%) set the grazing reflectance to 100% for typical fresnel effect.
 // For very low reflectance range on highly diffuse objects (below 4%), incrementally reduce grazing reflecance to 0%.
 float fresnelGrazingReflectance(float reflectance0) {
-    float reflectance90 = clamp(reflectance0 * 25.0, 0.0, 1.0);
+    float reflectance90 = saturate(reflectance0 * 25.0);
     return reflectance90;
 }
 
 // To enable 8 bit textures to be used we need to pack and unpack the LOD
 //inverse alpha is used to work around low-alpha bugs in Edge and Firefox
 #define UNPACK_LOD(x) (1.0 - x) * 255.0
+
+float getLodFromAlphaG(float cubeMapDimensionPixels, float microsurfaceAverageSlope) {
+    float microsurfaceAverageSlopeTexels = microsurfaceAverageSlope * cubeMapDimensionPixels;
+    float lod = log2(microsurfaceAverageSlopeTexels);
+    return lod;
+}
 
 float getLodFromAlphaG(float cubeMapDimensionPixels, float alphaG, float NdotV) {
     float microsurfaceAverageSlope = alphaG;
@@ -428,21 +434,19 @@ float getLodFromAlphaG(float cubeMapDimensionPixels, float alphaG, float NdotV) 
     // The constant factor of four is handled elsewhere as part of the scale/offset filter parameters.
     microsurfaceAverageSlope *= sqrt(abs(NdotV));
 
-    float microsurfaceAverageSlopeTexels = microsurfaceAverageSlope * cubeMapDimensionPixels;
-    float lod = log2(microsurfaceAverageSlopeTexels);
-    return lod;
+    return getLodFromAlphaG(cubeMapDimensionPixels, microsurfaceAverageSlope);
 }
 
 float environmentRadianceOcclusion(float ambientOcclusion, float NdotVUnclamped) {
     // Best balanced (implementation time vs result vs perf) analytical environment specular occlusion found.
     // http://research.tri-ace.com/Data/cedec2011_RealtimePBR_Implementation_e.pptx
     float temp = NdotVUnclamped + ambientOcclusion;
-    return clamp(square(temp) - 1.0 + ambientOcclusion, 0.0, 1.0);
+    return saturate(square(temp) - 1.0 + ambientOcclusion);
 }
 
 float environmentHorizonOcclusion(vec3 view, vec3 normal) {
     // http://marmosetco.tumblr.com/post/81245981087
     vec3 reflection = reflect(view, normal);
-    float temp = clamp( 1.0 + 1.1 * dot(reflection, normal), 0.0, 1.0);
+    float temp = saturate(1.0 + 1.1 * dot(reflection, normal));
     return square(temp);
 }

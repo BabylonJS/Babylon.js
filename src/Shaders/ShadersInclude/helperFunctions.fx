@@ -4,6 +4,14 @@ const float LinearEncodePowerApprox = 2.2;
 const float GammaEncodePowerApprox = 1.0 / LinearEncodePowerApprox;
 const vec3 LuminanceEncodeApprox = vec3(0.2126, 0.7152, 0.0722);
 
+const float Epsilon = 0.0000001;
+
+#define saturate(x)         clamp(x, 0.0, 1.0)
+
+#define absEps(x)           abs(x) + Epsilon
+#define maxEps(x)           max(x, Epsilon)
+#define saturateEps(x)      clamp(x, Epsilon, 1.0)
+
 mat3 transposeMat3(mat3 inMatrix) {
     vec3 i0 = inMatrix[0];
     vec3 i1 = inMatrix[1];
@@ -81,7 +89,7 @@ float dither(vec2 seed, float varianceAmount) {
 const float rgbdMaxRange = 255.0;
 
 vec4 toRGBD(vec3 color) {
-    float maxRGB = max(0.0000001, max(color.r, max(color.g, color.b)));
+    float maxRGB = maxEps(max(color.r, max(color.g, color.b)));
     float D      = max(rgbdMaxRange / maxRGB, 1.);
     D            = clamp(floor(D) / 255.0, 0., 1.);
     // vec3 rgb = color.rgb * (D * (255.0 / rgbdMaxRange));
