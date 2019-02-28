@@ -58,6 +58,7 @@ export class Skeleton implements IAnimatable {
     private _lastAbsoluteTransformsUpdateId = -1;
 
     private _canUseTextureForBones = false;
+    private _uniqueId = 0;
 
     /** @hidden */
     public _numBonesWithLinkedTransformNode = 0;
@@ -118,6 +119,13 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
+     * Gets the unique ID of this skeleton
+     */
+    public get uniqueId(): number {
+        return this._uniqueId;
+    }
+
+    /**
      * Creates a new skeleton
      * @param name defines the skeleton name
      * @param id defines the skeleton Id
@@ -131,6 +139,7 @@ export class Skeleton implements IAnimatable {
         this.bones = [];
 
         this._scene = scene || EngineStore.LastCreatedScene;
+        this._uniqueId = this._scene.getUniqueId();
 
         this._scene.addSkeleton(this);
 
