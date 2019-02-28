@@ -92,6 +92,10 @@ Object.defineProperty(AbstractMesh.prototype, "renderOverlay", {
  */
 export class OutlineRenderer implements ISceneComponent {
     /**
+     * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
+     */
+    private static _StencilReference = 0x04;
+    /**
      * The name of the component. Each component must have a unique name.
      */
     public name = SceneComponentConstants.NAME_OUTLINERENDERER;
@@ -274,9 +278,44 @@ export class OutlineRenderer implements ISceneComponent {
         // Outline - step 1
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
+            // Cache stencil state
+            var previousStencilBuffer = this._engine.getStencilBuffer();
+            var previousStencilFunction = this._engine.getStencilFunction();
+            var previousStencilMask = this._engine.getStencilMask();
+            var previousStencilOperationPass = this._engine.getStencilOperationPass();
+            var previousStencilOperationFail = this._engine.getStencilOperationFail();
+            var previousStencilOperationDepthFail = this._engine.getStencilOperationDepthFail();
+            var previousStencilReference = this._engine.getStencilFunctionReference();
+
+            var material = subMesh.getMaterial();
+            if (material && material.needAlphaBlending) {
+                // Draw only to stencil buffer for the original mesh
+                // The resulting stencil buffer will be used so the outline is not visible inside the mesh when the mesh is transparent
+                this._engine.setDepthWrite(false);
+                this._engine.setColorWrite(false);
+                this._engine.setStencilBuffer(true);
+                this._engine.setStencilOperationPass(Constants.REPLACE);
+                this._engine.setStencilFunction(Constants.ALWAYS);
+                this._engine.setStencilMask(OutlineRenderer._StencilReference);
+                this._engine.setStencilFunctionReference(OutlineRenderer._StencilReference);
+                this.render(subMesh, batch, /* This sets offset to 0 */ true);
+            }
+
+            // Draw the outline using the above stencil if needed to avoid drawing within the mesh
+            this._engine.setColorWrite(true);
             this._engine.setDepthWrite(false);
+            this._engine.setStencilFunction(Constants.NOTEQUAL);
             this.render(subMesh, batch);
             this._engine.setDepthWrite(this._savedDepthWrite);
+
+            // Restore stencil state
+            this._engine.setStencilFunction(previousStencilFunction);
+            this._engine.setStencilMask(previousStencilMask);
+            this._engine.setStencilBuffer(previousStencilBuffer);
+            this._engine.setStencilOperationPass(previousStencilOperationPass);
+            this._engine.setStencilOperationFail(previousStencilOperationFail);
+            this._engine.setStencilOperationDepthFail(previousStencilOperationDepthFail);
+            this._engine.setStencilFunctionReference(previousStencilReference);
         }
     }
 
