@@ -8,6 +8,7 @@ import { Mesh } from "babylonjs/Meshes/mesh";
 import { INode, IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { IProperty } from 'babylonjs-gltf2interface';
 
 const NAME = "MSFT_lod";
 
@@ -222,14 +223,14 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
-    public _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> {
+    public _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {
         // Defer the loading of uris if loading a material or node LOD.
         if (this._materialIndexLOD !== null) {
             this._loader.log(`deferred`);
             const previousIndexLOD = this._materialIndexLOD - 1;
             this._materialSignalLODs[previousIndexLOD] = this._materialSignalLODs[previousIndexLOD] || new Deferred<void>();
             return this._materialSignalLODs[previousIndexLOD].promise.then(() => {
-                return this._loader.loadUriAsync(context, uri);
+                return this._loader.loadUriAsync(context, property, uri);
             });
         }
         else if (this._nodeIndexLOD !== null) {
@@ -237,7 +238,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             const previousIndexLOD = this._nodeIndexLOD - 1;
             this._nodeSignalLODs[previousIndexLOD] = this._nodeSignalLODs[previousIndexLOD] || new Deferred<void>();
             return this._nodeSignalLODs[this._nodeIndexLOD - 1].promise.then(() => {
-                return this._loader.loadUriAsync(context, uri);
+                return this._loader.loadUriAsync(context, property, uri);
             });
         }
 
