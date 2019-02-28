@@ -5,13 +5,12 @@ float computeDistanceLightFalloff_Standard(vec3 lightOffset, float range)
 
 float computeDistanceLightFalloff_Physical(float lightDistanceSquared)
 {
-    return 1.0 / ((lightDistanceSquared + 0.001));
+    return 1.0 / maxEps(lightDistanceSquared);
 }
 
 float computeDistanceLightFalloff_GLTF(float lightDistanceSquared, float inverseSquaredRange)
 {
-    const float minDistanceSquared = 0.01*0.01;
-    float lightDistanceFalloff = 1.0 / (max(lightDistanceSquared, minDistanceSquared));
+    float lightDistanceFalloff = 1.0 / maxEps(lightDistanceSquared);
 
     float factor = lightDistanceSquared * inverseSquaredRange;
     float attenuation = saturate(1.0 - factor * factor);
@@ -38,7 +37,7 @@ float computeDirectionalLightFalloff_Standard(vec3 lightDirection, vec3 directio
 {
     float falloff = 0.0;
 
-    float cosAngle = max(Epsilon, dot(-lightDirection, directionToLightCenterW));
+    float cosAngle = maxEps(dot(-lightDirection, directionToLightCenterW));
     if (cosAngle >= cosHalfAngle)
     {
         falloff = max(0., pow(cosAngle, exponent));
