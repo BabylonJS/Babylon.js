@@ -14,7 +14,7 @@ float computeDistanceLightFalloff_GLTF(float lightDistanceSquared, float inverse
     float lightDistanceFalloff = 1.0 / (max(lightDistanceSquared, minDistanceSquared));
 
     float factor = lightDistanceSquared * inverseSquaredRange;
-    float attenuation = clamp(1.0 - factor * factor, 0., 1.);
+    float attenuation = saturate(1.0 - factor * factor);
     attenuation *= attenuation;
 
     // Smooth attenuation of the falloff defined by the range.
@@ -38,7 +38,7 @@ float computeDirectionalLightFalloff_Standard(vec3 lightDirection, vec3 directio
 {
     float falloff = 0.0;
 
-    float cosAngle = max(0.000000000000001, dot(-lightDirection, directionToLightCenterW));
+    float cosAngle = max(Epsilon, dot(-lightDirection, directionToLightCenterW));
     if (cosAngle >= cosHalfAngle)
     {
         falloff = max(0., pow(cosAngle, exponent));
@@ -72,7 +72,7 @@ float computeDirectionalLightFalloff_GLTF(vec3 lightDirection, vec3 directionToL
     // float lightAngleOffset = -cosOuter * angleScale;
 
     float cd = dot(-lightDirection, directionToLightCenterW);
-    float falloff = clamp(cd * lightAngleScale + lightAngleOffset, 0., 1.);
+    float falloff = saturate(cd * lightAngleScale + lightAngleOffset);
     // smooth the transition
     falloff *= falloff;
     return falloff;

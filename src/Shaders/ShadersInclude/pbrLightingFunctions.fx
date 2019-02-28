@@ -25,7 +25,7 @@ vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
 }
 
 vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
-    float NdotH = clamp(dot(N, info.H), 0.000000000001, 1.0);
+    float NdotH = saturateEps(dot(N, info.H));
 
     vec3 specTerm = computeSpecularTerm(NdotH, info.NdotL, info.NdotV, info.VdotH, info.roughness, reflectance0, reflectance90, geometricRoughnessFactor);
     return specTerm * info.attenuation * info.NdotL * lightColor;
@@ -33,7 +33,7 @@ vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, ve
 
 #ifdef ANISOTROPIC
     vec3 computeAnisotropicSpecularLighting(preLightingInfo info, vec3 V, vec3 N, vec3 T, vec3 B, float anisotropy, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
-        float NdotH = clamp(dot(N, info.H), 0.000000000001, 1.0);
+        float NdotH = saturateEps(dot(N, info.H));
 
         float TdotH = dot(T, info.H);
         float BdotH = dot(B, info.H);
@@ -50,8 +50,8 @@ vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, ve
 
 #ifdef CLEARCOAT
     vec4 computeClearCoatLighting(preLightingInfo info, vec3 Ncc, float geometricRoughnessFactor, float clearCoatIntensity, vec3 lightColor) {
-        float NccdotL = clamp(dot(Ncc, info.L), 0.00000000001, 1.0);
-        float NccdotH = clamp(dot(Ncc, info.H), 0.000000000001, 1.0);
+        float NccdotL = saturateEps(dot(Ncc, info.L));
+        float NccdotH = saturateEps(dot(Ncc, info.H));
 
         vec2 clearCoatTerm = computeClearCoatTerm(NccdotH, info.VdotH, info.roughness, geometricRoughnessFactor, clearCoatIntensity);
 
@@ -63,7 +63,7 @@ vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, ve
 
     vec3 computeClearCoatLightingAbsorption(float NdotVRefract, vec3 L, vec3 Ncc, vec3 clearCoatColor, float clearCoatThickness, float clearCoatIntensity) {
         vec3 LRefract = -refract(L, Ncc, vClearCoatRefractionParams.y);
-        float NdotLRefract = clamp(dot(Ncc, LRefract), 0.00000000001, 1.0);
+        float NdotLRefract = saturateEps(dot(Ncc, LRefract));
 
         vec3 absorption = computeClearCoatAbsorption(NdotVRefract, NdotLRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);
         return absorption;
@@ -72,7 +72,7 @@ vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, ve
 
 #ifdef SHEEN
     vec3 computeSheenLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
-        float NdotH = clamp(dot(N, info.H), 0.000000000001, 1.0);
+        float NdotH = saturateEps(dot(N, info.H));
 
         vec3 specTerm = computeSheenTerm(NdotH, info.NdotL, info.NdotV, info.VdotH, info.roughness, reflectance0, reflectance90, geometricRoughnessFactor);
         return specTerm * info.attenuation * info.NdotL * lightColor;
