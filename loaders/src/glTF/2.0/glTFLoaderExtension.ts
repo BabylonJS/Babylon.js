@@ -10,6 +10,7 @@ import { IDisposable } from "babylonjs/scene";
 
 import { IScene, INode, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
+import { IProperty } from 'babylonjs-gltf2interface';
 
 /**
  * Interface for a glTF loader extension.
@@ -106,8 +107,9 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     /**
      * Define this method to modify the default behavior when loading uris.
      * @param context The context when loading the asset
+     * @param property The glTF property associated with the uri
      * @param uri The uri to load
      * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
      */
-    _loadUriAsync?(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
+    _loadUriAsync?(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
 }
