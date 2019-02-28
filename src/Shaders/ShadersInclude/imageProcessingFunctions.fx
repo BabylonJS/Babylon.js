@@ -133,9 +133,9 @@ vec4 applyImageProcessing(vec4 result) {
 	result.rgb = saturate(result.rgb);
 
 #ifdef CONTRAST
-	// Contrast
-	vec3 resultHighContrast = applyEaseInOut(result.rgb);
-
+	// Contrast EaseInOut
+	vec3 resultHighContrast = result.rgb * result.rgb * (3.0 - 2.0 * result.rgb);
+	
 	if (contrast < 1.0) {
 		// Decrease contrast: interpolate towards zero-contrast image (flat grey)
 		result.rgb = mix(vec3(0.5, 0.5, 0.5), result.rgb, contrast);

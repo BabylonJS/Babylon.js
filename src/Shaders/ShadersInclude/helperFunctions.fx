@@ -43,16 +43,6 @@ mat3 inverseMat3(mat3 inMatrix) {
               b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
 }
 
-float computeFallOff(float value, vec2 clipSpace, float frustumEdgeFalloff)
-{
-    float mask = smoothstep(1.0 - frustumEdgeFalloff, 1.0, clamp(dot(clipSpace, clipSpace), 0., 1.));
-    return mix(value, 1.0, mask);
-}
-
-vec3 applyEaseInOut(vec3 x){
-    return x * x * (3.0 - 2.0 * x);
-}
-
 vec3 toLinearSpace(vec3 color)
 {
     return pow(color, vec3(LinearEncodePowerApprox));
