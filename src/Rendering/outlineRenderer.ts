@@ -278,14 +278,7 @@ export class OutlineRenderer implements ISceneComponent {
         // Outline - step 1
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
-            // Cache stencil state
-            var previousStencilBuffer = this._engine.getStencilBuffer();
-            var previousStencilFunction = this._engine.getStencilFunction();
-            var previousStencilMask = this._engine.getStencilMask();
-            var previousStencilOperationPass = this._engine.getStencilOperationPass();
-            var previousStencilOperationFail = this._engine.getStencilOperationFail();
-            var previousStencilOperationDepthFail = this._engine.getStencilOperationDepthFail();
-            var previousStencilReference = this._engine.getStencilFunctionReference();
+            this._engine.cacheStencilState();
 
             var material = subMesh.getMaterial();
             if (material && material.needAlphaBlending) {
@@ -299,23 +292,17 @@ export class OutlineRenderer implements ISceneComponent {
                 this._engine.setStencilMask(OutlineRenderer._StencilReference);
                 this._engine.setStencilFunctionReference(OutlineRenderer._StencilReference);
                 this.render(subMesh, batch, /* This sets offset to 0 */ true);
+
+                this._engine.setColorWrite(true);
+                this._engine.setStencilFunction(Constants.NOTEQUAL);
             }
 
             // Draw the outline using the above stencil if needed to avoid drawing within the mesh
-            this._engine.setColorWrite(true);
             this._engine.setDepthWrite(false);
-            this._engine.setStencilFunction(Constants.NOTEQUAL);
             this.render(subMesh, batch);
             this._engine.setDepthWrite(this._savedDepthWrite);
 
-            // Restore stencil state
-            this._engine.setStencilFunction(previousStencilFunction);
-            this._engine.setStencilMask(previousStencilMask);
-            this._engine.setStencilBuffer(previousStencilBuffer);
-            this._engine.setStencilOperationPass(previousStencilOperationPass);
-            this._engine.setStencilOperationFail(previousStencilOperationFail);
-            this._engine.setStencilOperationDepthFail(previousStencilOperationDepthFail);
-            this._engine.setStencilFunctionReference(previousStencilReference);
+            this._engine.restoreStencilState();
         }
     }
 
