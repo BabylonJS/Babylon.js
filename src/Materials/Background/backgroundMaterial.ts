@@ -678,8 +678,11 @@ export class BackgroundMaterial extends PushMaterial {
 
         // Multiview
         if (scene.activeCamera) {
+            var previousMultiview = defines.MULTIVIEW;
             defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
-            defines.markAsUnprocessed();
+            if (defines.MULTIVIEW != previousMultiview) {
+                defines.markAsUnprocessed();
+            }
         }
 
         // Textures

@@ -4129,8 +4129,6 @@ export class Scene extends AbstractScene implements IAnimatable {
                 engine.setViewport(this._activeCamera.viewport);
                 if (this.postProcessManager) {
                     this.postProcessManager._prepareFrame();
-                }
-                if (this.postProcessManager) {
                     this.postProcessManager._finalizeFrame(this._activeCamera.isIntermediate);
                 }
             }
