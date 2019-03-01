@@ -278,10 +278,9 @@ export class OutlineRenderer implements ISceneComponent {
         // Outline - step 1
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
-            this._engine.cacheStencilState();
-
             var material = subMesh.getMaterial();
             if (material && material.needAlphaBlending) {
+                this._engine.cacheStencilState();
                 // Draw only to stencil buffer for the original mesh
                 // The resulting stencil buffer will be used so the outline is not visible inside the mesh when the mesh is transparent
                 this._engine.setDepthWrite(false);
@@ -302,7 +301,9 @@ export class OutlineRenderer implements ISceneComponent {
             this.render(subMesh, batch);
             this._engine.setDepthWrite(this._savedDepthWrite);
 
-            this._engine.restoreStencilState();
+            if (material && material.needAlphaBlending) {
+                this._engine.restoreStencilState();
+            }
         }
     }
 
