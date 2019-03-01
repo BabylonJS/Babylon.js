@@ -71,7 +71,7 @@ export class VRMultiviewToSingleview extends PostProcess {
         this.onSizeChangedObservable.add(() => {
         });
         this.onApplyObservable.add((effect: Effect) => {
-            if (camera._scene.activeCamera && camera._scene.activeCamera.name == "_L") {
+            if (camera._scene.activeCamera && camera._scene.activeCamera.isLeftCamera) {
                 effect.setInt("imageIndex", 0);
             }else {
                 effect.setInt("imageIndex", 1);
