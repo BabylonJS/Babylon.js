@@ -1205,6 +1205,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderExtension" {
     import { IDisposable } from "babylonjs/scene";
     import { IScene, INode, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "babylonjs-loaders/glTF/glTFFileLoader";
+    import { IProperty } from 'babylonjs-gltf2interface';
     /**
      * Interface for a glTF loader extension.
      */
@@ -1289,10 +1290,11 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderExtension" {
         /**
          * Define this method to modify the default behavior when loading uris.
          * @param context The context when loading the asset
+         * @param property The glTF property associated with the uri
          * @param uri The uri to load
          * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
          */
-        _loadUriAsync?(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
+        _loadUriAsync?(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
     }
 }
 declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
@@ -1334,10 +1336,6 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
      * The glTF 2.0 loader
      */
     export class GLTFLoader implements IGLTFLoader {
-        /** The glTF object parsed from the JSON. */
-        gltf: IGLTF;
-        /** The Babylon scene when loading the asset. */
-        babylonScene: Scene;
         /** @hidden */
         _completePromises: Promise<any>[];
         private _disposed;
@@ -1347,6 +1345,8 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         private _rootUrl;
         private _fileName;
         private _uniqueRootUrl;
+        private _gltf;
+        private _babylonScene;
         private _rootBabylonMesh;
         private _defaultBabylonMaterialData;
         private _progressCallback?;
@@ -1370,6 +1370,18 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
          * Gets the loader state.
          */
         readonly state: Nullable<GLTFLoaderState>;
+        /**
+         * The glTF object parsed from the JSON.
+         */
+        readonly gltf: IGLTF;
+        /**
+         * The Babylon scene when loading the asset.
+         */
+        readonly babylonScene: Scene;
+        /**
+         * The root Babylon mesh when loading the asset.
+         */
+        readonly rootBabylonMesh: Mesh;
         /** @hidden */
         constructor(parent: GLTFFileLoader);
         /** @hidden */
@@ -1509,10 +1521,11 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         /**
          * Loads a glTF uri.
          * @param context The context when loading the asset
+         * @param property The glTF property associated with the uri
          * @param uri The base64 or relative uri
          * @returns A promise that resolves with the loaded data when the load is complete
          */
-        loadUriAsync(context: string, uri: string): Promise<ArrayBufferView>;
+        loadUriAsync(context: string, property: IProperty, uri: string): Promise<ArrayBufferView>;
         private _onProgress;
         /**
          * Adds a JSON pointer to the metadata of the Babylon object at `<object>.metadata.gltf.pointers`.
@@ -1781,6 +1794,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod" {
     import { INode, IMaterial } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    import { IProperty } from 'babylonjs-gltf2interface';
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
      */
@@ -1823,7 +1837,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod" {
         /** @hidden */
         _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /** @hidden */
-        _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
+        _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /**
          * Gets an array of LOD properties from lowest to highest.
          */
@@ -3446,10 +3460,11 @@ declare module BABYLON.GLTF2 {
         /**
          * Define this method to modify the default behavior when loading uris.
          * @param context The context when loading the asset
+         * @param property The glTF property associated with the uri
          * @param uri The uri to load
          * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
          */
-        _loadUriAsync?(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
+        _loadUriAsync?(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
     }
 }
 declare module BABYLON.GLTF2 {
@@ -3475,10 +3490,6 @@ declare module BABYLON.GLTF2 {
      * The glTF 2.0 loader
      */
     export class GLTFLoader implements IGLTFLoader {
-        /** The glTF object parsed from the JSON. */
-        gltf: IGLTF;
-        /** The Babylon scene when loading the asset. */
-        babylonScene: Scene;
         /** @hidden */
         _completePromises: Promise<any>[];
         private _disposed;
@@ -3488,6 +3499,8 @@ declare module BABYLON.GLTF2 {
         private _rootUrl;
         private _fileName;
         private _uniqueRootUrl;
+        private _gltf;
+        private _babylonScene;
         private _rootBabylonMesh;
         private _defaultBabylonMaterialData;
         private _progressCallback?;
@@ -3511,6 +3524,18 @@ declare module BABYLON.GLTF2 {
          * Gets the loader state.
          */
         readonly state: Nullable<GLTFLoaderState>;
+        /**
+         * The glTF object parsed from the JSON.
+         */
+        readonly gltf: IGLTF;
+        /**
+         * The Babylon scene when loading the asset.
+         */
+        readonly babylonScene: Scene;
+        /**
+         * The root Babylon mesh when loading the asset.
+         */
+        readonly rootBabylonMesh: Mesh;
         /** @hidden */
         constructor(parent: GLTFFileLoader);
         /** @hidden */
@@ -3650,10 +3675,11 @@ declare module BABYLON.GLTF2 {
         /**
          * Loads a glTF uri.
          * @param context The context when loading the asset
+         * @param property The glTF property associated with the uri
          * @param uri The base64 or relative uri
          * @returns A promise that resolves with the loaded data when the load is complete
          */
-        loadUriAsync(context: string, uri: string): Promise<ArrayBufferView>;
+        loadUriAsync(context: string, property: IProperty, uri: string): Promise<ArrayBufferView>;
         private _onProgress;
         /**
          * Adds a JSON pointer to the metadata of the Babylon object at `<object>.metadata.gltf.pointers`.
@@ -3920,7 +3946,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /** @hidden */
-        _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
+        _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /**
          * Gets an array of LOD properties from lowest to highest.
          */
