@@ -39420,7 +39420,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
     ToolsTabComponent.prototype.captureScreenshot = function () {
         var scene = this.props.scene;
         if (scene.activeCamera) {
-            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, { precision: 1.0 }, undefined, undefined, 4, true);
+            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshot(scene.getEngine(), scene.activeCamera, { precision: 1.0 });
         }
     };
     ToolsTabComponent.prototype.recordVideo = function () {
@@ -39478,6 +39478,12 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             alert(error);
         });
     };
+    ToolsTabComponent.prototype.resetReplay = function () {
+        this.props.globalState.recorder.reset();
+    };
+    ToolsTabComponent.prototype.exportReplay = function () {
+        this.props.globalState.recorder.export();
+    };
     ToolsTabComponent.prototype.render = function () {
         var _this = this;
         var scene = this.props.scene;
@@ -39488,6 +39494,9 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CAPTURE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Screenshot", onClick: function () { return _this.captureScreenshot(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: this.state.tag, onClick: function () { return _this.recordVideo(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "REPLAY" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate replay code", onClick: function () { return _this.exportReplay(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Reset", onClick: function () { return _this.resetReplay(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SCENE EXPORT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to GLB", onClick: function () { return _this.exportGLTF(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to Babylon", onClick: function () { return _this.exportBabylon(); } }),
@@ -39680,6 +39689,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _replayRecorder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./replayRecorder */ "./components/replayRecorder.ts");
+
 
 
 var GlobalState = /** @class */ (function () {
@@ -39691,9 +39702,17 @@ var GlobalState = /** @class */ (function () {
         this.glTFLoaderDefaults = { "validate": true };
         this.blockMutationUpdates = false;
         this.selectedLineContainerTitle = "";
+        this.recorder = new _replayRecorder__WEBPACK_IMPORTED_MODULE_1__["ReplayRecorder"]();
         // Light gizmos
         this.lightGizmos = [];
     }
+    GlobalState.prototype.init = function (propertyChangedObservable) {
+        var _this = this;
+        this.onPropertyChangedObservable = propertyChangedObservable;
+        propertyChangedObservable.add(function (event) {
+            _this.recorder.record(event);
+        });
+    };
     GlobalState.prototype.prepareGLTFPlugin = function (loader) {
         var _this = this;
         var loaderState = this.glTFLoaderDefaults;
@@ -39824,6 +39843,89 @@ var HeaderComponent = /** @class */ (function (_super) {
     };
     return HeaderComponent;
 }(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/replayRecorder.ts":
+/*!**************************************!*\
+  !*** ./components/replayRecorder.ts ***!
+  \**************************************/
+/*! exports provided: ReplayRecorder */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReplayRecorder", function() { return ReplayRecorder; });
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
+
+var ReplayRecorder = /** @class */ (function () {
+    function ReplayRecorder() {
+    }
+    ReplayRecorder.prototype.reset = function () {
+        this._recordedCodeLines = [];
+        this._previousObject = null;
+        this._previousProperty = "";
+    };
+    ReplayRecorder.prototype.record = function (event) {
+        if (!this._recordedCodeLines) {
+            this._recordedCodeLines = [];
+        }
+        if (this._previousObject === event.object && this._previousProperty === event.property) {
+            this._recordedCodeLines.pop();
+        }
+        var value = event.value;
+        if (value.w) { // Quaternion
+            value = "new BABYLON.Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
+        }
+        else if (value.z) { // Vector3
+            value = "new BABYLON.Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
+        }
+        else if (value.y) { // Vector2
+            value = "new BABYLON.Vector2(" + value.x + ", " + value.y + ")";
+        }
+        else if (value.a) { // Color4
+            value = "new BABYLON.Color4(" + value.r + ", " + value.g + ", " + value.b + ", " + value.a + ")";
+        }
+        else if (value.b) { // Color3
+            value = "new BABYLON.Color3(" + value.r + ", " + value.g + ", " + value.b + ")";
+        }
+        var target = event.object.getClassName().toLowerCase();
+        if (event.object.uniqueId) {
+            if (target.indexOf("camera")) {
+                target = "scene.getCameraByUniqueID(" + event.object.uniqueId + ")";
+            }
+            else if (target.indexOf("mesh")) {
+                target = "scene.getMeshByUniqueID(" + event.object.uniqueId + ")";
+            }
+            else if (target.indexOf("light")) {
+                target = "scene.getLightByUniqueID(" + event.object.uniqueId + ")";
+            }
+            else if (target === "transformnode") {
+                target = "scene.getTransformNodeByUniqueID(" + event.object.uniqueId + ")";
+            }
+            else if (target === "skeleton") {
+                target = "scene.getSkeletonByUniqueId(" + event.object.uniqueId + ")";
+            }
+            else if (target.indexOf("material")) {
+                target = "scene.getMaterialByUniqueID(" + event.object.uniqueId + ")";
+            }
+        }
+        this._recordedCodeLines.push(target + "." + event.property + " = " + value + ";");
+        this._previousObject = event.object;
+        this._previousProperty = event.property;
+    };
+    ReplayRecorder.prototype.export = function () {
+        var content = "// Code generated by babylon.js Inspector\r\n// Please keep in mind to define the 'scene' variable before using that code\r\n\r\n";
+        if (this._recordedCodeLines) {
+            content += this._recordedCodeLines.join("\r\n");
+        }
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].Download(new Blob([content]), "pseudo-code.txt");
+    };
+    return ReplayRecorder;
+}());
 
 
 
@@ -41829,7 +41931,7 @@ var Inspector = /** @class */ (function () {
         var options = tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({ original: true, popup: false, overlay: false, showExplorer: true, showInspector: true, embedMode: false, enableClose: true, handleResize: true, enablePopup: true }, userOptions);
         // Prepare state
         if (!this._GlobalState.onPropertyChangedObservable) {
-            this._GlobalState.onPropertyChangedObservable = this.OnPropertyChangedObservable;
+            this._GlobalState.init(this.OnPropertyChangedObservable);
         }
         if (!this._GlobalState.onSelectionChangedObservable) {
             this._GlobalState.onSelectionChangedObservable = this.OnSelectionChangeObservable;

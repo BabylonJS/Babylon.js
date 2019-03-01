@@ -7,6 +7,17 @@ declare module "babylonjs-inspector/components/propertyChangedEvent" {
         initialValue: any;
     }
 }
+declare module "babylonjs-inspector/components/replayRecorder" {
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    export class ReplayRecorder {
+        private _recordedCodeLines;
+        private _previousObject;
+        private _previousProperty;
+        reset(): void;
+        record(event: PropertyChangedEvent): void;
+        export(): void;
+    }
+}
 declare module "babylonjs-inspector/components/globalState" {
     import { GLTFFileLoader, IGLTFLoaderExtension } from "babylonjs-loaders/glTF/index";
     import { IGLTFValidationResults } from "babylonjs-gltf2interface";
@@ -17,6 +28,7 @@ declare module "babylonjs-inspector/components/globalState" {
     import { Light } from "babylonjs/Lights/light";
     import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { ReplayRecorder } from "babylonjs-inspector/components/replayRecorder";
     export class GlobalState {
         onSelectionChangedObservable: Observable<any>;
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
@@ -36,6 +48,8 @@ declare module "babylonjs-inspector/components/globalState" {
         };
         blockMutationUpdates: boolean;
         selectedLineContainerTitle: string;
+        recorder: ReplayRecorder;
+        init(propertyChangedObservable: Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: GLTFFileLoader): void;
         lightGizmos: Array<LightGizmo>;
         enableLightGizmo(light: Light, enable?: boolean): void;
@@ -1657,6 +1671,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
+        resetReplay(): void;
+        exportReplay(): void;
         render(): JSX.Element | null;
     }
 }
@@ -2187,6 +2203,16 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class ReplayRecorder {
+        private _recordedCodeLines;
+        private _previousObject;
+        private _previousProperty;
+        reset(): void;
+        record(event: PropertyChangedEvent): void;
+        export(): void;
+    }
+}
+declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
@@ -2206,6 +2232,8 @@ declare module INSPECTOR {
         };
         blockMutationUpdates: boolean;
         selectedLineContainerTitle: string;
+        recorder: ReplayRecorder;
+        init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
@@ -3449,6 +3477,8 @@ declare module INSPECTOR {
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
+        resetReplay(): void;
+        exportReplay(): void;
         render(): JSX.Element | null;
     }
 }
