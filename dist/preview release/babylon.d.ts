@@ -27358,6 +27358,21 @@ declare module BABYLON {
          * Sets the current depth function to LESS
          */
         setDepthFunctionToLess(): void;
+        private _cachedStencilBuffer;
+        private _cachedStencilFunction;
+        private _cachedStencilMask;
+        private _cachedStencilOperationPass;
+        private _cachedStencilOperationFail;
+        private _cachedStencilOperationDepthFail;
+        private _cachedStencilReference;
+        /**
+         * Caches the the state of the stencil buffer
+         */
+        cacheStencilState(): void;
+        /**
+         * Restores the state of the stencil buffer
+         */
+        restoreStencilState(): void;
         /**
          * Sets the current depth function to LEQUAL
          */
@@ -43583,7 +43598,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrFunctions: {
+    export var pbrFragmentExtraDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrFragmentSamplersDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrHelperFunctions: {
         name: string;
         shader: string;
     };
@@ -43597,21 +43626,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrPreLightingFunctions: {
+    export var pbrDirectLightingSetupFunctions: {
         name: string;
         shader: string;
     };
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrFalloffLightingFunctions: {
+    export var pbrDirectLightingFalloffFunctions: {
         name: string;
         shader: string;
     };
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrLightingFunctions: {
+    export var pbrBRDFFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrDirectLightingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrIBLFunctions: {
         name: string;
         shader: string;
     };
@@ -53613,6 +53656,10 @@ declare module BABYLON {
      * It should not be used directly but through the available method on mesh.
      */
     export class OutlineRenderer implements ISceneComponent {
+        /**
+         * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
+         */
+        private static _StencilReference;
         /**
          * The name of the component. Each component must have a unique name.
          */
