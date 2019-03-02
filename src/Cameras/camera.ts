@@ -243,6 +243,11 @@ export class Camera extends Node {
      * @hidden
      * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
      */
+    public _useMultiviewToSingleView = false;
+    /**
+     * @hidden
+     * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+     */
     public _multiviewTexture: Nullable<RenderTargetTexture> = null;
 
     /**
