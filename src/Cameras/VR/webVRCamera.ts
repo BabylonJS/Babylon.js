@@ -13,6 +13,8 @@ import { Node } from "../../node";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { HemisphericLight } from "../../Lights/hemisphericLight";
+import { Logger } from '../../Misc/logger';
+import { VRMultiviewToSingleview } from '../../PostProcesses/vrDistortionCorrectionPostProcess';
 
 // Side effect import to define the stereoscopic mode.
 import "../RigModes/webVRRigMode";
@@ -140,6 +142,10 @@ export interface WebVROptions {
      */
     defaultHeight?: number;
 
+    /**
+     * If multiview should be used if availible (default: false)
+     */
+    useMultiview?: boolean;
 }
 
 /**
@@ -275,6 +281,16 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
         if (typeof (VRFrameData) !== "undefined") {
             this._frameData = new VRFrameData();
+        }
+
+        if (webVROptions.useMultiview) {
+            if (!this.getScene().getEngine().getCaps().multiview) {
+                Logger.Warn("Multiview is not supported, falling back to standard rendering");
+                this._useMultiviewToSingleView = false;
+            }else {
+                this._useMultiviewToSingleView = true;
+                this._rigPostProcess = new VRMultiviewToSingleview("VRMultiviewToSingleview", this, 1.0);
+            }
         }
 
         /**

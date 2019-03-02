@@ -29,6 +29,7 @@ Camera._setVRRigMode = function(camera: Camera, rigParams: any) {
             Logger.Warn("Multiview is not supported, falling back to standard rendering");
             metrics.multiviewEnabled = false;
         }else {
+            camera._useMultiviewToSingleView = true;
             camera._rigPostProcess = new VRMultiviewToSingleview("VRMultiviewToSingleview", camera, 1.0);
         }
     }

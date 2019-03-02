@@ -4108,7 +4108,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
 
-        if (camera._rigCameras[0]._cameraRigParams && camera._rigCameras[0]._cameraRigParams.vrMetrics && camera._rigCameras[0]._cameraRigParams.vrMetrics.multiviewEnabled) {
+        if (camera._useMultiviewToSingleView) {
             // Multiview is only able to be displayed directly for API's such as webXR
             // This displays a multiview image by rendering to the multiview image and then
             // copying the result into the sub cameras instead of rendering them and proceeding as normal from there
