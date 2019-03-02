@@ -7734,6 +7734,7 @@ declare module BABYLON {
         /**
          * Defines the passed node as the parent of the current node.
          * The node will remain exactly where it is and its position / rotation will be updated accordingly
+         * @see https://doc.babylonjs.com/how_to/parenting
          * @param node the node ot set as the parent
          * @returns this TransformNode.
          */
@@ -18603,6 +18604,7 @@ declare module BABYLON {
         private _ranges;
         private _lastAbsoluteTransformsUpdateId;
         private _canUseTextureForBones;
+        private _uniqueId;
         /** @hidden */
         _numBonesWithLinkedTransformNode: number;
         /**
@@ -18633,6 +18635,10 @@ declare module BABYLON {
          * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
          */
         readonly isUsingTextureForMatrices: boolean;
+        /**
+         * Gets the unique ID of this skeleton
+         */
+        readonly uniqueId: number;
         /**
          * Creates a new skeleton
          * @param name defines the skeleton name
@@ -19491,6 +19497,7 @@ declare module BABYLON {
         setBodyVelocityIterations?(impostor: PhysicsImpostor, velocityIterations: number): void;
         getBodyPositionIterations?(impostor: PhysicsImpostor): number;
         setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
+        appendAnchor?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
         raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
@@ -20066,6 +20073,16 @@ declare module BABYLON {
          * @returns The physics imposter
          */
         addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
+        /**
+         * Add an anchor to a soft impostor
+         * @param otherImpostor rigid impostor as the anchor
+         * @param width ratio across width from 0 to 1
+         * @param height ratio up height from 0 to 1
+         * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         * @returns impostor the soft imposter
+         */
+        addAnchor(otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor;
         /**
          * Will keep this body still, in a sleep mode.
          * @returns the physics imposter
@@ -24025,10 +24042,11 @@ declare module BABYLON {
         getBoundingInfo(): BoundingInfo;
         /**
          * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
-         * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box
+         * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
+         * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
          * @returns the current mesh
          */
-        normalizeToUnitCube(includeDescendants?: boolean): AbstractMesh;
+        normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean): AbstractMesh;
         /**
          * Overwrite the current bounding info
          * @param boundingInfo defines the new bounding info
@@ -24624,7 +24642,8 @@ declare module BABYLON {
          */
         isDisposed(): boolean;
         /**
-         * Gets or sets the parent of the node
+         * Gets or sets the parent of the node (without keeping the current position in the scene)
+         * @see https://doc.babylonjs.com/how_to/parenting
          */
         parent: Nullable<Node>;
         private addToSceneRootNodes;
@@ -27339,6 +27358,21 @@ declare module BABYLON {
          * Sets the current depth function to LESS
          */
         setDepthFunctionToLess(): void;
+        private _cachedStencilBuffer;
+        private _cachedStencilFunction;
+        private _cachedStencilMask;
+        private _cachedStencilOperationPass;
+        private _cachedStencilOperationFail;
+        private _cachedStencilOperationDepthFail;
+        private _cachedStencilReference;
+        /**
+         * Caches the the state of the stencil buffer
+         */
+        cacheStencilState(): void;
+        /**
+         * Restores the state of the stencil buffer
+         */
+        restoreStencilState(): void;
         /**
          * Sets the current depth function to LEQUAL
          */
@@ -32671,6 +32705,12 @@ declare module BABYLON {
          */
         getAnimationGroupByName(name: string): Nullable<AnimationGroup>;
         /**
+         * Get a material using its unique id
+         * @param uniqueId defines the material's unique id
+         * @return the material or null if none found.
+         */
+        getMaterialByUniqueID(uniqueId: number): Nullable<Material>;
+        /**
          * get a material using its id
          * @param id defines the material's ID
          * @return the material or null if none found.
@@ -32780,6 +32820,12 @@ declare module BABYLON {
          */
         getTransformNodeByID(id: string): Nullable<TransformNode>;
         /**
+         * Gets a transform node with its auto-generated unique id
+         * @param uniqueId efines the unique id to search for
+         * @return the found transform node or null if not found at all.
+         */
+        getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode>;
+        /**
          * Gets a list of transform nodes using their id
          * @param id defines the id to search for
          * @returns a list of transform nodes
@@ -32833,6 +32879,12 @@ declare module BABYLON {
          * @return the found skeleton or null if not found at all.
          */
         getLastSkeletonByID(id: string): Nullable<Skeleton>;
+        /**
+         * Gets a skeleton using a given auto generated unique id
+         * @param  uniqueId defines the unique id to search for
+         * @return the found skeleton or null if not found at all.
+         */
+        getSkeletonByUniqueId(uniqueId: number): Nullable<Skeleton>;
         /**
          * Gets a skeleton using a given id (if many are found, this function will pick the first one)
          * @param id defines the id to search for
@@ -43546,7 +43598,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrFunctions: {
+    export var pbrFragmentExtraDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrFragmentSamplersDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrHelperFunctions: {
         name: string;
         shader: string;
     };
@@ -43560,21 +43626,35 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrPreLightingFunctions: {
+    export var pbrDirectLightingSetupFunctions: {
         name: string;
         shader: string;
     };
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrFalloffLightingFunctions: {
+    export var pbrDirectLightingFalloffFunctions: {
         name: string;
         shader: string;
     };
 }
 declare module BABYLON {
     /** @hidden */
-    export var pbrLightingFunctions: {
+    export var pbrBRDFFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrDirectLightingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrIBLFunctions: {
         name: string;
         shader: string;
     };
@@ -50865,6 +50945,16 @@ declare module BABYLON {
          */
         setBodyPositionIterations(impostor: PhysicsImpostor, positionIterations: number): void;
         /**
+        * Append an anchor to a soft object
+        * @param impostor soft impostor to add anchor to
+        * @param otherImpostor rigid impostor as the anchor
+        * @param width ratio across width from 0 to 1
+        * @param height ratio up height from 0 to 1
+        * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
+        * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+        */
+        appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence?: number, noCollisionBetweenLinkedBodies?: boolean): void;
+        /**
          * Sleeps the physics body and stops it from being active
          * @param impostor impostor to sleep
          */
@@ -53566,6 +53656,10 @@ declare module BABYLON {
      * It should not be used directly but through the available method on mesh.
      */
     export class OutlineRenderer implements ISceneComponent {
+        /**
+         * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
+         */
+        private static _StencilReference;
         /**
          * The name of the component. Each component must have a unique name.
          */
