@@ -31,8 +31,8 @@ preLightingInfo computePointAndSpotPreLightingInfo(vec4 lightData, vec3 V, vec3 
     // Geometry Data.
     result.L = normalize(result.lightOffset);
     result.H = normalize(V + result.L);
-    result.NdotL = clamp(dot(N, result.L), 0.000000000001, 1.0);
-    result.VdotH = clamp(dot(V, result.H), 0.0, 1.0);
+    result.NdotL = saturateEps(dot(N, result.L));
+    result.VdotH = saturate(dot(V, result.H));
 
     return result;
 }
@@ -46,8 +46,8 @@ preLightingInfo computeDirectionalPreLightingInfo(vec4 lightData, vec3 V, vec3 N
     // Geometry Data.
     result.L = normalize(-lightData.xyz);
     result.H = normalize(V + result.L);
-    result.NdotL = clamp(dot(N, result.L), 0.00000000001, 1.0);
-    result.VdotH = clamp(dot(V, result.H), 0.0, 1.0);
+    result.NdotL = saturateEps(dot(N, result.L));
+    result.VdotH = saturate(dot(V, result.H));
 
     return result;
 }
@@ -57,12 +57,12 @@ preLightingInfo computeHemisphericPreLightingInfo(vec4 lightData, vec3 V, vec3 N
 
     // Geometry Data.
     result.NdotL = dot(N, lightData.xyz) * 0.5 + 0.5;
-    result.NdotL = clamp(result.NdotL, 0.000000000001, 1.0);
+    result.NdotL = saturateEps(result.NdotL);
 
     #ifdef SPECULARTERM
         result.L = normalize(lightData.xyz);
         result.H = normalize(V + result.L);
-        result.VdotH = clamp(dot(V, result.H), 0.0, 1.0);
+        result.VdotH = saturate(dot(V, result.H));
     #endif
 
     return result;

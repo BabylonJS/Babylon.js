@@ -1774,6 +1774,40 @@ export class Engine {
         this._depthCullingState.depthFunc = this._gl.LESS;
     }
 
+    private _cachedStencilBuffer: boolean;
+    private _cachedStencilFunction: number;
+    private _cachedStencilMask: number;
+    private _cachedStencilOperationPass: number;
+    private _cachedStencilOperationFail: number;
+    private _cachedStencilOperationDepthFail: number;
+    private _cachedStencilReference: number;
+
+    /**
+     * Caches the the state of the stencil buffer
+     */
+    public cacheStencilState() {
+        this._cachedStencilBuffer = this.getStencilBuffer();
+        this._cachedStencilFunction = this.getStencilFunction();
+        this._cachedStencilMask = this.getStencilMask();
+        this._cachedStencilOperationPass = this.getStencilOperationPass();
+        this._cachedStencilOperationFail = this.getStencilOperationFail();
+        this._cachedStencilOperationDepthFail = this.getStencilOperationDepthFail();
+        this._cachedStencilReference = this.getStencilFunctionReference();
+    }
+
+    /**
+     * Restores the state of the stencil buffer
+     */
+    public restoreStencilState() {
+        this.setStencilFunction(this._cachedStencilFunction);
+        this.setStencilMask(this._cachedStencilMask);
+        this.setStencilBuffer(this._cachedStencilBuffer);
+        this.setStencilOperationPass(this._cachedStencilOperationPass);
+        this.setStencilOperationFail(this._cachedStencilOperationFail);
+        this.setStencilOperationDepthFail(this._cachedStencilOperationDepthFail);
+        this.setStencilFunctionReference(this._cachedStencilReference);
+    }
+
     /**
      * Sets the current depth function to LEQUAL
      */
