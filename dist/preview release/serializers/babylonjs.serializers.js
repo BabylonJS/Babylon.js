@@ -4537,24 +4537,27 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * Class for generating STL data from a Babylon scene.
- */
+* Class for generating STL data from a Babylon scene.
+*/
 var STLExport = /** @class */ (function () {
     function STLExport() {
     }
     /**
     * Exports the geometry of a Mesh array in .STL file format (ASCII)
-    * @param mesh defines the mesh to serialize
-    * @param fileName Name of the file when downloaded.
+    * @param meshes list defines the mesh to serialize
     * @param download triggers the automatic download of the file.
-    * @returns the ASCII STL format
+    * @param fileName changes the downloads fileName.
+    * @param binary changes the STL to a binary type.
+    * @param isLittleEndian toggle for binary type exporter.
+    * @returns the STL as UTF8 string
     */
-    STLExport.ASCII = function (mesh, download, fileName) {
-        if (download === void 0) { download = false; }
-        var data = 'solid exportedMesh\r\n';
-        var vertices = mesh.getVerticesData(babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind) || [];
-        var indices = mesh.getIndices() || [];
-        for (var i = 0; i < indices.length; i += 3) {
+    STLExport.CreateSTL = function (meshes, download, fileName, binary, isLittleEndian) {
+        //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
+        if (download === void 0) { download = true; }
+        if (fileName === void 0) { fileName = 'STL_Mesh'; }
+        if (binary === void 0) { binary = false; }
+        if (isLittleEndian === void 0) { isLittleEndian = true; }
+        var getFaceData = function (indices, vertices, i) {
             var id = [indices[i] * 3, indices[i + 1] * 3, indices[i + 2] * 3];
             var v = [
                 new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[0]], vertices[id[0] + 1], vertices[id[0] + 2]),
@@ -4564,15 +4567,64 @@ var STLExport = /** @class */ (function () {
             var p1p2 = v[0].subtract(v[1]);
             var p3p2 = v[2].subtract(v[1]);
             var n = (babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Cross(p1p2, p3p2)).normalize();
-            data += 'facet normal ' + n.x + ' ' + n.y + ' ' + n.z + '\r\n';
-            data += '\touter loop\r\n';
-            data += '\t\tvertex ' + v[0].x + ' ' + v[0].y + ' ' + v[0].z + '\r\n';
-            data += '\t\tvertex ' + v[1].x + ' ' + v[1].y + ' ' + v[1].z + '\r\n';
-            data += '\t\tvertex ' + v[2].x + ' ' + v[2].y + ' ' + v[2].z + '\r\n';
-            data += '\tendloop\r\n';
-            data += 'endfacet\r\n';
+            return { v: v, n: n };
+        };
+        var writeVector = function (dataview, offset, vector, isLittleEndian) {
+            offset = writeFloat(dataview, offset, vector.x, isLittleEndian);
+            offset = writeFloat(dataview, offset, vector.y, isLittleEndian);
+            return writeFloat(dataview, offset, vector.z, isLittleEndian);
+        };
+        var writeFloat = function (dataview, offset, value, isLittleEndian) {
+            dataview.setFloat32(offset, value, isLittleEndian);
+            return offset + 4;
+        };
+        var data;
+        var faceCount = 0;
+        var offset = 0;
+        if (binary) {
+            for (var i = 0; i < meshes.length; i++) {
+                var mesh = meshes[i];
+                var indices = mesh.getIndices();
+                faceCount += indices ? indices.length : 0;
+            }
+            var bufferSize = 84 + (50 * faceCount);
+            var buffer = new ArrayBuffer(bufferSize);
+            data = new DataView(buffer);
+            offset += 80;
+            data.setUint32(offset, faceCount, isLittleEndian);
+            offset += 4;
         }
-        data += 'endsolid exportedMesh';
+        else {
+            data = 'solid exportedMesh\r\n';
+        }
+        for (var i = 0; i < meshes.length; i++) {
+            var mesh = meshes[i];
+            mesh.bakeCurrentTransformIntoVertices();
+            var vertices = mesh.getVerticesData(babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind) || [];
+            var indices = mesh.getIndices() || [];
+            for (var i_1 = 0; i_1 < indices.length; i_1 += 3) {
+                var fd = getFaceData(indices, vertices, i_1);
+                if (binary) {
+                    offset = writeVector(data, offset, fd.n, isLittleEndian);
+                    offset = writeVector(data, offset, fd.v[0], isLittleEndian);
+                    offset = writeVector(data, offset, fd.v[1], isLittleEndian);
+                    offset = writeVector(data, offset, fd.v[2], isLittleEndian);
+                    offset += 2;
+                }
+                else {
+                    data += 'facet normal ' + fd.n.x + ' ' + fd.n.y + ' ' + fd.n.z + '\r\n';
+                    data += '\touter loop\r\n';
+                    data += '\t\tvertex ' + fd.v[0].x + ' ' + fd.v[0].y + ' ' + fd.v[0].z + '\r\n';
+                    data += '\t\tvertex ' + fd.v[1].x + ' ' + fd.v[1].y + ' ' + fd.v[1].z + '\r\n';
+                    data += '\t\tvertex ' + fd.v[2].x + ' ' + fd.v[2].y + ' ' + fd.v[2].z + '\r\n';
+                    data += '\tendloop\r\n';
+                    data += 'endfacet\r\n';
+                }
+            }
+        }
+        if (!binary) {
+            data += 'endsolid exportedMesh';
+        }
         if (download) {
             var a = document.createElement('a');
             var blob = new Blob([data], { 'type': 'application/octet-stream' });
