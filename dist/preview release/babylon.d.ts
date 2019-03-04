@@ -20884,6 +20884,7 @@ declare module BABYLON {
         flipFaces(flipNormals?: boolean): Mesh;
         /**
          * Increase the number of facets and hence vertices in a mesh
+         * Vertex normals are interpolated from existing vertex normals
          * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
          * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
          */
