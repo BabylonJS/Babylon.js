@@ -2401,6 +2401,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Increase the number of facets and hence vertices in a mesh
+     * Vertex normals are interpolated from existing vertex normals
      * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
      * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
      */
@@ -2478,22 +2479,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         len = side[a][b].length;
                         for (var idx = 0; idx < len; idx++) {
                             side[b][a][idx] = side[a][b][len - 1 - idx];
-                        }
-                    }
-                    else {
-                        if (side[a][b] === undefined) {
-                            side[a][b] = new Array();
-                            len = side[b][a].length;
-                            for (var idx = 0; idx < len; idx++) {
-                                side[a][b][idx] = side[b][a][len - 1 - idx];
-                            }
-                        }
-                        if (side[b][a] === undefined) {
-                            side[b][a] = new Array();
-                            len = side[a][b].length;
-                            for (var idx = 0; idx < len; idx++) {
-                                side[b][a][idx] = side[a][b][len - 1 - idx];
-                            }
                         }
                     }
                 }
