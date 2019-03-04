@@ -8,6 +8,9 @@ import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Nullable } from "../../types";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
+import { ShapeBuilder } from "../../Meshes/Builders/shapeBuilder";
+import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
+import { LinesMesh } from '../../Meshes/linesMesh';
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 
 declare var Ammo: any;
@@ -219,10 +222,53 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Update babylon mesh vertices vertices to match physics world object
+     * Update babylon mesh to match physics world object
      * @param impostor imposter to match
      */
     public afterSoftStep(impostor: PhysicsImpostor): void {
+        if (impostor.type === PhysicsImpostor.RopeImpostor) {
+            this.ropeStep(impostor);
+        }
+        else {
+            this.notRopeStep(impostor);
+        }
+    }
+
+    /**
+     * Update babylon mesh vertices vertices to match physics world softbody or cloth
+     * @param impostor imposter to match
+     */
+    public ropeStep(impostor: PhysicsImpostor): void {
+        var bodyVertices = impostor.physicsBody.get_m_nodes();
+        var nbVertices = bodyVertices.size();
+        var node: any;
+        var nodePositions: any;
+        var x, y, z: number;
+        var path: Array<Vector3> = new Array();
+        for (var n = 0; n < nbVertices; n++) {
+            node = bodyVertices.at(n);
+            nodePositions = node.get_m_x();
+            x = nodePositions.x();
+            y = nodePositions.y();
+            z = nodePositions.z();
+            path.push(new Vector3(x, y, z));
+        }
+        var object = impostor.object;
+        var shape = impostor.getParam("shape");
+        if (impostor._isFromLine) {
+            impostor.object = LinesBuilder.CreateLines("lines", {points: path, instance: <LinesMesh>object});
+        }
+        else {
+            impostor.object = ShapeBuilder.ExtrudeShape("ext", {shape: shape, path: path, instance: <Mesh>object});
+        }
+
+    }
+
+    /**
+     * Update babylon mesh vertices vertices to match physics world softbody or cloth
+     * @param impostor imposter to match
+     */
+    public notRopeStep(impostor: PhysicsImpostor): void {
         var normalDirection = (impostor.type === PhysicsImpostor.ClothImpostor) ? 1 : -1;
         var object = impostor.object;
         var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
@@ -628,7 +674,6 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     nodeNormals.setY(triNorms[3 * i + 1]);
                     nodeNormals.setZ(triNorms[3 * i + 2]);
                 }
-                softBody.get_m_cfg().set_collisions(0x11);
                 return softBody;
             }
         }
@@ -674,10 +719,74 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     impostor.getParam("fixedPoints"),
                     true
                 );
-                clothBody.get_m_cfg().set_collisions(0x11);
                 return clothBody;
             }
         }
+    }
+
+    /**
+     * Create rope for an impostor
+     * @param impostor to create the softbody for
+     */
+    private _createRope(impostor: PhysicsImpostor) {
+        var len: number;
+        var segments: number;
+        var vertex_data = this._softVertexData(impostor);
+        var vertexPositions = vertex_data.positions;
+        var vertexNormals = vertex_data.normals;
+
+        if (vertexPositions === null || vertexNormals === null) {
+            return new Ammo.btCompoundShape();
+        }
+
+        //force the mesh to be updatable
+        vertex_data.applyToMesh(<Mesh>impostor.object, true);
+
+        impostor._isFromLine = true;
+
+        // If in lines mesh all normals will be zero
+        var vertexSquared: Array<number> = <Array<number>>vertexNormals.map((x: number) => x * x);
+        var reducer = (accumulator: number, currentValue: number): number => accumulator + currentValue;
+        var reduced: number = vertexSquared.reduce(reducer);
+
+        if (reduced === 0) { // line mesh
+                len = vertexPositions.length;
+                segments = len / 3 - 1;
+                this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], vertexPositions[2]);
+                this._tmpAmmoVectorB.setValue(vertexPositions[len - 3], vertexPositions[len - 2], vertexPositions[len - 1]);
+        }
+        else { //extruded mesh
+            impostor._isFromLine = false;
+            var pathVectors = impostor.getParam("path");
+            var shape = impostor.getParam("shape");
+            if (shape === null) {
+                Logger.Warn("No shape available for extruded mesh");
+                return new Ammo.btCompoundShape();
+            }
+            if ((vertexPositions!.length % (3 * pathVectors.length)) !== 0) {
+                Logger.Warn("Path does not match extrusion");
+                return new Ammo.btCompoundShape();
+            }
+            len = pathVectors.length;
+            segments = len - 1;
+            this._tmpAmmoVectorA.setValue(pathVectors[0].x, pathVectors[0].y, pathVectors[0].z);
+            this._tmpAmmoVectorB.setValue(pathVectors[len - 1].x, pathVectors[len - 1].y, pathVectors[len - 1].z);
+        }
+
+        impostor.segments = segments;
+
+        var fixedPoints = impostor.getParam("fixedPoints");
+        fixedPoints = (fixedPoints > 3) ? 3 : fixedPoints;
+
+        var ropeBody = new Ammo.btSoftBodyHelpers().CreateRope(
+            this.world.getWorldInfo(),
+            this._tmpAmmoVectorA,
+            this._tmpAmmoVectorB,
+            segments - 1,
+            fixedPoints
+        );
+        ropeBody.get_m_cfg().set_collisions(0x11);
+        return ropeBody;
     }
 
     // adds all verticies (including child verticies) to the convex hull shape
@@ -827,8 +936,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 returnValue = this._createSoftbody(impostor);
                 break;
             case PhysicsImpostor.ClothImpostor:
-                // Only usable with a mesh that has sufficient and shared vertices
+                // Only usable with a ground mesh that has sufficient and shared vertices
                 returnValue = this._createCloth(impostor);
+                break;
+            case PhysicsImpostor.RopeImpostor:
+                // Only usable with a line mesh or an extruded mesh that is updatable
+                returnValue = this._createRope(impostor);
                 break;
             default:
                 Logger.Warn("The impostor type is not currently supported by the ammo plugin.");
@@ -1159,12 +1272,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
      /**
-     * Append an anchor to a soft object
-     * @param impostor soft impostor to add anchor to
-     * @param otherImpostor rigid impostor as the anchor
+     * Append an anchor to a cloth object
+     * @param impostor is the cloth impostor to add anchor to
+     * @param otherImpostor is the rigid impostor to anchor to
      * @param width ratio across width from 0 to 1
      * @param height ratio up height from 0 to 1
-     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
+     * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
      * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
      */
     public appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
@@ -1173,6 +1286,19 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         var nbUp = Math.round((segs - 1) * height);
         var nbDown = segs - 1 - nbUp;
         var node = nbAcross + segs * nbDown;
+        impostor.physicsBody.appendAnchor(node, otherImpostor.physicsBody, noCollisionBetweenLinkedBodies, influence);
+    }
+
+    /**
+     * Append an hook to a rope object
+     * @param impostor is the rope impostor to add hook to
+     * @param otherImpostor is the rigid impostor to hook to
+     * @param length ratio along the rope from 0 to 1
+     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little strech
+     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+     */
+    public appendHook(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
+        var node = Math.round(impostor.segments * length);
         impostor.physicsBody.appendAnchor(node, otherImpostor.physicsBody, noCollisionBetweenLinkedBodies, influence);
     }
 

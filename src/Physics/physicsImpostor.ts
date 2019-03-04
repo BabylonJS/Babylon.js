@@ -70,6 +70,14 @@ export interface PhysicsImpostorParameters {
      * The collision margin around a soft object
      */
     damping?: number;
+    /**
+     * The path for a rope based on an extrusion
+     */
+    path?: any;
+    /**
+     * The shape of an extrusion used for a rope based on an extrusion
+     */
+    shape?: any;
 }
 
 /**
@@ -214,6 +222,9 @@ export class PhysicsImpostor {
     private _deltaPosition: Vector3 = Vector3.Zero();
     private _deltaRotation: Quaternion;
     private _deltaRotationConjugated: Quaternion;
+
+    /** hidden */
+    public _isFromLine: boolean;
 
     //If set, this is this impostor's parent
     private _parent: Nullable<PhysicsImpostor>;
@@ -471,6 +482,8 @@ export class PhysicsImpostor {
                 this._options.fixedPoints = (_options.fixedPoints === void 0) ? 0 : _options.fixedPoints;
                 this._options.margin = (_options.margin === void 0) ? 0 : _options.margin;
                 this._options.damping = (_options.damping === void 0) ? 0 : _options.damping;
+                this._options.path = (_options.path === void 0) ? null : _options.path;
+                this._options.shape = (_options.shape === void 0) ? null : _options.shape;
             }
             this._joints = [];
             //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
@@ -948,12 +961,12 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Add an anchor to a soft impostor
-     * @param otherImpostor rigid impostor as the anchor
+     * Add an anchor to a cloth impostor
+     * @param otherImpostor rigid impostor to anchor to
      * @param width ratio across width from 0 to 1
      * @param height ratio up height from 0 to 1
-     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
-     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+     * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+     * @param noCollisionBetweenLinkedBodies when true collisions between cloth impostor and anchor are ignored; default false
      * @returns impostor the soft imposter
      */
     public addAnchor(otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor {
@@ -966,6 +979,28 @@ export class PhysicsImpostor {
         }
         if (this._physicsEngine) {
             plugin.appendAnchor!(this, otherImpostor, width, height, influence, noCollisionBetweenLinkedBodies);
+        }
+        return this;
+    }
+
+    /**
+     * Add a hook to a rope impostor
+     * @param otherImpostor rigid impostor to anchor to
+     * @param length ratio across rope from 0 to 1
+     * @param influence the elasticity between rope impostor and anchor from 0, very stretchy to 1, little strech
+     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+     * @returns impostor the rope imposter
+     */
+    public addHook(otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor {
+        if (!this._physicsEngine) {
+            return this;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.appendAnchor) {
+            return this;
+        }
+        if (this._physicsEngine) {
+            plugin.appendHook!(this, otherImpostor, length, influence, noCollisionBetweenLinkedBodies);
         }
         return this;
     }
