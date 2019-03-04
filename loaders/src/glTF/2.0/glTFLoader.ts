@@ -276,8 +276,8 @@ export class GLTFLoader implements IGLTFLoader {
             if (nodes) {
                 promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
             }
-            else if (this._gltf.scene != undefined) {
-                const scene = ArrayItem.Get(`/scene`, this._gltf.scenes, this._gltf.scene);
+            else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
+                const scene = ArrayItem.Get(`/scene`, this._gltf.scenes, this._gltf.scene || 0);
                 promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
             }
 
