@@ -197,7 +197,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         for (var mainImpostor of impostors) {
             // After physics update make babylon world objects match physics world objects
             if (mainImpostor.soft) {
-                this.afterSoftStep(mainImpostor);
+                this._afterSoftStep(mainImpostor);
             }
             else {
                 mainImpostor.afterStep();
@@ -225,12 +225,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * Update babylon mesh to match physics world object
      * @param impostor imposter to match
      */
-    public afterSoftStep(impostor: PhysicsImpostor): void {
+    private _afterSoftStep(impostor: PhysicsImpostor): void {
         if (impostor.type === PhysicsImpostor.RopeImpostor) {
-            this.ropeStep(impostor);
+            this._ropeStep(impostor);
         }
         else {
-            this.notRopeStep(impostor);
+            this._softbodyOrClothStep(impostor);
         }
     }
 
@@ -238,7 +238,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * Update babylon mesh vertices vertices to match physics world softbody or cloth
      * @param impostor imposter to match
      */
-    public ropeStep(impostor: PhysicsImpostor): void {
+    private _ropeStep(impostor: PhysicsImpostor): void {
         var bodyVertices = impostor.physicsBody.get_m_nodes();
         var nbVertices = bodyVertices.size();
         var node: any;
@@ -268,7 +268,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * Update babylon mesh vertices vertices to match physics world softbody or cloth
      * @param impostor imposter to match
      */
-    public notRopeStep(impostor: PhysicsImpostor): void {
+    private _softbodyOrClothStep(impostor: PhysicsImpostor): void {
         var normalDirection = (impostor.type === PhysicsImpostor.ClothImpostor) ? 1 : -1;
         var object = impostor.object;
         var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
