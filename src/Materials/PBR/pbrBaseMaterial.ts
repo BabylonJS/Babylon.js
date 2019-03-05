@@ -845,7 +845,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param mesh - BJS mesh.
      */
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-        if (this._disableAlphaBlending) {
+        if (this._disableAlphaBlending && mesh.visibility >= 1.0) {
             return false;
         }
 
@@ -1763,7 +1763,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 this._uniformBuffer.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
-                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha * mesh.visibility);
+
+                const alpha = this._disableAlphaBlending ? mesh.visibility : this.alpha * mesh.visibility;
+                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, alpha);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
