@@ -19498,6 +19498,7 @@ declare module BABYLON {
         getBodyPositionIterations?(impostor: PhysicsImpostor): number;
         setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
         appendAnchor?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
+        appendHook?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
         raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
@@ -19667,6 +19668,14 @@ declare module BABYLON {
          * The collision margin around a soft object
          */
         damping?: number;
+        /**
+         * The path for a rope based on an extrusion
+         */
+        path?: any;
+        /**
+         * The shape of an extrusion used for a rope based on an extrusion
+         */
+        shape?: any;
     }
     /**
      * Interface for a physics-enabled object
@@ -19807,6 +19816,8 @@ declare module BABYLON {
         private _deltaPosition;
         private _deltaRotation;
         private _deltaRotationConjugated;
+        /** hidden */
+        _isFromLine: boolean;
         private _parent;
         private _isDisposed;
         private static _tmpVecs;
@@ -20074,15 +20085,24 @@ declare module BABYLON {
          */
         addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
         /**
-         * Add an anchor to a soft impostor
-         * @param otherImpostor rigid impostor as the anchor
+         * Add an anchor to a cloth impostor
+         * @param otherImpostor rigid impostor to anchor to
          * @param width ratio across width from 0 to 1
          * @param height ratio up height from 0 to 1
-         * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
-         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between cloth impostor and anchor are ignored; default false
          * @returns impostor the soft imposter
          */
         addAnchor(otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor;
+        /**
+         * Add a hook to a rope impostor
+         * @param otherImpostor rigid impostor to anchor to
+         * @param length ratio across rope from 0 to 1
+         * @param influence the elasticity between rope impostor and anchor from 0, very stretchy to 1, little strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         * @returns impostor the rope imposter
+         */
+        addHook(otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor;
         /**
          * Will keep this body still, in a sleep mode.
          * @returns the physics imposter
@@ -50759,10 +50779,20 @@ declare module BABYLON {
          */
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
         /**
-         * Update babylon mesh vertices vertices to match physics world object
+         * Update babylon mesh to match physics world object
          * @param impostor imposter to match
          */
-        afterSoftStep(impostor: PhysicsImpostor): void;
+        private _afterSoftStep;
+        /**
+         * Update babylon mesh vertices vertices to match physics world softbody or cloth
+         * @param impostor imposter to match
+         */
+        private _ropeStep;
+        /**
+         * Update babylon mesh vertices vertices to match physics world softbody or cloth
+         * @param impostor imposter to match
+         */
+        private _softbodyOrClothStep;
         private _tmpVector;
         private _tmpMatrix;
         /**
@@ -50817,6 +50847,11 @@ declare module BABYLON {
          * @param impostor to create the softbody for
          */
         private _createCloth;
+        /**
+         * Create rope for an impostor
+         * @param impostor to create the softbody for
+         */
+        private _createRope;
         private _addHullVerts;
         private _createShape;
         /**
@@ -50946,15 +50981,24 @@ declare module BABYLON {
          */
         setBodyPositionIterations(impostor: PhysicsImpostor, positionIterations: number): void;
         /**
-        * Append an anchor to a soft object
-        * @param impostor soft impostor to add anchor to
-        * @param otherImpostor rigid impostor as the anchor
+        * Append an anchor to a cloth object
+        * @param impostor is the cloth impostor to add anchor to
+        * @param otherImpostor is the rigid impostor to anchor to
         * @param width ratio across width from 0 to 1
         * @param height ratio up height from 0 to 1
-        * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
+        * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
         */
         appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence?: number, noCollisionBetweenLinkedBodies?: boolean): void;
+        /**
+         * Append an hook to a rope object
+         * @param impostor is the rope impostor to add hook to
+         * @param otherImpostor is the rigid impostor to hook to
+         * @param length ratio along the rope from 0 to 1
+         * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         */
+        appendHook(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence?: number, noCollisionBetweenLinkedBodies?: boolean): void;
         /**
          * Sleeps the physics body and stops it from being active
          * @param impostor impostor to sleep
