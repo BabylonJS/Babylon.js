@@ -603,7 +603,7 @@
                 "processDeclaration": {
                     "moduleName": "BabylonViewer",
                     "doNotAppendNamespace": true,
-                    "prependText": "/// <reference path=\"./babylon.module.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n",
+                    "prependText": "/// <reference path=\"./babylon.module.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.module.d.ts\"/>\n",
                     "importsToRemove": [
                         "pep",
                         "babylonjs-loaders"
@@ -611,7 +611,17 @@
                     "classMap": {
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON"
-                    }
+                    },
+                    "replacements": [
+                        {
+                            "from": "import(\"./configuration\")",
+                            "to": "import(\"babylonjs-viewer/configuration/configuration\")"
+                        },
+                        {
+                            "from": "import(\"./viewer\")",
+                            "to": "import(\"babylonjs-viewer/viewer/viewer\")"
+                        }
+                    ]
                 },
                 "requiredFiles": [
                     "dist/preview release/viewer/readme.md",
@@ -632,7 +642,7 @@
                             "outputDirectory": "/viewer/",
                             "addBabylonDeclaration": [
                                 "babylon.module.d.ts",
-                                "loaders/babylonjs.loaders.d.ts",
+                                "loaders/babylonjs.loaders.module.d.ts",
                                 "glTF2Interface/babylon.glTF2Interface.d.ts"
                             ]
                         }

@@ -53,6 +53,7 @@ export interface IPhysicsEnginePlugin {
     getBodyPositionIterations?(impostor: PhysicsImpostor): number;
     setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
     appendAnchor?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
+    appendHook?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
     sleepBody(impostor: PhysicsImpostor): void;
     wakeUpBody(impostor: PhysicsImpostor): void;
     raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
