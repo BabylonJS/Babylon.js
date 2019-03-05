@@ -606,6 +606,11 @@
       "title": "Outline",
       "playgroundId": "#10WJ5S#6",
       "referenceImage": "outline.png"
+    },
+    {
+      "title": "Visibility",
+      "playgroundId": "#PXC9CF#2",
+      "referenceImage": "visibility.png"
     }
   ]
 }
