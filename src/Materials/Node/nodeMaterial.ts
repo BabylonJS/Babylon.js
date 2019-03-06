@@ -11,11 +11,23 @@ import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 
+/**
+ * Class used to configure NodeMaterial
+ */
 export interface INodeMaterialOptions {
-    needAlphaBlending: boolean,
-    needAlphaTesting: boolean
+    /**
+     * Defines if the material needs alpha blending
+     */
+    needAlphaBlending: boolean;
+    /**
+     * Defines if the material needs alpha testing
+     */
+    needAlphaTesting: boolean;
 }
 
+/**
+ * Class used to create a node based material built by assembling shader blocks
+ */
 export class NodeMaterial extends Material {
     private _options: INodeMaterialOptions;
     private _vertexCompilationState: NodeMaterialCompilationState;
@@ -25,17 +37,17 @@ export class NodeMaterial extends Material {
     private _effectCompileId: number = 0;
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
-    private _textureConnectionPoints = new Array<NodeMaterialConnectionPoint>()
+    private _textureConnectionPoints = new Array<NodeMaterialConnectionPoint>();
 
     /**
-     * Gets or sets the root node of the material vertex shader
+     * Gets or sets the root nodes of the material vertex shader
      */
-    public vertexRootNode: NodeMaterialBlock;
+    public vertexRootNodes = new Array<NodeMaterialBlock>();
 
     /**
-     * Gets or sets the root node of the material fragment (pixel) shader
+     * Gets or sets the root nodes of the material fragment (pixel) shader
      */
-    public fragmentRootNode: NodeMaterialBlock;
+    public fragmentRootNodes = new Array<NodeMaterialBlock>();
 
     /** Gets or sets options to control the node material overall behavior */
     public get options() {
@@ -46,6 +58,12 @@ export class NodeMaterial extends Material {
         this._options = options;
     }
 
+    /**
+     * Create a new node based material
+     * @param name defines the material name
+     * @param scene defines the hosting scene
+     * @param options defines creation option
+     */
     constructor(name: string, scene?: Scene, options: Partial<INodeMaterialOptions> = {}) {
         super(name, scene || Engine.LastCreatedScene!);
 
@@ -65,15 +83,31 @@ export class NodeMaterial extends Material {
     }
 
     /**
+     * Specifies if the material will require alpha blending
+     * @returns a boolean specifying if alpha blending is needed
+     */
+    public needAlphaBlending(): boolean {
+        return (this.alpha < 1.0) || this._options.needAlphaBlending;
+    }
+
+    /**
+     * Specifies if this material should be rendered in alpha test mode
+     * @returns a boolean specifying if an alpha test is needed.
+     */
+    public needAlphaTesting(): boolean {
+        return this._options.needAlphaTesting;
+    }
+
+    /**
      * Compile the material and generates the inner effect
      */
     public compile() {
-        if (!this.vertexRootNode) {
-            throw "You must define a vertexRootNode";
+        if (this.vertexRootNodes.length === 0) {
+            throw "You must define at least one vertexRootNode";
         }
 
-        if (!this.fragmentRootNode) {
-            throw "You must define a fragmentRootNode";
+        if (this.fragmentRootNodes.length === 0) {
+            throw "You must define at least one fragmentRootNode";
         }
 
         // Go through the nodes and do some magic :)
@@ -82,18 +116,22 @@ export class NodeMaterial extends Material {
         // Vertex
         this._vertexCompilationState = new NodeMaterialCompilationState();
 
-        this.vertexRootNode.compile(this._vertexCompilationState);
-        this.vertexRootNode.compileChildren(this._vertexCompilationState);
+        for (var vertexRootNode of this.vertexRootNodes) {
+            vertexRootNode.compile(this._vertexCompilationState);
+            vertexRootNode.compileChildren(this._vertexCompilationState);
+        }
 
         // Fragment
         this._fragmentCompilationState = new NodeMaterialCompilationState();
         this._fragmentCompilationState.isInFragmentMode = true;
-        this._fragmentCompilationState.vertexState = this._vertexCompilationState;
+        this._fragmentCompilationState._vertexState = this._vertexCompilationState;
         this._fragmentCompilationState.hints = this._vertexCompilationState.hints;
-        this._fragmentCompilationState.uniformConnectionPoints = this._vertexCompilationState.uniformConnectionPoints;
+        this._fragmentCompilationState._uniformConnectionPoints = this._vertexCompilationState._uniformConnectionPoints;
 
-        this.fragmentRootNode.compile(this._fragmentCompilationState);
-        this.fragmentRootNode.compileChildren(this._fragmentCompilationState);
+        for (var fragmentRootNode of this.fragmentRootNodes) {
+            fragmentRootNode.compile(this._fragmentCompilationState);
+            fragmentRootNode.compileChildren(this._fragmentCompilationState);
+        }
 
         // Finalize
         this._vertexCompilationState.varyings = this._fragmentCompilationState.varyings;
@@ -101,7 +139,7 @@ export class NodeMaterial extends Material {
         this._fragmentCompilationState.finalize();
 
         // Textures
-        this._textureConnectionPoints = this._fragmentCompilationState.uniformConnectionPoints.filter(u => u.type === NodeMaterialBlockConnectionPointTypes.Texture);
+        this._textureConnectionPoints = this._fragmentCompilationState._uniformConnectionPoints.filter((u) => u.type === NodeMaterialBlockConnectionPointTypes.Texture);
 
         this._compileId++;
     }
@@ -141,7 +179,7 @@ export class NodeMaterial extends Material {
         // Uniforms
         let mergedUniforms = this._vertexCompilationState.uniforms;
 
-        this._fragmentCompilationState.uniforms.forEach(u => {
+        this._fragmentCompilationState.uniforms.forEach((u) => {
             let index = mergedUniforms.indexOf(u);
 
             if (index === -1) {
@@ -153,7 +191,7 @@ export class NodeMaterial extends Material {
         // Samplers
         let mergedSamplers = this._vertexCompilationState.samplers;
 
-        this._fragmentCompilationState.samplers.forEach(s => {
+        this._fragmentCompilationState.samplers.forEach((s) => {
             let index = mergedSamplers.indexOf(s);
 
             if (index === -1) {
@@ -212,7 +250,7 @@ export class NodeMaterial extends Material {
         }
 
         if (hints.needWorldViewProjectionMatrix) {
-            world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix)
+            world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix);
             this._effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
         }
     }
@@ -241,14 +279,13 @@ export class NodeMaterial extends Material {
                 this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
             }
 
-            for (var connectionPoint of this._fragmentCompilationState.uniformConnectionPoints) {
+            for (var connectionPoint of this._fragmentCompilationState._uniformConnectionPoints) {
                 connectionPoint.transmit(this._effect);
             }
         }
 
         this._afterBind(mesh);
     }
-
 
     /**
      * Gets the active textures from the material

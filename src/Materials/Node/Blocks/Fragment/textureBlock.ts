@@ -1,8 +1,15 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from 'Materials/Node/nodeMaterialCompilationState';
+import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
 
+/**
+ * Block used to read a texture from a sampler
+ */
 export class TextureBlock extends NodeMaterialBlock {
+    /**
+     * Create a new TextureBlock
+     * @param name defines the block name
+     */
     public constructor(name: string) {
         super(name);
 
@@ -12,6 +19,10 @@ export class TextureBlock extends NodeMaterialBlock {
         this.registerExitPoint("color", NodeMaterialBlockConnectionPointTypes.Color4);
     }
 
+    /**
+     * Compile the block
+     * @param state defines the current compilation state
+     */
     public compile(state: NodeMaterialCompilationState) {
         super.compile(state);
 

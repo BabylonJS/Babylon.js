@@ -3,6 +3,9 @@ import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { Nullable } from '../../types';
 import { Effect } from '../effect';
 
+/**
+ * Defines a connection point for a block
+ */
 export class NodeMaterialConnectionPoint {
     private _ownerBlock: NodeMaterialBlock;
     private _connectedPoint: Nullable<NodeMaterialConnectionPoint>;
@@ -46,14 +49,14 @@ export class NodeMaterialConnectionPoint {
         this._associatedVariableName = value;
     }
 
-    /** 
+    /**
      * Gets or sets a boolean indicating that this connection point is coming from an uniform.
      * In this case the connection point name must be the name of the uniform to use.
      * Can only be set on entry points
      */
     public isUniform: boolean;
 
-    /** 
+    /**
      * Gets or sets a boolean indicating that this connection point is coming from an attribute.
      * In this case the connection point name must be the name of the attribute to use
      * Can only be set on entry points
@@ -85,6 +88,11 @@ export class NodeMaterialConnectionPoint {
         return this._connectedPoint.ownerBlock;
     }
 
+    /**
+     * Creates a new connection point
+     * @param name defines the connection point name
+     * @param ownerBlock defines the block hosting this connection point
+     */
     public constructor(name: string, ownerBlock: NodeMaterialBlock) {
         this._ownerBlock = ownerBlock;
         this.name = name;
@@ -98,6 +106,10 @@ export class NodeMaterialConnectionPoint {
         return "NodeMaterialConnectionPoint";
     }
 
+    /**
+     * Connect this point to another connection point
+     * @param connectionPoint defines the other connection point
+     */
     public connectTo(connectionPoint: NodeMaterialConnectionPoint) {
         this._connectedPoint = connectionPoint;
         connectionPoint._connectedPoint = this;
