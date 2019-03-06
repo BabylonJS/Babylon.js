@@ -1296,7 +1296,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate = false): Mesh {
+    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
             return this;
         }
@@ -1318,23 +1318,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
 
-        if (scene._isAlternateRenderingEnabled && !alternate) {
-            let effect = subMesh.effect || this._effectiveMaterial.getEffect();
-            if (!effect || !scene.activeCamera) {
-                return this;
-            }
-            scene._switchToAlternateCameraConfiguration(true);
-            this._effectiveMaterial.bindView(effect);
-            this._effectiveMaterial.bindViewProjection(effect);
-
-            engine.setViewport(scene.activeCamera._alternateCamera.viewport);
-            this._draw(subMesh, fillMode, instancesCount, true);
-            engine.setViewport(scene.activeCamera.viewport);
-
-            scene._switchToAlternateCameraConfiguration(false);
-            this._effectiveMaterial.bindView(effect);
-            this._effectiveMaterial.bindViewProjection(effect);
-        }
         return this;
     }
 
