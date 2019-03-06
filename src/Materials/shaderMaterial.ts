@@ -515,7 +515,7 @@ export class ShaderMaterial extends Material {
         }
 
         if (this._options.uniforms.indexOf("worldViewProjection") !== -1) {
-            world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix)
+            world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix);
             this._effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
 
         }

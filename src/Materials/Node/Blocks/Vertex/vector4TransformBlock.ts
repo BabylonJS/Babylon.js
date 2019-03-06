@@ -2,8 +2,15 @@ import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
 
+/**
+ * Block used to transform a vector4 with a matrix
+ */
 export class Vector4TransformBlock extends NodeMaterialBlock {
 
+    /**
+     * Creates a new Vector4TransformBlock
+     * @param name defines the block name
+     */
     public constructor(name: string) {
         super(name);
 
@@ -12,6 +19,10 @@ export class Vector4TransformBlock extends NodeMaterialBlock {
         this.registerExitPoint("output", NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
+    /**
+     * Compile the block
+     * @param state defines the current compilation state
+     */
     public compile(state: NodeMaterialCompilationState) {
         super.compile(state);
 

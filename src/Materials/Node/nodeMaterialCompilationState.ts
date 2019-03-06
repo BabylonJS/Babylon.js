@@ -1,17 +1,43 @@
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 
+/**
+ * Class used to store node based material compilation state
+ */
 export class NodeMaterialCompilationState {
+    /**
+     * Gets the list of emitted attributes
+     */
     public attributes = new Array<string>();
+    /**
+     * Gets the list of emitted uniforms
+     */
     public uniforms = new Array<string>();
+    /**
+     * Gets the list of emitted samplers
+     */
     public samplers = new Array<string>();
-    public variableNames: { [key: string]: number } = {};
-    public uniformConnectionPoints = new Array<NodeMaterialConnectionPoint>();
+    /**
+     * Gets the list of emitted varyings
+     */
     public varyings = new Array<string>();
+    /**
+     * Gets a boolean indicating if this state was emitted for a fragment shader
+     */
     public isInFragmentMode = false;
 
-    public vertexState: NodeMaterialCompilationState;
+    /** @hidden */
+    public _variableNames: { [key: string]: number } = {};
 
+    /** @hidden */
+    public _uniformConnectionPoints = new Array<NodeMaterialConnectionPoint>();
+
+    /** @hidden */
+    public _vertexState: NodeMaterialCompilationState;
+
+    /**
+     * Gets the compilation hints emitted at compilation time
+     */
     public hints = {
         needWorldMatrix: false,
         needViewMatrix: false,
@@ -19,7 +45,7 @@ export class NodeMaterialCompilationState {
         needViewProjectionMatrix: false,
         needWorldViewMatrix: false,
         needWorldViewProjectionMatrix: false
-    }
+    };
 
     private _attributeDeclaration = "";
     private _uniformDeclaration = "";
@@ -27,8 +53,14 @@ export class NodeMaterialCompilationState {
     private _varyingDeclaration = "";
     private _varyingTransfer = "";
 
+    /**
+     * Gets the emitted compilation strings
+     */
     public compilationString = "";
 
+    /**
+     * Finalize the compilation strings
+     */
     public finalize() {
         this.compilationString = `\r\n//Entry point\r\nvoid main(void) {\r\n${this.compilationString}`;
 
@@ -55,16 +87,18 @@ export class NodeMaterialCompilationState {
         }
     }
 
-    public getFreeVariableName(prefix: string): string {
-        if (this.variableNames[prefix] === undefined) {
-            this.variableNames[prefix] = 0;
+    /** @hidden */
+    public _getFreeVariableName(prefix: string): string {
+        if (this._variableNames[prefix] === undefined) {
+            this._variableNames[prefix] = 0;
         } else {
-            this.variableNames[prefix]++;
+            this._variableNames[prefix]++;
         }
 
-        return prefix + this.variableNames[prefix];
+        return prefix + this._variableNames[prefix];
     }
 
+    /** @hidden */
     private _getGLType(type: NodeMaterialBlockConnectionPointTypes): string {
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
@@ -86,7 +120,8 @@ export class NodeMaterialCompilationState {
         }
     }
 
-    public emitVaryings(point: NodeMaterialConnectionPoint, force = false) {
+    /** @hidden */
+    public _emitVaryings(point: NodeMaterialConnectionPoint, force = false) {
         if (point.isVarying || force) {
             if (this.varyings.indexOf(point.associatedVariableName) !== -1) {
                 return;
@@ -101,10 +136,11 @@ export class NodeMaterialCompilationState {
         }
     }
 
-    public emitUniformOrAttributes(point: NodeMaterialConnectionPoint) {
+    /** @hidden */
+    public _emitUniformOrAttributes(point: NodeMaterialConnectionPoint) {
         // Samplers
         if (point.type === NodeMaterialBlockConnectionPointTypes.Texture) {
-            point.name = this.getFreeVariableName(point.name);
+            point.name = this._getFreeVariableName(point.name);
             point.associatedVariableName = point.name;
 
             if (this.samplers.indexOf(point.name) !== -1) {
@@ -113,7 +149,7 @@ export class NodeMaterialCompilationState {
 
             this.samplers.push(point.name);
             this._samplerDeclaration += `uniform ${this._getGLType(point.type)} ${point.name};\r\n`;
-            this.uniformConnectionPoints.push(point);
+            this._uniformConnectionPoints.push(point);
             return;
         }
 
@@ -153,7 +189,7 @@ export class NodeMaterialCompilationState {
                     this.hints.needWorldViewProjectionMatrix = true;
                     break;
                 default:
-                    this.uniformConnectionPoints.push(point);
+                    this._uniformConnectionPoints.push(point);
                     break;
             }
 
@@ -162,10 +198,10 @@ export class NodeMaterialCompilationState {
 
         if (point.isAttribute) {
             if (this.isInFragmentMode) {
-                this.vertexState.emitUniformOrAttributes(point);
-                point.associatedVariableName = this.getFreeVariableName(point.name);
-                this.emitVaryings(point, true);
-                this.vertexState.emitVaryings(point, true);
+                this._vertexState._emitUniformOrAttributes(point);
+                point.associatedVariableName = this._getFreeVariableName(point.name);
+                this._emitVaryings(point, true);
+                this._vertexState._emitVaryings(point, true);
                 return;
             }
 

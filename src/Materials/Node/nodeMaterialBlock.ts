@@ -2,9 +2,14 @@ import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint'
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from './nodeMaterialCompilationState';
 
+/**
+ * Defines a block that can be used inside a node based material
+ */
 export class NodeMaterialBlock {
-    public _entryPoints = new Array<NodeMaterialConnectionPoint>();
-    public _exitPoints = new Array<NodeMaterialConnectionPoint>();
+    /** @hidden */
+    protected _entryPoints = new Array<NodeMaterialConnectionPoint>();
+    /** @hidden */
+    protected _exitPoints = new Array<NodeMaterialConnectionPoint>();
 
     /**
      * Gets or sets the name of the block
@@ -29,7 +34,7 @@ export class NodeMaterialBlock {
      * @returns the entry point or null if not found
      */
     public getEntryPointByName(name: string) {
-        let filter = this._entryPoints.filter(e => e.name === name);
+        let filter = this._entryPoints.filter((e) => e.name === name);
 
         if (filter.length) {
             return filter[0];
@@ -44,7 +49,7 @@ export class NodeMaterialBlock {
      * @returns the exit point or null if not found
      */
     public getExitPointByName(name: string) {
-        let filter = this._exitPoints.filter(e => e.name === name);
+        let filter = this._exitPoints.filter((e) => e.name === name);
 
         if (filter.length) {
             return filter[0];
@@ -53,14 +58,27 @@ export class NodeMaterialBlock {
         return null;
     }
 
+    /**
+     * Creates a new NodeMaterialBlock
+     * @param name defines the block name
+     */
     public constructor(name: string) {
         this.name = name;
     }
 
+    /**
+     * Gets the current class name e.g. "NodeMaterialBlock"
+     * @returns the class name
+     */
     public getClassName() {
         return "NodeMaterialBlock";
     }
 
+    /**
+     * Register a new entry point. Must be called inside a block constructor
+     * @param name defines the connection point name
+     * @param type defines the connection point type
+     */
     public registerEntryPoint(name: string, type: NodeMaterialBlockConnectionPointTypes) {
         let point = new NodeMaterialConnectionPoint(name, this);
         point.type = type;
@@ -68,6 +86,11 @@ export class NodeMaterialBlock {
         this._entryPoints.push(point);
     }
 
+    /**
+     * Register a new exit point. Must be called inside a block constructor
+     * @param name defines the connection point name
+     * @param type defines the connection point type
+     */
     public registerExitPoint(name: string, type: NodeMaterialBlockConnectionPointTypes) {
         let point = new NodeMaterialConnectionPoint(name, this);
         point.type = type;
@@ -77,6 +100,7 @@ export class NodeMaterialBlock {
 
     /**
      * Will return the first available entry point e.g. the first one which is not an uniform or an attribute
+     * @returns the first available entry point or null
      */
     public getFirstAvailableEntryPoint() {
         for (var entryPoint of this._entryPoints) {
@@ -113,15 +137,19 @@ export class NodeMaterialBlock {
      */
     public compile(state: NodeMaterialCompilationState) {
         for (var entryPoint of this._entryPoints) {
-            state.emitUniformOrAttributes(entryPoint);
+            state._emitUniformOrAttributes(entryPoint);
         }
 
         for (var exitPoint of this._exitPoints) {
-            exitPoint.associatedVariableName = state.getFreeVariableName(exitPoint.name);
-            state.emitVaryings(exitPoint);
+            exitPoint.associatedVariableName = state._getFreeVariableName(exitPoint.name);
+            state._emitVaryings(exitPoint);
         }
     }
 
+    /**
+     * Compile the block children
+     * @param state defines the current compilation state
+     */
     public compileChildren(state: NodeMaterialCompilationState) {
         // Compile blocks
         for (var exitPoint of this._exitPoints) {
