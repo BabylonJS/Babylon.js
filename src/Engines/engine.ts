@@ -174,6 +174,8 @@ export class EngineCapabilities {
     public timerQuery: EXT_disjoint_timer_query;
     /** Defines if timestamp can be used with timer query */
     public canUseTimestampForTimerQuery: boolean;
+    /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
+    public multiview: any;
     /** Function used to let the system compiles shaders in background */
     public parallelShaderCompile: {
         COMPLETION_STATUS_KHR: number;
@@ -1453,6 +1455,7 @@ export class Engine {
 
         this._caps.textureLOD = (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false;
 
+        this._caps.multiview = this._gl.getExtension('WEBGL_multiview');
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
@@ -5599,6 +5602,52 @@ export class Engine {
     }
 
     /**
+     * Creates a new multiview render target
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     */
+    public createMultiviewRenderTargetTexture(width: number, height: number) {
+        var gl = this._gl;
+
+        if (!this.getCaps().multiview) {
+            throw "Multiview is not supported";
+        }
+
+        var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN, true);
+        internalTexture.width = width;
+        internalTexture.height = height;
+        internalTexture._framebuffer = gl.createFramebuffer();
+
+        internalTexture._colorTextureArray = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._colorTextureArray);
+        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
+
+        internalTexture._depthStencilTextureArray = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._depthStencilTextureArray);
+        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH32F_STENCIL8, width, height, 2);
+        internalTexture.isReady = true;
+        return internalTexture;
+    }
+
+    /**
+     * Binds a multiview framebuffer to be drawn to
+     * @param multiviewTexture texture to bind
+     */
+    public bindMultiviewFramebuffer(multiviewTexture: InternalTexture) {
+        var gl: any = this._gl;
+        var ext = this.getCaps().multiview;
+
+        this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, multiviewTexture._framebuffer);
+        if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
+            ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
+            ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
+        }else {
+            throw "Invalid multiview frame buffer";
+        }
+    }
+
+    /**
      * Creates a new render target cube texture
      * @param size defines the size of the texture
      * @param options defines the options used to create the texture
@@ -6458,7 +6507,12 @@ export class Engine {
 
             this._activateCurrentTexture();
 
-            this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+            if (texture && texture.isMultiview) {
+                this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
+            }else {
+                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+            }
+
             this._boundTexturesCache[this._activeChannel] = texture;
 
             if (texture) {
@@ -6649,8 +6703,11 @@ export class Engine {
         }
 
         this._activeChannel = channel;
-
-        if (internalTexture && internalTexture.is3D) {
+        if (internalTexture && internalTexture.isMultiview) {
+            if (needToBind) {
+                this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
+            }
+        }else if (internalTexture && internalTexture.is3D) {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
             }
