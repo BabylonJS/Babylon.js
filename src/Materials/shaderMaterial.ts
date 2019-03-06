@@ -78,6 +78,7 @@ export class ShaderMaterial extends Material {
     private _vectors2Arrays: { [name: string]: number[] } = {};
     private _vectors3Arrays: { [name: string]: number[] } = {};
     private _cachedWorldViewMatrix = new Matrix();
+    private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
 
     /**
@@ -514,7 +515,9 @@ export class ShaderMaterial extends Material {
         }
 
         if (this._options.uniforms.indexOf("worldViewProjection") !== -1) {
-            this._effect.setMatrix("worldViewProjection", world.multiply(scene.getTransformMatrix()));
+            world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix)
+            this._effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
+
         }
     }
 
