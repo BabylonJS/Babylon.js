@@ -775,6 +775,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
+     * Gets the name of the material shader.
+     */
+    public getShaderName(): string {
+        return "pbr";
+    }
+
+    /**
      * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
      */
     @serialize()
@@ -1215,7 +1222,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         });
 
         var join = defines.toString();
-        return engine.createEffect("pbr", <EffectCreationOptions>{
+        return engine.createEffect(this.getShaderName(), <EffectCreationOptions>{
             attributes: attribs,
             uniformsNames: uniforms,
             uniformBuffersNames: uniformBuffers,
