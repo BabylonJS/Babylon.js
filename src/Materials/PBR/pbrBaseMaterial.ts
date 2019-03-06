@@ -776,6 +776,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Gets the name of the material shader.
+     * @returns - string that specifies the shader program of the material.
      */
     public getShaderName(): string {
         return "pbr";
