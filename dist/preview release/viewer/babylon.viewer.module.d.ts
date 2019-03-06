@@ -52,7 +52,6 @@ declare module 'babylonjs-viewer' {
         */
     import * as BABYLON from 'babylonjs';
     import 'babylonjs-loaders';
-    import { GLTF2 } from 'babylonjs-loaders';
     import 'pepjs';
     import { InitTags } from 'babylonjs-viewer/initializer';
     let disableInit: boolean;
@@ -61,7 +60,8 @@ declare module 'babylonjs-viewer' {
         */
     function disposeAll(): void;
     const Version: string;
-    export { BABYLON, GLTF2, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton, registerCustomOptimizer };
+    export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton, registerCustomOptimizer };
+    export { GLTF2 } from 'babylonjs-loaders';
     export * from 'babylonjs-viewer/configuration';
 }
 
