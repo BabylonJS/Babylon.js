@@ -28,6 +28,7 @@
   - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev)) **** NEED DEMO or DOC LINK)
 - Migrated the code to modules and deploy [ES6 npm packages](https://doc.babylonjs.com/features/es6_support) ([Sebavan](https://github.com/Sebavan))
 - Added `TrailMesh` class. Credit to furcatomasz ([danjpar](https://github.com/danjpar)) **** NEED DEMO or DOC LINK)
+- Support rendering to a Multiview outputRenderTargetTexture to improve performance for XR scenarios ([TrevorDev](https://github.com/TrevorDev))
 - PBR:
   - Added Inspector Debug Mode ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added Smith Height Correlated Visibility term to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
@@ -121,7 +122,6 @@
 - Inspector light gizmo ([TrevorDev](https://github.com/TrevorDev))
 - Added option `multiMultiMaterials` to mesh.mergeMeshes ([danjpar](https://github.com/danjpar))
 - Expose fallback camera distortion metrics option in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
-- Added setColor method to boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
 - Added OnAfterEnteringVRObservable to webVRHelper ([TrevorDev](https://github.com/TrevorDev))
 - Added Support for Side By Side and Top/Bottom VR videos in the [video dome](https://doc.babylonjs.com/how_to/360videodome#video-types) ([Sebavan](https://github.com/Sebavan))
 - Added UnitTests for BaseCameraPointersInput and ArcRotateCameraPointersInput. ([mrdunk](https://github.com))
