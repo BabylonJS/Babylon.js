@@ -42,6 +42,7 @@ declare module BabylonViewer {
         */
     function disposeAll(): void;
     const Version: string;
+    export { GLTF2 } from 'babylonjs-loaders';
 }
 declare module BabylonViewer {
     /**
