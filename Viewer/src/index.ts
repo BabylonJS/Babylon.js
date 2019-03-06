@@ -21,6 +21,8 @@ import * as BABYLON from 'babylonjs';
 
 // load needed modules.
 import 'babylonjs-loaders';
+import { GLTF2 } from 'babylonjs-loaders';
+
 import 'pepjs';
 
 import { initListeners, InitTags } from './initializer';
@@ -46,6 +48,6 @@ const Version = viewerGlobals.version;
 console.log("Babylon.js viewer (v" + Version + ")");
 
 // public API for initialization
-export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton, registerCustomOptimizer };
+export { BABYLON, GLTF2, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton, registerCustomOptimizer };
 // export publicliy all configuration interfaces
 export * from './configuration';
