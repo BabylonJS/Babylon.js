@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/decorators";
 import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
@@ -82,7 +82,7 @@ export class CubeTexture extends BaseTexture {
     private _files: string[];
     private _extensions: string[];
 
-    @serialize("textureMatrix")
+    @serializeAsMatrix("textureMatrix")
     private _textureMatrix: Matrix;
 
     private _format: number;
