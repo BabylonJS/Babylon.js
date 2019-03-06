@@ -169,6 +169,7 @@ class PBRMaterialDefines extends MaterialDefines
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
+    public MULTIVIEW = false;
 
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
@@ -1149,6 +1150,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
         }
 
+        if (defines.MULTIVIEW) {
+            fallbacks.addFallback(0, "MULTIVIEW");
+        }
+
         //Attributes
         var attribs = [VertexBuffer.PositionKind];
 
@@ -1243,6 +1248,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Lights
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
+
+        // Multiview
+        if (scene.activeCamera) {
+            var previousMultiview = defines.MULTIVIEW;
+            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
+            if (defines.MULTIVIEW != previousMultiview) {
+                defines.markAsUnprocessed();
+            }
+        }
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
