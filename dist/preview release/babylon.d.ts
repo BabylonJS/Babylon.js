@@ -29797,6 +29797,7 @@ declare module BABYLON {
     export function serializeAsColor4(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     export function serializeAsImageProcessingConfiguration(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     export function serializeAsQuaternion(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsMatrix(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     /**
      * Decorator used to define property that can be serialized as reference to a camera
      * @param sourceName defines the name of the property to decorate
