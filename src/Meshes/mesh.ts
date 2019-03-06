@@ -1442,9 +1442,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var offset = 0;
         var instancesCount = 0;
 
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
-
-        var world = effectiveMesh.getWorldMatrix();
+        var world = this._effectiveMesh.getWorldMatrix();
         if (batch.renderSelf[subMesh._id]) {
             world.copyToArray(instanceStorage.instancesData, offset);
             offset += 16;
@@ -1488,7 +1486,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
         var scene = this.getScene();
         var engine = scene.getEngine();
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
 
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
@@ -1496,7 +1493,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
-                    onBeforeDraw(false, effectiveMesh.getWorldMatrix(), effectiveMaterial);
+                    onBeforeDraw(false, this._effectiveMesh.getWorldMatrix(), effectiveMaterial);
                 }
 
                 this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
@@ -1590,7 +1587,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
+        const effectiveMesh = this._effectiveMesh;
 
         var sideOrientation = this.overrideMaterialSideOrientation;
         if (sideOrientation == null) {
