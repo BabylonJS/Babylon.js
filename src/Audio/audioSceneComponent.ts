@@ -275,8 +275,9 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     /**
      * Removes all the elements in the container from the scene
      * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
      */
-    public removeFromContainer(container: AbstractScene): void {
+    public removeFromContainer(container: AbstractScene, dispose = false): void {
         if (!container.sounds) {
             return;
         }
@@ -284,6 +285,9 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             sound.stop();
             sound.autoplay = false;
             this.scene.mainSoundTrack.RemoveSound(sound);
+            if (dispose) {
+                sound.dispose();
+            }
         });
     }
 

@@ -13,6 +13,7 @@ import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
+import { MultiviewRenderTarget } from '../Materials/Textures/renderTargetTexture';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -91,12 +92,6 @@ export class Camera extends Node {
      * Defines if by default attaching controls should prevent the default javascript event to continue.
      */
     public static ForceAttachControlToAlwaysPreventDefault = false;
-
-    /**
-     * @hidden
-     * Might be removed once multiview will be a thing
-     */
-    public static UseAlternateWebVRRendering = false;
 
     /**
      * Define the input manager associated with the camera.
@@ -245,6 +240,32 @@ export class Camera extends Node {
     public outputRenderTarget: Nullable<RenderTargetTexture> = null;
 
     /**
+     * @hidden
+     * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+     */
+    public _useMultiviewToSingleView = false;
+    /**
+     * @hidden
+     * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+     */
+    public _multiviewTexture: Nullable<RenderTargetTexture> = null;
+
+    /**
+     * @hidden
+     * ensures the multiview texture of the camera exists and has the specified width/height
+     * @param width height to set on the multiview texture
+     * @param height width to set on the multiview texture
+     */
+    public _resizeOrCreateMultiviewTexture(width: number, height: number) {
+        if (!this._multiviewTexture) {
+            this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), {width: width, height: height});
+        }else if (this._multiviewTexture.getRenderWidth() != width || this._multiviewTexture.getRenderHeight() != height) {
+            this._multiviewTexture.dispose();
+            this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), {width: width, height: height});
+        }
+    }
+
+    /**
      * Observable triggered when the camera view matrix has changed.
      */
     public onViewMatrixChangedObservable = new Observable<Camera>();
@@ -271,8 +292,6 @@ export class Camera extends Node {
     protected _webvrViewMatrix = Matrix.Identity();
     /** @hidden */
     public _skipRendering = false;
-    /** @hidden */
-    public _alternateCamera: Camera;
 
     /** @hidden */
     public _projectionMatrix = new Matrix();
