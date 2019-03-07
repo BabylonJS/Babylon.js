@@ -184,7 +184,7 @@ export class AssetContainer extends AbstractScene {
             o.dispose();
         });
         this.geometries = [];
-        
+
         this.transformNodes.forEach((o) => {
             o.dispose();
         });

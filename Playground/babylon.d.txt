@@ -16608,6 +16608,14 @@ declare module BABYLON {
         setArray3(name: string, value: number[]): ShaderMaterial;
         private _checkCache;
         /**
+         * Specifies that the submesh is ready to be used
+         * @param mesh defines the mesh to check
+         * @param subMesh defines which submesh to check
+         * @param useInstances specifies that instances should be used
+         * @returns a boolean indicating that the submesh is ready or not
+         */
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        /**
          * Checks if the material is ready to render the requested mesh
          * @param mesh Define the mesh to render
          * @param useInstances Define whether or not the material is used with instances
@@ -31181,7 +31189,15 @@ declare module BABYLON {
          * Defines the color used to simulate the ambient color (Default is (0, 0, 0))
          */
         ambientColor: Color3;
-        /** @hidden */environmentBRDFTexture: BaseTexture;
+        /**
+         * This is use to store the default BRDF lookup for PBR materials in your scene.
+         * It should only be one of the following (if not the default embedded one):
+         * * For uncorrelated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = false) : https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
+         * * For correlated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedBRDF.dds
+         * * For correlated multi scattering BRDF (pbr.brdf.useEnergyConservation = true and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
+         * The material properties need to be setup according to the type of texture in use.
+         */
+        environmentBRDFTexture: BaseTexture;
         /** @hidden */
         protected _environmentTexture: Nullable<BaseTexture>;
         /**
@@ -42847,6 +42863,16 @@ declare module BABYLON {
      * Define the code related to the BRDF parameters of the pbr material.
      */
     export class PBRBRDFConfiguration {
+        /**
+         * Default value used for the energy conservation.
+         * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+         */
+        static DEFAULT_USE_ENERGY_CONSERVATION: boolean;
+        /**
+         * Default value used for the Smith Visibility Height Correlated mode.
+         * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+         */
+        static DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED: boolean;
         private _useEnergyConservation;
         /**
          * Defines if the material uses energy conservation.
