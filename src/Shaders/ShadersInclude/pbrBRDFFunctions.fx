@@ -9,23 +9,27 @@
 #ifdef MS_BRDF_ENERGY_CONSERVATION
     // http://www.jcgt.org/published/0008/01/03/
     // http://advances.realtimerendering.com/s2018/Siggraph%202018%20HDRP%20talk_with%20notes.pdf
-    vec3 getEnergyConservationFactor(const vec3 specularEnvironmentR0, vec2 environmentBrdf) {
+    vec3 getEnergyConservationFactor(const vec3 specularEnvironmentR0, const vec3 environmentBrdf) {
         return 1.0 + specularEnvironmentR0 * (1.0 / environmentBrdf.y - 1.0);
     }
 #endif
 
 #ifdef ENVIRONMENTBRDF
-    vec2 getBRDFLookup(float NdotV, float perceptualRoughness, sampler2D brdfSampler) {
+    vec3 getBRDFLookup(float NdotV, float perceptualRoughness, sampler2D brdfSampler) {
         // Indexed on cos(theta) and roughness
         vec2 UV = vec2(NdotV, perceptualRoughness);
         
         // We can find the scale and offset to apply to the specular value.
-        vec2 brdfLookup = texture2D(brdfSampler, UV).xy;
+        vec4 brdfLookup = texture2D(brdfSampler, UV);
 
-        return brdfLookup;
+        #ifdef ENVIRONMENTBRDF_RGBD
+            brdfLookup.rgb = fromRGBD(brdfLookup.rgba);
+        #endif
+
+        return brdfLookup.rgb;
     }
 
-    vec3 getReflectanceFromBRDFLookup(const vec3 specularEnvironmentR0, vec2 environmentBrdf) {
+    vec3 getReflectanceFromBRDFLookup(const vec3 specularEnvironmentR0, const vec3 environmentBrdf) {
         #ifdef BRDF_V_HEIGHT_CORRELATED
             vec3 reflectance = mix(environmentBrdf.xxx, environmentBrdf.yyy, specularEnvironmentR0);
         #else
@@ -46,36 +50,12 @@
 
 #if defined(SHEEN) && defined(REFLECTION)
     /**
-    * Special thanks to @romainguy for all the support :-)
-    * Analytical approximation of the pre-filtered DFG terms for the cloth shading
-    * model. This approximation is based on the Estevez & Kulla distribution term
-    * ("Charlie" sheen) and the Neubelt visibility term. See brdf.fs for more
-    * details.
-    */
-    vec2 getCharlieSheenAnalyticalBRDFLookup_RomainGuy(float NoV, float roughness) {
-        const vec3 c0 = vec3(0.95, 1250.0, 0.0095);
-        const vec4 c1 = vec4(0.04, 0.2, 0.3, 0.2);
-
-        float a = 1.0 - NoV;
-        float b = 1.0 - roughness;
-
-        float n = pow(c1.x + a, 64.0);
-        float e = b - c0.x;
-        float g = exp2(-(e * e) * c0.y);
-        float f = b + c1.y;
-        float a2 = a * a;
-        float a3 = a2 * a;
-        float c = n * g + c1.z * (a + c1.w) * roughness + f * f * a3 * a3 * a2;
-        float r = min(c, 18.0);
-
-        return vec2(r, r * c0.z);
-    }
-
-    vec3 getSheenReflectanceFromBRDFLookup(const vec3 reflectance0, float NdotV, float sheenAlphaG) {
-        vec2 environmentSheenBrdf = getCharlieSheenAnalyticalBRDFLookup_RomainGuy(NdotV, sheenAlphaG);
-        vec3 reflectance = reflectance0 * environmentSheenBrdf.x + environmentSheenBrdf.y;
-
-        return reflectance;
+     * The sheen BRDF not containing F can be easily stored in the blue channel of the BRDF texture.
+     * The blue channel contains DCharlie * VAshikhmin * NdotL as a lokkup table
+     */
+    vec3 getSheenReflectanceFromBRDFLookup(const vec3 reflectance0, const vec3 environmentBrdf) {
+        vec3 sheenEnvironmentReflectance = reflectance0 * environmentBrdf.b;
+        return sheenEnvironmentReflectance;
     }
 #endif
 

@@ -16,16 +16,28 @@ export interface IMaterialBRDFDefines {
  */
 export class PBRBRDFConfiguration {
 
+    /**
+     * Default value used for the energy conservation.
+     * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+     */
+    public static DEFAULT_USE_ENERGY_CONSERVATION = true;
+
+    /**
+     * Default value used for the Smith Visibility Height Correlated mode.
+     * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+     */
+    public static DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED = true;
+
     @serialize()
-    private _useEnergyConservation = true;
+    private _useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
     /**
      * Defines if the material uses energy conservation.
      */
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useEnergyConservation = true;
+    public useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
 
     @serialize()
-    private _useSmithVisibilityHeightCorrelated = true;
+    private _useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
     /**
      * LEGACY Mode set to false
      * Defines if the material uses height smith correlated visibility term.
@@ -35,7 +47,7 @@ export class PBRBRDFConfiguration {
      * Not relying on height correlated will also disable energy conservation.
      */
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useSmithVisibilityHeightCorrelated = true;
+    public useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsMiscDirty: () => void;
