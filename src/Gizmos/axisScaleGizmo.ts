@@ -42,23 +42,22 @@ export class AxisScaleGizmo extends Gizmo {
      * @param dragAxis The axis which the gizmo will be able to scale on
      * @param color The color of the gizmo
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultGizmoUtilityLayer) {
         super(gizmoLayer);
 
         // Create Material
         this._coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._coloredMaterial.disableLighting = true;
-        this._coloredMaterial.emissiveColor = color;
+        this._coloredMaterial.diffuseColor = color;
+        this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverMaterial.disableLighting = true;
-        hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
+        hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
         var arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
         var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
         var arrowTail = LinesBuilder.CreateLines("yPosMesh", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, gizmoLayer.utilityLayerScene);
-        arrowTail.color = this._coloredMaterial.emissiveColor;
+        arrowTail.color = this._coloredMaterial.diffuseColor;
         arrow.addChild(arrowMesh);
         arrow.addChild(arrowTail);
 
@@ -69,7 +68,6 @@ export class AxisScaleGizmo extends Gizmo {
         arrowMesh.position.z += 0.3;
         arrowTail.scaling.scaleInPlace(0.26);
         arrowTail.rotation.x = Math.PI / 2;
-        arrowTail.material = this._coloredMaterial;
         arrow.lookAt(this._rootMesh.position.add(dragAxis));
         this._rootMesh.addChild(arrow);
         arrow.scaling.scaleInPlace(1 / 3);
@@ -130,7 +128,7 @@ export class AxisScaleGizmo extends Gizmo {
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.emissiveColor;
+                    (<LinesMesh>m).color = material.diffuseColor;
                 }
             });
         });
@@ -163,7 +161,7 @@ export class AxisScaleGizmo extends Gizmo {
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = this._coloredMaterial;
                 if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = this._coloredMaterial.emissiveColor;
+                    (<LinesMesh>m).color = this._coloredMaterial.diffuseColor;
                 }
             });
             this._customMeshSet = false;
