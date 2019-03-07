@@ -1121,6 +1121,8 @@ void main(void) {
     finalColor = applyImageProcessing(finalColor);
 #endif
 
+    finalColor.a *= visibility;
+
 #ifdef PREMULTIPLYALPHA
     // Convert to associative (premultiplied) format if needed.
     finalColor.rgb *= finalColor.a;

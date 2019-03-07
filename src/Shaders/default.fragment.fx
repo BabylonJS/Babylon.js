@@ -440,6 +440,8 @@ color.rgb = max(color.rgb, 0.);
 	#endif
 #endif
 
+	color.a *= visibility;
+
 #ifdef PREMULTIPLYALPHA
 	// Convert to associative (premultiplied) format if needed.
 	color.rgb *= color.a;
