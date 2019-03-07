@@ -1790,7 +1790,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._uniformBuffer.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
 
-                const alpha = this._disableAlphaBlending ? mesh.visibility : this.alpha * mesh.visibility;
+                const alpha = (this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_OPAQUE) ? mesh.visibility : this.alpha * mesh.visibility;
                 this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, alpha);
 
                 // Misc
