@@ -6257,6 +6257,10 @@ declare module BABYLON {
          */
         is3D: boolean;
         /**
+         * Defines if the texture contains multiview data
+         */
+        isMultiview: boolean;
+        /**
          * Gets the URL used to load this texture
          */
         url: string;
@@ -6382,6 +6386,10 @@ declare module BABYLON {
         _lodGenerationScale: number;
         /** @hidden */
         _lodGenerationOffset: number;
+        /** @hidden */
+        _colorTextureArray: Nullable<WebGLTexture>;
+        /** @hidden */
+        _depthStencilTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
         _lodTextureHigh: BaseTexture;
         /** @hidden */
@@ -11458,8 +11466,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Serializes the component data to the specified json object
          * @param serializationObject The object to serialize to
@@ -12877,6 +12886,143 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This represents all the required metrics to create a VR camera.
+     * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
+     */
+    export class VRCameraMetrics {
+        /**
+         * Define the horizontal resolution off the screen.
+         */
+        hResolution: number;
+        /**
+         * Define the vertical resolution off the screen.
+         */
+        vResolution: number;
+        /**
+         * Define the horizontal screen size.
+         */
+        hScreenSize: number;
+        /**
+         * Define the vertical screen size.
+         */
+        vScreenSize: number;
+        /**
+         * Define the vertical screen center position.
+         */
+        vScreenCenter: number;
+        /**
+         * Define the distance of the eyes to the screen.
+         */
+        eyeToScreenDistance: number;
+        /**
+         * Define the distance between both lenses
+         */
+        lensSeparationDistance: number;
+        /**
+         * Define the distance between both viewer's eyes.
+         */
+        interpupillaryDistance: number;
+        /**
+         * Define the distortion factor of the VR postprocess.
+         * Please, touch with care.
+         */
+        distortionK: number[];
+        /**
+         * Define the chromatic aberration correction factors for the VR post process.
+         */
+        chromaAbCorrection: number[];
+        /**
+         * Define the scale factor of the post process.
+         * The smaller the better but the slower.
+         */
+        postProcessScaleFactor: number;
+        /**
+         * Define an offset for the lens center.
+         */
+        lensCenterOffset: number;
+        /**
+         * Define if the current vr camera should compensate the distortion of the lense or not.
+         */
+        compensateDistortion: boolean;
+        /**
+         * Defines if multiview should be enabled when rendering (Default: false)
+         */
+        multiviewEnabled: boolean;
+        /**
+         * Gets the rendering aspect ratio based on the provided resolutions.
+         */
+        readonly aspectRatio: number;
+        /**
+         * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
+         */
+        readonly aspectRatioFov: number;
+        /**
+         * @hidden
+         */
+        readonly leftHMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly rightHMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly leftPreViewMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly rightPreViewMatrix: Matrix;
+        /**
+         * Get the default VRMetrics based on the most generic setup.
+         * @returns the default vr metrics
+         */
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var vrDistortionCorrectionPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * VRDistortionCorrectionPostProcess used for mobile VR
+     */
+    export class VRDistortionCorrectionPostProcess extends PostProcess {
+        private _isRightEye;
+        private _distortionFactors;
+        private _postProcessScaleFactor;
+        private _lensCenterOffset;
+        private _scaleIn;
+        private _scaleFactor;
+        private _lensCenter;
+        /**
+         * Initializes the VRDistortionCorrectionPostProcess
+         * @param name The name of the effect.
+         * @param camera The camera to apply the render pass to.
+         * @param isRightEye If this is for the right eye distortion
+         * @param vrMetrics All the required metrics for the VR camera
+         */
+        constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+    /**
+     * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR
+     * This will not be used for webXR as it supports displaying texture arrays directly
+     */
+    export class VRMultiviewToSingleview extends PostProcess {
+        /**
+         * Initializes a VRMultiviewToSingleview
+         * @param name name of the post process
+         * @param camera camera to be applied to
+         * @param scaleFactor scaling factor to the size of the output texture
+         */
+        constructor(name: string, camera: Camera, scaleFactor: number);
+    }
+}
+declare module BABYLON {
+    /**
      * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
      * IMPORTANT!! The data is right-hand data.
      * @export
@@ -12984,6 +13130,10 @@ declare module BABYLON {
          * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
          */
         defaultHeight?: number;
+        /**
+         * If multiview should be used if availible (default: false)
+         */
+        useMultiview?: boolean;
     }
     /**
      * This represents a WebVR camera.
@@ -17584,6 +17734,11 @@ declare module BABYLON {
          */
         render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
         private _bestReflectionRenderTargetDimension;
+        /**
+         * @hidden
+         * @param faceIndex face index to bind to if this is a cubetexture
+         */
+        _bindFrameBuffer(faceIndex?: number): void;
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
         private renderToTarget;
         /**
@@ -17627,6 +17782,38 @@ declare module BABYLON {
          * Clear the info related to rendering groups preventing retention point in material dispose.
          */
         freeRenderingGroups(): void;
+        /**
+         * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+         * @returns the view count
+         */
+        getViewCount(): number;
+    }
+    /**
+     * Renders to multiple views with a single draw call
+     * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
+     */
+    export class MultiviewRenderTarget extends RenderTargetTexture {
+        /**
+         * Creates a multiview render target
+         * @param scene scene used with the render target
+         * @param size the size of the render target (used for each view)
+         */
+        constructor(scene: Scene, size?: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        });
+        /**
+         * @hidden
+         * @param faceIndex the face index, if its a cube texture
+         */
+        _bindFrameBuffer(faceIndex?: number): void;
+        /**
+         * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+         * @returns the view count
+         */
+        getViewCount(): number;
     }
 }
 declare module BABYLON {
@@ -20730,7 +20917,7 @@ declare module BABYLON {
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
-        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate?: boolean): Mesh;
+        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh;
         /**
          * Registers for this mesh a javascript function called just before the rendering process
          * @param func defines the function to call before rendering this mesh
@@ -24154,6 +24341,8 @@ declare module BABYLON {
         _updateSubMeshesBoundingInfo(matrix: DeepImmutable<Matrix>): AbstractMesh;
         /** @hidden */
         protected _afterComputeWorldMatrix(): void;
+        /** @hidden */
+        readonly _effectiveMesh: AbstractMesh;
         /**
          * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
          * A mesh is in the frustum if its bounding box intersects the frustum
@@ -26626,6 +26815,8 @@ declare module BABYLON {
         timerQuery: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         canUseTimestampForTimerQuery: boolean;
+        /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
+        multiview: any;
         /** Function used to let the system compiles shaders in background */
         parallelShaderCompile: {
             COMPLETION_STATUS_KHR: number;
@@ -28354,6 +28545,18 @@ declare module BABYLON {
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
         /**
+         * Creates a new multiview render target
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @returns the created multiview texture
+         */
+        createMultiviewRenderTargetTexture(width: number, height: number): InternalTexture;
+        /**
+         * Binds a multiview framebuffer to be drawn to
+         * @param multiviewTexture texture to bind
+         */
+        bindMultiviewFramebuffer(multiviewTexture: InternalTexture): void;
+        /**
          * Creates a new render target cube texture
          * @param size defines the size of the texture
          * @param options defines the options used to create the texture
@@ -29920,11 +30123,6 @@ declare module BABYLON {
          */
         static ForceAttachControlToAlwaysPreventDefault: boolean;
         /**
-         * @hidden
-         * Might be removed once multiview will be a thing
-         */
-        static UseAlternateWebVRRendering: boolean;
-        /**
          * Define the input manager associated with the camera.
          */
         inputs: CameraInputsManager<Camera>;
@@ -30028,6 +30226,23 @@ declare module BABYLON {
          */
         outputRenderTarget: Nullable<RenderTargetTexture>;
         /**
+         * @hidden
+         * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+         */
+        _useMultiviewToSingleView: boolean;
+        /**
+         * @hidden
+         * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+         */
+        _multiviewTexture: Nullable<RenderTargetTexture>;
+        /**
+         * @hidden
+         * ensures the multiview texture of the camera exists and has the specified width/height
+         * @param width height to set on the multiview texture
+         * @param height width to set on the multiview texture
+         */
+        _resizeOrCreateMultiviewTexture(width: number, height: number): void;
+        /**
          * Observable triggered when the camera view matrix has changed.
          */
         onViewMatrixChangedObservable: Observable<Camera>;
@@ -30052,8 +30267,6 @@ declare module BABYLON {
         protected _webvrViewMatrix: Matrix;
         /** @hidden */
         _skipRendering: boolean;
-        /** @hidden */
-        _alternateCamera: Camera;
         /** @hidden */
         _projectionMatrix: Matrix;
         /** @hidden */
@@ -32069,8 +32282,6 @@ declare module BABYLON {
         private _intermediateRendering;
         private _viewUpdateFlag;
         private _projectionUpdateFlag;
-        private _alternateViewUpdateFlag;
-        private _alternateProjectionUpdateFlag;
         /** @hidden */
         _toBeDisposed: Nullable<IDisposable>[];
         private _activeRequests;
@@ -32093,20 +32304,14 @@ declare module BABYLON {
         /** @hidden */
         _activeAnimatables: Animatable[];
         private _transformMatrix;
+        private _transformMatrixR;
         private _sceneUbo;
-        private _alternateSceneUbo;
+        private _multiviewSceneUbo;
         private _viewMatrix;
         private _projectionMatrix;
-        private _alternateViewMatrix;
-        private _alternateProjectionMatrix;
-        private _alternateTransformMatrix;
-        private _useAlternateCameraConfiguration;
-        private _alternateRendering;
         private _wheelEventName;
         /** @hidden */
         _forcedViewPosition: Nullable<Vector3>;
-        /** @hidden */
-        readonly _isAlternateRenderingEnabled: boolean;
         private _frustumPlanes;
         /**
          * Gets the list of frustum planes (built from the active camera)
@@ -32394,7 +32599,7 @@ declare module BABYLON {
         incrementRenderId(): void;
         private _updatePointerPosition;
         private _createUbo;
-        private _createAlternateUbo;
+        private _createMultiviewUbo;
         private _setRayOnPointerInfo;
         /**
          * Use this method to simulate a pointer move on a mesh
@@ -32513,8 +32718,6 @@ declare module BABYLON {
          * Useful to override when animations start running when loading a scene for the first time.
          */
         resetLastAnimationTimeFrame(): void;
-        /** @hidden */
-        _switchToAlternateCameraConfiguration(active: boolean): void;
         /**
          * Gets the current view matrix
          * @returns a Matrix
@@ -32532,12 +32735,12 @@ declare module BABYLON {
         getTransformMatrix(): Matrix;
         /**
          * Sets the current transform matrix
-         * @param view defines the View matrix to use
-         * @param projection defines the Projection matrix to use
+         * @param viewL defines the View matrix to use
+         * @param projectionL defines the Projection matrix to use
+         * @param viewR defines the right View matrix to use (if provided)
+         * @param projectionR defines the right Projection matrix to use (if provided)
          */
-        setTransformMatrix(view: Matrix, projection: Matrix): void;
-        /** @hidden */
-        _setAlternateTransformMatrix(view: Matrix, projection: Matrix): void;
+        setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void;
         /**
          * Gets the uniform buffer used to store scene data
          * @returns a UniformBuffer
@@ -33025,11 +33228,7 @@ declare module BABYLON {
          * @param force defines a boolean used to force the update even if cache is up to date
          */
         updateTransformMatrix(force?: boolean): void;
-        /**
-         * Defines an alternate camera (used mostly in VR-like scenario where two cameras can render the same scene from a slightly different point of view)
-         * @param alternateCamera defines the camera to use
-         */
-        updateAlternateTransformMatrix(alternateCamera: Camera): void;
+        private _bindFrameBuffer;
         /** @hidden */
         _allowPostProcessClearColor: boolean;
         private _renderForCamera;
@@ -33419,6 +33618,10 @@ declare module BABYLON {
          * Textures to keep.
          */
         textures: BaseTexture[];
+        /**
+         * Environment texture for the scene
+         */
+        environmentTexture: Nullable<BaseTexture>;
     }
 }
 declare module BABYLON {
@@ -33971,8 +34174,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Disposes the component and the associated ressources.
          */
@@ -37355,126 +37559,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * This represents all the required metrics to create a VR camera.
-     * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
-     */
-    export class VRCameraMetrics {
-        /**
-         * Define the horizontal resolution off the screen.
-         */
-        hResolution: number;
-        /**
-         * Define the vertical resolution off the screen.
-         */
-        vResolution: number;
-        /**
-         * Define the horizontal screen size.
-         */
-        hScreenSize: number;
-        /**
-         * Define the vertical screen size.
-         */
-        vScreenSize: number;
-        /**
-         * Define the vertical screen center position.
-         */
-        vScreenCenter: number;
-        /**
-         * Define the distance of the eyes to the screen.
-         */
-        eyeToScreenDistance: number;
-        /**
-         * Define the distance between both lenses
-         */
-        lensSeparationDistance: number;
-        /**
-         * Define the distance between both viewer's eyes.
-         */
-        interpupillaryDistance: number;
-        /**
-         * Define the distortion factor of the VR postprocess.
-         * Please, touch with care.
-         */
-        distortionK: number[];
-        /**
-         * Define the chromatic aberration correction factors for the VR post process.
-         */
-        chromaAbCorrection: number[];
-        /**
-         * Define the scale factor of the post process.
-         * The smaller the better but the slower.
-         */
-        postProcessScaleFactor: number;
-        /**
-         * Define an offset for the lens center.
-         */
-        lensCenterOffset: number;
-        /**
-         * Define if the current vr camera should compensate the distortion of the lense or not.
-         */
-        compensateDistortion: boolean;
-        /**
-         * Gets the rendering aspect ratio based on the provided resolutions.
-         */
-        readonly aspectRatio: number;
-        /**
-         * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
-         */
-        readonly aspectRatioFov: number;
-        /**
-         * @hidden
-         */
-        readonly leftHMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly rightHMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly leftPreViewMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly rightPreViewMatrix: Matrix;
-        /**
-         * Get the default VRMetrics based on the most generic setup.
-         * @returns the default vr metrics
-         */
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var vrDistortionCorrectionPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * VRDistortionCorrectionPostProcess used for mobile VR
-     */
-    export class VRDistortionCorrectionPostProcess extends PostProcess {
-        private _isRightEye;
-        private _distortionFactors;
-        private _postProcessScaleFactor;
-        private _lensCenterOffset;
-        private _scaleIn;
-        private _scaleFactor;
-        private _lensCenter;
-        /**
-         * Initializes the VRDistortionCorrectionPostProcess
-         * @param name The name of the effect.
-         * @param camera The camera to apply the render pass to.
-         * @param isRightEye If this is for the right eye distortion
-         * @param vrMetrics All the required metrics for the VR camera
-         */
-        constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-declare module BABYLON {
-    /**
      * Camera used to simulate VR rendering (based on ArcRotateCamera)
      * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
      */
@@ -38152,6 +38236,7 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        MULTIVIEW: boolean;
         /**
          * If the reflection texture on this material is in linear color space
          * @hidden
@@ -44109,6 +44194,11 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
+         * Gets the name of the material shader.
+         * @returns - string that specifies the shader program of the material.
+         */
+        getShaderName(): string;
+        /**
          * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
          */
         /**
@@ -45787,8 +45877,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Disposes the component and the associated ressources.
          */
@@ -46527,8 +46618,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Serializes the component data to the specified json object
          * @param serializationObject The object to serialize to
@@ -46582,8 +46674,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Rebuilds the elements related to this component in case of
          * context lost for instance.
@@ -55283,6 +55376,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var blurPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var vrMultiviewToSingleviewPixelShader: {
         name: string;
         shader: string;
     };
