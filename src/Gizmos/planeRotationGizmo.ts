@@ -55,20 +55,16 @@ export class PlaneRotationGizmo extends Gizmo {
         // Build mesh on root node
         var parentMesh = new AbstractMesh("", gizmoLayer.utilityLayerScene);
 
-        // Create circle out of lines
-        var radius = 0.8;
-        var points = new Array<Vector3>();
-        for (var i = 0; i < tessellation; i++) {
-            var radian = (2 * Math.PI) * (i / (tessellation - 1));
-            points.push(new Vector3(radius * Math.sin(radian), 0, radius * Math.cos(radian)));
-        }
-        let rotationMesh = Mesh.CreateLines("", points, gizmoLayer.utilityLayerScene);
-        rotationMesh.color = coloredMaterial.diffuseColor;
+        let drag = Mesh.CreateTorus("", 0.6, 0.03, tessellation, gizmoLayer.utilityLayerScene);
+        drag.visibility = 0;
+        let rotationMesh = Mesh.CreateTorus("", 0.6, 0.005, tessellation, gizmoLayer.utilityLayerScene);
+        rotationMesh.material = coloredMaterial;
 
         // Position arrow pointing in its drag axis
-        rotationMesh.scaling.scaleInPlace(0.26);
         rotationMesh.rotation.x = Math.PI / 2;
+        drag.rotation.x = Math.PI / 2;
         parentMesh.addChild(rotationMesh);
+        parentMesh.addChild(drag);
         parentMesh.lookAt(this._rootMesh.position.add(planeNormal));
 
         this._rootMesh.addChild(parentMesh);

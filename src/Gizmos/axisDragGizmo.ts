@@ -7,7 +7,6 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
-import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
@@ -38,8 +37,8 @@ export class AxisDragGizmo extends Gizmo {
     public static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode {
         var arrow = new TransformNode("arrow", scene);
         var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375, tessellation: 96 }, scene);
-        var line = LinesBuilder.CreateLines("line", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, scene);
-        line.color = material.diffuseColor;
+        var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, scene);
+        line.material = material;
         cylinder.parent = arrow;
         line.parent = arrow;
 
@@ -47,7 +46,7 @@ export class AxisDragGizmo extends Gizmo {
         cylinder.material = material;
         cylinder.rotation.x = Math.PI / 2;
         cylinder.position.z += 0.3;
-        line.scaling.scaleInPlace(0.26);
+        line.position.z += 0.275 / 2;
         line.rotation.x = Math.PI / 2;
         return arrow;
     }

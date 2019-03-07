@@ -184,6 +184,9 @@ export class GizmoManager implements IDisposable {
                 this._attachedMesh.addBehavior(this.boundingBoxDragBehavior);
             }
         } else if (this.gizmos.boundingBoxGizmo) {
+            if (this._attachedMesh) {
+                this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
+            }
             this.gizmos.boundingBoxGizmo.attachedMesh = null;
         }
         this._gizmosEnabled.boundingBoxGizmo = value;
