@@ -149,13 +149,17 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     /**
      * Removes all the elements in the container from the scene
      * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
      */
-    public removeFromContainer(container: AbstractScene): void {
+    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
         if (!container.effectLayers) {
             return;
         }
         container.effectLayers.forEach((o) => {
             this.scene.removeEffectLayer(o);
+            if (dispose) {
+                o.dispose();
+            }
         });
     }
 
