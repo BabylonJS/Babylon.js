@@ -651,7 +651,7 @@ export class Effect {
         }
 
         // Add multiview setup to top of file when defined
-        var hasMultiviewExtension = this.defines.indexOf("#define MULTIVIEW\n") !== -1;
+        var hasMultiviewExtension = this.defines && this.defines.indexOf("#define MULTIVIEW\n") !== -1;
         if (hasMultiviewExtension && !isFragment) {
             result = "#extension GL_OVR_multiview : require\nlayout (num_views = 2) in;\n" + result;
         }
