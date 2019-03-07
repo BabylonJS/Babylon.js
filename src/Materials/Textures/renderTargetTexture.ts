@@ -727,6 +727,10 @@ export class RenderTargetTexture extends Texture {
         return Math.min(Tools.FloorPOT(renderDimension), curved);
     }
 
+    /**
+     * @hidden
+     * @param faceIndex face index to bind to if this is a cubetexture
+     */
     public _bindFrameBuffer(faceIndex: number = 0) {
         var scene = this.getScene();
         if (!scene) {
@@ -988,6 +992,7 @@ export class RenderTargetTexture extends Texture {
 
     /**
      * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+     * @returns the view count
      */
     public getViewCount() {
         return 1;
@@ -1008,7 +1013,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
      * @param scene scene used with the render target
      * @param size the size of the render target (used for each view)
      */
-    constructor(public scene: Scene, size: number | { width: number, height: number } | { ratio: number } = 512) {
+    constructor(scene: Scene, size: number | { width: number, height: number } | { ratio: number } = 512) {
         super("multiview rtt", size, scene, false, true, InternalTexture.DATASOURCE_UNKNOWN, false, undefined, false, false, true, undefined, true);
         var internalTexture = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
         internalTexture.isMultiview = true;
@@ -1023,11 +1028,12 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
         if (!this._texture) {
             return;
         }
-        this.scene.getEngine().bindMultiviewFramebuffer(this._texture);
+        this.getScene()!.getEngine().bindMultiviewFramebuffer(this._texture);
     }
 
     /**
      * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+     * @returns the view count
      */
     public getViewCount() {
         return 2;
