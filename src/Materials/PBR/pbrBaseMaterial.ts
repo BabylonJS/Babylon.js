@@ -96,6 +96,7 @@ class PBRMaterialDefines extends MaterialDefines
     public METALLNESSSTOREINMETALMAPBLUE = false;
     public AOSTOREINMETALMAPRED = false;
     public ENVIRONMENTBRDF = false;
+    public ENVIRONMENTBRDF_RGBD = false;
 
     public NORMAL = false;
     public TANGENT = false;
@@ -1448,8 +1449,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                     defines.ENVIRONMENTBRDF = true;
+                    // Not actual true RGBD, only the B chanel is encoded as RGBD for sheen.
+                    defines.ENVIRONMENTBRDF_RGBD = this._environmentBRDFTexture.isRGBD;
                 } else {
                     defines.ENVIRONMENTBRDF = false;
+                    defines.ENVIRONMENTBRDF_RGBD = false;
                 }
 
                 if (this._shouldUseAlphaFromAlbedoTexture()) {
@@ -2123,7 +2127,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._reflectionTexture.dispose();
             }
 
-            if (this._environmentBRDFTexture && this.getScene()._environmentBRDFTexture !== this._environmentBRDFTexture) {
+            if (this._environmentBRDFTexture && this.getScene().environmentBRDFTexture !== this._environmentBRDFTexture) {
                 this._environmentBRDFTexture.dispose();
             }
 
