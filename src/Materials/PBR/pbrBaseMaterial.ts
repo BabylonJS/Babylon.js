@@ -1182,7 +1182,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
-        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
+        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
             "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
             "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
@@ -1593,10 +1593,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
         this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
+        this._uniformBuffer.addUniform("pointSize", 1);
         this._uniformBuffer.addUniform("vReflectivityColor", 4);
         this._uniformBuffer.addUniform("vEmissiveColor", 3);
-
-        this._uniformBuffer.addUniform("pointSize", 1);
+        this._uniformBuffer.addUniform("visibility", 1);
 
         PBRClearCoatConfiguration.PrepareUniformBuffer(this._uniformBuffer);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(this._uniformBuffer);
@@ -1789,9 +1789,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 this._uniformBuffer.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
+                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
 
-                const alpha = (this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_OPAQUE) ? mesh.visibility : this.alpha * mesh.visibility;
-                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, alpha);
+                // Visibility
+                this._uniformBuffer.updateFloat("visibility", mesh.visibility);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
