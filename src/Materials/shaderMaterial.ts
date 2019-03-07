@@ -3,6 +3,7 @@ import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
+import { BaseSubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
@@ -375,6 +376,17 @@ export class ShaderMaterial extends Material {
         }
 
         return false;
+    }
+
+    /**
+     * Specifies that the submesh is ready to be used
+     * @param mesh defines the mesh to check
+     * @param subMesh defines which submesh to check
+     * @param useInstances specifies that instances should be used
+     * @returns a boolean indicating that the submesh is ready or not
+     */
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+        return this.isReady(mesh, useInstances);
     }
 
     /**

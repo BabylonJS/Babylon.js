@@ -188,8 +188,15 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public ambientColor = new Color3(0, 0, 0);
 
-    /** @hidden */
-    public _environmentBRDFTexture: BaseTexture;
+    /**
+     * This is use to store the default BRDF lookup for PBR materials in your scene.
+     * It should only be one of the following (if not the default embedded one):
+     * * For uncorrelated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = false) : https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
+     * * For correlated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedBRDF.dds
+     * * For correlated multi scattering BRDF (pbr.brdf.useEnergyConservation = true and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
+     * The material properties need to be setup according to the type of texture in use.
+     */
+    public environmentBRDFTexture: BaseTexture;
 
     /** @hidden */
     protected _environmentTexture: Nullable<BaseTexture>;
