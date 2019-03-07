@@ -5605,6 +5605,7 @@ export class Engine {
      * Creates a new multiview render target
      * @param width defines the width of the texture
      * @param height defines the height of the texture
+     * @returns the created multiview texture
      */
     public createMultiviewRenderTargetTexture(width: number, height: number) {
         var gl = this._gl;
