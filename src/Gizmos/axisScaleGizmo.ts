@@ -6,7 +6,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
-import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
+import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -56,8 +56,7 @@ export class AxisScaleGizmo extends Gizmo {
         // Build mesh on root node
         var arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
         var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
-        var arrowTail = LinesBuilder.CreateLines("yPosMesh", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, gizmoLayer.utilityLayerScene);
-        arrowTail.color = this._coloredMaterial.diffuseColor;
+        var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, gizmoLayer.utilityLayerScene);
         arrow.addChild(arrowMesh);
         arrow.addChild(arrowTail);
 
@@ -66,7 +65,7 @@ export class AxisScaleGizmo extends Gizmo {
         arrowMesh.material = this._coloredMaterial;
         arrowMesh.rotation.x = Math.PI / 2;
         arrowMesh.position.z += 0.3;
-        arrowTail.scaling.scaleInPlace(0.26);
+        arrowTail.position.z += 0.275 / 2;
         arrowTail.rotation.x = Math.PI / 2;
         arrow.lookAt(this._rootMesh.position.add(dragAxis));
         this._rootMesh.addChild(arrow);
