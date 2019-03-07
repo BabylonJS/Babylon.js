@@ -177,7 +177,7 @@ export class AssetContainer extends AbstractScene {
         });
 
         for (let component of this.scene._serializableComponents) {
-            component.dispose();
+            component.removeFromContainer(this, true);
         }
     }
 
