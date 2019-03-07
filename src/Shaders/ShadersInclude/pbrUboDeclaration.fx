@@ -61,5 +61,8 @@ uniform Material
 
 uniform Scene {
     mat4 viewProjection;
+#ifdef MULTIVIEW
+	mat4 viewProjectionR;
+#endif 
     mat4 view;
 };
