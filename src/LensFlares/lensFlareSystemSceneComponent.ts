@@ -157,7 +157,7 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
         }
         container.lensFlareSystems.forEach((o) => {
             this.scene.removeLensFlareSystem(o);
-            if(dispose){
+            if (dispose) {
                 o.dispose();
             }
         });

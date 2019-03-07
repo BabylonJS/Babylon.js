@@ -157,7 +157,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         }
         container.effectLayers.forEach((o) => {
             this.scene.removeEffectLayer(o);
-            if(dispose){
+            if (dispose) {
                 o.dispose();
             }
         });

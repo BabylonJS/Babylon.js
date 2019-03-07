@@ -74,6 +74,33 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
 
         var index: number;
         var cache: number;
+
+        // Environment texture
+        if (parsedData.environmentTexture !== undefined && parsedData.environmentTexture !== null) {
+            // PBR needed for both HDR texture (gamma space) & a sky box
+            var isPBR = parsedData.isPBR !== undefined ? parsedData.isPBR : true;
+            if (parsedData.environmentTextureType && parsedData.environmentTextureType === "BABYLON.HDRCubeTexture") {
+                var hdrSize: number = (parsedData.environmentTextureSize) ? parsedData.environmentTextureSize : 128;
+                var hdrTexture = new HDRCubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene, hdrSize, true, !isPBR);
+                if (parsedData.environmentTextureRotationY) {
+                    hdrTexture.rotationY = parsedData.environmentTextureRotationY;
+                }
+                scene.environmentTexture = hdrTexture;
+            } else {
+                var cubeTexture = CubeTexture.CreateFromPrefilteredData((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                if (parsedData.environmentTextureRotationY) {
+                    cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                }
+                scene.environmentTexture = cubeTexture;
+            }
+            if (parsedData.createDefaultSkybox === true) {
+                var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;
+                var skyboxBlurLevel = parsedData.skyboxBlurLevel || 0;
+                scene.createDefaultSkybox(scene.environmentTexture, isPBR, skyboxScale, skyboxBlurLevel);
+            }
+            container.environmentTexture = scene.environmentTexture;
+        }
+
         // Lights
         if (parsedData.lights !== undefined && parsedData.lights !== null) {
             for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
