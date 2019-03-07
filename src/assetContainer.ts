@@ -78,6 +78,8 @@ export class AssetContainer extends AbstractScene {
             this.scene.addReflectionProbe(o);
         });
 
+        this.scene.environmentTexture = this.environmentTexture;
+
         for (let component of this.scene._serializableComponents) {
             component.addFromContainer(this);
         }
@@ -130,6 +132,10 @@ export class AssetContainer extends AbstractScene {
             this.scene.removeReflectionProbe(o);
         });
 
+        if (this.environmentTexture == this.scene.environmentTexture) {
+            this.scene.environmentTexture = null;
+        }
+
         for (let component of this.scene._serializableComponents) {
             component.removeFromContainer(this);
         }
@@ -175,6 +181,10 @@ export class AssetContainer extends AbstractScene {
         this.reflectionProbes.forEach((o) => {
             o.dispose();
         });
+
+        if (this.scene.environmentTexture) {
+            this.scene.environmentTexture.dispose();
+        }
 
         for (let component of this.scene._serializableComponents) {
             component.removeFromContainer(this, true);

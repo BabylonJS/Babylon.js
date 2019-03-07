@@ -285,7 +285,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             sound.stop();
             sound.autoplay = false;
             this.scene.mainSoundTrack.RemoveSound(sound);
-            if(dispose){
+            if (dispose) {
                 sound.dispose();
             }
         });
