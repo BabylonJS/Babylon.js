@@ -306,7 +306,7 @@ export class Effect {
             }
         } else {
             this._engine = <Engine>engine;
-            this.defines = <string>defines;
+            this.defines = (defines == null ? "" : defines);
             this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
             this._samplers = samplers ? <string[]>samplers.slice() : [];
             this._attributesNames = (<string[]>attributesNamesOrOptions);
