@@ -4,6 +4,8 @@ uniform vec4 vSpecularColor;
 #endif
 uniform vec3 vEmissiveColor;
 
+uniform float visibility;
+
 // Samplers
 #ifdef DIFFUSE
 uniform vec2 vDiffuseInfos;
