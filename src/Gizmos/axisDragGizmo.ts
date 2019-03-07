@@ -37,20 +37,18 @@ export class AxisDragGizmo extends Gizmo {
     /** @hidden */
     public static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode {
         var arrow = new TransformNode("arrow", scene);
-        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96 }, scene);
+        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375, tessellation: 96 }, scene);
         var line = LinesBuilder.CreateLines("line", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, scene);
-        line.color = material.emissiveColor;
+        line.color = material.diffuseColor;
         cylinder.parent = arrow;
         line.parent = arrow;
 
         // Position arrow pointing in its drag axis
-        cylinder.scaling.scaleInPlace(0.05);
         cylinder.material = material;
         cylinder.rotation.x = Math.PI / 2;
         cylinder.position.z += 0.3;
         line.scaling.scaleInPlace(0.26);
         line.rotation.x = Math.PI / 2;
-        line.material = material;
         return arrow;
     }
 
@@ -70,17 +68,16 @@ export class AxisDragGizmo extends Gizmo {
      * @param dragAxis The axis which the gizmo will be able to drag on
      * @param color The color of the gizmo
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultGizmoUtilityLayer) {
         super(gizmoLayer);
 
         // Create Material
         var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        coloredMaterial.disableLighting = true;
-        coloredMaterial.emissiveColor = color;
+        coloredMaterial.diffuseColor = color;
+        coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverMaterial.disableLighting = true;
-        hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
+        hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
         var arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, coloredMaterial);
@@ -136,7 +133,7 @@ export class AxisDragGizmo extends Gizmo {
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.emissiveColor;
+                    (<LinesMesh>m).color = material.diffuseColor;
                 }
             });
         });
