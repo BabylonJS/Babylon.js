@@ -3,7 +3,7 @@ import { Observer } from "../../Misc/observable";
 import { IAnimatable } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
-import { TextureTools } from "../../Misc/textureTools";
+import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
@@ -751,7 +751,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return this._renderTargets;
         };
 
-        this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
     }
 
     /**
