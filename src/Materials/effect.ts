@@ -306,7 +306,7 @@ export class Effect {
             }
         } else {
             this._engine = <Engine>engine;
-            this.defines = <string>defines;
+            this.defines = (defines == null ? "" : defines);
             this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
             this._samplers = samplers ? <string[]>samplers.slice() : [];
             this._attributesNames = (<string[]>attributesNamesOrOptions);
@@ -651,7 +651,7 @@ export class Effect {
         }
 
         // Add multiview setup to top of file when defined
-        var hasMultiviewExtension = this.defines && this.defines.indexOf("#define MULTIVIEW\n") !== -1;
+        var hasMultiviewExtension = this.defines.indexOf("#define MULTIVIEW\n") !== -1;
         if (hasMultiviewExtension && !isFragment) {
             result = "#extension GL_OVR_multiview : require\nlayout (num_views = 2) in;\n" + result;
         }
