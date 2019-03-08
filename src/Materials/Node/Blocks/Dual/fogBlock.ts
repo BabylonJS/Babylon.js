@@ -1,7 +1,8 @@
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from '../../nodeMaterialBlock';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
  * Block used to add support for scene fog
@@ -15,15 +16,15 @@ export class FogBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
         // Vertex
-        this.registerInput("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
         this.registerOutput("vFogDistance", NodeMaterialBlockConnectionPointTypes.Vector3, NodeMaterialBlockTargets.Vertex);
 
         // Fragment
-        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.Color3OrColor4, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("fogColor", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("fogParameters", NodeMaterialBlockConnectionPointTypes.Vector4, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.Color3OrColor4, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("fogColor", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("fogParameters", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
 
         // Auto configuration
@@ -31,6 +32,14 @@ export class FogBlock extends NodeMaterialBlock {
         this._inputs[3].setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
         this._inputs[4].setAsWellKnownValue(NodeMaterialWellKnownValues.FogParameters);
         this._outputs[0].isVarying = true;
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "FogBlock";
     }
 
     /** @hidden */
@@ -42,38 +51,12 @@ export class FogBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Fragment) {
-            state._emitFunction("CalcFogFactor",
-                `
-                    #define FOGMODE_NONE    0.
-                    #define FOGMODE_EXP     1.
-                    #define FOGMODE_EXP2    2.
-                    #define FOGMODE_LINEAR  3.
-                    #define E 2.71828
-
-                    float CalcFogFactor(vec3 vFogDistance, vec4 fogInfos)
-                    {
-                        float fogCoeff = 1.0;
-                        float fogStart = fogInfos.y;
-                        float fogEnd = fogInfos.z;
-                        float fogDensity = fogInfos.w;
-                        float fogDistance = length(vFogDistance);
-
-                        if (FOGMODE_LINEAR == fogInfos.x)
-                        {
-                            fogCoeff = (fogEnd - fogDistance) / (fogEnd - fogStart);
-                        }
-                        else if (FOGMODE_EXP == fogInfos.x)
-                        {
-                            fogCoeff = 1.0 / pow(E, fogDistance * fogDensity);
-                        }
-                        else if (FOGMODE_EXP2 == fogInfos.x)
-                        {
-                            fogCoeff = 1.0 / pow(E, fogDistance * fogDistance * fogDensity * fogDensity);
-                        }
-
-                        return clamp(fogCoeff, 0.0, 1.0);
-                    }
-                `);
+            state._emitFunctionFromInclude("CalcFogFactor", "fogFragmentDeclaration", {
+                removeUniforms: true,
+                removeVaryings: true,
+                removeifDef: true,
+                replaceString: ["float CalcFogFactor()", "float CalcFogFactor(vec3 vFogDistance, vec4 vFogInfos)"]
+            });
 
             let tempFogVariablename = state._getFreeVariableName("fog");
             let input = this._inputs[2];

@@ -2,11 +2,11 @@ import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../nodeMaterialCompilationState';
 /**
- * Block used to mix 2 vector4
+ * Block used to add 2 vector4
  */
-export class MixBlock extends NodeMaterialBlock {
+export class AddBlock extends NodeMaterialBlock {
     /**
-     * Creates a new MixBlock
+     * Creates a new AddBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -17,6 +17,14 @@ export class MixBlock extends NodeMaterialBlock {
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4OrColor4);
     }
 
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "AddBlock";
+    }
+
     protected _buildBlock(state: NodeMaterialCompilationState) {
         super._buildBlock(state);
 
@@ -25,7 +33,7 @@ export class MixBlock extends NodeMaterialBlock {
         let vector0 = this._inputs[0];
         let vector1 = this._inputs[1];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${vector0.associatedVariableName} * ${vector1.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${vector0.associatedVariableName} + ${vector1.associatedVariableName};\r\n`;
 
         return this;
     }

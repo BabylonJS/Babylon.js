@@ -1,8 +1,10 @@
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from './nodeMaterialBlock';
+import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { Nullable } from '../../types';
 import { Effect } from '../effect';
 import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
+
+declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
 
 /**
  * Defines a connection point for a block
@@ -30,12 +32,12 @@ export class NodeMaterialConnectionPoint {
     public name: string;
 
     /**
-     * Gets or sets a boolean indicating that this input can be omitted
+     * Gets or sets a boolean indicating that this connection point can be omitted
      */
-    public isOptional: boolean
+    public isOptional: boolean;
 
     /** Gets or sets the target of that connection point */
-    public target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment
+    public target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
 
     /**
      * Gets or sets the value of that point.

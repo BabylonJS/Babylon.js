@@ -1,33 +1,9 @@
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlock';
-
-/**
- * Class used to store shared data between 2 NodeMaterialCompilationState
- */
-export class NodeMaterialCompilationStateSharedData {
-    /**
-     * Gets the list of emitted varyings
-     */
-    public varyings = new Array<string>();
-
-    /**
-     * Gets the varying declaration string
-     */
-    public varyingDeclaration = "";
-
-    /**
-     * Build Id used to avoid multiple recompilations
-     */
-    public buildId: number;
-
-    /** List of emitted variables */
-    public variableNames: { [key: string]: number } = {};
-
-    /** Should emit comments? */
-    public emitComments: boolean;
-}
+import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialCompilationStateSharedData } from './nodeMaterialCompilationStateSharedData';
+import { Effect } from '../../Materials/effect';
 
 /**
  * Class used to store node based material compilation state
@@ -65,20 +41,6 @@ export class NodeMaterialCompilationState {
     /** @hidden */
     public _vertexState: NodeMaterialCompilationState;
 
-    /**
-     * Gets the compilation hints emitted at compilation time
-     */
-    public hints = {
-        needWorldMatrix: false,
-        needViewMatrix: false,
-        needProjectionMatrix: false,
-        needViewProjectionMatrix: false,
-        needWorldViewMatrix: false,
-        needWorldViewProjectionMatrix: false,
-        needFogColor: false,
-        needFogParameters: false
-    };
-
     private _attributeDeclaration = "";
     private _uniformDeclaration = "";
     private _samplerDeclaration = "";
@@ -111,19 +73,19 @@ export class NodeMaterialCompilationState {
         this.compilationString = `${this.compilationString}\r\n}`;
 
         if (this.sharedData.varyingDeclaration) {
-            this.compilationString = `\r\n${emitComments ? "//Varyings\r\n" : ""}${this.sharedData.varyingDeclaration}\r\n\r\n${this.compilationString}`;
+            this.compilationString = `\r\n${emitComments ? "//Varyings\r\n" : ""}${this.sharedData.varyingDeclaration}\r\n${this.compilationString}`;
         }
 
         if (this._samplerDeclaration) {
-            this.compilationString = `\r\n${emitComments ? "//Samplers\r\n" : ""}${this._samplerDeclaration}\r\n\r\n${this.compilationString}`;
+            this.compilationString = `\r\n${emitComments ? "//Samplers\r\n" : ""}${this._samplerDeclaration}\r\n${this.compilationString}`;
         }
 
         if (this._uniformDeclaration) {
-            this.compilationString = `\r\n${emitComments ? "//Uniforms\r\n" : ""}${this._uniformDeclaration}\r\n\r\n${this.compilationString}`;
+            this.compilationString = `\r\n${emitComments ? "//Uniforms\r\n" : ""}${this._uniformDeclaration}\r\n${this.compilationString}`;
         }
 
         if (this._attributeDeclaration && !isFragmentMode) {
-            this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n\r\n${this.compilationString}`;
+            this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
         }
     }
 
@@ -171,6 +133,42 @@ export class NodeMaterialCompilationState {
         }
 
         this.functions[name] = code;
+    }
+
+    /** @hidden */
+    public _emitFunctionFromInclude(name: string, includeName: string, options?: {
+        removeUniforms?: boolean,
+        removeVaryings?: boolean,
+        removeifDef?: boolean,
+        replaceString?: string[],
+    }) {
+        if (this.functions[name]) {
+            return;
+        }
+
+        this.functions[name] = Effect.IncludesShadersStore[includeName];
+
+        if (!options) {
+            return;
+        }
+
+        if (options.removeifDef) {
+            this.functions[name] = this.functions[name].replace(/^\s*?#.+$/gm, "");
+        }
+
+        if (options.removeUniforms) {
+            this.functions[name] = this.functions[name].replace(/^\s*?uniform.+$/gm, "");
+        }
+
+        if (options.removeVaryings) {
+            this.functions[name] = this.functions[name].replace(/^\s*?varying.+$/gm, "");
+        }
+
+        if (options.replaceString) {
+            for (var index = 0; index < options.replaceString.length; index += 2) {
+                this.functions[name] = this.functions[name].replace(options.replaceString[index], options.replaceString[index + 1]);
+            }
+        }
     }
 
     /** @hidden */
@@ -222,31 +220,32 @@ export class NodeMaterialCompilationState {
             this._uniformDeclaration += `uniform ${this._getGLType(point.type)} ${point.name};\r\n`;
 
             // well known
+            let hints = this.sharedData.hints;
             if (point._wellKnownValue !== null) {
                 switch (point._wellKnownValue) {
                     case NodeMaterialWellKnownValues.World:
-                        this.hints.needWorldMatrix = true;
+                        hints.needWorldMatrix = true;
                         break;
                     case NodeMaterialWellKnownValues.View:
-                        this.hints.needViewMatrix = true;
+                        hints.needViewMatrix = true;
                         break;
                     case NodeMaterialWellKnownValues.Projection:
-                        this.hints.needProjectionMatrix = true;
+                        hints.needProjectionMatrix = true;
                         break;
                     case NodeMaterialWellKnownValues.ViewProjection:
-                        this.hints.needViewProjectionMatrix = true;
+                        hints.needViewProjectionMatrix = true;
                         break;
                     case NodeMaterialWellKnownValues.WorldView:
-                        this.hints.needWorldViewMatrix = true;
+                        hints.needWorldViewMatrix = true;
                         break;
                     case NodeMaterialWellKnownValues.WorldViewProjection:
-                        this.hints.needWorldViewProjectionMatrix = true;
+                        hints.needWorldViewProjectionMatrix = true;
                         break;
                     case NodeMaterialWellKnownValues.FogColor:
-                        this.hints.needFogColor = true;
+                        hints.needFogColor = true;
                         break;
                     case NodeMaterialWellKnownValues.FogParameters:
-                        this.hints.needFogParameters = true;
+                        hints.needFogParameters = true;
                         break;
                 }
             } else {

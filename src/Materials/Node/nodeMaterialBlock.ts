@@ -1,27 +1,16 @@
-import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from './nodeMaterialCompilationState';
 import { Nullable } from '../../types';
-
-/**
- * Enum used to define the target of a block
- */
-export enum NodeMaterialBlockTargets {
-    /** Vertex shader */
-    Vertex = 1,
-    /** Fragment shader */
-    Fragment = 2,
-    /** Vertex and Fragment */
-    VertexAndFragment = Vertex | Fragment
-}
+import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 
 /**
  * Defines a block that can be used inside a node based material
  */
 export class NodeMaterialBlock {
     private _buildId: number;
-    private _userDefinedTarget: Nullable<NodeMaterialBlockTargets> = null;
-    private _restrictedTarget: Nullable<NodeMaterialBlockTargets> = null;
+    private _target: NodeMaterialBlockTargets;
+    private _isFinalMerger = false;
 
     /** @hidden */
     protected _inputs = new Array<NodeMaterialConnectionPoint>();
@@ -32,6 +21,13 @@ export class NodeMaterialBlock {
      * Gets or sets the name of the block
      */
     public name: string;
+
+    /**
+     * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
+     */
+    public get isFinalMerger(): boolean {
+        return this._isFinalMerger;
+    }
 
     /**
      * Gets or sets the build Id
@@ -45,18 +41,17 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets the type of the block
+     * Gets or sets the target of the block
      */
     public get target() {
-        if (this._restrictedTarget !== null) {
-            return this._restrictedTarget;
-        }
-
-        return this._userDefinedTarget;
+        return this._target;
     }
 
-    public set target(value: Nullable<NodeMaterialBlockTargets>) {
-        this._userDefinedTarget = value;
+    public set target(value: NodeMaterialBlockTargets) {
+        if ((this._target & value) !== 0) {
+            return;
+        }
+        this._target = value;
     }
 
     /**
@@ -104,13 +99,16 @@ export class NodeMaterialBlock {
     /**
      * Creates a new NodeMaterialBlock
      * @param name defines the block name
-     * @param restrictedTarget defines the target of that block (can be null)
+     * @param target defines the target of that block (Vertex by default)
+     * @param isFinalMerger defines a boolean indicating that this block is an end block (e.g. it is generating a system value). Default is false
      */
-    public constructor(name: string, restrictedTarget?: NodeMaterialBlockTargets) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false) {
         this.name = name;
 
-        if (restrictedTarget !== undefined) {
-            this._restrictedTarget = restrictedTarget;
+        this._target = target;
+
+        if (isFinalMerger) {
+            this._isFinalMerger = true;
         }
     }
 
@@ -120,6 +118,15 @@ export class NodeMaterialBlock {
         }
 
         return `${state._getGLType(output.type)} ${output.associatedVariableName}`;
+    }
+
+    protected _writeFloat(value: number) {
+        let stringVersion = value.toString();
+
+        if (stringVersion.indexOf(".") === -1) {
+            stringVersion += ".0";
+        }
+        return `${stringVersion}`;
     }
 
     /**
@@ -253,6 +260,9 @@ export class NodeMaterialBlock {
         // Check if "parent" blocks are compiled
         for (var input of this._inputs) {
             if (!input.connectedPoint) {
+                if (!input.isOptional && !input.isAttribute && !input.isUniform) { // Emit a warning
+                    state.sharedData.checks.notConnectedNonOptionalInputs.push(input);
+                }
                 continue;
             }
 
@@ -270,6 +280,11 @@ export class NodeMaterialBlock {
             return; // Need to check again as inputs can be connected multiple time to this endpoint
         }
 
+        // Logs
+        if (state.sharedData.verbose) {
+            console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
+        }
+
         // Build
         for (var input of this._inputs) {
             if ((input.target & this.target!) === 0) {
@@ -278,6 +293,19 @@ export class NodeMaterialBlock {
             state._emitUniformOrAttributes(input);
         }
 
+        // Checks final outputs
+        if (this.isFinalMerger) {
+            switch (state.target) {
+                case NodeMaterialBlockTargets.Vertex:
+                    state.sharedData.checks.emitVertex = true;
+                    break;
+                case NodeMaterialBlockTargets.Fragment:
+                    state.sharedData.checks.emitFragment = true;
+                    break;
+            }
+        }
+
+        /** Prepare outputs */
         for (var output of this._outputs) {
             if ((output.target & this.target!) === 0 || output.associatedVariableName) {
                 continue;
@@ -301,7 +329,7 @@ export class NodeMaterialBlock {
             }
 
             for (var block of output.connectedBlocks) {
-                if (block && (!block.target || (block.target & this.target!) !== 0)) {
+                if (block && (block.target & state.target) !== 0) {
                     block.build(state);
                 }
             }

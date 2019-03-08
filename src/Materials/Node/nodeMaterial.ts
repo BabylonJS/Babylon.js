@@ -1,16 +1,18 @@
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from './nodeMaterialBlock';
+import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { Material } from '../material';
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Matrix } from '../../Maths/math';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';
-import { NodeMaterialCompilationState, NodeMaterialCompilationStateSharedData } from './nodeMaterialCompilationState';
+import { NodeMaterialCompilationState } from './nodeMaterialCompilationState';
 import { EffectCreationOptions } from '../effect';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 import { Observable } from '../../Misc/observable';
+import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialCompilationStateSharedData } from './nodeMaterialCompilationStateSharedData';
 
 /**
  * Class used to configure NodeMaterial
@@ -224,8 +226,9 @@ export class NodeMaterial extends Material {
 
     /**
      * Build the material and generates the inner effect
+     * @param verbose defines if the build should log activity
      */
-    public build() {
+    public build(verbose: boolean = false) {
         if (this._vertexRootNodes.length === 0) {
             throw "You must define at least one vertexRootNode";
         }
@@ -233,9 +236,6 @@ export class NodeMaterial extends Material {
         if (this._fragmentRootNodes.length === 0) {
             throw "You must define at least one fragmentRootNode";
         }
-
-        // Go through the nodes and do some magic :)
-        // Needs to create the code and deduce samplers and uniforms in order to populate some lists used during bindings
 
         // Propagate targets
         for (var vertexRootNode of this._vertexRootNodes) {
@@ -255,6 +255,7 @@ export class NodeMaterial extends Material {
         this._fragmentCompilationState.sharedData = sharedData;
         sharedData.buildId = this._buildId;
         sharedData.emitComments = this._options.emitComments;
+        sharedData.verbose = verbose;
 
         for (var vertexRootNode of this._vertexRootNodes) {
             vertexRootNode.build(this._vertexCompilationState);
@@ -263,7 +264,6 @@ export class NodeMaterial extends Material {
         // Fragment
         this._fragmentCompilationState.target = NodeMaterialBlockTargets.Fragment;
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
-        this._fragmentCompilationState.hints = this._vertexCompilationState.hints;
         this._fragmentCompilationState._uniformConnectionPoints = this._vertexCompilationState._uniformConnectionPoints;
 
         for (var fragmentRootNode of this._fragmentRootNodes) {
@@ -282,6 +282,16 @@ export class NodeMaterial extends Material {
         this._textureConnectionPoints = this._fragmentCompilationState._uniformConnectionPoints.filter((u) => u.type === NodeMaterialBlockConnectionPointTypes.Texture);
 
         this._buildId++;
+
+        // Errors
+        sharedData.emitErrors();
+
+        if (verbose) {
+            console.log("Vertex shader:");
+            console.log(this._vertexCompilationState.compilationString);
+            console.log("Fragment shader:");
+            console.log(this._fragmentCompilationState.compilationString);
+        }
 
         this.onBuildObservable.notifyObservers(this);
     }
@@ -381,7 +391,7 @@ export class NodeMaterial extends Material {
             return;
         }
 
-        let hints = this._fragmentCompilationState.hints;
+        let hints = this._fragmentCompilationState.sharedData.hints;
         if (hints.needWorldMatrix) {
             this._effect.setMatrix("world", world);
         }
@@ -408,7 +418,7 @@ export class NodeMaterial extends Material {
         this.bindOnlyWorldMatrix(world);
 
         if (this._effect && scene.getCachedMaterial() !== this) {
-            let hints = this._fragmentCompilationState.hints;
+            let hints = this._fragmentCompilationState.sharedData.hints;
 
             if (hints.needViewMatrix) {
                 this._effect.setMatrix("view", scene.getViewMatrix());

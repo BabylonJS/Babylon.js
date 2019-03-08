@@ -1,6 +1,7 @@
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from '../nodeMaterialBlock';
+import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../nodeMaterialCompilationState';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 
 /**
  * Block used to read a texture from a sampler
@@ -17,6 +18,14 @@ export class TextureBlock extends NodeMaterialBlock {
         this.registerInput("texture", NodeMaterialBlockConnectionPointTypes.Texture);
 
         this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color4);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "TextureBlock";
     }
 
     protected _buildBlock(state: NodeMaterialCompilationState) {

@@ -1,6 +1,7 @@
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from '../../nodeMaterialBlock';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
  * Block used to create a Color3 out of 3 inputs (one for each component)
@@ -18,6 +19,14 @@ export class RGBMergerBlock extends NodeMaterialBlock {
         this.registerInput("b", NodeMaterialBlockConnectionPointTypes.Float);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "RGBMergerBlock";
     }
 
     protected _buildBlock(state: NodeMaterialCompilationState) {
