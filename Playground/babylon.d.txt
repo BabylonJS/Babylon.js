@@ -42517,16 +42517,12 @@ declare module BABYLON {
     /**
      * Class used to host texture specific utilities
      */
-    export class TextureTools {
+    export class BRDFTextureTools {
         /**
-         * Uses the GPU to create a copy texture rescaled at a given size
-         * @param texture Texture to copy from
-         * @param width defines the desired width
-         * @param height defines the desired height
-         * @param useBilinearMode defines if bilinear mode has to be used
-         * @return the generated texture
+         * Expand the BRDF Texture from RGBD to Half Float if necessary.
+         * @param texture the texture to expand.
          */
-        static CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
+        private static _ExpandDefaultBRDFTexture;
         /**
          * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
          * @param scene defines the hosting scene
@@ -54468,6 +54464,22 @@ declare module BABYLON {
          * @returns a JSON compatible object
          */
         static SerializeMesh(toSerialize: any, withParents?: boolean, withChildren?: boolean): any;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to host texture specific utilities
+     */
+    export class TextureTools {
+        /**
+         * Uses the GPU to create a copy texture rescaled at a given size
+         * @param texture Texture to copy from
+         * @param width defines the desired width
+         * @param height defines the desired height
+         * @param useBilinearMode defines if bilinear mode has to be used
+         * @return the generated texture
+         */
+        static CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
     }
 }
 declare module BABYLON {
