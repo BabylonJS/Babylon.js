@@ -57,10 +57,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         var wireframeOver = mesh.clone();
         wireframeOver.reservedDataStore = { hidden: true };
         wireframeOver.position = Vector3.Zero();
-        wireframeOver.scaling = new Vector3(1, 1, 1);
-        wireframeOver.rotation = Vector3.Zero();
-        wireframeOver.rotationQuaternion = null;
-        wireframeOver.parent = mesh;
+        wireframeOver.setParent(mesh);
         var material = new StandardMaterial("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
@@ -276,7 +273,6 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     </LineContainerComponent>
                 }
                 <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
-                    <CheckBoxLineComponent label="Show bounding box" target={mesh} propertyName="showBoundingBox" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.material &&
                         <CheckBoxLineComponent label="Display normals" isSelected={() => displayNormals} onSelect={() => this.displayNormals()} />

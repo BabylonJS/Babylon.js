@@ -5,6 +5,8 @@ import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointe
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
+import { HemisphericLight } from '../Lights/hemisphericLight';
+import { Vector3, Color3 } from '../Maths/math';
 
 /**
  * Renders a layer on top of an existing scene
@@ -12,6 +14,7 @@ import { EngineStore } from "../Engines/engineStore";
 export class UtilityLayerRenderer implements IDisposable {
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _lastPointerEvents: { [pointerId: number]: boolean } = {};
+    private static _DefaultGizmoUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer> = null;
 
@@ -30,6 +33,21 @@ export class UtilityLayerRenderer implements IDisposable {
             });
         }
         return UtilityLayerRenderer._DefaultUtilityLayer;
+    }
+    /**
+     * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
+     */
+    public static get DefaultGizmoUtilityLayer(): UtilityLayerRenderer {
+        if (UtilityLayerRenderer._DefaultGizmoUtilityLayer == null) {
+            UtilityLayerRenderer._DefaultGizmoUtilityLayer = new UtilityLayerRenderer(EngineStore.LastCreatedScene!);
+            var light = new HemisphericLight("light1", new Vector3(0, 1, 0), UtilityLayerRenderer._DefaultGizmoUtilityLayer.utilityLayerScene);
+            light.intensity = 2;
+            light.groundColor = Color3.Gray();
+            UtilityLayerRenderer._DefaultGizmoUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
+                UtilityLayerRenderer._DefaultGizmoUtilityLayer = null;
+            });
+        }
+        return UtilityLayerRenderer._DefaultGizmoUtilityLayer;
     }
     /**
      * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)

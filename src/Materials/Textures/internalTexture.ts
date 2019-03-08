@@ -418,6 +418,7 @@ export class InternalTexture implements IInternalTextureTracker {
     /** @hidden */
     public _swapAndDie(target: InternalTexture): void {
         target._webGLTexture = this._webGLTexture;
+        target._isRGBD = this._isRGBD;
 
         if (this._framebuffer) {
             target._framebuffer = this._framebuffer;
