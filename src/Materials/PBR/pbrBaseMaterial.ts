@@ -41,7 +41,7 @@ import "../../Shaders/pbr.vertex";
  * Manages the defines for the PBR Material.
  * @hiddenChildren
  */
-class PBRMaterialDefines extends MaterialDefines
+export class PBRMaterialDefines extends MaterialDefines
     implements IImageProcessingConfigurationDefines,
     IMaterialClearCoatDefines,
     IMaterialAnisotropicDefines,
