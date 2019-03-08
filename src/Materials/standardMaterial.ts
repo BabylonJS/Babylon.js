@@ -1117,6 +1117,8 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
+            var shaderName = this.getShaderName();
+
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor", "visibility",
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
@@ -1146,7 +1148,6 @@ export class StandardMaterial extends PushMaterial {
                 maxSimultaneousLights: this._maxSimultaneousLights
             });
 
-            let shaderName: string = this.getShaderName();
             if (this.customShaderNameResolve) {
                 shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
             }
