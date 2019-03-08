@@ -40789,6 +40789,7 @@ declare module BABYLON.Debug {
         private _debugBoxMesh;
         private _debugSphereMesh;
         private _debugMaterial;
+        private _debugMeshMeshes;
         /**
          * Creates a new PhysicsViewer
          * @param scene defines the hosting scene
@@ -40799,9 +40800,10 @@ declare module BABYLON.Debug {
         /**
          * Renders a specified physic impostor
          * @param impostor defines the impostor to render
+         * @param targetMesh defines the mesh represented by the impostor
          * @returns the new debug mesh used to render the impostor
          */
-        showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh>;
+        showImpostor(impostor: PhysicsImpostor, targetMesh?: Mesh): Nullable<AbstractMesh>;
         /**
          * Hides a specified physic impostor
          * @param impostor defines the impostor to hide
@@ -40810,6 +40812,7 @@ declare module BABYLON.Debug {
         private _getDebugMaterial;
         private _getDebugBoxMesh;
         private _getDebugSphereMesh;
+        private _getDebugMeshMesh;
         private _getDebugMesh;
         /** Releases all resources */
         dispose(): void;

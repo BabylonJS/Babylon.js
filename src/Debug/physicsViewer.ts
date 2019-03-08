@@ -215,7 +215,7 @@ export class PhysicsViewer {
         var mesh: Nullable<AbstractMesh> = null;
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
-        switch(impostor.type) {
+        switch (impostor.type) {
             case PhysicsImpostor.BoxImpostor:
                 mesh = this._getDebugBoxMesh(utilityLayerScene);
                 impostor.getBoxSizeToRef(mesh.scaling);

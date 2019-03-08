@@ -35834,7 +35834,7 @@ var DebugTabComponent = /** @class */ (function (_super) {
             for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
                 var mesh = _a[_i];
                 if (mesh.physicsImpostor) {
-                    var debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor);
+                    var debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor, mesh);
                     if (debugMesh) {
                         debugMesh.reservedDataStore = { hidden: true };
                         debugMesh.material.reservedDataStore = { hidden: true };
@@ -38937,10 +38937,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var wireframeOver = mesh.clone();
         wireframeOver.reservedDataStore = { hidden: true };
         wireframeOver.position = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
-        wireframeOver.scaling = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, 1, 1);
-        wireframeOver.rotation = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
-        wireframeOver.rotationQuaternion = null;
-        wireframeOver.parent = mesh;
+        wireframeOver.setParent(mesh);
         var material = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
