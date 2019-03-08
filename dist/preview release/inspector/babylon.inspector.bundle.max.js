@@ -41517,7 +41517,7 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         }
         var manager = scene.reservedDataStore.gizmoManager;
         // Allow picking of light gizmo when a gizmo mode is selected
-        this._gizmoLayerOnPointerObserver = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["UtilityLayerRenderer"].DefaultUtilityLayer.utilityLayerScene.onPointerObservable.add(function (pointerInfo) {
+        this._gizmoLayerOnPointerObserver = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["UtilityLayerRenderer"].DefaultGizmoUtilityLayer.utilityLayerScene.onPointerObservable.add(function (pointerInfo) {
             if (pointerInfo.type == babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERDOWN) {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh) {
                     var node = pointerInfo.pickInfo.pickedMesh;
