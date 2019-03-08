@@ -27,7 +27,6 @@ export class UtilityLayerRenderer implements IDisposable {
             this._sharedGizmoLight = new HemisphericLight("shared gizmo light", new Vector3(0, 1, 0), this.utilityLayerScene);
             this._sharedGizmoLight.intensity = 2;
             this._sharedGizmoLight.groundColor = Color3.Gray();
-            this._sharedGizmoLight.includedOnlyMeshes = [new AbstractMesh("", this.utilityLayerScene)];
         }
         return this._sharedGizmoLight;
     }
