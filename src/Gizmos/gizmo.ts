@@ -78,7 +78,7 @@ export class Gizmo implements IDisposable {
      */
     constructor(
         /** The utility layer the gizmo will be added to */
-        public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+        public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultGizmoUtilityLayer) {
         this._rootMesh = new Mesh("gizmoRootNode", gizmoLayer.utilityLayerScene);
         this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(() => {
             this._update();

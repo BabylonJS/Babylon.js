@@ -165,7 +165,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
         const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
         // Allow picking of light gizmo when a gizmo mode is selected
-        this._gizmoLayerOnPointerObserver = UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene.onPointerObservable.add((pointerInfo)=>{
+        this._gizmoLayerOnPointerObserver = UtilityLayerRenderer.DefaultGizmoUtilityLayer.utilityLayerScene.onPointerObservable.add((pointerInfo)=>{
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh) {
                     var node: Nullable<any> = pointerInfo.pickInfo.pickedMesh;
