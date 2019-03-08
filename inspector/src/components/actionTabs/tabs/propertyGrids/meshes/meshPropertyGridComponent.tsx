@@ -57,10 +57,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         var wireframeOver = mesh.clone();
         wireframeOver.reservedDataStore = { hidden: true };
         wireframeOver.position = Vector3.Zero();
-        wireframeOver.scaling = new Vector3(1, 1, 1);
-        wireframeOver.rotation = Vector3.Zero();
-        wireframeOver.rotationQuaternion = null;
-        wireframeOver.parent = mesh;
+        wireframeOver.setParent(mesh);
         var material = new StandardMaterial("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
