@@ -657,7 +657,6 @@ export class StandardMaterial extends PushMaterial {
 
     /**
      * Custom callback helping to override the default shader used in the material.
-     * @returns string - The custom shader name to use for the material
      */
     public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
 
