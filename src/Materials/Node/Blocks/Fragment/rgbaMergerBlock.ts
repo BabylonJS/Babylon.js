@@ -1,6 +1,7 @@
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from '../../nodeMaterialBlock';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
  * Block used to create a Color4 out of 4 inputs (one for each component)
@@ -22,6 +23,14 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color4);
     }
 
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "RGBAMergerBlock";
+    }
+
     protected _buildBlock(state: NodeMaterialCompilationState) {
         super._buildBlock(state);
 
@@ -37,7 +46,6 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
             let bInput = this._inputs[2];
             state.compilationString += this._declareOutput(output, state) + ` = vec4(${rInput.associatedVariableName}, ${gInput.associatedVariableName}, ${bInput.associatedVariableName}, ${aInput.associatedVariableName});\r\n`;
         }
-
 
         return this;
     }

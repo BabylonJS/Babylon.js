@@ -1,6 +1,7 @@
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from '../../nodeMaterialBlock';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
  * Block used to add an alpha test in the fragment shader
@@ -20,6 +21,14 @@ export class AlphaTestBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment);
 
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "AlphaTestBlock";
     }
 
     /** @hidden */

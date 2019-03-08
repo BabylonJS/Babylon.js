@@ -1,3 +1,4 @@
+export * from "./nodeMaterialBlockTargets";
 export * from "./nodeMaterialBlockConnectionPointTypes";
 export * from "./nodeMaterialBlockConnectionPoint";
 export * from "./nodeMaterialBlock";

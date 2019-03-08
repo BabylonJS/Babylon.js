@@ -1,6 +1,7 @@
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from '../../nodeMaterialBlock';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
  * Block used to output the final color
@@ -11,9 +12,17 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.Fragment, true);
 
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "FragmentOutputBlock";
     }
 
     /** @hidden */

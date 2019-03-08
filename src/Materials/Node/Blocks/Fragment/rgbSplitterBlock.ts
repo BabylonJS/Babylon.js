@@ -1,6 +1,7 @@
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from '../../nodeMaterialBlock';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
  * Block used to expand a Color3 or a Vector3 into 3 outputs (one for each component)
@@ -18,6 +19,14 @@ export class RGBSplitterBlock extends NodeMaterialBlock {
         this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "RGBSplitterBlock";
     }
 
     protected _buildBlock(state: NodeMaterialCompilationState) {

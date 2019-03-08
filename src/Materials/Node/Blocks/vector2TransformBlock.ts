@@ -1,6 +1,8 @@
-import { NodeMaterialBlock, NodeMaterialBlockTargets } from '../nodeMaterialBlock';
+import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../nodeMaterialCompilationState';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+
 /**
  * Block used to transform a vector2 with a matrix
  */
@@ -25,6 +27,14 @@ export class Vector2TransformBlock extends NodeMaterialBlock {
         this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector2);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "Vector2TransformBlock";
     }
 
     protected _buildBlock(state: NodeMaterialCompilationState) {
