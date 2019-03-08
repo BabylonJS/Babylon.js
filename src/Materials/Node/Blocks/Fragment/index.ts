@@ -1,3 +1,7 @@
 
 export * from "./fragmentOutputBlock";
-export * from "./textureBlock";
+export * from "./alphaTestBlock";
+export * from "./rgbaMergerBlock";
+export * from "./rgbMergerBlock";
+export * from "./rgbaSplitterBlock";
+export * from "./rgbSplitterBlock";
