@@ -124,7 +124,6 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
-    public MULTIVIEW = false;
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
@@ -657,6 +656,12 @@ export class StandardMaterial extends PushMaterial {
 
     /**
      * Custom callback helping to override the default shader used in the material.
+     * @param shaderName The default shader name.
+     * @param uniforms The default shader uniforms.
+     * @param uniformBuffers The default shader uniform buffers.
+     * @param samplers The default shader samplers.
+     * @param defines The default shader defines.
+     * @returns String - The custom shader name to use for the material
      */
     public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
 
@@ -716,6 +721,14 @@ export class StandardMaterial extends PushMaterial {
      */
     public getClassName(): string {
         return "StandardMaterial";
+    }
+
+    /**
+     * Gets the name of the material shader.
+     * @returns String - The default shader name to use for the material
+     */
+    public getShaderName(): string {
+        return "default";
     }
 
     /**
@@ -793,13 +806,6 @@ export class StandardMaterial extends PushMaterial {
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
-        if (scene.activeCamera) {
-            var previousMultiview = defines.MULTIVIEW;
-            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
-            if (defines.MULTIVIEW != previousMultiview) {
-                defines.markAsUnprocessed();
-            }
-        }
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1088,10 +1094,6 @@ export class StandardMaterial extends PushMaterial {
                 fallbacks.addFallback(4, "FRESNEL");
             }
 
-            if (defines.MULTIVIEW) {
-                fallbacks.addFallback(0, "MULTIVIEW");
-            }
-
             //Attributes
             var attribs = [VertexBuffer.PositionKind];
 
@@ -1114,8 +1116,6 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
-
-            var shaderName = "default";
 
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                 "vFogInfos", "vFogColor", "pointSize",
@@ -1146,12 +1146,12 @@ export class StandardMaterial extends PushMaterial {
                 maxSimultaneousLights: this._maxSimultaneousLights
             });
 
+            let shaderName: string = this.getShaderName();
             if (this.customShaderNameResolve) {
                 shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
             }
 
-            var join = defines.toString();
-
+            let join = defines.toString();
             let previousEffect = subMesh.effect;
             let effect = scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{
                 attributes: attribs,

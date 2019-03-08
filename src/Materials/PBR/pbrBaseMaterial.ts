@@ -169,7 +169,6 @@ class PBRMaterialDefines extends MaterialDefines
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
-    public MULTIVIEW = false;
 
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
@@ -725,6 +724,17 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly sheen = new PBRSheenConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
+     * Custom callback helping to override the default shader used in the material.
+     * @param shaderName The default shader name.
+     * @param uniforms The default shader uniforms.
+     * @param uniformBuffers The default shader uniform buffers.
+     * @param samplers The default shader samplers.
+     * @param defines The default shader defines.
+     * @returns String - The custom shader name to use for the material
+     */
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+
+    /**
      * Instantiates a new PBRMaterial instance.
      *
      * @param name The material name
@@ -777,7 +787,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Gets the name of the material shader.
-     * @returns - string that specifies the shader program of the material.
+     * @returns String - The default shader name to use for the material
      */
     public getShaderName(): string {
         return "pbr";
@@ -1150,10 +1160,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
         }
 
-        if (defines.MULTIVIEW) {
-            fallbacks.addFallback(0, "MULTIVIEW");
-        }
-
         //Attributes
         var attribs = [VertexBuffer.PositionKind];
 
@@ -1227,8 +1233,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             maxSimultaneousLights: this._maxSimultaneousLights
         });
 
-        var join = defines.toString();
-        return engine.createEffect(this.getShaderName(), <EffectCreationOptions>{
+        let shaderName: string = this.getShaderName();
+        if (this.customShaderNameResolve) {
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+        }
+
+        let join = defines.toString();
+        return engine.createEffect(shaderName, <EffectCreationOptions>{
             attributes: attribs,
             uniformsNames: uniforms,
             uniformBuffersNames: uniformBuffers,
@@ -1248,15 +1259,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Lights
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
-
-        // Multiview
-        if (scene.activeCamera) {
-            var previousMultiview = defines.MULTIVIEW;
-            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
-            if (defines.MULTIVIEW != previousMultiview) {
-                defines.markAsUnprocessed();
-            }
-        }
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
