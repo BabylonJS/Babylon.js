@@ -32494,6 +32494,11 @@ declare module BABYLON {
          * @param options defines the scene options
          */
         constructor(engine: Engine, options?: SceneOptions);
+        /**
+         * Gets a string idenfifying the name of the class
+         * @returns "Scene" string
+         */
+        getClassName(): string;
         private _defaultMeshCandidates;
         /**
          * @hidden

@@ -36017,6 +36017,10 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
         }
         if (entity.getClassName) {
             var className = entity.getClassName();
+            if (className === "Scene") {
+                var scene = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_scenePropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["ScenePropertyGridComponent"], { scene: scene, globalState: this.props.globalState, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
             if (className.indexOf("Mesh") !== -1) {
                 var mesh = entity;
                 if (mesh.getTotalVertices() > 0) {
@@ -36176,10 +36180,6 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
                 var control = entity;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["ControlPropertyGridComponent"], { control: control, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
-        }
-        else if (entity.transformNodes) {
-            var scene = entity;
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_scenePropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["ScenePropertyGridComponent"], { scene: scene, globalState: this.props.globalState, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
         }
         return null;
     };
@@ -40777,7 +40777,10 @@ var ReplayRecorder = /** @class */ (function () {
         }
         var target = event.object.getClassName().toLowerCase();
         if (event.object.uniqueId) {
-            if (target.indexOf("camera")) {
+            if (target === "Scene") {
+                target = "scene";
+            }
+            else if (target.indexOf("camera")) {
                 target = "scene.getCameraByUniqueID(" + event.object.uniqueId + ")";
             }
             else if (target.indexOf("mesh")) {
