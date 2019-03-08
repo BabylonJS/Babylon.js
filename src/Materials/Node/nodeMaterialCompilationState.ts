@@ -1,5 +1,33 @@
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
+import { NodeMaterialBlockTargets } from './nodeMaterialBlock';
+
+/**
+ * Class used to store shared data between 2 NodeMaterialCompilationState
+ */
+export class NodeMaterialCompilationStateSharedData {
+    /**
+     * Gets the list of emitted varyings
+     */
+    public varyings = new Array<string>();
+
+    /**
+     * Gets the varying declaration string
+     */
+    public varyingDeclaration = "";
+
+    /**
+     * Build Id used to avoid multiple recompilations
+     */
+    public buildId: number;
+
+    /** List of emitted variables */
+    public variableNames: { [key: string]: number } = {};
+
+    /** Should emit comments? */
+    public emitComments: boolean;
+}
 
 /**
  * Class used to store node based material compilation state
@@ -18,16 +46,18 @@ export class NodeMaterialCompilationState {
      */
     public samplers = new Array<string>();
     /**
-     * Gets the list of emitted varyings
+     * Gets the list of emitted functions
      */
-    public varyings = new Array<string>();
+    public functions: { [key: string]: string } = {};
     /**
-     * Gets a boolean indicating if this state was emitted for a fragment shader
+     * Gets the target of the compilation state
      */
-    public isInFragmentMode = false;
+    public target: NodeMaterialBlockTargets;
 
-    /** @hidden */
-    public _variableNames: { [key: string]: number } = {};
+    /**
+     * Shared data between multiple NodeMaterialCompilationState instances
+     */
+    public sharedData: NodeMaterialCompilationStateSharedData;
 
     /** @hidden */
     public _uniformConnectionPoints = new Array<NodeMaterialConnectionPoint>();
@@ -44,13 +74,14 @@ export class NodeMaterialCompilationState {
         needProjectionMatrix: false,
         needViewProjectionMatrix: false,
         needWorldViewMatrix: false,
-        needWorldViewProjectionMatrix: false
+        needWorldViewProjectionMatrix: false,
+        needFogColor: false,
+        needFogParameters: false
     };
 
     private _attributeDeclaration = "";
     private _uniformDeclaration = "";
     private _samplerDeclaration = "";
-    private _varyingDeclaration = "";
     private _varyingTransfer = "";
 
     /**
@@ -60,46 +91,55 @@ export class NodeMaterialCompilationState {
 
     /**
      * Finalize the compilation strings
+     * @param state defines the current compilation state
      */
-    public finalize() {
-        this.compilationString = `\r\n//Entry point\r\nvoid main(void) {\r\n${this.compilationString}`;
+    public finalize(state: NodeMaterialCompilationState) {
+        let emitComments = state.sharedData.emitComments;
+        let isFragmentMode = (this.target === NodeMaterialBlockTargets.Fragment);
 
-        if (!this.isInFragmentMode && this.varyings.length > 0) {
+        this.compilationString = `\r\n${emitComments ? "//Entry point\r\n" : ""}void main(void) {\r\n${this.compilationString}`;
+
+        for (var functionName in this.functions) {
+            let functionCode = this.functions[functionName];
+            this.compilationString = `\r\n${functionCode}\r\n${this.compilationString}`;
+        }
+
+        if (!isFragmentMode && this._varyingTransfer) {
             this.compilationString = `${this.compilationString}\r\n${this._varyingTransfer}`;
         }
 
         this.compilationString = `${this.compilationString}\r\n}`;
 
-        if (this._varyingDeclaration) {
-            this.compilationString = `\r\n//Varyings\r\n${this._varyingDeclaration}\r\n\r\n${this.compilationString}`;
+        if (this.sharedData.varyingDeclaration) {
+            this.compilationString = `\r\n${emitComments ? "//Varyings\r\n" : ""}${this.sharedData.varyingDeclaration}\r\n\r\n${this.compilationString}`;
         }
 
         if (this._samplerDeclaration) {
-            this.compilationString = `\r\n//Samplers\r\n${this._samplerDeclaration}\r\n\r\n${this.compilationString}`;
+            this.compilationString = `\r\n${emitComments ? "//Samplers\r\n" : ""}${this._samplerDeclaration}\r\n\r\n${this.compilationString}`;
         }
 
         if (this._uniformDeclaration) {
-            this.compilationString = `\r\n//Uniforms\r\n${this._uniformDeclaration}\r\n\r\n${this.compilationString}`;
+            this.compilationString = `\r\n${emitComments ? "//Uniforms\r\n" : ""}${this._uniformDeclaration}\r\n\r\n${this.compilationString}`;
         }
 
-        if (this._attributeDeclaration && !this.isInFragmentMode) {
-            this.compilationString = `\r\n//Attributes\r\n${this._attributeDeclaration}\r\n\r\n${this.compilationString}`;
+        if (this._attributeDeclaration && !isFragmentMode) {
+            this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n\r\n${this.compilationString}`;
         }
     }
 
     /** @hidden */
     public _getFreeVariableName(prefix: string): string {
-        if (this._variableNames[prefix] === undefined) {
-            this._variableNames[prefix] = 0;
+        if (this.sharedData.variableNames[prefix] === undefined) {
+            this.sharedData.variableNames[prefix] = 0;
         } else {
-            this._variableNames[prefix]++;
+            this.sharedData.variableNames[prefix]++;
         }
 
-        return prefix + this._variableNames[prefix];
+        return prefix + this.sharedData.variableNames[prefix];
     }
 
     /** @hidden */
-    private _getGLType(type: NodeMaterialBlockConnectionPointTypes): string {
+    public _getGLType(type: NodeMaterialBlockConnectionPointTypes): string {
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
                 return "float";
@@ -109,28 +149,41 @@ export class NodeMaterialCompilationState {
                 return "vec2";
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Vector3:
+            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 return "vec3";
             case NodeMaterialBlockConnectionPointTypes.Color4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
+            case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
                 return "vec4";
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 return "mat4";
             case NodeMaterialBlockConnectionPointTypes.Texture:
                 return "sampler2D";
         }
+
+        return "";
     }
 
     /** @hidden */
-    public _emitVaryings(point: NodeMaterialConnectionPoint, force = false) {
+    public _emitFunction(name: string, code: string) {
+        if (this.functions[name]) {
+            return;
+        }
+
+        this.functions[name] = code;
+    }
+
+    /** @hidden */
+    public _emitVaryings(point: NodeMaterialConnectionPoint, force = false, fromFragment = false) {
         if (point.isVarying || force) {
-            if (this.varyings.indexOf(point.associatedVariableName) !== -1) {
+            if (this.sharedData.varyings.indexOf(point.associatedVariableName) !== -1) {
                 return;
             }
 
-            this.varyings.push(point.associatedVariableName);
-            this._varyingDeclaration += `varying ${this._getGLType(point.type)} ${point.associatedVariableName};\r\n`;
+            this.sharedData.varyings.push(point.associatedVariableName);
+            this.sharedData.varyingDeclaration += `varying ${this._getGLType(point.type)} ${point.associatedVariableName};\r\n`;
 
-            if (!this.isInFragmentMode) {
+            if (this.target === NodeMaterialBlockTargets.Vertex && fromFragment) {
                 this._varyingTransfer += `${point.associatedVariableName} = ${point.name};\r\n`;
             }
         }
@@ -169,39 +222,46 @@ export class NodeMaterialCompilationState {
             this._uniformDeclaration += `uniform ${this._getGLType(point.type)} ${point.name};\r\n`;
 
             // well known
-            switch (point.name) {
-                case "world":
-                    this.hints.needWorldMatrix = true;
-                    break;
-                case "view":
-                    this.hints.needViewMatrix = true;
-                    break;
-                case "projection":
-                    this.hints.needProjectionMatrix = true;
-                    break;
-                case "viewProjection":
-                    this.hints.needViewProjectionMatrix = true;
-                    break;
-                case "worldView":
-                    this.hints.needWorldViewMatrix = true;
-                    break;
-                case "worldViewProjection":
-                    this.hints.needWorldViewProjectionMatrix = true;
-                    break;
-                default:
-                    this._uniformConnectionPoints.push(point);
-                    break;
+            if (point._wellKnownValue !== null) {
+                switch (point._wellKnownValue) {
+                    case NodeMaterialWellKnownValues.World:
+                        this.hints.needWorldMatrix = true;
+                        break;
+                    case NodeMaterialWellKnownValues.View:
+                        this.hints.needViewMatrix = true;
+                        break;
+                    case NodeMaterialWellKnownValues.Projection:
+                        this.hints.needProjectionMatrix = true;
+                        break;
+                    case NodeMaterialWellKnownValues.ViewProjection:
+                        this.hints.needViewProjectionMatrix = true;
+                        break;
+                    case NodeMaterialWellKnownValues.WorldView:
+                        this.hints.needWorldViewMatrix = true;
+                        break;
+                    case NodeMaterialWellKnownValues.WorldViewProjection:
+                        this.hints.needWorldViewProjectionMatrix = true;
+                        break;
+                    case NodeMaterialWellKnownValues.FogColor:
+                        this.hints.needFogColor = true;
+                        break;
+                    case NodeMaterialWellKnownValues.FogParameters:
+                        this.hints.needFogParameters = true;
+                        break;
+                }
+            } else {
+                this._uniformConnectionPoints.push(point);
             }
 
             return;
         }
 
         if (point.isAttribute) {
-            if (this.isInFragmentMode) {
+            if (this.target === NodeMaterialBlockTargets.Fragment) { // Attribute for fragment need to be carried over by varyings
                 this._vertexState._emitUniformOrAttributes(point);
                 point.associatedVariableName = this._getFreeVariableName(point.name);
                 this._emitVaryings(point, true);
-                this._vertexState._emitVaryings(point, true);
+                this._vertexState._emitVaryings(point, true, true);
                 return;
             }
 

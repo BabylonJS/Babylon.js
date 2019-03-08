@@ -3,21 +3,27 @@
  */
 export enum NodeMaterialBlockConnectionPointTypes {
     /** Float */
-    Float,
+    Float = 1,
     /** Int */
-    Int,
+    Int = 2,
     /** Vector2 */
-    Vector2,
+    Vector2 = 4,
     /** Vector3 */
-    Vector3,
+    Vector3 = 8,
     /** Vector4 */
-    Vector4,
+    Vector4 = 16,
     /** Color3 */
-    Color3,
+    Color3 = 32,
     /** Color4 */
-    Color4,
+    Color4 = 64,
     /** Matrix */
-    Matrix,
+    Matrix = 128,
     /** Texture */
-    Texture
+    Texture = 256,
+    /** Vector3 or Color3 */
+    Vector3OrColor3 = Vector3 | Color3,
+    /** Vector4 or Color4 */
+    Vector4OrColor4 = Vector4 | Color4,
+    /** Color3 or Color4 */
+    Color3OrColor4 = Color3 | Color4,
 }

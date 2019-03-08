@@ -1,4 +1,4 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
+import { NodeMaterialBlock, NodeMaterialBlockTargets } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
 
@@ -12,20 +12,28 @@ export class VertexOutputBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name);
+        super(name, NodeMaterialBlockTargets.Vertex);
 
-        this.registerEntryPoint("vector", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
-    /**
-     * Compile the block
-     * @param state defines the current compilation state
-     */
-    public compile(state: NodeMaterialCompilationState) {
-        super.compile(state);
+    /** @hidden */
+    public get _canAddAtVertexRoot(): boolean {
+        return false;
+    }
 
-        let entryPoint = this.entryPoints[0];
+    /** @hidden */
+    public get _canAddAtFragmentRoot(): boolean {
+        return false;
+    }
 
-        state.compilationString += `gl_Position = ${entryPoint.associatedVariableName};\r\n`;
+    protected _buildBlock(state: NodeMaterialCompilationState) {
+        super._buildBlock(state);
+
+        let input = this._inputs[0];
+
+        state.compilationString += `gl_Position = ${input.associatedVariableName};\r\n`;
+
+        return this;
     }
 }

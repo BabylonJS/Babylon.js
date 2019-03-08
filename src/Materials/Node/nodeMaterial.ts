@@ -1,15 +1,16 @@
-import { NodeMaterialBlock } from './nodeMaterialBlock';
+import { NodeMaterialBlock, NodeMaterialBlockTargets } from './nodeMaterialBlock';
 import { Material } from '../material';
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Matrix } from '../../Maths/math';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';
-import { NodeMaterialCompilationState } from './nodeMaterialCompilationState';
+import { NodeMaterialCompilationState, NodeMaterialCompilationStateSharedData } from './nodeMaterialCompilationState';
 import { EffectCreationOptions } from '../effect';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
+import { Observable } from '../../Misc/observable';
 
 /**
  * Class used to configure NodeMaterial
@@ -23,6 +24,11 @@ export interface INodeMaterialOptions {
      * Defines if the material needs alpha testing
      */
     needAlphaTesting: boolean;
+
+    /**
+     * Defines if blocks should emit comments
+     */
+    emitComments: boolean;
 }
 
 /**
@@ -32,7 +38,7 @@ export class NodeMaterial extends Material {
     private _options: INodeMaterialOptions;
     private _vertexCompilationState: NodeMaterialCompilationState;
     private _fragmentCompilationState: NodeMaterialCompilationState;
-    private _compileId: number = 0;
+    private _buildId: number = 0;
     private _renderId: number;
     private _effectCompileId: number = 0;
     private _cachedWorldViewMatrix = new Matrix();
@@ -40,14 +46,19 @@ export class NodeMaterial extends Material {
     private _textureConnectionPoints = new Array<NodeMaterialConnectionPoint>();
 
     /**
+     * Observable raised when the material is built
+     */
+    public onBuildObservable = new Observable<NodeMaterial>();
+
+    /**
      * Gets or sets the root nodes of the material vertex shader
      */
-    public vertexRootNodes = new Array<NodeMaterialBlock>();
+    private _vertexRootNodes = new Array<NodeMaterialBlock>();
 
     /**
      * Gets or sets the root nodes of the material fragment (pixel) shader
      */
-    public fragmentRootNodes = new Array<NodeMaterialBlock>();
+    private _fragmentRootNodes = new Array<NodeMaterialBlock>();
 
     /** Gets or sets options to control the node material overall behavior */
     public get options() {
@@ -70,6 +81,7 @@ export class NodeMaterial extends Material {
         this._options = {
             needAlphaBlending: false,
             needAlphaTesting: false,
+            emitComments: false,
             ...options
         };
     }
@@ -80,6 +92,92 @@ export class NodeMaterial extends Material {
      */
     public getClassName(): string {
         return "NodeMaterial";
+    }
+
+    /**
+     * Add a new block to the list of root nodes
+     * @param node defines the node to add
+     * @returns the current material
+     */
+    public addRootNode(node: NodeMaterialBlock) {
+        if (node.target === null) {
+            throw "This node is not meant to be at root level. You may want to explicitly set its target value.";
+        }
+
+        if ((node.target & NodeMaterialBlockTargets.Vertex) !== 0 && node._canAddAtVertexRoot) {
+            this._addVertexRootNode(node);
+        }
+
+        if ((node.target & NodeMaterialBlockTargets.Fragment) !== 0 && node._canAddAtFragmentRoot) {
+            this._addFragmentRootNode(node);
+        }
+
+        return this;
+    }
+
+    /**
+     * Remove a block from the list of root nodes
+     * @param node defines the node to remove
+     * @returns the current material
+     */
+    public removeRootNode(node: NodeMaterialBlock) {
+        if (node.target === null) {
+            return this;
+        }
+
+        if ((node.target & NodeMaterialBlockTargets.Vertex) !== 0) {
+            this._removeVertexRootNode(node);
+        }
+
+        if ((node.target & NodeMaterialBlockTargets.Fragment) !== 0) {
+            this._removeFragmentRootNode(node);
+        }
+
+        return this;
+    }
+
+    private _addVertexRootNode(node: NodeMaterialBlock) {
+        if (this._vertexRootNodes.indexOf(node) !== -1) {
+            return;
+        }
+
+        node.target = NodeMaterialBlockTargets.Vertex;
+        this._vertexRootNodes.push(node);
+
+        return this;
+    }
+
+    private _removeVertexRootNode(node: NodeMaterialBlock) {
+        let index = this._vertexRootNodes.indexOf(node);
+        if (index === -1) {
+            return;
+        }
+
+        this._vertexRootNodes.splice(index, 1);
+
+        return this;
+    }
+
+    private _addFragmentRootNode(node: NodeMaterialBlock) {
+        if (this._fragmentRootNodes.indexOf(node) !== -1) {
+            return;
+        }
+
+        node.target = NodeMaterialBlockTargets.Fragment;
+        this._fragmentRootNodes.push(node);
+
+        return this;
+    }
+
+    private _removeFragmentRootNode(node: NodeMaterialBlock) {
+        let index = this._fragmentRootNodes.indexOf(node);
+        if (index === -1) {
+            return;
+        }
+
+        this._fragmentRootNodes.splice(index, 1);
+
+        return this;
     }
 
     /**
@@ -98,50 +196,94 @@ export class NodeMaterial extends Material {
         return this._options.needAlphaTesting;
     }
 
+    private _propagateTarget(node: NodeMaterialBlock, target: NodeMaterialBlockTargets) {
+        node.target = target;
+
+        for (var exitPoint of node.outputs) {
+            for (var block of exitPoint.connectedBlocks) {
+                if (block) {
+                    this._propagateTarget(block, target);
+                }
+            }
+        }
+    }
+
+    private _resetDualBlocks(node: NodeMaterialBlock, id: number) {
+        if (node.target === NodeMaterialBlockTargets.VertexAndFragment) {
+            node.buildId = id;
+        }
+
+        for (var exitPoint of node.outputs) {
+            for (var block of exitPoint.connectedBlocks) {
+                if (block) {
+                    this._resetDualBlocks(block, id);
+                }
+            }
+        }
+    }
+
     /**
-     * Compile the material and generates the inner effect
+     * Build the material and generates the inner effect
      */
-    public compile() {
-        if (this.vertexRootNodes.length === 0) {
+    public build() {
+        if (this._vertexRootNodes.length === 0) {
             throw "You must define at least one vertexRootNode";
         }
 
-        if (this.fragmentRootNodes.length === 0) {
+        if (this._fragmentRootNodes.length === 0) {
             throw "You must define at least one fragmentRootNode";
         }
 
         // Go through the nodes and do some magic :)
         // Needs to create the code and deduce samplers and uniforms in order to populate some lists used during bindings
 
+        // Propagate targets
+        for (var vertexRootNode of this._vertexRootNodes) {
+            this._propagateTarget(vertexRootNode, NodeMaterialBlockTargets.Vertex);
+        }
+
+        for (var fragmentRootNode of this._fragmentRootNodes) {
+            this._propagateTarget(fragmentRootNode, NodeMaterialBlockTargets.Fragment);
+        }
+
         // Vertex
         this._vertexCompilationState = new NodeMaterialCompilationState();
+        this._vertexCompilationState.target = NodeMaterialBlockTargets.Vertex;
+        this._fragmentCompilationState = new NodeMaterialCompilationState();
+        let sharedData = new NodeMaterialCompilationStateSharedData();
+        this._vertexCompilationState.sharedData = sharedData;
+        this._fragmentCompilationState.sharedData = sharedData;
+        sharedData.buildId = this._buildId;
+        sharedData.emitComments = this._options.emitComments;
 
-        for (var vertexRootNode of this.vertexRootNodes) {
-            vertexRootNode.compile(this._vertexCompilationState);
-            vertexRootNode.compileChildren(this._vertexCompilationState);
+        for (var vertexRootNode of this._vertexRootNodes) {
+            vertexRootNode.build(this._vertexCompilationState);
         }
 
         // Fragment
-        this._fragmentCompilationState = new NodeMaterialCompilationState();
-        this._fragmentCompilationState.isInFragmentMode = true;
+        this._fragmentCompilationState.target = NodeMaterialBlockTargets.Fragment;
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
         this._fragmentCompilationState.hints = this._vertexCompilationState.hints;
         this._fragmentCompilationState._uniformConnectionPoints = this._vertexCompilationState._uniformConnectionPoints;
 
-        for (var fragmentRootNode of this.fragmentRootNodes) {
-            fragmentRootNode.compile(this._fragmentCompilationState);
-            fragmentRootNode.compileChildren(this._fragmentCompilationState);
+        for (var fragmentRootNode of this._fragmentRootNodes) {
+            this._resetDualBlocks(fragmentRootNode, this._buildId - 1);
+        }
+
+        for (var fragmentRootNode of this._fragmentRootNodes) {
+            fragmentRootNode.build(this._fragmentCompilationState);
         }
 
         // Finalize
-        this._vertexCompilationState.varyings = this._fragmentCompilationState.varyings;
-        this._vertexCompilationState.finalize();
-        this._fragmentCompilationState.finalize();
+        this._vertexCompilationState.finalize(this._vertexCompilationState);
+        this._fragmentCompilationState.finalize(this._fragmentCompilationState);
 
         // Textures
         this._textureConnectionPoints = this._fragmentCompilationState._uniformConnectionPoints.filter((u) => u.type === NodeMaterialBlockConnectionPointTypes.Texture);
 
-        this._compileId++;
+        this._buildId++;
+
+        this.onBuildObservable.notifyObservers(this);
     }
 
     /**
@@ -170,7 +312,7 @@ export class NodeMaterial extends Material {
 
         this._renderId = scene.getRenderId();
 
-        if (this._effectCompileId === this._compileId) {
+        if (this._effectCompileId === this._buildId) {
             return true;
         }
 
@@ -202,8 +344,8 @@ export class NodeMaterial extends Material {
 
         // Compilation
         this._effect = engine.createEffect({
-            vertex: "nodeMaterial" + this._compileId,
-            fragment: "nodeMaterial" + this._compileId,
+            vertex: "nodeMaterial" + this._buildId,
+            fragment: "nodeMaterial" + this._buildId,
             vertexSource: this._vertexCompilationState.compilationString,
             fragmentSource: this._fragmentCompilationState.compilationString
         }, <EffectCreationOptions>{
@@ -223,7 +365,7 @@ export class NodeMaterial extends Material {
             scene.resetCachedMaterial();
         }
 
-        this._effectCompileId = this._compileId;
+        this._effectCompileId = this._buildId;
 
         return true;
     }
@@ -261,22 +403,31 @@ export class NodeMaterial extends Material {
      * @param mesh defines the mesh to bind the material to
      */
     public bind(world: Matrix, mesh?: Mesh): void {
+        let scene = this.getScene();
         // Std values
         this.bindOnlyWorldMatrix(world);
 
-        if (this._effect && this.getScene().getCachedMaterial() !== this) {
+        if (this._effect && scene.getCachedMaterial() !== this) {
             let hints = this._fragmentCompilationState.hints;
 
             if (hints.needViewMatrix) {
-                this._effect.setMatrix("view", this.getScene().getViewMatrix());
+                this._effect.setMatrix("view", scene.getViewMatrix());
             }
 
             if (hints.needProjectionMatrix) {
-                this._effect.setMatrix("projection", this.getScene().getProjectionMatrix());
+                this._effect.setMatrix("projection", scene.getProjectionMatrix());
             }
 
             if (hints.needViewProjectionMatrix) {
-                this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+            }
+
+            if (hints.needFogColor) {
+                this._effect.setColor3("fogColor", scene.fogColor);
+            }
+
+            if (hints.needFogParameters) {
+                this._effect.setFloat4("fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
             }
 
             for (var connectionPoint of this._fragmentCompilationState._uniformConnectionPoints) {
@@ -320,5 +471,27 @@ export class NodeMaterial extends Material {
         }
 
         return false;
+    }
+
+    /**
+     * Disposes the material
+     * @param forceDisposeEffect specifies if effects should be forcefully disposed
+     * @param forceDisposeTextures specifies if textures should be forcefully disposed
+     * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
+     */
+    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
+
+        if (forceDisposeTextures) {
+            for (var connectionPoint of this._textureConnectionPoints) {
+                if (connectionPoint.value) {
+                    (connectionPoint.value as BaseTexture).dispose();
+                }
+            }
+        }
+
+        this._textureConnectionPoints = [];
+        this.onBuildObservable.clear();
+
+        super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }
 }

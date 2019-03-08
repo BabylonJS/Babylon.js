@@ -3,11 +3,17 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
 
 /**
- * Block used to output the final color
+ * Block used to add an alpha test in the fragment shader
  */
-export class FragmentOutputBlock extends NodeMaterialBlock {
+export class AlphaTestBlock extends NodeMaterialBlock {
+
     /**
-     * Create a new FragmentOutputBlock
+     * Gets or sets the alpha value where alpha testing happens
+     */
+    public alphaCutOff = 0.4;
+
+    /**
+     * Create a new AlphaTestBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -31,7 +37,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         let input = this._inputs[0];
 
-        state.compilationString += `gl_FragColor = ${input.associatedVariableName};\r\n`;
+        state.compilationString += `if (${input.associatedVariableName}.a < ${this.alphaCutOff}) discard;\r\n`;
 
         return this;
     }
