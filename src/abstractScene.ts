@@ -193,4 +193,9 @@ export abstract class AbstractScene {
      * Textures to keep.
      */
     public textures = new Array<BaseTexture>();
+
+    /**
+     * Environment texture for the scene
+     */
+    public environmentTexture: Nullable<BaseTexture> = null;
 }

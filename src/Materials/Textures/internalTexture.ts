@@ -88,6 +88,10 @@ export class InternalTexture implements IInternalTextureTracker {
      */
     public is3D: boolean;
     /**
+     * Defines if the texture contains multiview data
+     */
+    public isMultiview: boolean;
+    /**
      * Gets the URL used to load this texture
      */
     public url: string;
@@ -216,6 +220,12 @@ export class InternalTexture implements IInternalTextureTracker {
     public _lodGenerationScale: number = 0;
     /** @hidden */
     public _lodGenerationOffset: number = 0;
+
+    // Multiview
+    /** @hidden */
+    public _colorTextureArray: Nullable<WebGLTexture>;
+    /** @hidden */
+    public _depthStencilTextureArray:  Nullable<WebGLTexture>;
 
     // The following three fields helps sharing generated fixed LODs for texture filtering
     // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
@@ -408,6 +418,7 @@ export class InternalTexture implements IInternalTextureTracker {
     /** @hidden */
     public _swapAndDie(target: InternalTexture): void {
         target._webGLTexture = this._webGLTexture;
+        target._isRGBD = this._isRGBD;
 
         if (this._framebuffer) {
             target._framebuffer = this._framebuffer;

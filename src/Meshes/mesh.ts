@@ -1296,7 +1296,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate = false): Mesh {
+    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
             return this;
         }
@@ -1318,23 +1318,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
 
-        if (scene._isAlternateRenderingEnabled && !alternate) {
-            let effect = subMesh.effect || this._effectiveMaterial.getEffect();
-            if (!effect || !scene.activeCamera) {
-                return this;
-            }
-            scene._switchToAlternateCameraConfiguration(true);
-            this._effectiveMaterial.bindView(effect);
-            this._effectiveMaterial.bindViewProjection(effect);
-
-            engine.setViewport(scene.activeCamera._alternateCamera.viewport);
-            this._draw(subMesh, fillMode, instancesCount, true);
-            engine.setViewport(scene.activeCamera.viewport);
-
-            scene._switchToAlternateCameraConfiguration(false);
-            this._effectiveMaterial.bindView(effect);
-            this._effectiveMaterial.bindViewProjection(effect);
-        }
         return this;
     }
 
@@ -1442,9 +1425,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var offset = 0;
         var instancesCount = 0;
 
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
-
-        var world = effectiveMesh.getWorldMatrix();
+        var world = this._effectiveMesh.getWorldMatrix();
         if (batch.renderSelf[subMesh._id]) {
             world.copyToArray(instanceStorage.instancesData, offset);
             offset += 16;
@@ -1488,7 +1469,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
         var scene = this.getScene();
         var engine = scene.getEngine();
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
 
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
@@ -1496,7 +1476,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
-                    onBeforeDraw(false, effectiveMesh.getWorldMatrix(), effectiveMaterial);
+                    onBeforeDraw(false, this._effectiveMesh.getWorldMatrix(), effectiveMaterial);
                 }
 
                 this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
@@ -1590,7 +1570,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
+        const effectiveMesh = this._effectiveMesh;
 
         var sideOrientation = this.overrideMaterialSideOrientation;
         if (sideOrientation == null) {

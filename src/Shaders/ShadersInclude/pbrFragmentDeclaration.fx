@@ -7,6 +7,8 @@ uniform vec4 vLightingIntensity;
 uniform vec4 vReflectivityColor;
 uniform vec3 vEmissiveColor;
 
+uniform float visibility;
+
 // Samplers
 #ifdef ALBEDO
 uniform vec2 vAlbedoInfos;
@@ -21,7 +23,7 @@ uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
-#ifdef OPACITY	
+#ifdef OPACITY
 uniform vec2 vOpacityInfos;
 #endif
 

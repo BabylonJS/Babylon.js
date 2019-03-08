@@ -1204,6 +1204,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
                 var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
 
+                this.skeleton.prepare();
                 var skeletonMatrices = this.skeleton.getTransformMatrices(this);
 
                 var tempVector = Tmp.Vector3[0];
@@ -1244,7 +1245,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _updateBoundingInfo(): AbstractMesh {
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
+        const effectiveMesh = this._effectiveMesh;
         if (this._boundingInfo) {
             this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
         }
@@ -1274,6 +1275,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     protected _afterComputeWorldMatrix(): void {
         // Bounding info
         this._updateBoundingInfo();
+    }
+
+    /** @hidden */
+    public get _effectiveMesh(): AbstractMesh {
+        return (this.skeleton && this.skeleton.overrideMesh) || this;
     }
 
     /**

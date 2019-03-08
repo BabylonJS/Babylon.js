@@ -707,6 +707,12 @@ export class VRExperienceHelper {
 
         // Create VR cameras
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
+            if (webVROptions.useMultiview) {
+                if (!webVROptions.vrDeviceOrientationCameraMetrics) {
+                    webVROptions.vrDeviceOrientationCameraMetrics = VRCameraMetrics.GetDefault();
+                }
+                webVROptions.vrDeviceOrientationCameraMetrics.multiviewEnabled = true;
+            }
             this._vrDeviceOrientationCamera = new VRDeviceOrientationFreeCamera("VRDeviceOrientationVRHelper", this._position, this._scene, true, webVROptions.vrDeviceOrientationCameraMetrics);
             this._vrDeviceOrientationCamera.angularSensibility = Number.MAX_VALUE;
         }

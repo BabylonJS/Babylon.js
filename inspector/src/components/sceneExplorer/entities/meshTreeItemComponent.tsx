@@ -1,12 +1,9 @@
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { Color3 } from "babylonjs/Maths/math";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { BoundingBoxGizmo } from "babylonjs/Gizmos/boundingBoxGizmo";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
-import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { faVectorSquare } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faSquare } from '@fortawesome/free-regular-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
@@ -17,40 +14,19 @@ interface IMeshTreeItemComponentProps {
     onClick: () => void;
 }
 
-export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, { isGizmoEnabled: boolean, isVisible: boolean }> {
+export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, { isBoundingBoxEnabled: boolean, isVisible: boolean }> {
     constructor(props: IMeshTreeItemComponentProps) {
         super(props);
 
         const mesh = this.props.mesh;
 
-        this.state = { isGizmoEnabled: mesh.reservedDataStore && mesh.reservedDataStore.gizmo, isVisible: this.props.mesh.isVisible };
+        this.state = { isBoundingBoxEnabled: mesh.showBoundingBox, isVisible: this.props.mesh.isVisible };
     }
 
-    showGizmos(): void {
+    showBoundingBox(): void {
         const mesh = this.props.mesh;
-
-        if (!this.state.isGizmoEnabled) {
-
-            if (!mesh.reservedDataStore) {
-                mesh.reservedDataStore = {};
-            }
-
-            const gizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"));
-            gizmo.attachedMesh = mesh;
-            gizmo.enableDragBehavior();
-
-            gizmo.updateBoundingBox();
-
-            gizmo.fixedDragMeshScreenSize = true;
-            mesh.reservedDataStore.gizmo = gizmo;
-            this.setState({ isGizmoEnabled: true });
-            return;
-        }
-
-        mesh.reservedDataStore.gizmo.dispose();
-        mesh.reservedDataStore.gizmo = null;
-
-        this.setState({ isGizmoEnabled: false });
+        mesh.showBoundingBox = !this.state.isBoundingBoxEnabled;
+        this.setState({ isBoundingBoxEnabled: !this.state.isBoundingBoxEnabled });
     }
 
     switchVisibility(): void {
@@ -67,8 +43,8 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
         return (
             <div className="meshTools">
                 <TreeItemLabelComponent label={mesh.name} onClick={() => this.props.onClick()} icon={faCube} color="dodgerblue" />
-                <div className={this.state.isGizmoEnabled ? "gizmo selected icon" : "gizmo icon"} onClick={() => this.showGizmos()} title="Show/Hide position gizmo">
-                    <FontAwesomeIcon icon={faVectorSquare} />
+                <div className={this.state.isBoundingBoxEnabled ? "bounding-box selected icon" : "bounding-box icon"} onClick={() => this.showBoundingBox()} title="Show/Hide bounding box">
+                    <FontAwesomeIcon icon={faSquare} />
                 </div>
                 <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide mesh">
                     {visibilityElement}

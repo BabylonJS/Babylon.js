@@ -6,7 +6,7 @@ import { GizmoManager } from "babylonjs/Gizmos/gizmoManager";
 import { Scene } from "babylonjs/scene";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare } from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
@@ -41,6 +41,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 gizmoMode = 2;
             } else if (manager.scaleGizmoEnabled) {
                 gizmoMode = 3;
+            } else if (manager.boundingBoxGizmoEnabled) {
+                gizmoMode = 4;
             }
         }
 
@@ -165,7 +167,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
         const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
         // Allow picking of light gizmo when a gizmo mode is selected
-        this._gizmoLayerOnPointerObserver = UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene.onPointerObservable.add((pointerInfo)=>{
+        this._gizmoLayerOnPointerObserver = UtilityLayerRenderer.DefaultGizmoUtilityLayer.utilityLayerScene.onPointerObservable.add((pointerInfo)=>{
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh) {
                     var node: Nullable<any> = pointerInfo.pickInfo.pickedMesh;
@@ -182,6 +184,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             }
         })
 
+        manager.boundingBoxGizmoEnabled = false;
         manager.positionGizmoEnabled = false;
         manager.rotationGizmoEnabled = false;
         manager.scaleGizmoEnabled = false;
@@ -200,6 +203,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     break;
                 case 3:
                     manager.scaleGizmoEnabled = true;
+                    break;
+                case 4:
+                    manager.boundingBoxGizmoEnabled = true;
                     break;
             }
 
@@ -233,6 +239,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     <div className={this.state.gizmoMode === 3 ? "scaling selected icon" : "scaling icon"} onClick={() => this.setGizmoMode(3)} title="Enable/Disable scaling mode">
                         <FontAwesomeIcon icon={faCompress} />
                     </div>
+                    <div className={this.state.gizmoMode === 4 ? "bounding selected icon" : "bounding icon"} onClick={() => this.setGizmoMode(4)} title="Enable/Disable bounding box mode">
+                        <FontAwesomeIcon icon={faVectorSquare} />
+                    </div>                    
                     <div className="separator" />
                     <div className={this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon"} onClick={() => this.onPickingMode()} title="Turn picking mode on/off">
                         <FontAwesomeIcon icon={faCrosshairs} />

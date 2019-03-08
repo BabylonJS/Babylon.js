@@ -516,9 +516,12 @@ void main(void) {
                 sheenColor.rgb *= toLinearSpace(sheenMapData.rgb);
             #endif
             float sheenRoughness = roughness;
+
+            // Sheen Lobe Layering.
+            sheenIntensity *= (1. - reflectance);
+
             // Remap F0 and sheen.
             sheenColor *= sheenIntensity;
-            specularEnvironmentR0 *= (1.0-sheenIntensity);
         #endif
 
         // Sheen Reflection
@@ -731,7 +734,7 @@ void main(void) {
     // _____________________________ IBL BRDF + Energy Cons _________________________________
     #if defined(ENVIRONMENTBRDF)
         // BRDF Lookup
-        vec2 environmentBrdf = getBRDFLookup(NdotV, roughness, environmentBrdfSampler);
+        vec3 environmentBrdf = getBRDFLookup(NdotV, roughness, environmentBrdfSampler);
 
         #ifdef MS_BRDF_ENERGY_CONSERVATION
             vec3 energyConservationFactor = getEnergyConservationFactor(specularEnvironmentR0, environmentBrdf);
@@ -796,7 +799,7 @@ void main(void) {
 
     // _____________________________ Sheen Environment Oclusion __________________________
     #if defined(SHEEN) && defined(REFLECTION)
-        vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, NdotV, sheenAlphaG);
+        vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, environmentBrdf);
 
         #ifdef RADIANCEOCCLUSION
             sheenEnvironmentReflectance *= seo;
@@ -815,7 +818,7 @@ void main(void) {
     #ifdef CLEARCOAT
         #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
             // BRDF Lookup
-            vec2 environmentClearCoatBrdf = getBRDFLookup(clearCoatNdotV, clearCoatRoughness, environmentBrdfSampler);
+            vec3 environmentClearCoatBrdf = getBRDFLookup(clearCoatNdotV, clearCoatRoughness, environmentBrdfSampler);
             vec3 clearCoatEnvironmentReflectance = getReflectanceFromBRDFLookup(vec3(vClearCoatRefractionParams.x), environmentClearCoatBrdf);
 
             #ifdef RADIANCEOCCLUSION
@@ -985,11 +988,11 @@ void main(void) {
         finalSheen = max(finalSheen, 0.0);
 
         vec3 finalSheenScaled = finalSheen * vLightingIntensity.x * vLightingIntensity.w;
-        #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
+        // #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
             // The sheen does not use the same BRDF so not energy conservation is possible
             // Should be less a problem as it is usually not metallic
             // finalSheenScaled *= energyConservationFactor;
-        #endif
+        // #endif
         
         #ifdef REFLECTION
             vec3 finalSheenRadiance = environmentSheenRadiance.rgb;
@@ -1117,6 +1120,8 @@ void main(void) {
     // Alway run to ensure we are going back to gamma space.
     finalColor = applyImageProcessing(finalColor);
 #endif
+
+    finalColor.a *= visibility;
 
 #ifdef PREMULTIPLYALPHA
     // Convert to associative (premultiplied) format if needed.

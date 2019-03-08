@@ -129,8 +129,9 @@ export interface ISceneSerializableComponent extends ISceneComponent {
     /**
      * Removes all the elements in the container from the scene
      * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
      */
-    removeFromContainer(container: AbstractScene): void;
+    removeFromContainer(container: AbstractScene, dispose?: boolean): void;
 
     /**
      * Serializes the component data to the specified json object
