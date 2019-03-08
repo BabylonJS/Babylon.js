@@ -41,7 +41,7 @@ export class DebugTabComponent extends PaneComponent {
 
             for (var mesh of scene.meshes) {
                 if (mesh.physicsImpostor) {
-                    let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor);
+                    let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor, mesh);
 
                     if (debugMesh) {
                         debugMesh.reservedDataStore = { hidden: true };
