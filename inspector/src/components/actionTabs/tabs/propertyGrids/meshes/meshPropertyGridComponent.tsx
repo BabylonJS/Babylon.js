@@ -273,7 +273,6 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     </LineContainerComponent>
                 }
                 <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
-                    <CheckBoxLineComponent label="Show bounding box" target={mesh} propertyName="showBoundingBox" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.material &&
                         <CheckBoxLineComponent label="Display normals" isSelected={() => displayNormals} onSelect={() => this.displayNormals()} />
