@@ -57,6 +57,7 @@ export class AxisScaleGizmo extends Gizmo {
         var arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
         var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
         var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, gizmoLayer.utilityLayerScene);
+        arrowTail.material = this._coloredMaterial;
         arrow.addChild(arrowMesh);
         arrow.addChild(arrowTail);
 
