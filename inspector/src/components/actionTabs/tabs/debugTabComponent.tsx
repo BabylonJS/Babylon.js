@@ -6,6 +6,7 @@ import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPrope
 
 import { PhysicsViewer } from "babylonjs/Debug/physicsViewer";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Mesh } from 'babylonjs/Meshes/mesh';
 
 export class DebugTabComponent extends PaneComponent {
     private _physicsViewersEnabled = false;
@@ -41,7 +42,7 @@ export class DebugTabComponent extends PaneComponent {
 
             for (var mesh of scene.meshes) {
                 if (mesh.physicsImpostor) {
-                    let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor, mesh);
+                    let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor, mesh as Mesh);
 
                     if (debugMesh) {
                         debugMesh.reservedDataStore = { hidden: true };
