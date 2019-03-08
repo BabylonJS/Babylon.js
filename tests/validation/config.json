@@ -483,6 +483,11 @@
       "referenceImage": "pbr.png"
     },
     {
+      "title": "PBR refraction",
+      "playgroundId": "#LCA0Q4#25",
+      "referenceImage": "pbr_refraction.png"
+    },
+    {
       "title": "Texture cache",
       "playgroundId": "#20OAV9#237",
       "referenceImage": "texture cache.png"

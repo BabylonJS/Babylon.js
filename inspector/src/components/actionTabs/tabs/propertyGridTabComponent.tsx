@@ -122,6 +122,15 @@ export class PropertyGridTabComponent extends PaneComponent {
         if (entity.getClassName) {
             const className = entity.getClassName();
 
+            if (className === "Scene") {
+                const scene = entity as Scene;
+                return (<ScenePropertyGridComponent scene={scene}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
             if (className.indexOf("Mesh") !== -1) {
                 const mesh = entity as Mesh;
                 if (mesh.getTotalVertices() > 0) {
@@ -453,13 +462,6 @@ export class PropertyGridTabComponent extends PaneComponent {
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
-        } else if (entity.transformNodes) {
-            const scene = entity as Scene;
-            return (<ScenePropertyGridComponent scene={scene}
-                globalState={this.props.globalState}
-                lockObject={this._lockObject}
-                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
         }
 
         return null;

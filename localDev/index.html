@@ -90,7 +90,7 @@
                     if (typeof createEngine !== "undefined") {
                         engine = createEngine();
                     } else {
-                        engine = new BABYLON.Engine(canvas, true, { stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true });
+                        engine = new BABYLON.Engine(canvas, true, {  premultipliedAlpha: false, stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true });
                     }
 
                     BABYLONDEVTOOLS.Loader.debugShortcut(engine);

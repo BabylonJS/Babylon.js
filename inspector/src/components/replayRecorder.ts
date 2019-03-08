@@ -38,7 +38,9 @@ export class ReplayRecorder {
         let target = event.object.getClassName().toLowerCase();
 
         if (event.object.uniqueId) {
-            if (target.indexOf("camera")) {
+            if (target === "Scene") {
+                target = `scene`;
+            } else if (target.indexOf("camera")) {
                 target = `scene.getCameraByUniqueID(${event.object.uniqueId})`;
             } else if (target.indexOf("mesh")) {
                 target = `scene.getMeshByUniqueID(${event.object.uniqueId})`;

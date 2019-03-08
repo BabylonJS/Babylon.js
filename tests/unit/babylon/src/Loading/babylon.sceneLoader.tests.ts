@@ -121,7 +121,7 @@ describe('Babylon Scene Loader', function() {
                 expect(meshCount, "meshCount").to.equal(scene.meshes.length);
                 expect(materialCount, "materialCount").to.equal(scene.materials.length);
 
-                const filteredTextures = scene.textures.filter((texture) => texture !== scene._environmentBRDFTexture);
+                const filteredTextures = scene.textures.filter((texture) => texture !== scene.environmentBRDFTexture);
                 expect(textureCount, "textureCount").to.equal(filteredTextures.length);
             }));
 
