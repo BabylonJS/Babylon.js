@@ -41,36 +41,30 @@ export class PlaneRotationGizmo extends Gizmo {
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32) {
+    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultGizmoUtilityLayer, tessellation = 32) {
         super(gizmoLayer);
 
         // Create Material
         var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        coloredMaterial.disableLighting = true;
-        coloredMaterial.emissiveColor = color;
+        coloredMaterial.diffuseColor = color;
+        coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverMaterial.disableLighting = true;
-        hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
+        hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
         var parentMesh = new AbstractMesh("", gizmoLayer.utilityLayerScene);
 
-        // Create circle out of lines
-        var radius = 0.8;
-        var points = new Array<Vector3>();
-        for (var i = 0; i < tessellation; i++) {
-            var radian = (2 * Math.PI) * (i / (tessellation - 1));
-            points.push(new Vector3(radius * Math.sin(radian), 0, radius * Math.cos(radian)));
-        }
-        let rotationMesh = Mesh.CreateLines("", points, gizmoLayer.utilityLayerScene);
-        rotationMesh.color = coloredMaterial.emissiveColor;
+        let drag = Mesh.CreateTorus("", 0.6, 0.03, tessellation, gizmoLayer.utilityLayerScene);
+        drag.visibility = 0;
+        let rotationMesh = Mesh.CreateTorus("", 0.6, 0.005, tessellation, gizmoLayer.utilityLayerScene);
+        rotationMesh.material = coloredMaterial;
 
         // Position arrow pointing in its drag axis
-        rotationMesh.scaling.scaleInPlace(0.26);
-        rotationMesh.material = coloredMaterial;
         rotationMesh.rotation.x = Math.PI / 2;
+        drag.rotation.x = Math.PI / 2;
         parentMesh.addChild(rotationMesh);
+        parentMesh.addChild(drag);
         parentMesh.lookAt(this._rootMesh.position.add(planeNormal));
 
         this._rootMesh.addChild(parentMesh);
@@ -187,7 +181,7 @@ export class PlaneRotationGizmo extends Gizmo {
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.emissiveColor;
+                    (<LinesMesh>m).color = material.diffuseColor;
                 }
             });
         });
