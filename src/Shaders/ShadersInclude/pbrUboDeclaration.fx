@@ -12,7 +12,7 @@ uniform Material
     uniform vec4 vRefractionInfos;
     uniform vec2 vReflectionInfos;
     uniform vec3 vReflectionPosition;
-    uniform vec3 vReflectionSize;	
+    uniform vec3 vReflectionSize;
     uniform vec3 vBumpInfos;
     uniform mat4 albedoMatrix;
     uniform mat4 ambientMatrix;
@@ -33,10 +33,12 @@ uniform Material
     uniform vec3 vRefractionMicrosurfaceInfos;
     uniform vec3 vReflectionMicrosurfaceInfos;
 
+    uniform float pointSize;
+
     uniform vec4 vReflectivityColor;
     uniform vec3 vEmissiveColor;
 
-    uniform float pointSize;
+    uniform float visibility;
 
     uniform vec2 vClearCoatParams;
     uniform vec4 vClearCoatRefractionParams;
@@ -61,5 +63,8 @@ uniform Material
 
 uniform Scene {
     mat4 viewProjection;
+#ifdef MULTIVIEW
+	mat4 viewProjectionR;
+#endif 
     mat4 view;
 };

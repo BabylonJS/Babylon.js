@@ -1749,11 +1749,11 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/meshTreeIt
         onClick: () => void;
     }
     export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, {
-        isGizmoEnabled: boolean;
+        isBoundingBoxEnabled: boolean;
         isVisible: boolean;
     }> {
         constructor(props: IMeshTreeItemComponentProps);
-        showGizmos(): void;
+        showBoundingBox(): void;
         switchVisibility(): void;
         render(): JSX.Element;
     }
@@ -3546,11 +3546,11 @@ declare module INSPECTOR {
         onClick: () => void;
     }
     export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, {
-        isGizmoEnabled: boolean;
+        isBoundingBoxEnabled: boolean;
         isVisible: boolean;
     }> {
         constructor(props: IMeshTreeItemComponentProps);
-        showGizmos(): void;
+        showBoundingBox(): void;
         switchVisibility(): void;
         render(): JSX.Element;
     }

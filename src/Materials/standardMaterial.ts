@@ -124,6 +124,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public MULTIVIEW = false;
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
@@ -792,6 +793,13 @@ export class StandardMaterial extends PushMaterial {
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
+        if (scene.activeCamera) {
+            var previousMultiview = defines.MULTIVIEW;
+            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
+            if (defines.MULTIVIEW != previousMultiview) {
+                defines.markAsUnprocessed();
+            }
+        }
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1080,6 +1088,10 @@ export class StandardMaterial extends PushMaterial {
                 fallbacks.addFallback(4, "FRESNEL");
             }
 
+            if (defines.MULTIVIEW) {
+                fallbacks.addFallback(0, "MULTIVIEW");
+            }
+
             //Attributes
             var attribs = [VertexBuffer.PositionKind];
 
@@ -1105,7 +1117,7 @@ export class StandardMaterial extends PushMaterial {
 
             var shaderName = "default";
 
-            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
+            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor", "visibility",
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                 "mBones",
@@ -1212,12 +1224,13 @@ export class StandardMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("specularMatrix", 16);
         this._uniformBuffer.addUniform("bumpMatrix", 16);
         this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
+        this._uniformBuffer.addUniform("pointSize", 1);
         this._uniformBuffer.addUniform("refractionMatrix", 16);
         this._uniformBuffer.addUniform("vRefractionInfos", 4);
         this._uniformBuffer.addUniform("vSpecularColor", 4);
         this._uniformBuffer.addUniform("vEmissiveColor", 3);
+        this._uniformBuffer.addUniform("visibility", 1);
         this._uniformBuffer.addUniform("vDiffuseColor", 4);
-        this._uniformBuffer.addUniform("pointSize", 1);
 
         this._uniformBuffer.create();
     }
@@ -1395,8 +1408,11 @@ export class StandardMaterial extends PushMaterial {
                 }
                 this._uniformBuffer.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
 
+                // Visibility
+                this._uniformBuffer.updateFloat("visibility", mesh.visibility);
+
                 // Diffuse
-                this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+                this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
             }
 
             // Textures

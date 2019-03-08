@@ -8,6 +8,7 @@
 - Added [support for AmmoJS](https://doc.babylonjs.com/how_to/using_the_physics_engine) as a physics plugin (Composite objects, motors, joints) ([TrevorDev](https://github.com/TrevorDev))
   - Added support for soft bodies, which are 3D softbody, 2D cloth and 1D rope, in Ammo physics plugin. [Doc](https://doc.babylonjs.com/how_to/soft_bodies) ([JohnK](https://github.com/BabylonJSGuide))
   - Added support for [Convex Hull Impostor][https://github.com/kripken/ammo.js/blob/master/bullet/src/BulletCollision/CollisionShapes/btConvexHullShape.h] using Ammo.js plugin ([MackeyK24](https://github.com/mackeyk24))
+  - Added getShaderName to PBRMaterialBase to allow subclasses to specify custom PBR shaders [MackeyK24](https://github.com/mackeyk24))
 - Added support for [WebXR](https://doc.babylonjs.com/how_to/webxr) ([TrevorDev](https://github.com/TrevorDev))
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
@@ -27,6 +28,7 @@
   - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev)) **** NEED DEMO or DOC LINK)
 - Migrated the code to modules and deploy [ES6 npm packages](https://doc.babylonjs.com/features/es6_support) ([Sebavan](https://github.com/Sebavan))
 - Added `TrailMesh` class. Credit to furcatomasz ([danjpar](https://github.com/danjpar)) **** NEED DEMO or DOC LINK)
+- Support rendering to a Multiview outputRenderTargetTexture to improve performance for XR scenarios ([TrevorDev](https://github.com/TrevorDev))
 - PBR:
   - Added Inspector Debug Mode ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added Smith Height Correlated Visibility term to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
@@ -120,7 +122,6 @@
 - Inspector light gizmo ([TrevorDev](https://github.com/TrevorDev))
 - Added option `multiMultiMaterials` to mesh.mergeMeshes ([danjpar](https://github.com/danjpar))
 - Expose fallback camera distortion metrics option in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
-- Added setColor method to boundingBoxGizmo ([TrevorDev](https://github.com/TrevorDev))
 - Added OnAfterEnteringVRObservable to webVRHelper ([TrevorDev](https://github.com/TrevorDev))
 - Added Support for Side By Side and Top/Bottom VR videos in the [video dome](https://doc.babylonjs.com/how_to/360videodome#video-types) ([Sebavan](https://github.com/Sebavan))
 - Added UnitTests for BaseCameraPointersInput and ArcRotateCameraPointersInput. ([mrdunk](https://github.com))
@@ -192,16 +193,18 @@
 - CannonJS ignores connectedPivot joint parameter ([TrevorDev](https://github.com/TrevorDev))
 - Fix case sensitive paths ([mrdunk](https://github.com))
 - Fix more case sensitive paths ([mrdunk](https://github.com))
-- Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev)))
-- AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev)))
-- Warn of motor with maxForce in Oimo plugin and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev)))
+- Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev))
+- AmmoJS fix include issue caused after modules update and use world contact point to be consistent with oimo and cannon ([TrevorDev](https://github.com/TrevorDev))
+- Warn of motor with maxForce in Oimo plugin and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBehavior should not let the drag plane get out of sync when rotating the object during dragging ([TrevorDev](https://github.com/TrevorDev))
 - Do not crash the application if webVR submitFrame fails ([TrevorDev](https://github.com/TrevorDev))
 - Fix pinch action on FollowCameraPointersInput ([mrdunk](https://github.com))
 - Tools.CreateScreenshot stopped working ([TrevorDev](https://github.com/TrevorDev))
-- Inspector showing duplicate nodes when attached to gizmo ([TrevorDev](https://github.com/TrevorDev)))
-- Add missing dependencies for files to support including them from a direct path (eg. import "@babylonjs/core/Helpers/sceneHelpers";) ([TrevorDev](https://github.com/TrevorDev)))
+- Inspector showing duplicate nodes when attached to gizmo ([TrevorDev](https://github.com/TrevorDev))
+- Add missing dependencies for files to support including them from a direct path (eg. import "@babylonjs/core/Helpers/sceneHelpers";) ([TrevorDev](https://github.com/TrevorDev))
+- AssetContainer should not dispose objects it doesn't contain, Support for environmentTexture ([TrevorDev](https://github.com/TrevorDev))
+- Fix `mesh.visibility` not working properly when certain material properties are set that changes the interpretation of alpha (e.g. refraction, specular over alpha, etc.) ([bghgary](https://github.com/bghgary))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -225,6 +228,7 @@
 - Add option to disable gazeTracker color changes in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBehavior validateDrag predicate to stop dragging to specific points ([TrevorDev](https://github.com/TrevorDev))
 - Auto Update Touch Action [#5674](https://github.com/BabylonJS/Babylon.js/issues/5674)([Sebavan](https://github.com/Sebavan))
+- Add hemispheric lighting to gizmos to avoid flat look ([TrevorDev](https://github.com/TrevorDev))
 
 ### Viewer
 

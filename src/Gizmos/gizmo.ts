@@ -78,7 +78,7 @@ export class Gizmo implements IDisposable {
      */
     constructor(
         /** The utility layer the gizmo will be added to */
-        public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+        public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultGizmoUtilityLayer) {
         this._rootMesh = new Mesh("gizmoRootNode", gizmoLayer.utilityLayerScene);
         this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(() => {
             this._update();
@@ -93,31 +93,32 @@ export class Gizmo implements IDisposable {
      */
     protected _update() {
         if (this.attachedMesh) {
+            const effectiveMesh = this.attachedMesh._effectiveMesh || this.attachedMesh;
             if (this.updateGizmoRotationToMatchAttachedMesh) {
                 if (!this._rootMesh.rotationQuaternion) {
                     this._rootMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._rootMesh.rotation.y, this._rootMesh.rotation.x, this._rootMesh.rotation.z);
                 }
 
                 // Remove scaling before getting rotation matrix to get rotation matrix unmodified by scale
-                this._tempVector.copyFrom(this.attachedMesh.scaling);
-                if (this.attachedMesh.scaling.x < 0) {
-                    this.attachedMesh.scaling.x *= -1;
+                this._tempVector.copyFrom(effectiveMesh.scaling);
+                if (effectiveMesh.scaling.x < 0) {
+                    effectiveMesh.scaling.x *= -1;
                 }
-                if (this.attachedMesh.scaling.y < 0) {
-                    this.attachedMesh.scaling.y *= -1;
+                if (effectiveMesh.scaling.y < 0) {
+                    effectiveMesh.scaling.y *= -1;
                 }
-                if (this.attachedMesh.scaling.z < 0) {
-                    this.attachedMesh.scaling.z *= -1;
+                if (effectiveMesh.scaling.z < 0) {
+                    effectiveMesh.scaling.z *= -1;
                 }
-                this.attachedMesh.computeWorldMatrix().getRotationMatrixToRef(this._tmpMatrix);
-                this.attachedMesh.scaling.copyFrom(this._tempVector);
-                this.attachedMesh.computeWorldMatrix();
+                effectiveMesh.computeWorldMatrix().getRotationMatrixToRef(this._tmpMatrix);
+                effectiveMesh.scaling.copyFrom(this._tempVector);
+                effectiveMesh.computeWorldMatrix();
                 Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this._rootMesh.rotationQuaternion);
             } else if (this._rootMesh.rotationQuaternion) {
                 this._rootMesh.rotationQuaternion.set(0, 0, 0, 1);
             }
             if (this.updateGizmoPositionToMatchAttachedMesh) {
-                this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
+                this._rootMesh.position.copyFrom(effectiveMesh.absolutePosition);
             }
             if (this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh) {
                 var cameraPosition = this.gizmoLayer.utilityLayerScene.activeCamera.globalPosition;

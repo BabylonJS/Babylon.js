@@ -83,8 +83,9 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
     /**
      * Removes all the elements in the container from the scene
      * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
      */
-    public removeFromContainer(container: AbstractScene): void {
+    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
         // Nothing To Do Here. (directly attached to a light)
     }
 

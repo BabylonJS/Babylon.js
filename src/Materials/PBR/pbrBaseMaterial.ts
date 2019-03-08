@@ -3,7 +3,7 @@ import { Observer } from "../../Misc/observable";
 import { IAnimatable } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
-import { TextureTools } from "../../Misc/textureTools";
+import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
@@ -96,6 +96,7 @@ class PBRMaterialDefines extends MaterialDefines
     public METALLNESSSTOREINMETALMAPBLUE = false;
     public AOSTOREINMETALMAPRED = false;
     public ENVIRONMENTBRDF = false;
+    public ENVIRONMENTBRDF_RGBD = false;
 
     public NORMAL = false;
     public TANGENT = false;
@@ -169,6 +170,7 @@ class PBRMaterialDefines extends MaterialDefines
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
+    public MULTIVIEW = false;
 
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
@@ -749,7 +751,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return this._renderTargets;
         };
 
-        this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
     }
 
     /**
@@ -772,6 +774,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public getClassName(): string {
         return "PBRBaseMaterial";
+    }
+
+    /**
+     * Gets the name of the material shader.
+     * @returns - string that specifies the shader program of the material.
+     */
+    public getShaderName(): string {
+        return "pbr";
     }
 
     /**
@@ -845,7 +855,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param mesh - BJS mesh.
      */
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-        if (this._disableAlphaBlending) {
+        if (this._disableAlphaBlending && mesh.visibility >= 1.0) {
             return false;
         }
 
@@ -1141,6 +1151,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
         }
 
+        if (defines.MULTIVIEW) {
+            fallbacks.addFallback(0, "MULTIVIEW");
+        }
+
         //Attributes
         var attribs = [VertexBuffer.PositionKind];
 
@@ -1168,7 +1182,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
-        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
+        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
             "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
             "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
@@ -1215,7 +1229,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         });
 
         var join = defines.toString();
-        return engine.createEffect("pbr", <EffectCreationOptions>{
+        return engine.createEffect(this.getShaderName(), <EffectCreationOptions>{
             attributes: attribs,
             uniformsNames: uniforms,
             uniformBuffersNames: uniformBuffers,
@@ -1235,6 +1249,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Lights
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
+
+        // Multiview
+        if (scene.activeCamera) {
+            var previousMultiview = defines.MULTIVIEW;
+            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
+            if (defines.MULTIVIEW != previousMultiview) {
+                defines.markAsUnprocessed();
+            }
+        }
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
@@ -1434,8 +1457,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                     defines.ENVIRONMENTBRDF = true;
+                    // Not actual true RGBD, only the B chanel is encoded as RGBD for sheen.
+                    defines.ENVIRONMENTBRDF_RGBD = this._environmentBRDFTexture.isRGBD;
                 } else {
                     defines.ENVIRONMENTBRDF = false;
+                    defines.ENVIRONMENTBRDF_RGBD = false;
                 }
 
                 if (this._shouldUseAlphaFromAlbedoTexture()) {
@@ -1567,10 +1593,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
         this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
+        this._uniformBuffer.addUniform("pointSize", 1);
         this._uniformBuffer.addUniform("vReflectivityColor", 4);
         this._uniformBuffer.addUniform("vEmissiveColor", 3);
-
-        this._uniformBuffer.addUniform("pointSize", 1);
+        this._uniformBuffer.addUniform("visibility", 1);
 
         PBRClearCoatConfiguration.PrepareUniformBuffer(this._uniformBuffer);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(this._uniformBuffer);
@@ -1763,7 +1789,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 this._uniformBuffer.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
-                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha * mesh.visibility);
+                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
+
+                // Visibility
+                this._uniformBuffer.updateFloat("visibility", mesh.visibility);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
@@ -2107,7 +2136,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._reflectionTexture.dispose();
             }
 
-            if (this._environmentBRDFTexture && this.getScene()._environmentBRDFTexture !== this._environmentBRDFTexture) {
+            if (this._environmentBRDFTexture && this.getScene().environmentBRDFTexture !== this._environmentBRDFTexture) {
                 this._environmentBRDFTexture.dispose();
             }
 

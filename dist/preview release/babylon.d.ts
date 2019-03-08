@@ -6257,6 +6257,10 @@ declare module BABYLON {
          */
         is3D: boolean;
         /**
+         * Defines if the texture contains multiview data
+         */
+        isMultiview: boolean;
+        /**
          * Gets the URL used to load this texture
          */
         url: string;
@@ -6382,6 +6386,10 @@ declare module BABYLON {
         _lodGenerationScale: number;
         /** @hidden */
         _lodGenerationOffset: number;
+        /** @hidden */
+        _colorTextureArray: Nullable<WebGLTexture>;
+        /** @hidden */
+        _depthStencilTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
         _lodTextureHigh: BaseTexture;
         /** @hidden */
@@ -11458,8 +11466,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Serializes the component data to the specified json object
          * @param serializationObject The object to serialize to
@@ -12877,6 +12886,143 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This represents all the required metrics to create a VR camera.
+     * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
+     */
+    export class VRCameraMetrics {
+        /**
+         * Define the horizontal resolution off the screen.
+         */
+        hResolution: number;
+        /**
+         * Define the vertical resolution off the screen.
+         */
+        vResolution: number;
+        /**
+         * Define the horizontal screen size.
+         */
+        hScreenSize: number;
+        /**
+         * Define the vertical screen size.
+         */
+        vScreenSize: number;
+        /**
+         * Define the vertical screen center position.
+         */
+        vScreenCenter: number;
+        /**
+         * Define the distance of the eyes to the screen.
+         */
+        eyeToScreenDistance: number;
+        /**
+         * Define the distance between both lenses
+         */
+        lensSeparationDistance: number;
+        /**
+         * Define the distance between both viewer's eyes.
+         */
+        interpupillaryDistance: number;
+        /**
+         * Define the distortion factor of the VR postprocess.
+         * Please, touch with care.
+         */
+        distortionK: number[];
+        /**
+         * Define the chromatic aberration correction factors for the VR post process.
+         */
+        chromaAbCorrection: number[];
+        /**
+         * Define the scale factor of the post process.
+         * The smaller the better but the slower.
+         */
+        postProcessScaleFactor: number;
+        /**
+         * Define an offset for the lens center.
+         */
+        lensCenterOffset: number;
+        /**
+         * Define if the current vr camera should compensate the distortion of the lense or not.
+         */
+        compensateDistortion: boolean;
+        /**
+         * Defines if multiview should be enabled when rendering (Default: false)
+         */
+        multiviewEnabled: boolean;
+        /**
+         * Gets the rendering aspect ratio based on the provided resolutions.
+         */
+        readonly aspectRatio: number;
+        /**
+         * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
+         */
+        readonly aspectRatioFov: number;
+        /**
+         * @hidden
+         */
+        readonly leftHMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly rightHMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly leftPreViewMatrix: Matrix;
+        /**
+         * @hidden
+         */
+        readonly rightPreViewMatrix: Matrix;
+        /**
+         * Get the default VRMetrics based on the most generic setup.
+         * @returns the default vr metrics
+         */
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var vrDistortionCorrectionPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * VRDistortionCorrectionPostProcess used for mobile VR
+     */
+    export class VRDistortionCorrectionPostProcess extends PostProcess {
+        private _isRightEye;
+        private _distortionFactors;
+        private _postProcessScaleFactor;
+        private _lensCenterOffset;
+        private _scaleIn;
+        private _scaleFactor;
+        private _lensCenter;
+        /**
+         * Initializes the VRDistortionCorrectionPostProcess
+         * @param name The name of the effect.
+         * @param camera The camera to apply the render pass to.
+         * @param isRightEye If this is for the right eye distortion
+         * @param vrMetrics All the required metrics for the VR camera
+         */
+        constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+    /**
+     * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR
+     * This will not be used for webXR as it supports displaying texture arrays directly
+     */
+    export class VRMultiviewToSingleview extends PostProcess {
+        /**
+         * Initializes a VRMultiviewToSingleview
+         * @param name name of the post process
+         * @param camera camera to be applied to
+         * @param scaleFactor scaling factor to the size of the output texture
+         */
+        constructor(name: string, camera: Camera, scaleFactor: number);
+    }
+}
+declare module BABYLON {
+    /**
      * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
      * IMPORTANT!! The data is right-hand data.
      * @export
@@ -12984,6 +13130,10 @@ declare module BABYLON {
          * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
          */
         defaultHeight?: number;
+        /**
+         * If multiview should be used if availible (default: false)
+         */
+        useMultiview?: boolean;
     }
     /**
      * This represents a WebVR camera.
@@ -16705,6 +16855,14 @@ declare module BABYLON {
         setArray3(name: string, value: number[]): ShaderMaterial;
         private _checkCache;
         /**
+         * Specifies that the submesh is ready to be used
+         * @param mesh defines the mesh to check
+         * @param subMesh defines which submesh to check
+         * @param useInstances specifies that instances should be used
+         * @returns a boolean indicating that the submesh is ready or not
+         */
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        /**
          * Checks if the material is ready to render the requested mesh
          * @param mesh Define the mesh to render
          * @param useInstances Define whether or not the material is used with instances
@@ -17584,6 +17742,11 @@ declare module BABYLON {
          */
         render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
         private _bestReflectionRenderTargetDimension;
+        /**
+         * @hidden
+         * @param faceIndex face index to bind to if this is a cubetexture
+         */
+        _bindFrameBuffer(faceIndex?: number): void;
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
         private renderToTarget;
         /**
@@ -17627,6 +17790,38 @@ declare module BABYLON {
          * Clear the info related to rendering groups preventing retention point in material dispose.
          */
         freeRenderingGroups(): void;
+        /**
+         * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+         * @returns the view count
+         */
+        getViewCount(): number;
+    }
+    /**
+     * Renders to multiple views with a single draw call
+     * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
+     */
+    export class MultiviewRenderTarget extends RenderTargetTexture {
+        /**
+         * Creates a multiview render target
+         * @param scene scene used with the render target
+         * @param size the size of the render target (used for each view)
+         */
+        constructor(scene: Scene, size?: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        });
+        /**
+         * @hidden
+         * @param faceIndex the face index, if its a cube texture
+         */
+        _bindFrameBuffer(faceIndex?: number): void;
+        /**
+         * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+         * @returns the view count
+         */
+        getViewCount(): number;
     }
 }
 declare module BABYLON {
@@ -19498,6 +19693,7 @@ declare module BABYLON {
         getBodyPositionIterations?(impostor: PhysicsImpostor): number;
         setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
         appendAnchor?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
+        appendHook?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
         sleepBody(impostor: PhysicsImpostor): void;
         wakeUpBody(impostor: PhysicsImpostor): void;
         raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
@@ -19667,6 +19863,14 @@ declare module BABYLON {
          * The collision margin around a soft object
          */
         damping?: number;
+        /**
+         * The path for a rope based on an extrusion
+         */
+        path?: any;
+        /**
+         * The shape of an extrusion used for a rope based on an extrusion
+         */
+        shape?: any;
     }
     /**
      * Interface for a physics-enabled object
@@ -19807,6 +20011,8 @@ declare module BABYLON {
         private _deltaPosition;
         private _deltaRotation;
         private _deltaRotationConjugated;
+        /** hidden */
+        _isFromLine: boolean;
         private _parent;
         private _isDisposed;
         private static _tmpVecs;
@@ -20074,15 +20280,24 @@ declare module BABYLON {
          */
         addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
         /**
-         * Add an anchor to a soft impostor
-         * @param otherImpostor rigid impostor as the anchor
+         * Add an anchor to a cloth impostor
+         * @param otherImpostor rigid impostor to anchor to
          * @param width ratio across width from 0 to 1
          * @param height ratio up height from 0 to 1
-         * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
-         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between cloth impostor and anchor are ignored; default false
          * @returns impostor the soft imposter
          */
         addAnchor(otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor;
+        /**
+         * Add a hook to a rope impostor
+         * @param otherImpostor rigid impostor to anchor to
+         * @param length ratio across rope from 0 to 1
+         * @param influence the elasticity between rope impostor and anchor from 0, very stretchy to 1, little strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         * @returns impostor the rope imposter
+         */
+        addHook(otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor;
         /**
          * Will keep this body still, in a sleep mode.
          * @returns the physics imposter
@@ -20710,7 +20925,7 @@ declare module BABYLON {
         /** @hidden */
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
-        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate?: boolean): Mesh;
+        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh;
         /**
          * Registers for this mesh a javascript function called just before the rendering process
          * @param func defines the function to call before rendering this mesh
@@ -24134,6 +24349,8 @@ declare module BABYLON {
         _updateSubMeshesBoundingInfo(matrix: DeepImmutable<Matrix>): AbstractMesh;
         /** @hidden */
         protected _afterComputeWorldMatrix(): void;
+        /** @hidden */
+        readonly _effectiveMesh: AbstractMesh;
         /**
          * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
          * A mesh is in the frustum if its bounding box intersects the frustum
@@ -26606,6 +26823,8 @@ declare module BABYLON {
         timerQuery: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         canUseTimestampForTimerQuery: boolean;
+        /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
+        multiview: any;
         /** Function used to let the system compiles shaders in background */
         parallelShaderCompile: {
             COMPLETION_STATUS_KHR: number;
@@ -28334,6 +28553,18 @@ declare module BABYLON {
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
         /**
+         * Creates a new multiview render target
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @returns the created multiview texture
+         */
+        createMultiviewRenderTargetTexture(width: number, height: number): InternalTexture;
+        /**
+         * Binds a multiview framebuffer to be drawn to
+         * @param multiviewTexture texture to bind
+         */
+        bindMultiviewFramebuffer(multiviewTexture: InternalTexture): void;
+        /**
          * Creates a new render target cube texture
          * @param size defines the size of the texture
          * @param options defines the options used to create the texture
@@ -29777,6 +30008,7 @@ declare module BABYLON {
     export function serializeAsColor4(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     export function serializeAsImageProcessingConfiguration(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     export function serializeAsQuaternion(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsMatrix(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
     /**
      * Decorator used to define property that can be serialized as reference to a camera
      * @param sourceName defines the name of the property to decorate
@@ -29899,11 +30131,6 @@ declare module BABYLON {
          */
         static ForceAttachControlToAlwaysPreventDefault: boolean;
         /**
-         * @hidden
-         * Might be removed once multiview will be a thing
-         */
-        static UseAlternateWebVRRendering: boolean;
-        /**
          * Define the input manager associated with the camera.
          */
         inputs: CameraInputsManager<Camera>;
@@ -30007,6 +30234,23 @@ declare module BABYLON {
          */
         outputRenderTarget: Nullable<RenderTargetTexture>;
         /**
+         * @hidden
+         * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+         */
+        _useMultiviewToSingleView: boolean;
+        /**
+         * @hidden
+         * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+         */
+        _multiviewTexture: Nullable<RenderTargetTexture>;
+        /**
+         * @hidden
+         * ensures the multiview texture of the camera exists and has the specified width/height
+         * @param width height to set on the multiview texture
+         * @param height width to set on the multiview texture
+         */
+        _resizeOrCreateMultiviewTexture(width: number, height: number): void;
+        /**
          * Observable triggered when the camera view matrix has changed.
          */
         onViewMatrixChangedObservable: Observable<Camera>;
@@ -30031,8 +30275,6 @@ declare module BABYLON {
         protected _webvrViewMatrix: Matrix;
         /** @hidden */
         _skipRendering: boolean;
-        /** @hidden */
-        _alternateCamera: Camera;
         /** @hidden */
         _projectionMatrix: Matrix;
         /** @hidden */
@@ -31470,8 +31712,15 @@ declare module BABYLON {
          * Defines the color used to simulate the ambient color (Default is (0, 0, 0))
          */
         ambientColor: Color3;
-        /** @hidden */
-        _environmentBRDFTexture: BaseTexture;
+        /**
+         * This is use to store the default BRDF lookup for PBR materials in your scene.
+         * It should only be one of the following (if not the default embedded one):
+         * * For uncorrelated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = false) : https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
+         * * For correlated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedBRDF.dds
+         * * For correlated multi scattering BRDF (pbr.brdf.useEnergyConservation = true and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
+         * The material properties need to be setup according to the type of texture in use.
+         */
+        environmentBRDFTexture: BaseTexture;
         /** @hidden */
         protected _environmentTexture: Nullable<BaseTexture>;
         /**
@@ -32048,8 +32297,6 @@ declare module BABYLON {
         private _intermediateRendering;
         private _viewUpdateFlag;
         private _projectionUpdateFlag;
-        private _alternateViewUpdateFlag;
-        private _alternateProjectionUpdateFlag;
         /** @hidden */
         _toBeDisposed: Nullable<IDisposable>[];
         private _activeRequests;
@@ -32072,20 +32319,14 @@ declare module BABYLON {
         /** @hidden */
         _activeAnimatables: Animatable[];
         private _transformMatrix;
+        private _transformMatrixR;
         private _sceneUbo;
-        private _alternateSceneUbo;
+        private _multiviewSceneUbo;
         private _viewMatrix;
         private _projectionMatrix;
-        private _alternateViewMatrix;
-        private _alternateProjectionMatrix;
-        private _alternateTransformMatrix;
-        private _useAlternateCameraConfiguration;
-        private _alternateRendering;
         private _wheelEventName;
         /** @hidden */
         _forcedViewPosition: Nullable<Vector3>;
-        /** @hidden */
-        readonly _isAlternateRenderingEnabled: boolean;
         private _frustumPlanes;
         /**
          * Gets the list of frustum planes (built from the active camera)
@@ -32253,6 +32494,11 @@ declare module BABYLON {
          * @param options defines the scene options
          */
         constructor(engine: Engine, options?: SceneOptions);
+        /**
+         * Gets a string idenfifying the name of the class
+         * @returns "Scene" string
+         */
+        getClassName(): string;
         private _defaultMeshCandidates;
         /**
          * @hidden
@@ -32373,7 +32619,7 @@ declare module BABYLON {
         incrementRenderId(): void;
         private _updatePointerPosition;
         private _createUbo;
-        private _createAlternateUbo;
+        private _createMultiviewUbo;
         private _setRayOnPointerInfo;
         /**
          * Use this method to simulate a pointer move on a mesh
@@ -32492,8 +32738,6 @@ declare module BABYLON {
          * Useful to override when animations start running when loading a scene for the first time.
          */
         resetLastAnimationTimeFrame(): void;
-        /** @hidden */
-        _switchToAlternateCameraConfiguration(active: boolean): void;
         /**
          * Gets the current view matrix
          * @returns a Matrix
@@ -32511,12 +32755,12 @@ declare module BABYLON {
         getTransformMatrix(): Matrix;
         /**
          * Sets the current transform matrix
-         * @param view defines the View matrix to use
-         * @param projection defines the Projection matrix to use
+         * @param viewL defines the View matrix to use
+         * @param projectionL defines the Projection matrix to use
+         * @param viewR defines the right View matrix to use (if provided)
+         * @param projectionR defines the right Projection matrix to use (if provided)
          */
-        setTransformMatrix(view: Matrix, projection: Matrix): void;
-        /** @hidden */
-        _setAlternateTransformMatrix(view: Matrix, projection: Matrix): void;
+        setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void;
         /**
          * Gets the uniform buffer used to store scene data
          * @returns a UniformBuffer
@@ -33004,11 +33248,7 @@ declare module BABYLON {
          * @param force defines a boolean used to force the update even if cache is up to date
          */
         updateTransformMatrix(force?: boolean): void;
-        /**
-         * Defines an alternate camera (used mostly in VR-like scenario where two cameras can render the same scene from a slightly different point of view)
-         * @param alternateCamera defines the camera to use
-         */
-        updateAlternateTransformMatrix(alternateCamera: Camera): void;
+        private _bindFrameBuffer;
         /** @hidden */
         _allowPostProcessClearColor: boolean;
         private _renderForCamera;
@@ -33398,6 +33638,10 @@ declare module BABYLON {
          * Textures to keep.
          */
         textures: BaseTexture[];
+        /**
+         * Environment texture for the scene
+         */
+        environmentTexture: Nullable<BaseTexture>;
     }
 }
 declare module BABYLON {
@@ -33950,8 +34194,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Disposes the component and the associated ressources.
          */
@@ -37334,126 +37579,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * This represents all the required metrics to create a VR camera.
-     * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
-     */
-    export class VRCameraMetrics {
-        /**
-         * Define the horizontal resolution off the screen.
-         */
-        hResolution: number;
-        /**
-         * Define the vertical resolution off the screen.
-         */
-        vResolution: number;
-        /**
-         * Define the horizontal screen size.
-         */
-        hScreenSize: number;
-        /**
-         * Define the vertical screen size.
-         */
-        vScreenSize: number;
-        /**
-         * Define the vertical screen center position.
-         */
-        vScreenCenter: number;
-        /**
-         * Define the distance of the eyes to the screen.
-         */
-        eyeToScreenDistance: number;
-        /**
-         * Define the distance between both lenses
-         */
-        lensSeparationDistance: number;
-        /**
-         * Define the distance between both viewer's eyes.
-         */
-        interpupillaryDistance: number;
-        /**
-         * Define the distortion factor of the VR postprocess.
-         * Please, touch with care.
-         */
-        distortionK: number[];
-        /**
-         * Define the chromatic aberration correction factors for the VR post process.
-         */
-        chromaAbCorrection: number[];
-        /**
-         * Define the scale factor of the post process.
-         * The smaller the better but the slower.
-         */
-        postProcessScaleFactor: number;
-        /**
-         * Define an offset for the lens center.
-         */
-        lensCenterOffset: number;
-        /**
-         * Define if the current vr camera should compensate the distortion of the lense or not.
-         */
-        compensateDistortion: boolean;
-        /**
-         * Gets the rendering aspect ratio based on the provided resolutions.
-         */
-        readonly aspectRatio: number;
-        /**
-         * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
-         */
-        readonly aspectRatioFov: number;
-        /**
-         * @hidden
-         */
-        readonly leftHMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly rightHMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly leftPreViewMatrix: Matrix;
-        /**
-         * @hidden
-         */
-        readonly rightPreViewMatrix: Matrix;
-        /**
-         * Get the default VRMetrics based on the most generic setup.
-         * @returns the default vr metrics
-         */
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var vrDistortionCorrectionPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * VRDistortionCorrectionPostProcess used for mobile VR
-     */
-    export class VRDistortionCorrectionPostProcess extends PostProcess {
-        private _isRightEye;
-        private _distortionFactors;
-        private _postProcessScaleFactor;
-        private _lensCenterOffset;
-        private _scaleIn;
-        private _scaleFactor;
-        private _lensCenter;
-        /**
-         * Initializes the VRDistortionCorrectionPostProcess
-         * @param name The name of the effect.
-         * @param camera The camera to apply the render pass to.
-         * @param isRightEye If this is for the right eye distortion
-         * @param vrMetrics All the required metrics for the VR camera
-         */
-        constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-declare module BABYLON {
-    /**
      * Camera used to simulate VR rendering (based on ArcRotateCamera)
      * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
      */
@@ -38131,6 +38256,7 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        MULTIVIEW: boolean;
         /**
          * If the reflection texture on this material is in linear color space
          * @hidden
@@ -40097,85 +40223,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class containing static functions to help procedurally build meshes
-     */
-    export class LinesBuilder {
-        /**
-         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
-         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
-         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
-         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
-         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line system mesh
-         */
-        static CreateLineSystem(name: string, options: {
-            lines: Vector3[][];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Nullable<Color4[][]>;
-            useVertexAlpha?: boolean;
-        }, scene: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a line mesh
-         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * The optional parameter `colors` is an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line mesh
-         */
-        static CreateLines(name: string, options: {
-            points: Vector3[];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Color4[];
-            useVertexAlpha?: boolean;
-        }, scene?: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a dashed line mesh
-         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
-         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
-         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the dashed line mesh
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
-         */
-        static CreateDashedLines(name: string, options: {
-            points: Vector3[];
-            dashSize?: number;
-            gapSize?: number;
-            dashNb?: number;
-            updatable?: boolean;
-            instance?: LinesMesh;
-        }, scene?: Nullable<Scene>): LinesMesh;
-    }
-}
-declare module BABYLON {
-    /**
      * Renders a layer on top of an existing scene
      */
     export class UtilityLayerRenderer implements IDisposable {
@@ -40183,6 +40230,7 @@ declare module BABYLON {
         originalScene: Scene;
         private _pointerCaptures;
         private _lastPointerEvents;
+        private static _DefaultGizmoUtilityLayer;
         private static _DefaultUtilityLayer;
         private static _DefaultKeepDepthUtilityLayer;
         /**
@@ -40193,6 +40241,10 @@ declare module BABYLON {
          * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
          */
         static readonly DefaultUtilityLayer: UtilityLayerRenderer;
+        /**
+         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
+         */
+        static readonly DefaultGizmoUtilityLayer: UtilityLayerRenderer;
         /**
          * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
          */
@@ -40668,6 +40720,7 @@ declare module BABYLON.Debug {
         private _debugBoxMesh;
         private _debugSphereMesh;
         private _debugMaterial;
+        private _debugMeshMeshes;
         /**
          * Creates a new PhysicsViewer
          * @param scene defines the hosting scene
@@ -40678,9 +40731,10 @@ declare module BABYLON.Debug {
         /**
          * Renders a specified physic impostor
          * @param impostor defines the impostor to render
+         * @param targetMesh defines the mesh represented by the impostor
          * @returns the new debug mesh used to render the impostor
          */
-        showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh>;
+        showImpostor(impostor: PhysicsImpostor, targetMesh?: Mesh): Nullable<AbstractMesh>;
         /**
          * Hides a specified physic impostor
          * @param impostor defines the impostor to hide
@@ -40689,9 +40743,89 @@ declare module BABYLON.Debug {
         private _getDebugMaterial;
         private _getDebugBoxMesh;
         private _getDebugSphereMesh;
+        private _getDebugMeshMesh;
         private _getDebugMesh;
         /** Releases all resources */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class LinesBuilder {
+        /**
+         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
+         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
+         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
+         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line system mesh
+         */
+        static CreateLineSystem(name: string, options: {
+            lines: Vector3[][];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Nullable<Color4[][]>;
+            useVertexAlpha?: boolean;
+        }, scene: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a line mesh
+         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * The optional parameter `colors` is an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line mesh
+         */
+        static CreateLines(name: string, options: {
+            points: Vector3[];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Color4[];
+            useVertexAlpha?: boolean;
+        }, scene?: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a dashed line mesh
+         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
+         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
+         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the dashed line mesh
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
+         */
+        static CreateDashedLines(name: string, options: {
+            points: Vector3[];
+            dashSize?: number;
+            gapSize?: number;
+            dashNb?: number;
+            updatable?: boolean;
+            instance?: LinesMesh;
+        }, scene?: Nullable<Scene>): LinesMesh;
     }
 }
 declare module BABYLON {
@@ -43044,16 +43178,12 @@ declare module BABYLON {
     /**
      * Class used to host texture specific utilities
      */
-    export class TextureTools {
+    export class BRDFTextureTools {
         /**
-         * Uses the GPU to create a copy texture rescaled at a given size
-         * @param texture Texture to copy from
-         * @param width defines the desired width
-         * @param height defines the desired height
-         * @param useBilinearMode defines if bilinear mode has to be used
-         * @return the generated texture
+         * Expand the BRDF Texture from RGBD to Half Float if necessary.
+         * @param texture the texture to expand.
          */
-        static CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
+        private static _ExpandDefaultBRDFTexture;
         /**
          * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
          * @param scene defines the hosting scene
@@ -43396,6 +43526,16 @@ declare module BABYLON {
      * Define the code related to the BRDF parameters of the pbr material.
      */
     export class PBRBRDFConfiguration {
+        /**
+         * Default value used for the energy conservation.
+         * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+         */
+        static DEFAULT_USE_ENERGY_CONSERVATION: boolean;
+        /**
+         * Default value used for the Smith Visibility Height Correlated mode.
+         * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+         */
+        static DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED: boolean;
         private _useEnergyConservation;
         /**
          * Defines if the material uses energy conservation.
@@ -44087,6 +44227,11 @@ declare module BABYLON {
          * Gets the name of the material class.
          */
         getClassName(): string;
+        /**
+         * Gets the name of the material shader.
+         * @returns - string that specifies the shader program of the material.
+         */
+        getShaderName(): string;
         /**
          * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
          */
@@ -45766,8 +45911,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Disposes the component and the associated ressources.
          */
@@ -46506,8 +46652,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Serializes the component data to the specified json object
          * @param serializationObject The object to serialize to
@@ -46561,8 +46708,9 @@ declare module BABYLON {
         /**
          * Removes all the elements in the container from the scene
          * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
          */
-        removeFromContainer(container: AbstractScene): void;
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
         /**
          * Rebuilds the elements related to this component in case of
          * context lost for instance.
@@ -50759,10 +50907,20 @@ declare module BABYLON {
          */
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
         /**
-         * Update babylon mesh vertices vertices to match physics world object
+         * Update babylon mesh to match physics world object
          * @param impostor imposter to match
          */
-        afterSoftStep(impostor: PhysicsImpostor): void;
+        private _afterSoftStep;
+        /**
+         * Update babylon mesh vertices vertices to match physics world softbody or cloth
+         * @param impostor imposter to match
+         */
+        private _ropeStep;
+        /**
+         * Update babylon mesh vertices vertices to match physics world softbody or cloth
+         * @param impostor imposter to match
+         */
+        private _softbodyOrClothStep;
         private _tmpVector;
         private _tmpMatrix;
         /**
@@ -50817,6 +50975,11 @@ declare module BABYLON {
          * @param impostor to create the softbody for
          */
         private _createCloth;
+        /**
+         * Create rope for an impostor
+         * @param impostor to create the softbody for
+         */
+        private _createRope;
         private _addHullVerts;
         private _createShape;
         /**
@@ -50946,15 +51109,24 @@ declare module BABYLON {
          */
         setBodyPositionIterations(impostor: PhysicsImpostor, positionIterations: number): void;
         /**
-        * Append an anchor to a soft object
-        * @param impostor soft impostor to add anchor to
-        * @param otherImpostor rigid impostor as the anchor
+        * Append an anchor to a cloth object
+        * @param impostor is the cloth impostor to add anchor to
+        * @param otherImpostor is the rigid impostor to anchor to
         * @param width ratio across width from 0 to 1
         * @param height ratio up height from 0 to 1
-        * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, no strech
+        * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
         */
         appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence?: number, noCollisionBetweenLinkedBodies?: boolean): void;
+        /**
+         * Append an hook to a rope object
+         * @param impostor is the rope impostor to add hook to
+         * @param otherImpostor is the rigid impostor to hook to
+         * @param length ratio along the rope from 0 to 1
+         * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little strech
+         * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+         */
+        appendHook(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence?: number, noCollisionBetweenLinkedBodies?: boolean): void;
         /**
          * Sleeps the physics body and stops it from being active
          * @param impostor impostor to sleep
@@ -55035,6 +55207,22 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to host texture specific utilities
+     */
+    export class TextureTools {
+        /**
+         * Uses the GPU to create a copy texture rescaled at a given size
+         * @param texture Texture to copy from
+         * @param width defines the desired width
+         * @param height defines the desired height
+         * @param useBilinearMode defines if bilinear mode has to be used
+         * @return the generated texture
+         */
+        static CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode?: boolean): Texture;
+    }
+}
+declare module BABYLON {
+    /**
      * This represents the different options avilable for the video capture.
      */
     export interface VideoRecorderOptions {
@@ -55238,6 +55426,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var blurPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var vrMultiviewToSingleviewPixelShader: {
         name: string;
         shader: string;
     };

@@ -78,6 +78,8 @@ export class AssetContainer extends AbstractScene {
             this.scene.addReflectionProbe(o);
         });
 
+        this.scene.environmentTexture = this.environmentTexture;
+
         for (let component of this.scene._serializableComponents) {
             component.addFromContainer(this);
         }
@@ -130,6 +132,10 @@ export class AssetContainer extends AbstractScene {
             this.scene.removeReflectionProbe(o);
         });
 
+        if (this.environmentTexture === this.scene.environmentTexture) {
+            this.scene.environmentTexture = null;
+        }
+
         for (let component of this.scene._serializableComponents) {
             component.removeFromContainer(this);
         }
@@ -142,42 +148,70 @@ export class AssetContainer extends AbstractScene {
         this.cameras.forEach((o) => {
             o.dispose();
         });
+        this.cameras = [];
+
         this.lights.forEach((o) => {
             o.dispose();
         });
+        this.lights = [];
+
         this.meshes.forEach((o) => {
             o.dispose();
         });
+        this.meshes = [];
+
         this.skeletons.forEach((o) => {
             o.dispose();
         });
+        this.skeletons = [];
+
         this.animationGroups.forEach((o) => {
             o.dispose();
         });
+        this.animationGroups = [];
+
         this.multiMaterials.forEach((o) => {
             o.dispose();
         });
+        this.multiMaterials = [];
+
         this.materials.forEach((o) => {
             o.dispose();
         });
+        this.materials = [];
+
         this.geometries.forEach((o) => {
             o.dispose();
         });
+        this.geometries = [];
+
         this.transformNodes.forEach((o) => {
             o.dispose();
         });
+        this.transformNodes = [];
+
         this.actionManagers.forEach((o) => {
             o.dispose();
         });
+        this.actionManagers = [];
+
         this.textures.forEach((o) => {
             o.dispose();
         });
+        this.textures = [];
+
         this.reflectionProbes.forEach((o) => {
             o.dispose();
         });
+        this.reflectionProbes = [];
+
+        if (this.environmentTexture) {
+            this.environmentTexture.dispose();
+            this.environmentTexture = null;
+        }
 
         for (let component of this.scene._serializableComponents) {
-            component.dispose();
+            component.removeFromContainer(this, true);
         }
     }
 
