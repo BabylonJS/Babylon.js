@@ -1364,6 +1364,14 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._engine.onNewSceneAddedObservable.notifyObservers(this);
     }
 
+    /**
+     * Gets a string idenfifying the name of the class
+     * @returns "Scene" string
+     */
+    public getClassName(): string {
+        return "Scene";
+    }
+
     private _defaultMeshCandidates: ISmartArrayLike<AbstractMesh> = {
         data: [],
         length: 0
