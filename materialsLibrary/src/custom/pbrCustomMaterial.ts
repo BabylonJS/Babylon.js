@@ -1,20 +1,12 @@
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Effect } from "babylonjs/Materials/effect";
-import { StandardMaterialDefines } from "babylonjs/Materials/standardMaterial";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { PBRMaterialDefines } from "babylonjs/Materials/PBR/pbrBaseMaterial";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
-export class CustomShaderStructure {
-
-    public FragmentStore: string;
-    public VertexStore: string;
-
-    constructor() { }
-}
-
-export class ShaderSpecialParts {
+export class ShaderAlebdoParts {
 
     constructor() { }
 
@@ -22,8 +14,8 @@ export class ShaderSpecialParts {
     public Fragment_Definitions: string;
     public Fragment_MainBegin: string;
 
-    // diffuseColor
-    public Fragment_Custom_Diffuse: string;
+    // albedoColor
+    public Fragment_Custom_Albedo: string;
     // lights
     public Fragment_Before_Lights: string;
     // fog
@@ -47,9 +39,9 @@ export class ShaderSpecialParts {
     public Vertex_MainEnd: string;
 }
 
-export class CustomMaterial extends StandardMaterial {
+export class PBRCustomMaterial extends PBRMaterial {
     public static ShaderIndexer = 1;
-    public CustomParts: ShaderSpecialParts;
+    public CustomParts: ShaderAlebdoParts;
     _isCreatedShader: boolean;
     _createdShaderName: string;
     _customUniform: string[];
@@ -105,15 +97,15 @@ export class CustomMaterial extends StandardMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines): string {
 
         if (this._isCreatedShader) {
             return this._createdShaderName;
         }
         this._isCreatedShader = false;
 
-        CustomMaterial.ShaderIndexer++;
-        var name: string = "custom_" + CustomMaterial.ShaderIndexer;
+        PBRCustomMaterial.ShaderIndexer++;
+        var name: string = "custom_" + PBRCustomMaterial.ShaderIndexer;
 
         this.ReviewUniform("uniform", uniforms);
         this.ReviewUniform("sampler", samplers);
@@ -140,7 +132,7 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
             .replace('#define CUSTOM_FRAGMENT_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
-            .replace('#define CUSTOM_FRAGMENT_UPDATE_DIFFUSE', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
+            .replace('#define CUSTOM_FRAGMENT_UPDATE_ALBEDO', (this.CustomParts.Fragment_Custom_Albedo ? this.CustomParts.Fragment_Custom_Albedo : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', (this.CustomParts.Fragment_Before_Fog ? this.CustomParts.Fragment_Before_Fog : ""))
@@ -154,14 +146,14 @@ export class CustomMaterial extends StandardMaterial {
 
     constructor(name: string, scene: Scene) {
         super(name, scene);
-        this.CustomParts = new ShaderSpecialParts();
+        this.CustomParts = new ShaderAlebdoParts();
         this.customShaderNameResolve = this.Builder;
 
-        this.FragmentShader = Effect.ShadersStore["defaultPixelShader"];
-        this.VertexShader = Effect.ShadersStore["defaultVertexShader"];
+        this.FragmentShader = Effect.ShadersStore["pbrPixelShader"];
+        this.VertexShader = Effect.ShadersStore["pbrVertexShader"];
     }
 
-    public AddUniform(name: string, kind: string, param: any): CustomMaterial {
+    public AddUniform(name: string, kind: string, param: any): PBRCustomMaterial {
         if (!this._customUniform) {
             this._customUniform = new Array();
             this._newUniforms = new Array();
@@ -182,75 +174,75 @@ export class CustomMaterial extends StandardMaterial {
         return this;
     }
 
-    public Fragment_Begin(shaderPart: string): CustomMaterial {
+    public Fragment_Begin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Begin = shaderPart;
         return this;
     }
 
-    public Fragment_Definitions(shaderPart: string): CustomMaterial {
+    public Fragment_Definitions(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Definitions = shaderPart;
         return this;
     }
 
-    public Fragment_MainBegin(shaderPart: string): CustomMaterial {
+    public Fragment_MainBegin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_MainBegin = shaderPart;
         return this;
     }
 
-    public Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial {
-        this.CustomParts.Fragment_Custom_Diffuse = shaderPart.replace("result", "diffuseColor");
+    public Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial {
+        this.CustomParts.Fragment_Custom_Albedo = shaderPart.replace("result", "surfaceAlbedo");
         return this;
     }
 
-    public Fragment_Custom_Alpha(shaderPart: string): CustomMaterial {
+    public Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
         return this;
     }
 
-    public Fragment_Before_Lights(shaderPart: string): CustomMaterial {
+    public Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_Lights = shaderPart;
         return this;
     }
 
-    public Fragment_Before_Fog(shaderPart: string): CustomMaterial {
+    public Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_Fog = shaderPart;
         return this;
     }
 
-    public Fragment_Before_FragColor(shaderPart: string): CustomMaterial {
+    public Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
         return this;
     }
 
-    public Vertex_Begin(shaderPart: string): CustomMaterial {
+    public Vertex_Begin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Begin = shaderPart;
         return this;
     }
 
-    public Vertex_Definitions(shaderPart: string): CustomMaterial {
+    public Vertex_Definitions(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Definitions = shaderPart;
         return this;
     }
 
-    public Vertex_MainBegin(shaderPart: string): CustomMaterial {
+    public Vertex_MainBegin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_MainBegin = shaderPart;
         return this;
     }
 
-    public Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial {
+    public Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result", "positionUpdated");
         return this;
     }
 
-    public Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial {
+    public Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
         return this;
     }
 
-    public Vertex_MainEnd(shaderPart: string): CustomMaterial {
+    public Vertex_MainEnd(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_MainEnd = shaderPart;
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.CustomMaterial"] = CustomMaterial;
+_TypeStore.RegisteredTypes["BABYLON.PBRCustomMaterial"] = PBRCustomMaterial;
