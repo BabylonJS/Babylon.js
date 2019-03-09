@@ -39,7 +39,7 @@ import "../../Shaders/pbr.vertex";
 
 /**
  * Manages the defines for the PBR Material.
- * @hiddenChildren
+ * @hidden
  */
 export class PBRMaterialDefines extends MaterialDefines
     implements IImageProcessingConfigurationDefines,
