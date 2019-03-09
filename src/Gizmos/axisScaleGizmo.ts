@@ -42,7 +42,7 @@ export class AxisScaleGizmo extends Gizmo {
      * @param dragAxis The axis which the gizmo will be able to scale on
      * @param color The color of the gizmo
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultGizmoUtilityLayer) {
+    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         super(gizmoLayer);
 
         // Create Material
@@ -57,6 +57,7 @@ export class AxisScaleGizmo extends Gizmo {
         var arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
         var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
         var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, gizmoLayer.utilityLayerScene);
+        arrowTail.material = this._coloredMaterial;
         arrow.addChild(arrowMesh);
         arrow.addChild(arrowTail);
 
@@ -131,6 +132,9 @@ export class AxisScaleGizmo extends Gizmo {
                 }
             });
         });
+
+        var light = gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes());
     }
 
     protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {

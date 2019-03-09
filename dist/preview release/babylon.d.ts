@@ -12987,6 +12987,13 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+    /** @hidden */
+    export var vrMultiviewToSingleviewPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
     /**
      * VRDistortionCorrectionPostProcess used for mobile VR
      */
@@ -40230,9 +40237,14 @@ declare module BABYLON {
         originalScene: Scene;
         private _pointerCaptures;
         private _lastPointerEvents;
-        private static _DefaultGizmoUtilityLayer;
         private static _DefaultUtilityLayer;
         private static _DefaultKeepDepthUtilityLayer;
+        private _sharedGizmoLight;
+        /**
+         * @hidden
+         * Light which used by gizmos to get light shading
+         */
+        _getSharedGizmoLight(): HemisphericLight;
         /**
          * If the picking should be done on the utility layer prior to the actual scene (Default: true)
          */
@@ -40241,10 +40253,6 @@ declare module BABYLON {
          * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
          */
         static readonly DefaultUtilityLayer: UtilityLayerRenderer;
-        /**
-         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
-         */
-        static readonly DefaultGizmoUtilityLayer: UtilityLayerRenderer;
         /**
          * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
          */
@@ -55426,13 +55434,6 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var blurPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var vrMultiviewToSingleviewPixelShader: {
         name: string;
         shader: string;
     };

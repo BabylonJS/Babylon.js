@@ -41,7 +41,7 @@ export class PlaneRotationGizmo extends Gizmo {
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultGizmoUtilityLayer, tessellation = 32) {
+    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32) {
         super(gizmoLayer);
 
         // Create Material
@@ -185,6 +185,9 @@ export class PlaneRotationGizmo extends Gizmo {
                 }
             });
         });
+
+        var light = gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
     }
 
     protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
