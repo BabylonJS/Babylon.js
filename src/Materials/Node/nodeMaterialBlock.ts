@@ -3,7 +3,8 @@ import { NodeMaterialBuildState } from './nodeMaterialBuildState';
 import { Nullable } from '../../types';
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
-import { Effect } from '../effect';
+import { Effect, EffectFallbacks } from '../effect';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
 
 /**
@@ -13,7 +14,6 @@ export class NodeMaterialBlock {
     private _buildId: number;
     private _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
-    private _isBindable = false;
 
     /** @hidden */
     protected _inputs = new Array<NodeMaterialConnectionPoint>();
@@ -30,13 +30,6 @@ export class NodeMaterialBlock {
      */
     public get isFinalMerger(): boolean {
         return this._isFinalMerger;
-    }
-
-    /**
-     * Gets a boolean indicating that this block needs to bind data to effect
-     */
-    public get isBindable(): boolean {
-        return this._isBindable;
     }
 
     /**
@@ -111,13 +104,11 @@ export class NodeMaterialBlock {
      * @param name defines the block name
      * @param target defines the target of that block (Vertex by default)
      * @param isFinalMerger defines a boolean indicating that this block is an end block (e.g. it is generating a system value). Default is false
-     * @param isBindable defines that this block needs to bind data to effect
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false, isBindable = false) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false) {
         this.name = name;
 
         this._target = target;
-        this._isBindable = isBindable;
 
         if (isFinalMerger) {
             this._isFinalMerger = true;
@@ -286,6 +277,15 @@ export class NodeMaterialBlock {
     }
 
     /**
+     * Add potential fallbacks if shader compilation fails
+     * @param mesh defines the mesh to be rendered
+     * @param fallbacks defines the current prioritized list of fallbacks
+     */
+    public provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
+        // Do nothing
+    }
+
+    /**
      * Compile the current node and generate the shader code
      * @param state defines the current compilation state (uniforms, samplers, current string)
      * @returns the current block
@@ -316,10 +316,6 @@ export class NodeMaterialBlock {
 
         if (this._buildId === state.sharedData.buildId) {
             return; // Need to check again as inputs can be connected multiple time to this endpoint
-        }
-
-        if (this.isBindable) {
-            state.sharedData.activeBlocks.push(this);
         }
 
         // Logs

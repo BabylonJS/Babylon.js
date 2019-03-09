@@ -3,6 +3,8 @@ import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { Nullable } from '../../types';
 import { Effect } from '../effect';
 import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
+import { Scene } from '../../scene';
+import { Matrix } from '../../Maths/math';
 
 declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
 
@@ -182,32 +184,6 @@ export class NodeMaterialConnectionPoint {
      * @returns the current connection point
      */
     public setAsWellKnownValue(value: NodeMaterialWellKnownValues): NodeMaterialConnectionPoint {
-        switch (value) {
-            case NodeMaterialWellKnownValues.World:
-                this.name = "world";
-                break;
-            case NodeMaterialWellKnownValues.View:
-                this.name = "view";
-                break;
-            case NodeMaterialWellKnownValues.Projection:
-                this.name = "projection";
-                break;
-            case NodeMaterialWellKnownValues.WorldView:
-                this.name = "worldView";
-                break;
-            case NodeMaterialWellKnownValues.WorldViewProjection:
-                this.name = "worldViewProjection";
-                break;
-            case NodeMaterialWellKnownValues.ViewProjection:
-                this.name = "viewProjection";
-                break;
-            case NodeMaterialWellKnownValues.FogColor:
-                this.name = "fogColor";
-                break;
-            case NodeMaterialWellKnownValues.FogParameters:
-                this.name = "fogParameters";
-                break;
-        }
         this.isUniform = true;
         this._wellKnownValue = value;
         return this;
@@ -278,8 +254,51 @@ export class NodeMaterialConnectionPoint {
     /**
      * When connection point is an uniform, this function will send its value to the effect
      * @param effect defines the effect to transmit value to
+     * @param world defines the world matrix
+     * @param worldView defines the worldxview matrix
+     * @param worldViewProjection defines the worldxviewxprojection matrix
      */
-    public transmit(effect: Effect) {
+    public transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix) {
+        switch (this._wellKnownValue) {
+            case NodeMaterialWellKnownValues.World:
+                effect.setMatrix("world", world);
+                break;
+            case NodeMaterialWellKnownValues.WorldView:
+                effect.setMatrix("worldView", worldView);
+                break;
+            case NodeMaterialWellKnownValues.WorldViewProjection:
+                effect.setMatrix("worldViewProjection", worldViewProjection);
+                break;
+        }
+    }
+
+    /**
+     * When connection point is an uniform, this function will send its value to the effect
+     * @param effect defines the effect to transmit value to
+     * @param scene defines the hosting scene
+     */
+    public transmit(effect: Effect, scene: Scene) {
+        if (this._wellKnownValue) {
+            switch (this._wellKnownValue) {
+                case NodeMaterialWellKnownValues.View:
+                    effect.setMatrix("world", scene.getViewMatrix());
+                    break;
+                case NodeMaterialWellKnownValues.Projection:
+                    effect.setMatrix("world", scene.getProjectionMatrix());
+                    break;
+                case NodeMaterialWellKnownValues.ViewProjection:
+                    effect.setMatrix("world", scene.getTransformMatrix());
+                    break;
+                case NodeMaterialWellKnownValues.FogColor:
+                    effect.setColor3("fogColor", scene.fogColor);
+                    break;
+                case NodeMaterialWellKnownValues.FogParameters:
+                    effect.setFloat4("fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+                    break;
+            }
+            return;
+        }
+
         let value = this._valueCallback ? this._valueCallback() : this._storedValue;
 
         switch (this.type) {
