@@ -49,7 +49,7 @@ export class ScaleGizmo extends Gizmo {
      * Creates a ScaleGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultGizmoUtilityLayer) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         super(gizmoLayer);
         this.xGizmo = new AxisScaleGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer);
         this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer);
@@ -66,6 +66,8 @@ export class ScaleGizmo extends Gizmo {
         octahedron.scaling.scaleInPlace(0.007);
         uniformScalingMesh.addChild(octahedron);
         this.uniformScaleGizmo.setCustomMesh(uniformScalingMesh, true);
+        var light = gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(octahedron);
 
         // Relay drag events
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {

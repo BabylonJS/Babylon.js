@@ -42,7 +42,7 @@ export class AxisScaleGizmo extends Gizmo {
      * @param dragAxis The axis which the gizmo will be able to scale on
      * @param color The color of the gizmo
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultGizmoUtilityLayer) {
+    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         super(gizmoLayer);
 
         // Create Material
@@ -131,6 +131,9 @@ export class AxisScaleGizmo extends Gizmo {
                 }
             });
         });
+
+        var light = gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes());
     }
 
     protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
