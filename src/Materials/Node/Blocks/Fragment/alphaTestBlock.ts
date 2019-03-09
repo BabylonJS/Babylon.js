@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
@@ -41,10 +41,12 @@ export class AlphaTestBlock extends NodeMaterialBlock {
         return false;
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let input = this._inputs[0];
+
+        state.sharedData.hints.needAlphaTesting = true;
 
         state.compilationString += `if (${input.associatedVariableName}.a < ${this.alphaCutOff}) discard;\r\n`;
 

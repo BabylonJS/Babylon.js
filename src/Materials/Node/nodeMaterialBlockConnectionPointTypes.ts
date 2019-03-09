@@ -26,4 +26,6 @@ export enum NodeMaterialBlockConnectionPointTypes {
     Vector4OrColor4 = Vector4 | Color4,
     /** Color3 or Color4 */
     Color3OrColor4 = Color3 | Color4,
+    /** Vector3 or Color3 */
+    Vector3OrColor3OrVector4OrColor4 = Vector3 | Color3 | Vector4 | Color4,
 }

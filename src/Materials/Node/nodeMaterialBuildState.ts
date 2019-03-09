@@ -2,13 +2,13 @@ import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint'
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
-import { NodeMaterialCompilationStateSharedData } from './nodeMaterialCompilationStateSharedData';
-import { Effect } from '../../Materials/effect';
+import { NodeMaterialBuildStateSharedData } from './NodeMaterialBuildStateSharedData';
+import { Effect } from '../effect';
 
 /**
- * Class used to store node based material compilation state
+ * Class used to store node based material build state
  */
-export class NodeMaterialCompilationState {
+export class NodeMaterialBuildState {
     /**
      * Gets the list of emitted attributes
      */
@@ -31,15 +31,12 @@ export class NodeMaterialCompilationState {
     public target: NodeMaterialBlockTargets;
 
     /**
-     * Shared data between multiple NodeMaterialCompilationState instances
+     * Shared data between multiple NodeMaterialBuildState instances
      */
-    public sharedData: NodeMaterialCompilationStateSharedData;
+    public sharedData: NodeMaterialBuildStateSharedData;
 
     /** @hidden */
-    public _uniformConnectionPoints = new Array<NodeMaterialConnectionPoint>();
-
-    /** @hidden */
-    public _vertexState: NodeMaterialCompilationState;
+    public _vertexState: NodeMaterialBuildState;
 
     private _attributeDeclaration = "";
     private _uniformDeclaration = "";
@@ -55,7 +52,7 @@ export class NodeMaterialCompilationState {
      * Finalize the compilation strings
      * @param state defines the current compilation state
      */
-    public finalize(state: NodeMaterialCompilationState) {
+    public finalize(state: NodeMaterialBuildState) {
         let emitComments = state.sharedData.emitComments;
         let isFragmentMode = (this.target === NodeMaterialBlockTargets.Fragment);
 
@@ -101,6 +98,11 @@ export class NodeMaterialCompilationState {
     }
 
     /** @hidden */
+    public _excludeVariableName(name: string) {
+        this.sharedData.variableNames[name] = 0;
+    }
+
+    /** @hidden */
     public _getGLType(type: NodeMaterialBlockConnectionPointTypes): string {
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
@@ -136,11 +138,32 @@ export class NodeMaterialCompilationState {
     }
 
     /** @hidden */
+    public _emitCodeFromInclude(includeName: string, options?: {
+        replaceStrings?: { search: RegExp, replace: string }[],
+    }) {
+        let code = Effect.IncludesShadersStore[includeName] + "\r\n";
+
+        if (!options) {
+            return code;
+        }
+
+        if (options.replaceStrings) {
+            for (var index = 0; index < options.replaceStrings.length; index++) {
+                let replaceString = options.replaceStrings[index];
+                code = code.replace(replaceString.search, replaceString.replace);
+            }
+        }
+
+        return code;
+    }
+
+    /** @hidden */
     public _emitFunctionFromInclude(name: string, includeName: string, options?: {
+        removeAttributes?: boolean,
         removeUniforms?: boolean,
         removeVaryings?: boolean,
         removeifDef?: boolean,
-        replaceString?: string[],
+        replaceStrings?: { search: RegExp, replace: string }[],
     }) {
         if (this.functions[name]) {
             return;
@@ -153,7 +176,14 @@ export class NodeMaterialCompilationState {
         }
 
         if (options.removeifDef) {
-            this.functions[name] = this.functions[name].replace(/^\s*?#.+$/gm, "");
+            this.functions[name] = this.functions[name].replace(/^\s*?#ifdef.+$/gm, "");
+            this.functions[name] = this.functions[name].replace(/^\s*?#endif.*$/gm, "");
+            this.functions[name] = this.functions[name].replace(/^\s*?#else.*$/gm, "");
+            this.functions[name] = this.functions[name].replace(/^\s*?#elif.*$/gm, "");
+        }
+
+        if (options.removeAttributes) {
+            this.functions[name] = this.functions[name].replace(/^\s*?attribute.+$/gm, "");
         }
 
         if (options.removeUniforms) {
@@ -164,9 +194,10 @@ export class NodeMaterialCompilationState {
             this.functions[name] = this.functions[name].replace(/^\s*?varying.+$/gm, "");
         }
 
-        if (options.replaceString) {
-            for (var index = 0; index < options.replaceString.length; index += 2) {
-                this.functions[name] = this.functions[name].replace(options.replaceString[index], options.replaceString[index + 1]);
+        if (options.replaceStrings) {
+            for (var index = 0; index < options.replaceStrings.length; index++) {
+                let replaceString = options.replaceStrings[index];
+                this.functions[name] = this.functions[name].replace(replaceString.search, replaceString.replace);
             }
         }
     }
@@ -200,7 +231,7 @@ export class NodeMaterialCompilationState {
 
             this.samplers.push(point.name);
             this._samplerDeclaration += `uniform ${this._getGLType(point.type)} ${point.name};\r\n`;
-            this._uniformConnectionPoints.push(point);
+            this.sharedData.uniformConnectionPoints.push(point);
             return;
         }
 
@@ -249,7 +280,7 @@ export class NodeMaterialCompilationState {
                         break;
                 }
             } else {
-                this._uniformConnectionPoints.push(point);
+                this.sharedData.uniformConnectionPoints.push(point);
             }
 
             return;

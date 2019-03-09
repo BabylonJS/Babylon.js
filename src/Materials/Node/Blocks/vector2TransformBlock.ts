@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from '../nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 
 /**
@@ -37,7 +37,7 @@ export class Vector2TransformBlock extends NodeMaterialBlock {
         return "Vector2TransformBlock";
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let output = this._outputs[0];

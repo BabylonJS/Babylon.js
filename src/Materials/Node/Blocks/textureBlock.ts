@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from '../nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 
 /**
@@ -28,7 +28,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return "TextureBlock";
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let uvInput = this._inputs[0];

@@ -1,8 +1,10 @@
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from './nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from './nodeMaterialBuildState';
 import { Nullable } from '../../types';
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { Effect } from '../effect';
+import { Mesh } from '../../Meshes/mesh';
 
 /**
  * Defines a block that can be used inside a node based material
@@ -11,6 +13,7 @@ export class NodeMaterialBlock {
     private _buildId: number;
     private _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
+    private _isBindable = false;
 
     /** @hidden */
     protected _inputs = new Array<NodeMaterialConnectionPoint>();
@@ -27,6 +30,13 @@ export class NodeMaterialBlock {
      */
     public get isFinalMerger(): boolean {
         return this._isFinalMerger;
+    }
+
+    /**
+     * Gets a boolean indicating that this block needs to bind data to effect
+     */
+    public get isBindable(): boolean {
+        return this._isBindable;
     }
 
     /**
@@ -101,23 +111,47 @@ export class NodeMaterialBlock {
      * @param name defines the block name
      * @param target defines the target of that block (Vertex by default)
      * @param isFinalMerger defines a boolean indicating that this block is an end block (e.g. it is generating a system value). Default is false
+     * @param isBindable defines that this block needs to bind data to effect
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false, isBindable = false) {
         this.name = name;
 
         this._target = target;
+        this._isBindable = isBindable;
 
         if (isFinalMerger) {
             this._isFinalMerger = true;
         }
     }
 
-    protected _declareOutput(output: NodeMaterialConnectionPoint, state: NodeMaterialCompilationState): string {
+    /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public initialize(state: NodeMaterialBuildState) {
+        // Do nothing
+    }
+
+    /**
+     * Bind data to effect. Will only be called for blocks with isBindable === true
+     * @param effect defines the effect to bind data to
+     * @param mesh defines the mesh that will be rendered
+     */
+    public bind(effect: Effect, mesh?: Mesh) {
+        // Do nothing
+    }
+
+    protected _declareOutput(output: NodeMaterialConnectionPoint, state: NodeMaterialBuildState): string {
         if (output.isVarying) {
             return `${output.associatedVariableName}`;
         }
 
         return `${state._getGLType(output.type)} ${output.associatedVariableName}`;
+    }
+
+    protected _writeVariable(currentPoint: NodeMaterialConnectionPoint): string {
+        let connectionPoint = currentPoint.connectedPoint!;
+        return `${currentPoint.associatedVariableName}${connectionPoint.swizzle ? "." + connectionPoint.swizzle : ""}`;
     }
 
     protected _writeFloat(value: number) {
@@ -212,19 +246,23 @@ export class NodeMaterialBlock {
     /**
      * Connect current block with another block
      * @param other defines the block to connect with
-     * @param inputName define the name of the other block input (will take the first available one if not defined)
-     * @param outputName define the name of current block output (will take the first one if not defined)
+     * @param options define the various options to help pick the right connections
      * @returns the current block
      */
-    public connectTo(other: NodeMaterialBlock, inputName?: string, outputName?: string) {
+    public connectTo(other: NodeMaterialBlock, options?: {
+        input?: string,
+        output?: string,
+        outputSwizzle?: string
+    }) {
         if (this._outputs.length === 0) {
             return;
         }
 
-        let output = outputName ? this.getOutputByName(outputName) : this.getFirstAvailableOutput(other);
-        let input = inputName ? other.getInputByName(inputName) : other.getFirstAvailableInput(output);
+        let output = options && options.output ? this.getOutputByName(options.output) : this.getFirstAvailableOutput(other);
+        let input = options && options.input ? other.getInputByName(options.input) : other.getFirstAvailableInput(output);
 
         if (output && input) {
+            output.swizzle = options ? options.outputSwizzle || "" : "";
             output.connectTo(input);
         } else {
             throw "Unable to find a compatible match";
@@ -233,7 +271,7 @@ export class NodeMaterialBlock {
         return this;
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         // Empty. Must be defined by child nodes
     }
 
@@ -252,7 +290,7 @@ export class NodeMaterialBlock {
      * @param state defines the current compilation state (uniforms, samplers, current string)
      * @returns the current block
      */
-    public build(state: NodeMaterialCompilationState) {
+    public build(state: NodeMaterialBuildState) {
         if (this._buildId === state.sharedData.buildId) {
             return;
         }
@@ -278,6 +316,10 @@ export class NodeMaterialBlock {
 
         if (this._buildId === state.sharedData.buildId) {
             return; // Need to check again as inputs can be connected multiple time to this endpoint
+        }
+
+        if (this.isBindable) {
+            state.sharedData.activeBlocks.push(this);
         }
 
         // Logs

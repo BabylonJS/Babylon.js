@@ -584,7 +584,7 @@ export class SceneLoader {
                 onProgress(event);
             }
             catch (e) {
-                errorHandler("Error in onProgress callback", e);
+                errorHandler("Error in onProgress callback: " + e, e);
             }
         } : undefined;
 
@@ -596,7 +596,7 @@ export class SceneLoader {
                     onSuccess(meshes, particleSystems, skeletons, animationGroups);
                 }
                 catch (e) {
-                    errorHandler("Error in onSuccess callback", e);
+                    errorHandler("Error in onSuccess callback: " + e, e);
                 }
             }
 

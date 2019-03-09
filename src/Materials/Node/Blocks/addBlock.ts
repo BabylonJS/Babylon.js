@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from '../nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 /**
  * Block used to add 2 vector4
  */
@@ -25,7 +25,7 @@ export class AddBlock extends NodeMaterialBlock {
         return "AddBlock";
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let output = this._outputs[0];

@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
@@ -29,7 +29,7 @@ export class RGBMergerBlock extends NodeMaterialBlock {
         return "RGBMergerBlock";
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let rInput = this._inputs[0];
@@ -38,7 +38,7 @@ export class RGBMergerBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = vec3(${rInput.associatedVariableName}, ${gInput.associatedVariableName}, ${bInput.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = vec3(${this._writeVariable(rInput)}, ${this._writeVariable(gInput)}, ${this._writeVariable(bInput)});\r\n`;
 
         return this;
     }

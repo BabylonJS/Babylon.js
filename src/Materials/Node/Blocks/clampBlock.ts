@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from '../nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 /**
  * Block used to clamp a float
  */
@@ -30,7 +30,7 @@ export class ClampBlock extends NodeMaterialBlock {
         return "ClampBlock";
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let output = this._outputs[0];
