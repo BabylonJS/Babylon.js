@@ -105,7 +105,9 @@ export class SkeletonViewer {
 
     private _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void {
         var len = bones.length;
-        var meshPos = this.mesh.position;
+
+        let mesh = this.skeleton.overrideMesh || this.mesh;
+        var meshPos = mesh.position;
         for (var i = 0; i < len; i++) {
             var bone = bones[i];
             var points = this._debugLines[i];
@@ -123,7 +125,9 @@ export class SkeletonViewer {
     private _getLinesForBonesNoLength(bones: Bone[], meshMat: Matrix): void {
         var len = bones.length;
         var boneNum = 0;
-        var meshPos = this.mesh.position;
+
+        let mesh = this.skeleton.overrideMesh || this.mesh;
+        var meshPos = mesh.position;
         for (var i = len - 1; i >= 0; i--) {
             var childBone = bones[i];
             var parentBone = childBone.getParent();
@@ -135,8 +139,8 @@ export class SkeletonViewer {
                 points = [Vector3.Zero(), Vector3.Zero()];
                 this._debugLines[boneNum] = points;
             }
-            childBone.getAbsolutePositionToRef(this.mesh, points[0]);
-            parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
+            childBone.getAbsolutePositionToRef(mesh, points[0]);
+            parentBone.getAbsolutePositionToRef(mesh, points[1]);
             points[0].subtractInPlace(meshPos);
             points[1].subtractInPlace(meshPos);
             boneNum++;
@@ -153,10 +157,12 @@ export class SkeletonViewer {
             this.skeleton.computeAbsoluteTransforms();
         }
 
+        let mesh = this.skeleton.overrideMesh || this.mesh;
+
         if (this.skeleton.bones[0].length === undefined) {
-            this._getLinesForBonesNoLength(this.skeleton.bones, this.mesh.getWorldMatrix());
+            this._getLinesForBonesNoLength(this.skeleton.bones, mesh.getWorldMatrix());
         } else {
-            this._getLinesForBonesWithLength(this.skeleton.bones, this.mesh.getWorldMatrix());
+            this._getLinesForBonesWithLength(this.skeleton.bones, mesh.getWorldMatrix());
         }
         const targetScene = this._utilityLayer.utilityLayerScene;
 
