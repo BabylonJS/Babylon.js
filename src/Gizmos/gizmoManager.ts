@@ -54,7 +54,7 @@ export class GizmoManager implements IDisposable {
     constructor(private scene: Scene) {
         this._defaultKeepDepthUtilityLayer = new UtilityLayerRenderer(scene);
         this._defaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
-        this._defaultUtilityLayer = UtilityLayerRenderer.DefaultGizmoUtilityLayer;
+        this._defaultUtilityLayer = UtilityLayerRenderer.DefaultUtilityLayer;
 
         this.gizmos = { positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null };
 

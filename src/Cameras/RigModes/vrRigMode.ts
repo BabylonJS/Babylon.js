@@ -5,7 +5,7 @@ import { VRCameraMetrics } from "../VR/vrCameraMetrics";
 import { Logger } from '../../Misc/logger';
 
 Camera._setVRRigMode = function(camera: Camera, rigParams: any) {
-    var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
+    var metrics = <VRCameraMetrics>rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
 
     camera._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
     camera._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
@@ -30,7 +30,7 @@ Camera._setVRRigMode = function(camera: Camera, rigParams: any) {
             metrics.multiviewEnabled = false;
         }else {
             camera._useMultiviewToSingleView = true;
-            camera._rigPostProcess = new VRMultiviewToSingleview("VRMultiviewToSingleview", camera, 1.0);
+            camera._rigPostProcess = new VRMultiviewToSingleview("VRMultiviewToSingleview", camera, metrics.postProcessScaleFactor);
         }
     }
 
