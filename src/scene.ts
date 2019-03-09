@@ -4174,7 +4174,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             // copying the result into the sub cameras instead of rendering them and proceeding as normal from there
 
             // Render to a multiview texture
-            camera._resizeOrCreateMultiviewTexture(this.getEngine().getRenderWidth(true) / 2, this.getEngine().getRenderHeight(true));
+            camera._resizeOrCreateMultiviewTexture(
+                (camera._rigPostProcess && camera._rigPostProcess && camera._rigPostProcess.width > 0) ? camera._rigPostProcess.width / 2 : this.getEngine().getRenderWidth(true) / 2,
+                (camera._rigPostProcess && camera._rigPostProcess && camera._rigPostProcess.height > 0) ? camera._rigPostProcess.height : this.getEngine().getRenderHeight(true)
+            );
             if (!this._multiviewSceneUbo) {
                 this._createMultiviewUbo();
             }
