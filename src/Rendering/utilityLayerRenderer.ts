@@ -14,7 +14,6 @@ import { Vector3, Color3 } from '../Maths/math';
 export class UtilityLayerRenderer implements IDisposable {
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _lastPointerEvents: { [pointerId: number]: boolean } = {};
-    private static _DefaultGizmoUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private _sharedGizmoLight: Nullable<HemisphericLight> = null;
