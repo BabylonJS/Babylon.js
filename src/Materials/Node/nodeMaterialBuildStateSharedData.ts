@@ -21,9 +21,14 @@ export class NodeMaterialBuildStateSharedData {
     public uniformConnectionPoints = new Array<NodeMaterialConnectionPoint>();
 
     /**
-     * Active blocks (Blocks that need to set data to the effect)
+     * Bindable blocks (Blocks that need to set data to the effect)
      */
-    public activeBlocks = new Array<NodeMaterialBlock>();
+    public bindableBlocks = new Array<NodeMaterialBlock>();
+
+    /**
+     * List of blocks that can provide a compilation fallback
+     */
+    public blocksWithFallbacks = new Array<NodeMaterialBlock>();
 
     /**
      * Build Id used to avoid multiple recompilations
@@ -43,14 +48,8 @@ export class NodeMaterialBuildStateSharedData {
      * Gets the compilation hints emitted at compilation time
      */
     public hints = {
-        needWorldMatrix: false,
-        needViewMatrix: false,
-        needProjectionMatrix: false,
-        needViewProjectionMatrix: false,
         needWorldViewMatrix: false,
         needWorldViewProjectionMatrix: false,
-        needFogColor: false,
-        needFogParameters: false,
         needAlphaBlending: false,
         needAlphaTesting: false
     };

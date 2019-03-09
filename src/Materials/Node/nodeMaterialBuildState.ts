@@ -254,29 +254,11 @@ export class NodeMaterialBuildState {
             let hints = this.sharedData.hints;
             if (point._wellKnownValue !== null) {
                 switch (point._wellKnownValue) {
-                    case NodeMaterialWellKnownValues.World:
-                        hints.needWorldMatrix = true;
-                        break;
-                    case NodeMaterialWellKnownValues.View:
-                        hints.needViewMatrix = true;
-                        break;
-                    case NodeMaterialWellKnownValues.Projection:
-                        hints.needProjectionMatrix = true;
-                        break;
-                    case NodeMaterialWellKnownValues.ViewProjection:
-                        hints.needViewProjectionMatrix = true;
-                        break;
                     case NodeMaterialWellKnownValues.WorldView:
                         hints.needWorldViewMatrix = true;
                         break;
                     case NodeMaterialWellKnownValues.WorldViewProjection:
                         hints.needWorldViewProjectionMatrix = true;
-                        break;
-                    case NodeMaterialWellKnownValues.FogColor:
-                        hints.needFogColor = true;
-                        break;
-                    case NodeMaterialWellKnownValues.FogParameters:
-                        hints.needFogParameters = true;
                         break;
                 }
             } else {

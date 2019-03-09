@@ -3,8 +3,9 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { Mesh } from '../../../../Meshes/mesh';
-import { Effect } from '../../../effect';
+import { Effect, EffectFallbacks } from '../../../effect';
 import { MaterialHelper } from '../../../materialHelper';
 
 /**
@@ -16,7 +17,7 @@ export class BonesBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Vertex, false, true);
+        super(name, NodeMaterialBlockTargets.Vertex);
 
         this.registerInput("matricesIndices", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerInput("matricesWeights", NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -53,6 +54,12 @@ export class BonesBlock extends NodeMaterialBlock {
         return "BonesBlock";
     }
 
+    public provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
+        if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+            fallbacks.addCPUSkinningFallback(0, mesh);
+        }
+    }
+
     public bind(effect: Effect, mesh?: Mesh) {
         MaterialHelper.BindBonesParameters(mesh, effect);
     }
@@ -60,6 +67,19 @@ export class BonesBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
+        // Register for compilation fallbacks
+        state.sharedData.blocksWithFallbacks.push(this);
+
+        // Register for binding
+        state.sharedData.bindableBlocks.push(this);
+
+        // Register internal uniforms and samplers
+        state.uniforms.push("boneTextureWidth");
+        state.uniforms.push("mBones");
+
+        state.samplers.push("boneSampler");
+
+        // Emit code
         state._emitFunctionFromInclude("BonesDeclaration", "bonesDeclaration", {
             removeAttributes: true,
             removeUniforms: false,

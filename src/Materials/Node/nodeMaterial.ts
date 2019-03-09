@@ -1,5 +1,5 @@
 import { NodeMaterialBlock } from './nodeMaterialBlock';
-import { Material } from '../material';
+import { PushMaterial } from '../pushMaterial';
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Matrix } from '../../Maths/math';
@@ -13,6 +13,9 @@ import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnec
 import { Observable } from '../../Misc/observable';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './NodeMaterialBuildStateSharedData';
+import { SubMesh } from '../../Meshes/subMesh';
+import { MaterialDefines } from '../../Materials/materialDefines';
+import { MaterialHelper } from '../../Materials/materialHelper';
 
 /**
  * Class used to configure NodeMaterial
@@ -27,13 +30,13 @@ export interface INodeMaterialOptions {
 /**
  * Class used to create a node based material built by assembling shader blocks
  */
-export class NodeMaterial extends Material {
+export class NodeMaterial extends PushMaterial {
     private _options: INodeMaterialOptions;
     private _vertexCompilationState: NodeMaterialBuildState;
     private _fragmentCompilationState: NodeMaterialBuildState;
+    private _sharedData: NodeMaterialBuildStateSharedData;
     private _buildId: number = 0;
-    private _renderId: number;
-    private _effectCompileId: number = 0;
+    private _buildWasSuccessful = false;
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _textureConnectionPoints = new Array<NodeMaterialConnectionPoint>();
@@ -176,7 +179,7 @@ export class NodeMaterial extends Material {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
-        return (this.alpha < 1.0) || this._fragmentCompilationState.sharedData.hints.needAlphaBlending;
+        return (this.alpha < 1.0) || this._sharedData.hints.needAlphaBlending;
     }
 
     /**
@@ -184,7 +187,7 @@ export class NodeMaterial extends Material {
      * @returns a boolean specifying if an alpha test is needed.
      */
     public needAlphaTesting(): boolean {
-        return this._fragmentCompilationState.sharedData.hints.needAlphaTesting;
+        return this._sharedData.hints.needAlphaTesting;
     }
 
     private _propagateTarget(node: NodeMaterialBlock, target: NodeMaterialBlockTargets, state: NodeMaterialBuildState) {
@@ -219,6 +222,7 @@ export class NodeMaterial extends Material {
      * @param verbose defines if the build should log activity
      */
     public build(verbose: boolean = false) {
+        this._buildWasSuccessful = false;
         if (this._vertexRootNodes.length === 0) {
             throw "You must define at least one vertexRootNode";
         }
@@ -234,12 +238,12 @@ export class NodeMaterial extends Material {
         this._fragmentCompilationState.target = NodeMaterialBlockTargets.Fragment;
 
         // Shared data
-        let sharedData = new NodeMaterialBuildStateSharedData();
-        this._vertexCompilationState.sharedData = sharedData;
-        this._fragmentCompilationState.sharedData = sharedData;
-        sharedData.buildId = this._buildId;
-        sharedData.emitComments = this._options.emitComments;
-        sharedData.verbose = verbose;
+        this._sharedData = new NodeMaterialBuildStateSharedData();
+        this._vertexCompilationState.sharedData = this._sharedData;
+        this._fragmentCompilationState.sharedData = this._sharedData;
+        this._sharedData.buildId = this._buildId;
+        this._sharedData.emitComments = this._options.emitComments;
+        this._sharedData.verbose = verbose;
 
         // Propagate targets
         for (var vertexRootNode of this._vertexRootNodes) {
@@ -271,12 +275,12 @@ export class NodeMaterial extends Material {
         this._fragmentCompilationState.finalize(this._fragmentCompilationState);
 
         // Textures
-        this._textureConnectionPoints = sharedData.uniformConnectionPoints.filter((u) => u.type === NodeMaterialBlockConnectionPointTypes.Texture);
+        this._textureConnectionPoints = this._sharedData.uniformConnectionPoints.filter((u) => u.type === NodeMaterialBlockConnectionPointTypes.Texture);
 
         this._buildId++;
 
         // Errors
-        sharedData.emitErrors();
+        this._sharedData.emitErrors();
 
         if (verbose) {
             console.log("Vertex shader:");
@@ -285,27 +289,42 @@ export class NodeMaterial extends Material {
             console.log(this._fragmentCompilationState.compilationString);
         }
 
+        this._buildWasSuccessful = true;
         this.onBuildObservable.notifyObservers(this);
     }
 
-    /**
-     * Checks if the material is ready to render the requested mesh
-     * @param mesh defines the mesh to render
-     * @param useInstances defines whether or not the material is used with instances
-     * @returns true if ready, otherwise false
+   /**
+     * Get if the submesh is ready to be used and all its information available.
+     * Child classes can use it to update shaders
+     * @param mesh defines the mesh to check
+     * @param subMesh defines which submesh to check
+     * @param useInstances specifies that instances should be used
+     * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-        var scene = this.getScene();
-        var engine = scene.getEngine();
-        let defines: string[] = [];
-        var fallbacks = new EffectFallbacks();
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+        if (!this._buildWasSuccessful) {
+            return false;
+        }
 
-        if (!this.checkReadyOnEveryCall) {
-            if (this._renderId === scene.getRenderId()) {
+        if (subMesh.effect && this.isFrozen) {
+            if (this._wasPreviouslyReady) {
                 return true;
             }
         }
 
+        if (!subMesh._materialDefines) {
+            subMesh._materialDefines = new MaterialDefines();
+        }
+
+        var scene = this.getScene();
+        var defines = subMesh._materialDefines;
+        if (!this.checkReadyOnEveryCall && subMesh.effect) {
+            if (defines._renderId === scene.getRenderId()) {
+                return true;
+            }
+        }
+
+        var engine = scene.getEngine();
         // Textures
         for (var connectionPoint of this._textureConnectionPoints) {
             let texture = connectionPoint.value as BaseTexture;
@@ -314,92 +333,75 @@ export class NodeMaterial extends Material {
             }
         }
 
-        this._renderId = scene.getRenderId();
-
-        if (this._effectCompileId === this._buildId) {
-            return true;
-        }
-
-        var previousEffect = this._effect;
-
-        // Uniforms
-        let mergedUniforms = this._vertexCompilationState.uniforms;
-
-        this._fragmentCompilationState.uniforms.forEach((u) => {
-            let index = mergedUniforms.indexOf(u);
-
-            if (index === -1) {
-                mergedUniforms.push(u);
-            }
-
-        });
-
-        // Samplers
-        let mergedSamplers = this._vertexCompilationState.samplers;
-
-        this._fragmentCompilationState.samplers.forEach((s) => {
-            let index = mergedSamplers.indexOf(s);
-
-            if (index === -1) {
-                mergedSamplers.push(s);
-            }
-        });
-
         // Bones
-        if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-            const skeleton = mesh.skeleton;
+        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false, false);
 
-            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            fallbacks.addCPUSkinningFallback(0, mesh);
+        if (defines.isDirty) {
+            defines.markAsProcessed();
+            // Uniforms
+            let mergedUniforms = this._vertexCompilationState.uniforms;
 
-            if (skeleton.isUsingTextureForMatrices) {
-                defines.push("#define BONETEXTURE");
+            this._fragmentCompilationState.uniforms.forEach((u) => {
+                let index = mergedUniforms.indexOf(u);
 
-                if (mergedUniforms.indexOf("boneTextureWidth") === -1) {
-                    mergedUniforms.push("boneTextureWidth");
+                if (index === -1) {
+                    mergedUniforms.push(u);
                 }
+            });
 
-                if (mergedSamplers.indexOf("boneSampler") === -1) {
-                    mergedSamplers.push("boneSampler");
+            // Samplers
+            let mergedSamplers = this._vertexCompilationState.samplers;
+
+            this._fragmentCompilationState.samplers.forEach((s) => {
+                let index = mergedSamplers.indexOf(s);
+
+                if (index === -1) {
+                    mergedSamplers.push(s);
                 }
-            } else {
-                defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+            });
 
-                if (mergedUniforms.indexOf("mBones") === -1) {
-                    mergedUniforms.push("mBones");
+            var fallbacks = new EffectFallbacks();
+
+            this._sharedData.blocksWithFallbacks.forEach(b => {
+                b.provideFallbacks(mesh, fallbacks);
+            })
+
+            let previousEffect = subMesh.effect;
+            // Compilation
+            var join = defines.toString();
+            var effect = engine.createEffect({
+                vertex: "nodeMaterial" + this._buildId,
+                fragment: "nodeMaterial" + this._buildId,
+                vertexSource: this._vertexCompilationState.compilationString,
+                fragmentSource: this._fragmentCompilationState.compilationString
+            }, <EffectCreationOptions>{
+                attributes: this._vertexCompilationState.attributes,
+                uniformsNames: mergedUniforms,
+                samplers: mergedSamplers,
+                defines: join,
+                fallbacks: fallbacks,
+                onCompiled: this.onCompiled,
+                onError: this.onError
+            }, engine);
+
+            if (effect) {
+                // Use previous effect while new one is compiling
+                if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
+                    effect = previousEffect;
+                    defines.markAsUnprocessed();
+                } else {
+                    scene.resetCachedMaterial();
+                    subMesh.setEffect(effect, defines);
                 }
             }
-
-        } else {
-            defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
-        // Compilation
-        var join = defines.join("\n");
-        this._effect = engine.createEffect({
-            vertex: "nodeMaterial" + this._buildId,
-            fragment: "nodeMaterial" + this._buildId,
-            vertexSource: this._vertexCompilationState.compilationString,
-            fragmentSource: this._fragmentCompilationState.compilationString
-        }, <EffectCreationOptions>{
-            attributes: this._vertexCompilationState.attributes,
-            uniformsNames: mergedUniforms,
-            samplers: mergedSamplers,
-            defines: join,
-            fallbacks: fallbacks,
-            onCompiled: this.onCompiled,
-            onError: this.onError
-        }, engine);
-
-        if (!this._effect.isReady()) {
+        if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
         }
 
-        if (previousEffect !== this._effect) {
-            scene.resetCachedMaterial();
-        }
-
-        this._effectCompileId = this._buildId;
+        defines._renderId = scene.getRenderId();
+        this._wasPreviouslyReady = true;
 
         return true;
     }
@@ -411,72 +413,61 @@ export class NodeMaterial extends Material {
     public bindOnlyWorldMatrix(world: Matrix): void {
         var scene = this.getScene();
 
-        if (!this._effect) {
+        if (!this._activeEffect) {
             return;
         }
 
-        let hints = this._fragmentCompilationState.sharedData.hints;
-        if (hints.needWorldMatrix) {
-            this._effect.setMatrix("world", world);
-        }
+        let hints = this._sharedData.hints;
 
         if (hints.needWorldViewMatrix) {
             world.multiplyToRef(scene.getViewMatrix(), this._cachedWorldViewMatrix);
-            this._effect.setMatrix("worldView", this._cachedWorldViewMatrix);
         }
 
         if (hints.needWorldViewProjectionMatrix) {
             world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix);
-            this._effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
+        }
+
+        // Connection points
+        for (var connectionPoint of this._sharedData.uniformConnectionPoints) {
+            connectionPoint.transmitWorld(this._activeEffect, world, this._cachedWorldViewMatrix, this._cachedWorldViewProjectionMatrix);
         }
     }
 
     /**
-     * Binds the material to the mesh
+     * Binds the submesh to this material by preparing the effect and shader to draw
      * @param world defines the world transformation matrix
-     * @param mesh defines the mesh to bind the material to
+     * @param mesh defines the mesh containing the submesh
+     * @param subMesh defines the submesh to bind the material to
      */
-    public bind(world: Matrix, mesh?: Mesh): void {
+    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         let scene = this.getScene();
-        // Std values
+        var effect = subMesh.effect;
+        if (!effect) {
+            return;
+        }
+        this._activeEffect = effect;
+
+        // Matrices
         this.bindOnlyWorldMatrix(world);
 
-        let sharedData = this._fragmentCompilationState.sharedData;
-        if (this._effect && scene.getCachedMaterial() !== this) {
-            let hints = sharedData.hints;
+        let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
-            if (hints.needViewMatrix) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
-            }
+        if (mustRebind) {
+            let sharedData = this._sharedData;
+            if (effect && scene.getCachedMaterial() !== this) {
+                // Connection points
+                for (var connectionPoint of sharedData.uniformConnectionPoints) {
+                    connectionPoint.transmit(effect, scene);
+                }
 
-            if (hints.needProjectionMatrix) {
-                this._effect.setMatrix("projection", scene.getProjectionMatrix());
-            }
-
-            if (hints.needViewProjectionMatrix) {
-                this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
-            }
-
-            if (hints.needFogColor) {
-                this._effect.setColor3("fogColor", scene.fogColor);
-            }
-
-            if (hints.needFogParameters) {
-                this._effect.setFloat4("fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-            }
-
-            // Connection points
-            for (var connectionPoint of sharedData.uniformConnectionPoints) {
-                connectionPoint.transmit(this._effect);
-            }
-
-            // Bindable blocks
-            for (var block of sharedData.activeBlocks) {
-                block.bind(this._effect, mesh);
+                // Bindable blocks
+                for (var block of sharedData.bindableBlocks) {
+                    block.bind(effect, mesh);
+                }
             }
         }
 
-        this._afterBind(mesh);
+        this._afterBind(mesh, this._activeEffect);
     }
 
     /**

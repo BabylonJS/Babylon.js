@@ -30,6 +30,8 @@ export class MaterialDefines {
     /** @hidden */
     public _needUVs = false;
 
+    [id: string]: any;
+
     /**
      * Specifies if the material needs to be re-calculated
      */
