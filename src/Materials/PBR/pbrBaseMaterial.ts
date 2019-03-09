@@ -39,9 +39,9 @@ import "../../Shaders/pbr.vertex";
 
 /**
  * Manages the defines for the PBR Material.
- * @hiddenChildren
+ * @hidden
  */
-class PBRMaterialDefines extends MaterialDefines
+export class PBRMaterialDefines extends MaterialDefines
     implements IImageProcessingConfigurationDefines,
     IMaterialClearCoatDefines,
     IMaterialAnisotropicDefines,
@@ -726,6 +726,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly sheen = new PBRSheenConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     /**
+     * Custom callback helping to override the default shader used in the material.
+     */
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+
+    /**
      * Instantiates a new PBRMaterial instance.
      *
      * @param name The material name
@@ -774,14 +779,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public getClassName(): string {
         return "PBRBaseMaterial";
-    }
-
-    /**
-     * Gets the name of the material shader.
-     * @returns - string that specifies the shader program of the material.
-     */
-    public getShaderName(): string {
-        return "pbr";
     }
 
     /**
@@ -1182,6 +1179,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
+        var shaderName = "pbr";
+
         var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
             "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
@@ -1228,8 +1227,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             maxSimultaneousLights: this._maxSimultaneousLights
         });
 
+        if (this.customShaderNameResolve) {
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+        }
+
         var join = defines.toString();
-        return engine.createEffect(this.getShaderName(), <EffectCreationOptions>{
+        return engine.createEffect(shaderName, <EffectCreationOptions>{
             attributes: attribs,
             uniformsNames: uniforms,
             uniformBuffersNames: uniformBuffers,
