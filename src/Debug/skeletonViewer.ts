@@ -106,7 +106,7 @@ export class SkeletonViewer {
     private _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void {
         var len = bones.length;
 
-        let mesh = this.skeleton.overrideMesh || this.mesh;
+        let mesh = this.mesh._effectiveMesh;
         var meshPos = mesh.position;
         for (var i = 0; i < len; i++) {
             var bone = bones[i];
@@ -126,7 +126,7 @@ export class SkeletonViewer {
         var len = bones.length;
         var boneNum = 0;
 
-        let mesh = this.skeleton.overrideMesh || this.mesh;
+        let mesh = this.mesh._effectiveMesh;
         var meshPos = mesh.position;
         for (var i = len - 1; i >= 0; i--) {
             var childBone = bones[i];
@@ -157,7 +157,7 @@ export class SkeletonViewer {
             this.skeleton.computeAbsoluteTransforms();
         }
 
-        let mesh = this.skeleton.overrideMesh || this.mesh;
+        let mesh = this.mesh._effectiveMesh;
 
         if (this.skeleton.bones[0].length === undefined) {
             this._getLinesForBonesNoLength(this.skeleton.bones, mesh.getWorldMatrix());
