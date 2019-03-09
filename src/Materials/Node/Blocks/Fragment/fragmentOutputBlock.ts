@@ -1,12 +1,16 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
  * Block used to output the final color
  */
 export class FragmentOutputBlock extends NodeMaterialBlock {
+    /**
+     * Gets or sets a boolean indicating if this block will output an alpha value
+     */
+    public alphaBlendingEnabled = false;
     /**
      * Create a new FragmentOutputBlock
      * @param name defines the block name
@@ -35,10 +39,11 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return false;
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let input = this._inputs[0];
+        state.sharedData.hints.needAlphaBlending = this.alphaBlendingEnabled;
 
         state.compilationString += `gl_FragColor = ${input.associatedVariableName};\r\n`;
 

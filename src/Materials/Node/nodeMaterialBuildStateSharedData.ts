@@ -1,9 +1,10 @@
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlock } from './nodeMaterialBlock';
 
 /**
- * Class used to store shared data between 2 NodeMaterialCompilationState
+ * Class used to store shared data between 2 NodeMaterialBuildState
  */
-export class NodeMaterialCompilationStateSharedData {
+export class NodeMaterialBuildStateSharedData {
     /**
      * Gets the list of emitted varyings
      */
@@ -13,6 +14,16 @@ export class NodeMaterialCompilationStateSharedData {
      * Gets the varying declaration string
      */
     public varyingDeclaration = "";
+
+    /**
+     * Uniform connection points
+     */
+    public uniformConnectionPoints = new Array<NodeMaterialConnectionPoint>();
+
+    /**
+     * Active blocks (Blocks that need to set data to the effect)
+     */
+    public activeBlocks = new Array<NodeMaterialBlock>();
 
     /**
      * Build Id used to avoid multiple recompilations
@@ -39,7 +50,9 @@ export class NodeMaterialCompilationStateSharedData {
         needWorldViewMatrix: false,
         needWorldViewProjectionMatrix: false,
         needFogColor: false,
-        needFogParameters: false
+        needFogParameters: false,
+        needAlphaBlending: false,
+        needAlphaTesting: false
     };
 
     /**
@@ -50,6 +63,26 @@ export class NodeMaterialCompilationStateSharedData {
         emitFragment: false,
         notConnectedNonOptionalInputs: new Array<NodeMaterialConnectionPoint>()
     };
+
+    /** Creates a new shared data */
+    public constructor() {
+        // Exclude usual attributes from free variable names
+        this.variableNames["position"] = 0;
+        this.variableNames["normal"] = 0;
+        this.variableNames["tangent"] = 0;
+        this.variableNames["uv"] = 0;
+        this.variableNames["uv2"] = 0;
+        this.variableNames["uv3"] = 0;
+        this.variableNames["uv4"] = 0;
+        this.variableNames["uv4"] = 0;
+        this.variableNames["uv5"] = 0;
+        this.variableNames["uv6"] = 0;
+        this.variableNames["color"] = 0;
+        this.variableNames["matricesIndices"] = 0;
+        this.variableNames["matricesWeights"] = 0;
+        this.variableNames["matricesIndicesExtra"] = 0;
+        this.variableNames["matricesWeightsExtra"] = 0;
+    }
 
     /**
      * Emits console errors and exceptions if there is a failing check

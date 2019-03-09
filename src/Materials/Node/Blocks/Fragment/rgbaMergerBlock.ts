@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 
 /**
@@ -17,7 +17,7 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
         this.registerInput("r", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("g", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("b", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Vector3OrColor3, true);
+        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color4);
@@ -31,7 +31,7 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
         return "RGBAMergerBlock";
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let rgbInput = this._inputs[3];
@@ -39,12 +39,12 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
         let output = this._outputs[0];
 
         if (rgbInput.connectedPoint) {
-            state.compilationString += this._declareOutput(output, state) + ` = vec4(${rgbInput.associatedVariableName}, ${aInput.associatedVariableName});\r\n`;
+            state.compilationString += this._declareOutput(output, state) + ` = vec4(${rgbInput.associatedVariableName}.rgb, ${this._writeVariable(aInput)});\r\n`;
         } else {
             let rInput = this._inputs[0];
             let gInput = this._inputs[1];
             let bInput = this._inputs[2];
-            state.compilationString += this._declareOutput(output, state) + ` = vec4(${rInput.associatedVariableName}, ${gInput.associatedVariableName}, ${bInput.associatedVariableName}, ${aInput.associatedVariableName});\r\n`;
+            state.compilationString += this._declareOutput(output, state) + ` = vec4(${this._writeVariable(rInput)}, ${this._writeVariable(gInput)}, ${this._writeVariable(bInput)}, ${this._writeVariable(aInput)});\r\n`;
         }
 
         return this;

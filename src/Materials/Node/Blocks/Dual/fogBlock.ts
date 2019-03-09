@@ -1,8 +1,10 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialCompilationState } from '../../nodeMaterialCompilationState';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { Mesh } from '../../../../Meshes/mesh';
+import { Effect } from '../../../effect';
 
 /**
  * Block used to add support for scene fog
@@ -13,7 +15,7 @@ export class FogBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.VertexAndFragment);
+        super(name, NodeMaterialBlockTargets.VertexAndFragment, true);
 
         // Vertex
         this.registerInput("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
@@ -42,12 +44,22 @@ export class FogBlock extends NodeMaterialBlock {
         return "FogBlock";
     }
 
+    public bind(effect: Effect, mesh?: Mesh) {
+        if (!mesh) {
+            return;
+        }
+
+        const scene = mesh.getScene();
+        effect.setColor3("fogColor", scene.fogColor);
+        effect.setFloat4("fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+    }
+
     /** @hidden */
     public get _canAddAtFragmentRoot(): boolean {
         return false;
     }
 
-    protected _buildBlock(state: NodeMaterialCompilationState) {
+    protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Fragment) {
@@ -55,7 +67,7 @@ export class FogBlock extends NodeMaterialBlock {
                 removeUniforms: true,
                 removeVaryings: true,
                 removeifDef: true,
-                replaceString: ["float CalcFogFactor()", "float CalcFogFactor(vec3 vFogDistance, vec4 vFogInfos)"]
+                replaceStrings: [{ search: /float CalcFogFactor\(\)/, replace: "float CalcFogFactor(vec3 vFogDistance, vec4 vFogInfos)" }]
             });
 
             let tempFogVariablename = state._getFreeVariableName("fog");

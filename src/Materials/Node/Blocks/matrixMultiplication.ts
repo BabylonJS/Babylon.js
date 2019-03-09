@@ -4,20 +4,19 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 
 /**
- * Block used to transform a vector4 with a matrix
+ * Block used to multiply two matrices
  */
-export class Vector4TransformBlock extends NodeMaterialBlock {
-
+export class MatrixMultiplicationBlock extends NodeMaterialBlock {
     /**
-     * Creates a new Vector4TransformBlock
+     * Creates a new MatrixMultiplicationBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Vertex);
 
-        this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.registerInput("left", NodeMaterialBlockConnectionPointTypes.Matrix);
+        this.registerInput("right", NodeMaterialBlockConnectionPointTypes.Matrix);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Matrix);
     }
 
     /**
@@ -25,17 +24,17 @@ export class Vector4TransformBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "Vector4TransformBlock";
+        return "MatrixMultiplicationBlock";
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let output = this._outputs[0];
-        let vector = this._inputs[0];
-        let transform = this._inputs[1];
+        let input0 = this._inputs[0];
+        let input1 = this._inputs[1];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * ${vector.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${input0.associatedVariableName} * ${input1.associatedVariableName};\r\n`;
 
         return this;
     }

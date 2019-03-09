@@ -32,6 +32,11 @@ export class NodeMaterialConnectionPoint {
     public name: string;
 
     /**
+     * Gets or sets the swizzle to apply to this connection point when reading or writing
+     */
+    public swizzle: string;
+
+    /**
      * Gets or sets a boolean indicating that this connection point can be omitted
      */
     public isOptional: boolean;
@@ -160,11 +165,13 @@ export class NodeMaterialConnectionPoint {
 
     /**
      * Set the source of this connection point to a vertex attribute
-     * @param attributeName defines the attribute name (position, uv, normal, etc...)
+     * @param attributeName defines the attribute name (position, uv, normal, etc...). If not specified it will take the connection point name
      * @returns the current connection point
      */
-    public setAsAttribute(attributeName: string): NodeMaterialConnectionPoint {
-        this.name = attributeName;
+    public setAsAttribute(attributeName?: string): NodeMaterialConnectionPoint {
+        if (attributeName) {
+            this.name = attributeName;
+        }
         this.isAttribute = true;
         return this;
     }
@@ -206,6 +213,23 @@ export class NodeMaterialConnectionPoint {
         return this;
     }
 
+    private _getTypeLength(type: NodeMaterialBlockConnectionPointTypes) {
+        switch (type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                return 1;
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                return 2;
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                return 3;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return 3;
+        }
+
+        return -1;
+    }
+
     /**
      * Connect this point to another connection point
      * @param connectionPoint defines the other connection point
@@ -213,7 +237,20 @@ export class NodeMaterialConnectionPoint {
      */
     public connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
         if ((this.type & connectionPoint.type) === 0) {
-            throw "Cannot connect two different connection types.";
+            let fail = true;
+            // Check swizzle
+            if (this.swizzle) {
+                let swizzleLength = this.swizzle.length;
+                let connectionLength = this._getTypeLength(connectionPoint.type);
+
+                if (swizzleLength === connectionLength) {
+                    fail = false;
+                }
+            }
+
+            if (fail) {
+                throw "Cannot connect two different connection types.";
+            }
         }
 
         this._endpoints.push(connectionPoint);
