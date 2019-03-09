@@ -6,6 +6,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 
 import "../Shaders/vrDistortionCorrection.fragment";
+import "../Shaders/vrMultiviewToSingleview.fragment";
 
 /**
  * VRDistortionCorrectionPostProcess used for mobile VR
