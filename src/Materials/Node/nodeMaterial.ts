@@ -352,7 +352,7 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        // Shared defines        
+        // Shared defines
         this._sharedData.blocksWithDefines.forEach((b) => {
             b.prepareDefines(mesh, this, defines);
         });
