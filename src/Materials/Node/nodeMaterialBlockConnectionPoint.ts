@@ -318,10 +318,11 @@ export class NodeMaterialConnectionPoint {
             case NodeMaterialBlockConnectionPointTypes.Int:
                 effect.setInt(this.name, value);
                 break;
+            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 effect.setColor3(this.name, value);
                 break;
-            case NodeMaterialBlockConnectionPointTypes.Color4:
+                case NodeMaterialBlockConnectionPointTypes.Color4:
                 effect.setDirectColor4(this.name, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
@@ -330,6 +331,7 @@ export class NodeMaterialConnectionPoint {
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 effect.setVector3(this.name, value);
                 break;
+            case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 effect.setVector4(this.name, value);
                 break;
