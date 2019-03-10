@@ -38,7 +38,7 @@ export class AddBlock extends NodeMaterialBlock {
      */
     public get right(): NodeMaterialConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);

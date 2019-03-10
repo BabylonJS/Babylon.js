@@ -62,7 +62,7 @@ export class TextureBlock extends NodeMaterialBlock {
     public get textureInfo(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
-        
+
     /**
      * Gets the transformed uv input component
      */
@@ -75,15 +75,15 @@ export class TextureBlock extends NodeMaterialBlock {
      */
     public get texture(): NodeMaterialConnectionPoint {
         return this._inputs[3];
-    }     
-    
+    }
+
     /**
      * Gets the texture transform input component
      */
     public get textureTransform(): NodeMaterialConnectionPoint {
         return this._inputs[4];
-    }    
-    
+    }
+
     public initialize(state: NodeMaterialBuildState) {
         if (this.texture.value && this.texture.value.getTextureMatrix) {
             const texture = this.texture.value as BaseTexture;
@@ -104,7 +104,7 @@ export class TextureBlock extends NodeMaterialBlock {
         let transformedUV = this.transformedUV;
         let textureInfo = this.textureInfo;
         let textureTransform = this.textureTransform;
-        let isTextureInfoConnected = textureInfo.connectedPoint != null || textureInfo.isUniform;        
+        let isTextureInfoConnected = textureInfo.connectedPoint != null || textureInfo.isUniform;
         let isTextureTransformConnected = textureTransform.connectedPoint != null || textureTransform.isUniform;
 
         if (state.target === NodeMaterialBlockTargets.Fragment) { // Fragment

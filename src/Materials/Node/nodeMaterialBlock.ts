@@ -325,7 +325,6 @@ export class NodeMaterialBlock {
             console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
         }
 
-
         /** Prepare outputs */
         for (var output of this._outputs) {
             if ((output.target & this.target!) === 0) {//} || output.associatedVariableName) {
@@ -334,7 +333,7 @@ export class NodeMaterialBlock {
             output.associatedVariableName = state._getFreeVariableName(output.name);
             state._emitVaryings(output);
         }
-        
+
         // Build
         for (var input of this._inputs) {
             if ((input.target & this.target!) === 0) {
