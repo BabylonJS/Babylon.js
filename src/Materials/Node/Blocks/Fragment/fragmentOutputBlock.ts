@@ -36,17 +36,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public get color(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
-
-    /** @hidden */
-    public get _canAddAtVertexRoot(): boolean {
-        return false;
-    }
-
-    /** @hidden */
-    public get _canAddAtFragmentRoot(): boolean {
-        return true;
-    }
-
+    
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 

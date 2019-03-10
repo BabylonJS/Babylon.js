@@ -268,16 +268,6 @@ export class NodeMaterialBlock {
         // Empty. Must be defined by child nodes
     }
 
-    /** @hidden */
-    public get _canAddAtVertexRoot(): boolean {
-        return true; // Must be overriden by children
-    }
-
-    /** @hidden */
-    public get _canAddAtFragmentRoot(): boolean {
-        return true; // Must be overriden by children
-    }
-
     /**
      * Add potential fallbacks if shader compilation fails
      * @param mesh defines the mesh to be rendered
@@ -321,7 +311,7 @@ export class NodeMaterialBlock {
             }
 
             let block = input.connectedPoint.ownerBlock;
-            if (block && block.target === this.target && block.buildId !== state.sharedData.buildId) {
+            if (block && block !== this && block.buildId !== state.sharedData.buildId) {
                 block.build(state);
             }
         }
@@ -335,6 +325,16 @@ export class NodeMaterialBlock {
             console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
         }
 
+
+        /** Prepare outputs */
+        for (var output of this._outputs) {
+            if ((output.target & this.target!) === 0) {//} || output.associatedVariableName) {
+                continue;
+            }
+            output.associatedVariableName = state._getFreeVariableName(output.name);
+            state._emitVaryings(output);
+        }
+        
         // Build
         for (var input of this._inputs) {
             if ((input.target & this.target!) === 0) {
@@ -353,15 +353,6 @@ export class NodeMaterialBlock {
                     state.sharedData.checks.emitFragment = true;
                     break;
             }
-        }
-
-        /** Prepare outputs */
-        for (var output of this._outputs) {
-            if ((output.target & this.target!) === 0 || output.associatedVariableName) {
-                continue;
-            }
-            output.associatedVariableName = state._getFreeVariableName(output.name);
-            state._emitVaryings(output);
         }
 
         if (state.sharedData.emitComments) {

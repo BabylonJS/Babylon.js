@@ -8,6 +8,8 @@ import { Mesh } from '../../../../Meshes/mesh';
 import { Effect, EffectFallbacks } from '../../../effect';
 import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { NodeMaterial } from '../../nodeMaterial';
+import { MaterialDefines } from '../../../materialDefines';
 
 /**
  * Block used to add support for vertex skinning (bones)
@@ -100,6 +102,13 @@ export class BonesBlock extends NodeMaterialBlock {
         MaterialHelper.BindBonesParameters(mesh, effect);
     }
 
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: MaterialDefines) {
+        if (!defines._areAttributesDirty) {
+            return;
+        }
+        MaterialHelper.PrepareDefinesForBones(mesh, defines);
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
@@ -108,6 +117,9 @@ export class BonesBlock extends NodeMaterialBlock {
 
         // Register for binding
         state.sharedData.bindableBlocks.push(this);
+
+        // Register for defines
+        state.sharedData.blocksWithDefines.push(this);
 
         // Register internal uniforms and samplers
         state.uniforms.push("boneTextureWidth");

@@ -34,16 +34,6 @@ export class VertexOutputBlock extends NodeMaterialBlock {
         return this._inputs[0];
     }
 
-    /** @hidden */
-    public get _canAddAtVertexRoot(): boolean {
-        return false;
-    }
-
-    /** @hidden */
-    public get _canAddAtFragmentRoot(): boolean {
-        return false;
-    }
-
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 

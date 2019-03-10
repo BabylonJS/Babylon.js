@@ -15,7 +15,6 @@ import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './NodeMaterialBuildStateSharedData';
 import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
-import { MaterialHelper } from '../../Materials/materialHelper';
 
 /** @hidden */
 export class NodeMaterialDefines extends MaterialDefines {
@@ -66,12 +65,12 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Gets or sets the root nodes of the material vertex shader
      */
-    private _vertexRootNodes = new Array<NodeMaterialBlock>();
+    private _vertexOutputNodes = new Array<NodeMaterialBlock>();
 
     /**
      * Gets or sets the root nodes of the material fragment (pixel) shader
      */
-    private _fragmentRootNodes = new Array<NodeMaterialBlock>();
+    private _fragmentOutputNodes = new Array<NodeMaterialBlock>();
 
     /** Gets or sets options to control the node material overall behavior */
     public get options() {
@@ -106,21 +105,21 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Add a new block to the list of root nodes
+     * Add a new block to the list of output nodes
      * @param node defines the node to add
      * @returns the current material
      */
-    public addRootNode(node: NodeMaterialBlock) {
+    public addOutputNode(node: NodeMaterialBlock) {
         if (node.target === null) {
-            throw "This node is not meant to be at root level. You may want to explicitly set its target value.";
+            throw "This node is not meant to be an output node. You may want to explicitly set its target value.";
         }
 
-        if ((node.target & NodeMaterialBlockTargets.Vertex) !== 0 && node._canAddAtVertexRoot) {
-            this._addVertexRootNode(node);
+        if ((node.target & NodeMaterialBlockTargets.Vertex) !== 0) {
+            this._addVertexOutputNode(node);
         }
 
-        if ((node.target & NodeMaterialBlockTargets.Fragment) !== 0 && node._canAddAtFragmentRoot) {
-            this._addFragmentRootNode(node);
+        if ((node.target & NodeMaterialBlockTargets.Fragment) !== 0) {
+            this._addFragmentOutputNode(node);
         }
 
         return this;
@@ -131,62 +130,62 @@ export class NodeMaterial extends PushMaterial {
      * @param node defines the node to remove
      * @returns the current material
      */
-    public removeRootNode(node: NodeMaterialBlock) {
+    public removeOutputNode(node: NodeMaterialBlock) {
         if (node.target === null) {
             return this;
         }
 
         if ((node.target & NodeMaterialBlockTargets.Vertex) !== 0) {
-            this._removeVertexRootNode(node);
+            this._removeVertexOutputNode(node);
         }
 
         if ((node.target & NodeMaterialBlockTargets.Fragment) !== 0) {
-            this._removeFragmentRootNode(node);
+            this._removeFragmentOutputNode(node);
         }
 
         return this;
     }
 
-    private _addVertexRootNode(node: NodeMaterialBlock) {
-        if (this._vertexRootNodes.indexOf(node) !== -1) {
+    private _addVertexOutputNode(node: NodeMaterialBlock) {
+        if (this._vertexOutputNodes.indexOf(node) !== -1) {
             return;
         }
 
         node.target = NodeMaterialBlockTargets.Vertex;
-        this._vertexRootNodes.push(node);
+        this._vertexOutputNodes.push(node);
 
         return this;
     }
 
-    private _removeVertexRootNode(node: NodeMaterialBlock) {
-        let index = this._vertexRootNodes.indexOf(node);
+    private _removeVertexOutputNode(node: NodeMaterialBlock) {
+        let index = this._vertexOutputNodes.indexOf(node);
         if (index === -1) {
             return;
         }
 
-        this._vertexRootNodes.splice(index, 1);
+        this._vertexOutputNodes.splice(index, 1);
 
         return this;
     }
 
-    private _addFragmentRootNode(node: NodeMaterialBlock) {
-        if (this._fragmentRootNodes.indexOf(node) !== -1) {
+    private _addFragmentOutputNode(node: NodeMaterialBlock) {
+        if (this._fragmentOutputNodes.indexOf(node) !== -1) {
             return;
         }
 
         node.target = NodeMaterialBlockTargets.Fragment;
-        this._fragmentRootNodes.push(node);
+        this._fragmentOutputNodes.push(node);
 
         return this;
     }
 
-    private _removeFragmentRootNode(node: NodeMaterialBlock) {
-        let index = this._fragmentRootNodes.indexOf(node);
+    private _removeFragmentOutputNode(node: NodeMaterialBlock) {
+        let index = this._fragmentOutputNodes.indexOf(node);
         if (index === -1) {
             return;
         }
 
-        this._fragmentRootNodes.splice(index, 1);
+        this._fragmentOutputNodes.splice(index, 1);
 
         return this;
     }
@@ -207,14 +206,15 @@ export class NodeMaterial extends PushMaterial {
         return this._sharedData.hints.needAlphaTesting;
     }
 
-    private _propagateTarget(node: NodeMaterialBlock, target: NodeMaterialBlockTargets, state: NodeMaterialBuildState) {
-        node.target = target;
+    private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState) {
         node.initialize(state);
 
-        for (var exitPoint of node.outputs) {
-            for (var block of exitPoint.connectedBlocks) {
-                if (block) {
-                    this._propagateTarget(block, target, state);
+        for (var inputs of node.inputs) {
+            let connectedPoint = inputs.connectedPoint;
+            if (connectedPoint) {
+                let block = connectedPoint.ownerBlock;
+                if (block !== node) {
+                    this._initializeBlock(block, state);
                 }
             }
         }
@@ -225,9 +225,11 @@ export class NodeMaterial extends PushMaterial {
             node.buildId = id;
         }
 
-        for (var exitPoint of node.outputs) {
-            for (var block of exitPoint.connectedBlocks) {
-                if (block) {
+        for (var inputs of node.inputs) {
+            let connectedPoint = inputs.connectedPoint;
+            if (connectedPoint) {
+                let block = connectedPoint.ownerBlock;
+                if (block !== node) {
                     this._resetDualBlocks(block, id);
                 }
             }
@@ -240,12 +242,12 @@ export class NodeMaterial extends PushMaterial {
      */
     public build(verbose: boolean = false) {
         this._buildWasSuccessful = false;
-        if (this._vertexRootNodes.length === 0) {
-            throw "You must define at least one vertexRootNode";
+        if (this._vertexOutputNodes.length === 0) {
+            throw "You must define at least one vertexOutputNode";
         }
 
-        if (this._fragmentRootNodes.length === 0) {
-            throw "You must define at least one fragmentRootNode";
+        if (this._fragmentOutputNodes.length === 0) {
+            throw "You must define at least one fragmentOutputNode";
         }
 
         // Compilation state
@@ -262,29 +264,29 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.emitComments = this._options.emitComments;
         this._sharedData.verbose = verbose;
 
-        // Propagate targets
-        for (var vertexRootNode of this._vertexRootNodes) {
-            this._propagateTarget(vertexRootNode, NodeMaterialBlockTargets.Vertex, this._vertexCompilationState);
+        // Initialize blocks
+        for (var vertexOutputNode of this._vertexOutputNodes) {
+            this._initializeBlock(vertexOutputNode, this._vertexCompilationState);
         }
 
-        for (var fragmentRootNode of this._fragmentRootNodes) {
-            this._propagateTarget(fragmentRootNode, NodeMaterialBlockTargets.Fragment, this._fragmentCompilationState);
+        for (var fragmentOutputNode of this._fragmentOutputNodes) {
+            this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState);
         }
 
         // Vertex
-        for (var vertexRootNode of this._vertexRootNodes) {
-            vertexRootNode.build(this._vertexCompilationState);
+        for (var vertexOutputNode of this._vertexOutputNodes) {
+            vertexOutputNode.build(this._vertexCompilationState);
         }
 
         // Fragment
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
-        for (var fragmentRootNode of this._fragmentRootNodes) {
-            this._resetDualBlocks(fragmentRootNode, this._buildId - 1);
+        for (var fragmentOutputNode of this._fragmentOutputNodes) {
+            this._resetDualBlocks(fragmentOutputNode, this._buildId - 1);
         }
 
-        for (var fragmentRootNode of this._fragmentRootNodes) {
-            fragmentRootNode.build(this._fragmentCompilationState);
+        for (var fragmentOutputNode of this._fragmentOutputNodes) {
+            fragmentOutputNode.build(this._fragmentCompilationState);
         }
 
         // Finalize
@@ -350,8 +352,7 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        // Shared defines
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false, false);
+        // Shared defines        
         this._sharedData.blocksWithDefines.forEach((b) => {
             b.prepareDefines(mesh, this, defines);
         });
@@ -476,14 +477,14 @@ export class NodeMaterial extends PushMaterial {
         if (mustRebind) {
             let sharedData = this._sharedData;
             if (effect && scene.getCachedMaterial() !== this) {
-                // Connection points
-                for (var connectionPoint of sharedData.uniformConnectionPoints) {
-                    connectionPoint.transmit(effect, scene);
-                }
-
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
                     block.bind(effect, mesh);
+                }
+
+                // Connection points
+                for (var connectionPoint of sharedData.uniformConnectionPoints) {
+                    connectionPoint.transmit(effect, scene);
                 }
             }
         }

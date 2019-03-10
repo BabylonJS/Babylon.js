@@ -165,6 +165,29 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines for bones
+     * @param mesh The mesh containing the geometry data we will draw
+     * @param defines The defines to update
+     */
+    public static PrepareDefinesForBones(mesh: AbstractMesh, defines: any) {
+        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+            defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
+
+            const materialSupportsBoneTexture = defines["BONETEXTURE"] !== undefined;
+
+            if (mesh.skeleton.isUsingTextureForMatrices && materialSupportsBoneTexture) {
+                defines["BONETEXTURE"] = true;
+            } else {
+                defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+                defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
+            }
+        } else {
+            defines["NUM_BONE_INFLUENCERS"] = 0;
+            defines["BonesPerMesh"] = 0;
+        }
+    }
+
+    /**
      * Prepares the defines used in the shader depending on the attributes data available in the mesh
      * @param mesh The mesh containing the geometry data we will draw
      * @param defines The defines to update
@@ -203,21 +226,7 @@ export class MaterialHelper {
         }
 
         if (useBones) {
-            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
-
-                const materialSupportsBoneTexture = defines["BONETEXTURE"] !== undefined;
-
-                if (mesh.skeleton.isUsingTextureForMatrices && materialSupportsBoneTexture) {
-                    defines["BONETEXTURE"] = true;
-                } else {
-                    defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
-                    defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
-                }
-            } else {
-                defines["NUM_BONE_INFLUENCERS"] = 0;
-                defines["BonesPerMesh"] = 0;
-            }
+            this.PrepareDefinesForBones(mesh, defines);
         }
 
         if (useMorphTargets) {
