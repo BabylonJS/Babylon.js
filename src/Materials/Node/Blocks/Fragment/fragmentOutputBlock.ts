@@ -29,7 +29,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public getClassName() {
         return "FragmentOutputBlock";
     }
-        
+
     /**
      * Gets the color input component
      */

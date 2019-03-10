@@ -42,7 +42,7 @@ export class RGBMergerBlock extends NodeMaterialBlock {
      */
     public get g(): NodeMaterialConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     /**
      * Gets the B component input

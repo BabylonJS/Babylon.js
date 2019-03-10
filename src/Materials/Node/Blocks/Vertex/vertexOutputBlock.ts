@@ -26,11 +26,11 @@ export class VertexOutputBlock extends NodeMaterialBlock {
     public getClassName() {
         return "VertexOutputBlock";
     }
-    
+
     /**
      * Gets the vector input component
      */
-    public get input(): NodeMaterialConnectionPoint {
+    public get vector(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
@@ -47,7 +47,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.input;
+        let input = this.vector;
 
         state.compilationString += `gl_Position = ${input.associatedVariableName};\r\n`;
 

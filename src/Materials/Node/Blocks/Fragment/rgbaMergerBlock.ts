@@ -2,7 +2,7 @@ import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from 'Materials/Node/nodeMaterialBlockConnectionPoint';
+import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 
 /**
  * Block used to create a Color4 out of 4 inputs (one for each component)
@@ -33,39 +33,39 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the R component input
+     * Gets the R input component
      */
     public get r(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the G component input
+     * Gets the G input component
      */
     public get g(): NodeMaterialConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     /**
-     * Gets the B component input
+     * Gets the B input component
      */
     public get b(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the RGB component input
+     * Gets the RGB input component
      */
     public get rgb(): NodeMaterialConnectionPoint {
         return this._inputs[3];
-    }   
-    
+    }
+
     /**
-     * Gets the R component input
+     * Gets the R input component
      */
     public get a(): NodeMaterialConnectionPoint {
         return this._inputs[4];
-    }    
+    }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);

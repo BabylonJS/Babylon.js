@@ -2,6 +2,7 @@ import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 
 /**
  * Block used to add an alpha test in the fragment shader
@@ -31,6 +32,13 @@ export class AlphaTestBlock extends NodeMaterialBlock {
         return "AlphaTestBlock";
     }
 
+    /**
+     * Gets the color input component
+     */
+    public get color(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
     /** @hidden */
     public get _canAddAtVertexRoot(): boolean {
         return false;
@@ -44,11 +52,9 @@ export class AlphaTestBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this._inputs[0];
-
         state.sharedData.hints.needAlphaTesting = true;
 
-        state.compilationString += `if (${input.associatedVariableName}.a < ${this.alphaCutOff}) discard;\r\n`;
+        state.compilationString += `if (${this.color.associatedVariableName}.a < ${this.alphaCutOff}) discard;\r\n`;
 
         return this;
     }

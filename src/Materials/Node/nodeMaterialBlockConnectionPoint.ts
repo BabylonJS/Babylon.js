@@ -259,10 +259,10 @@ export class NodeMaterialConnectionPoint {
      * @param worldViewProjection defines the worldxviewxprojection matrix
      */
     public transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix) {
-        if (!this._wellKnownValue) { 
+        if (!this._wellKnownValue) {
             return;
         }
-        
+
         let variableName = this.associatedVariableName;
         switch (this._wellKnownValue) {
             case NodeMaterialWellKnownValues.World:
