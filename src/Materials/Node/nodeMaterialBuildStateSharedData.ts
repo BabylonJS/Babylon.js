@@ -31,6 +31,11 @@ export class NodeMaterialBuildStateSharedData {
     public blocksWithFallbacks = new Array<NodeMaterialBlock>();
 
     /**
+     * List of blocks that can provide a define update
+     */
+    public blocksWithDefines = new Array<NodeMaterialBlock>();
+
+    /**
      * Build Id used to avoid multiple recompilations
      */
     public buildId: number;

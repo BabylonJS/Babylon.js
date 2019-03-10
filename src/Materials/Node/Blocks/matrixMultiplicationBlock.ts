@@ -2,6 +2,7 @@ import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 
 /**
  * Block used to multiply two matrices
@@ -20,6 +21,20 @@ export class MatrixMultiplicationBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the left operand
+     */
+    public get left(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
+    /**
+     * Gets the right operand
+     */
+    public get right(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
      * Gets the current class name
      * @returns the class name
      */
@@ -31,10 +46,8 @@ export class MatrixMultiplicationBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         let output = this._outputs[0];
-        let input0 = this._inputs[0];
-        let input1 = this._inputs[1];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${input0.associatedVariableName} * ${input1.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${this.left.associatedVariableName} * ${this.right.associatedVariableName};\r\n`;
 
         return this;
     }

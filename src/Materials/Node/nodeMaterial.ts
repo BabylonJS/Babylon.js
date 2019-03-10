@@ -17,6 +17,25 @@ import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
 import { MaterialHelper } from '../../Materials/materialHelper';
 
+
+/** @hidden */
+export class NodeMaterialDefines extends MaterialDefines {
+
+    /** MISC */
+    public FOG = false;
+
+    /** Bones */
+    public NUM_BONE_INFLUENCERS = 0;
+    public BonesPerMesh = 0;
+    public BONETEXTURE = false;
+
+
+    constructor() {
+        super();
+        this.rebuild();
+    }
+}
+
 /**
  * Class used to configure NodeMaterial
  */
@@ -313,7 +332,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new MaterialDefines();
+            subMesh._materialDefines = new NodeMaterialDefines();
         }
 
         var scene = this.getScene();
@@ -333,9 +352,13 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        // Bones
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false, false);
+        // Shared defines
+        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false, false);  
+        this._sharedData.blocksWithDefines.forEach(b => {
+            b.prepareDefines(mesh, this, defines);
+        })
 
+        // Need to recompile?
         if (defines.isDirty) {
             defines.markAsProcessed();
             // Uniforms

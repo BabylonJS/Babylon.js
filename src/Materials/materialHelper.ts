@@ -80,6 +80,16 @@ export class MaterialHelper {
     }
 
     /**
+     * Gets the current status of the fog (should it be enabled?)
+     * @param mesh defines the mesh to evaluate for fog support
+     * @param scene defines the hosting scene
+     * @returns true if fog must be enabled
+     */
+    public static GetFogState(mesh: AbstractMesh, scene: Scene) {
+        return (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE);
+    }
+
+    /**
      * Helper used to prepare the list of defines associated with misc. values for shader compilation
      * @param mesh defines the current mesh
      * @param scene defines the current scene
@@ -93,7 +103,7 @@ export class MaterialHelper {
         if (defines._areMiscDirty) {
             defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
             defines["POINTSIZE"] = pointsCloud;
-            defines["FOG"] = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && fogEnabled);
+            defines["FOG"] = fogEnabled && this.GetFogState(mesh, scene);
             defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             defines["ALPHATEST"] = alphaTest;
         }

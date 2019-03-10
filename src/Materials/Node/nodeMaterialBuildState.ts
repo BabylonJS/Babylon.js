@@ -114,6 +114,7 @@ export class NodeMaterialBuildState {
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Vector3:
             case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
+            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
                 return "vec3";
             case NodeMaterialBlockConnectionPointTypes.Color4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
@@ -261,9 +262,9 @@ export class NodeMaterialBuildState {
                         hints.needWorldViewProjectionMatrix = true;
                         break;
                 }
-            } else {
-                this.sharedData.uniformConnectionPoints.push(point);
-            }
+            } 
+        
+            this.sharedData.uniformConnectionPoints.push(point);                    
 
             return;
         }
