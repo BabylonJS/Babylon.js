@@ -2,6 +2,7 @@ import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 
 /**
  * Block used to expand a Color3 or a Vector3 into 3 outputs (one for each component)
@@ -29,10 +30,17 @@ export class RGBSplitterBlock extends NodeMaterialBlock {
         return "RGBSplitterBlock";
     }
 
+    /**
+     * Gets the input component
+     */
+    public get input(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this._inputs[0];
+        let input = this.input;
         let rOutput = this._outputs[0];
         let gOutput = this._outputs[1];
         let bOutput = this._outputs[2];

@@ -6,6 +6,8 @@ import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { Effect, EffectFallbacks } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
+import { MaterialDefines } from '../materialDefines';
+import { NodeMaterial } from './nodeMaterial';
 
 /**
  * Defines a block that can be used inside a node based material
@@ -282,6 +284,16 @@ export class NodeMaterialBlock {
      * @param fallbacks defines the current prioritized list of fallbacks
      */
     public provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
+        // Do nothing
+    }
+
+    /**
+     * Update defines for shader compilation
+     * @param mesh defines the mesh to be rendered
+     * @param nodeMaterial defines the node material requesting the update
+     * @param defines defines the material defines to update\
+     */
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: MaterialDefines) {
         // Do nothing
     }
 

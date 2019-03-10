@@ -259,15 +259,20 @@ export class NodeMaterialConnectionPoint {
      * @param worldViewProjection defines the worldxviewxprojection matrix
      */
     public transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix) {
+        if (!this._wellKnownValue) { 
+            return;
+        }
+        
+        let variableName = this.associatedVariableName;
         switch (this._wellKnownValue) {
             case NodeMaterialWellKnownValues.World:
-                effect.setMatrix("world", world);
+                effect.setMatrix(variableName, world);
                 break;
             case NodeMaterialWellKnownValues.WorldView:
-                effect.setMatrix("worldView", worldView);
+                effect.setMatrix(variableName, worldView);
                 break;
             case NodeMaterialWellKnownValues.WorldViewProjection:
-                effect.setMatrix("worldViewProjection", worldViewProjection);
+                effect.setMatrix(variableName, worldViewProjection);
                 break;
         }
     }
@@ -279,21 +284,26 @@ export class NodeMaterialConnectionPoint {
      */
     public transmit(effect: Effect, scene: Scene) {
         if (this._wellKnownValue) {
+            let variableName = this.associatedVariableName;
             switch (this._wellKnownValue) {
+                case NodeMaterialWellKnownValues.World:
+                case NodeMaterialWellKnownValues.WorldView:
+                case NodeMaterialWellKnownValues.WorldViewProjection:
+                    return;
                 case NodeMaterialWellKnownValues.View:
-                    effect.setMatrix("world", scene.getViewMatrix());
+                    effect.setMatrix(variableName, scene.getViewMatrix());
                     break;
                 case NodeMaterialWellKnownValues.Projection:
-                    effect.setMatrix("world", scene.getProjectionMatrix());
+                    effect.setMatrix(variableName, scene.getProjectionMatrix());
                     break;
                 case NodeMaterialWellKnownValues.ViewProjection:
-                    effect.setMatrix("world", scene.getTransformMatrix());
+                    effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
                 case NodeMaterialWellKnownValues.FogColor:
-                    effect.setColor3("fogColor", scene.fogColor);
+                    effect.setColor3(variableName, scene.fogColor);
                     break;
                 case NodeMaterialWellKnownValues.FogParameters:
-                    effect.setFloat4("fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+                    effect.setFloat4(variableName, scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
                     break;
             }
             return;

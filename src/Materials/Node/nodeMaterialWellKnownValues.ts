@@ -3,19 +3,19 @@
  */
 export enum NodeMaterialWellKnownValues {
     /** World */
-    World,
+    World = 1,
     /** View */
-    View,
+    View = 2,
     /** Projection */
-    Projection,
+    Projection = 3,
     /** ViewProjection */
-    ViewProjection,
+    ViewProjection = 4,
     /** WorldView */
-    WorldView,
+    WorldView = 5,
     /** WorldViewProjection */
-    WorldViewProjection,
+    WorldViewProjection = 6,
     /** Fog color */
-    FogColor,
+    FogColor = 7,
     /** Fog parameters */
-    FogParameters
+    FogParameters = 8
 }

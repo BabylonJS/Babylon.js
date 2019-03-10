@@ -2,6 +2,7 @@ import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 
 /**
  * Block used to transform a vector4 with a matrix
@@ -28,12 +29,26 @@ export class Vector4TransformBlock extends NodeMaterialBlock {
         return "Vector4TransformBlock";
     }
 
+    /**
+     * Gets the vector input
+     */
+    public get vector(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
+    /**
+     * Gets the matrix transform input
+     */
+    public get transform(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }    
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let output = this._outputs[0];
-        let vector = this._inputs[0];
-        let transform = this._inputs[1];
+        let vector = this.vector;
+        let transform = this.transform;
 
         state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * ${vector.associatedVariableName};\r\n`;
 

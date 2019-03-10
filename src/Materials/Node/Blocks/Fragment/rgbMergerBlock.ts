@@ -2,6 +2,7 @@ import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 
 /**
  * Block used to create a Color3 out of 3 inputs (one for each component)
@@ -29,12 +30,33 @@ export class RGBMergerBlock extends NodeMaterialBlock {
         return "RGBMergerBlock";
     }
 
+    /**
+     * Gets the R component input
+     */
+    public get r(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
+    /**
+     * Gets the G component input
+     */
+    public get g(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }    
+
+    /**
+     * Gets the B component input
+     */
+    public get b(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let rInput = this._inputs[0];
-        let gInput = this._inputs[1];
-        let bInput = this._inputs[2];
+        let rInput = this.r;
+        let gInput = this.g;
+        let bInput = this.b;
 
         let output = this._outputs[0];
 

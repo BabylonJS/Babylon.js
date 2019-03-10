@@ -2,6 +2,7 @@ import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 
 /**
  * Block used to output the vertex position
@@ -25,6 +26,13 @@ export class VertexOutputBlock extends NodeMaterialBlock {
     public getClassName() {
         return "VertexOutputBlock";
     }
+    
+    /**
+     * Gets the vector input component
+     */
+    public get input(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
 
     /** @hidden */
     public get _canAddAtVertexRoot(): boolean {
@@ -39,7 +47,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this._inputs[0];
+        let input = this.input;
 
         state.compilationString += `gl_Position = ${input.associatedVariableName};\r\n`;
 
