@@ -7,6 +7,7 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Effect, EffectFallbacks } from '../../../effect';
 import { MaterialHelper } from '../../../materialHelper';
+import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 
 /**
  * Block used to add support for vertex skinning (bones)
@@ -53,6 +54,41 @@ export class BonesBlock extends NodeMaterialBlock {
     public getClassName() {
         return "BonesBlock";
     }
+
+    /**
+     * Gets the matrix indices input component
+     */
+    public get matricesIndices(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }    
+
+    /**
+     * Gets the matrix weights input component
+     */
+    public get matricesWeights(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    } 
+    
+    /**
+     * Gets the extra matrix indices input component
+     */
+    public get matricesIndicesExtra(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
+    } 
+    
+    /**
+     * Gets the extra matrix weights input component
+     */
+    public get matricesWeightsExtra(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }    
+    
+    /**
+     * Gets the world input component
+     */
+    public get world(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
+    }      
 
     public provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
@@ -103,7 +139,7 @@ export class BonesBlock extends NodeMaterialBlock {
         });
 
         let output = this._outputs[0];
-        let worldInput = this._inputs[4];
+        let worldInput = this.world;
 
         state.compilationString += this._declareOutput(output, state) + ` = ${worldInput.associatedVariableName} * ${influenceVariablename};`;
         return this;

@@ -17,7 +17,6 @@ import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
 import { MaterialHelper } from '../../Materials/materialHelper';
 
-
 /** @hidden */
 export class NodeMaterialDefines extends MaterialDefines {
 
@@ -28,7 +27,6 @@ export class NodeMaterialDefines extends MaterialDefines {
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public BONETEXTURE = false;
-
 
     constructor() {
         super();
@@ -353,10 +351,10 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Shared defines
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false, false);  
-        this._sharedData.blocksWithDefines.forEach(b => {
+        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false, false);
+        this._sharedData.blocksWithDefines.forEach((b) => {
             b.prepareDefines(mesh, this, defines);
-        })
+        });
 
         // Need to recompile?
         if (defines.isDirty) {
@@ -385,9 +383,9 @@ export class NodeMaterial extends PushMaterial {
 
             var fallbacks = new EffectFallbacks();
 
-            this._sharedData.blocksWithFallbacks.forEach(b => {
+            this._sharedData.blocksWithFallbacks.forEach((b) => {
                 b.provideFallbacks(mesh, fallbacks);
-            })
+            });
 
             let previousEffect = subMesh.effect;
             // Compilation

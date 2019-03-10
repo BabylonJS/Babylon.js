@@ -8,8 +8,8 @@ import { Effect } from '../../../effect';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { MaterialDefines } from '../../../materialDefines';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { MaterialHelper} from '../../../materialHelper';
-import { NodeMaterial} from '../../nodeMaterial';
+import { MaterialHelper } from '../../../materialHelper';
+import { NodeMaterial } from '../../nodeMaterial';
 
 /**
  * Block used to add support for scene fog
@@ -23,7 +23,7 @@ export class FogBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.VertexAndFragment, true);
 
         // Vertex
-        this.registerInput("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
         this.registerOutput("vFogDistance", NodeMaterialBlockConnectionPointTypes.Vector3, NodeMaterialBlockTargets.Vertex);
@@ -32,7 +32,7 @@ export class FogBlock extends NodeMaterialBlock {
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3OrColor4, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("fogColor", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("fogParameters", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
-        
+
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
 
         // Auto configuration
@@ -51,15 +51,43 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the world position input component
+     */
+    public get worldPosition(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
+    /**
+     * Gets the view input component
+     */
+    public get view(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
      * Gets the color input component
      */
     public get color(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
+    /**
+     * Gets the fog color input component
+     */
+    public get fogColor(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
+     * Gets the for parameter input component
+     */
+    public get fogParameters(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
+    }
+
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: MaterialDefines) {
         let scene = mesh.getScene();
-        defines["FOG"] = nodeMaterial.fogEnabled && MaterialHelper.GetFogState(mesh, scene)
+        defines["FOG"] = nodeMaterial.fogEnabled && MaterialHelper.GetFogState(mesh, scene);
     }
 
     public bind(effect: Effect, mesh?: Mesh) {
@@ -87,8 +115,8 @@ export class FogBlock extends NodeMaterialBlock {
 
             let tempFogVariablename = state._getFreeVariableName("fog");
             let color = this.color;
-            let fogColor = this._inputs[3];
-            let fogParameters = this._inputs[4];
+            let fogColor = this.fogColor;
+            let fogParameters = this.fogParameters;
             let output = this._outputs[1];
             let vFogDistance = this._outputs[0];
 
@@ -98,8 +126,8 @@ export class FogBlock extends NodeMaterialBlock {
             state.compilationString += `#else\r\n${this._declareOutput(output, state)} =  ${color.associatedVariableName}.rgb;\r\n`;
             state.compilationString += `#endif\r\n`;
         } else {
-            let worldPos = this._inputs[0];
-            let view = this._inputs[1];
+            let worldPos = this.worldPosition;
+            let view = this.view;
             let vFogDistance = this._outputs[0];
             state.compilationString += this._declareOutput(vFogDistance, state) + ` = (${view.associatedVariableName} * ${worldPos.associatedVariableName}).xyz;\r\n`;
         }

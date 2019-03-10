@@ -41,7 +41,7 @@ export class Vector4TransformBlock extends NodeMaterialBlock {
      */
     public get transform(): NodeMaterialConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);

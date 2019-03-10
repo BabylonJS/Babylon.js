@@ -262,9 +262,9 @@ export class NodeMaterialBuildState {
                         hints.needWorldViewProjectionMatrix = true;
                         break;
                 }
-            } 
-        
-            this.sharedData.uniformConnectionPoints.push(point);                    
+            }
+
+            this.sharedData.uniformConnectionPoints.push(point);
 
             return;
         }

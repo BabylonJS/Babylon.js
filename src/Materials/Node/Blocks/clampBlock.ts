@@ -1,6 +1,7 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
+import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 /**
  * Block used to clamp a float
  */
@@ -30,14 +31,19 @@ export class ClampBlock extends NodeMaterialBlock {
         return "ClampBlock";
     }
 
+    /**
+     * Gets the value input component
+     */
+    public get value(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let output = this._outputs[0];
 
-        let value = this._inputs[0];
-
-        state.compilationString += this._declareOutput(output, state) + ` = clamp(${value.associatedVariableName}, ${this._writeFloat(this.minimum)}, ${this._writeFloat(this.maximum)});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = clamp(${this.value.associatedVariableName}, ${this._writeFloat(this.minimum)}, ${this._writeFloat(this.maximum)});\r\n`;
 
         return this;
     }
