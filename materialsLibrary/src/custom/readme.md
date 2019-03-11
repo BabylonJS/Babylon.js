@@ -1,10 +1,13 @@
 
-CustomMaterial
-==============
+Custom Materials
+================
 
 ### CustomMaterial is a StandardMaterial with some customizable Options 
+
+### PBRCustomMaterial is a PBRMaterial with some customizable Options 
+
 1- manage part of current shader
-> CustomMaterial put some part of shader in special part of current shader and make new shader in ShaderStore 
+> CustomMaterial or PBRCustomMaterial put some part of shader in special part of current shader and make new shader in ShaderStore 
  > shaders struct  :
  >
  >   [ Begin ]
@@ -28,7 +31,7 @@ CustomMaterial
 
 
 method : SelectVersion(ver:string) 
-> Custom material for now Supported just ver 3.0.0 of BabylonJs and this is default of currentVersion for now
+> Custom materials for now Supported just ver 3.0.0 of BabylonJs and this is default of currentVersion for now
 > Add other old version in Progress %
   
   
@@ -56,6 +59,7 @@ method : Fragment_MainBegin(shaderPart:string):CustomMaterial
 > shaderPart is Shader Structure append in start place of the main function in fragment shader 
 
 
+**CustomMaterial Only**
 method : Fragment_Custom_Diffuse(shaderPart:string):CustomMaterial 
 > shaderPart is Shader Structure append after diffuseColor is defined of the main function in fragment shader </br>
 > usage : new CustomMaterial(...).Fragment_Custom_Diffuse('diffuseColor = vec3(sin(vPositionW.x));')  </br>
@@ -63,6 +67,13 @@ method : Fragment_Custom_Diffuse(shaderPart:string):CustomMaterial
 > * diffuseColor is vec3 variable </br>
 > * you can use result (vec3) too that replaced by diffuseColor
 
+**PBRCustomMaterial Only**
+method : Fragment_Custom_Albedo(shaderPart:string):PBRCustomMaterial 
+> shaderPart is Shader Structure append after surfaceAlbedo is defined of the main function in fragment shader </br>
+> usage : new PBRCustomMaterial(...).Fragment_Custom_Albedo('surfaceAlbedo = vec3(sin(vPositionW.x));')  </br>
+>       : new PBRCustomMaterial(...).Fragment_Custom_Albedo('result = vec3(sin(vPositionW.x));')  </br>
+> * surfaceAlbedo is vec3 variable </br>
+> * you can use result (vec3) too that replaced by surfaceAlbedo
 
 method : Fragment_Custom_Alpha(shaderPart:string):CustomMaterial 
 > shaderPart is Shader Structure append when material need a alpha parameter in fragment shader </br>

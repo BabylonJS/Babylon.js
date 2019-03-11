@@ -3411,7 +3411,7 @@ export class Engine {
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
 
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        if (!this._caps.parallelShaderCompile && !gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
             let log = gl.getShaderInfoLog(shader);
             if (log) {
                 throw new Error(log);
@@ -3470,6 +3470,10 @@ export class Engine {
             throw new Error("Unable to create program");
         }
 
+        if (this._caps.parallelShaderCompile) {
+            shaderProgram.isParallelCompiled = true;
+        }
+
         context.attachShader(shaderProgram, vertexShader);
         context.attachShader(shaderProgram, fragmentShader);
 
@@ -3491,10 +3495,8 @@ export class Engine {
         shaderProgram.vertexShader = vertexShader;
         shaderProgram.fragmentShader = fragmentShader;
 
-        if (!this._caps.parallelShaderCompile) {
+        if (!shaderProgram.isParallelCompiled) {
             this._finalizeProgram(shaderProgram);
-        } else {
-            shaderProgram.isParallelCompiled = true;
         }
 
         return shaderProgram;
@@ -5643,7 +5645,7 @@ export class Engine {
         if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
             ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
             ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
-        }else {
+        } else {
             throw "Invalid multiview frame buffer";
         }
     }
@@ -6510,7 +6512,7 @@ export class Engine {
 
             if (texture && texture.isMultiview) {
                 this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
-            }else {
+            } else {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
             }
 
@@ -6708,7 +6710,7 @@ export class Engine {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
             }
-        }else if (internalTexture && internalTexture.is3D) {
+        } else if (internalTexture && internalTexture.is3D) {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
             }
