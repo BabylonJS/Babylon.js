@@ -16,15 +16,10 @@ import { NodeMaterialBuildStateSharedData } from './NodeMaterialBuildStateShared
 import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
 import { NodeMaterialOptimizer } from './Optimizers/nodeMaterialOptimizer';
-import { UVVaryingOptimizer } from './Optimizers/uvVaryingOptimizer';
 
 /** @hidden */
 export class NodeMaterialDefines extends MaterialDefines {
-
-    /** MISC */
-    public FOG = false;
-
-    /** Bones */
+    /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public BONETEXTURE = false;
@@ -32,6 +27,14 @@ export class NodeMaterialDefines extends MaterialDefines {
     constructor() {
         super();
         this.rebuild();
+    }
+
+    public setValue(name: string, value: boolean) {
+        if (this[name] === undefined) {
+            this._keys.push(name);
+        }
+
+        this[name] = value;
     }
 }
 
@@ -97,9 +100,6 @@ export class NodeMaterial extends PushMaterial {
             emitComments: false,
             ...options
         };
-
-        // Registers some optimizers
-        this.registerOptimizer(new UVVaryingOptimizer());
     }
 
     /**
@@ -388,7 +388,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         var scene = this.getScene();
-        var defines = subMesh._materialDefines;
+        var defines = <NodeMaterialDefines>subMesh._materialDefines;
         if (!this.checkReadyOnEveryCall && subMesh.effect) {
             if (defines._renderId === scene.getRenderId()) {
                 return true;
