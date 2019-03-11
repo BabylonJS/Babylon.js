@@ -19,7 +19,7 @@ import { SpotLight } from '../Lights/spotLight';
  */
 export class LightGizmo extends Gizmo {
     private _lightMesh: Mesh;
-    private static _Scale = 0.02;
+    private static _Scale = 0.007;
 
     private static _createLightLines = (levels:number, scene:Scene)=>{
         var distFromSphere = 1.2;
@@ -166,6 +166,8 @@ export class LightGizmo extends Gizmo {
         return root;
     }
 
+    private _material:StandardMaterial;
+    
     /**
      * Creates a LightGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
@@ -173,6 +175,9 @@ export class LightGizmo extends Gizmo {
     constructor(gizmoLayer?: UtilityLayerRenderer) {
         super(gizmoLayer);        
         this.attachedMesh = new AbstractMesh("", this.gizmoLayer.utilityLayerScene);
+        this._material = new StandardMaterial("light", this.gizmoLayer.originalScene)
+        this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
+        this._material.specularColor = new Color3(0.1, 0.1, 0.1);
     }
     private _light: Nullable<Light> = null;
 
@@ -195,6 +200,14 @@ export class LightGizmo extends Gizmo {
             }else{
                 this._lightMesh = LightGizmo._CreatePointLightMesh(this.gizmoLayer.utilityLayerScene);
             }
+            this._lightMesh.getChildMeshes(false).forEach((m)=>{
+                m.material = this._material;
+            })
+
+            // Add lighting to the light gizmo
+            var gizmoLight = this.gizmoLayer._getSharedGizmoLight();
+            gizmoLight.includedOnlyMeshes = gizmoLight.includedOnlyMeshes.concat(this._lightMesh.getChildMeshes(false));
+
             this._lightMesh.parent = this._rootMesh;
             
             if ((light as any).position) {
@@ -224,10 +237,11 @@ export class LightGizmo extends Gizmo {
         if ((this._light as any).direction) {
             (this._light as any).direction.copyFrom(this._lightMesh.forward);
         }
-        // if (!this._light.isEnabled()) {
-        //     (this._lightMesh.material as StandardMaterial).emissiveColor.set(0, 0, 0);
-        // } else {
-        //     (this._lightMesh.material as StandardMaterial).emissiveColor.set(1, 1, 1);
-        // }
+        
+        if (!this._light.isEnabled()) {
+            this._material.diffuseColor.set(0,0,0);
+        } else {
+            this._material.diffuseColor.set(this._light.diffuse.r/3,this._light.diffuse.g/3,this._light.diffuse.b/3);
+        }
     }
 }
