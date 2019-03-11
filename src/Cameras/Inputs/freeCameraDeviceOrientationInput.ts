@@ -76,6 +76,11 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
         if (this._camera != null && !this._camera.rotationQuaternion) {
             this._camera.rotationQuaternion = new Quaternion();
         }
+        if (this._camera) {
+            this._camera.onDisposeObservable.add(() => {
+                this._onDeviceOrientationChangedObservable.clear();
+            });
+        }
     }
 
     /**
