@@ -6,6 +6,8 @@
 #extension GL_EXT_shader_texture_lod : enable
 #endif
 
+#define CUSTOM_FRAGMENT_BEGIN
+
 #ifdef LOGARITHMICDEPTH
 #extension GL_EXT_frag_depth : enable
 #endif
@@ -44,8 +46,12 @@ precision highp float;
     #include<reflectionFunction>
 #endif
 
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {
+
+    #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
     #include<clipPlaneFragment>
 
@@ -99,6 +105,8 @@ void main(void) {
     surfaceAlbedo *= vColor.rgb;
 #endif
 
+#define CUSTOM_FRAGMENT_UPDATE_ALBEDO
+
 // _____________________________ Alpha Information _______________________________
 #ifdef OPACITY
     vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
@@ -128,7 +136,11 @@ void main(void) {
     #endif
 #endif
 
+#define CUSTOM_FRAGMENT_UPDATE_ALPHA
+
 #include<depthPrePass>
+
+#define CUSTOM_FRAGMENT_BEFORE_LIGHTS
 
 // _____________________________ AO    Information _______________________________
     vec3 ambientOcclusionColor = vec3(1., 1., 1.);
@@ -1106,9 +1118,10 @@ void main(void) {
     #endif
 #endif
 
+#define CUSTOM_FRAGMENT_BEFORE_FOG
+
 // _____________________________ Finally ___________________________________________
     finalColor = max(finalColor, 0.0);
-
 #include<logDepthFragment>
 #include<fogFragment>(color, finalColor)
 
@@ -1128,6 +1141,7 @@ void main(void) {
     finalColor.rgb *= finalColor.a;
 #endif
 
+#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
     gl_FragColor = finalColor;
 
 #include<pbrDebug>
