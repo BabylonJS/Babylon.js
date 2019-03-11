@@ -15,6 +15,8 @@ import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './NodeMaterialBuildStateSharedData';
 import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
+import { NodeMaterialOptimizer } from './Optimizers/nodeMaterialOptimizer';
+import { UVVaryingOptimizer } from './Optimizers/uvVaryingOptimizer';
 
 /** @hidden */
 export class NodeMaterialDefines extends MaterialDefines {
@@ -56,6 +58,7 @@ export class NodeMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _textureConnectionPoints = new Array<NodeMaterialConnectionPoint>();
+    private _optimizers = new Array<NodeMaterialOptimizer>();
 
     /**
      * Observable raised when the material is built
@@ -94,6 +97,9 @@ export class NodeMaterial extends PushMaterial {
             emitComments: false,
             ...options
         };
+
+        // Registers some optimizers
+        this.registerOptimizer(new UVVaryingOptimizer());
     }
 
     /**
@@ -102,6 +108,40 @@ export class NodeMaterial extends PushMaterial {
      */
     public getClassName(): string {
         return "NodeMaterial";
+    }
+
+    /**
+     * Adds a new optimizer to the list of optimizers
+     * @param optimizer defines the optimizers to add
+     * @returns the current material
+     */
+    public registerOptimizer(optimizer: NodeMaterialOptimizer) {
+        let index = this._optimizers.indexOf(optimizer);
+
+        if (index > -1) {
+            return;
+        }
+
+        this._optimizers.push(optimizer);
+
+        return this;
+    }
+
+    /**
+     * Remove an optimizer from the list of optimizers
+     * @param optimizer defines the optimizers to remove
+     * @returns the current material
+     */
+    public unregisterOptimizer(optimizer: NodeMaterialOptimizer) {
+        let index = this._optimizers.indexOf(optimizer);
+
+        if (index === -1) {
+            return;
+        }
+
+        this._optimizers.splice(index, 1);
+
+        return this;
     }
 
     /**
@@ -273,6 +313,9 @@ export class NodeMaterial extends PushMaterial {
             this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState);
         }
 
+        // Optimize
+        this.optimize();
+
         // Vertex
         for (var vertexOutputNode of this._vertexOutputNodes) {
             vertexOutputNode.build(this._vertexCompilationState);
@@ -312,14 +355,23 @@ export class NodeMaterial extends PushMaterial {
         this.onBuildObservable.notifyObservers(this);
     }
 
-   /**
-     * Get if the submesh is ready to be used and all its information available.
-     * Child classes can use it to update shaders
-     * @param mesh defines the mesh to check
-     * @param subMesh defines which submesh to check
-     * @param useInstances specifies that instances should be used
-     * @returns a boolean indicating that the submesh is ready or not
+    /**
+     * Runs an otpimization phase to try to improve the shader code
      */
+    public optimize() {
+        for (var optimizer of this._optimizers) {
+            optimizer.optimize(this._vertexOutputNodes, this._fragmentOutputNodes);
+        }
+    }
+
+    /**
+      * Get if the submesh is ready to be used and all its information available.
+      * Child classes can use it to update shaders
+      * @param mesh defines the mesh to check
+      * @param subMesh defines which submesh to check
+      * @param useInstances specifies that instances should be used
+      * @returns a boolean indicating that the submesh is ready or not
+      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
         if (!this._buildWasSuccessful) {
             return false;
@@ -347,7 +399,7 @@ export class NodeMaterial extends PushMaterial {
         // Textures
         for (var connectionPoint of this._textureConnectionPoints) {
             let texture = connectionPoint.value as BaseTexture;
-            if (texture && !texture.isReady()) {
+            if (texture && !texture.isReadyOrNotBlocking()) {
                 return false;
             }
         }

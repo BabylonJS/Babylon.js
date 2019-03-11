@@ -5643,7 +5643,7 @@ export class Engine {
         if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
             ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
             ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
-        }else {
+        } else {
             throw "Invalid multiview frame buffer";
         }
     }
@@ -6510,7 +6510,7 @@ export class Engine {
 
             if (texture && texture.isMultiview) {
                 this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
-            }else {
+            } else {
                 this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
             }
 
@@ -6708,7 +6708,7 @@ export class Engine {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
             }
-        }else if (internalTexture && internalTexture.is3D) {
+        } else if (internalTexture && internalTexture.is3D) {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
             }

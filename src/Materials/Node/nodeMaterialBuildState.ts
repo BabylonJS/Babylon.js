@@ -98,6 +98,17 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
+    public _getFreeDefineName(prefix: string): string {
+        if (this.sharedData.defineNames[prefix] === undefined) {
+            this.sharedData.defineNames[prefix] = 0;
+        } else {
+            this.sharedData.defineNames[prefix]++;
+        }
+
+        return prefix + this.sharedData.defineNames[prefix];
+    }
+
+    /** @hidden */
     public _excludeVariableName(name: string) {
         this.sharedData.variableNames[name] = 0;
     }
@@ -240,16 +251,18 @@ export class NodeMaterialBuildState {
             return;
         }
 
-        point.associatedVariableName = point.name;
+        if (!point.associatedVariableName) {
+            point.associatedVariableName = point.name;
+        }
 
         // Uniforms
         if (point.isUniform) {
-            if (this.uniforms.indexOf(point.name) !== -1) {
+            if (this.uniforms.indexOf(point.associatedVariableName) !== -1) {
                 return;
             }
 
-            this.uniforms.push(point.name);
-            this._uniformDeclaration += `uniform ${this._getGLType(point.type)} ${point.name};\r\n`;
+            this.uniforms.push(point.associatedVariableName);
+            this._uniformDeclaration += `uniform ${this._getGLType(point.type)} ${point.associatedVariableName};\r\n`;
 
             // well known
             let hints = this.sharedData.hints;
@@ -272,6 +285,9 @@ export class NodeMaterialBuildState {
         if (point.isAttribute) {
             if (this.target === NodeMaterialBlockTargets.Fragment) { // Attribute for fragment need to be carried over by varyings
                 this._vertexState._emitUniformOrAttributes(point);
+                if (point.associatedVariableName) {
+                    return;
+                }
                 point.associatedVariableName = this._getFreeVariableName(point.name);
                 this._emitVaryings(point, true);
                 this._vertexState._emitVaryings(point, true, true);

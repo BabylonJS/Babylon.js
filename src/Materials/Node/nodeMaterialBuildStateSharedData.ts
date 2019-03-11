@@ -43,6 +43,9 @@ export class NodeMaterialBuildStateSharedData {
     /** List of emitted variables */
     public variableNames: { [key: string]: number } = {};
 
+    /** List of emitted defines */
+    public defineNames: { [key: string]: number } = {};
+
     /** Should emit comments? */
     public emitComments: boolean;
 
@@ -86,6 +89,16 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["matricesWeights"] = 0;
         this.variableNames["matricesIndicesExtra"] = 0;
         this.variableNames["matricesWeightsExtra"] = 0;
+
+        // Exclude defines
+        this.defineNames["MAINUV0"] = 0;
+        this.defineNames["MAINUV1"] = 0;
+        this.defineNames["MAINUV2"] = 0;
+        this.defineNames["MAINUV3"] = 0;
+        this.defineNames["MAINUV4"] = 0;
+        this.defineNames["MAINUV5"] = 0;
+        this.defineNames["MAINUV6"] = 0;
+        this.defineNames["MAINUV7"] = 0;
     }
 
     /**
