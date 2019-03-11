@@ -215,23 +215,37 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
-    public _emitVaryings(point: NodeMaterialConnectionPoint, force = false, fromFragment = false) {
+    public _emitVaryings(point: NodeMaterialConnectionPoint, define: string = "", force = false, fromFragment = false, replacementName: string = "") {
+        let name = replacementName || point.associatedVariableName;
         if (point.isVarying || force) {
-            if (this.sharedData.varyings.indexOf(point.associatedVariableName) !== -1) {
+            if (this.sharedData.varyings.indexOf(name) !== -1) {
                 return;
             }
 
-            this.sharedData.varyings.push(point.associatedVariableName);
-            this.sharedData.varyingDeclaration += `varying ${this._getGLType(point.type)} ${point.associatedVariableName};\r\n`;
+            this.sharedData.varyings.push(name);
+
+            if (define) {
+                this.sharedData.varyingDeclaration += `#ifdef ${define}\r\n`;
+            }
+            this.sharedData.varyingDeclaration += `varying ${this._getGLType(point.type)} ${name};\r\n`;
+            if (define) {
+                this.sharedData.varyingDeclaration += `#endif\r\n`;
+            }
 
             if (this.target === NodeMaterialBlockTargets.Vertex && fromFragment) {
-                this._varyingTransfer += `${point.associatedVariableName} = ${point.name};\r\n`;
+                if (define) {
+                    this.sharedData.varyingDeclaration += `#ifdef ${define}\r\n`;
+                }
+                this._varyingTransfer += `${name} = ${point.name};\r\n`;
+                if (define) {
+                    this.sharedData.varyingDeclaration += `#endif\r\n`;
+                }
             }
         }
     }
 
     /** @hidden */
-    public _emitUniformOrAttributes(point: NodeMaterialConnectionPoint) {
+    public _emitUniformOrAttributes(point: NodeMaterialConnectionPoint, define?: string) {
         // Samplers
         if (point.type === NodeMaterialBlockConnectionPointTypes.Texture) {
             point.name = this._getFreeVariableName(point.name);
@@ -242,7 +256,13 @@ export class NodeMaterialBuildState {
             }
 
             this.samplers.push(point.name);
+            if (define) {
+                this._uniformDeclaration += `#ifdef ${define}\r\n`;
+            }
             this._samplerDeclaration += `uniform ${this._getGLType(point.type)} ${point.name};\r\n`;
+            if (define) {
+                this._uniformDeclaration += `#endif\r\n`;
+            }
             this.sharedData.uniformConnectionPoints.push(point);
             return;
         }
@@ -262,7 +282,13 @@ export class NodeMaterialBuildState {
             }
 
             this.uniforms.push(point.associatedVariableName);
+            if (define) {
+                this._uniformDeclaration += `#ifdef ${define}\r\n`;
+            }
             this._uniformDeclaration += `uniform ${this._getGLType(point.type)} ${point.associatedVariableName};\r\n`;
+            if (define) {
+                this._uniformDeclaration += `#endif\r\n`;
+            }
 
             // well known
             let hints = this.sharedData.hints;
@@ -289,8 +315,8 @@ export class NodeMaterialBuildState {
                     return;
                 }
                 point.associatedVariableName = this._getFreeVariableName(point.name);
-                this._emitVaryings(point, true);
-                this._vertexState._emitVaryings(point, true, true);
+                this._emitVaryings(point, "", true);
+                this._vertexState._emitVaryings(point, "", true, true);
                 return;
             }
 

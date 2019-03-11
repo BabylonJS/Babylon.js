@@ -6,8 +6,7 @@ import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { Effect, EffectFallbacks } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
-import { MaterialDefines } from '../materialDefines';
-import { NodeMaterial } from './nodeMaterial';
+import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
 
 /**
  * Defines a block that can be used inside a node based material
@@ -283,7 +282,7 @@ export class NodeMaterialBlock {
      * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update\
      */
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: MaterialDefines) {
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         // Do nothing
     }
 
@@ -331,7 +330,10 @@ export class NodeMaterialBlock {
 
         /** Prepare outputs */
         for (var output of this._outputs) {
-            if ((output.target & this.target!) === 0) {//} || output.associatedVariableName) {
+            if ((output.target & this.target!) === 0) {
+                continue;
+            }
+            if ((output.target & state.target!) === 0) {
                 continue;
             }
             output.associatedVariableName = state._getFreeVariableName(output.name);
