@@ -4,10 +4,15 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { Quaternion } from "../../Maths/math";
 import { Tools } from "../../Misc/tools";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
+import { Observable } from '../../Misc/observable';
 
 // Module augmentation to abstract orientation inputs from camera.
 declare module "../../Cameras/freeCameraInputsManager" {
     export interface FreeCameraInputsManager {
+        /**
+         * @hidden
+         */
+        _deviceOrientationInput: Nullable<FreeCameraDeviceOrientationInput>;
         /**
          * Add orientation input support to the input manager.
          * @returns the current input manager
@@ -21,7 +26,11 @@ declare module "../../Cameras/freeCameraInputsManager" {
  * @returns the current input manager
  */
 FreeCameraInputsManager.prototype.addDeviceOrientation = function(): FreeCameraInputsManager {
-    this.add(new FreeCameraDeviceOrientationInput());
+    if (!this._deviceOrientationInput) {
+        this._deviceOrientationInput = new FreeCameraDeviceOrientationInput();
+        this.add(this._deviceOrientationInput);
+    }
+
     return this;
 };
 
@@ -42,6 +51,10 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     private _beta: number = 0;
     private _gamma: number = 0;
 
+    /**
+     * @hidden
+     */
+    public _onDeviceOrientationChangedObservable = new Observable<void>();
     /**
      * Instantiates a new input
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -88,6 +101,9 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
         this._alpha = evt.alpha !== null ? evt.alpha : 0;
         this._beta = evt.beta !== null ? evt.beta : 0;
         this._gamma = evt.gamma !== null ? evt.gamma : 0;
+        if (evt.alpha !== null) {
+            this._onDeviceOrientationChangedObservable.notifyObservers();
+        }
     }
 
     /**
