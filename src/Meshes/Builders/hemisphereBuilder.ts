@@ -3,7 +3,7 @@ import { Scene } from "../../scene";
 import { SphereBuilder } from '../Builders/sphereBuilder';
 
 /**
- * 
+ * Creates a hemispheric light
  */
 Mesh.CreateHemisphere = (name: string, segments: number, diameter: number, scene?: Scene): Mesh => {
     var options = {
@@ -26,19 +26,19 @@ export class HemisphereBuilder {
      * @returns the hemisphere mesh
      */
     public static CreateHemisphere(name: string, options: { segments?: number, diameter?: number, sideOrientation?: number }, scene: any): Mesh {
-        if(!options.diameter){
+        if (!options.diameter) {
             options.diameter = 1;
         }
-        if(!options.segments){
+        if (!options.segments) {
             options.segments = 16;
         }
 
-        var halfSphere = SphereBuilder.CreateSphere("", {slice: 0.5, diameter: options.diameter, segments: options.segments}, scene)
-        var disc = Mesh.CreateDisc("", options.diameter/2, (options.segments*3)+(4-options.segments), scene);
-        disc.rotation.x = -Math.PI/2;
+        var halfSphere = SphereBuilder.CreateSphere("", {slice: 0.5, diameter: options.diameter, segments: options.segments}, scene);
+        var disc = Mesh.CreateDisc("", options.diameter / 2, (options.segments * 3) + (4 - options.segments), scene);
+        disc.rotation.x = -Math.PI / 2;
         disc.parent = halfSphere;
 
-        var merged = <Mesh>Mesh.MergeMeshes([disc, halfSphere], true)
+        var merged = <Mesh>Mesh.MergeMeshes([disc, halfSphere], true);
         merged.name = name;
 
         return merged;
