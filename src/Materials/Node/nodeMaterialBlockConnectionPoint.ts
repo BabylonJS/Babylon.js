@@ -106,12 +106,6 @@ export class NodeMaterialConnectionPoint {
      * Can only be set on exit points
      */
     public get isVarying(): boolean {
-        for (var connectedBlock of this.connectedBlocks) {
-            if (connectedBlock.target && this.ownerBlock.target && (connectedBlock.target & this.ownerBlock.target) === 0) {
-                return true;
-            }
-        }
-
         return this._isVarying;
     }
 
@@ -322,7 +316,7 @@ export class NodeMaterialConnectionPoint {
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 effect.setColor3(this.name, value);
                 break;
-                case NodeMaterialBlockConnectionPointTypes.Color4:
+            case NodeMaterialBlockConnectionPointTypes.Color4:
                 effect.setDirectColor4(this.name, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:

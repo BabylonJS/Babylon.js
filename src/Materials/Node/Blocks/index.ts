@@ -4,7 +4,6 @@ export * from "./Dual/index";
 export * from "./multiplyBlock";
 export * from "./addBlock";
 export * from "./clampBlock";
-export * from "./textureBlock";
 export * from "./vector2TransformBlock";
 export * from "./vector3TransformBlock";
 export * from "./vector4TransformBlock";

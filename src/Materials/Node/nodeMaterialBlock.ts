@@ -310,6 +310,10 @@ export class NodeMaterialBlock {
                 continue;
             }
 
+            if ((input.target & state.target!) === 0) {
+                continue;
+            }
+
             let block = input.connectedPoint.ownerBlock;
             if (block && block !== this && block.buildId !== state.sharedData.buildId) {
                 block.build(state);
@@ -337,6 +341,9 @@ export class NodeMaterialBlock {
         // Build
         for (var input of this._inputs) {
             if ((input.target & this.target!) === 0) {
+                continue;
+            }
+            if ((input.target & state.target!) === 0) {
                 continue;
             }
             state._emitUniformOrAttributes(input);

@@ -5,3 +5,4 @@ export * from "./rgbaMergerBlock";
 export * from "./rgbMergerBlock";
 export * from "./rgbaSplitterBlock";
 export * from "./rgbSplitterBlock";
+export * from "./textureBlock";
