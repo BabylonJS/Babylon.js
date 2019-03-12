@@ -3232,6 +3232,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+      * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
+      * @param name defines the name of the mesh to create
+      * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
+      * @param diameter sets the diameter size (float) of the sphere (default 1)
+      * @param scene defines the hosting scene
+      * @returns a new Mesh
+      */
+    public static CreateHemisphere(name: string, segments: number, diameter: number, scene?: Scene): Mesh {
+        throw _DevTools.WarnImport("MeshBuilder");
+    }
+
+    /**
      * Creates a cylinder or a cone mesh. Please consider using the same method from the MeshBuilder class instead
      * @param name defines the name of the mesh to create
      * @param height sets the height size (float) of the cylinder/cone (float, default 2)

@@ -3411,7 +3411,7 @@ export class Engine {
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
 
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        if (!this._caps.parallelShaderCompile && !gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
             let log = gl.getShaderInfoLog(shader);
             if (log) {
                 throw new Error(log);
@@ -3470,6 +3470,10 @@ export class Engine {
             throw new Error("Unable to create program");
         }
 
+        if (this._caps.parallelShaderCompile) {
+            shaderProgram.isParallelCompiled = true;
+        }
+
         context.attachShader(shaderProgram, vertexShader);
         context.attachShader(shaderProgram, fragmentShader);
 
@@ -3491,10 +3495,8 @@ export class Engine {
         shaderProgram.vertexShader = vertexShader;
         shaderProgram.fragmentShader = fragmentShader;
 
-        if (!this._caps.parallelShaderCompile) {
+        if (!shaderProgram.isParallelCompiled) {
             this._finalizeProgram(shaderProgram);
-        } else {
-            shaderProgram.isParallelCompiled = true;
         }
 
         return shaderProgram;

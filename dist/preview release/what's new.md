@@ -120,7 +120,7 @@
 - Added transparency support to `GlowLayer` ([Sebavan](https://github.com/Sebavan))
 - Added option `forceDisposeChildren` to multiMaterial.dispose ([danjpar](https://github.com/danjpar))
 - Added Pointer bindings for FollowCamera. ([mrdunk](https://github.com))
-- Inspector light gizmo ([TrevorDev](https://github.com/TrevorDev))
+- Inspector light gizmo with icons ([TrevorDev](https://github.com/TrevorDev))
 - Added option `multiMultiMaterials` to mesh.mergeMeshes ([danjpar](https://github.com/danjpar))
 - Expose fallback camera distortion metrics option in vrExperienceHelper ([TrevorDev](https://github.com/TrevorDev))
 - Added OnAfterEnteringVRObservable to webVRHelper ([TrevorDev](https://github.com/TrevorDev))
@@ -130,6 +130,7 @@
 - Added `MeshExploder` class ([danjpar](https://github.com/danjpar))
 - Observables can now make observers top or bottom priority ([TrevorDev](https://github.com/TrevorDev))
 - Mesh outline no longer is shown through the mesh when it's transparent ([TrevorDev](https://github.com/TrevorDev))
+- DeviceOrientationCamera will no longer be modified by mouse input if the orientation sensor is active ([TrevorDev](https://github.com/TrevorDev))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))

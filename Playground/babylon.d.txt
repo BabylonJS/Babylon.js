@@ -12017,6 +12017,12 @@ declare module BABYLON {
      */
     export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
         /**
+         * @hidden
+         */keyboardInput: Nullable<FreeCameraKeyboardMoveInput>;
+        /**
+         * @hidden
+         */mouseInput: Nullable<FreeCameraMouseInput>;
+        /**
          * Instantiates a new FreeCameraInputsManager.
          * @param camera Defines the camera the inputs belong to
          */
@@ -12032,6 +12038,11 @@ declare module BABYLON {
          * @returns the current input manager
          */
         addMouse(touchEnabled?: boolean): FreeCameraInputsManager;
+        /**
+         * Removes the mouse input support from the manager
+         * @returns the current input manager
+         */
+        removeMouse(): FreeCameraInputsManager;
         /**
          * Add touch input support to the input manager.
          * @returns the current input manager
@@ -20888,6 +20899,15 @@ declare module BABYLON {
           * @returns a new Mesh
           */
         static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        /**
+          * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
+          * @param name defines the name of the mesh to create
+          * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
+          * @param diameter sets the diameter size (float) of the sphere (default 1)
+          * @param scene defines the hosting scene
+          * @returns a new Mesh
+          */
+        static CreateHemisphere(name: string, segments: number, diameter: number, scene?: Scene): Mesh;
         /**
          * Creates a cylinder or a cone mesh. Please consider using the same method from the MeshBuilder class instead
          * @param name defines the name of the mesh to create
@@ -36265,6 +36285,9 @@ declare module BABYLON {
 declare module BABYLON {
         interface FreeCameraInputsManager {
             /**
+             * @hidden
+             */deviceOrientationInput: Nullable<FreeCameraDeviceOrientationInput>;
+            /**
              * Add orientation input support to the input manager.
              * @returns the current input manager
              */
@@ -36283,6 +36306,9 @@ declare module BABYLON {
         private _alpha;
         private _beta;
         private _gamma;
+        /**
+         * @hidden
+         */onDeviceOrientationChangedObservable: Observable<void>;
         /**
          * Instantiates a new input
          * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -41798,10 +41824,286 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A directional light is defined by a direction (what a surprise!).
+     * The light is emitted from everywhere in the specified direction, and has an infinite range.
+     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
+    export class DirectionalLight extends ShadowLight {
+        private _shadowFrustumSize;
+        /**
+         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
+         */
+        /**
+        * Specifies a fix frustum size for the shadow generation.
+        */
+        shadowFrustumSize: number;
+        private _shadowOrthoScale;
+        /**
+         * Gets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
+        /**
+        * Sets the shadow projection scale against the optimal computed one.
+        * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+        * This does not impact in fixed frustum size (shadowFrustumSize being set)
+        */
+        shadowOrthoScale: number;
+        /**
+         * Automatically compute the projection matrix to best fit (including all the casters)
+         * on each frame.
+         */
+        autoUpdateExtends: boolean;
+        private _orthoLeft;
+        private _orthoRight;
+        private _orthoTop;
+        private _orthoBottom;
+        /**
+         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
+         * The directional light is emitted from everywhere in the given direction.
+         * It can cast shadows.
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
+         * @param name The friendly name of the light
+         * @param direction The direction of the light
+         * @param scene The scene the light belongs to
+         */
+        constructor(name: string, direction: Vector3, scene: Scene);
+        /**
+         * Returns the string "DirectionalLight".
+         * @return The class name
+         */
+        getClassName(): string;
+        /**
+         * Returns the integer 1.
+         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        /**
+         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void;
+        /**
+         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _buildUniformLayout(): void;
+        /**
+         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The directional light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the min for
+         * @returns the depth min z
+         */
+        getDepthMinZ(activeCamera: Camera): number;
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the max for
+         * @returns the depth max z
+         */
+        getDepthMaxZ(activeCamera: Camera): number;
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class HemisphereBuilder {
+        /**
+         * Creates a hemisphere mesh
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the hemisphere mesh
+         */
+        static CreateHemisphere(name: string, options: {
+            segments?: number;
+            diameter?: number;
+            sideOrientation?: number;
+        }, scene: any): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * A spot light is defined by a position, a direction, an angle, and an exponent.
+     * These values define a cone of light starting from the position, emitting toward the direction.
+     * The angle, in radians, defines the size (field of illumination) of the spotlight's conical beam,
+     * and the exponent defines the speed of the decay of the light with distance (reach).
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
+    export class SpotLight extends ShadowLight {
+        private _angle;
+        private _innerAngle;
+        private _cosHalfAngle;
+        private _lightAngleScale;
+        private _lightAngleOffset;
+        /**
+         * Gets the cone angle of the spot light in Radians.
+         */
+        /**
+        * Sets the cone angle of the spot light in Radians.
+        */
+        angle: number;
+        /**
+         * Only used in gltf falloff mode, this defines the angle where
+         * the directional falloff will start before cutting at angle which could be seen
+         * as outer angle.
+         */
+        /**
+        * Only used in gltf falloff mode, this defines the angle where
+        * the directional falloff will start before cutting at angle which could be seen
+        * as outer angle.
+        */
+        innerAngle: number;
+        private _shadowAngleScale;
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+        /**
+        * Allows scaling the angle of the light for shadow generation only.
+        */
+        shadowAngleScale: number;
+        /**
+         * The light decay speed with the distance from the emission spot.
+         */
+        exponent: number;
+        private _projectionTextureMatrix;
+        /**
+        * Allows reading the projecton texture
+        */
+        readonly projectionTextureMatrix: Matrix;
+        protected _projectionTextureLightNear: number;
+        /**
+         * Gets the near clip of the Spotlight for texture projection.
+         */
+        /**
+        * Sets the near clip of the Spotlight for texture projection.
+        */
+        projectionTextureLightNear: number;
+        protected _projectionTextureLightFar: number;
+        /**
+         * Gets the far clip of the Spotlight for texture projection.
+         */
+        /**
+        * Sets the far clip of the Spotlight for texture projection.
+        */
+        projectionTextureLightFar: number;
+        protected _projectionTextureUpDirection: Vector3;
+        /**
+         * Gets the Up vector of the Spotlight for texture projection.
+         */
+        /**
+        * Sets the Up vector of the Spotlight for texture projection.
+        */
+        projectionTextureUpDirection: Vector3;
+        private _projectionTexture;
+        /**
+         * Gets the projection texture of the light.
+        */
+        /**
+        * Sets the projection texture of the light.
+        */
+        projectionTexture: Nullable<BaseTexture>;
+        private _projectionTextureViewLightDirty;
+        private _projectionTextureProjectionLightDirty;
+        private _projectionTextureDirty;
+        private _projectionTextureViewTargetVector;
+        private _projectionTextureViewLightMatrix;
+        private _projectionTextureProjectionLightMatrix;
+        private _projectionTextureScalingMatrix;
+        /**
+         * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
+         * It can cast shadows.
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
+         * @param name The light friendly name
+         * @param position The position of the spot light in the scene
+         * @param direction The direction of the light in the scene
+         * @param angle The cone angle of the light in Radians
+         * @param exponent The light decay speed with the distance from the emission spot
+         * @param scene The scene the lights belongs to
+         */
+        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
+        /**
+         * Returns the string "SpotLight".
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Returns the integer 2.
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Overrides the direction setter to recompute the projection texture view light Matrix.
+         */
+        protected _setDirection(value: Vector3): void;
+        /**
+         * Overrides the position setter to recompute the projection texture view light Matrix.
+         */
+        protected _setPosition(value: Vector3): void;
+        /**
+         * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.
+         * Returns the SpotLight.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _computeProjectionTextureViewLightMatrix(): void;
+        protected _computeProjectionTextureProjectionLightMatrix(): void;
+        /**
+         * Main function for light texture projection matrix computing.
+         */
+        protected _computeProjectionTextureMatrix(): void;
+        protected _buildUniformLayout(): void;
+        private _computeAngleValues;
+        /**
+         * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The spot light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): SpotLight;
+        /**
+         * Disposes the light and the associated resources.
+         */
+        dispose(): void;
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Gizmo that enables viewing a light
      */
     export class LightGizmo extends Gizmo {
-        private _box;
+        private _lightMesh;
+        private _material;
         /**
          * Creates a LightGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -41817,6 +42119,15 @@ declare module BABYLON {
          * Updates the gizmo to match the attached mesh's position/rotation
          */
         protected _update(): void;
+        private static _Scale;
+        /**
+         * Creates the lines for a light mesh
+         */
+        private static _createLightLines;
+        private static _CreateHemisphericLightMesh;
+        private static _CreatePointLightMesh;
+        private static _CreateSpotLightMesh;
+        private static _CreateDirectionalLightMesh;
     }
 }
 declare module BABYLON {
@@ -43180,6 +43491,160 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Manages the defines for the PBR Material.
+     * @hidden
+     */
+    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines {
+        PBR: boolean;
+        MAINUV1: boolean;
+        MAINUV2: boolean;
+        UV1: boolean;
+        UV2: boolean;
+        ALBEDO: boolean;
+        ALBEDODIRECTUV: number;
+        VERTEXCOLOR: boolean;
+        AMBIENT: boolean;
+        AMBIENTDIRECTUV: number;
+        AMBIENTINGRAYSCALE: boolean;
+        OPACITY: boolean;
+        VERTEXALPHA: boolean;
+        OPACITYDIRECTUV: number;
+        OPACITYRGB: boolean;
+        ALPHATEST: boolean;
+        DEPTHPREPASS: boolean;
+        ALPHABLEND: boolean;
+        ALPHAFROMALBEDO: boolean;
+        ALPHATESTVALUE: string;
+        SPECULAROVERALPHA: boolean;
+        RADIANCEOVERALPHA: boolean;
+        ALPHAFRESNEL: boolean;
+        LINEARALPHAFRESNEL: boolean;
+        PREMULTIPLYALPHA: boolean;
+        EMISSIVE: boolean;
+        EMISSIVEDIRECTUV: number;
+        REFLECTIVITY: boolean;
+        REFLECTIVITYDIRECTUV: number;
+        SPECULARTERM: boolean;
+        MICROSURFACEFROMREFLECTIVITYMAP: boolean;
+        MICROSURFACEAUTOMATIC: boolean;
+        LODBASEDMICROSFURACE: boolean;
+        MICROSURFACEMAP: boolean;
+        MICROSURFACEMAPDIRECTUV: number;
+        METALLICWORKFLOW: boolean;
+        ROUGHNESSSTOREINMETALMAPALPHA: boolean;
+        ROUGHNESSSTOREINMETALMAPGREEN: boolean;
+        METALLNESSSTOREINMETALMAPBLUE: boolean;
+        AOSTOREINMETALMAPRED: boolean;
+        ENVIRONMENTBRDF: boolean;
+        ENVIRONMENTBRDF_RGBD: boolean;
+        NORMAL: boolean;
+        TANGENT: boolean;
+        BUMP: boolean;
+        BUMPDIRECTUV: number;
+        OBJECTSPACE_NORMALMAP: boolean;
+        PARALLAX: boolean;
+        PARALLAXOCCLUSION: boolean;
+        NORMALXYSCALE: boolean;
+        LIGHTMAP: boolean;
+        LIGHTMAPDIRECTUV: number;
+        USELIGHTMAPASSHADOWMAP: boolean;
+        GAMMALIGHTMAP: boolean;
+        REFLECTION: boolean;
+        REFLECTIONMAP_3D: boolean;
+        REFLECTIONMAP_SPHERICAL: boolean;
+        REFLECTIONMAP_PLANAR: boolean;
+        REFLECTIONMAP_CUBIC: boolean;
+        USE_LOCAL_REFLECTIONMAP_CUBIC: boolean;
+        REFLECTIONMAP_PROJECTION: boolean;
+        REFLECTIONMAP_SKYBOX: boolean;
+        REFLECTIONMAP_SKYBOX_TRANSFORMED: boolean;
+        REFLECTIONMAP_EXPLICIT: boolean;
+        REFLECTIONMAP_EQUIRECTANGULAR: boolean;
+        REFLECTIONMAP_EQUIRECTANGULAR_FIXED: boolean;
+        REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED: boolean;
+        INVERTCUBICMAP: boolean;
+        USESPHERICALFROMREFLECTIONMAP: boolean;
+        USESPHERICALINVERTEX: boolean;
+        REFLECTIONMAP_OPPOSITEZ: boolean;
+        LODINREFLECTIONALPHA: boolean;
+        GAMMAREFLECTION: boolean;
+        RGBDREFLECTION: boolean;
+        RADIANCEOCCLUSION: boolean;
+        HORIZONOCCLUSION: boolean;
+        REFRACTION: boolean;
+        REFRACTIONMAP_3D: boolean;
+        REFRACTIONMAP_OPPOSITEZ: boolean;
+        LODINREFRACTIONALPHA: boolean;
+        GAMMAREFRACTION: boolean;
+        RGBDREFRACTION: boolean;
+        LINKREFRACTIONTOTRANSPARENCY: boolean;
+        INSTANCES: boolean;
+        NUM_BONE_INFLUENCERS: number;
+        BonesPerMesh: number;
+        BONETEXTURE: boolean;
+        NONUNIFORMSCALING: boolean;
+        MORPHTARGETS: boolean;
+        MORPHTARGETS_NORMAL: boolean;
+        MORPHTARGETS_TANGENT: boolean;
+        NUM_MORPH_INFLUENCERS: number;
+        IMAGEPROCESSING: boolean;
+        VIGNETTE: boolean;
+        VIGNETTEBLENDMODEMULTIPLY: boolean;
+        VIGNETTEBLENDMODEOPAQUE: boolean;
+        TONEMAPPING: boolean;
+        TONEMAPPING_ACES: boolean;
+        CONTRAST: boolean;
+        COLORCURVES: boolean;
+        COLORGRADING: boolean;
+        COLORGRADING3D: boolean;
+        SAMPLER3DGREENDEPTH: boolean;
+        SAMPLER3DBGRMAP: boolean;
+        IMAGEPROCESSINGPOSTPROCESS: boolean;
+        EXPOSURE: boolean;
+        MULTIVIEW: boolean;
+        USEPHYSICALLIGHTFALLOFF: boolean;
+        USEGLTFLIGHTFALLOFF: boolean;
+        TWOSIDEDLIGHTING: boolean;
+        SHADOWFLOAT: boolean;
+        CLIPPLANE: boolean;
+        CLIPPLANE2: boolean;
+        CLIPPLANE3: boolean;
+        CLIPPLANE4: boolean;
+        POINTSIZE: boolean;
+        FOG: boolean;
+        LOGARITHMICDEPTH: boolean;
+        FORCENORMALFORWARD: boolean;
+        SPECULARAA: boolean;
+        CLEARCOAT: boolean;
+        CLEARCOAT_DEFAULTIOR: boolean;
+        CLEARCOAT_TEXTURE: boolean;
+        CLEARCOAT_TEXTUREDIRECTUV: number;
+        CLEARCOAT_BUMP: boolean;
+        CLEARCOAT_BUMPDIRECTUV: number;
+        CLEARCOAT_TINT: boolean;
+        CLEARCOAT_TINT_TEXTURE: boolean;
+        CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
+        ANISOTROPIC: boolean;
+        ANISOTROPIC_TEXTURE: boolean;
+        ANISOTROPIC_TEXTUREDIRECTUV: number;
+        BRDF_V_HEIGHT_CORRELATED: boolean;
+        MS_BRDF_ENERGY_CONSERVATION: boolean;
+        SHEEN: boolean;
+        SHEEN_TEXTURE: boolean;
+        SHEEN_TEXTUREDIRECTUV: number;
+        SHEEN_LINKWITHALBEDO: boolean;
+        UNLIT: boolean;
+        DEBUGMODE: number;
+        /**
+         * Initializes the PBR Material defines.
+         */
+        constructor();
+        /**
+         * Resets the PBR Material defines.
+         */
+        reset(): void;
+    }
+    /**
      * The Physically based material base class of BJS.
      *
      * This offers the main features of a standard PBR material.
@@ -43563,6 +44028,10 @@ declare module BABYLON {
          */
         readonly sheen: PBRSheenConfiguration;
         /**
+         * Custom callback helping to override the default shader used in the material.
+         */
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+        /**
          * Instantiates a new PBRMaterial instance.
          *
          * @param name The material name
@@ -43577,11 +44046,6 @@ declare module BABYLON {
          * Gets the name of the material class.
          */
         getClassName(): string;
-        /**
-         * Gets the name of the material shader.
-         * @returns - string that specifies the shader program of the material.
-         */
-        getShaderName(): string;
         /**
          * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
          */
@@ -46064,112 +46528,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * A directional light is defined by a direction (what a surprise!).
-     * The light is emitted from everywhere in the specified direction, and has an infinite range.
-     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
-     * Documentation: https://doc.babylonjs.com/babylon101/lights
-     */
-    export class DirectionalLight extends ShadowLight {
-        private _shadowFrustumSize;
-        /**
-         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
-         */
-        /**
-        * Specifies a fix frustum size for the shadow generation.
-        */
-        shadowFrustumSize: number;
-        private _shadowOrthoScale;
-        /**
-         * Gets the shadow projection scale against the optimal computed one.
-         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-         * This does not impact in fixed frustum size (shadowFrustumSize being set)
-         */
-        /**
-        * Sets the shadow projection scale against the optimal computed one.
-        * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-        * This does not impact in fixed frustum size (shadowFrustumSize being set)
-        */
-        shadowOrthoScale: number;
-        /**
-         * Automatically compute the projection matrix to best fit (including all the casters)
-         * on each frame.
-         */
-        autoUpdateExtends: boolean;
-        private _orthoLeft;
-        private _orthoRight;
-        private _orthoTop;
-        private _orthoBottom;
-        /**
-         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
-         * The directional light is emitted from everywhere in the given direction.
-         * It can cast shadows.
-         * Documentation : https://doc.babylonjs.com/babylon101/lights
-         * @param name The friendly name of the light
-         * @param direction The direction of the light
-         * @param scene The scene the light belongs to
-         */
-        constructor(name: string, direction: Vector3, scene: Scene);
-        /**
-         * Returns the string "DirectionalLight".
-         * @return The class name
-         */
-        getClassName(): string;
-        /**
-         * Returns the integer 1.
-         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        /**
-         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void;
-        /**
-         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _buildUniformLayout(): void;
-        /**
-         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The directional light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
-        /**
-         * Gets the minZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the min for
-         * @returns the depth min z
-         */
-        getDepthMinZ(activeCamera: Camera): number;
-        /**
-         * Gets the maxZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the max for
-         * @returns the depth max z
-         */
-        getDepthMaxZ(activeCamera: Camera): number;
-        /**
-         * Prepares the list of defines specific to the light type.
-         * @param defines the list of defines
-         * @param lightIndex defines the index of the light for the effect
-         */
-        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
-    }
-}
-declare module BABYLON {
-    /**
      * A point light is a light defined by an unique point in world space.
      * The light is emitted in every direction from this point.
      * A good example of a point light is a standard light bulb.
@@ -46249,156 +46607,6 @@ declare module BABYLON {
          * @returns The point light
          */
         transferToEffect(effect: Effect, lightIndex: string): PointLight;
-        /**
-         * Prepares the list of defines specific to the light type.
-         * @param defines the list of defines
-         * @param lightIndex defines the index of the light for the effect
-         */
-        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * A spot light is defined by a position, a direction, an angle, and an exponent.
-     * These values define a cone of light starting from the position, emitting toward the direction.
-     * The angle, in radians, defines the size (field of illumination) of the spotlight's conical beam,
-     * and the exponent defines the speed of the decay of the light with distance (reach).
-     * Documentation: https://doc.babylonjs.com/babylon101/lights
-     */
-    export class SpotLight extends ShadowLight {
-        private _angle;
-        private _innerAngle;
-        private _cosHalfAngle;
-        private _lightAngleScale;
-        private _lightAngleOffset;
-        /**
-         * Gets the cone angle of the spot light in Radians.
-         */
-        /**
-        * Sets the cone angle of the spot light in Radians.
-        */
-        angle: number;
-        /**
-         * Only used in gltf falloff mode, this defines the angle where
-         * the directional falloff will start before cutting at angle which could be seen
-         * as outer angle.
-         */
-        /**
-        * Only used in gltf falloff mode, this defines the angle where
-        * the directional falloff will start before cutting at angle which could be seen
-        * as outer angle.
-        */
-        innerAngle: number;
-        private _shadowAngleScale;
-        /**
-         * Allows scaling the angle of the light for shadow generation only.
-         */
-        /**
-        * Allows scaling the angle of the light for shadow generation only.
-        */
-        shadowAngleScale: number;
-        /**
-         * The light decay speed with the distance from the emission spot.
-         */
-        exponent: number;
-        private _projectionTextureMatrix;
-        /**
-        * Allows reading the projecton texture
-        */
-        readonly projectionTextureMatrix: Matrix;
-        protected _projectionTextureLightNear: number;
-        /**
-         * Gets the near clip of the Spotlight for texture projection.
-         */
-        /**
-        * Sets the near clip of the Spotlight for texture projection.
-        */
-        projectionTextureLightNear: number;
-        protected _projectionTextureLightFar: number;
-        /**
-         * Gets the far clip of the Spotlight for texture projection.
-         */
-        /**
-        * Sets the far clip of the Spotlight for texture projection.
-        */
-        projectionTextureLightFar: number;
-        protected _projectionTextureUpDirection: Vector3;
-        /**
-         * Gets the Up vector of the Spotlight for texture projection.
-         */
-        /**
-        * Sets the Up vector of the Spotlight for texture projection.
-        */
-        projectionTextureUpDirection: Vector3;
-        private _projectionTexture;
-        /**
-         * Gets the projection texture of the light.
-        */
-        /**
-        * Sets the projection texture of the light.
-        */
-        projectionTexture: Nullable<BaseTexture>;
-        private _projectionTextureViewLightDirty;
-        private _projectionTextureProjectionLightDirty;
-        private _projectionTextureDirty;
-        private _projectionTextureViewTargetVector;
-        private _projectionTextureViewLightMatrix;
-        private _projectionTextureProjectionLightMatrix;
-        private _projectionTextureScalingMatrix;
-        /**
-         * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
-         * It can cast shadows.
-         * Documentation : https://doc.babylonjs.com/babylon101/lights
-         * @param name The light friendly name
-         * @param position The position of the spot light in the scene
-         * @param direction The direction of the light in the scene
-         * @param angle The cone angle of the light in Radians
-         * @param exponent The light decay speed with the distance from the emission spot
-         * @param scene The scene the lights belongs to
-         */
-        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
-        /**
-         * Returns the string "SpotLight".
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Returns the integer 2.
-         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Overrides the direction setter to recompute the projection texture view light Matrix.
-         */
-        protected _setDirection(value: Vector3): void;
-        /**
-         * Overrides the position setter to recompute the projection texture view light Matrix.
-         */
-        protected _setPosition(value: Vector3): void;
-        /**
-         * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.
-         * Returns the SpotLight.
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _computeProjectionTextureViewLightMatrix(): void;
-        protected _computeProjectionTextureProjectionLightMatrix(): void;
-        /**
-         * Main function for light texture projection matrix computing.
-         */
-        protected _computeProjectionTextureMatrix(): void;
-        protected _buildUniformLayout(): void;
-        private _computeAngleValues;
-        /**
-         * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The spot light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): SpotLight;
-        /**
-         * Disposes the light and the associated resources.
-         */
-        dispose(): void;
         /**
          * Prepares the list of defines specific to the light type.
          * @param defines the list of defines
@@ -62669,6 +62877,8 @@ declare module BABYLON {
         Fragment_Definitions: string;
         Fragment_MainBegin: string;
         Fragment_Custom_Diffuse: string;
+        Fragment_Before_Lights: string;
+        Fragment_Before_Fog: string;
         Fragment_Custom_Alpha: string;
         Fragment_Before_FragColor: string;
         Vertex_Begin: string;
@@ -62676,6 +62886,7 @@ declare module BABYLON {
         Vertex_MainBegin: string;
         Vertex_Before_PositionUpdated: string;
         Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
     }
     export class CustomMaterial extends BABYLON.StandardMaterial {
         static ShaderIndexer: number;
@@ -62692,12 +62903,59 @@ declare module BABYLON {
         Fragment_MainBegin(shaderPart: string): CustomMaterial;
         Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): CustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): CustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): CustomMaterial;
         Vertex_Begin(shaderPart: string): CustomMaterial;
         Vertex_Definitions(shaderPart: string): CustomMaterial;
         Vertex_MainBegin(shaderPart: string): CustomMaterial;
         Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
         Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
+        Vertex_MainEnd(shaderPart: string): CustomMaterial;
+    }
+}
+declare module BABYLON {
+    export class ShaderAlebdoParts {
+        constructor();
+        Fragment_Begin: string;
+        Fragment_Definitions: string;
+        Fragment_MainBegin: string;
+        Fragment_Custom_Albedo: string;
+        Fragment_Before_Lights: string;
+        Fragment_Before_Fog: string;
+        Fragment_Custom_Alpha: string;
+        Fragment_Before_FragColor: string;
+        Vertex_Begin: string;
+        Vertex_Definitions: string;
+        Vertex_MainBegin: string;
+        Vertex_Before_PositionUpdated: string;
+        Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
+    }
+    export class PBRCustomMaterial extends BABYLON.PBRMaterial {
+        static ShaderIndexer: number;
+        CustomParts: ShaderAlebdoParts;isCreatedShader: boolean;createdShaderName: string;customUniform: string[];newUniforms: string[];newUniformInstances: any[];newSamplerInstances: BABYLON.Texture[];
+        FragmentShader: string;
+        VertexShader: string;
+        AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
+        ReviewUniform(name: string, arr: string[]): string[];
+        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.PBRMaterialDefines): string;
+        constructor(name: string, scene: BABYLON.Scene);
+        AddUniform(name: string, kind: string, param: any): PBRCustomMaterial;
+        Fragment_Begin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Definitions(shaderPart: string): PBRCustomMaterial;
+        Fragment_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial;
+        Vertex_Begin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Definitions(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainEnd(shaderPart: string): PBRCustomMaterial;
     }
 }
 declare module BABYLON {
