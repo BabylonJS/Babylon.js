@@ -143,6 +143,14 @@ VertexData.CreateGroundFromHeightMap = function(options: { width: number, height
     var row, col;
     var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
     var alphaFilter = options.alphaFilter || 0.0;
+    var invert = false;
+
+    if (options.minHeight > options.maxHeight) {
+        invert = true;
+        let temp = options.maxHeight;
+        options.maxHeight = options.minHeight;
+        options.minHeight = temp;
+    }
 
     // Vertices
     for (row = 0; row <= options.subdivisions; row++) {
@@ -158,6 +166,12 @@ VertexData.CreateGroundFromHeightMap = function(options: { width: number, height
             var g = options.buffer[pos + 1] / 255.0;
             var b = options.buffer[pos + 2] / 255.0;
             var a = options.buffer[pos + 3] / 255.0;
+
+            if (invert) {
+                r = 1.0 - r;
+                g = 1.0 - g;
+                b = 1.0 - b;
+            }
 
             var gradient = r * filter.r + g * filter.g + b * filter.b;
 
