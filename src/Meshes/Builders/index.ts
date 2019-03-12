@@ -2,6 +2,7 @@ export * from "./boxBuilder";
 export * from "./discBuilder";
 export * from "./ribbonBuilder";
 export * from "./sphereBuilder";
+export * from "./hemisphereBuilder";
 export * from "./cylinderBuilder";
 export * from "./torusBuilder";
 export * from "./torusKnotBuilder";
