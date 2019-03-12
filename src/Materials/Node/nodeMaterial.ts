@@ -248,6 +248,7 @@ export class NodeMaterial extends PushMaterial {
 
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState) {
         node.initialize(state);
+        node.autoConfigure();
 
         for (var inputs of node.inputs) {
             let connectedPoint = inputs.connectedPoint;
@@ -406,7 +407,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Shared defines
         this._sharedData.blocksWithDefines.forEach((b) => {
-            b.prepareDefines(mesh, this, defines);
+            b.prepareDefines(mesh, this, defines, useInstances);
         });
 
         // Need to recompile?

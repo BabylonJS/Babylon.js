@@ -33,12 +33,6 @@ export class FogBlock extends NodeMaterialBlock {
         this.registerInput("fogParameters", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
-
-        // Auto configuration
-        this._inputs[1].setAsWellKnownValue(NodeMaterialWellKnownValues.View);
-        this._inputs[3].setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
-        this._inputs[4].setAsWellKnownValue(NodeMaterialWellKnownValues.FogParameters);
-        this._outputs[0].isVarying = true;
     }
 
     /**
@@ -82,6 +76,19 @@ export class FogBlock extends NodeMaterialBlock {
      */
     public get fogParameters(): NodeMaterialConnectionPoint {
         return this._inputs[4];
+    }
+
+    public autoConfigure() {
+        if (!this.view.connectedPoint) {
+            this.view.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+        }
+        if (!this.fogColor.connectedPoint) {
+            this.fogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
+        }
+        if (!this.fogParameters.connectedPoint) {
+            this.fogParameters.setAsWellKnownValue(NodeMaterialWellKnownValues.FogParameters);
+        }
+        this._outputs[0].isVarying = true;
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
