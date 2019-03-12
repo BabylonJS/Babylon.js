@@ -532,12 +532,12 @@ export class StandardMaterial extends PushMaterial {
             return;
         }
 
-        // Detaches observer.
+        // Detaches observer
         if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
             this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
         }
 
-        // Pick the scene configuration if needed.
+        // Pick the scene configuration if needed
         if (!configuration) {
             this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
         }
@@ -545,7 +545,7 @@ export class StandardMaterial extends PushMaterial {
             this._imageProcessingConfiguration = configuration;
         }
 
-        // Attaches observer.
+        // Attaches observer
         if (this._imageProcessingConfiguration) {
             this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
                 this._markAllSubMeshesAsImageProcessingDirty();

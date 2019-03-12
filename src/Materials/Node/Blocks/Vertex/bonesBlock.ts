@@ -108,7 +108,7 @@ export class BonesBlock extends NodeMaterialBlock {
         }
     }
 
-    public bind(effect: Effect, mesh?: Mesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         MaterialHelper.BindBonesParameters(mesh, effect);
     }
 
@@ -138,11 +138,11 @@ export class BonesBlock extends NodeMaterialBlock {
         state.samplers.push("boneSampler");
 
         // Emit code
-        state._emitFunctionFromInclude("BonesDeclaration", "bonesDeclaration", {
+        state._emitFunctionFromInclude("bonesDeclaration", {
             removeAttributes: true,
             removeUniforms: false,
             removeVaryings: true,
-            removeifDef: false
+            removeIfDef: false
         });
 
         let influenceVariablename = state._getFreeVariableName("influence");

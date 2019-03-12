@@ -58,10 +58,11 @@ export class NodeMaterialBuildState {
 
         this.compilationString = `\r\n${emitComments ? "//Entry point\r\n" : ""}void main(void) {\r\n${this.compilationString}`;
 
+        let functionCode = "";
         for (var functionName in this.functions) {
-            let functionCode = this.functions[functionName];
-            this.compilationString = `\r\n${functionCode}\r\n${this.compilationString}`;
+            functionCode += this.functions[functionName] + `\r\n`;
         }
+        this.compilationString = `\r\n${functionCode}\r\n${this.compilationString}`;
 
         if (!isFragmentMode && this._varyingTransfer) {
             this.compilationString = `${this.compilationString}\r\n${this._varyingTransfer}`;
@@ -135,6 +136,8 @@ export class NodeMaterialBuildState {
                 return "mat4";
             case NodeMaterialBlockConnectionPointTypes.Texture:
                 return "sampler2D";
+            case NodeMaterialBlockConnectionPointTypes.Texture3D:
+                return "sampler3D";
         }
 
         return "";
@@ -170,46 +173,47 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
-    public _emitFunctionFromInclude(name: string, includeName: string, options?: {
+    public _emitFunctionFromInclude(includeName: string, options?: {
         removeAttributes?: boolean,
         removeUniforms?: boolean,
         removeVaryings?: boolean,
-        removeifDef?: boolean,
+        removeIfDef?: boolean,
         replaceStrings?: { search: RegExp, replace: string }[],
     }) {
-        if (this.functions[name]) {
+        if (this.functions[includeName]) {
             return;
         }
-
-        this.functions[name] = Effect.IncludesShadersStore[includeName];
 
         if (!options) {
+            this.functions[includeName] = `#include<${includeName}>\r\n`;
             return;
         }
 
-        if (options.removeifDef) {
-            this.functions[name] = this.functions[name].replace(/^\s*?#ifdef.+$/gm, "");
-            this.functions[name] = this.functions[name].replace(/^\s*?#endif.*$/gm, "");
-            this.functions[name] = this.functions[name].replace(/^\s*?#else.*$/gm, "");
-            this.functions[name] = this.functions[name].replace(/^\s*?#elif.*$/gm, "");
+        this.functions[includeName] = Effect.IncludesShadersStore[includeName];
+
+        if (options.removeIfDef) {
+            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#ifdef.+$/gm, "");
+            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#endif.*$/gm, "");
+            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#else.*$/gm, "");
+            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#elif.*$/gm, "");
         }
 
         if (options.removeAttributes) {
-            this.functions[name] = this.functions[name].replace(/^\s*?attribute.+$/gm, "");
+            this.functions[includeName] = this.functions[includeName].replace(/^\s*?attribute.+$/gm, "");
         }
 
         if (options.removeUniforms) {
-            this.functions[name] = this.functions[name].replace(/^\s*?uniform.+$/gm, "");
+            this.functions[includeName] = this.functions[includeName].replace(/^\s*?uniform.+$/gm, "");
         }
 
         if (options.removeVaryings) {
-            this.functions[name] = this.functions[name].replace(/^\s*?varying.+$/gm, "");
+            this.functions[includeName] = this.functions[includeName].replace(/^\s*?varying.+$/gm, "");
         }
 
         if (options.replaceStrings) {
             for (var index = 0; index < options.replaceStrings.length; index++) {
                 let replaceString = options.replaceStrings[index];
-                this.functions[name] = this.functions[name].replace(replaceString.search, replaceString.replace);
+                this.functions[includeName] = this.functions[includeName].replace(replaceString.search, replaceString.replace);
             }
         }
     }
@@ -244,8 +248,18 @@ export class NodeMaterialBuildState {
         }
     }
 
+    private _emitDefine(define: string): string {
+        if (define[0] === "!") {
+            return `#ifndef ${define.substring(1)}\r\n`;
+        }
+
+        return `#ifdef ${define}\r\n`;
+    }
+
     /** @hidden */
     public _emitUniformOrAttributes(point: NodeMaterialConnectionPoint, define?: string) {
+        define = define || point.define;
+
         // Samplers
         if (point.type === NodeMaterialBlockConnectionPointTypes.Texture) {
             point.name = this._getFreeVariableName(point.name);
@@ -257,7 +271,7 @@ export class NodeMaterialBuildState {
 
             this.samplers.push(point.name);
             if (define) {
-                this._uniformDeclaration += `#ifdef ${define}\r\n`;
+                this._uniformDeclaration += this._emitDefine(define);
             }
             this._samplerDeclaration += `uniform ${this._getGLType(point.type)} ${point.name};\r\n`;
             if (define) {
@@ -283,7 +297,7 @@ export class NodeMaterialBuildState {
 
             this.uniforms.push(point.associatedVariableName);
             if (define) {
-                this._uniformDeclaration += `#ifdef ${define}\r\n`;
+                this._uniformDeclaration += this._emitDefine(define);
             }
             this._uniformDeclaration += `uniform ${this._getGLType(point.type)} ${point.associatedVariableName};\r\n`;
             if (define) {

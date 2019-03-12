@@ -14,8 +14,6 @@ export enum NodeMaterialWellKnownValues {
     WorldView = 5,
     /** WorldViewProjection */
     WorldViewProjection = 6,
-    /** Fog color */
-    FogColor = 7,
-    /** Fog parameters */
-    FogParameters = 8
+    /** Will be filled by the block itself */
+    BlockBased = 7
 }

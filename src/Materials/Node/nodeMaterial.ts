@@ -10,19 +10,37 @@ import { EffectCreationOptions, EffectFallbacks } from '../effect';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { Observable } from '../../Misc/observable';
+import { Observable, Observer } from '../../Misc/observable';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './NodeMaterialBuildStateSharedData';
 import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
 import { NodeMaterialOptimizer } from './Optimizers/nodeMaterialOptimizer';
+import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from '../imageProcessingConfiguration';
+import { Nullable } from '../../types';
 
 /** @hidden */
-export class NodeMaterialDefines extends MaterialDefines {
+export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public BONETEXTURE = false;
+
+    /** IMAGE PROCESSING */
+    public IMAGEPROCESSING = false;
+    public VIGNETTE = false;
+    public VIGNETTEBLENDMODEMULTIPLY = false;
+    public VIGNETTEBLENDMODEOPAQUE = false;
+    public TONEMAPPING = false;
+    public TONEMAPPING_ACES = false;
+    public CONTRAST = false;
+    public EXPOSURE = false;
+    public COLORCURVES = false;
+    public COLORGRADING = false;
+    public COLORGRADING3D = false;
+    public SAMPLER3DGREENDEPTH = false;
+    public SAMPLER3DBGRMAP = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
 
     constructor() {
         super();
@@ -88,6 +106,30 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Default configuration related to image processing available in the standard Material.
+     */
+    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+
+    /**
+     * Gets the image processing configuration used either in this material.
+     */
+    public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+        return this._imageProcessingConfiguration;
+    }
+
+    /**
+     * Sets the Default image processing configuration used either in the this material.
+     *
+     * If sets to null, the scene one is in use.
+     */
+    public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+        this._attachImageProcessingConfiguration(value);
+
+        // Ensure the effect will be rebuilt.
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
      * Create a new node based material
      * @param name defines the material name
      * @param scene defines the hosting scene
@@ -100,6 +142,9 @@ export class NodeMaterial extends PushMaterial {
             emitComments: false,
             ...options
         };
+
+        // Setup the default processing configuration to the scene.
+        this._attachImageProcessingConfiguration(null);
     }
 
     /**
@@ -108,6 +153,41 @@ export class NodeMaterial extends PushMaterial {
      */
     public getClassName(): string {
         return "NodeMaterial";
+    }
+
+    /**
+     * Keep track of the image processing observer to allow dispose and replace.
+     */
+    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
+
+    /**
+     * Attaches a new image processing configuration to the Standard Material.
+     * @param configuration
+     */
+    protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
+        if (configuration === this._imageProcessingConfiguration) {
+            return;
+        }
+
+        // Detaches observer.
+        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
+        }
+
+        // Pick the scene configuration if needed.
+        if (!configuration) {
+            this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
+        }
+        else {
+            this._imageProcessingConfiguration = configuration;
+        }
+
+        // Attaches observer.
+        if (this._imageProcessingConfiguration) {
+            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
+                this._markAllSubMeshesAsImageProcessingDirty();
+            });
+        }
     }
 
     /**
@@ -338,7 +418,8 @@ export class NodeMaterial extends PushMaterial {
         this._fragmentCompilationState.finalize(this._fragmentCompilationState);
 
         // Textures
-        this._textureConnectionPoints = this._sharedData.uniformConnectionPoints.filter((u) => u.type === NodeMaterialBlockConnectionPointTypes.Texture);
+        this._textureConnectionPoints =
+            this._sharedData.uniformConnectionPoints.filter((u) => u.type === NodeMaterialBlockConnectionPointTypes.Texture || u.type === NodeMaterialBlockConnectionPointTypes.Texture3D);
 
         this._buildId++;
 
@@ -397,12 +478,10 @@ export class NodeMaterial extends PushMaterial {
         }
 
         var engine = scene.getEngine();
-        // Textures
-        for (var connectionPoint of this._textureConnectionPoints) {
-            let texture = connectionPoint.value as BaseTexture;
-            if (texture && !texture.isReadyOrNotBlocking()) {
-                return false;
-            }
+
+        // Check if blocks are ready
+        if (this._sharedData.blockingBlocks.some((b) => !b.isReady(mesh, this, defines, useInstances))) {
+            return false;
         }
 
         // Shared defines
@@ -532,7 +611,7 @@ export class NodeMaterial extends PushMaterial {
             if (effect && scene.getCachedMaterial() !== this) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
-                    block.bind(effect, mesh);
+                    block.bind(effect, this, mesh);
                 }
 
                 // Connection points

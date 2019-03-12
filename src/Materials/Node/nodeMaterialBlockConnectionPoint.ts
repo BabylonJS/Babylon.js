@@ -43,6 +43,11 @@ export class NodeMaterialConnectionPoint {
      */
     public isOptional: boolean;
 
+    /**
+     * Gets or sets a string indicating that this uniform must be defined under a #ifdef
+     */
+    public define: string;
+
     /** Gets or sets the target of that connection point */
     public target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
 
@@ -293,12 +298,6 @@ export class NodeMaterialConnectionPoint {
                 case NodeMaterialWellKnownValues.ViewProjection:
                     effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
-                case NodeMaterialWellKnownValues.FogColor:
-                    effect.setColor3(variableName, scene.fogColor);
-                    break;
-                case NodeMaterialWellKnownValues.FogParameters:
-                    effect.setFloat4(variableName, scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                    break;
             }
             return;
         }
@@ -333,6 +332,7 @@ export class NodeMaterialConnectionPoint {
                 effect.setMatrix(this.name, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Texture:
+            case NodeMaterialBlockConnectionPointTypes.Texture3D:
                 effect.setTexture(this.name, value);
                 break;
         }

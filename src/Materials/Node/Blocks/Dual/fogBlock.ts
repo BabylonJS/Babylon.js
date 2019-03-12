@@ -83,10 +83,10 @@ export class FogBlock extends NodeMaterialBlock {
             this.view.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
         }
         if (!this.fogColor.connectedPoint) {
-            this.fogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
+            this.fogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.BlockBased);
         }
         if (!this.fogParameters.connectedPoint) {
-            this.fogParameters.setAsWellKnownValue(NodeMaterialWellKnownValues.FogParameters);
+            this.fogParameters.setAsWellKnownValue(NodeMaterialWellKnownValues.BlockBased);
         }
         this._outputs[0].isVarying = true;
     }
@@ -96,7 +96,7 @@ export class FogBlock extends NodeMaterialBlock {
         defines.setValue("FOG", nodeMaterial.fogEnabled && MaterialHelper.GetFogState(mesh, scene));
     }
 
-    public bind(effect: Effect, mesh?: Mesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
         }
@@ -112,10 +112,10 @@ export class FogBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
 
         if (state.target === NodeMaterialBlockTargets.Fragment) {
-            state._emitFunctionFromInclude("CalcFogFactor", "fogFragmentDeclaration", {
+            state._emitFunctionFromInclude("fogFragmentDeclaration", {
                 removeUniforms: true,
                 removeVaryings: true,
-                removeifDef: false,
+                removeIfDef: false,
                 replaceStrings: [{ search: /float CalcFogFactor\(\)/, replace: "float CalcFogFactor(vec3 vFogDistance, vec4 vFogInfos)" }]
             });
 
