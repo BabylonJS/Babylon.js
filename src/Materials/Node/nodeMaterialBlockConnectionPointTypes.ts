@@ -20,6 +20,8 @@ export enum NodeMaterialBlockConnectionPointTypes {
     Matrix = 128,
     /** Texture */
     Texture = 256,
+    /** Texture3D */
+    Texture3D = 512,
     /** Vector3 or Color3 */
     Vector3OrColor3 = Vector3 | Color3,
     /** Vector4 or Color4 */

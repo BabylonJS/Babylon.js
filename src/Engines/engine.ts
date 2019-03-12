@@ -3510,6 +3510,25 @@ export class Engine {
         var linked = context.getProgramParameter(shaderProgram, context.LINK_STATUS);
 
         if (!linked) {
+            if (this._caps.parallelShaderCompile) { // Get more info
+
+                // Vertex
+                if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
+                    let log = this._gl.getShaderInfoLog(vertexShader);
+                    if (log) {
+                        throw new Error(log);
+                    }
+                }
+
+                // Fragment
+                if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
+                    let log = this._gl.getShaderInfoLog(fragmentShader);
+                    if (log) {
+                        throw new Error(log);
+                    }
+                }
+            }
+
             var error = context.getProgramInfoLog(shaderProgram);
             if (error) {
                 throw new Error(error);

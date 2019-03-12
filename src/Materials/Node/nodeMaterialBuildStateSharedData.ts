@@ -36,6 +36,11 @@ export class NodeMaterialBuildStateSharedData {
     public blocksWithDefines = new Array<NodeMaterialBlock>();
 
     /**
+     * List of blocks that can block the isReady function for the material
+     */
+    public blockingBlocks = new Array<NodeMaterialBlock>();
+
+    /**
      * Build Id used to avoid multiple recompilations
      */
     public buildId: number;

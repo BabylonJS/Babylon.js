@@ -124,6 +124,15 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    public isReady() {
+        let texture = this.texture.value as BaseTexture;
+        if (texture && !texture.isReadyOrNotBlocking()) {
+            return false;
+        }
+
+        return true;
+    }
+
     private _injectVertexCode(state: NodeMaterialBuildState) {
         let uvInput = this.uv;
         let transformedUV = this.transformedUV;
@@ -142,6 +151,9 @@ export class TextureBlock extends NodeMaterialBlock {
         state._emitUniformOrAttributes(textureTransform, this._defineName);
 
         if (isTextureTransformConnected) {
+            if (state.sharedData.emitComments) {
+                state.compilationString += `\r\n//${this.name}\r\n`;
+            }
             state.compilationString += `#ifdef ${this._defineName}\r\n`;
             state.compilationString += `${transformedUV.associatedVariableName} = vec2(${textureTransform.associatedVariableName} * vec4(${uvInput.associatedVariableName}, 1.0, 0.0));\r\n`;
             state.compilationString += `#else\r\n`;
@@ -154,6 +166,8 @@ export class TextureBlock extends NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
+
+        state.sharedData.blockingBlocks.push(this);
 
         // Vertex
         this._injectVertexCode(state._vertexState);

@@ -127,9 +127,10 @@ export class NodeMaterialBlock {
     /**
      * Bind data to effect. Will only be called for blocks with isBindable === true
      * @param effect defines the effect to bind data to
+     * @param nodeMaterial defines the hosting NodeMaterial
      * @param mesh defines the mesh that will be rendered
      */
-    public bind(effect: Effect, mesh?: Mesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         // Do nothing
     }
 
@@ -292,6 +293,18 @@ export class NodeMaterialBlock {
      */
     public autoConfigure() {
         // Do nothing
+    }
+
+    /**
+     * Checks if the block is ready
+     * @param mesh defines the mesh to be rendered
+     * @param nodeMaterial defines the node material requesting the update
+     * @param defines defines the material defines to update
+     * @param useInstances specifies that instances should be used
+     * @returns true if the block is ready
+     */
+    public isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+        return true;
     }
 
     /**

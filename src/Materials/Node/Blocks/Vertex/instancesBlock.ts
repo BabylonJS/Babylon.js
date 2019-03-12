@@ -94,6 +94,8 @@ export class InstancesBlock extends NodeMaterialBlock {
         if (!this.world.connectedPoint) {
             this.world.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
         }
+
+        this.world.define = "!INSTANCES";
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
