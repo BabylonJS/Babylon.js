@@ -130,6 +130,7 @@
 - Added `MeshExploder` class ([danjpar](https://github.com/danjpar))
 - Observables can now make observers top or bottom priority ([TrevorDev](https://github.com/TrevorDev))
 - Mesh outline no longer is shown through the mesh when it's transparent ([TrevorDev](https://github.com/TrevorDev))
+- DeviceOrientationCamera will no longer be modified by mouse input if the orientation sensor is active ([TrevorDev](https://github.com/TrevorDev))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
