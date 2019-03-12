@@ -38,10 +38,6 @@ export class TextureBlock extends NodeMaterialBlock {
         this.registerInput("textureTransform", NodeMaterialBlockConnectionPointTypes.Matrix, true, NodeMaterialBlockTargets.Vertex);
 
         this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color4);
-
-        // Auto configuration
-        this._inputs[0].setAsAttribute();
-        this._inputs[0].connectTo(this._inputs[2]);
     }
 
     /**
@@ -85,6 +81,13 @@ export class TextureBlock extends NodeMaterialBlock {
      */
     public get textureTransform(): NodeMaterialConnectionPoint {
         return this._inputs[4];
+    }
+
+    public autoConfigure() {
+        if (!this.uv.connectedPoint) {
+            this.uv.setAsAttribute();
+            this.uv.connectTo(this.transformedUV);
+        }
     }
 
     public initialize(state: NodeMaterialBuildState) {
@@ -166,13 +169,11 @@ export class TextureBlock extends NodeMaterialBlock {
         let isTextureInfoConnected = textureInfo.connectedPoint != null || textureInfo.isUniform;
         const complement = isTextureInfoConnected ? ` * ${textureInfo.associatedVariableName}.y` : "";
 
-
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `vec4 ${output.associatedVariableName} = texture2D(${samplerInput.associatedVariableName}, ${transformedUV.associatedVariableName})${complement};\r\n`;
         state.compilationString += `#else\r\n`;
         state.compilationString += `vec4 ${output.associatedVariableName} = texture2D(${samplerInput.associatedVariableName}, ${"vMain" + uvInput.associatedVariableName})${complement};\r\n`;
         state.compilationString += `#endif\r\n`;
-
 
         return this;
     }

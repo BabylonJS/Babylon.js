@@ -280,9 +280,17 @@ export class NodeMaterialBlock {
      * Update defines for shader compilation
      * @param mesh defines the mesh to be rendered
      * @param nodeMaterial defines the node material requesting the update
-     * @param defines defines the material defines to update\
+     * @param defines defines the material defines to update
+     * @param useInstances specifies that instances should be used
      */
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+        // Do nothing
+    }
+
+    /**
+     * Lets the block try to connect some inputs automatically
+     */
+    public autoConfigure() {
         // Do nothing
     }
 

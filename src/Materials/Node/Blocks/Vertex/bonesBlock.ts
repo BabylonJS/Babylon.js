@@ -28,13 +28,6 @@ export class BonesBlock extends NodeMaterialBlock {
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Matrix);
-
-        // Auto configuration
-        this._inputs[0].setAsAttribute();
-        this._inputs[1].setAsAttribute();
-        this._inputs[2].setAsAttribute();
-        this._inputs[3].setAsAttribute();
-        this._inputs[4].setAsWellKnownValue(NodeMaterialWellKnownValues.World);
     }
 
     /**
@@ -89,6 +82,24 @@ export class BonesBlock extends NodeMaterialBlock {
      */
     public get world(): NodeMaterialConnectionPoint {
         return this._inputs[4];
+    }
+
+    public autoConfigure() {
+        if (!this.matricesIndices.connectedPoint) {
+            this.matricesIndices.setAsAttribute();
+        }
+        if (!this.matricesWeights.connectedPoint) {
+            this.matricesWeights.setAsAttribute();
+        }
+        if (!this.matricesIndicesExtra.connectedPoint) {
+            this.matricesIndicesExtra.setAsAttribute();
+        }
+        if (!this.matricesWeightsExtra.connectedPoint) {
+            this.matricesWeightsExtra.setAsAttribute();
+        }
+        if (!this.world.connectedPoint) {
+            this.world.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+        }
     }
 
     public provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
