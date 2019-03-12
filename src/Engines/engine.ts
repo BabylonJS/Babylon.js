@@ -5801,8 +5801,12 @@ export class Engine {
                 if (loader.supportCascades) {
                     this._cascadeLoadFiles(scene, onloaddata, files, onError);
                 }
-                else if (onError) {
-                    onError("Textures type does not support cascades.");
+                else {
+                    if (onError) {
+                        onError("Textures type does not support cascades.");
+                    } else {
+                        Logger.Warn("Texture loader does not support cascades.");
+                    }
                 }
             }
             else {
