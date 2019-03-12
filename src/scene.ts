@@ -2595,7 +2595,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             this._multiviewSceneUbo.updateMatrix("viewProjectionR", this._transformMatrixR);
             this._multiviewSceneUbo.updateMatrix("view", this._viewMatrix);
             this._multiviewSceneUbo.update();
-        }else if (this._sceneUbo.useUbo) {
+        } else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
             this._sceneUbo.update();
@@ -4031,7 +4031,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             var useMultiview = this.getEngine().getCaps().multiview && this.activeCamera.outputRenderTarget && this.activeCamera.outputRenderTarget.getViewCount() > 1;
             if (useMultiview) {
                 this.activeCamera.outputRenderTarget._bindFrameBuffer();
-            }else {
+            } else {
                 var internalTexture = this.activeCamera.outputRenderTarget.getInternalTexture();
                 if (internalTexture) {
                     this.getEngine().bindFramebuffer(internalTexture);
@@ -4069,7 +4069,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
         if (useMultiview) {
             this.setTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
-        }else {
+        } else {
             this.updateTransformMatrix();
         }
 
@@ -4152,7 +4152,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Finalize frame
-        if (this.postProcessManager  && !camera._multiviewTexture) {
+        if (this.postProcessManager && !camera._multiviewTexture) {
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
         }
 
@@ -4215,7 +4215,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 continue;
             }
 
-            for (var actionIndex = 0; actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
+            for (var actionIndex = 0; sourceMesh.actionManager && actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                 var action = sourceMesh.actionManager.actions[actionIndex];
 
                 if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
