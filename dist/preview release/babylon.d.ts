@@ -12180,6 +12180,14 @@ declare module BABYLON {
      */
     export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
         /**
+         * @hidden
+         */
+        _keyboardInput: Nullable<FreeCameraKeyboardMoveInput>;
+        /**
+         * @hidden
+         */
+        _mouseInput: Nullable<FreeCameraMouseInput>;
+        /**
          * Instantiates a new FreeCameraInputsManager.
          * @param camera Defines the camera the inputs belong to
          */
@@ -12195,6 +12203,11 @@ declare module BABYLON {
          * @returns the current input manager
          */
         addMouse(touchEnabled?: boolean): FreeCameraInputsManager;
+        /**
+         * Removes the mouse input support from the manager
+         * @returns the current input manager
+         */
+        removeMouse(): FreeCameraInputsManager;
         /**
          * Add touch input support to the input manager.
          * @returns the current input manager
@@ -36873,6 +36886,10 @@ declare module BABYLON {
 declare module BABYLON {
         interface FreeCameraInputsManager {
             /**
+             * @hidden
+             */
+            _deviceOrientationInput: Nullable<FreeCameraDeviceOrientationInput>;
+            /**
              * Add orientation input support to the input manager.
              * @returns the current input manager
              */
@@ -36891,6 +36908,10 @@ declare module BABYLON {
         private _alpha;
         private _beta;
         private _gamma;
+        /**
+         * @hidden
+         */
+        _onDeviceOrientationChangedObservable: Observable<void>;
         /**
          * Instantiates a new input
          * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs

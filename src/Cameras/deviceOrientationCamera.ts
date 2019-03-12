@@ -29,6 +29,13 @@ export class DeviceOrientationCamera extends FreeCamera {
         super(name, position, scene);
         this._quaternionCache = new Quaternion();
         this.inputs.addDeviceOrientation();
+
+        // When the orientation sensor fires it's first event, disable mouse input
+        if (this.inputs._deviceOrientationInput) {
+            this.inputs._deviceOrientationInput._onDeviceOrientationChangedObservable.addOnce(() => {
+                this.inputs.removeMouse();
+            });
+        }
     }
 
     /**
