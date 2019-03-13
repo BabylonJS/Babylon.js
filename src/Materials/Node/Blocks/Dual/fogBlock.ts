@@ -112,7 +112,7 @@ export class FogBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
 
         if (state.target === NodeMaterialBlockTargets.Fragment) {
-            state._emitFunctionFromInclude("fogFragmentDeclaration", {
+            state._emitFunctionFromInclude("fogFragmentDeclaration", `//${this.name}`, {
                 removeUniforms: true,
                 removeVaryings: true,
                 removeIfDef: false,

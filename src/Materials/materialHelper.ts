@@ -188,6 +188,26 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines for morph targets
+     * @param mesh The mesh containing the geometry data we will draw
+     * @param defines The defines to update
+     */
+    public static PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) {
+        var manager = (<Mesh>mesh).morphTargetManager;
+        if (manager) {
+            defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
+            defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
+            defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
+            defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
+        } else {
+            defines["MORPHTARGETS_TANGENT"] = false;
+            defines["MORPHTARGETS_NORMAL"] = false;
+            defines["MORPHTARGETS"] = false;
+            defines["NUM_MORPH_INFLUENCERS"] = 0;
+        }
+    }
+
+    /**
      * Prepares the defines used in the shader depending on the attributes data available in the mesh
      * @param mesh The mesh containing the geometry data we will draw
      * @param defines The defines to update
@@ -230,18 +250,7 @@ export class MaterialHelper {
         }
 
         if (useMorphTargets) {
-            var manager = (<Mesh>mesh).morphTargetManager;
-            if (manager) {
-                defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
-                defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
-                defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
-                defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
-            } else {
-                defines["MORPHTARGETS_TANGENT"] = false;
-                defines["MORPHTARGETS_NORMAL"] = false;
-                defines["MORPHTARGETS"] = false;
-                defines["NUM_MORPH_INFLUENCERS"] = 0;
-            }
+            this.PrepareDefinesForMorphTargets(mesh, defines);
         }
 
         return true;

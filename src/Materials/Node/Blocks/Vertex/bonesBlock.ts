@@ -138,7 +138,8 @@ export class BonesBlock extends NodeMaterialBlock {
         state.samplers.push("boneSampler");
 
         // Emit code
-        state._emitFunctionFromInclude("bonesDeclaration", {
+        let comments = `//${this.name}`;
+        state._emitFunctionFromInclude("bonesDeclaration", comments, {
             removeAttributes: true,
             removeUniforms: false,
             removeVaryings: true,
@@ -147,7 +148,7 @@ export class BonesBlock extends NodeMaterialBlock {
 
         let influenceVariablename = state._getFreeVariableName("influence");
 
-        state.compilationString += state._emitCodeFromInclude("bonesVertex", {
+        state.compilationString += state._emitCodeFromInclude("bonesVertex", comments, {
             replaceStrings: [
                 {
                     search: /finalWorld=finalWorld\*influence;/,

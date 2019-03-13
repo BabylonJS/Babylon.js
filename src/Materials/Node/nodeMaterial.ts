@@ -18,6 +18,7 @@ import { MaterialDefines } from '../../Materials/materialDefines';
 import { NodeMaterialOptimizer } from './Optimizers/nodeMaterialOptimizer';
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from '../imageProcessingConfiguration';
 import { Nullable } from '../../types';
+import { VertexBuffer } from '../../Meshes/buffer';
 
 /** @hidden */
 export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
@@ -25,6 +26,12 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public BONETEXTURE = false;
+
+    /** MORPH TARGETS */
+    public MORPHTARGETS = false;
+    public MORPHTARGETS_NORMAL = false;
+    public MORPHTARGETS_TANGENT = false;
+    public NUM_MORPH_INFLUENCERS = 0;
 
     /** IMAGE PROCESSING */
     public IMAGEPROCESSING = false;
@@ -80,6 +87,11 @@ export class NodeMaterial extends PushMaterial {
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _textureConnectionPoints = new Array<NodeMaterialConnectionPoint>();
     private _optimizers = new Array<NodeMaterialOptimizer>();
+
+    /**
+    * Defines the maximum number of lights that can be used in the material
+    */
+    public maxSimultaneousLights = 4;
 
     /**
      * Observable raised when the material is built
@@ -446,6 +458,18 @@ export class NodeMaterial extends PushMaterial {
         }
     }
 
+    private _prepareDefinesForAttributes(mesh: AbstractMesh, defines: NodeMaterialDefines) {
+        if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
+            return;
+        }
+
+        defines._normals = defines._needNormals;
+        defines._uvs = defines._needUVs;
+
+        defines.setValue("NORMAL", (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)));
+        defines.setValue("TANGENT", mesh.isVerticesDataPresent(VertexBuffer.TangentKind));
+    }
+
     /**
       * Get if the submesh is ready to be used and all its information available.
       * Child classes can use it to update shaders
@@ -479,6 +503,8 @@ export class NodeMaterial extends PushMaterial {
 
         var engine = scene.getEngine();
 
+        this._prepareDefinesForAttributes(mesh, defines);
+
         // Check if blocks are ready
         if (this._sharedData.blockingBlocks.some((b) => !b.isReady(mesh, this, defines, useInstances))) {
             return false;
@@ -492,6 +518,15 @@ export class NodeMaterial extends PushMaterial {
         // Need to recompile?
         if (defines.isDirty) {
             defines.markAsProcessed();
+
+            // Repeatable content generators
+            this._vertexCompilationState.compilationString = this._vertexCompilationState._builtCompilationString;
+            this._fragmentCompilationState.compilationString = this._fragmentCompilationState._builtCompilationString;
+
+            this._sharedData.repeatableContentBlocks.forEach((b) => {
+                b.replaceRepeatableContent(this._vertexCompilationState, this._fragmentCompilationState, mesh, defines);
+            });
+
             // Uniforms
             let mergedUniforms = this._vertexCompilationState.uniforms;
 
@@ -535,7 +570,8 @@ export class NodeMaterial extends PushMaterial {
                 defines: join,
                 fallbacks: fallbacks,
                 onCompiled: this.onCompiled,
-                onError: this.onError
+                onError: this.onError,
+                indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
             }, engine);
 
             if (effect) {

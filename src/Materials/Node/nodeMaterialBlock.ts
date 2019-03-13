@@ -296,6 +296,17 @@ export class NodeMaterialBlock {
     }
 
     /**
+     * Function called when a block is declared as repeatable content generator
+     * @param vertexShaderState defines the current compilation state for the vertex shader
+     * @param fragmentShaderState defines the current compilation state for the fragment shader
+     * @param mesh defines the mesh to be rendered
+     * @param defines defines the material defines to update
+     */
+    public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
+        // Do nothing
+    }
+
+    /**
      * Checks if the block is ready
      * @param mesh defines the mesh to be rendered
      * @param nodeMaterial defines the node material requesting the update
