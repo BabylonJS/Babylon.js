@@ -31,8 +31,8 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     private _observer: Nullable<Observer<PointerInfo>>;
     private previousPosition: Nullable<{ x: number, y: number }> = null;
     
-    public _onMouseMoved = new Observable<{ offsetX: number, offsetY: number }>();
-    public _moveCamera = true;
+    public onPointerMovedObservable = new Observable<{ offsetX: number, offsetY: number }>();
+    public _allowCameraRotation = true;
     /**
      * Manage the mouse inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -111,11 +111,11 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (this.camera.getScene().useRightHandedSystem) { offsetX *= -1; }
                     if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) { offsetX *= -1; }
 
-                    if(this._moveCamera){
+                    if(this._allowCameraRotation){
                         this.camera.cameraRotation.y += offsetX / this.angularSensibility;
                         this.camera.cameraRotation.x += offsetY / this.angularSensibility;
                     }
-                    this._onMouseMoved.notifyObservers({offsetX:offsetX, offsetY:offsetY})
+                    this.onPointerMovedObservable.notifyObservers({offsetX:offsetX, offsetY:offsetY})
 
                     this.previousPosition = {
                         x: evt.clientX,
@@ -184,8 +184,8 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                 element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
             }
 
-            if (this._onMouseMoved) {
-                this._onMouseMoved.clear();
+            if (this.onPointerMovedObservable) {
+                this.onPointerMovedObservable.clear();
             }
 
             this._observer = null;
