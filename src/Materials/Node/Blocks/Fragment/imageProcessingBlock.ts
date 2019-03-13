@@ -109,10 +109,11 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         // Emit code
         let color = this.color;
         let output = this._outputs[0];
+        let comments = `//${this.name}`;
 
-        state._emitFunctionFromInclude("helperFunctions");
-        state._emitFunctionFromInclude("imageProcessingDeclaration");
-        state._emitFunctionFromInclude("imageProcessingFunctions");
+        state._emitFunctionFromInclude("helperFunctions", comments);
+        state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
+        state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
         if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4) {
             state.compilationString += `${this._declareOutput(output, state)} = ${color.associatedVariableName};\r\n`;

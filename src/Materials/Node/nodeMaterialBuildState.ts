@@ -43,6 +43,10 @@ export class NodeMaterialBuildState {
     private _samplerDeclaration = "";
     private _varyingTransfer = "";
 
+    private _repeatableContentAnchorIndex = 0;
+    /** @hidden */
+    public _builtCompilationString = "";
+
     /**
      * Gets the emitted compilation strings
      */
@@ -85,12 +89,26 @@ export class NodeMaterialBuildState {
         if (this._attributeDeclaration && !isFragmentMode) {
             this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
         }
+
+        this._builtCompilationString = this.compilationString;
+    }
+
+    /** @hidden */
+    public get _repeatableContentAnchor(): string {
+        return `###___ANCHOR${this._repeatableContentAnchorIndex++}___###`;
     }
 
     /** @hidden */
     public _getFreeVariableName(prefix: string): string {
         if (this.sharedData.variableNames[prefix] === undefined) {
             this.sharedData.variableNames[prefix] = 0;
+
+            // Check reserved words
+            if (prefix === "output" || prefix === "texture") {
+                return prefix + this.sharedData.variableNames[prefix];
+            }
+
+            return prefix;
         } else {
             this.sharedData.variableNames[prefix]++;
         }
@@ -131,6 +149,7 @@ export class NodeMaterialBuildState {
             case NodeMaterialBlockConnectionPointTypes.Color4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
             case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
+            case NodeMaterialBlockConnectionPointTypes.Vector3OrVector4:
                 return "vec4";
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 return "mat4";
@@ -144,19 +163,27 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
-    public _emitFunction(name: string, code: string) {
+    public _emitFunction(name: string, code: string, comments: string) {
         if (this.functions[name]) {
             return;
+        }
+
+        if (this.sharedData.emitComments) {
+            code = comments + `\r\n` + code;
         }
 
         this.functions[name] = code;
     }
 
     /** @hidden */
-    public _emitCodeFromInclude(includeName: string, options?: {
+    public _emitCodeFromInclude(includeName: string, comments: string, options?: {
         replaceStrings?: { search: RegExp, replace: string }[],
     }) {
         let code = Effect.IncludesShadersStore[includeName] + "\r\n";
+
+        if (this.sharedData.emitComments) {
+            code = comments + `\r\n` + code;
+        }
 
         if (!options) {
             return code;
@@ -173,7 +200,8 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
-    public _emitFunctionFromInclude(includeName: string, options?: {
+    public _emitFunctionFromInclude(includeName: string, comments: string, options?: {
+        repeatKey?: string,
         removeAttributes?: boolean,
         removeUniforms?: boolean,
         removeVaryings?: boolean,
@@ -184,12 +212,26 @@ export class NodeMaterialBuildState {
             return;
         }
 
-        if (!options) {
-            this.functions[includeName] = `#include<${includeName}>\r\n`;
+        if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
+
+            if (options && options.repeatKey) {
+                this.functions[includeName] = `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
+            } else {
+                this.functions[includeName] = `#include<${includeName}>\r\n`;
+            }
+
+            if (this.sharedData.emitComments) {
+                this.functions[includeName] = comments + `\r\n` + this.functions[includeName];
+            }
+
             return;
         }
 
         this.functions[includeName] = Effect.IncludesShadersStore[includeName];
+
+        if (this.sharedData.emitComments) {
+            this.functions[includeName] = comments + `\r\n` + this.functions[includeName];
+        }
 
         if (options.removeIfDef) {
             this.functions[includeName] = this.functions[includeName].replace(/^\s*?#ifdef.+$/gm, "");
@@ -285,12 +327,11 @@ export class NodeMaterialBuildState {
             return;
         }
 
-        if (!point.associatedVariableName) {
-            point.associatedVariableName = point.name;
-        }
-
         // Uniforms
         if (point.isUniform) {
+            if (!point.associatedVariableName) {
+                point.associatedVariableName = this._getFreeVariableName(point.name);
+            }
             if (this.uniforms.indexOf(point.associatedVariableName) !== -1) {
                 return;
             }
@@ -322,24 +363,27 @@ export class NodeMaterialBuildState {
             return;
         }
 
+        // Attribute
         if (point.isAttribute) {
+            point.associatedVariableName = point.name;
+
             if (this.target === NodeMaterialBlockTargets.Fragment) { // Attribute for fragment need to be carried over by varyings
                 this._vertexState._emitUniformOrAttributes(point);
-                if (point.associatedVariableName) {
-                    return;
-                }
-                point.associatedVariableName = this._getFreeVariableName(point.name);
-                this._emitVaryings(point, "", true);
-                this._vertexState._emitVaryings(point, "", true, true);
                 return;
             }
 
-            if (this.attributes.indexOf(point.name) !== -1) {
+            if (this.attributes.indexOf(point.associatedVariableName) !== -1) {
                 return;
             }
 
-            this.attributes.push(point.name);
-            this._attributeDeclaration += `attribute ${this._getGLType(point.type)} ${point.name};\r\n`;
+            this.attributes.push(point.associatedVariableName);
+            if (define) {
+                this._attributeDeclaration += this._emitDefine(define);
+            }
+            this._attributeDeclaration += `attribute ${this._getGLType(point.type)} ${point.associatedVariableName};\r\n`;
+            if (define) {
+                this._attributeDeclaration += `#endif\r\n`;
+            }
         }
     }
 }

@@ -8,6 +8,10 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
  * Block used to transform a vector4 with a matrix
  */
 export class Vector4TransformBlock extends NodeMaterialBlock {
+    /**
+     * Defines the value to use to complement Vector3 to transform it to a Vector4
+     */
+    public complementW = 1;
 
     /**
      * Creates a new Vector4TransformBlock
@@ -16,7 +20,7 @@ export class Vector4TransformBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Vertex);
 
-        this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.Vector3OrVector4);
         this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
     }
@@ -50,7 +54,11 @@ export class Vector4TransformBlock extends NodeMaterialBlock {
         let vector = this.vector;
         let transform = this.transform;
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * ${vector.associatedVariableName};\r\n`;
+        if (vector.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+            state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
+        } else {
+            state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * ${vector.associatedVariableName};\r\n`;
+        }
 
         return this;
     }

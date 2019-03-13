@@ -36,6 +36,11 @@ export class NodeMaterialBuildStateSharedData {
     public blocksWithDefines = new Array<NodeMaterialBlock>();
 
     /**
+    * List of blocks that can provide a repeatable content
+    */
+    public repeatableContentBlocks = new Array<NodeMaterialBlock>();
+
+    /**
      * List of blocks that can block the isReady function for the material
      */
     public blockingBlocks = new Array<NodeMaterialBlock>();
