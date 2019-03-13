@@ -34,18 +34,18 @@ export class DeviceOrientationCamera extends FreeCamera {
         // When the orientation sensor fires it's first event, disable mouse input
         if (this.inputs._deviceOrientationInput) {
             this.inputs._deviceOrientationInput._onDeviceOrientationChangedObservable.addOnce(() => {
-                if(this.inputs._mouseInput){
-                    this.inputs._mouseInput._moveCamera = false;
-                    this.inputs._mouseInput._onMouseMoved.add((e)=>{
-                        if(this._dragFactor != 0){
+                if (this.inputs._mouseInput) {
+                    this.inputs._mouseInput._allowCameraRotation = false;
+                    this.inputs._mouseInput.onPointerMovedObservable.add((e) => {
+                        if (this._dragFactor != 0) {
                             if (!this._initialQuaternion) {
                                 this._initialQuaternion = new Quaternion();
                             }
                             // Rotate the initial space around the y axis to allow users to "turn around" via touch/mouse
-                            Quaternion.FromEulerAnglesToRef(0,e.offsetX*this._dragFactor,0, this._tmpDragQuaternion);
+                            Quaternion.FromEulerAnglesToRef(0, e.offsetX * this._dragFactor, 0, this._tmpDragQuaternion);
                             this._initialQuaternion.multiplyToRef(this._tmpDragQuaternion, this._initialQuaternion);
                         }
-                    })
+                    });
                 }
             });
         }
@@ -56,7 +56,7 @@ export class DeviceOrientationCamera extends FreeCamera {
      * Enabled turning on the y axis when the orientation sensor is active
      * @param dragFactor the factor that controls the turn speed (default: 1/300)
      */
-    public enableHorizontalDragging(dragFactor=1/300){
+    public enableHorizontalDragging(dragFactor= 1 / 300) {
         this._dragFactor = dragFactor;
     }
 

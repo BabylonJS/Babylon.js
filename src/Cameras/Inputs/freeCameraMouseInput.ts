@@ -30,8 +30,15 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     private _onMouseMove: Nullable<(e: MouseEvent) => any>;
     private _observer: Nullable<Observer<PointerInfo>>;
     private previousPosition: Nullable<{ x: number, y: number }> = null;
-    
+
+    /**
+     * Observable for when a pointer move event occurs containing the move offset
+     */
     public onPointerMovedObservable = new Observable<{ offsetX: number, offsetY: number }>();
+    /**
+     * @hidden
+     * If the camera should be rotated automatically based on pointer movement
+     */
     public _allowCameraRotation = true;
     /**
      * Manage the mouse inputs to control the movement of a free camera.
@@ -111,11 +118,11 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (this.camera.getScene().useRightHandedSystem) { offsetX *= -1; }
                     if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) { offsetX *= -1; }
 
-                    if(this._allowCameraRotation){
+                    if (this._allowCameraRotation) {
                         this.camera.cameraRotation.y += offsetX / this.angularSensibility;
                         this.camera.cameraRotation.x += offsetY / this.angularSensibility;
                     }
-                    this.onPointerMovedObservable.notifyObservers({offsetX:offsetX, offsetY:offsetY})
+                    this.onPointerMovedObservable.notifyObservers({offsetX: offsetX, offsetY: offsetY});
 
                     this.previousPosition = {
                         x: evt.clientX,
