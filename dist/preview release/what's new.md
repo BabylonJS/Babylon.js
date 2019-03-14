@@ -29,7 +29,7 @@
   - InvalidateRect added to AdvancedDynamicTexture to improve perf for heavily populated GUIs, works with shadows ([TrevorDev](https://github.com/TrevorDev)) **** NEED DEMO or DOC LINK)
 - Migrated the code to modules and deploy [ES6 npm packages](https://doc.babylonjs.com/features/es6_support) ([Sebavan](https://github.com/Sebavan))
 - Added `TrailMesh` class. Credit to furcatomasz ([danjpar](https://github.com/danjpar)) **** NEED DEMO or DOC LINK)
-- Support rendering to a Multiview outputRenderTargetTexture to improve performance for XR scenarios ([TrevorDev](https://github.com/TrevorDev))
+- Support rendering to a Multiview outputRenderTargetTexture with multiview engine component to improve performance for XR scenarios ([TrevorDev](https://github.com/TrevorDev))
 - PBR:
   - Added Inspector Debug Mode ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added Smith Height Correlated Visibility term to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)

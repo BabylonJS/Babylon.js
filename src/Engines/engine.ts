@@ -5604,53 +5604,6 @@ export class Engine {
     }
 
     /**
-     * Creates a new multiview render target
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @returns the created multiview texture
-     */
-    public createMultiviewRenderTargetTexture(width: number, height: number) {
-        var gl = this._gl;
-
-        if (!this.getCaps().multiview) {
-            throw "Multiview is not supported";
-        }
-
-        var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN, true);
-        internalTexture.width = width;
-        internalTexture.height = height;
-        internalTexture._framebuffer = gl.createFramebuffer();
-
-        internalTexture._colorTextureArray = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._colorTextureArray);
-        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
-
-        internalTexture._depthStencilTextureArray = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, internalTexture._depthStencilTextureArray);
-        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH32F_STENCIL8, width, height, 2);
-        internalTexture.isReady = true;
-        return internalTexture;
-    }
-
-    /**
-     * Binds a multiview framebuffer to be drawn to
-     * @param multiviewTexture texture to bind
-     */
-    public bindMultiviewFramebuffer(multiviewTexture: InternalTexture) {
-        var gl: any = this._gl;
-        var ext = this.getCaps().multiview;
-
-        this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
-        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, multiviewTexture._framebuffer);
-        if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
-            ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
-            ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
-        } else {
-            throw "Invalid multiview frame buffer";
-        }
-    }
-
-    /**
      * Creates a new render target cube texture
      * @param size defines the size of the texture
      * @param options defines the options used to create the texture

@@ -6,7 +6,6 @@ import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 
 import "../Shaders/vrDistortionCorrection.fragment";
-import "../Shaders/vrMultiviewToSingleview.fragment";
 
 /**
  * VRDistortionCorrectionPostProcess used for mobile VR
@@ -51,33 +50,6 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
             effect.setFloat2("Scale", this._scaleFactor.x, this._scaleFactor.y);
             effect.setFloat2("ScaleIn", this._scaleIn.x, this._scaleIn.y);
             effect.setFloat4("HmdWarpParam", this._distortionFactors[0], this._distortionFactors[1], this._distortionFactors[2], this._distortionFactors[3]);
-        });
-    }
-}
-
-/**
- * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR
- * This will not be used for webXR as it supports displaying texture arrays directly
- */
-export class VRMultiviewToSingleview extends PostProcess {
-    /**
-     * Initializes a VRMultiviewToSingleview
-     * @param name name of the post process
-     * @param camera camera to be applied to
-     * @param scaleFactor scaling factor to the size of the output texture
-     */
-    constructor(name: string, camera: Camera, scaleFactor: number) {
-        super(name, "vrMultiviewToSingleview", ["imageIndex"], ["multiviewSampler"], scaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
-
-        this.onSizeChangedObservable.add(() => {
-        });
-        this.onApplyObservable.add((effect: Effect) => {
-            if (camera._scene.activeCamera && camera._scene.activeCamera.isLeftCamera) {
-                effect.setInt("imageIndex", 0);
-            }else {
-                effect.setInt("imageIndex", 1);
-            }
-            effect.setTexture("multiviewSampler", camera._multiviewTexture);
         });
     }
 }
