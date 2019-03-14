@@ -37237,6 +37237,10 @@ declare module BABYLON {
          * @param scene The scene the camera belongs to
          */
         constructor(name: string, position: Vector3, scene: Scene);
+        /**
+         * Disabled pointer input on first orientation sensor update (Default: true)
+         */
+        disablePointerInputWhenUsingDeviceOrientation: boolean;
         private _dragFactor;
         /**
          * Enabled turning on the y axis when the orientation sensor is active
@@ -54714,7 +54718,7 @@ declare module BABYLON {
          * @param onSuccess is a callback called when the task is successfully executed
          * @param onError is a callback called if an error occurs
          */
-        run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
+        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
     /**
      * This class can be used to easily import assets into a scene
