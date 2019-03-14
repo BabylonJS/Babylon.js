@@ -3104,12 +3104,23 @@ var GLTFFileLoader = /** @class */ (function () {
         return this._parseAsync(scene, data, rootUrl, fileName).then(function (loaderData) {
             _this._log("Loading " + (fileName || ""));
             _this._loader = _this._getLoader(loaderData);
+            // Get materials/textures when loading to add to container
+            var materials = [];
+            _this.onMaterialLoadedObservable.add(function (material) {
+                materials.push(material);
+            });
+            var textures = [];
+            _this.onTextureLoadedObservable.add(function (texture) {
+                textures.push(texture);
+            });
             return _this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then(function (result) {
                 var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
+                Array.prototype.push.apply(container.materials, materials);
+                Array.prototype.push.apply(container.textures, textures);
                 container.removeAllFromScene();
                 return container;
             });
