@@ -124,8 +124,8 @@ export class Node implements IBehaviorAware<Node> {
     private _isReady = true;
     /** @hidden */
     public _currentRenderId = -1;
-    private _parentRenderId = -1;
-    protected _childRenderId = -1;
+    private _parentUpdateId = -1;
+    protected _childUpdateId = -1;
 
     /** @hidden */
     public _waitingParentId: Nullable<string>;
@@ -435,7 +435,7 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public _markSyncedWithParent() {
         if (this._parentNode) {
-            this._parentRenderId = this._parentNode._childRenderId;
+            this._parentUpdateId = this._parentNode._childUpdateId;
         }
     }
 
@@ -445,7 +445,7 @@ export class Node implements IBehaviorAware<Node> {
             return true;
         }
 
-        if (this._parentRenderId !== this._parentNode._childRenderId) {
+        if (this._parentUpdateId !== this._parentNode._childUpdateId) {
             return false;
         }
 

@@ -258,10 +258,10 @@ export class Camera extends Node {
      */
     public _resizeOrCreateMultiviewTexture(width: number, height: number) {
         if (!this._multiviewTexture) {
-            this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), {width: width, height: height});
-        }else if (this._multiviewTexture.getRenderWidth() != width || this._multiviewTexture.getRenderHeight() != height) {
+            this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), { width: width, height: height });
+        } else if (this._multiviewTexture.getRenderWidth() != width || this._multiviewTexture.getRenderHeight() != height) {
             this._multiviewTexture.dispose();
-            this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), {width: width, height: height});
+            this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), { width: width, height: height });
         }
     }
 
@@ -670,7 +670,7 @@ export class Camera extends Node {
         this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
         this._currentRenderId = this.getScene().getRenderId();
-        this._childRenderId = this._currentRenderId;
+        this._childUpdateId++;
 
         this._refreshFrustumPlanes = true;
 
