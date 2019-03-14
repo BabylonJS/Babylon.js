@@ -24867,8 +24867,8 @@ declare module BABYLON {
         private _isReady;
         /** @hidden */
         _currentRenderId: number;
-        private _parentRenderId;
-        protected _childRenderId: number;
+        private _parentUpdateId;
+        protected _childUpdateId: number;
         /** @hidden */
         _waitingParentId: Nullable<string>;
         /** @hidden */

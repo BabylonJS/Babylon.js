@@ -365,7 +365,7 @@ export class Bone extends Node {
      */
     public markAsDirty(): void {
         this._currentRenderId++;
-        this._childRenderId++;
+        this._childUpdateId++;
         this._skeleton._markAsDirty();
     }
 
