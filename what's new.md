@@ -133,6 +133,7 @@
 - Added optional alphaFilter parameter to ```CreateGroundFromHeightMap``` to allow for heightmaps to be created that ignore any transparent data ([Postman-nz](https://github.com/Postman-nz))
 - Fixed renormalization of mesh weights to in cleanMatrixWeights function. ([Bolloxim](https://github.com/Bolloxim))
 - Added a validationSkin function to report out any errors on skinned meshes. ([Bolloxim](https://github.com/Bolloxim))
+- PolygonMeshBuilder can be used to generate ```VertexData``` instead of requiring a mesh to be built
 
 
 ### glTF Loader
@@ -204,6 +205,7 @@
 - Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 - Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
 - Particle emit rate and start size over time do not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
+- SSAO2 now correctly takes diffuse texture alpha value into account. ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### Core Engine
 

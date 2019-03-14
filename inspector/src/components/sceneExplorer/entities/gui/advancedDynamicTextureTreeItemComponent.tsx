@@ -1,16 +1,21 @@
+import { Nullable } from "babylonjs/types";
+import { Observer, Observable } from "babylonjs/Misc/observable";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+
+import { Control } from 'babylonjs-gui/2D/controls/control';
+import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
+
 import { faImage, faCrosshairs } from '@fortawesome/free-solid-svg-icons';
-import { IExplorerExtensibilityGroup, Nullable, Observer, Observable } from "babylonjs";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from 'react';
-import { AdvancedDynamicTexture, Control } from 'babylonjs-gui';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface IAdvancedDynamicTextureTreeItemComponentProps {
-    texture: AdvancedDynamicTexture,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onSelectionChangedObservable?: Observable<any>,
-    onClick: () => void
+    texture: AdvancedDynamicTexture;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onSelectionChangedObservable?: Observable<any>;
+    onClick: () => void;
 }
 
 export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAdvancedDynamicTextureTreeItemComponentProps, { isInPickingMode: boolean }> {
@@ -65,6 +70,6 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
                 </div>
                 <ExtensionsComponent target={this.props.texture} extensibilityGroups={this.props.extensibilityGroups} />
             </div>
-        )
+        );
     }
 }

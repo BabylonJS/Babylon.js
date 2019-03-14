@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 interface ISliderLineComponentProps {
@@ -12,7 +12,8 @@ interface ISliderLineComponentProps {
     directValue?: number,
     onChange?: (value: number) => void,
     onInput?: (value: number) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
+    decimalCount?: number
 }
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {
@@ -25,7 +26,12 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                 value: this.props.directValue
             }
         } else {
-            this.state = { value: this.props.target![this.props.propertyName!] };
+            let value = this.props.target![this.props.propertyName!];
+
+            if (value === undefined) {
+                value = this.props.maximum;
+            }
+            this.state = { value: value };
         }
     }
 
@@ -34,7 +40,11 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
             nextState.value = nextProps.directValue;
             return true;
         }
-        const currentState = nextProps.target![nextProps.propertyName!];
+
+        let currentState = nextProps.target![nextProps.propertyName!];
+        if (currentState === undefined) {
+            currentState = nextProps.maximum;
+        }
 
         if (currentState !== nextState.value || this._localChange) {
             nextState.value = currentState;
@@ -76,13 +86,14 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
     }
 
     render() {
+        let decimalCount = this.props.decimalCount !== undefined ? this.props.decimalCount : 2;
         return (
             <div className="sliderLine">
                 <div className="label">
                     {this.props.label}
                 </div>
                 <div className="slider">
-                    {this.state.value ? this.state.value.toFixed(2) : "0"}&nbsp;<input className="range" type="range" step={this.props.step} min={this.props.minimum} max={this.props.maximum} value={this.state.value}
+                    {this.state.value ? this.state.value.toFixed(decimalCount) : "0"}&nbsp;<input className="range" type="range" step={this.props.step} min={this.props.minimum} max={this.props.maximum} value={this.state.value}
                         onInput={evt => this.onInput((evt.target as HTMLInputElement).value)}
                         onChange={evt => this.onChange(evt.target.value)} />
                 </div>

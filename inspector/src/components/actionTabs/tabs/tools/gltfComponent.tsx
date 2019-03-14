@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Scene } from "babylonjs";
+import { Scene } from "babylonjs/scene";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 import { GlobalState } from "../../../globalState";
@@ -8,6 +8,7 @@ import { OptionsLineComponent } from "../../lines/optionsLineComponent";
 import { MessageLineComponent } from "../../lines/messageLineComponent";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { TextLineComponent } from "../../lines/textLineComponent";
+import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "babylonjs-loaders/glTF/index";
 
 interface IGLTFComponentProps {
     scene: Scene,
@@ -34,12 +35,12 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         const loaderState = this.props.globalState.glTFLoaderDefaults;
 
         if (loaderState["animationStartMode"] === undefined) {
-            loaderState["animationStartMode"] = BABYLON.GLTFLoaderAnimationStartMode.FIRST;
+            loaderState["animationStartMode"] = GLTFLoaderAnimationStartMode.FIRST;
         }
         loaderState["capturePerformanceCounters"] = loaderState["capturePerformanceCounters"] || false;
         loaderState["compileMaterials"] = loaderState["compileMaterials"] || false;
         loaderState["compileShadowGenerators"] = loaderState["compileShadowGenerators"] || false;
-        loaderState["coordinateSystemMode"] = loaderState["coordinateSystemMode"] || BABYLON.GLTFLoaderCoordinateSystemMode.AUTO;
+        loaderState["coordinateSystemMode"] = loaderState["coordinateSystemMode"] || GLTFLoaderCoordinateSystemMode.AUTO;
         loaderState["loggingEnabled"] = loaderState["loggingEnabled"] || false;
         loaderState["transparencyAsCoverage"] = loaderState["transparencyAsCoverage"] || false;
         loaderState["useClipPlane"] = loaderState["useClipPlane"] || false;
@@ -73,7 +74,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         const issues = validationResults.issues;
 
         return (
-            <LineContainerComponent title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
+            <LineContainerComponent globalState={this.props.globalState} title="GLTF VALIDATION" closed={!issues.numErrors && !issues.numWarnings}>
                 {
                     issues.numErrors !== 0 &&
                     <MessageLineComponent text="Your file has some validation issues" icon={faTimesCircle} color="Red" />
@@ -96,19 +97,19 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         const loaderState = this.props.globalState.glTFLoaderDefaults;
 
         var animationStartMode = [
-            { label: "None", value: BABYLON.GLTFLoaderAnimationStartMode.NONE },
-            { label: "First", value: BABYLON.GLTFLoaderAnimationStartMode.FIRST },
-            { label: "ALL", value: BABYLON.GLTFLoaderAnimationStartMode.ALL }
+            { label: "None", value: GLTFLoaderAnimationStartMode.NONE },
+            { label: "First", value: GLTFLoaderAnimationStartMode.FIRST },
+            { label: "ALL", value: GLTFLoaderAnimationStartMode.ALL }
         ];
 
         var coordinateSystemMode = [
-            { label: "Auto", value: BABYLON.GLTFLoaderCoordinateSystemMode.AUTO },
-            { label: "Right handed", value: BABYLON.GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED }
+            { label: "Auto", value: GLTFLoaderCoordinateSystemMode.AUTO },
+            { label: "Right handed", value: GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED }
         ];
 
         return (
             <div>
-                <LineContainerComponent title="GLTF LOADER" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="GLTF LOADER" closed={true}>
                     <OptionsLineComponent label="Animation start mode" options={animationStartMode} target={loaderState} propertyName="animationStartMode" />
                     <CheckBoxLineComponent label="Capture performance counters" target={loaderState} propertyName="capturePerformanceCounters" />
                     <CheckBoxLineComponent label="Compile materials" target={loaderState} propertyName="compileMaterials" />
@@ -120,7 +121,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                     <CheckBoxLineComponent label="Validate" target={loaderState} propertyName="validate" />
                     <MessageLineComponent text="You need to reload your file to see these changes" />
                 </LineContainerComponent>
-                <LineContainerComponent title="GLTF EXTENSIONS" closed={true}>
+                <LineContainerComponent globalState={this.props.globalState} title="GLTF EXTENSIONS" closed={true}>
                     <CheckBoxLineComponent label="MSFT_lod" isSelected={() => extensionStates["MSFT_lod"].enabled} onSelect={value => extensionStates["MSFT_lod"].enabled = value} />
                     <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" additionalClass="gltf-extension-property" />
                     <CheckBoxLineComponent label="MSFT_minecraftMesh" isSelected={() => extensionStates["MSFT_minecraftMesh"].enabled} onSelect={value => extensionStates["MSFT_minecraftMesh"].enabled = value} />

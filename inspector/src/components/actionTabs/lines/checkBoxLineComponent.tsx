@@ -1,14 +1,15 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 export interface ICheckBoxLineComponentProps {
-    label: string,
-    target?: any,
-    propertyName?: string,
-    isSelected?: () => boolean,
-    onSelect?: (value: boolean) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    label: string;
+    target?: any;
+    propertyName?: string;
+    isSelected?: () => boolean;
+    onSelect?: (value: boolean) => void;
+    onValueChanged?: () => void;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean }> {
@@ -60,6 +61,11 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
 
             this.props.target[this.props.propertyName!] = !this.state.isSelected;
         }
+
+        if (this.props.onValueChanged) {
+            this.props.onValueChanged();
+        }
+
         this.setState({ isSelected: !this.state.isSelected });
     }
 

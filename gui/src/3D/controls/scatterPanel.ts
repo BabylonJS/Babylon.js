@@ -1,5 +1,8 @@
+import { Tools } from "babylonjs/Misc/tools";
+import { Tmp, Vector3 } from "babylonjs/Maths/math";
+import { float } from "babylonjs/types";
+
 import { VolumeBasedPanel } from "./volumeBasedPanel";
-import { float, Tools, Vector3, Tmp } from "babylonjs";
 import { Control3D } from "./control3D";
 import { Container3D } from "./container3D";
 

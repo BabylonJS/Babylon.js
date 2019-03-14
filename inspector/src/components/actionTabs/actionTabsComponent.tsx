@@ -1,5 +1,7 @@
 import * as React from "react";
-import { Observer, Scene, Nullable } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { Scene } from "babylonjs/scene";
 import { TabsComponent } from "./tabsComponent";
 import { faFileAlt, faWrench, faBug, faChartBar } from '@fortawesome/free-solid-svg-icons';
 import { StatisticsTabComponent } from "./tabs/statisticsTabComponent";
@@ -8,7 +10,7 @@ import Resizable from "re-resizable";
 import { PropertyGridTabComponent } from "./tabs/propertyGridTabComponent";
 import { HeaderComponent } from "../headerComponent";
 import { ToolsTabComponent } from "./tabs/toolsTabComponent";
-import { GlobalState } from "components/globalState";
+import { GlobalState } from "../../components/globalState";
 
 require("./actionTabs.scss");
 
@@ -73,10 +75,11 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
             <TabsComponent selectedIndex={this.state.selectedIndex} onSelectedIndexChange={(value) => this.changeSelectedTab(value)}>
                 <PropertyGridTabComponent
                     title="Properties" icon={faFileAlt} scene={this.props.scene} selectedEntity={this.state.selectedEntity}
+                    globalState={this.props.globalState}
                     onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
-                <DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} />
-                <StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} />
+                <DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} globalState={this.props.globalState} />
+                <StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} globalState={this.props.globalState} />
                 <ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} globalState={this.props.globalState} />
             </TabsComponent>
         )

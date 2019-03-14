@@ -113,11 +113,12 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 
     // gl check
     var gl = currentViewer.engine._gl;
-    if (gl.getError() !== 0) {
+    var err = gl.getError();
+    if (err !== 0) {
         result.classList.add("failed");
         result.innerHTML = "×";
         testRes = false;
-        console.log('%c failed (gl error)', 'color: red');
+        console.log('%c failed (gl error: ' + err + ')', 'color: red');
     } else {
 
         // Visual check
@@ -205,6 +206,7 @@ function runTest(index, done) {
     configuration.engine = configuration.engine || {};
     configuration.engine.engineOptions = configuration.engine.engineOptions || {};
     configuration.engine.engineOptions.preserveDrawingBuffer = true;
+    // configuration.engine.engineOptions.disableWebGL2Support = true;
 
     //cancel camera behvaviors for the tests
     configuration.camera = configuration.camera || {};

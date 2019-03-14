@@ -1,7 +1,15 @@
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { Logger } from "babylonjs/Misc/logger";
+import { Tools } from "babylonjs/Misc/tools";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Scene } from "babylonjs/scene";
+
 import { Container } from "./container";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Nullable, Observer, Vector2, AbstractMesh, Observable, Vector3, Scene, Tools, Matrix, PointerEventTypes } from "babylonjs";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
@@ -50,6 +58,8 @@ export class Control {
     /** @hidden */
     public _tempParentMeasure = Measure.Empty();
     /** @hidden */
+    public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
+    /** @hidden */
     protected _cachedParentMeasure = Measure.Empty();
     private _paddingLeft = new ValueAndUnit(0);
     private _paddingRight = new ValueAndUnit(0);
@@ -64,7 +74,8 @@ export class Control {
     private _rotation = 0;
     private _transformCenterX = 0.5;
     private _transformCenterY = 0.5;
-    private _transformMatrix = Matrix2D.Identity();
+    /** @hidden */
+    public _transformMatrix = Matrix2D.Identity();
     /** @hidden */
     protected _invertTransformMatrix = Matrix2D.Identity();
     /** @hidden */
@@ -110,7 +121,10 @@ export class Control {
     /** Gets or sets a boolean indicating if the control can be focusable */
     public isFocusInvisible = false;
 
-    /** Gets or sets a boolean indicating if the children are clipped to the current control bounds */
+    /**
+     * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+     * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+     */
     public clipChildren = true;
 
     /**
@@ -1045,6 +1059,7 @@ export class Control {
 
         this._left.ignoreAdaptiveScaling = true;
         this._top.ignoreAdaptiveScaling = true;
+        this._markAsDirty();
     }
 
     /** @hidden */
@@ -1071,6 +1086,68 @@ export class Control {
     }
 
     /** @hidden */
+    public _intersectsRect(rect: Measure) {
+        // Rotate the control's current measure into local space and check if it intersects the passed in rectangle
+        this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
+        if (this._tmpMeasureA.left >= rect.left + rect.width) {
+            return false;
+        }
+
+        if (this._tmpMeasureA.top >= rect.top + rect.height) {
+            return false;
+        }
+
+        if (this._tmpMeasureA.left + this._tmpMeasureA.width <= rect.left) {
+            return false;
+        }
+
+        if (this._tmpMeasureA.top + this._tmpMeasureA.height <= rect.top) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /** @hidden */
+    protected invalidateRect() {
+        this._transform();
+        if (this.host && this.host.useInvalidateRectOptimization) {
+            // Rotate by transform to get the measure transformed to global space
+            this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
+            // get the boudning box of the current measure and last frames measure in global space and invalidate it
+            // the previous measure is used to properly clear a control that is scaled down
+            Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
+
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                // Expand rect based on shadows
+                var shadowOffsetX = this.shadowOffsetX;
+                var shadowOffsetY = this.shadowOffsetY;
+                var shadowBlur = this.shadowBlur;
+
+                var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+                var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+                var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+                var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+
+                this.host.invalidateRect(
+                    Math.floor(this._tmpMeasureA.left + leftShadowOffset),
+                    Math.floor(this._tmpMeasureA.top + topShadowOffset),
+                    Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset),
+                    Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset),
+                );
+            } else {
+                this.host.invalidateRect(
+                    Math.floor(this._tmpMeasureA.left),
+                    Math.floor(this._tmpMeasureA.top),
+                    Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width),
+                    Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height),
+                );
+            }
+
+        }
+    }
+
+    /** @hidden */
     public _markAsDirty(force = false): void {
         if (!this._isVisible && !force) {
             return;
@@ -1078,10 +1155,10 @@ export class Control {
 
         this._isDirty = true;
 
-        if (!this._host) {
-            return; // Not yet connected
+        // Redraw only this rectangle
+        if (this._host) {
+            this._host.markAsDirty();
         }
-        this._host.markAsDirty();
     }
 
     /** @hidden */
@@ -1102,7 +1179,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _transform(context: CanvasRenderingContext2D): void {
+    protected _transform(context?: CanvasRenderingContext2D): void {
         if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
             return;
         }
@@ -1110,17 +1187,18 @@ export class Control {
         // postTranslate
         var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
         var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
-        context.translate(offsetX, offsetY);
+        if (context) {
+            context.translate(offsetX, offsetY);
 
-        // rotate
-        context.rotate(this._rotation);
+            // rotate
+            context.rotate(this._rotation);
 
-        // scale
-        context.scale(this._scaleX, this._scaleY);
+            // scale
+            context.scale(this._scaleX, this._scaleY);
 
-        // preTranslate
-        context.translate(-offsetX, -offsetY);
-
+            // preTranslate
+            context.translate(-offsetX, -offsetY);
+        }
         // Need to update matrices?
         if (this._isMatrixDirty || this._cachedOffsetX !== offsetX || this._cachedOffsetY !== offsetY) {
             this._cachedOffsetX = offsetX;
@@ -1181,26 +1259,33 @@ export class Control {
 
     /** @hidden */
     public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
-        context.save();
 
-        this._applyStates(context);
+        if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
 
-        let rebuildCount = 0;
-        do {
-            this._rebuildLayout = false;
-            this._processMeasures(parentMeasure, context);
-            rebuildCount++;
+            context.save();
+
+            this._applyStates(context);
+
+            let rebuildCount = 0;
+            do {
+                this._rebuildLayout = false;
+                this._processMeasures(parentMeasure, context);
+                rebuildCount++;
+            }
+            while (this._rebuildLayout && rebuildCount < 3);
+
+            if (rebuildCount >= 3) {
+                Logger.Error(`Layout cycle detected in GUI (Control name=${this.name}, uniqueId=${this.uniqueId})`);
+            }
+
+            context.restore();
+            this.invalidateRect();
+            this._evaluateClippingState(parentMeasure);
         }
-        while (this._rebuildLayout && rebuildCount < 3);
-
-        if (rebuildCount >= 3) {
-            BABYLON.Tools.Error(`Layout cycle detected in GUI (Control uniqueId=${this.uniqueId})`);
-        }
-
-        context.restore();
 
         this._wasDirty = this._isDirty;
         this._isDirty = false;
@@ -1210,31 +1295,31 @@ export class Control {
 
     /** @hidden */
     protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-        if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
-            this._currentMeasure.copyFrom(parentMeasure);
+        this._currentMeasure.copyFrom(parentMeasure);
 
-            // Let children take some pre-measurement actions
-            this._preMeasure(parentMeasure, context);
+        // Let children take some pre-measurement actions
+        this._preMeasure(parentMeasure, context);
 
-            this._measure();
-            this._computeAlignment(parentMeasure, context);
+        this._measure();
+        this._computeAlignment(parentMeasure, context);
 
-            // Convert to int values
-            this._currentMeasure.left = this._currentMeasure.left | 0;
-            this._currentMeasure.top = this._currentMeasure.top | 0;
-            this._currentMeasure.width = this._currentMeasure.width | 0;
-            this._currentMeasure.height = this._currentMeasure.height | 0;
+        // Convert to int values
+        this._currentMeasure.left = this._currentMeasure.left | 0;
+        this._currentMeasure.top = this._currentMeasure.top | 0;
+        this._currentMeasure.width = this._currentMeasure.width | 0;
+        this._currentMeasure.height = this._currentMeasure.height | 0;
 
-            // Let children add more features
-            this._additionalProcessing(parentMeasure, context);
+        // Let children add more features
+        this._additionalProcessing(parentMeasure, context);
 
-            this._cachedParentMeasure.copyFrom(parentMeasure);
+        this._cachedParentMeasure.copyFrom(parentMeasure);
 
-            if (this.onDirtyObservable.hasObservers()) {
-                this.onDirtyObservable.notifyObservers(this);
-            }
+        if (this.onDirtyObservable.hasObservers()) {
+            this.onDirtyObservable.notifyObservers(this);
         }
+    }
 
+    protected _evaluateClippingState(parentMeasure: Measure) {
         if (this.parent && this.parent.clipChildren) {
             // Early clip
             if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
@@ -1372,8 +1457,23 @@ export class Control {
         // DO nothing
     }
 
-    private _clip(context: CanvasRenderingContext2D) {
+    private static _ClipMeasure = new Measure(0, 0, 0, 0);
+    private _tmpMeasureA = new Measure(0, 0, 0, 0);
+    private _clip(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>) {
         context.beginPath();
+        Control._ClipMeasure.copyFrom(this._currentMeasure);
+        if (invalidatedRectangle) {
+            // Rotate the invalidated rect into the control's space
+            invalidatedRectangle.transformToRef(this._invertTransformMatrix, this._tmpMeasureA);
+
+            // Get the intersection of the rect in context space and the current context
+            var intersection = new Measure(0, 0, 0, 0);
+            intersection.left = Math.max(this._tmpMeasureA.left, this._currentMeasure.left);
+            intersection.top = Math.max(this._tmpMeasureA.top, this._currentMeasure.top);
+            intersection.width = Math.min(this._tmpMeasureA.left + this._tmpMeasureA.width, this._currentMeasure.left + this._currentMeasure.width) - intersection.left;
+            intersection.height = Math.min(this._tmpMeasureA.top + this._tmpMeasureA.height, this._currentMeasure.top + this._currentMeasure.height) - intersection.top;
+            Control._ClipMeasure.copyFrom(intersection);
+        }
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             var shadowOffsetX = this.shadowOffsetX;
@@ -1385,19 +1485,21 @@ export class Control {
             var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
-            context.rect(this._currentMeasure.left + leftShadowOffset,
-                this._currentMeasure.top + topShadowOffset,
-                this._currentMeasure.width + rightShadowOffset - leftShadowOffset,
-                this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
+            context.rect(
+                Control._ClipMeasure.left + leftShadowOffset,
+                Control._ClipMeasure.top + topShadowOffset,
+                Control._ClipMeasure.width + rightShadowOffset - leftShadowOffset,
+                Control._ClipMeasure.height + bottomShadowOffset - topShadowOffset
+            );
         } else {
-            context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            context.rect(Control._ClipMeasure.left, Control._ClipMeasure.top, Control._ClipMeasure.width, Control._ClipMeasure.height);
         }
 
         context.clip();
     }
 
     /** @hidden */
-    public _render(context: CanvasRenderingContext2D): boolean {
+    public _render(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
             this._isDirty = false;
             return false;
@@ -1410,9 +1512,9 @@ export class Control {
         this._transform(context);
 
         // Clip
-        if (this.clipChildren) {
-            this._clip(context);
-        }
+        //     if (this.clipChildren) {
+        this._clip(context, invalidatedRectangle);
+        //   }
 
         if (this.onBeforeDrawObservable.hasObservers()) {
             this.onBeforeDrawObservable.notifyObservers(this);
@@ -1421,7 +1523,7 @@ export class Control {
         if (this.useBitmapCache && !this._wasDirty && this._cacheData) {
             context.putImageData(this._cacheData, this._currentMeasure.left, this._currentMeasure.top);
         } else {
-            this._draw(context);
+            this._draw(context, invalidatedRectangle);
         }
 
         if (this.useBitmapCache && this._wasDirty) {
@@ -1440,7 +1542,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
     }
 
@@ -1527,8 +1629,8 @@ export class Control {
     }
 
     /** @hidden */
-    public _onPointerOut(target: Control): void {
-        if (!this._isEnabled || target === this) {
+    public _onPointerOut(target: Control, force = false): void {
+        if (!force && (!this._isEnabled || target === this)) {
             return;
         }
         this._enterCount = 0;
@@ -1539,7 +1641,9 @@ export class Control {
             canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
         }
 
-        if (canNotify && this.parent != null) { this.parent._onPointerOut(target); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerOut(target, force);
+        }
     }
 
     /** @hidden */

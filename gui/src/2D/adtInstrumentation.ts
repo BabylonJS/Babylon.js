@@ -1,4 +1,9 @@
-import { IDisposable, PerfCounter, Nullable, Observer } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { PerfCounter } from "babylonjs/Misc/tools";
+import { IDisposable } from "babylonjs/scene";
+
 import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
 
 /**

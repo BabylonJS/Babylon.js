@@ -10,9 +10,9 @@
             "typescript": true,
             "tsconfig": "tsconfig.json",
             "dependencies": [
-                "babylon.js",
-                "gui/babylon.gui.min.js",
-                "loaders/babylonjs.loaders.min.js"
+                "babylon.max.js",
+                "gui/babylon.gui.js",
+                "loaders/babylonjs.loaders.js"
             ]
         }
     ]

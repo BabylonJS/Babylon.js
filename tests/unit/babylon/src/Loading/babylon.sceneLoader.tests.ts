@@ -15,7 +15,7 @@ describe('Babylon Scene Loader', function() {
             .useDist()
             .testMode()
             .load(function() {
-                // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
+                // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 BABYLON.Engine.audioEngine = new BABYLON.AudioEngine();
                 done();
@@ -44,7 +44,7 @@ describe('Babylon Scene Loader', function() {
     describe('#glTF', () => {
         it('Load BoomBox', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(scene => {
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then((scene) => {
                 expect(scene.meshes.length, "scene.meshes.length").to.equal(2);
                 expect(scene.materials.length, "scene.materials.length").to.equal(1);
             });
@@ -52,7 +52,7 @@ describe('Babylon Scene Loader', function() {
 
         it('Load BoomBox GLB', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "BoomBox.glb", scene).then(scene => {
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "BoomBox.glb", scene).then((scene) => {
                 expect(scene.meshes.length, "scene.meshes.length").to.equal(2);
                 expect(scene.materials.length, "scene.materials.length").to.equal(1);
             });
@@ -60,7 +60,7 @@ describe('Babylon Scene Loader', function() {
 
         it('Load BoomBox with ImportMesh', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(result => {
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then((result) => {
                 expect(result.meshes.length, "meshes.length").to.equal(scene.meshes.length);
                 expect(result.particleSystems.length, "particleSystems.length").to.equal(0);
                 expect(result.skeletons.length, "skeletons.length").to.equal(0);
@@ -94,17 +94,17 @@ describe('Babylon Scene Loader', function() {
             const promises = new Array<Promise<void>>();
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
-                loader.onParsed = data => {
+                loader.onParsed = (data) => {
                     parsedCount++;
                 };
 
-                loader.onMeshLoaded = mesh => {
+                loader.onMeshLoaded = (mesh) => {
                     meshCount++;
                 };
-                loader.onMaterialLoaded = material => {
+                loader.onMaterialLoaded = (material) => {
                     materialCount++;
                 };
-                loader.onTextureLoaded = texture => {
+                loader.onTextureLoaded = (texture) => {
                     textureCount++;
                 };
 
@@ -121,7 +121,7 @@ describe('Babylon Scene Loader', function() {
                 expect(meshCount, "meshCount").to.equal(scene.meshes.length);
                 expect(materialCount, "materialCount").to.equal(scene.materials.length);
 
-                const filteredTextures = scene.textures.filter((texture) => texture !== scene._environmentBRDFTexture);
+                const filteredTextures = scene.textures.filter((texture) => texture !== scene.environmentBRDFTexture);
                 expect(textureCount, "textureCount").to.equal(filteredTextures.length);
             }));
 
@@ -165,7 +165,7 @@ describe('Babylon Scene Loader', function() {
                 }
             });
 
-            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(scene => {
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then((scene) => {
                 subject.stopRenderLoop();
 
                 for (const mesh of scene.meshes) {
@@ -238,7 +238,7 @@ describe('Babylon Scene Loader', function() {
 
         it('Load Alien', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/Alien/", "Alien.gltf", scene).then(result => {
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/Alien/", "Alien.gltf", scene).then((result) => {
                 const skeletonsMapping = {
                     "AlienHead": "skeleton0",
                     "Collar": "skeleton1",
@@ -267,11 +267,11 @@ describe('Babylon Scene Loader', function() {
                 const animationGroup = result.animationGroups[0];
                 expect(animationGroup.name, "animationGroup.name").to.equal("TwoTargetBlend");
                 expect(animationGroup.targetedAnimations, "animationGroup.targetedAnimations").to.have.lengthOf(7);
-                const influenceAnimations = animationGroup.targetedAnimations.filter(_ => _.animation.targetProperty === "influence");
+                const influenceAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "influence");
                 expect(influenceAnimations, "influenceAnimations").to.have.lengthOf(2);
-                const rotationAnimations = animationGroup.targetedAnimations.filter(_ => _.animation.targetProperty === "rotationQuaternion");
+                const rotationAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "rotationQuaternion");
                 expect(rotationAnimations, "rotationAnimations").to.have.lengthOf(4);
-                const positionAnimations = animationGroup.targetedAnimations.filter(_ => _.animation.targetProperty === "position");
+                const positionAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "position");
                 expect(positionAnimations, "positionAnimations").to.have.lengthOf(1);
             });
         });
@@ -342,10 +342,10 @@ describe('Babylon Scene Loader', function() {
             const promises = new Array<Promise<void>>();
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
-                const observer = loader.onExtensionLoadedObservable.add(extension => {
+                const observer = loader.onExtensionLoadedObservable.add((extension) => {
                     if (extension instanceof BABYLON.GLTF2.Loader.Extensions.MSFT_lod) {
                         loader.onExtensionLoadedObservable.remove(observer);
-                        extension.onMaterialLODsLoadedObservable.add(indexLOD => {
+                        extension.onMaterialLODsLoadedObservable.add((indexLOD) => {
                             const expectedMaterialName = `LOD${2 - indexLOD}`;
                             expect(scene.getMeshByName("node0").material.name, "Material for node 0").to.equal(expectedMaterialName);
                             expect(scene.getMeshByName("node1").material.name, "Material for node 1").to.equal(expectedMaterialName);
@@ -368,17 +368,17 @@ describe('Babylon Scene Loader', function() {
             const promises = new Array<Promise<void>>();
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
-                const observer = loader.onExtensionLoadedObservable.add(extension => {
+                const observer = loader.onExtensionLoadedObservable.add((extension) => {
                     if (extension instanceof BABYLON.GLTF2.Loader.Extensions.MSFT_lod) {
                         loader.onExtensionLoadedObservable.remove(observer);
-                        extension.onMaterialLODsLoadedObservable.add(indexLOD => {
+                        extension.onMaterialLODsLoadedObservable.add((indexLOD) => {
                             expect(indexLOD, "indexLOD").to.equal(0);
                             loader.dispose();
                         });
                     }
                 });
 
-                promises.push(new Promise(resolve => {
+                promises.push(new Promise((resolve) => {
                     loader.onDisposeObservable.addOnce(() => {
                         resolve();
                     });
@@ -427,7 +427,7 @@ describe('Babylon Scene Loader', function() {
 
         it('Load BrainStem', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/BrainStem/", "BrainStem.gltf", scene).then(result => {
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/BrainStem/", "BrainStem.gltf", scene).then((result) => {
                 expect(result.skeletons, "skeletons").to.have.lengthOf(1);
 
                 const node1 = scene.getNodeByName("node1");
@@ -451,7 +451,7 @@ describe('Babylon Scene Loader', function() {
                 var radianceOverAlpha = false;
 
                 loader.transparencyAsCoverage = true;
-                loader.onMaterialLoaded = material => {
+                loader.onMaterialLoaded = (material) => {
                     specularOverAlpha = specularOverAlpha || (material as BABYLON.PBRMaterial).useSpecularOverAlpha;
                     radianceOverAlpha = radianceOverAlpha || (material as BABYLON.PBRMaterial).useRadianceOverAlpha;
                 };
@@ -475,7 +475,7 @@ describe('Babylon Scene Loader', function() {
                 var radianceOverAlpha = true;
 
                 loader.transparencyAsCoverage = false;
-                loader.onMaterialLoaded = material => {
+                loader.onMaterialLoaded = (material) => {
                     specularOverAlpha = specularOverAlpha && (material as BABYLON.PBRMaterial).useSpecularOverAlpha;
                     radianceOverAlpha = radianceOverAlpha && (material as BABYLON.PBRMaterial).useRadianceOverAlpha;
                 };
@@ -503,7 +503,7 @@ describe('Babylon Scene Loader', function() {
 
         it('Load UFO with MSFT_audio_emitter', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/", "ufo.glb", scene).then(result => {
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/", "ufo.glb", scene).then((result) => {
                 expect(result.meshes.length, "meshes.length").to.equal(scene.meshes.length);
                 expect(result.particleSystems.length, "particleSystems.length").to.equal(0);
                 expect(result.animationGroups.length, "animationGroups.length").to.equal(3);
@@ -519,10 +519,71 @@ describe('Babylon Scene Loader', function() {
         // TODO: test KHR_lights
     });
 
+    /**
+     * Integration tests for loading OBJ assets.
+     */
+    describe('#OBJ', () => {
+        it('should load a tetrahedron (without colors)', () => {
+            var fileContents = `               
+                g tetrahedron
+                
+                v 1.00 1.00 1.00 0.666 0 0
+                v 2.00 1.00 1.00 0.666 0 0
+                v 1.00 2.00 1.00 0.666 0 0
+                v 1.00 1.00 2.00 0.666 0 0
+                
+                f 1 3 2
+                f 1 4 3
+                f 1 2 4
+                f 2 3 4
+            `;
+
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+                expect(container.meshes.length).to.eq(1);
+                let tetrahedron = container.meshes[0];
+
+                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var colors : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+
+                expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
+                assert.isNull(colors, 'expecting colors vertex buffer to be null')
+            })
+        })
+
+        it('should parse leniently allowing extra spaces with vertex definitions', () => {
+            var fileContents = `               
+                g tetrahedron
+                
+                v  1.00 1.00 1.00 0.666 0 0
+                v  2.00 1.00 1.00 0.666 0 0
+                v  1.00 2.00 1.00 0.666 0 0
+                v  1.00 1.00 2.00 0.666 0 0
+                # ^
+                # └── allow extra spaces before position/color
+
+                f 1 3 2
+                f 1 4 3
+                f 1 2 4
+                f 2 3 4
+            `;
+
+            var scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+                expect(container.meshes.length).to.eq(1);
+                let tetrahedron = container.meshes[0];
+
+                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+
+                expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
+            })
+        })
+    })
+
     describe('#AssetContainer', () => {
         it('should be loaded from BoomBox GLTF', () => {
             var scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.LoadAssetContainerAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(container => {
+            return BABYLON.SceneLoader.LoadAssetContainerAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then((container) => {
                 expect(container.meshes.length).to.eq(2);
             });
         });

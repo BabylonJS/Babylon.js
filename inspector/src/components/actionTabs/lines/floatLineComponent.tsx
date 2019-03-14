@@ -1,17 +1,18 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IFloatLineComponentProps {
-    label: string,
-    target: any,
-    propertyName: string,
-    lockObject?: LockObject,
-    onChange?: (newValue: number) => void,
-    isInteger?: boolean,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
-    additionalClass?: string
+    label: string;
+    target: any;
+    propertyName: string;
+    lockObject?: LockObject;
+    onChange?: (newValue: number) => void;
+    isInteger?: boolean;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    additionalClass?: string;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -22,10 +23,9 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         let currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(3)) : "0" }
+        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(3)) : "0" };
         this._store = currentValue;
     }
-
 
     componentWillUnmount() {
         this.unlock();
@@ -69,7 +69,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
 
-        let valueAsNumber: number
+        let valueAsNumber: number;
 
         if (this.props.isInteger) {
             valueAsNumber = parseInt(valueString);

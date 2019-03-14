@@ -1,14 +1,14 @@
 window.preparePBRSpecularGlossiness = function() {
 	var pbr = new BABYLON.PBRSpecularGlossinessMaterial("pbrspecularglossiness", scene);
 
-	pbr.diffuseTexture = new BABYLON.Texture("/playground/textures/amiga.jpg", scene);
+	pbr.diffuseTexture = new BABYLON.Texture("/Playground/textures/amiga.jpg", scene);
 	pbr.diffuseTexture.uScale = 5;
 	pbr.diffuseTexture.vScale = 5;
 	pbr.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 	pbr.glossiness = 0.9;
 
     // Uncomment for PMREM Generation
-    var hdrTexture = new BABYLON.HDRCubeTexture("/playground/textures/environment.hdr", scene, 512);
+    var hdrTexture = new BABYLON.HDRCubeTexture("/Playground/textures/environment.hdr", scene, 512);
     // var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 128, false, true, false, true);
 
     // Skybox

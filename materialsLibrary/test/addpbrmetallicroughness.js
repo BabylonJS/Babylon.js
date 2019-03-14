@@ -1,14 +1,14 @@
 window.preparePBRMetallicRoughness = function() {
 	var pbr = new BABYLON.PBRMetallicRoughnessMaterial("pbrmetallicroughness", scene);
 
-	pbr.baseTexture = new BABYLON.Texture("/playground/textures/amiga.jpg", scene);
+	pbr.baseTexture = new BABYLON.Texture("/Playground/textures/amiga.jpg", scene);
 	pbr.baseTexture.uScale = 5;
 	pbr.baseTexture.vScale = 5;
 	pbr.metallic = 0.5;
 	pbr.roughness = 0.1;
 
     // Uncomment for PMREM Generation
-    var hdrTexture = new BABYLON.HDRCubeTexture("/playground/textures/environment.hdr", scene, 512);
+    var hdrTexture = new BABYLON.HDRCubeTexture("/Playground/textures/environment.hdr", scene, 512);
     // var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 128, false, true, false, true);
 
     // Skybox

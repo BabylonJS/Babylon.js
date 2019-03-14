@@ -11,10 +11,10 @@ attribute vec3 normal;
 varying vec2 vUV;
 uniform mat4 diffuseMatrix;
 #ifdef UV1
-varying vec2 uv;
+attribute vec2 uv;
 #endif
 #ifdef UV2
-varying vec2 uv2;
+attribute vec2 uv2;
 #endif
 #endif
 

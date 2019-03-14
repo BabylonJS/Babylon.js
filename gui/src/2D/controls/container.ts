@@ -1,6 +1,8 @@
+import { Nullable } from "babylonjs/types";
+import { Logger } from "babylonjs/Misc/logger";
+
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Nullable } from "babylonjs";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
@@ -201,14 +203,18 @@ export class Container extends Control {
     public _reOrderControl(control: Control): void {
         this.removeControl(control);
 
+        let wasAdded = false;
         for (var index = 0; index < this._children.length; index++) {
             if (this._children[index].zIndex > control.zIndex) {
                 this._children.splice(index, 0, control);
-                return;
+                wasAdded = true;
+                break;
             }
         }
 
-        this._children.push(control);
+        if (!wasAdded) {
+            this._children.push(control);
+        }
 
         control.parent = this;
 
@@ -274,9 +280,21 @@ export class Container extends Control {
     }
 
     /** @hidden */
+    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+        if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            super._processMeasures(parentMeasure, context);
+            this._evaluateClippingState(parentMeasure);
+        }
+    }
+
+    /** @hidden */
     public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
+        }
+
+        if (this._isDirty) {
+            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
         }
 
         let rebuildCount = 0;
@@ -328,12 +346,16 @@ export class Container extends Control {
         while (this._rebuildLayout && rebuildCount < 3);
 
         if (rebuildCount >= 3) {
-            BABYLON.Tools.Error(`Layout cycle detected in GUI (Container uniqueId=${this.uniqueId})`);
+            Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 
         context.restore();
 
-        this._isDirty = false;
+        if (this._isDirty) {
+            this.invalidateRect();
+
+            this._isDirty = false;
+        }
 
         return true;
     }
@@ -343,7 +365,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
 
         this._localDraw(context);
 
@@ -352,7 +374,13 @@ export class Container extends Control {
         }
 
         for (var child of this._children) {
-            child._render(context);
+            // Only redraw parts of the screen that are invalidated
+            if (invalidatedRectangle) {
+                if (!child._intersectsRect(invalidatedRectangle)) {
+                    continue;
+                }
+            }
+            child._render(context, invalidatedRectangle);
         }
     }
 
@@ -377,7 +405,7 @@ export class Container extends Control {
 
     /** @hidden */
     public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
 
@@ -414,8 +442,8 @@ export class Container extends Control {
     public dispose() {
         super.dispose();
 
-        for (var control of this._children) {
-            control.dispose();
+        for (var index = this.children.length - 1; index >= 0; index--) {
+            this.children[index].dispose();
         }
     }
 }

@@ -1,16 +1,24 @@
-import { Effect, Engine, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observable, RenderingManager, Scene, SceneLoaderProgressEvent, TargetCamera, Tools, Vector3, Observer } from 'babylonjs';
+import { Engine } from 'babylonjs/Engines/engine';
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderProgressEvent } from 'babylonjs/Loading/sceneLoader';
+import { Observable } from 'babylonjs/Misc/observable';
+import { Scene } from 'babylonjs/scene';
+import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
+import { Vector3 } from 'babylonjs/Maths/math';
+import { TargetCamera } from 'babylonjs/Cameras/targetCamera';
+import { Tools } from 'babylonjs/Misc/tools';
+import { Effect } from 'babylonjs/Materials/effect';
+import { ConfigurationLoader } from '../configuration/loader';
 import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from '../configuration/';
 import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
 import { viewerGlobals } from '../configuration/globals';
-import { ConfigurationLoader } from '../configuration/loader';
+import { RenderOnlyConfigurationLoader } from '../configuration/renderOnlyLoader';
 import { deepmerge } from '../helper/';
 import { ModelLoader } from '../loader/modelLoader';
 import { ObservablesManager } from '../managers/observablesManager';
 import { SceneManager } from '../managers/sceneManager';
 import { telemetryManager } from '../managers/telemetryManager';
 import { ViewerModel } from '../model/viewerModel';
-import { TemplateManager } from '../templating/templateManager';
 import { viewerManager } from './viewerManager';
 
 /**
@@ -18,13 +26,6 @@ import { viewerManager } from './viewerManager';
  * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
  */
 export abstract class AbstractViewer {
-
-    /**
-     * The corresponsing template manager of this viewer.
-     */
-    public templateManager: TemplateManager;
-    // TODO get the template manager to the default viewer, if no one is extending the abstract viewer
-
     /**
      * Babylon Engine corresponding with this viewer
      */
@@ -160,7 +161,7 @@ export abstract class AbstractViewer {
     /**
      * The configuration loader of this viewer
      */
-    protected _configurationLoader: ConfigurationLoader;
+    protected _configurationLoader: RenderOnlyConfigurationLoader;
 
     /**
      * Is the viewer already initialized. for internal use.
@@ -171,6 +172,10 @@ export abstract class AbstractViewer {
 
     public get configurationContainer() {
         return this._configurationContainer;
+    }
+
+    protected getConfigurationLoader(){
+        return new RenderOnlyConfigurationLoader();
     }
 
     constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = {}) {
@@ -192,7 +197,7 @@ export abstract class AbstractViewer {
         RenderingManager.AUTOCLEAR = false;
 
         // extend the configuration
-        this._configurationLoader = new ConfigurationLoader();
+        this._configurationLoader = this.getConfigurationLoader();
         this._configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
             this._onConfigurationLoaded(configuration);
         });
@@ -417,8 +422,6 @@ export abstract class AbstractViewer {
             }));
         }
 
-        this.templateManager = new TemplateManager(this.containerElement);
-
         this.observablesManager.onViewerInitStartedObservable.notifyObservers(this);
     }
 
@@ -461,7 +464,7 @@ export abstract class AbstractViewer {
         // Create the screenshot
         return new Promise<string>((resolve, reject) => {
             try {
-                BABYLON.Tools.CreateScreenshot(this.engine, this.sceneManager.camera, { width, height }, (data) => {
+                Tools.CreateScreenshot(this.engine, this.sceneManager.camera, { width, height }, (data) => {
                     if (callback) {
                         callback(data);
                     }
@@ -680,7 +683,6 @@ export abstract class AbstractViewer {
      * @returns a ViewerModel object that is not yet fully loaded.
      */
     public initModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): ViewerModel {
-
         let configuration: IModelConfiguration;
         if (typeof modelConfig === 'string') {
             configuration = {
@@ -748,7 +750,7 @@ export abstract class AbstractViewer {
             // We can decide here whether or not to cancel the lst load, but the developer can do that.
             return Promise.reject("another model is curently being loaded.");
         }
-
+        
         return Promise.resolve(this.sceneManager.scene).then((scene) => {
             if (!scene) { return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer); }
             return scene;

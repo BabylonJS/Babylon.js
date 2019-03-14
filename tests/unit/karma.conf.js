@@ -18,6 +18,7 @@ module.exports = function (config) {
             './tests/unit/babylon/src/Mesh/babylon.positionAndRotation.tests.js',
             './tests/unit/babylon/serializers/babylon.glTFSerializer.tests.js',
             './tests/unit/babylon/src/babylon.node.tests.js',
+            './tests/unit/babylon/src/Animations/babylon.animation.tests.js',
             './tests/unit/babylon/src/Animations/babylon.animationGroup.tests.js',
             './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
             './tests/unit/babylon/src/PostProcess/babylon.postProcess.tests.js',
@@ -25,13 +26,14 @@ module.exports = function (config) {
             './tests/unit/babylon/src/Mesh/babylon.geometry.tests.js',
             './tests/unit/babylon/src/Mesh/babylon.mesh.vertexData.tests.js',
             './tests/unit/babylon/src/Tools/babylon.promise.tests.js',
+            './tests/unit/babylon/src/Cameras/babylon.pointerInput.tests.js',
             { pattern: 'dist/preview release/**/*.js', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
             //{ pattern: 'tests/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/scenes/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/textures/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/sounds/**/*', watched: false, included: false, served: true },
-            { pattern: 'Tools/Gulp/config.json', watched: false, included: false, served: true },
+            { pattern: 'Tools/Config/config.json', watched: false, included: false, served: true },
         ],
         proxies: {
             '/': '/base/'
@@ -46,6 +48,6 @@ module.exports = function (config) {
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         logLevel: config.LOG_INFO,
 
-        browsers: ['PhantomJS']
+        browsers: ['ChromeHeadless']
     })
 }

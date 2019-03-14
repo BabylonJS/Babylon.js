@@ -1,24 +1,28 @@
-import { Light, IExplorerExtensibilityGroup } from "babylonjs";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Light } from "babylonjs/Lights/light";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLightbulb } from '@fortawesome/free-solid-svg-icons';
+import { faLightbulb, faEye } from '@fortawesome/free-solid-svg-icons';
 import { faLightbulb as faLightbubRegular } from '@fortawesome/free-regular-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
+import { GlobalState } from "../../globalState";
 
 interface ILightTreeItemComponentProps {
     light: Light,
     extensibilityGroups?: IExplorerExtensibilityGroup[]
-    onClick: () => void
+    onClick: () => void,
+    globalState: GlobalState
 }
 
-export class LightTreeItemComponent extends React.Component<ILightTreeItemComponentProps, { isEnabled: boolean }> {
+export class LightTreeItemComponent extends React.Component<ILightTreeItemComponentProps, { isEnabled: boolean, isGizmoEnabled:boolean }> {
     constructor(props: ILightTreeItemComponentProps) {
         super(props);
 
         const light = this.props.light;
 
-        this.state = { isEnabled: light.isEnabled() };
+        this.state = { isEnabled: light.isEnabled(), isGizmoEnabled: (light.reservedDataStore && light.reservedDataStore.lightGizmo) };
     }
 
     switchIsEnabled(): void {
@@ -29,14 +33,29 @@ export class LightTreeItemComponent extends React.Component<ILightTreeItemCompon
         this.setState({ isEnabled: light.isEnabled() });
     }
 
+    toggleGizmo(): void {
+        const light = this.props.light;
+        if(light.reservedDataStore && light.reservedDataStore.lightGizmo){
+            this.props.globalState.enableLightGizmo(light, false);
+            this.setState({ isGizmoEnabled: false });
+        }else{
+            this.props.globalState.enableLightGizmo(light, true);
+            this.setState({ isGizmoEnabled: true });
+        }
+    }
+
     render() {
         const isEnabledElement = this.state.isEnabled ? <FontAwesomeIcon icon={faLightbubRegular} /> : <FontAwesomeIcon icon={faLightbubRegular} className="isNotActive" />;
+        const isGizmoEnabled = this.state.isGizmoEnabled ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEye} className="isNotActive" />;
 
         return (
             <div className="lightTools">
                 <TreeItemLabelComponent label={this.props.light.name} onClick={() => this.props.onClick()} icon={faLightbulb} color="yellow" />
-                <div className="enableLight icon" onClick={() => this.switchIsEnabled()} title="Turn on/off the light">
+                <div className="visibility icon" onClick={() => this.switchIsEnabled()} title="Turn on/off the light">
                     {isEnabledElement}
+                </div>
+                <div className="enableGizmo icon" onClick={() => this.toggleGizmo()} title="Turn on/off the light's gizmo">
+                    {isGizmoEnabled}
                 </div>
                 {
                     <ExtensionsComponent target={this.props.light} extensibilityGroups={this.props.extensibilityGroups} />

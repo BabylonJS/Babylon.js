@@ -1,6 +1,7 @@
 import { Helper } from "../../../commons/helper";
 import { assert, expect, should } from "../viewerReference";
 import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../../src";
+import { Engine } from "babylonjs";
 
 export let name = "viewer Tests";
 
@@ -119,7 +120,7 @@ describe('Viewer', function() {
 
     it('should have a version', (done) => {
         assert.exists(Version, "Viewer should have a version");
-        assert.equal(Version, BABYLON.Engine.Version, "Viewer version should equal to Babylon's engine version");
+        assert.equal(Version, Engine.Version, "Viewer version should equal to Babylon's engine version");
         done();
     });
 

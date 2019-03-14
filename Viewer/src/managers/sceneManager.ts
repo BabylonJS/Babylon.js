@@ -1,4 +1,3 @@
-import { Scene, ArcRotateCamera, Engine, Light, ShadowLight, Vector3, ShadowGenerator, Tags, CubeTexture, Quaternion, SceneOptimizer, EnvironmentHelper, SceneOptimizerOptions, Color3, IEnvironmentHelperOptions, AbstractMesh, FramingBehavior, Behavior, Observable, Color4, IGlowLayerOptions, PostProcessRenderPipeline, DefaultRenderingPipeline, StandardRenderingPipeline, SSAORenderingPipeline, SSAO2RenderingPipeline, LensRenderingPipeline, RenderTargetTexture, AnimationPropertiesOverride, Animation, Scalar, StandardMaterial, PBRMaterial, Nullable, Mesh, VRExperienceHelperOptions, VRExperienceHelper, Axis, Matrix } from 'babylonjs';
 import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration';
 import { ViewerModel, ModelState } from '../model/viewerModel';
 import { extendClassWithConfig } from '../helper';
@@ -9,6 +8,33 @@ import { ObservablesManager } from '../managers/observablesManager';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
 import { deepmerge } from '../helper';
 import { IEnvironmentMapConfiguration } from '../configuration/interfaces/environmentMapConfiguration';
+import { Observable } from 'babylonjs/Misc/observable';
+import { SceneOptimizer, SceneOptimizerOptions } from 'babylonjs/Misc/sceneOptimizer';
+import { ArcRotateCamera } from 'babylonjs/Cameras/arcRotateCamera';
+import { Light } from 'babylonjs/Lights/light';
+import { EnvironmentHelper, IEnvironmentHelperOptions } from 'babylonjs/Helpers/environmentHelper';
+import { VRExperienceHelper, VRExperienceHelperOptions } from 'babylonjs/Cameras/VR/vrExperienceHelper';
+import { Color3, Quaternion, Vector3, Axis, Matrix } from 'babylonjs/Maths/math';
+import { Nullable } from 'babylonjs/types';
+import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
+import { Engine } from 'babylonjs/Engines/engine';
+import { Animation } from 'babylonjs/Animations/index';
+import { AnimationPropertiesOverride } from 'babylonjs/Animations/animationPropertiesOverride';
+import { RenderTargetTexture } from 'babylonjs/Materials/Textures/renderTargetTexture';
+import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
+import { ShadowLight, IShadowLight } from 'babylonjs/Lights/shadowLight';
+import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
+import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
+import { Scalar } from 'babylonjs/Maths/math.scalar';
+import { SpotLight } from 'babylonjs/Lights/spotLight';
+import { PointLight } from 'babylonjs/Lights/pointLight';
+import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
+import { Mesh } from 'babylonjs/Meshes/mesh';
+import { Tags } from 'babylonjs/Misc/tags';
+import { Behavior } from 'babylonjs/Behaviors/behavior';
+import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
+import { Scene } from 'babylonjs/scene';
+import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -344,7 +370,7 @@ export class SceneManager {
      * initialize the scene. Calling this function again will dispose the old scene, if exists.
      */
     public initScene(sceneConfiguration: ISceneConfiguration = {}, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
-
+        
         // if the scen exists, dispose it.
         if (this.scene) {
             this.scene.dispose();
@@ -357,8 +383,8 @@ export class SceneManager {
 
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
-            var defaultMaterial = new BABYLON.PBRMaterial('defaultMaterial', this.scene);
-            defaultMaterial.reflectivityColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            var defaultMaterial = new PBRMaterial('defaultMaterial', this.scene);
+            defaultMaterial.reflectivityColor = new Color3(0.1, 0.1, 0.1);
             defaultMaterial.microSurface = 0.6;
 
             if (this.scene.defaultMaterial) {
@@ -379,7 +405,7 @@ export class SceneManager {
             if (typeof sceneConfiguration.glow === 'object') {
                 options = sceneConfiguration.glow
             }
-            var gl = new BABYLON.GlowLayer("glow", this.scene, options);
+            var gl = new GlowLayer("glow", this.scene, options);
         }*/
 
         return this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
@@ -566,6 +592,10 @@ export class SceneManager {
         }
     }
 
+    public setDefaultMaterial(sceneConfig: ISceneConfiguration){
+        
+    }
+
     /**
      * internally configure the scene using the provided configuration.
      * The scene will not be recreated, but just updated.
@@ -644,19 +674,7 @@ export class SceneManager {
             }
         }
 
-        if (sceneConfig.defaultMaterial) {
-            let conf = sceneConfig.defaultMaterial;
-            if ((conf.materialType === 'standard' && this.scene.defaultMaterial.getClassName() !== 'StandardMaterial') ||
-                (conf.materialType === 'pbr' && this.scene.defaultMaterial.getClassName() !== 'PBRMaterial')) {
-                this.scene.defaultMaterial.dispose();
-                if (conf.materialType === 'standard') {
-                    this.scene.defaultMaterial = new StandardMaterial("defaultMaterial", this.scene);
-                } else {
-                    this.scene.defaultMaterial = new PBRMaterial("defaultMaterial", this.scene);
-                }
-            }
-            extendClassWithConfig(this.scene.defaultMaterial, conf);
-        }
+        this.setDefaultMaterial(sceneConfig);
 
         if (sceneConfig.flags) {
             extendClassWithConfig(this.scene, sceneConfig.flags);
@@ -815,7 +833,7 @@ export class SceneManager {
 
     protected _configureEnvironmentMap(environmentMapConfiguration: IEnvironmentMapConfiguration): any {
         if (environmentMapConfiguration.texture) {
-            this.scene.environmentTexture = new BABYLON.CubeTexture(this._getAssetUrl(environmentMapConfiguration.texture), this.scene);
+            this.scene.environmentTexture = new CubeTexture(this._getAssetUrl(environmentMapConfiguration.texture), this.scene);
         }
 
         //sanity check
@@ -872,7 +890,44 @@ export class SceneManager {
             if (this._globalConfiguration.scene && this._globalConfiguration.scene.disableCameraControl) {
                 attachControl = false;
             }
-            this.scene.createDefaultCamera(true, true, attachControl);
+
+            // Inline scene.createDefaultCamera to reduce file size
+            // Dispose existing camera in replace mode.
+            if (this.scene.activeCamera) {
+                (this.scene.activeCamera as ArcRotateCamera).dispose();
+                this.scene.activeCamera = null;
+            }
+            // Camera
+            if (!this.scene.activeCamera) {
+                var worldExtends = this.scene.getWorldExtends();
+                var worldSize = worldExtends.max.subtract(worldExtends.min);
+                var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
+
+                var camera: ArcRotateCamera;
+                var radius = worldSize.length() * 1.5;
+                // empty scene scenario!
+                if (!isFinite(radius)) {
+                    radius = 1;
+                    worldCenter.copyFromFloats(0, 0, 0);
+                }
+
+                var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this.scene);
+                arcRotateCamera.lowerRadiusLimit = radius * 0.01;
+                arcRotateCamera.wheelPrecision = 100 / radius;
+                camera = arcRotateCamera;
+
+                camera.minZ = radius * 0.01;
+                camera.maxZ = radius * 1000;
+                camera.speed = radius * 0.2;
+                this.scene.activeCamera = camera;
+
+                let canvas = this.scene.getEngine().getRenderingCanvas();
+            }
+            let canvas = this.scene.getEngine().getRenderingCanvas();
+            if (canvas) {
+                this.scene.activeCamera.attachControl(canvas);
+            }
+            
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;
             this.camera.setTarget(Vector3.Zero());
         }
@@ -1058,7 +1113,7 @@ export class SceneManager {
             options.setupImageProcessing = false; // TMP
 
             if (!this.environmentHelper) {
-                this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+                this.environmentHelper = new EnvironmentHelper(options, this.scene);
             } else {
                 // unlikely, but there might be a new scene! we need to dispose.
 
@@ -1067,7 +1122,7 @@ export class SceneManager {
                 // is it a different scene? Oh no!
                 if (scene !== this.scene) {
                     this.environmentHelper.dispose();
-                    this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+                    this.environmentHelper = new EnvironmentHelper(options, this.scene);
                 } else {
                     // recreate the ground
                     if (this.environmentHelper.ground) {
@@ -1081,7 +1136,7 @@ export class SceneManager {
                     this.environmentHelper.updateOptions(options)!;
                     // update doesn't change the size of the skybox and ground, so we have to recreate!
                     //this.environmentHelper.dispose();
-                    //this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+                    //this.environmentHelper = new EnvironmentHelper(options, this.scene);
                 }
             }
 
@@ -1229,12 +1284,12 @@ export class SceneManager {
                     }
 
                     let isShadowEnabled = false;
-                    if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-                        (<BABYLON.DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
+                    if (light.getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+                        (<DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
                         isShadowEnabled = true;
                     }
-                    else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
-                        let spotLight: BABYLON.SpotLight = <BABYLON.SpotLight>light;
+                    else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
+                        let spotLight: SpotLight = <SpotLight>light;
                         if (lightConfig.spotAngle !== undefined) {
                             spotLight.angle = lightConfig.spotAngle * Math.PI / 180;
                         }
@@ -1243,14 +1298,14 @@ export class SceneManager {
                         }
                         isShadowEnabled = true;
                     }
-                    else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
+                    else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
                         if (lightConfig.shadowFieldOfView) {
-                            (<BABYLON.PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
+                            (<PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
                         }
                         isShadowEnabled = true;
                     }
 
-                    let shadowGenerator = <BABYLON.ShadowGenerator>light.getShadowGenerator();
+                    let shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
                     if (isShadowEnabled && lightConfig.shadowEnabled && this._maxShadows) {
                         let bufferSize = lightConfig.shadowBufferSize || 256;
 
@@ -1320,7 +1375,7 @@ export class SceneManager {
                 let shadowGroundPlane = Mesh.CreatePlane("shadowGroundPlane", 100, this.scene, false);
                 shadowGroundPlane.useVertexColors = false;
                 //material isn't ever used in rendering, just used to set back face culling
-                shadowGroundPlane.material = new StandardMaterial('shadowGroundPlaneMaterial', this.scene);
+                shadowGroundPlane.material = new PBRMaterial('shadowGroundPlaneMaterial', this.scene);
                 shadowGroundPlane.material.backFaceCulling = false;
                 shadowGroundPlane.rotation.x = Math.PI * 0.5;
                 shadowGroundPlane.freezeWorldMatrix();
@@ -1361,16 +1416,16 @@ export class SceneManager {
      * @param bufferSize The size of the shadow map
      * @return the kernel blur size
      */
-    public getBlurKernel(light: BABYLON.IShadowLight, bufferSize: number): number {
+    public getBlurKernel(light: IShadowLight, bufferSize: number): number {
         var normalizedBlurKernel = 0.05; // TODO Should come from the config.
-        if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-            normalizedBlurKernel = normalizedBlurKernel / (<BABYLON.DirectionalLight>light).shadowFrustumSize;
+        if (light.getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / (<DirectionalLight>light).shadowFrustumSize;
         }
-        else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_POINTLIGHT) {
-            normalizedBlurKernel = normalizedBlurKernel / (<BABYLON.PointLight>light).shadowAngle;
+        else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / (<PointLight>light).shadowAngle;
         }
-        else if (light.getTypeID() === BABYLON.Light.LIGHTTYPEID_SPOTLIGHT) {
-            normalizedBlurKernel = normalizedBlurKernel / ((<BABYLON.SpotLight>light).angle * (<BABYLON.SpotLight>light).shadowAngleScale);
+        else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
+            normalizedBlurKernel = normalizedBlurKernel / ((<SpotLight>light).angle * (<SpotLight>light).shadowAngleScale);
         }
 
         let minimumBlurKernel = 5 / (bufferSize / 256); //magic number that aims to keep away sawtooth shadows

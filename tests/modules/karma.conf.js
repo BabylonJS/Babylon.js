@@ -28,12 +28,12 @@ module.exports = function (config) {
         port: 3000,
         colors: true,
         autoWatch: false,
-        singleRun: false,
+        singleRun: true,
 
         // level of logging
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         logLevel: config.LOG_INFO,
 
-        browsers: ['PhantomJS']
+        browsers: ['ChromeHeadless']
     })
 }

@@ -1,74 +1,32 @@
-import { AbstractMesh, IExplorerExtensibilityGroup } from "babylonjs";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
-import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { faVectorSquare } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faSquare } from '@fortawesome/free-regular-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface IMeshTreeItemComponentProps {
-    mesh: AbstractMesh,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onClick: () => void
+    mesh: AbstractMesh;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onClick: () => void;
 }
 
-export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, { isGizmoEnabled: boolean, isVisible: boolean }> {
+export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, { isBoundingBoxEnabled: boolean, isVisible: boolean }> {
     constructor(props: IMeshTreeItemComponentProps) {
         super(props);
 
         const mesh = this.props.mesh;
 
-        this.state = { isGizmoEnabled: mesh.reservedDataStore && mesh.reservedDataStore.gizmo, isVisible: this.props.mesh.isVisible }
+        this.state = { isBoundingBoxEnabled: mesh.showBoundingBox, isVisible: this.props.mesh.isVisible };
     }
 
-    showGizmos(): void {
+    showBoundingBox(): void {
         const mesh = this.props.mesh;
-
-        if (!this.state.isGizmoEnabled) {
-
-            if (!mesh.reservedDataStore) {
-                mesh.reservedDataStore = {};
-            }
-            mesh.reservedDataStore.previousParent = mesh.parent;
-
-            if (mesh.reservedDataStore.previousParent) {
-                if (!mesh.reservedDataStore.previousParent.reservedDataStore) {
-                    mesh.reservedDataStore.previousParent.reservedDataStore = {};
-                }
-
-                if (!mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren) {
-                    mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren = [];
-                }
-
-                mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren.push(mesh);
-            }
-
-            const gizmo = new BABYLON.BoundingBoxGizmo(BABYLON.Color3.FromHexString("#0984e3"));
-            gizmo.attachedMesh = mesh;
-            gizmo.enableDragBehavior();
-
-            gizmo.updateBoundingBox();
-
-            gizmo.fixedDragMeshScreenSize = true;
-            mesh.reservedDataStore.gizmo = gizmo;
-            this.setState({ isGizmoEnabled: true });
-            return;
-        }
-
-        const previousParent = mesh.reservedDataStore.previousParent;
-        mesh.reservedDataStore.gizmo.dispose();
-        mesh.reservedDataStore.gizmo = null;
-        mesh.setParent(previousParent);
-
-        if (previousParent && previousParent.reservedDataStore) {
-            previousParent.reservedDataStore.detachedChildren = null;
-        }
-
-        mesh.reservedDataStore.previousParent = null;
-        mesh.reservedDataStore.pointerDragBehavior = null;
-
-        this.setState({ isGizmoEnabled: false });
+        mesh.showBoundingBox = !this.state.isBoundingBoxEnabled;
+        this.setState({ isBoundingBoxEnabled: !this.state.isBoundingBoxEnabled });
     }
 
     switchVisibility(): void {
@@ -80,13 +38,13 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
     render() {
         const mesh = this.props.mesh;
 
-        const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />
+        const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />;
 
         return (
             <div className="meshTools">
                 <TreeItemLabelComponent label={mesh.name} onClick={() => this.props.onClick()} icon={faCube} color="dodgerblue" />
-                <div className={this.state.isGizmoEnabled ? "gizmo selected icon" : "gizmo icon"} onClick={() => this.showGizmos()} title="Show/Hide position gizmo">
-                    <FontAwesomeIcon icon={faVectorSquare} />
+                <div className={this.state.isBoundingBoxEnabled ? "bounding-box selected icon" : "bounding-box icon"} onClick={() => this.showBoundingBox()} title="Show/Hide bounding box">
+                    <FontAwesomeIcon icon={faSquare} />
                 </div>
                 <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide mesh">
                     {visibilityElement}
@@ -95,6 +53,6 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
                     <ExtensionsComponent target={mesh} extensibilityGroups={this.props.extensibilityGroups} />
                 }
             </div>
-        )
+        );
     }
 }

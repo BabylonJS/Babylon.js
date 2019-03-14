@@ -1,11 +1,19 @@
-import { Observable, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Observer, Nullable } from "babylonjs";
+import { GLTFFileLoader, IGLTFLoaderExtension } from "babylonjs-loaders/glTF/index";
+import { IGLTFValidationResults } from "babylonjs-gltf2interface";
+
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
+import { Scene } from "babylonjs/scene";
+import { Light } from "babylonjs/Lights/light";
+import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { IGLTFLoaderExtension, GLTFFileLoader } from "babylonjs-loaders";
-import { } from "babylonjs-gltf2interface";
+import { ReplayRecorder } from './replayRecorder';
 
 export class GlobalState {
-    public onSelectionChangedObservable: Observable<string>;
+    public onSelectionChangedObservable: Observable<any>;
     public onPropertyChangedObservable: Observable<PropertyChangedEvent>;
+    public onInspectorClosedObservable = new Observable<Scene>();
     public onTabChangedObservable = new Observable<number>();
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
 
@@ -15,6 +23,19 @@ export class GlobalState {
     public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {};
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
+
+    public blockMutationUpdates = false;
+    public selectedLineContainerTitle = "";
+
+    public recorder = new ReplayRecorder();
+
+    public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
+        this.onPropertyChangedObservable = propertyChangedObservable;
+
+        propertyChangedObservable.add(event => {
+            this.recorder.record(event);
+        })
+    }
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
         var loaderState = this.glTFLoaderDefaults;
@@ -42,5 +63,24 @@ export class GlobalState {
                 this.onTabChangedObservable.notifyObservers(3);
             }
         });
+    }
+
+    // Light gizmos
+    public lightGizmos: Array<LightGizmo> = [];
+    public enableLightGizmo(light: Light, enable = true) {
+        if (enable) {
+            if (!light.reservedDataStore) {
+                light.reservedDataStore = {}
+            }
+            if (!light.reservedDataStore.lightGizmo) {
+                light.reservedDataStore.lightGizmo = new LightGizmo();
+                this.lightGizmos.push(light.reservedDataStore.lightGizmo)
+                light.reservedDataStore.lightGizmo.light = light;
+            }
+        } else if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
+            this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo), 1);
+            light.reservedDataStore.lightGizmo.dispose();
+            light.reservedDataStore.lightGizmo = null;
+        }
     }
 }

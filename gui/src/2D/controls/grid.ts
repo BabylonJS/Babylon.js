@@ -1,8 +1,9 @@
+import { Nullable } from "babylonjs/types";
+
 import { Container } from "./container";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Nullable } from "babylonjs";
 
 /**
  * Class used to create a 2D grid container
@@ -291,6 +292,7 @@ export class Grid extends Container {
         goodContainer.addControl(control);
         this._childControls.push(control);
         control._tag = key;
+        control.parent = this;
 
         this._markAsDirty();
 
@@ -416,6 +418,10 @@ export class Grid extends Container {
                 cell.top = tops[x] + "px";
                 cell.width = widths[y] + "px";
                 cell.height = heights[x] + "px";
+                cell._left.ignoreAdaptiveScaling = true;
+                cell._top.ignoreAdaptiveScaling = true;
+                cell._width.ignoreAdaptiveScaling = true;
+                cell._height.ignoreAdaptiveScaling = true;
             }
         });
 
@@ -467,5 +473,7 @@ export class Grid extends Container {
         for (var control of this._childControls) {
             control.dispose();
         }
+
+        this._childControls = [];
     }
 }
