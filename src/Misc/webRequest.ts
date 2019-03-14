@@ -112,6 +112,10 @@ export class WebRequest {
      * @param body defines an optional request body
      */
     public send(body?: Document | BodyInit | null): void {
+        if (WebRequest.CustomRequestHeaders) {
+            this._injectCustomRequestHeaders();
+        }
+
         this._xhr.send(body);
     }
 
@@ -121,10 +125,6 @@ export class WebRequest {
      * @param url defines the url to connect with
      */
     public open(method: string, url: string): void {
-        if (WebRequest.CustomRequestHeaders) {
-            this._injectCustomRequestHeaders();
-        }
-
         for (var update of WebRequest.CustomRequestModifiers) {
             update(this._xhr);
         }
