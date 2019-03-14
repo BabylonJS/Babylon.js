@@ -872,7 +872,7 @@ export class TransformNode extends Node {
         this._cache.billboardMode = this.billboardMode;
         this._cache.infiniteDistance = this.infiniteDistance;
         this._currentRenderId = this.getScene().getRenderId();
-        this._childRenderId = this.getScene().getRenderId();
+        this._childUpdateId++;
         this._isDirty = false;
 
         // Scaling

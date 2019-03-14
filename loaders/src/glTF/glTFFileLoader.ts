@@ -503,12 +503,25 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         return this._parseAsync(scene, data, rootUrl, fileName).then((loaderData) => {
             this._log(`Loading ${fileName || ""}`);
             this._loader = this._getLoader(loaderData);
+
+            // Get materials/textures when loading to add to container
+            let materials: Array<Material> = [];
+            this.onMaterialLoadedObservable.add((material) => {
+                materials.push(material);
+            });
+            let textures: Array<BaseTexture> = [];
+            this.onTextureLoadedObservable.add((texture) => {
+                textures.push(texture);
+            });
+
             return this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then((result) => {
                 const container = new AssetContainer(scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
+                Array.prototype.push.apply(container.materials, materials);
+                Array.prototype.push.apply(container.textures, textures);
                 container.removeAllFromScene();
                 return container;
             });
