@@ -24460,8 +24460,8 @@ declare module BABYLON {
         private _isParentEnabled;
         private _isReady;
         /** @hidden */currentRenderId: number;
-        private _parentRenderId;
-        protected _childRenderId: number;
+        private _parentUpdateId;
+        protected _childUpdateId: number;
         /** @hidden */waitingParentId: Nullable<string>;
         /** @hidden */scene: Scene;
         /** @hidden */cache: any;
