@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Observable, Quaternion, Vector3 } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
+import { Quaternion } from "babylonjs/Maths/math";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -14,19 +15,18 @@ interface IQuaternionLineComponentProps {
 
 export class QuaternionLineComponent extends React.Component<IQuaternionLineComponentProps, { isExpanded: boolean, value: Quaternion }> {
     private _localChange = false;
-    private _eulerValue: Vector3;
 
     constructor(props: IQuaternionLineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName] }
+        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName].clone() }
     }
 
     shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: { isExpanded: boolean, value: Quaternion }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
-            nextState.value = nextPropsValue;
+            nextState.value = nextPropsValue.clone();
             this._localChange = false;
             return true;
         }
@@ -51,40 +51,46 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
     }
 
     updateQuaternion() {
-        const store = this.state.value.clone();
-        const quaternion = this._eulerValue.toQuaternion();
-        this.props.target[this.props.propertyName] = quaternion;
+        const store = this.props.target[this.props.propertyName].clone();
+        this.props.target[this.props.propertyName] = this.state.value;
 
-        this.setState({ value: quaternion });
+        this.setState({ value: store });
 
-        this.raiseOnPropertyChanged(quaternion, store);
+        this.raiseOnPropertyChanged(this.state.value, store);
     }
 
     updateStateX(value: number) {
         this._localChange = true;
 
-        this._eulerValue.x = value;
+        this.state.value.x = value;
         this.updateQuaternion();
     }
 
     updateStateY(value: number) {
         this._localChange = true;
 
-        this._eulerValue.y = value;
+        this.state.value.y = value;
         this.updateQuaternion();
     }
 
     updateStateZ(value: number) {
         this._localChange = true;
 
-        this._eulerValue.z = value;
+        this.state.value.z = value;
+        this.updateQuaternion();
+    }
+
+    updateStateW(value: number) {
+        this._localChange = true;
+
+        this.state.value.w = value;
         this.updateQuaternion();
     }
 
     render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
 
-        this._eulerValue = this.state.value.toEulerAngles();
+        let quat = this.state.value;
 
         return (
             <div className="vector3Line">
@@ -93,7 +99,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                         {this.props.label}
                     </div>
                     <div className="vector">
-                        {`X: ${this._eulerValue.x.toFixed(2)}, Y: ${this._eulerValue.y.toFixed(2)}, Z: ${this._eulerValue.z.toFixed(2)}`}
+                        {`X: ${quat.x.toFixed(1)}, Y: ${quat.y.toFixed(1)}, Z: ${quat.z.toFixed(1)}, W: ${quat.w.toFixed(1)}`}
                     </div>
                     <div className="expand" onClick={() => this.switchExpandState()}>
                         {chevron}
@@ -102,9 +108,10 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent label="x" value={this._eulerValue.x} onChange={value => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" value={this._eulerValue.y} onChange={value => this.updateStateY(value)} />
-                        <NumericInputComponent label="z" value={this._eulerValue.z} onChange={value => this.updateStateZ(value)} />
+                        <NumericInputComponent label="x" value={quat.x} onChange={value => this.updateStateX(value)} />
+                        <NumericInputComponent label="y" value={quat.y} onChange={value => this.updateStateY(value)} />
+                        <NumericInputComponent label="z" value={quat.z} onChange={value => this.updateStateZ(value)} />
+                        <NumericInputComponent label="w" value={quat.w} onChange={value => this.updateStateW(value)} />
                     </div>
                 }
             </div>

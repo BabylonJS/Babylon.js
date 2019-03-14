@@ -1,5 +1,16 @@
 import { Button3D } from "./button3D";
-import { Mesh, StandardMaterial, Nullable, Observer, Vector3, Scene, TransformNode, MeshBuilder, Color3 } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { PlaneBuilder } from "babylonjs/Meshes/Builders/planeBuilder";
+import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
+import { FadeInOutBehavior } from "babylonjs/Behaviors/Meshes/fadeInOutBehavior";
+import { Scene } from "babylonjs/scene";
+
 import { FluentMaterial } from "../materials/fluentMaterial";
 import { StackPanel } from "../../2D/controls/stackPanel";
 import { Image } from "../../2D/controls/image";
@@ -23,7 +34,7 @@ export class HolographicButton extends Button3D {
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
 
     // Tooltip
-    private _tooltipFade: Nullable<BABYLON.FadeInOutBehavior>;
+    private _tooltipFade: Nullable<FadeInOutBehavior>;
     private _tooltipTextBlock: Nullable<TextBlock>;
     private _tooltipTexture: Nullable<AdvancedDynamicTexture>;
     private _tooltipMesh: Nullable<Mesh>;
@@ -55,10 +66,10 @@ export class HolographicButton extends Button3D {
         }
         if (!this._tooltipFade) {
             // Create tooltip with mesh and text
-            this._tooltipMesh = BABYLON.MeshBuilder.CreatePlane("", {size: 1}, this._backPlate._scene);
-            var tooltipBackground = BABYLON.MeshBuilder.CreatePlane("", {size: 1, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, this._backPlate._scene);
+            this._tooltipMesh = PlaneBuilder.CreatePlane("", { size: 1 }, this._backPlate._scene);
+            var tooltipBackground = PlaneBuilder.CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
             var mat = new StandardMaterial("", this._backPlate._scene);
-            mat.diffuseColor = BABYLON.Color3.FromHexString("#212121");
+            mat.diffuseColor = Color3.FromHexString("#212121");
             tooltipBackground.material = mat;
             tooltipBackground.isPickable = false;
             this._tooltipMesh.addChild(tooltipBackground);
@@ -78,7 +89,7 @@ export class HolographicButton extends Button3D {
             this._tooltipTexture.addControl(this._tooltipTextBlock);
 
             // Add hover action to tooltip
-            this._tooltipFade = new BABYLON.FadeInOutBehavior();
+            this._tooltipFade = new FadeInOutBehavior();
             this._tooltipFade.delay = 500;
             this._tooltipMesh.addBehavior(this._tooltipFade);
             this._tooltipHoverObserver = this.onPointerEnterObservable.add(() => {
@@ -225,13 +236,13 @@ export class HolographicButton extends Button3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this._backPlate = MeshBuilder.CreateBox(this.name + "BackMesh", {
+        this._backPlate = BoxBuilder.CreateBox(this.name + "BackMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08
         }, scene);
 
-        this._frontPlate = MeshBuilder.CreateBox(this.name + "FrontMesh", {
+        this._frontPlate = BoxBuilder.CreateBox(this.name + "FrontMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08

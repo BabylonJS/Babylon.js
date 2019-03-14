@@ -4,14 +4,16 @@ language: node_js
 node_js:
 - '8'
 git:
-  depth: 3
+  depth: 2
 cache:
   directories:
-  - Tools/Gulp/node_modules
+  - node_modules
   - Playground/node_modules
-  - tests/unit/node_modules
 install:
-- travis_retry npm install -g gulp
+- rm node_modules/@babylonjs/core -f
+- rm node_modules/@babylonjs/materials -f
+- travis_retry npm install -g gulp@4.0.0
+- travis_retry npm install -g typescript
 - cd ./Tools/Gulp
 - travis_retry npm install
 jobs:
@@ -21,8 +23,8 @@ jobs:
     script: gulp tests-whatsnew
   - env: JOB=DocumentationCheck
     script: gulp typedoc-check
-  - env: JOB=Styling
-    script: gulp tsLint
+  - env: JOB=Linting
+    script: gulp fullLint
   - env: JOB=Build
     script: gulp typescript-all
   - env: JOB=Tests
@@ -31,11 +33,26 @@ jobs:
     - sh -e /etc/init.d/xvfb start
     - sleep 3
     - set -e
+    - export CHROME_BIN=chromium-browser
     - gulp typescript-all
-    - gulp tests-unit
+    - gulp tests-babylon-unit
     - travis_retry gulp tests-validation-virtualscreen
     - travis_retry gulp tests-validation-browserstack
+  - env: JOB=ModuleTests
+    script:
+    - gulp typescript-all
+    - export CHROME_BIN=chromium-browser
     - gulp tests-modules
+    - gulp deployAndTests-es6Modules
+  - env: JOB=ViewerTests
+    script:
+    - export DISPLAY=:99.0
+    - sh -e /etc/init.d/xvfb start
+    - sleep 3
+    - set -e
+    - export CHROME_BIN=chromium-browser
+    - gulp typescript-all
+    - gulp tests-viewer-unit
     - travis_retry gulp tests-viewer-validation-virtualscreen
     - travis_retry gulp tests-viewer-validation-browserstack
 notifications:

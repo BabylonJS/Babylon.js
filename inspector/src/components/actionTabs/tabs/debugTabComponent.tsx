@@ -4,10 +4,12 @@ import { LineContainerComponent } from "../lineContainerComponent";
 import { CheckBoxLineComponent } from "../lines/checkBoxLineComponent";
 import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
 
+import { PhysicsViewer } from "babylonjs/Debug/physicsViewer";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Mesh } from 'babylonjs/Meshes/mesh';
+
 export class DebugTabComponent extends PaneComponent {
-    private _skeletonViewersEnabled = false;
     private _physicsViewersEnabled = false;
-    private _skeletonViewers = new Array<BABYLON.Debug.SkeletonViewer>();
 
     constructor(props: IPaneComponentProps) {
         super(props);
@@ -24,53 +26,10 @@ export class DebugTabComponent extends PaneComponent {
             scene.reservedDataStore = {};
         }
 
-        for (var mesh of scene.meshes) {
-            if (mesh.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
-                this._skeletonViewers.push(mesh.reservedDataStore.skeletonViewer);
-            }
-        }
-
-        this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
         this._physicsViewersEnabled = scene.reservedDataStore.physicsViewer != null;
     }
 
     componentWillUnmount() {
-    }
-
-    switchSkeletonViewers() {
-        this._skeletonViewersEnabled = !this._skeletonViewersEnabled;
-        const scene = this.props.scene;
-
-        if (this._skeletonViewersEnabled) {
-            for (var mesh of scene.meshes) {
-                if (mesh.skeleton) {
-                    var found = false;
-                    for (var sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
-                        if (this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found) {
-                        continue;
-                    }
-                    var viewer = new BABYLON.Debug.SkeletonViewer(mesh.skeleton, mesh, scene, true, 0);
-                    viewer.isEnabled = true;
-                    this._skeletonViewers.push(viewer);
-                    if (!mesh.reservedDataStore) {
-                        mesh.reservedDataStore = {};
-                    }
-                    mesh.reservedDataStore.skeletonViewer = viewer;
-                }
-            }
-        } else {
-            for (var index = 0; index < this._skeletonViewers.length; index++) {
-                this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
-                this._skeletonViewers[index].dispose();
-            }
-            this._skeletonViewers = [];
-
-        }
     }
 
     switchPhysicsViewers() {
@@ -78,12 +37,12 @@ export class DebugTabComponent extends PaneComponent {
         const scene = this.props.scene;
 
         if (this._physicsViewersEnabled) {
-            const physicsViewer = new BABYLON.Debug.PhysicsViewer(scene);
+            const physicsViewer = new PhysicsViewer(scene);
             scene.reservedDataStore.physicsViewer = physicsViewer;
 
             for (var mesh of scene.meshes) {
                 if (mesh.physicsImpostor) {
-                    let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor);
+                    let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor, mesh as Mesh);
 
                     if (debugMesh) {
                         debugMesh.reservedDataStore = { hidden: true };
@@ -106,25 +65,24 @@ export class DebugTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent title="HELPERS">
-                    <RenderGridPropertyGridComponent scene={scene} />
-                    <CheckBoxLineComponent label="Bones" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
+                <LineContainerComponent globalState={this.props.globalState} title="HELPERS">
+                    <RenderGridPropertyGridComponent globalState={this.props.globalState} scene={scene} />
                     <CheckBoxLineComponent label="Physics" isSelected={() => this._physicsViewersEnabled} onSelect={() => this.switchPhysicsViewers()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="TEXTURE CHANNELS">
-                    <CheckBoxLineComponent label="Diffuse" isSelected={() => BABYLON.StandardMaterial.DiffuseTextureEnabled} onSelect={() => BABYLON.StandardMaterial.DiffuseTextureEnabled = !BABYLON.StandardMaterial.DiffuseTextureEnabled} />
-                    <CheckBoxLineComponent label="Ambient" isSelected={() => BABYLON.StandardMaterial.AmbientTextureEnabled} onSelect={() => BABYLON.StandardMaterial.AmbientTextureEnabled = !BABYLON.StandardMaterial.AmbientTextureEnabled} />
-                    <CheckBoxLineComponent label="Specular" isSelected={() => BABYLON.StandardMaterial.SpecularTextureEnabled} onSelect={() => BABYLON.StandardMaterial.SpecularTextureEnabled = !BABYLON.StandardMaterial.SpecularTextureEnabled} />
-                    <CheckBoxLineComponent label="Emissive" isSelected={() => BABYLON.StandardMaterial.EmissiveTextureEnabled} onSelect={() => BABYLON.StandardMaterial.EmissiveTextureEnabled = !BABYLON.StandardMaterial.EmissiveTextureEnabled} />
-                    <CheckBoxLineComponent label="Bump" isSelected={() => BABYLON.StandardMaterial.BumpTextureEnabled} onSelect={() => BABYLON.StandardMaterial.BumpTextureEnabled = !BABYLON.StandardMaterial.BumpTextureEnabled} />
-                    <CheckBoxLineComponent label="Opacity" isSelected={() => BABYLON.StandardMaterial.OpacityTextureEnabled} onSelect={() => BABYLON.StandardMaterial.OpacityTextureEnabled = !BABYLON.StandardMaterial.OpacityTextureEnabled} />
-                    <CheckBoxLineComponent label="Reflection" isSelected={() => BABYLON.StandardMaterial.ReflectionTextureEnabled} onSelect={() => BABYLON.StandardMaterial.ReflectionTextureEnabled = !BABYLON.StandardMaterial.ReflectionTextureEnabled} />
-                    <CheckBoxLineComponent label="Refraction" isSelected={() => BABYLON.StandardMaterial.RefractionTextureEnabled} onSelect={() => BABYLON.StandardMaterial.RefractionTextureEnabled = !BABYLON.StandardMaterial.RefractionTextureEnabled} />
-                    <CheckBoxLineComponent label="ColorGrading" isSelected={() => BABYLON.StandardMaterial.ColorGradingTextureEnabled} onSelect={() => BABYLON.StandardMaterial.ColorGradingTextureEnabled = !BABYLON.StandardMaterial.ColorGradingTextureEnabled} />
-                    <CheckBoxLineComponent label="Lightmap" isSelected={() => BABYLON.StandardMaterial.LightmapTextureEnabled} onSelect={() => BABYLON.StandardMaterial.LightmapTextureEnabled = !BABYLON.StandardMaterial.LightmapTextureEnabled} />
-                    <CheckBoxLineComponent label="Fresnel" isSelected={() => BABYLON.StandardMaterial.FresnelEnabled} onSelect={() => BABYLON.StandardMaterial.FresnelEnabled = !BABYLON.StandardMaterial.FresnelEnabled} />
+                <LineContainerComponent globalState={this.props.globalState} title="TEXTURE CHANNELS">
+                    <CheckBoxLineComponent label="Diffuse" isSelected={() => StandardMaterial.DiffuseTextureEnabled} onSelect={() => StandardMaterial.DiffuseTextureEnabled = !StandardMaterial.DiffuseTextureEnabled} />
+                    <CheckBoxLineComponent label="Ambient" isSelected={() => StandardMaterial.AmbientTextureEnabled} onSelect={() => StandardMaterial.AmbientTextureEnabled = !StandardMaterial.AmbientTextureEnabled} />
+                    <CheckBoxLineComponent label="Specular" isSelected={() => StandardMaterial.SpecularTextureEnabled} onSelect={() => StandardMaterial.SpecularTextureEnabled = !StandardMaterial.SpecularTextureEnabled} />
+                    <CheckBoxLineComponent label="Emissive" isSelected={() => StandardMaterial.EmissiveTextureEnabled} onSelect={() => StandardMaterial.EmissiveTextureEnabled = !StandardMaterial.EmissiveTextureEnabled} />
+                    <CheckBoxLineComponent label="Bump" isSelected={() => StandardMaterial.BumpTextureEnabled} onSelect={() => StandardMaterial.BumpTextureEnabled = !StandardMaterial.BumpTextureEnabled} />
+                    <CheckBoxLineComponent label="Opacity" isSelected={() => StandardMaterial.OpacityTextureEnabled} onSelect={() => StandardMaterial.OpacityTextureEnabled = !StandardMaterial.OpacityTextureEnabled} />
+                    <CheckBoxLineComponent label="Reflection" isSelected={() => StandardMaterial.ReflectionTextureEnabled} onSelect={() => StandardMaterial.ReflectionTextureEnabled = !StandardMaterial.ReflectionTextureEnabled} />
+                    <CheckBoxLineComponent label="Refraction" isSelected={() => StandardMaterial.RefractionTextureEnabled} onSelect={() => StandardMaterial.RefractionTextureEnabled = !StandardMaterial.RefractionTextureEnabled} />
+                    <CheckBoxLineComponent label="ColorGrading" isSelected={() => StandardMaterial.ColorGradingTextureEnabled} onSelect={() => StandardMaterial.ColorGradingTextureEnabled = !StandardMaterial.ColorGradingTextureEnabled} />
+                    <CheckBoxLineComponent label="Lightmap" isSelected={() => StandardMaterial.LightmapTextureEnabled} onSelect={() => StandardMaterial.LightmapTextureEnabled = !StandardMaterial.LightmapTextureEnabled} />
+                    <CheckBoxLineComponent label="Fresnel" isSelected={() => StandardMaterial.FresnelEnabled} onSelect={() => StandardMaterial.FresnelEnabled = !StandardMaterial.FresnelEnabled} />
                 </LineContainerComponent>
-                <LineContainerComponent title="FEATURES">
+                <LineContainerComponent globalState={this.props.globalState} title="FEATURES">
                     <CheckBoxLineComponent label="Animations" isSelected={() => scene.animationsEnabled} onSelect={() => scene.animationsEnabled = !scene.animationsEnabled} />
                     <CheckBoxLineComponent label="Collisions" isSelected={() => scene.collisionsEnabled} onSelect={() => scene.collisionsEnabled = !scene.collisionsEnabled} />
                     <CheckBoxLineComponent label="Fog" isSelected={() => scene.fogEnabled} onSelect={() => scene.fogEnabled = !scene.fogEnabled} />

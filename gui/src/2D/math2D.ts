@@ -1,4 +1,5 @@
-import { Vector2, Epsilon, Nullable } from "babylonjs";
+import { Nullable } from "babylonjs/types";
+import { Vector2, Epsilon } from "babylonjs/Maths/math";
 
 /**
  * Class used to transport Vector2 information for pointer events

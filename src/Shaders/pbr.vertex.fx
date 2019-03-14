@@ -2,6 +2,8 @@
 
 #include<__decl__pbrVertex>
 
+#define CUSTOM_VERTEX_BEGIN
+
 // Attributes
 attribute vec3 position;
 #ifdef NORMAL
@@ -64,8 +66,37 @@ varying vec2 vMicroSurfaceSamplerUV;
 varying vec2 vBumpUV;
 #endif
 
+#ifdef CLEARCOAT
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+        varying vec2 vClearCoatUV;
+    #endif
+
+    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
+        varying vec2 vClearCoatBumpUV;
+    #endif
+
+    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0 
+        varying vec2 vClearCoatTintUV;
+    #endif
+#endif
+
+#ifdef SHEEN
+    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0 
+        varying vec2 vSheenUV;
+    #endif
+#endif
+
+#ifdef ANISOTROPIC
+    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0 
+        varying vec2 vAnisotropyUV;
+    #endif
+#endif
+
 // Output
 varying vec3 vPositionW;
+#if DEBUGMODE > 0
+    varying vec4 vClipSpacePosition;
+#endif
 #ifdef NORMAL
     varying vec3 vNormalW;
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
@@ -96,8 +127,12 @@ varying vec3 vDirectionW;
 #endif
 
 #include<logDepthDeclaration>
+#define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void) {
+
+	#define CUSTOM_VERTEX_MAIN_BEGIN
+
     vec3 positionUpdated = position;
 #ifdef NORMAL
     vec3 normalUpdated = normal;
@@ -116,10 +151,26 @@ void main(void) {
     #endif
 #endif 
 
+#define CUSTOM_VERTEX_UPDATE_POSITION
+
+#define CUSTOM_VERTEX_UPDATE_NORMAL
+
 #include<instancesVertex>
 #include<bonesVertex>
 
-    gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+#ifdef MULTIVIEW
+	if (gl_ViewID_OVR == 0u) {
+		gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+	} else {
+		gl_Position = viewProjectionR * finalWorld * vec4(positionUpdated, 1.0);
+	}
+#else
+	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+#endif
+
+#if DEBUGMODE > 0
+    vClipSpacePosition = gl_Position;
+#endif
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
@@ -250,6 +301,67 @@ void main(void) {
     }
 #endif
 
+#ifdef CLEARCOAT
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+        if (vClearCoatInfos.x == 0.)
+        {
+            vClearCoatUV = vec2(clearCoatMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatUV = vec2(clearCoatMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
+        if (vClearCoatBumpInfos.x == 0.)
+        {
+            vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatBumpUV = vec2(clearCoatBumpMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(CLEARCOAT_TINT_TEXTURE) && CLEARCOAT_TINT_TEXTUREDIRECTUV == 0 
+        if (vClearCoatTintInfos.x == 0.)
+        {
+            vClearCoatTintUV = vec2(clearCoatTintMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatTintUV = vec2(clearCoatTintMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+#endif
+
+#ifdef SHEEN
+    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0 
+        if (vSheenInfos.x == 0.)
+        {
+            vSheenUV = vec2(sheenMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vSheenUV = vec2(sheenMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+#endif
+
+#ifdef ANISOTROPIC
+    #if defined(ANISOTROPIC_TEXTURE) && ANISOTROPIC_TEXTUREDIRECTUV == 0 
+        if (vAnisotropyInfos.x == 0.)
+        {
+            vAnisotropyUV = vec2(anisotropyMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vAnisotropyUV = vec2(anisotropyMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+#endif
+
     // TBN
 #include<bumpVertex>
 
@@ -274,4 +386,7 @@ void main(void) {
 
     // Log. depth
 #include<logDepthVertex>
+
+#define CUSTOM_VERTEX_MAIN_END
+
 }

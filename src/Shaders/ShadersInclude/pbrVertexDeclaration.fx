@@ -58,3 +58,37 @@ uniform float pointSize;
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
 #endif
+
+// Clear Coat
+#ifdef CLEARCOAT
+    #ifdef CLEARCOAT_TEXTURE
+        uniform vec2 vClearCoatInfos;
+        uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_BUMP
+        uniform vec2 vClearCoatBumpInfos;
+        uniform mat4 clearCoatBumpMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_TINT_TEXTURE
+        uniform vec2 vClearCoatTintInfos;
+        uniform mat4 clearCoatTintMatrix;
+    #endif
+#endif
+
+// Anisotropy
+#ifdef ANISOTROPIC
+    #ifdef ANISOTROPIC_TEXTURE
+        uniform vec2 vAnisotropyInfos;
+        uniform mat4 anisotropyMatrix;
+    #endif
+#endif
+
+// Sheen
+#ifdef SHEEN
+    #ifdef SHEEN_TEXTURE
+        uniform vec2 vSheenInfos;
+        uniform mat4 sheenMatrix;
+    #endif
+#endif

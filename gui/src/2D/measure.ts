@@ -1,3 +1,6 @@
+import { Matrix2D } from "./math2D";
+import { Vector2 } from "babylonjs/Maths/math";
+import { Polygon } from "babylonjs/Meshes/polygonMesh";
 
 /**
  * Class used to store 2D control sizes
@@ -45,6 +48,45 @@ export class Measure {
         this.top = top;
         this.width = width;
         this.height = height;
+    }
+
+    /**
+     * Computes the axis aligned bounding box measure for two given measures
+     * @param a Input measure
+     * @param b Input measure
+     * @param result the resulting bounding measure
+     */
+    public static CombineToRef(a: Measure, b: Measure, result: Measure) {
+        var left = Math.min(a.left, b.left);
+        var top = Math.min(a.top, b.top);
+        var right = Math.max(a.left + a.width, b.left + b.width);
+        var bottom = Math.max(a.top + a.height, b.top + b.height);
+        result.left = left;
+        result.top = top;
+        result.width = right - left;
+        result.height = bottom - top;
+    }
+
+    /**
+     * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+     * @param transform the matrix to transform the measure before computing the AABB
+     * @param result the resulting AABB
+     */
+    public transformToRef(transform: Matrix2D, result: Measure) {
+        var rectanglePoints = Polygon.Rectangle(this.left, this.top, this.left + this.width, this.top + this.height);
+        var min = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+        var max = new Vector2(0, 0);
+        for (var i = 0; i < 4; i++) {
+            transform.transformCoordinates(rectanglePoints[i].x, rectanglePoints[i].y, rectanglePoints[i]);
+            min.x = Math.floor(Math.min(min.x, rectanglePoints[i].x));
+            min.y = Math.floor(Math.min(min.y, rectanglePoints[i].y));
+            max.x = Math.ceil(Math.max(max.x, rectanglePoints[i].x));
+            max.y = Math.ceil(Math.max(max.y, rectanglePoints[i].y));
+        }
+        result.left = min.x;
+        result.top = min.y;
+        result.width = max.x - min.x;
+        result.height = max.y - min.y;
     }
 
     /**

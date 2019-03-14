@@ -27,11 +27,9 @@ To integrate your new procedural texture to the build process, you have to edit 
   "libraries": [
     ...
       {
-        "files": ["../../proceduralTexturesLibrary/src/wood/babylon.woodProceduralTexture.ts"],
-        "shaderFiles": [
-          "../../proceduralTexturesLibrary/src/wood/woodProceduralTexture.fragment.fx"
-        ],
-        "output": "babylon.woodProceduralTexture.js"
+        "output": "babylon.brickProceduralTexture.min.js",
+        "entry": "./legacy/legacy-brick.ts",
+        "preventLoadLibrary": true
       }
     ...
   ]

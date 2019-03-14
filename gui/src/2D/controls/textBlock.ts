@@ -1,4 +1,4 @@
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";

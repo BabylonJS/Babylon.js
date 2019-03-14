@@ -28,6 +28,7 @@ var BABYLONDEVTOOLS;
 
     var Loader = (function() {
         var queue;
+        var esmQueue;
         var callback;
         var dependencies;
         var useDist;
@@ -35,8 +36,12 @@ var BABYLONDEVTOOLS;
         var min;
         var babylonJSPath;
 
+        var localDevES6FolderName;
+        var localDevUMDFolderName;
+
         function Loader() {
             queue = [];
+            esmQueue = [];
             dependencies = [];
             callback = null;
             min = (document.location.href.toLowerCase().indexOf('dist=min') > 0);
@@ -103,7 +108,7 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.dequeue = function() {
-            if (queue.length == 0) {
+            if (queue.length + esmQueue.length == 0) {
                 console.log('Scripts loaded');
                 BABYLON.Engine.ShadersRepository = "/src/Shaders/";
                 if (callback) {
@@ -112,12 +117,17 @@ var BABYLONDEVTOOLS;
                 return;
             }
 
-            var url = queue.shift();
-
             var head = document.getElementsByTagName('head')[0];
             var script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = url;
+
+            if (esmQueue.length) {
+                script.type = 'module';
+                script.src = esmQueue.shift();
+            }
+            else {
+                script.type = 'text/javascript';
+                script.src = queue.shift();
+            }
 
             var self = this;
             script.onload = function() {
@@ -130,9 +140,11 @@ var BABYLONDEVTOOLS;
             queue.push(url);
         }
 
-        Loader.prototype.loadCss = function(url) {
-            var head = document.getElementsByTagName('head')[0];
+        Loader.prototype.loadESMScript = function(url) {
+            esmQueue.push(url);
+        }
 
+        Loader.prototype.loadCss = function(url) {
             var style = document.createElement('link');
             style.href = url;
             style.rel = "stylesheet";
@@ -146,70 +158,51 @@ var BABYLONDEVTOOLS;
             }
         }
 
-        Loader.prototype.loadLibrary = function(library, module) {
+        Loader.prototype.loadLibrary = function(moduleName, library, module) {
             if (library.preventLoadLibrary) {
                 return;
             }
 
+            var distFolder = (module.build.distOutputDirectory !== undefined) ?
+                module.build.distOutputDirectory :
+                "/" + moduleName;
+            distFolder += "/";
+            
             if (!useDist) {
-                if (library.useOutputForDebugging) {
-                    this.loadScript(babylonJSPath + '/.temp' + module.build.distOutputDirectory + library.output);
-                } else {
-                    var i = 0;
-                    for (; i < library.files.length; i++) {
-                        var file = library.files[i];
-                        if (file.indexOf('lib.d.ts') > 0) {
-                            continue;
-                        }
-                        // Manage exclude files.
-                        if (library.excludeFromLoader && library.excludeFromLoader.indexOf(file) > -1) {
-                            continue;
-                        }
-
-                        file = file.replace('.ts', '.js');
-                        file = file.replace('../', '');
-                        file = babylonJSPath + '/' + file;
-                        this.loadScript(file);
-                    }
-
-                    if (library.shaderFiles && library.shaderFiles.length > 0) {
-                        var shaderFile = library.shaderFiles[0];
-                        var endDirectoryIndex = shaderFile.lastIndexOf('/');
-                        shaderFile = shaderFile.substring(0, endDirectoryIndex + 1);
-                        shaderFile += library.output.replace('.js', '.js.fx');
-                        this.loadScript(shaderFile);
-                        if (library.shadersIncludeFiles) {
-                            var includeShaderFile = shaderFile.replace('.js.fx', '.js.include.fx');
-                            this.loadScript(includeShaderFile);
-                        }
-                    }
-                }
+                var tempDirectory = '/.temp/' + localDevUMDFolderName + distFolder;
+                this.loadScript((babylonJSPath + tempDirectory + library.output)
+                    .replace(".min.", ".")
+                    .replace(".max.", "."));
             }
-            else if (min) {
-                if (library.webpack) {
-                    if (module.build.distOutputDirectory)
-                        this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
+            else if (!testMode || !module.build.ignoreInTestMode) {
+                if (min) {
+                    this.loadScript(babylonJSPath + '/dist/preview release' + distFolder + library.output);
                 }
                 else {
-                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output.replace('.js', '.min.js'));
+                    var isMinOutputName = library.output.indexOf(".min.") > -1;
+                    if (isMinOutputName) {
+                        this.loadScript(babylonJSPath + '/dist/preview release' + distFolder + library.output.replace(".min", ""));
+                    }
+                    else {
+                        this.loadScript(babylonJSPath + '/dist/preview release' + distFolder + library.output.replace(".js", ".max.js"));
+                    }
                 }
-            }
-            else {
-                if (module.build.distOutputDirectory && (!testMode || !module.build.ignoreInTestMode))
-                    this.loadScript(babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + library.output);
-            }
-
-            // Currently not being used
-            if (!min && library.sassFiles && library.sassFiles.length > 0) {
-                var cssFile = library.output.replace('.js', '.css');
-                cssFile = babylonJSPath + '/dist/preview release' + module.build.distOutputDirectory + cssFile;
-                this.loadCss(cssFile);
             }
         }
 
-        Loader.prototype.loadModule = function(module) {
+        Loader.prototype.loadCoreDev = function() {
+            // Es6 core import
+            this.loadESMScript(babylonJSPath + "/.temp/" + localDevES6FolderName + "/core/Legacy/legacy.js");
+        }
+
+        Loader.prototype.loadModule = function(moduleName, module) {
             for (var i = 0; i < module.libraries.length; i++) {
-                this.loadLibrary(module.libraries[i], module);
+                if (!useDist && module.isCore) {
+                    this.loadCoreDev();
+                }
+                else {
+                    this.loadLibrary(moduleName, module.libraries[i], module);
+                }
             }
         }
 
@@ -232,39 +225,9 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.loadBJSScripts = function(settings) {
-            var loadModules = true;
-
-            // Main bjs files
-            if (!useDist) {
-                var currentConfig = settings.build.currentConfig;
-                var buildConfiguration = settings.buildConfigurations[currentConfig];
-                var filesToLoad = [];
-
-                for (var index = 0; index < buildConfiguration.length; index++) {
-                    var dependencyName = buildConfiguration[index];
-                    var dependency = settings.workloads[dependencyName];
-                    this.processDependency(settings, dependency, filesToLoad);
-                }
-
-                this.loadScripts(filesToLoad);
-
-                if (currentConfig !== "all") {
-                    loadModules = false;
-                }
-            }
-            else if (min) {
-                this.loadScript('/dist/preview release/babylon.js');
-            }
-            else {
-                this.loadScript('/dist/preview release/babylon.max.js');
-            }
-
-            // Modules
-            if (loadModules) {
-
-                for (var i = 0; i < settings.modules.length; i++) {
-                    this.loadModule(settings[settings.modules[i]]);
-                }
+            // Load all the modules from the config.json.
+            for (var i = 0; i < settings.modules.length; i++) {
+                this.loadModule(settings.modules[i], settings[settings.modules[i]]);
             }
         }
 
@@ -273,8 +236,11 @@ var BABYLONDEVTOOLS;
             if (newCallback) {
                 callback = newCallback;
             }
-            getJson('/Tools/Gulp/config.json',
+            getJson('/Tools/Config/config.json',
                 function(data) {
+                    localDevES6FolderName = data.build.localDevES6FolderName;
+                    localDevUMDFolderName = data.build.localDevUMDFolderName;
+
                     self.loadBJSScripts(data);
                     if (dependencies) {
                         self.loadScripts(dependencies);

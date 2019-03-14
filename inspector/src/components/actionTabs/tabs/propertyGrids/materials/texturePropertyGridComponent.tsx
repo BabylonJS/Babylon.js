@@ -1,5 +1,12 @@
 import * as React from "react";
-import { Texture, BaseTexture, CubeTexture, Observable, Nullable } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { Tools } from "babylonjs/Misc/tools";
+import { Observable } from "babylonjs/Misc/observable";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
+
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
@@ -11,33 +18,39 @@ import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FileButtonLineComponent } from "../../../lines/fileButtonLineComponent";
 import { LockObject } from "../lockObject";
 import { ValueLineComponent } from "../../../lines/valueLineComponent";
+import { GlobalState } from "../../../../../components/globalState";
+
+import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
     lockObject: LockObject,
+    globalState: GlobalState,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
 
-    private _adtInstrumentation: Nullable<BABYLON.GUI.AdvancedDynamicTextureInstrumentation>;
+    private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
 
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
     }
 
     componentWillMount() {
-        const texture = this.props.texture
+        const texture = this.props.texture;
 
         if (!texture || !(texture as any).rootContainer) {
             return;
         }
 
-        const adt = texture as BABYLON.GUI.AdvancedDynamicTexture;
+        const adt = texture as AdvancedDynamicTexture;
 
-        this._adtInstrumentation = new BABYLON.GUI.AdvancedDynamicTextureInstrumentation(adt);
-        this._adtInstrumentation.captureRenderTime = true;
-        this._adtInstrumentation.captureLayoutTime = true;
+        this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
+        this._adtInstrumentation!.captureRenderTime = true;
+        this._adtInstrumentation!.captureLayoutTime = true;
     }
 
     componentWillUnmount() {
@@ -49,7 +62,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     updateTexture(file: File) {
         const texture = this.props.texture;
-        BABYLON.Tools.ReadFile(file, (data) => {
+        Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
             var url = URL.createObjectURL(blob);
 
@@ -73,18 +86,33 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const texture = this.props.texture;
 
         var samplingMode = [
-            { label: "Nearest", value: BABYLON.Texture.NEAREST_NEAREST },
-            { label: "Nearest & linear mip", value: BABYLON.Texture.NEAREST_LINEAR },
-            { label: "Linear", value: BABYLON.Texture.LINEAR_LINEAR_MIPLINEAR },
+            { label: "Nearest", value: Texture.NEAREST_NEAREST },
+            { label: "Nearest & linear mip", value: Texture.NEAREST_LINEAR },
+            { label: "Linear", value: Texture.LINEAR_LINEAR_MIPLINEAR },
+        ];
+
+        var coordinatesMode = [
+            { label: "Explicit", value: Texture.EXPLICIT_MODE },
+            { label: "Cubic", value: Texture.CUBIC_MODE },
+            { label: "Inverse cubic", value: Texture.INVCUBIC_MODE },
+            { label: "Equirectangular", value: Texture.EQUIRECTANGULAR_MODE },
+            { label: "Fixed equirectangular", value: Texture.FIXED_EQUIRECTANGULAR_MODE },
+            { label: "Fixed equirectangular mirrored", value: Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE },
+            { label: "Planar", value: Texture.PLANAR_MODE },
+            { label: "Projection", value: Texture.PROJECTION_MODE },
+            { label: "Skybox", value: Texture.SKYBOX_MODE },
+            { label: "Spherical", value: Texture.SPHERICAL_MODE },
         ];
 
         return (
             <div className="pane">
-                <LineContainerComponent title="PREVIEW">
-                    <TextureLineComponent texture={texture} width={256} height={256} />
+                <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
+                    <TextureLineComponent texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
-                <LineContainerComponent title="GENERAL">
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
@@ -92,15 +120,17 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
-                    <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={0} />
+                    <OptionsLineComponent label="Mode" options={coordinatesMode} target={texture} propertyName="coordinatesMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
+                    <SliderLineComponent label="Level" target={texture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         texture.updateSamplingMode &&
-                        <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={value => texture.updateSamplingMode(value)} />
+                        <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
                     }
                 </LineContainerComponent>
                 {
                     (texture as any).rootContainer &&
-                    <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
+                    <LineContainerComponent globalState={this.props.globalState} title="ADVANCED TEXTURE PROPERTIES">
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={texture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -109,9 +139,10 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <FloatLineComponent lockObject={this.props.lockObject} label="Ideal height" target={texture} propertyName="idealHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Use smallest ideal" target={texture} propertyName="useSmallestIdeal" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Render at ideal size" target={texture} propertyName="renderAtIdealSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <CheckBoxLineComponent label="Invalidate Rect optimization" target={texture} propertyName="useInvalidateRectOptimization" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
-                <LineContainerComponent title="TRANSFORM">
+                <LineContainerComponent globalState={this.props.globalState} title="TRANSFORM">
                     {
                         !texture.isCube &&
                         <div>
@@ -122,8 +153,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                             <FloatLineComponent lockObject={this.props.lockObject} label="U angle" target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <FloatLineComponent lockObject={this.props.lockObject} label="V angle" target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <FloatLineComponent lockObject={this.props.lockObject} label="W angle" target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
-                            <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === BABYLON.Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? BABYLON.Texture.CLAMP_ADDRESSMODE : BABYLON.Texture.WRAP_ADDRESSMODE} />
+                            <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE} />
+                            <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE} />
                         </div>
                     }
                     {

@@ -1,4 +1,6 @@
-import { IExplorerExtensibilityGroup, AnimationGroup } from "babylonjs";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+
 import { faFilm } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";

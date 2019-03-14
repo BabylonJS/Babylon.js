@@ -1,5 +1,4 @@
 ﻿/// <reference path="../dist/preview release/babylon.d.ts" />
-/// <reference path="../dist/preview release/loaders/babylon.glTFFileLoader.d.ts" />
 
 var assetUrl;
 var cameraPosition;

@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 class ListLineOption {
@@ -23,7 +24,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     constructor(props: IOptionsLineComponentProps) {
         super(props);
 
-        this.state = { value: 0 };
+        this.state = { value: props.target[props.propertyName] };
     }
 
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {

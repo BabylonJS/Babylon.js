@@ -7,6 +7,7 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/BabylonJS/Babylon.js.svg)](http://isitmaintained.com/project/BabylonJS/Babylon.js "Average time to resolve an issue")
 [![Percentage of issues still open](https://isitmaintained.com/badge/open/babylonJS/babylon.js.svg)](https://isitmaintained.com/project/babylonJS/babylon.js "Percentage of issues still open")
 [![Build Size](https://img.badgesize.io/BabylonJS/Babylon.js/master/dist/preview%20release/babylon.js.svg?compression=gzip)](https://img.badgesize.io/BabylonJS/Babylon.js/master/dist/preview%20release/babylon.js.svg?compression=gzip)
+[![Twitter](https://img.shields.io/twitter/follow/babylonjs.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=babylonjs)
 
 **Any questions?** Here is our official [forum](https://forum.babylonjs.com/).
 
@@ -14,7 +15,6 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 
 - <https://cdn.babylonjs.com/babylon.js>
 - <https://cdn.babylonjs.com/babylon.max.js>
-- <https://cdn.babylonjs.com/babylon.worker.js>
 
 Additional references can be found on <https://cdn.babylonjs.com/xxx> where `xxx` is the folder structure you can find in the /dist folder like <https://cdn.babylonjs.com/gui/babylon.gui.min.js>
 
@@ -22,7 +22,6 @@ For the preview release, use the following URLs:
 
 - <https://preview.babylonjs.com/babylon.js>
 - <https://preview.babylonjs.com/babylon.max.js>
-- <https://preview.babylonjs.com/babylon.worker.js>
 
 Additional references can be found on <https://preview.babylonjs.com/xxx> where xxx is the folder structure you can find in the /dist/preview release folder like <https://preview.babylonjs.com/gui/babylon.gui.min.js>
 
@@ -110,6 +109,9 @@ If you want to contribute, please read our [contribution guidelines](https://git
 
 - [Documentation](https://doc.babylonjs.com)
 - [Examples](https://doc.babylonjs.com/examples)
+
+## Contributing
+Please see the [Contributing Guidelines](./contributing.md)
 
 ## Useful links
 

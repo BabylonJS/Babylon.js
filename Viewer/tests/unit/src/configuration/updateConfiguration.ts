@@ -1,5 +1,6 @@
 import { Helper } from "../../../commons/helper";
 import { assert, expect, should } from "../viewerReference";
+import { SceneOptimizer, SceneOptimizerOptions } from "babylonjs";
 
 export let name = "configuration update";
 
@@ -10,49 +11,6 @@ describe(name + " scene", () => {
 
         viewer.onInitDoneObservable.add(() => {
 
-            viewer.dispose();
-            done();
-        });
-    });
-
-    it("should enable and disable the debug layer", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
-        let showCalled = 0;
-        let hideCalled = 0;
-        let isVisible = false;
-        viewer.onSceneInitObservable.add((scene) => {
-            scene.debugLayer.show = () => {
-                showCalled++;
-                isVisible = true;
-            };
-
-            scene.debugLayer.hide = () => {
-                hideCalled++;
-                isVisible = false;
-            };
-
-            scene.debugLayer.isVisible = () => {
-                return isVisible;
-            };
-        });
-        viewer.onInitDoneObservable.add(() => {
-            // assert.isUndefined(viewer.configuration.scene);
-            assert.equal(showCalled, 0);
-            assert.equal(hideCalled, 0);
-            viewer.updateConfiguration({
-                scene: {
-                    debug: true
-                }
-            });
-            assert.equal(showCalled, 1);
-
-            viewer.updateConfiguration({
-                scene: {
-                    debug: false
-                }
-            });
-            assert.equal(showCalled, 1);
-            assert.equal(hideCalled, 1);
             viewer.dispose();
             done();
         });
@@ -262,24 +220,19 @@ describe(name + " scene optimizer", () => {
         let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         let started = false;
-        let constructed = false;
 
-        let optimizerFunction = BABYLON.SceneOptimizer;
+        let optimizerFunction = SceneOptimizer;
 
         //mock!
-        (<any>BABYLON.SceneOptimizer) = function() {
-            constructed = true;
-        };
-
-        BABYLON.SceneOptimizer.prototype.start = function() {
+        SceneOptimizer.prototype.start = function() {
             started = true;
         };
 
-        BABYLON.SceneOptimizer.prototype.stop = function() {
+        SceneOptimizer.prototype.stop = function() {
             started = false;
         };
 
-        BABYLON.SceneOptimizer.prototype.dispose = function() {
+        SceneOptimizer.prototype.dispose = function() {
         };
 
         viewer.onInitDoneObservable.add(() => {
@@ -292,7 +245,6 @@ describe(name + " scene optimizer", () => {
 
             assert.isDefined(viewer.sceneManager.sceneOptimizer);
             assert.isTrue(started);
-            assert.isTrue(constructed);
 
             viewer.updateConfiguration({
                 optimizer: false
@@ -301,7 +253,7 @@ describe(name + " scene optimizer", () => {
             assert.isUndefined(viewer.sceneManager.sceneOptimizer);
             assert.isFalse(started);
 
-            BABYLON.SceneOptimizer = optimizerFunction;
+            //SceneOptimizer = optimizerFunction;
 
             viewer.dispose();
             done();

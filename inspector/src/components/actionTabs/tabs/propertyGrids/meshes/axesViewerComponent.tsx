@@ -1,9 +1,16 @@
 import * as React from "react";
-import { TransformNode } from "babylonjs";
+
+import { Vector3, Tmp } from "babylonjs/Maths/math";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { AxesViewer } from "babylonjs/Debug/axesViewer";
+
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { UtilityLayerRenderer } from 'babylonjs/Rendering/utilityLayerRenderer';
+import { GlobalState } from '../../../../globalState';
 
 interface IAxisViewerComponentProps {
-    node: TransformNode
+    node: TransformNode;
+    globalState: GlobalState;
 }
 
 export class AxesViewerComponent extends React.Component<IAxisViewerComponentProps, { displayAxis: boolean }> {
@@ -15,12 +22,20 @@ export class AxesViewerComponent extends React.Component<IAxisViewerComponentPro
             node.reservedDataStore = {};
         }
 
-        this.state = { displayAxis: (node.reservedDataStore && node.reservedDataStore.axisViewer) ? true : false }
+        this.state = { displayAxis: (node.reservedDataStore && node.reservedDataStore.axisViewer) ? true : false };
+    }
+
+    shouldComponentUpdate(nextProps: IAxisViewerComponentProps, nextState: { displayAxis: boolean }) {
+        if (nextProps.node !== this.props.node) {
+            nextState.displayAxis = (nextProps.node.reservedDataStore && nextProps.node.reservedDataStore.axisViewer) ? true : false;
+        }
+
+        return true;
     }
 
     displayAxes() {
         const node = this.props.node;
-        const scene = node.getScene();
+        const scene = UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene;
 
         if (node.reservedDataStore.axisViewer) {
             node.reservedDataStore.axisViewer.dispose();
@@ -34,25 +49,24 @@ export class AxesViewerComponent extends React.Component<IAxisViewerComponentPro
             return;
         }
 
-        const viewer = new BABYLON.Debug.AxesViewer(scene);
+        const viewer = new AxesViewer(scene);
         node.reservedDataStore.axisViewer = viewer;
-        const x = new BABYLON.Vector3(1, 0, 0);
-        const y = new BABYLON.Vector3(0, 1, 0);
-        const z = new BABYLON.Vector3(0, 0, 1);
+        const x = new Vector3(1, 0, 0);
+        const y = new Vector3(0, 1, 0);
+        const z = new Vector3(0, 0, 1);
 
         viewer.xAxis.reservedDataStore = { hidden: true };
         viewer.yAxis.reservedDataStore = { hidden: true };
         viewer.zAxis.reservedDataStore = { hidden: true };
 
         node.reservedDataStore.onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+            let cameraMatrix = scene.activeCamera!.getWorldMatrix();
             let matrix = node.getWorldMatrix();
-            let extend = BABYLON.Tmp.Vector3[0];
-            const worldExtend = scene.getWorldExtends();
-            worldExtend.max.subtractToRef(worldExtend.min, extend);
-            extend.scaleInPlace(0.5 * 0.5);
+            let extend = Tmp.Vector3[0];
+            Vector3.TransformCoordinatesFromFloatsToRef(0, 0, 1, cameraMatrix, extend);
 
-            viewer.scaleLines = Math.max(extend.x, extend.y, extend.z) * 2;
-            viewer.update(node.getAbsolutePosition(), BABYLON.Vector3.TransformNormal(x, matrix), BABYLON.Vector3.TransformNormal(y, matrix), BABYLON.Vector3.TransformNormal(z, matrix));
+            viewer.scaleLines = extend.length() / 10;
+            viewer.update(node.getAbsolutePosition(), Vector3.TransformNormal(x, matrix), Vector3.TransformNormal(y, matrix), Vector3.TransformNormal(z, matrix));
         });
 
         this.setState({ displayAxis: true });
@@ -61,6 +75,6 @@ export class AxesViewerComponent extends React.Component<IAxisViewerComponentPro
     render() {
         return (
             <CheckBoxLineComponent label="Display axes" isSelected={() => this.state.displayAxis} onSelect={() => this.displayAxes()} />
-        )
+        );
     }
 }

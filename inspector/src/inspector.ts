@@ -1,13 +1,19 @@
-
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+
+import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
+import { Nullable } from "babylonjs/types";
+import { Observable, Observer } from "babylonjs/Misc/observable";
+import { EngineStore } from "babylonjs/Engines/engineStore";
+import { Scene } from "babylonjs/scene";
+import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+
 import { ActionTabsComponent } from "./components/actionTabs/actionTabsComponent";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-import { Scene, Observable, Observer, Nullable, IInspectorOptions } from "babylonjs";
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
-import { GLTFFileLoader } from "babylonjs-loaders";
+import { GLTFFileLoader } from "babylonjs-loaders/glTF/index";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -31,9 +37,13 @@ export class Inspector {
     private static _OpenedPane = 0;
     private static _OnBeforeRenderObserver: Nullable<Observer<Scene>>;
 
-    public static OnSelectionChangeObservable = new BABYLON.Observable<string>();
-    public static OnPropertyChangedObservable = new BABYLON.Observable<PropertyChangedEvent>();
+    public static OnSelectionChangeObservable = new Observable<any>();
+    public static OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
     private static _GlobalState = new GlobalState();
+
+    public static MarkLineContainerTitleForHighlighting(title: string) {
+        this._GlobalState.selectedLineContainerTitle = title;
+    }
 
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
@@ -69,7 +79,7 @@ export class Inspector {
                 embedMode: options.embedMode,
                 handleResize: options.handleResize,
                 enablePopup: options.enablePopup,
-                enableClose: options.enablePopup,
+                enableClose: options.enableClose,
                 explorerExtensibility: options.explorerExtensibility
             };
         }
@@ -288,7 +298,8 @@ export class Inspector {
 
     public static EarlyAttachToLoader() {
         if (!this._GlobalState.onPluginActivatedObserver) {
-            this._GlobalState.onPluginActivatedObserver = BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: GLTFFileLoader) => {
+            this._GlobalState.onPluginActivatedObserver = SceneLoader.OnPluginActivatedObservable.add((rawLoader) => {
+                const loader = rawLoader as GLTFFileLoader;
                 if (loader.name === "gltf") {
                     this._GlobalState.prepareGLTFPlugin(loader);
                 }
@@ -312,7 +323,7 @@ export class Inspector {
 
         // Prepare state
         if (!this._GlobalState.onPropertyChangedObservable) {
-            this._GlobalState.onPropertyChangedObservable = this.OnPropertyChangedObservable;
+            this._GlobalState.init(this.OnPropertyChangedObservable);
         }
         if (!this._GlobalState.onSelectionChangedObservable) {
             this._GlobalState.onSelectionChangedObservable = this.OnSelectionChangeObservable;
@@ -324,12 +335,12 @@ export class Inspector {
         }
 
         if (!scene) {
-            scene = BABYLON.Engine.LastCreatedScene!;
+            scene = EngineStore.LastCreatedScene!;
         }
 
         this._Scene = scene;
 
-        var canvas = scene ? scene.getEngine().getRenderingCanvas() : BABYLON.Engine.LastCreatedEngine!.getRenderingCanvas();
+        var canvas = scene ? scene.getEngine().getRenderingCanvas() : EngineStore.LastCreatedEngine!.getRenderingCanvas();
 
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
@@ -432,16 +443,33 @@ export class Inspector {
     }
 
     private static _Cleanup() {
+        if (Inspector._OpenedPane !== 0) {
+            return;
+        }
+
+        // Gizmo disposal
+        this._GlobalState.lightGizmos.forEach((g) => {
+            if (g.light) {
+                this._GlobalState.enableLightGizmo(g.light, false);
+            }
+        })
+        if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {
+            this._Scene.reservedDataStore.gizmoManager.dispose();
+            this._Scene.reservedDataStore.gizmoManager = null;
+        }
+
         if (this._NewCanvasContainer) {
             this._DestroyCanvasContainer();
         }
 
-        if (Inspector._OpenedPane === 0 && this._OnBeforeRenderObserver && this._Scene) {
+        if (this._OnBeforeRenderObserver && this._Scene) {
             this._Scene.onBeforeRenderObservable.remove(this._OnBeforeRenderObserver);
             this._OnBeforeRenderObserver = null;
 
             this._Scene.getEngine().resize();
         }
+
+        this._GlobalState.onInspectorClosedObservable.notifyObservers(this._Scene);
     }
 
     private static _RemoveElementFromDOM(element: Nullable<HTMLElement>) {
@@ -482,7 +510,7 @@ export class Inspector {
         this._Cleanup();
 
         if (!this._GlobalState.onPluginActivatedObserver) {
-            BABYLON.SceneLoader.OnPluginActivatedObservable.remove(this._GlobalState.onPluginActivatedObserver);
+            SceneLoader.OnPluginActivatedObservable.remove(this._GlobalState.onPluginActivatedObserver);
             this._GlobalState.onPluginActivatedObserver = null;
         }
     }

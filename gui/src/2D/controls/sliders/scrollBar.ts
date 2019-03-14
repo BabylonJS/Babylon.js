@@ -1,6 +1,6 @@
+import { Vector2 } from "babylonjs/Maths/math";
 import { BaseSlider } from "./baseSlider";
-import { Control } from "..";
-import { Vector2 } from "babylonjs";
+import { Control } from "../control";
 import { Measure } from "../../measure";
 
 /**

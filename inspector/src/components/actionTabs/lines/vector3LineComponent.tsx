@@ -1,5 +1,7 @@
 import * as React from "react";
-import { Vector3, Observable } from "babylonjs";
+import { Vector3 } from "babylonjs/Maths/math";
+import { Observable } from "babylonjs/Misc/observable";
+
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -100,7 +102,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                         {`X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}, Z: ${this.state.value.z.toFixed(2)}`}
 
                     </div>
-                    <div className="expand" onClick={() => this.switchExpandState()}>
+                    <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
                 </div>

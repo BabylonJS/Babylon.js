@@ -1,5 +1,21 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, AnimationGroup, Animatable, AbstractMesh, Tools, Scene, SceneLoader, Observable, SceneLoaderProgressEvent, Tags, IParticleSystem, Skeleton, IDisposable, Nullable, Animation, Quaternion, Material, Vector3, AnimationPropertiesOverride, QuinticEase, SineEase, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, PBRMaterial, MultiMaterial } from "babylonjs";
-import { GLTFFileLoader, GLTF2 } from "babylonjs-loaders";
+import { IDisposable } from "babylonjs/scene";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+import { Skeleton } from "babylonjs/Bones/skeleton";
+import { Observable } from "babylonjs/Misc/observable";
+import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Animation, Animatable, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, QuinticEase, SineEase } from "babylonjs/Animations/index";
+import { Nullable } from "babylonjs/types";
+import { Quaternion, Vector3 } from "babylonjs/Maths/math";
+import { Tags } from "babylonjs/Misc/tags";
+import { Material } from "babylonjs/Materials/material";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
+import { Tools } from "babylonjs/Misc/tools";
+import { GLTFFileLoader } from "babylonjs-loaders/glTF/index";
+import { IAsset } from "babylonjs-gltf2interface";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
@@ -90,7 +106,7 @@ export class ViewerModel implements IDisposable {
      */
     public loadId: number;
 
-    public loadInfo: GLTF2.IAsset;
+    public loadInfo: IAsset;
     private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
@@ -196,7 +212,11 @@ export class ViewerModel implements IDisposable {
         if (!mesh.parent) {
             mesh.parent = this._pivotMesh;
         }
-        mesh.receiveShadows = !!this.configuration.receiveShadows;
+
+        if (mesh.getClassName() !== "InstancedMesh") {
+            mesh.receiveShadows = !!this.configuration.receiveShadows;
+        }
+
         this._meshes.push(mesh);
         if (triggerLoaded) {
             return this.onLoadedObservable.notifyObserversWithPromise(this);
@@ -557,7 +577,7 @@ export class ViewerModel implements IDisposable {
                 material.disableLighting = !this._modelConfiguration.material.directEnabled;
             }
             if (this._configurationContainer && this._configurationContainer.reflectionColor) {
-                material.reflectionColor = this._configurationContainer.reflectionColor;
+                material.reflectionColor = this._configurationContainer.reflectionColor.clone();
             }
         }
         else if (material instanceof MultiMaterial) {
@@ -619,7 +639,7 @@ export class ViewerModel implements IDisposable {
         animations: Animation[],
         duration: number,
         easingFunction: any,
-        easingMode: number = BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
+        easingMode: number = 2, // BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
         onAnimationEnd: () => void): void {
 
         if (easingFunction) {

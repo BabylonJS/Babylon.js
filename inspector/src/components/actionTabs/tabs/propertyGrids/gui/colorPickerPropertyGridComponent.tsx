@@ -1,16 +1,18 @@
 import * as React from "react";
-import { Observable } from "babylonjs";
+import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
 import { Color3LineComponent } from "../../../lines/color3LineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
 
 interface IColorPickerPropertyGridComponentProps {
-    colorPicker: ColorPicker,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    globalState: GlobalState;
+    colorPicker: ColorPicker;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {
@@ -23,8 +25,8 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={colorPicker} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="COLORPICKER">
+                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={colorPicker} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="COLORPICKER">
                     <Color3LineComponent label="Color" target={colorPicker} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>

@@ -2,7 +2,12 @@ import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 import { TextLineComponent } from "../lines/textLineComponent";
 import { LineContainerComponent } from "../lineContainerComponent";
-import { SceneInstrumentation, EngineInstrumentation, Nullable } from "babylonjs";
+
+import { Nullable } from "babylonjs/types";
+import { EngineInstrumentation } from "babylonjs/Instrumentation/engineInstrumentation";
+import { SceneInstrumentation } from "babylonjs/Instrumentation/sceneInstrumentation";
+import { Engine } from "babylonjs/Engines/engine";
+
 import { ValueLineComponent } from "../lines/valueLineComponent";
 import { BooleanLineComponent } from "../lines/booleanLineComponent";
 
@@ -22,7 +27,7 @@ export class StatisticsTabComponent extends PaneComponent {
             return;
         }
 
-        this._sceneInstrumentation = new BABYLON.SceneInstrumentation(scene);
+        this._sceneInstrumentation = new SceneInstrumentation(scene);
         this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
         this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
         this._sceneInstrumentation.captureFrameTime = true;
@@ -33,7 +38,7 @@ export class StatisticsTabComponent extends PaneComponent {
         this._sceneInstrumentation.capturePhysicsTime = true;
         this._sceneInstrumentation.captureAnimationsTime = true;
 
-        this._engineInstrumentation = new BABYLON.EngineInstrumentation(scene.getEngine());
+        this._engineInstrumentation = new EngineInstrumentation(scene.getEngine());
         this._engineInstrumentation.captureGPUFrameTime = true;
 
         this._timerIntervalId = window.setInterval(() => this.forceUpdate(), 500);
@@ -67,9 +72,9 @@ export class StatisticsTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <TextLineComponent label="Version" value={BABYLON.Engine.Version} color="rgb(113, 159, 255)" />
+                <TextLineComponent label="Version" value={Engine.Version} color="rgb(113, 159, 255)" />
                 <ValueLineComponent label="FPS" value={engine.getFps()} fractionDigits={0} />
-                <LineContainerComponent title="COUNT">
+                <LineContainerComponent globalState={this.props.globalState} title="COUNT">
                     <TextLineComponent label="Total meshes" value={scene.meshes.length.toString()} />
                     <TextLineComponent label="Active meshes" value={scene.getActiveMeshes().length.toString()} />
                     <TextLineComponent label="Active indices" value={scene.getActiveIndices().toString()} />
@@ -83,7 +88,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <TextLineComponent label="Total materials" value={scene.materials.length.toString()} />
                     <TextLineComponent label="Total textures" value={scene.textures.length.toString()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="FRAME STEPS DURATION">
+                <LineContainerComponent globalState={this.props.globalState} title="FRAME STEPS DURATION">
                     <ValueLineComponent label="Absolute FPS" value={1000.0 / this._sceneInstrumentation!.frameTimeCounter.current} fractionDigits={0} />
                     <ValueLineComponent label="Meshes selection" value={sceneInstrumentation.activeMeshesEvaluationTimeCounter.current} units="ms" />
                     <ValueLineComponent label="Render targets" value={sceneInstrumentation.renderTargetsRenderTimeCounter.current} units="ms" />
@@ -97,7 +102,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <ValueLineComponent label="GPU Frame time" value={engineInstrumentation.gpuFrameTimeCounter.current * 0.000001} units="ms" />
                     <ValueLineComponent label="GPU Frame time (average)" value={engineInstrumentation.gpuFrameTimeCounter.average * 0.000001} units="ms" />
                 </LineContainerComponent>
-                <LineContainerComponent title="SYSTEM INFO">
+                <LineContainerComponent globalState={this.props.globalState} title="SYSTEM INFO">
                     <TextLineComponent label="Resolution" value={engine.getRenderWidth() + "x" + engine.getRenderHeight()} />
                     <TextLineComponent label="WebGL version" value={engine.webGLVersion.toString()} />
                     <BooleanLineComponent label="Std derivatives" value={caps.standardDerivatives} />
@@ -114,6 +119,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <BooleanLineComponent label="Vertex array object" value={caps.vertexArrayObject} />
                     <BooleanLineComponent label="Timer query" value={caps.timerQuery !== undefined} />
                     <BooleanLineComponent label="Stencil" value={engine.isStencilEnable} />
+                    <BooleanLineComponent label="Parallel shader compilation" value={caps.parallelShaderCompile != null} />
                     <ValueLineComponent label="Max textures units" value={caps.maxTexturesImageUnits} fractionDigits={0} />
                     <ValueLineComponent label="Max textures size" value={caps.maxTextureSize} fractionDigits={0} />
                     <ValueLineComponent label="Max anisotropy" value={caps.maxAnisotropy} fractionDigits={0} />

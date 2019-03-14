@@ -1,6 +1,9 @@
+import { Nullable } from "babylonjs/types";
+import { Observable } from "babylonjs/Misc/observable";
+import { Tools } from "babylonjs/Misc/tools";
+
 import { Control } from "./control";
-import { Nullable, Tools, Observable } from "babylonjs";
-import { Measure } from "2D";
+import { Measure } from "../measure";
 
 /**
  * Class used to create 2D images
@@ -31,6 +34,8 @@ export class Image extends Control {
     private _sliceTop: number;
     private _sliceBottom: number;
 
+    private _detectPointerOnOpaqueOnly: boolean;
+
     /**
      * Observable notified when the content is loaded
      */
@@ -60,6 +65,22 @@ export class Image extends Control {
         if (this._populateNinePatchSlicesFromImage && this._loaded) {
             this._extractNinePatchSliceDataFromImage();
         }
+    }
+
+    /**
+     * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
+     * Beware using this as this will comsume more memory as the image has to be stored twice
+     */
+    public get detectPointerOnOpaqueOnly(): boolean {
+        return this._detectPointerOnOpaqueOnly;
+    }
+
+    public set detectPointerOnOpaqueOnly(value: boolean) {
+        if (this._detectPointerOnOpaqueOnly === value) {
+            return;
+        }
+
+        this._detectPointerOnOpaqueOnly = value;
     }
 
     /**
@@ -402,6 +423,35 @@ export class Image extends Control {
         this.source = url;
     }
 
+    /**
+     * Tests if a given coordinates belong to the current control
+     * @param x defines x coordinate to test
+     * @param y defines y coordinate to test
+     * @returns true if the coordinates are inside the control
+     */
+    public contains(x: number, y: number): boolean {
+        if (!super.contains(x, y)) {
+            return false;
+        }
+
+        if (!this._detectPointerOnOpaqueOnly || !Image._WorkingCanvas) {
+            return true;
+        }
+
+        const canvas = Image._WorkingCanvas;
+        const context = canvas.getContext("2d")!;
+        const width = this._currentMeasure.width | 0;
+        const height = this._currentMeasure.height | 0;
+        const imageData = context.getImageData(0, 0, width, height).data;
+
+        x = (x - this._currentMeasure.left) | 0;
+        y = (y - this._currentMeasure.top) | 0;
+
+        const pickedPixel = imageData[(x + y * this._currentMeasure.width) * 4 + 3];
+
+        return pickedPixel > 0;
+    }
+
     protected _getTypeName(): string {
         return "Image";
     }
@@ -425,6 +475,8 @@ export class Image extends Control {
                     break;
                 case Image.STRETCH_UNIFORM:
                     break;
+                case Image.STRETCH_NINE_PATCH:
+                    break;
                 case Image.STRETCH_EXTEND:
                     if (this._autoScale) {
                         this.synchronizeSizeWithContent();
@@ -438,6 +490,42 @@ export class Image extends Control {
         }
 
         super._processMeasures(parentMeasure, context);
+    }
+
+    private _prepareWorkingCanvasForOpaqueDetection() {
+        if (!this._detectPointerOnOpaqueOnly) {
+            return;
+        }
+
+        if (!Image._WorkingCanvas) {
+            Image._WorkingCanvas = document.createElement('canvas');
+        }
+        const canvas = Image._WorkingCanvas;
+        const width = this._currentMeasure.width;
+        const height = this._currentMeasure.height;
+        const context = canvas.getContext("2d")!;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        context.clearRect(0, 0, width, height);
+    }
+
+    private _drawImage(context: CanvasRenderingContext2D, sx: number, sy: number, sw: number, sh: number, tx: number, ty: number, tw: number, th: number) {
+        context.drawImage(this._domImage,
+            sx, sy, sw, sh,
+            tx, ty, tw, th);
+
+        if (!this._detectPointerOnOpaqueOnly) {
+            return;
+        }
+
+        const canvas = Image._WorkingCanvas!;
+        context = canvas.getContext("2d")!;
+
+        context.drawImage(this._domImage,
+            sx, sy, sw, sh,
+            tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
     }
 
     public _draw(context: CanvasRenderingContext2D): void {
@@ -469,15 +557,17 @@ export class Image extends Control {
             height = this.cellHeight;
         }
 
+        this._prepareWorkingCanvasForOpaqueDetection();
+
         this._applyStates(context);
         if (this._loaded) {
             switch (this._stretch) {
                 case Image.STRETCH_NONE:
-                    context.drawImage(this._domImage, x, y, width, height,
+                    this._drawImage(context, x, y, width, height,
                         this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
                 case Image.STRETCH_FILL:
-                    context.drawImage(this._domImage, x, y, width, height,
+                    this._drawImage(context, x, y, width, height,
                         this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
                 case Image.STRETCH_UNIFORM:
@@ -487,11 +577,11 @@ export class Image extends Control {
                     var centerX = (this._currentMeasure.width - width * ratio) / 2;
                     var centerY = (this._currentMeasure.height - height * ratio) / 2;
 
-                    context.drawImage(this._domImage, x, y, width, height,
+                    this._drawImage(context, x, y, width, height,
                         this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
                     break;
                 case Image.STRETCH_EXTEND:
-                    context.drawImage(this._domImage, x, y, width, height,
+                    this._drawImage(context, x, y, width, height,
                         this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
                 case Image.STRETCH_NINE_PATCH:
@@ -504,7 +594,7 @@ export class Image extends Control {
     }
 
     private _renderCornerPatch(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, targetX: number, targetY: number): void {
-        context.drawImage(this._domImage, x, y, width, height, this._currentMeasure.left + targetX, this._currentMeasure.top + targetY, width, height);
+        this._drawImage(context, x, y, width, height, this._currentMeasure.left + targetX, this._currentMeasure.top + targetY, width, height);
     }
 
     private _renderNinePatch(context: CanvasRenderingContext2D): void {
@@ -538,20 +628,20 @@ export class Image extends Control {
         this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, rightWidth, height - this._sliceBottom, this._currentMeasure.width - rightWidth, targetTopHeight);
 
         // Center
-        context.drawImage(this._domImage, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop + 1,
+        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop + 1,
             this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight + 1);
 
         // Borders
-        context.drawImage(this._domImage, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
+        this._drawImage(context, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
             this._currentMeasure.left, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
 
-        context.drawImage(this._domImage, this._sliceRight, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
+        this._drawImage(context, this._sliceRight, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
             this._currentMeasure.left + this._currentMeasure.width - rightWidth, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
 
-        context.drawImage(this._domImage, this._sliceLeft, top, centerWidth, topHeight,
+        this._drawImage(context, this._sliceLeft, top, centerWidth, topHeight,
             this._currentMeasure.left + leftWidth, this._currentMeasure.top, targetCenterWidth, topHeight);
 
-        context.drawImage(this._domImage, this._sliceLeft, this._sliceBottom, centerWidth, bottomHeight,
+        this._drawImage(context, this._sliceLeft, this._sliceBottom, centerWidth, bottomHeight,
             this._currentMeasure.left + leftWidth, this._currentMeasure.top + targetTopHeight, targetCenterWidth, bottomHeight);
     }
 

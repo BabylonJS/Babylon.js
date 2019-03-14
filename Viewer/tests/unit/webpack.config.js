@@ -1,5 +1,7 @@
 const path = require('path');
 
+const ViewerResolve = require('../../../Tools/WebpackPlugins/viewerResolve');
+
 module.exports = {
     context: __dirname,
     entry: {
@@ -17,13 +19,10 @@ module.exports = {
             "babylonjs-materials": __dirname + '/../../../dist/preview release/materialsLibrary/babylonjs.materials.js',
             "babylonjs-loaders": __dirname + '/../../../dist/preview release/loaders/babylonjs.loaders.js',
             "babylonjs-viewer-assets": __dirname + '/../../src/assets/index.ts'
-        }
-    },
-    externals: {
-        // until physics will be integrated in the viewer, ignore cannon
-        cannon: 'CANNON',
-        oimo: 'OIMO',
-        "earcut": true
+        },
+        plugins: [
+            new ViewerResolve(["babylonjs", "babylonjs-loaders"])
+        ]
     },
     mode: "development",
     devtool: 'source-map',

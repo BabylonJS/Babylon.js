@@ -1,11 +1,11 @@
 window.preparePBR = function() {
 	var pbr = new BABYLON.PBRMaterial("pbr", scene);
 
-	pbr.albedoTexture = new BABYLON.Texture("/playground/textures/amiga.jpg", scene);
+	pbr.albedoTexture = new BABYLON.Texture("/Playground/textures/amiga.jpg", scene);
 	pbr.albedoTexture.uScale = 5;
 	pbr.albedoTexture.vScale = 5;
     
-    var hdrTexture = new BABYLON.HDRCubeTexture("/playground/textures/environment.hdr", scene, 512);
+    var hdrTexture = new BABYLON.HDRCubeTexture("/Playground/textures/environment.hdr", scene, 512);
 
    
     // Uncomment for PMREM Generation
@@ -15,7 +15,7 @@ window.preparePBR = function() {
     pbr.linkRefractionWithTransparency = true;
     pbr.indexOfRefraction = 0.52;
 
-	var colorGrading = new BABYLON.Texture("/playground/textures/colorGrade.png", scene, true);
+	var colorGrading = new BABYLON.Texture("/Playground/textures/colorGrade.png", scene, true);
 	pbr.cameraColorGradingTexture = colorGrading;
 	pbr.colorGradingEnabled = true;
 
