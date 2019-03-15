@@ -1047,8 +1047,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     public proceduralTexturesEnabled = true;
 
     // Private
-    /** @hidden */
-    public _engine: Engine;
+    private _engine: Engine;
 
     // Performance counters
     private _totalVertices = new PerfCounter();
@@ -1114,8 +1113,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** @hidden */
     public _activeAnimatables = new Array<Animatable>();
 
-    /** @hidden */
-    public _transformMatrix = Matrix.Zero();
+    private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
 
     /** @hidden */
