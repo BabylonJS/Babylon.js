@@ -673,7 +673,7 @@ export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextu
      * @param onSuccess is a callback called when the task is successfully executed
      * @param onError is a callback called if an error occurs
      */
-    public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+    public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
 
         var onload = () => {
             onSuccess();
