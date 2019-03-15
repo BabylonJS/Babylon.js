@@ -3,9 +3,10 @@ import { Engine } from "../../Engines/engine";
 import { Scene } from "../../scene";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
-import { RenderTargetTexture, MultiviewRenderTarget } from '../../Materials/Textures/renderTargetTexture';
+import { RenderTargetTexture } from '../../Materials/Textures/renderTargetTexture';
 import { Matrix, Tmp, Frustum } from '../../Maths/math';
 import { UniformBuffer } from '../../Materials/uniformBuffer';
+import { MultiviewRenderTarget } from '../../Materials/Textures/MultiviewRenderTarget';
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -116,7 +117,7 @@ declare module "../../scene" {
 Scene.prototype._transformMatrixR = Matrix.Zero();
 Scene.prototype._multiviewSceneUbo = null;
 Scene.prototype._createMultiviewUbo = function() {
-    this._multiviewSceneUbo = new UniformBuffer(this._engine, undefined, true);
+    this._multiviewSceneUbo = new UniformBuffer(this.getEngine(), undefined, true);
     this._multiviewSceneUbo.addUniform("viewProjection", 16);
     this._multiviewSceneUbo.addUniform("viewProjectionR", 16);
     this._multiviewSceneUbo.addUniform("view", 16);
@@ -132,7 +133,7 @@ Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Mat
     }
 
     if (this._multiviewSceneUbo) {
-        this._multiviewSceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+        this._multiviewSceneUbo.updateMatrix("viewProjection", this.getTransformMatrix());
         this._multiviewSceneUbo.updateMatrix("viewProjectionR", this._transformMatrixR);
         this._multiviewSceneUbo.updateMatrix("view", this._viewMatrix);
         this._multiviewSceneUbo.update();
@@ -157,7 +158,7 @@ Scene.prototype._renderMultiviewToSingleView = function(camera: Camera) {
 
     // Consume the multiview texture through a shader for each eye
     for (var index = 0; index < camera._rigCameras.length; index++) {
-        var engine = this._engine;
+        var engine = this.getEngine();
         this._activeCamera = camera._rigCameras[index];
         engine.setViewport(this._activeCamera.viewport);
         if (this.postProcessManager) {
