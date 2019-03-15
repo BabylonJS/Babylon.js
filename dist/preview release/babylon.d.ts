@@ -12081,6 +12081,18 @@ declare module BABYLON {
         private _observer;
         private previousPosition;
         /**
+         * Observable for when a pointer move event occurs containing the move offset
+         */
+        onPointerMovedObservable: Observable<{
+            offsetX: number;
+            offsetY: number;
+        }>;
+        /**
+         * @hidden
+         * If the camera should be rotated automatically based on pointer movement
+         */
+        _allowCameraRotation: boolean;
+        /**
          * Manage the mouse inputs to control the movement of a free camera.
          * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
          * @param touchEnabled Defines if touch is enabled or not
@@ -37217,6 +37229,7 @@ declare module BABYLON {
     export class DeviceOrientationCamera extends FreeCamera {
         private _initialQuaternion;
         private _quaternionCache;
+        private _tmpDragQuaternion;
         /**
          * Creates a new device orientation camera
          * @param name The name of the camera
@@ -37224,6 +37237,16 @@ declare module BABYLON {
          * @param scene The scene the camera belongs to
          */
         constructor(name: string, position: Vector3, scene: Scene);
+        /**
+         * Disabled pointer input on first orientation sensor update (Default: true)
+         */
+        disablePointerInputWhenUsingDeviceOrientation: boolean;
+        private _dragFactor;
+        /**
+         * Enabled turning on the y axis when the orientation sensor is active
+         * @param dragFactor the factor that controls the turn speed (default: 1/300)
+         */
+        enableHorizontalDragging(dragFactor?: number): void;
         /**
          * Gets the current instance class name ("DeviceOrientationCamera").
          * This helps avoiding instanceof at run time.
@@ -54695,7 +54718,7 @@ declare module BABYLON {
          * @param onSuccess is a callback called when the task is successfully executed
          * @param onError is a callback called if an error occurs
          */
-        run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
+        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
     }
     /**
      * This class can be used to easily import assets into a scene
