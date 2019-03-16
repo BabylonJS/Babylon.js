@@ -78,7 +78,9 @@ export class AssetContainer extends AbstractScene {
             this.scene.addReflectionProbe(o);
         });
 
-        this.scene.environmentTexture = this.environmentTexture;
+        if (this.environmentTexture) {
+            this.scene.environmentTexture = this.environmentTexture;
+        }
 
         for (let component of this.scene._serializableComponents) {
             component.addFromContainer(this);
