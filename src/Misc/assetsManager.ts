@@ -690,7 +690,7 @@ export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextu
 /**
  * Define a task used by AssetsManager to load Equirectangular cube textures
  */
-class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<EquiRectangularCubeTexture> {
+export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<EquiRectangularCubeTexture> {
     /**
      * Gets the loaded texture
      */
