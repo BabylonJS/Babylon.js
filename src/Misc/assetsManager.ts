@@ -714,7 +714,7 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
      * @param noMipmap defines if mipmaps should not be generated (default is false)
      * @param gammaSpace specifies if the texture will be used in gamma or linear space
      * (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
-     * (default is false)
+     * (default is true)
      */
     constructor(
         /**
@@ -735,9 +735,9 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
         public noMipmap: boolean = false,
         /**
          * Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space,
-         * but the standard material would require them in Gamma space) (default is false)
+         * but the standard material would require them in Gamma space) (default is true)
          */
-        public gammaSpace: boolean = false) {
+        public gammaSpace: boolean = true) {
         super(name);
     }
 
