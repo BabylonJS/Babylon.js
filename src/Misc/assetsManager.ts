@@ -9,9 +9,9 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
+import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
 import { AnimationGroup } from '../Animations/animationGroup';
-import { EquiRectangularCubeTexture } from 'Materials/Textures/equiRectangularCubeTexture';
 
 /**
  * Defines the list of states available for a task inside a AssetsManager
@@ -687,6 +687,9 @@ export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextu
     }
 }
 
+/**
+ * Define a task used by AssetsManager to load Equirectangular cube textures
+ */
 class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<EquiRectangularCubeTexture> {
     /**
      * Gets the loaded texture
