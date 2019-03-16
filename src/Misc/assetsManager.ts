@@ -747,7 +747,7 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
      * @param onSuccess is a callback called when the task is successfully executed
      * @param onError is a callback called if an error occurs
      */
-    public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void {
+    public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void {
 
         const onload = () => {
             onSuccess();
