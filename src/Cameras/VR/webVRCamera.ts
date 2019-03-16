@@ -14,7 +14,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { HemisphericLight } from "../../Lights/hemisphericLight";
 import { Logger } from '../../Misc/logger';
-import { VRMultiviewToSingleview } from '../../PostProcesses/vrDistortionCorrectionPostProcess';
+import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiviewToSingleviewPostProcess';
 
 // Side effect import to define the stereoscopic mode.
 import "../RigModes/webVRRigMode";
@@ -289,7 +289,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
                 this._useMultiviewToSingleView = false;
             }else {
                 this._useMultiviewToSingleView = true;
-                this._rigPostProcess = new VRMultiviewToSingleview("VRMultiviewToSingleview", this, 1.0);
+                this._rigPostProcess = new VRMultiviewToSingleviewPostProcess("VRMultiviewToSingleview", this, 1.0);
             }
         }
 
