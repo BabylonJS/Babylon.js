@@ -9,7 +9,7 @@
   - Added support for soft bodies, which are 3D softbody, 2D cloth and 1D rope, in Ammo physics plugin. [Doc](https://doc.babylonjs.com/how_to/soft_bodies) ([JohnK](https://github.com/BabylonJSGuide))
   - Added support for [Convex Hull Impostor][https://github.com/kripken/ammo.js/blob/master/bullet/src/BulletCollision/CollisionShapes/btConvexHullShape.h] using Ammo.js plugin ([MackeyK24](https://github.com/mackeyk24))
   - Added customShaderNameResolve to PBRMaterialBase to allow subclasses to specify custom shader information [MackeyK24](https://github.com/mackeyk24))
-  - Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))  
+  - Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))
 - Added support for [WebXR](https://doc.babylonjs.com/how_to/webxr) ([TrevorDev](https://github.com/TrevorDev))
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
@@ -147,6 +147,7 @@
   - Skinned meshes now set an override mesh instead of reparenting to the `__root__` transform node
   - Loaded bones are linked with the transform node created for the corresponding glTF node
 - Add `EquiRectangularCubeTexture` class to enable the usage of browser-canvas supported images as `CubeTexture`'s ([Dennis Dervisis](https://github.com/ddervisis))
+- Add `EquiRectangularCubeTextureAssetTask` to be able to load `EquiRectangularCubeTextures`s via Asset Manager ([Dennis Dervisis](https://github.com/ddervisis))
 
 ### glTF Serializer
 
