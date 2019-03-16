@@ -793,13 +793,9 @@ export class StandardMaterial extends PushMaterial {
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
-        if (scene.activeCamera) {
-            var previousMultiview = defines.MULTIVIEW;
-            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
-            if (defines.MULTIVIEW != previousMultiview) {
-                defines.markAsUnprocessed();
-            }
-        }
+
+        // Multiview
+        MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // Textures
         if (defines._areTexturesDirty) {

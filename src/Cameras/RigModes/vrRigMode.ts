@@ -1,6 +1,7 @@
 import { Camera } from "../camera";
 import { Matrix, Viewport } from "../../Maths/math";
-import { VRDistortionCorrectionPostProcess, VRMultiviewToSingleview } from "../../PostProcesses/vrDistortionCorrectionPostProcess";
+import { VRDistortionCorrectionPostProcess } from "../../PostProcesses/vrDistortionCorrectionPostProcess";
+import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiviewToSingleviewPostProcess';
 import { VRCameraMetrics } from "../VR/vrCameraMetrics";
 import { Logger } from '../../Misc/logger';
 
@@ -30,7 +31,7 @@ Camera._setVRRigMode = function(camera: Camera, rigParams: any) {
             metrics.multiviewEnabled = false;
         }else {
             camera._useMultiviewToSingleView = true;
-            camera._rigPostProcess = new VRMultiviewToSingleview("VRMultiviewToSingleview", camera, metrics.postProcessScaleFactor);
+            camera._rigPostProcess = new VRMultiviewToSingleviewPostProcess("VRMultiviewToSingleview", camera, metrics.postProcessScaleFactor);
         }
     }
 
