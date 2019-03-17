@@ -28,6 +28,7 @@ import { OimoJSPlugin } from "../../Physics/Plugins/oimoJSPlugin";
 import { AmmoJSPlugin } from "../../Physics/Plugins/ammoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { _TypeStore } from '../../Misc/typeStore';
+import { Tools } from '../../Misc/tools';
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
@@ -88,11 +89,19 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 }
                 scene.environmentTexture = hdrTexture;
             } else {
-                var cubeTexture = CubeTexture.CreateFromPrefilteredData((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
-                if (parsedData.environmentTextureRotationY) {
-                    cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                    var compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                    if (parsedData.environmentTextureRotationY) {
+                        compressedTexture.rotationY = parsedData.environmentTextureRotationY;
+                    }
+                    scene.environmentTexture = compressedTexture;
+                } else {
+                    var cubeTexture = CubeTexture.CreateFromPrefilteredData((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                    if (parsedData.environmentTextureRotationY) {
+                        cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                    }
+                    scene.environmentTexture = cubeTexture;
                 }
-                scene.environmentTexture = cubeTexture;
             }
             if (parsedData.createDefaultSkybox === true) {
                 var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;
@@ -636,11 +645,19 @@ SceneLoader.RegisterPlugin({
                     }
                     scene.environmentTexture = hdrTexture;
                 } else {
-                    var cubeTexture = CubeTexture.CreateFromPrefilteredData(rootUrl + parsedData.environmentTexture, scene);
-                    if (parsedData.environmentTextureRotationY) {
-                        cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                    if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                        var compressedTexture = new CubeTexture(rootUrl + parsedData.environmentTexture, scene);
+                        if (parsedData.environmentTextureRotationY) {
+                            compressedTexture.rotationY = parsedData.environmentTextureRotationY;
+                        }
+                        scene.environmentTexture = compressedTexture;
+                    } else {
+                        var cubeTexture = CubeTexture.CreateFromPrefilteredData(rootUrl + parsedData.environmentTexture, scene);
+                        if (parsedData.environmentTextureRotationY) {
+                            cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                        }
+                        scene.environmentTexture = cubeTexture;
                     }
-                    scene.environmentTexture = cubeTexture;
                 }
                 if (parsedData.createDefaultSkybox === true) {
                     var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;
