@@ -25,6 +25,7 @@ import { Skeleton } from "../../Bones/skeleton";
 import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { CannonJSPlugin } from "../../Physics/Plugins/cannonJSPlugin";
 import { OimoJSPlugin } from "../../Physics/Plugins/oimoJSPlugin";
+import { AmmoJSPlugin } from "../../Physics/Plugins/ammoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { _TypeStore } from '../../Misc/typeStore';
 
@@ -591,6 +592,8 @@ SceneLoader.RegisterPlugin({
                     physicsPlugin = new CannonJSPlugin();
                 } else if (parsedData.physicsEngine === "oimo") {
                     physicsPlugin = new OimoJSPlugin();
+                } else if (parsedData.physicsEngine === "ammo") {
+                    physicsPlugin = new AmmoJSPlugin();
                 }
                 log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
                 //else - default engine, which is currently oimo
