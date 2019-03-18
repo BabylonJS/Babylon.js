@@ -8,8 +8,6 @@
 - Added [support for AmmoJS](https://doc.babylonjs.com/how_to/using_the_physics_engine) as a physics plugin (Composite objects, motors, joints) ([TrevorDev](https://github.com/TrevorDev))
   - Added support for soft bodies, which are 3D softbody, 2D cloth and 1D rope, in Ammo physics plugin. [Doc](https://doc.babylonjs.com/how_to/soft_bodies) ([JohnK](https://github.com/BabylonJSGuide))
   - Added support for [Convex Hull Impostor][https://github.com/kripken/ammo.js/blob/master/bullet/src/BulletCollision/CollisionShapes/btConvexHullShape.h] using Ammo.js plugin ([MackeyK24](https://github.com/mackeyk24))
-  - Added customShaderNameResolve to PBRMaterialBase to allow subclasses to specify custom shader information [MackeyK24](https://github.com/mackeyk24))
-  - Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))  
   - Added AmmoJSPlugin scene file loader [MackeyK24](https://github.com/mackeyk24))  
 - Added support for [WebXR](https://doc.babylonjs.com/how_to/webxr) ([TrevorDev](https://github.com/TrevorDev))
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
@@ -133,6 +131,8 @@
 - Mesh outline no longer is shown through the mesh when it's transparent ([TrevorDev](https://github.com/TrevorDev))
 - DeviceOrientationCamera will no longer be modified by mouse input if the orientation sensor is active ([TrevorDev](https://github.com/TrevorDev))
 - Added LoadScriptAsync tools helper function [MackeyK24](https://github.com/mackeyk24))  
+- Added customShaderNameResolve to PBRMaterialBase to allow subclasses to specify custom shader information [MackeyK24](https://github.com/mackeyk24))
+- Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))    
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
@@ -149,6 +149,7 @@
   - Skinned meshes now set an override mesh instead of reparenting to the `__root__` transform node
   - Loaded bones are linked with the transform node created for the corresponding glTF node
 - Add `EquiRectangularCubeTexture` class to enable the usage of browser-canvas supported images as `CubeTexture`'s ([Dennis Dervisis](https://github.com/ddervisis))
+- Add `EquiRectangularCubeTextureAssetTask` to be able to load `EquiRectangularCubeTextures`s via Asset Manager ([Dennis Dervisis](https://github.com/ddervisis))
 
 ### glTF Serializer
 
