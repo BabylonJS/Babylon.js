@@ -309,10 +309,14 @@ class PhysicsRadialExplosionEvent {
         return { force: force, contactPoint: contactPoint, distanceFromOrigin: distanceFromOrigin };
     }
 
+    /**
+     * Triggers affecterd impostors callbacks
+     * @param affectedImpostorsWithData defines the list of affected impostors (including associated data)
+     */
     public triggerAffectedImpostorsCallback(affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>) {
-      if (this._options.affectedImpostorsCallback) {
-        this._options.affectedImpostorsCallback(affectedImpostorsWithData);
-      }
+        if (this._options.affectedImpostorsCallback) {
+            this._options.affectedImpostorsCallback(affectedImpostorsWithData);
+        }
     }
 
     /**
