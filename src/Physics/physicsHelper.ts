@@ -61,7 +61,7 @@ export class PhysicsHelper {
         }
 
         var event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
-        var affectedImpostors = Array<PhysicsAffectedImpostorWithData>();
+        var affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
 
         impostors.forEach((impostor) => {
             var impostorHitData = event.getImpostorHitData(impostor, origin);
@@ -71,13 +71,13 @@ export class PhysicsHelper {
 
             impostor.applyImpulse(impostorHitData.force, impostorHitData.contactPoint);
 
-            affectedImpostors.push({
+            affectedImpostorsWithData.push({
                 impostor: impostor,
                 hitData: impostorHitData,
             });
         });
 
-        event.triggerAffectedImpostorsCallback(affectedImpostors);
+        event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
 
         event.dispose(false);
 
@@ -111,7 +111,7 @@ export class PhysicsHelper {
         }
 
         var event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
-        var affectedImpostors = Array<PhysicsAffectedImpostorWithData>();
+        var affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
 
         impostors.forEach((impostor) => {
             var impostorHitData = event.getImpostorHitData(impostor, origin);
@@ -121,13 +121,13 @@ export class PhysicsHelper {
 
             impostor.applyForce(impostorHitData.force, impostorHitData.contactPoint);
 
-            affectedImpostors.push({
+            affectedImpostorsWithData.push({
                 impostor: impostor,
                 hitData: impostorHitData,
             });
         });
 
-        event.triggerAffectedImpostorsCallback(affectedImpostors);
+        event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
 
         event.dispose(false);
 
