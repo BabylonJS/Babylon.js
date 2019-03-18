@@ -309,9 +309,9 @@ class PhysicsRadialExplosionEvent {
         return { force: force, contactPoint: contactPoint, distanceFromOrigin: distanceFromOrigin };
     }
 
-    public triggerAffectedImpostorsCallback(affectedImpostors: Array<PhysicsAffectedImpostorWithData>) {
+    public triggerAffectedImpostorsCallback(affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>) {
       if (this._options.affectedImpostorsCallback) {
-        this._options.affectedImpostorsCallback(affectedImpostors);
+        this._options.affectedImpostorsCallback(affectedImpostorsWithData);
       }
     }
 
@@ -758,7 +758,7 @@ export class PhysicsRadialExplosionEventOptions {
     /**
      * Sphere options for the radial explosion.
      */
-    affectedImpostorsCallback: (affectedImpostors: Array<PhysicsAffectedImpostorWithData>) => void;
+    affectedImpostorsCallback: (affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>) => void;
 }
 
 /**
