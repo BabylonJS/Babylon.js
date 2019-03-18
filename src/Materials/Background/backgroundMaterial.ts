@@ -677,13 +677,7 @@ export class BackgroundMaterial extends PushMaterial {
         defines._needNormals = true;
 
         // Multiview
-        if (scene.activeCamera) {
-            var previousMultiview = defines.MULTIVIEW;
-            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
-            if (defines.MULTIVIEW != previousMultiview) {
-                defines.markAsUnprocessed();
-            }
-        }
+        MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // Textures
         if (defines._areTexturesDirty) {
