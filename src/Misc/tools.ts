@@ -995,15 +995,19 @@ export class Tools {
      * @param scriptUrl defines the url of the script to laod
      * @param onSuccess defines the callback called when the script is loaded
      * @param onError defines the callback to call if an error occurs
+     * @param scriptId defines the id of the script element
      */
-    public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void) {
+    public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
         if (!DomManagement.IsWindowObjectExist()) {
             return;
         }
         var head = document.getElementsByTagName('head')[0];
         var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = scriptUrl;
+        script.setAttribute('type', 'text/javascript');
+        script.setAttribute('src', scriptUrl);
+        if (scriptId) {
+            script.id = scriptId;
+        }
 
         script.onload = () => {
             if (onSuccess) {
@@ -1018,6 +1022,39 @@ export class Tools {
         };
 
         head.appendChild(script);
+    }
+
+    /**
+     * Load an asynchronous script (identified by an url). When the url returns, the
+     * content of this file is added into a new script element, attached to the DOM (body element)
+     * @param scriptUrl defines the url of the script to laod
+     * @param scriptId defines the id of the script element
+     * @returns a promise request object
+     */
+    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Nullable<Promise<boolean>> {
+        return new Promise<boolean>((resolve, reject) => {
+            if (!DomManagement.IsWindowObjectExist()) {
+                resolve(false);
+                return;
+            }
+            var head = document.getElementsByTagName('head')[0];
+            var script = document.createElement('script');
+            script.setAttribute('type', 'text/javascript');
+            script.setAttribute('src', scriptUrl);
+            if (scriptId) {
+                script.id = scriptId;
+            }
+
+            script.onload = () => {
+                resolve(true);
+            };
+
+            script.onerror = (e) => {
+                resolve(false);
+            };
+
+            head.appendChild(script);
+        });
     }
 
     /**
@@ -1145,6 +1182,16 @@ export class Tools {
             }
         }
         return true;
+    }
+
+    /**
+     * Checks for a matching suffix at the end of a string (for ES5 and lower)
+     * @param str Source string
+     * @param suffix Suffix to search for in the source string
+     * @returns Boolean indicating whether the suffix was found (true) or not (false)
+     */
+    public static EndsWith(str: string, suffix: string): boolean {
+        return str.indexOf(suffix, str.length - suffix.length) !== -1;
     }
 
     /**
