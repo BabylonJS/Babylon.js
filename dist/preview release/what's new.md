@@ -11,7 +11,6 @@
   - Added customShaderNameResolve to PBRMaterialBase to allow subclasses to specify custom shader information [MackeyK24](https://github.com/mackeyk24))
   - Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))  
   - Added AmmoJSPlugin scene file loader [MackeyK24](https://github.com/mackeyk24))  
-  - Added LoadScriptAsync tools helper function [MackeyK24](https://github.com/mackeyk24))  
 - Added support for [WebXR](https://doc.babylonjs.com/how_to/webxr) ([TrevorDev](https://github.com/TrevorDev))
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
@@ -133,6 +132,7 @@
 - Observables can now make observers top or bottom priority ([TrevorDev](https://github.com/TrevorDev))
 - Mesh outline no longer is shown through the mesh when it's transparent ([TrevorDev](https://github.com/TrevorDev))
 - DeviceOrientationCamera will no longer be modified by mouse input if the orientation sensor is active ([TrevorDev](https://github.com/TrevorDev))
+- Added LoadScriptAsync tools helper function [MackeyK24](https://github.com/mackeyk24))  
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
