@@ -243,12 +243,17 @@ export interface IDisplayChangedEventArgs {
 export class Engine {
     /** Use this array to turn off some WebGL2 features on known buggy browsers version */
     public static ExceptionList = [
-        { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
-        { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
-        { key: "Firefox/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Chrome\/63\.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
+        { key: "Firefox\/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Firefox\/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
         { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
-        { key: "iPad", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] }
+        { key: "iPad", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
+        { key: "Chrome\/72.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Chrome\/73.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Chrome\/74.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome\/71", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome\/72", capture: null, captureConstraint: null, targets: ["vao"] }
     ];
 
     /** Gets the list of created engines */
@@ -856,6 +861,11 @@ export class Engine {
         return this._performanceMonitor;
     }
 
+    /**
+     * Gets or sets a boolean indicating that vertex array object must be disabled even if they are supported
+     */
+    public disableVertexArrayObjects = false;
+
     // States
     /** @hidden */
     protected _depthCullingState = new _DepthCullingState();
@@ -1054,8 +1064,9 @@ export class Engine {
                 for (var exception of Engine.ExceptionList) {
                     let key = exception.key;
                     let targets = exception.targets;
+                    let check = new RegExp(key);
 
-                    if (ua.indexOf(key) > -1) {
+                    if (check.test(ua)) {
                         if (exception.capture && exception.captureConstraint) {
                             let capture = exception.capture;
                             let constraint = exception.captureConstraint;
@@ -1075,6 +1086,9 @@ export class Engine {
                             switch (target) {
                                 case "uniformBuffer":
                                     this.disableUniformBuffers = true;
+                                    break;
+                                case "vao":
+                                    this.disableVertexArrayObjects = true;
                                     break;
                                 case "textureBindingOptimization":
                                     this.disableTextureBindingOptimization = true;
@@ -1491,7 +1505,9 @@ export class Engine {
         }
 
         // Vertex array object
-        if (this._webGLVersion > 1) {
+        if (this.disableVertexArrayObjects) {
+            this._caps.vertexArrayObject = false;
+        } else if (this._webGLVersion > 1) {
             this._caps.vertexArrayObject = true;
         } else {
             var vertexArrayObjectExtension = this._gl.getExtension('OES_vertex_array_object');
