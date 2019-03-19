@@ -83,11 +83,17 @@ export class BRDFTextureTools {
      */
     public static GetEnvironmentBRDFTexture(scene: Scene): BaseTexture {
         if (!scene.environmentBRDFTexture) {
+            // Forces Delayed Texture Loading to prevent undefined error whilst setting RGBD values.
+            var useDelayedTextureLoading = scene.useDelayedTextureLoading;
+            scene.useDelayedTextureLoading = false;
+
             var texture = Texture.CreateFromBase64String(this._environmentBRDFBase64Texture, "EnvironmentBRDFTexture", scene, true, true, Texture.BILINEAR_SAMPLINGMODE);
             texture._texture!._isRGBD = true;
             texture.wrapU = Texture.CLAMP_ADDRESSMODE;
             texture.wrapV = Texture.CLAMP_ADDRESSMODE;
             scene.environmentBRDFTexture = texture;
+
+            scene.useDelayedTextureLoading = useDelayedTextureLoading;
 
             texture.onLoadObservable.addOnce(() => {
                 this._ExpandDefaultBRDFTexture(texture._texture!);
