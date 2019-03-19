@@ -556,6 +556,8 @@ export class RenderTargetTexture extends Texture {
      *   - or an object containing a ratio { ratio: number }
      */
     public resize(size: number | { width: number, height: number } | { ratio: number }): void {
+        var wasCube = this.isCube;
+
         this.releaseInternalTexture();
         let scene = this.getScene();
 
@@ -565,7 +567,7 @@ export class RenderTargetTexture extends Texture {
 
         this._processSizeParameter(size);
 
-        if (this.isCube) {
+        if (wasCube) {
             this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
         } else {
             this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
