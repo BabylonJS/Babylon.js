@@ -21,6 +21,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     private _fixedTimeStep: number = 1 / 60;
     private _cannonRaycastResult: any;
     private _raycastResult: PhysicsRaycastResult;
+    private _removeAfterStep = new Array<PhysicsImpostor>();
     //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
     public BJSCANNON: any;
 
@@ -54,6 +55,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
     public executeStep(delta: number): void {
         this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
+        if (this._removeAfterStep.length > 0) {
+            this._removeAfterStep.forEach((impostor) => {
+                this.world.remove(impostor.physicsBody);
+            });
+            this._removeAfterStep = [];
+        }
     }
 
     public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -165,7 +172,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         impostor.physicsBody.removeEventListener("collide", impostor.onCollide);
         this.world.removeEventListener("preStep", impostor.beforeStep);
         this.world.removeEventListener("postStep", impostor.afterStep);
-        this.world.remove(impostor.physicsBody);
+
+        // Only remove the physics body after the physics step to avoid disrupting cannon's internal state
+        this._removeAfterStep.push(impostor);
     }
 
     public generateJoint(impostorJoint: PhysicsImpostorJoint) {
