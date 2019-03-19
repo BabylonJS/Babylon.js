@@ -30922,8 +30922,17 @@ declare module BABYLON {
          * @param scriptUrl defines the url of the script to laod
          * @param onSuccess defines the callback called when the script is loaded
          * @param onError defines the callback to call if an error occurs
+         * @param scriptId defines the id of the script element
          */
-        static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void): void;
+        static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string): void;
+        /**
+         * Load an asynchronous script (identified by an url). When the url returns, the
+         * content of this file is added into a new script element, attached to the DOM (body element)
+         * @param scriptUrl defines the url of the script to laod
+         * @param scriptId defines the id of the script element
+         * @returns a promise request object
+         */
+        static LoadScriptAsync(scriptUrl: string, scriptId?: string): Nullable<Promise<boolean>>;
         /**
          * Loads a file from a blob
          * @param fileToLoad defines the blob to use
@@ -30975,6 +30984,13 @@ declare module BABYLON {
          * @returns true if object has no own property
          */
         static IsEmpty(obj: any): boolean;
+        /**
+         * Checks for a matching suffix at the end of a string (for ES5 and lower)
+         * @param str Source string
+         * @param suffix Suffix to search for in the source string
+         * @returns Boolean indicating whether the suffix was found (true) or not (false)
+         */
+        static EndsWith(str: string, suffix: string): boolean;
         /**
          * Function used to register events at window level
          * @param events defines the events to register
@@ -51170,9 +51186,14 @@ declare module BABYLON {
          * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
          * @param impostor A physics imposter
          * @param origin the origin of the explosion
-         * @returns {Nullable<PhysicsForceAndContactPoint>} A physics force and contact point, or null
+         * @returns {Nullable<PhysicsHitData>} A physics force and contact point, or null
          */
-        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsForceAndContactPoint>;
+        getImpostorHitData(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsHitData>;
+        /**
+         * Triggers affecterd impostors callbacks
+         * @param affectedImpostorsWithData defines the list of affected impostors (including associated data)
+         */
+        triggerAffectedImpostorsCallback(affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>): void;
         /**
          * Disposes the sphere.
          * @param force Specifies if the sphere should be disposed by force
@@ -51260,7 +51281,7 @@ declare module BABYLON {
          * @param force Specifies if the updraft should be disposed by force
          */
         dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint;
+        private getImpostorHitData;
         private _tick;
         /*** Helpers ***/
         private _prepareCylinder;
@@ -51304,7 +51325,7 @@ declare module BABYLON {
          * @param force
          */
         dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint;
+        private getImpostorHitData;
         private _tick;
         /*** Helpers ***/
         private _prepareCylinder;
@@ -51334,6 +51355,10 @@ declare module BABYLON {
             segments: number;
             diameter: number;
         };
+        /**
+         * Sphere options for the radial explosion.
+         */
+        affectedImpostorsCallback: (affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>) => void;
     }
     /**
      * Options fot the updraft event
@@ -51412,10 +51437,10 @@ declare module BABYLON {
         Perpendicular = 1
     }
     /**
-     * Interface for a physics force and contact point
+     * Interface for a physics hit data
      * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
      */
-    export interface PhysicsForceAndContactPoint {
+    export interface PhysicsHitData {
         /**
          * The force applied at the contact point
          */
@@ -51424,6 +51449,10 @@ declare module BABYLON {
          * The contact point
          */
         contactPoint: Vector3;
+        /**
+         * The distance from the origin to the contact point
+         */
+        distanceFromOrigin: number;
     }
     /**
      * Interface for radial explosion event data
@@ -51464,6 +51493,20 @@ declare module BABYLON {
          * A cylinder used for the vortex event
          */
         cylinder: Mesh;
+    }
+    /**
+     * Interface for an affected physics impostor
+     * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
+     */
+    export interface PhysicsAffectedImpostorWithData {
+        /**
+         * The impostor affected by the effect
+         */
+        impostor: PhysicsImpostor;
+        /**
+         * The data about the hit/horce from the explosion
+         */
+        hitData: PhysicsHitData;
     }
 }
 declare module BABYLON {
