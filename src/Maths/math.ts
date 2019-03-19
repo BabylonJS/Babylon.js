@@ -5477,6 +5477,27 @@ export class Matrix {
     }
 
     /**
+     * Takes normalised vectors and returns a rotation matrix to align "from" with "to".  
+     * Taken from http://www.iquilezles.org/www/articles/noacos/noacos.htm
+     * @param from defines the vector to align
+     * @param to defines the vector to align to
+     * @param result defines the target matrix
+     */
+    public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void {
+        const v = Vector3.Cross(to, from);
+        const c = Vector3.Dot(to, from);
+        const k = 1 / (1 + c);
+
+        const m = result._m;
+        m[0]  = v.x*v.x*k + c;   m[1]  = v.y*v.x*k - v.z; m[2]  = v.z*v.x*k + v.y; m[3]  = 0;
+        m[4]  = v.x*v.y*k + v.z; m[5]  = v.y*v.y*k + c;   m[6]  = v.z*v.y*k - v.x; m[7]  = 0;
+        m[8]  = v.x*v.z*k - v.y; m[9]  = v.y*v.z*k + v.x; m[10] = v.z*v.z*k + c;   m[11] = 0;
+        m[12] = 0;               m[13] = 0;               m[14] = 0;               m[15] = 1;
+
+        result._markAsUpdated();
+    }
+
+    /**
      * Creates a rotation matrix
      * @param yaw defines the yaw angle in radians (Y axis)
      * @param pitch defines the pitch angle in radians (X axis)
