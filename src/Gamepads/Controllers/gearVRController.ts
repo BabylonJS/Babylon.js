@@ -73,7 +73,7 @@ export class GearVRController extends WebVRController {
     protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
         if (buttonIdx < this._buttonIndexToObservableNameMap.length) {
             const observableName: string = this._buttonIndexToObservableNameMap[buttonIdx];
-            
+
             // Only emit events for buttons that we know how to map from index to observable
             let observable = (<any>this)[observableName];
             if (observable) {
