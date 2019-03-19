@@ -28,9 +28,10 @@ declare module "../scene" {
          * Enables physics to the current scene
          * @param gravity defines the scene's gravity for the physics engine
          * @param plugin defines the physics engine to be used. defaults to OimoJS.
+         * @param useWorker defines if the physics engine should use a separate worker process
          * @return a boolean indicating if the physics engine was initialized
          */
-        enablePhysics(gravity: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
+        enablePhysics(gravity: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin, useWorker?: boolean): boolean;
 
         /**
          * Disables and disposes the physics engine associated with the scene
@@ -73,9 +74,10 @@ Scene.prototype.getPhysicsEngine = function(): Nullable<IPhysicsEngine> {
  * Enables physics to the current scene
  * @param gravity defines the scene's gravity for the physics engine
  * @param plugin defines the physics engine to be used. defaults to OimoJS.
+ * @param useWorker defines if the physics engine should use a separate worker process
  * @return a boolean indicating if the physics engine was initialized
  */
-Scene.prototype.enablePhysics = function(gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
+Scene.prototype.enablePhysics = function(gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin, useWorker?: boolean): boolean {
     if (this._physicsEngine) {
         return true;
     }
@@ -88,7 +90,7 @@ Scene.prototype.enablePhysics = function(gravity: Nullable<Vector3> = null, plug
     }
 
     try {
-        this._physicsEngine = new PhysicsEngine(gravity, plugin);
+        this._physicsEngine = new PhysicsEngine(gravity, plugin, useWorker);
         return true;
     } catch (e) {
         Logger.Error(e.message);

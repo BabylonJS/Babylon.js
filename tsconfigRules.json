@@ -14,6 +14,8 @@
         "strictNullChecks": true,
         "strictFunctionTypes": true,
         "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
         "lib": [
             "es5",
             "dom",

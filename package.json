@@ -103,6 +103,8 @@
         "webpack-cli": "^3.1.2",
         "webpack-dev-server": "^3.1.14",
         "webpack-stream": "5.0.0",
+        "worker-loader": "^2.0.0",
+        "worker-plugin": "^3.1.0",
         "xhr2": "^0.1.4"
     }
 }

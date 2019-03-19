@@ -6,6 +6,20 @@ import { PhysicsJoint } from "./physicsJoint";
 import { PhysicsRaycastResult } from "./physicsRaycastResult";
 import { _DevTools } from '../Misc/devTools';
 
+// Worker loader
+/*
+declare module "worker-loader!*" {
+  class WebpackWorker extends Worker {
+    constructor();
+  }
+
+  export default WebpackWorker;
+}
+*/
+// import PhysicsWorker from "worker-loader!./physicsWorker";
+import PhysicsWorker = require('worker-loader!./physicsWorker');
+//import PhysicsWorker from './physicsWorkerLoader';
+
 /**
  * Class used to control physics engine
  * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
@@ -18,6 +32,9 @@ export class PhysicsEngine implements IPhysicsEngine {
 
     private _impostors: Array<PhysicsImpostor> = [];
     private _joints: Array<PhysicsImpostorJoint> = [];
+
+    private _isInWorker: boolean = false;
+    private _worker: Worker;
 
     /**
      * Gets the gravity vector used by the simulation
@@ -36,12 +53,33 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Creates a new Physics Engine
      * @param gravity defines the gravity vector used by the simulation
      * @param _physicsPlugin defines the plugin to use (CannonJS by default)
+     * @param _useWorker defines if the plugin should use a worker
      */
-    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = PhysicsEngine.DefaultPluginFactory()) {
+    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = PhysicsEngine.DefaultPluginFactory(), private _useWorker: boolean = false) {
         if (!this._physicsPlugin.isSupported()) {
             throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. "
                 + "Please make sure it is included.");
         }
+
+        if (this._useWorker) {
+            // Worker plugin
+            // this._worker = new Worker('./physicsWorker.ts', { type: 'module' });
+
+            // Worker loader
+            this._worker = new PhysicsWorker();
+        }
+
+        if (typeof window === 'undefined') {
+            this._isInWorker = true;
+        }
+
+        if (this._useWorker && !this._isInWorker) {
+            this._worker.postMessage(['ping']);
+            this._worker.addEventListener('message', event => {
+                console.log(event);
+            });
+        }
+
         gravity = gravity || new Vector3(0, -9.807, 0);
         this.setGravity(gravity);
         this.setTimeStep();
