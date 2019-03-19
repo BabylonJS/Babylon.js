@@ -892,6 +892,12 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public rebuildAnglesAndRadius(): void {
         this._position.subtractToRef(this._getTargetPosition(), this._computationVector);
+
+        // need to rotate to Y up equivalent if up vector not Axis.Y
+        if (this._upVector.x !== 0 || this._upVector.y !== 1.0 || this._upVector.z !== 0) {
+            Vector3.TransformCoordinatesToRef(this._computationVector, this._upToYMatrix, this._computationVector);
+        }
+
         this.radius = this._computationVector.length();
 
         if (this.radius === 0) {
@@ -899,7 +905,11 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         // Alpha
-        this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
+        if (this._computationVector.x === 0 && this._computationVector.z === 0) {
+            this.alpha = Math.PI / 2; // avoid division by zero, and set to acos(0)
+        } else {
+            this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
+        }
 
         if (this._computationVector.z < 0) {
             this.alpha = 2 * Math.PI - this.alpha;
