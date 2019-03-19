@@ -146,10 +146,19 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     public horizontalBlur: boolean = false;
 
     /**
-     * Sets the overall exposure used by the pipeline
+     * Gets the overall exposure used by the pipeline
      */
     @serialize()
-    public exposure: number = 1.0;
+    public get exposure(): number {
+        return this._fixedExposure;
+    }
+    /**
+     * Sets the overall exposure used by the pipeline
+     */
+    public set exposure(value: number) {
+        this._fixedExposure = value;
+        this._currentExposure = value;
+    }
 
     /**
      * Texture used typically to simulate "dirty" on camera lens
@@ -194,6 +203,26 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      */
     @serialize()
     public hdrIncreaseRate: number = 0.5;
+    /**
+     * Gets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+     */
+    @serialize()
+    public get hdrAutoExposure(): boolean {
+        return this._hdrAutoExposure;
+    }
+    /**
+     * Sets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+     */
+    public set hdrAutoExposure(value: boolean) {
+        this._hdrAutoExposure = value;
+        if (this.hdrPostProcess) {
+            const defines = ["#define HDR"];
+            if (value) {
+                defines.push("#define AUTO_EXPOSURE");
+            }
+            this.hdrPostProcess.updateEffect(defines.join("\n"));
+        }
+    }
 
     /**
      * Lens color texture used by the lens flare effect. Mandatory if lens flare effect enabled
@@ -263,6 +292,9 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     private _currentDepthOfFieldSource: Nullable<PostProcess> = null;
     private _basePostProcess: Nullable<PostProcess>;
 
+    private _fixedExposure: number = 1.0;
+    private _currentExposure: number = 1.0;
+    private _hdrAutoExposure: boolean = false;
     private _hdrCurrentLuminance: number = 1.0;
 
     private _floatTextureType: number;
@@ -675,7 +707,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             effect.setTextureFromPostProcess("otherSampler", this._vlsEnabled ? this._currentDepthOfFieldSource : this.originalPostProcess);
             effect.setTexture("lensSampler", this.lensTexture);
 
-            effect.setFloat("exposure", this.exposure);
+            effect.setFloat("exposure", this._currentExposure);
 
             this._currentDepthOfFieldSource = this.textureAdderFinalPostProcess;
         };
@@ -824,7 +856,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     // Create HDR post-process
     private _createHdrPostProcess(scene: Scene, ratio: number): void {
-        this.hdrPostProcess = new PostProcess("HDR", "standard", ["averageLuminance"], ["textureAdderSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define HDR", Constants.TEXTURETYPE_UNSIGNED_INT);
+        const defines = ["#define HDR"];
+        if (this._hdrAutoExposure) {
+            defines.push("#define AUTO_EXPOSURE");
+        }
+        this.hdrPostProcess = new PostProcess("HDR", "standard", ["averageLuminance"], ["textureAdderSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, defines.join("\n"), Constants.TEXTURETYPE_UNSIGNED_INT);
 
         var outputLiminance = 1;
         var time = 0;
@@ -851,9 +887,12 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 }
             }
 
-            outputLiminance = Scalar.Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
-
-            effect.setFloat("averageLuminance", outputLiminance);
+            if (this.hdrAutoExposure) {
+                this._currentExposure = this._fixedExposure / outputLiminance;
+            } else {
+                outputLiminance = Scalar.Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
+                effect.setFloat("averageLuminance", outputLiminance);
+            }
 
             lastTime = time;
 

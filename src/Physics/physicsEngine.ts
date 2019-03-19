@@ -117,8 +117,7 @@ export class PhysicsEngine implements IPhysicsEngine {
             var removed = this._impostors.splice(index, 1);
             //Is it needed?
             if (removed.length) {
-                //this will also remove it from the world.
-                removed[0].physicsBody = null;
+                this.getPhysicsPlugin().removePhysicsBody(impostor);
             }
         }
     }
