@@ -1,4 +1,4 @@
-#if defined(REFLECTION) || defined(REFRACTION)
+#if defined(REFLECTION) || defined(SS_REFRACTION)
     float getLodFromAlphaG(float cubeMapDimensionPixels, float microsurfaceAverageSlope) {
         float microsurfaceAverageSlopeTexels = microsurfaceAverageSlope * cubeMapDimensionPixels;
         float lod = log2(microsurfaceAverageSlopeTexels);
@@ -29,7 +29,7 @@
 // LEGACY
 // ___________________________________________________________________________________
 
-#if defined(LODINREFLECTIONALPHA) || defined(LODINREFRACTIONALPHA)
+#if defined(LODINREFLECTIONALPHA) || defined(SS_LODINREFRACTIONALPHA)
     // To enable 8 bit textures to be used we need to pack and unpack the LOD
     //inverse alpha is used to work around low-alpha bugs in Edge and Firefox
     #define UNPACK_LOD(x) (1.0 - x) * 255.0

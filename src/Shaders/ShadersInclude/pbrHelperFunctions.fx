@@ -60,16 +60,20 @@ vec2 getAARoughnessFactors(vec3 normalVector) {
     }
 #endif
 
-#ifdef CLEARCOAT
+#if defined(CLEARCOAT) || defined(SS_REFRACTION)
     // From beer lambert law I1/I0 = e −α′lc
     // c is considered included in alpha
     // https://blog.selfshadow.com/publications/s2017-shading-course/drobot/s2017_pbs_multilayered.pdf page 47
-    // where L on a thin constant size layer can be (d * ((NdotLRefract + NdotVRefract) / (NdotLRefract * NdotVRefract))
-    vec3 cocaLambert(float NdotVRefract, float NdotLRefract, vec3 alpha, float thickness) {
-        return exp(alpha * -(thickness * ((NdotLRefract + NdotVRefract) / (NdotLRefract * NdotVRefract))));
+    vec3 cocaLambert(vec3 alpha, float distance) {
+        return exp(-alpha * distance);
     }
 
-    // From beerLambert Solves what alpha should be for a given resutlt at a known distance.
+    // where L on a thin constant size layer can be (d * ((NdotLRefract + NdotVRefract) / (NdotLRefract * NdotVRefract))
+    vec3 cocaLambert(float NdotVRefract, float NdotLRefract, vec3 alpha, float thickness) {
+        return cocaLambert(alpha, (thickness * ((NdotLRefract + NdotVRefract) / (NdotLRefract * NdotVRefract))));
+    }
+
+    // From beerLambert Solves what alpha should be for a given result at a known distance.
     vec3 computeColorAtDistanceInMedia(vec3 color, float distance) {
         return -log(color) / distance;
     }
