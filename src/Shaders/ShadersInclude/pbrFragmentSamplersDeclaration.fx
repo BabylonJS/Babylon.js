@@ -136,33 +136,6 @@
     #endif
 #endif
 
-// Refraction
-#ifdef REFRACTION
-    #ifdef REFRACTIONMAP_3D
-        #define sampleRefraction(s, c) textureCube(s, c)
-        
-        uniform samplerCube refractionSampler;
-
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
-        #else
-            uniform samplerCube refractionSamplerLow;
-            uniform samplerCube refractionSamplerHigh;
-        #endif
-    #else
-        #define sampleRefraction(s, c) texture2D(s, c)
-        
-        uniform sampler2D refractionSampler;
-
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
-        #else
-            uniform samplerCube refractionSamplerLow;
-            uniform samplerCube refractionSamplerHigh;
-        #endif
-    #endif
-#endif
-
 // Reflection
 #ifdef REFLECTION
     #ifdef REFLECTIONMAP_3D
@@ -200,4 +173,44 @@
 
 #ifdef ENVIRONMENTBRDF
     uniform sampler2D environmentBrdfSampler;
+#endif
+
+// SUBSURFACE
+#ifdef SUBSURFACE
+    #ifdef SS_REFRACTION
+        #ifdef SS_REFRACTIONMAP_3D
+            #define sampleRefraction(s, c) textureCube(s, c)
+            
+            uniform samplerCube refractionSampler;
+
+            #ifdef LODBASEDMICROSFURACE
+                #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
+            #else
+                uniform samplerCube refractionSamplerLow;
+                uniform samplerCube refractionSamplerHigh;
+            #endif
+        #else
+            #define sampleRefraction(s, c) texture2D(s, c)
+            
+            uniform sampler2D refractionSampler;
+
+            #ifdef LODBASEDMICROSFURACE
+                #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
+            #else
+                uniform samplerCube refractionSamplerLow;
+                uniform samplerCube refractionSamplerHigh;
+            #endif
+        #endif
+    #endif
+
+    #ifdef SS_THICKNESSANDMASK_TEXTURE
+        #if SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 1
+            #define vThicknessUV vMainUV1
+        #elif SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 2
+            #define vThicknessUV vMainUV2
+        #else
+            varying vec2 vThicknessUV;
+        #endif
+        uniform sampler2D thicknessSampler;
+    #endif
 #endif
