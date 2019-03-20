@@ -22088,7 +22088,7 @@ declare module BABYLON {
          * @param rootUrl defines the root URL to use to load textures
          * @returns a new material
          */
-        static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): any;
+        static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): Nullable<Material>;
     }
 }
 declare module BABYLON {
@@ -38112,6 +38112,11 @@ declare module BABYLON {
          * Are anisotropic textures enabled in the application.
          */
         static AnisotropicTextureEnabled: boolean;
+        private static _ThicknessTextureEnabled;
+        /**
+         * Are thickness textures enabled in the application.
+         */
+        static ThicknessTextureEnabled: boolean;
     }
 }
 declare module BABYLON {
@@ -43655,12 +43660,12 @@ declare module BABYLON {
          */
         isTintEnabled: boolean;
         /**
-         * Defines if the clear coat tint is enabled in the material.
+         * Defines the clear coat tint of the material.
          * This is only use if tint is enabled
          */
         tintColor: Color3;
         /**
-         * Defines if the distance at which the tint color should be found in the
+         * Defines the distance at which the tint color should be found in the
          * clear coat media.
          * This is only use if tint is enabled
          */
@@ -43687,7 +43692,7 @@ declare module BABYLON {
          */
         constructor(markAllSubMeshesAsTexturesDirty: () => void);
         /**
-         * Specifies that the submesh is ready to be used.
+         * Gets wehter the submesh is ready to be used or not.
          * @param defines the list of "defines" to update.
          * @param scene defines the scene the material belongs to.
          * @param engine defines the engine the material belongs to.
@@ -44123,6 +44128,247 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IMaterialSubSurfaceDefines {
+        SUBSURFACE: boolean;
+        SS_REFRACTION: boolean;
+        SS_TRANSLUCENCY: boolean;
+        SS_SCATERRING: boolean;
+        SS_THICKNESSANDMASK_TEXTURE: boolean;
+        SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_REFRACTIONMAP_3D: boolean;
+        SS_REFRACTIONMAP_OPPOSITEZ: boolean;
+        SS_LODINREFRACTIONALPHA: boolean;
+        SS_GAMMAREFRACTION: boolean;
+        SS_RGBDREFRACTION: boolean;
+        SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
+        SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
+        /** @hidden */
+        _areTexturesDirty: boolean;
+    }
+    /**
+     * Define the code related to the sub surface parameters of the pbr material.
+     */
+    export class PBRSubSurfaceConfiguration {
+        private _isRefractionEnabled;
+        /**
+         * Defines if the refraction is enabled in the material.
+         */
+        isRefractionEnabled: boolean;
+        private _isTranslucencyEnabled;
+        /**
+         * Defines if the translucency is enabled in the material.
+         */
+        isTranslucencyEnabled: boolean;
+        private _isScatteringEnabled;
+        /**
+         * Defines the refraction intensity of the material.
+         * The refraction when enabled replaces the Diffuse part of the material.
+         * The intensity helps transitionning between diffuse and refraction.
+         */
+        refractionIntensity: number;
+        /**
+         * Defines the translucency intensity of the material.
+         * When translucency has been enabled, this defines how much of the "translucency"
+         * is addded to the diffuse part of the material.
+         */
+        translucencyIntensity: number;
+        /**
+         * Defines the scattering intensity of the material.
+         * When scattering has been enabled, this defines how much of the "scattered light"
+         * is addded to the diffuse part of the material.
+         */
+        scatteringIntensity: number;
+        private _thicknessTexture;
+        /**
+         * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
+         * The red channel of the texture should contain the thickness remapped between 0 and 1.
+         * 0 would mean minimumThickness
+         * 1 would mean maximumThickness
+         * The other channels might be use as a mask to vary the different effects intensity.
+         */
+        thicknessTexture: Nullable<BaseTexture>;
+        private _refractionTexture;
+        /**
+         * Defines the texture to use for refraction.
+         */
+        refractionTexture: Nullable<BaseTexture>;
+        private _indexOfRefraction;
+        /**
+         * Defines the indice of refraction used in the material.
+         * https://en.wikipedia.org/wiki/List_of_refractive_indices
+         */
+        indexOfRefraction: number;
+        private _invertRefractionY;
+        /**
+         * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
+         */
+        invertRefractionY: boolean;
+        private _linkRefractionWithTransparency;
+        /**
+         * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+         * Materials half opaque for instance using refraction could benefit from this control.
+         */
+        linkRefractionWithTransparency: boolean;
+        /**
+         * Defines the minimum thickness stored in the thickness map.
+         * If no thickness map is defined, this value will be used to simulate thickness.
+         */
+        minimumThickness: number;
+        /**
+         * Defines the maximum thickness stored in the thickness map.
+         */
+        maximumThickness: number;
+        /**
+         * Defines the volume tint of the material.
+         * This is used for both translucency and scattering.
+         */
+        tintColor: Color3;
+        /**
+         * Defines the distance at which the tint color should be found in the media.
+         * This is used for refraction only.
+         */
+        tintColorAtDistance: number;
+        /**
+         * Defines how far each channel transmit through the media.
+         * It is defined as a color to simplify it selection.
+         */
+        diffusionDistance: Color3;
+        private _useMaskFromThicknessTexture;
+        /**
+         * Stores the intensity of the different subsurface effects in the thickness texture.
+         * * the green channel is the translucency intensity.
+         * * the blue channel is the scattering intensity.
+         * * the alpha channel is the refraction intensity.
+         */
+        useMaskFromThicknessTexture: boolean;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsTexturesDirty;
+        /** @hidden */
+        _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Instantiate a new istance of sub surface configuration.
+         * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsTexturesDirty: () => void);
+        /**
+         * Gets wehter the submesh is ready to be used or not.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
+        isReadyForSubMesh(defines: IMaterialSubSurfaceDefines, scene: Scene): boolean;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene to the material belongs to.
+         */
+        prepareDefines(defines: IMaterialSubSurfaceDefines, scene: Scene): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
+         * @param engine defines the engine the material belongs to.
+         * @param isFrozen defines wether the material is frozen or not.
+         * @param lodBasedMicrosurface defines wether the material relies on lod based microsurface or not.
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean): void;
+        /**
+         * Unbinds the material from the mesh.
+         * @param activeEffect defines the effect that should be unbound from.
+         * @returns true if unbound, otherwise false
+         */
+        unbind(activeEffect: Effect): boolean;
+        /**
+         * Returns the texture used for refraction or null if none is used.
+         * @param scene defines the scene the material belongs to.
+         * @returns - Refraction texture if present.  If no refraction texture and refraction
+         * is linked with transparency, returns environment texture.  Otherwise, returns null.
+         */
+        private _getRefractionTexture;
+        /**
+         * Returns true if alpha blending should be disabled.
+         */
+        readonly disableAlphaBlending: boolean;
+        /**
+         * Fills the list of render target textures.
+         * @param renderTargets the list of render targets to update
+         */
+        fillRenderTargetTextures(renderTargets: SmartArray<RenderTargetTexture>): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Gets a boolean indicating that current material needs to register RTT
+         * @returns true if this uses a render target otherwise false.
+         */
+        hasRenderTargetTextures(): boolean;
+        /**
+         * Returns an array of the actively used textures.
+         * @param activeTextures Array of BaseTextures
+         */
+        getActiveTextures(activeTextures: BaseTexture[]): void;
+        /**
+         * Returns the animatable textures.
+         * @param animatables Array of animatable textures.
+         */
+        getAnimatables(animatables: IAnimatable[]): void;
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
+        /**
+        * Get the current class name of the texture useful for serialization or dynamic coding.
+        * @returns "PBRSubSurfaceConfiguration"
+        */
+        getClassName(): string;
+        /**
+         * Add fallbacks to the effect fallbacks list.
+         * @param defines defines the Base texture to use.
+         * @param fallbacks defines the current fallback list.
+         * @param currentRank defines the current fallback rank.
+         * @returns the new fallback rank.
+         */
+        static AddFallbacks(defines: IMaterialSubSurfaceDefines, fallbacks: EffectFallbacks, currentRank: number): number;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Makes a duplicate of the current configuration into another one.
+         * @param configuration define the config where to copy the info
+         */
+        copyTo(configuration: PBRSubSurfaceConfiguration): void;
+        /**
+         * Serializes this Sub Surface configuration.
+         * @returns - An object with the serialized config.
+         */
+        serialize(): any;
+        /**
+         * Parses a Sub Surface Configuration from a serialized object.
+         * @param source - Serialized object.
+         */
+        parse(source: any): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var pbrFragmentDeclaration: {
         name: string;
@@ -44232,7 +44478,7 @@ declare module BABYLON {
      * Manages the defines for the PBR Material.
      * @hidden
      */
-    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines {
+    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines, IMaterialSubSurfaceDefines {
         PBR: boolean;
         MAINUV1: boolean;
         MAINUV2: boolean;
@@ -44309,13 +44555,6 @@ declare module BABYLON {
         RGBDREFLECTION: boolean;
         RADIANCEOCCLUSION: boolean;
         HORIZONOCCLUSION: boolean;
-        REFRACTION: boolean;
-        REFRACTIONMAP_3D: boolean;
-        REFRACTIONMAP_OPPOSITEZ: boolean;
-        LODINREFRACTIONALPHA: boolean;
-        GAMMAREFRACTION: boolean;
-        RGBDREFRACTION: boolean;
-        LINKREFRACTIONTOTRANSPARENCY: boolean;
         INSTANCES: boolean;
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -44371,6 +44610,19 @@ declare module BABYLON {
         SHEEN_TEXTURE: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
+        SUBSURFACE: boolean;
+        SS_REFRACTION: boolean;
+        SS_TRANSLUCENCY: boolean;
+        SS_SCATERRING: boolean;
+        SS_THICKNESSANDMASK_TEXTURE: boolean;
+        SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
+        SS_REFRACTIONMAP_3D: boolean;
+        SS_REFRACTIONMAP_OPPOSITEZ: boolean;
+        SS_LODINREFRACTIONALPHA: boolean;
+        SS_GAMMAREFRACTION: boolean;
+        SS_RGBDREFRACTION: boolean;
+        SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
+        SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -44481,10 +44733,6 @@ declare module BABYLON {
          */
         protected _reflectionTexture: BaseTexture;
         /**
-         * Stores the refraction values in a texture.
-         */
-        protected _refractionTexture: BaseTexture;
-        /**
          * Stores the emissive values in a texture.
          */
         protected _emissiveTexture: BaseTexture;
@@ -44543,19 +44791,6 @@ declare module BABYLON {
          * AKA Glossiness in other nomenclature.
          */
         protected _microSurface: number;
-        /**
-         * source material index of refraction (IOR)' / 'destination material IOR.
-         */
-        protected _indexOfRefraction: number;
-        /**
-         * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
-         */
-        protected _invertRefractionY: boolean;
-        /**
-         * This parameters will make the material used its opacity to control how much it is refracting aginst not.
-         * Materials half opaque for instance using refraction could benefit from this control.
-         */
-        protected _linkRefractionWithTransparency: boolean;
         /**
          * Specifies that the material will use the light map as a show map.
          */
@@ -44766,6 +45001,10 @@ declare module BABYLON {
          */
         readonly sheen: PBRSheenConfiguration;
         /**
+         * Defines the SubSurface parameters for the material.
+         */
+        readonly subSurface: PBRSubSurfaceConfiguration;
+        /**
          * Custom callback helping to override the default shader used in the material.
          */
         customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
@@ -44857,7 +45096,7 @@ declare module BABYLON {
          */
         buildUniformLayout(): void;
         /**
-         * Unbinds the textures.
+         * Unbinds the material from the mesh
          */
         unbind(): void;
         /**
@@ -44877,12 +45116,6 @@ declare module BABYLON {
          * @returns - Reflection texture if present.  Otherwise, returns the environment texture.
          */
         private _getReflectionTexture;
-        /**
-         * Returns the texture used for refraction or null if none is used.
-         * @returns - Refection texture if present.  If no refraction texture and refraction
-         * is linked with transparency, returns environment texture.  Otherwise, returns null.
-         */
-        private _getRefractionTexture;
         /**
          * Returns an array of the actively used textures.
          * @returns - Array of BaseTextures
@@ -45021,7 +45254,7 @@ declare module BABYLON {
         /**
          * Stores the refracted light information in a texture.
          */
-        refractionTexture: BaseTexture;
+        refractionTexture: Nullable<BaseTexture>;
         /**
          * The color of a material in ambient lighting.
          */
