@@ -267,3 +267,21 @@ float diffuseBRDF_Burley(float NdotL, float NdotV, float VdotH, float roughness)
 
     return fresnel / PI;
 }
+
+#ifdef SS_TRANSLUCENCY
+    // Pixar diffusion profile
+    // http://graphics.pixar.com/library/ApproxBSSRDF/paper.pdf
+    vec3 transmittanceBRDF_Burley(const vec3 tintColor, const vec3 diffusionDistance, float thickness) {
+        vec3 S = 1. / maxEps(diffusionDistance);
+        vec3 temp = exp((-0.333333333 * thickness) * S);
+        return tintColor.rgb * 0.25 * (temp * temp * temp + 3.0 * temp);
+    }
+
+    // Extends the dark area to prevent seams
+    // Keep it energy conserving by using McCauley solution: https://blog.selfshadow.com/2011/12/31/righting-wrap-part-1/
+    float computeWrappedDiffuseNdotL(float NdotL, float w) {
+        float t = 1.0 + w;
+        float invt2 = 1.0 / square(t);
+        return saturate((NdotL + w) * invt2);
+    }
+#endif
