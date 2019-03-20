@@ -705,9 +705,15 @@ function showError(errorMessage, errorEvent) {
             }
 
             if (textures[index].isCube) {
-                if (textures[index]._extensions && textures[index].name.indexOf("dds") === -1) {
-                    for (var i = 0; i < 6; i++) {
-                        textures.push({ name: textures[index].name + textures[index]._extensions[i] });
+                if (textures[index].name.indexOf("dds") === -1) {
+                    if (textures[index]._extensions) {
+                        for (var i = 0; i < 6; i++) {
+                            textures.push({ name: textures[index].name + textures[index]._extensions[i] });
+                        }
+                    } else if (textures[index]._files) {
+                        for (var i = 0; i < 6; i++) {
+                            textures.push({ name: textures[index]._files[i] });
+                        }
                     }
                 }
                 else {
