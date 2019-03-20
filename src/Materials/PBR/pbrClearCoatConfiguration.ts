@@ -96,14 +96,14 @@ export class PBRClearCoatConfiguration {
     public isTintEnabled = false;
 
     /**
-     * Defines if the clear coat tint is enabled in the material.
+     * Defines the clear coat tint of the material.
      * This is only use if tint is enabled
      */
     @serializeAsColor3()
     public tintColor = Color3.White();
 
     /**
-     * Defines if the distance at which the tint color should be found in the
+     * Defines the distance at which the tint color should be found in the
      * clear coat media.
      * This is only use if tint is enabled
      */
@@ -144,7 +144,7 @@ export class PBRClearCoatConfiguration {
     }
 
     /**
-     * Specifies that the submesh is ready to be used.
+     * Gets wehter the submesh is ready to be used or not.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
      * @param engine defines the engine the material belongs to.
