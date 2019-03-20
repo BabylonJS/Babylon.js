@@ -7522,6 +7522,11 @@ declare module BABYLON {
         */
         billboardMode: number;
         /**
+         * Gets or sets a boolean indicating that parent rotation should be preserved when using billboards.
+         * This could be useful for glTF objects where parent rotation helps converting from right handed to left handed
+         */
+        preserveParentRotationForBillboard: boolean;
+        /**
          * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
          */
         scalingDeterminant: number;
