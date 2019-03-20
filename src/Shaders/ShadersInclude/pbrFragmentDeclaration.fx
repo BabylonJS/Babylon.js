@@ -44,15 +44,8 @@ uniform vec2 vMicroSurfaceSamplerInfos;
 #endif
 
 // Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION)
 uniform mat4 view;
-#endif
-
-// Refraction
-#ifdef REFRACTION
-    uniform vec4 vRefractionInfos;
-    uniform mat4 refractionMatrix;
-    uniform vec3 vRefractionMicrosurfaceInfos;
 #endif
 
 // Reflection
@@ -112,4 +105,23 @@ uniform mat4 view;
         uniform vec2 vSheenInfos;
         uniform mat4 sheenMatrix;
     #endif
+#endif
+
+// SubSurface
+#ifdef SUBSURFACE
+    #ifdef SS_REFRACTION
+        uniform vec3 vRefractionMicrosurfaceInfos;
+        uniform vec4 vRefractionInfos;
+        uniform mat4 refractionMatrix;
+    #endif
+
+    #ifdef SS_THICKNESSANDMASK_TEXTURE
+        uniform vec2 vThicknessInfos;
+        uniform mat4 thicknessMatrix;;
+    #endif
+
+    uniform vec2 vThicknessParam;
+    uniform vec3 vDiffusionDistance;
+    uniform vec4 vTintColor;
+    uniform vec3 vSubSurfaceIntensity;
 #endif

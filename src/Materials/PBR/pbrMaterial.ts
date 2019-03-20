@@ -191,9 +191,12 @@ export class PBRMaterial extends PBRBaseMaterial {
     /**
      * Stores the refracted light information in a texture.
      */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public refractionTexture: BaseTexture;
+    public get refractionTexture(): Nullable<BaseTexture> {
+        return this.subSurface.refractionTexture;
+    }
+    public set refractionTexture(value: Nullable<BaseTexture>) {
+        this.subSurface.refractionTexture = value;
+    }
 
     /**
      * The color of a material in ambient lighting.
@@ -240,24 +243,33 @@ export class PBRMaterial extends PBRBaseMaterial {
     /**
      * source material index of refraction (IOR)' / 'destination material IOR.
      */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public indexOfRefraction = 0.66;
+    public get indexOfRefraction(): number {
+        return  1 / this.subSurface.indexOfRefraction;
+    }
+    public set indexOfRefraction(value: number) {
+        this.subSurface.indexOfRefraction =  1 / value;
+    }
 
     /**
      * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
      */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertRefractionY = false;
+    public get invertRefractionY(): boolean {
+        return this.subSurface.invertRefractionY;
+    }
+    public set invertRefractionY(value: boolean) {
+        this.subSurface.invertRefractionY = value;
+    }
 
     /**
      * This parameters will make the material used its opacity to control how much it is refracting aginst not.
      * Materials half opaque for instance using refraction could benefit from this control.
      */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public linkRefractionWithTransparency = false;
+    public get linkRefractionWithTransparency(): boolean {
+        return this.subSurface.linkRefractionWithTransparency;
+    }
+    public set linkRefractionWithTransparency(value: boolean) {
+        this.subSurface.linkRefractionWithTransparency = value;
+    }
 
     /**
      * If true, the light map contains occlusion information instead of lighting info.
