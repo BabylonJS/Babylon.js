@@ -35164,9 +35164,8 @@ declare module BABYLON {
         protected _checkLimits(): void;
         /**
          * Rebuilds angles (alpha, beta) and radius from the give position and target
-         * @param updateView defines a boolean forcing the camera to update its position with a view matrix computation first (default is true)
          */
-        rebuildAnglesAndRadius(updateView?: boolean): void;
+        rebuildAnglesAndRadius(): void;
         /**
          * Use a position to define the current camera related information like aplha, beta and radius
          * @param position Defines the position to set the camera at
@@ -47640,6 +47639,7 @@ declare module BABYLON {
         private _fixedTimeStep;
         private _cannonRaycastResult;
         private _raycastResult;
+        private _removeAfterStep;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
@@ -53539,8 +53539,11 @@ declare module BABYLON {
          */
         horizontalBlur: boolean;
         /**
-         * Sets the overall exposure used by the pipeline
+         * Gets the overall exposure used by the pipeline
          */
+        /**
+        * Sets the overall exposure used by the pipeline
+        */
         exposure: number;
         /**
          * Texture used typically to simulate "dirty" on camera lens
@@ -53576,6 +53579,13 @@ declare module BABYLON {
          * For eye adaptation, represents the increase luminance speed
          */
         hdrIncreaseRate: number;
+        /**
+         * Gets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+         */
+        /**
+        * Sets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+        */
+        hdrAutoExposure: boolean;
         /**
          * Lens color texture used by the lens flare effect. Mandatory if lens flare effect enabled
          */
@@ -53629,6 +53639,9 @@ declare module BABYLON {
         private _scene;
         private _currentDepthOfFieldSource;
         private _basePostProcess;
+        private _fixedExposure;
+        private _currentExposure;
+        private _hdrAutoExposure;
         private _hdrCurrentLuminance;
         private _floatTextureType;
         private _ratio;

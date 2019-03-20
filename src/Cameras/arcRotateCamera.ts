@@ -856,13 +856,8 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Rebuilds angles (alpha, beta) and radius from the give position and target
-     * @param updateView defines a boolean forcing the camera to update its position with a view matrix computation first (default is true)
      */
-    public rebuildAnglesAndRadius(updateView = true): void {
-        if (updateView) {
-            this.getViewMatrix(); // Force position update
-        }
-
+    public rebuildAnglesAndRadius(): void {
         this._position.subtractToRef(this._getTargetPosition(), this._computationVector);
         this.radius = this._computationVector.length();
 
@@ -893,7 +888,7 @@ export class ArcRotateCamera extends TargetCamera {
         }
         this._position.copyFrom(position);
 
-        this.rebuildAnglesAndRadius(false);
+        this.rebuildAnglesAndRadius();
     }
 
     /**
