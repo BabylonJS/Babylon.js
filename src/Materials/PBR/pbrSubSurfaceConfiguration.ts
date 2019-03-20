@@ -343,6 +343,7 @@ export class PBRSubSurfaceConfiguration {
 
     /**
      * Unbinds the material from the mesh.
+     * @param activeEffect defines the effect that should be unbound from.
      * @returns true if unbound, otherwise false
      */
     public unbind(activeEffect: Effect): boolean {
