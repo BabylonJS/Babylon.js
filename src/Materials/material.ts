@@ -1156,7 +1156,7 @@ export class Material implements IAnimatable {
      * @param rootUrl defines the root URL to use to load textures
      * @returns a new material
      */
-    public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): any {
+    public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): Nullable<Material> {
         if (!parsedMaterial.customType) {
             parsedMaterial.customType = "BABYLON.StandardMaterial";
         }
@@ -1164,7 +1164,7 @@ export class Material implements IAnimatable {
             parsedMaterial.customType = "BABYLON.LegacyPBRMaterial";
             if (!BABYLON.LegacyPBRMaterial) {
                 Logger.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
-                return;
+                return null;
             }
         }
 
