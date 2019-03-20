@@ -196,6 +196,12 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
     public set refractionTexture(value: Nullable<BaseTexture>) {
         this.subSurface.refractionTexture = value;
+        if (value) {
+            this.subSurface.isRefractionEnabled = true;
+        }
+        else if (!this.subSurface.linkRefractionWithTransparency) {
+            this.subSurface.isRefractionEnabled = false;
+        }
     }
 
     /**
@@ -269,6 +275,9 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
     public set linkRefractionWithTransparency(value: boolean) {
         this.subSurface.linkRefractionWithTransparency = value;
+        if (value) {
+            this.subSurface.isRefractionEnabled = true;
+        }
     }
 
     /**
