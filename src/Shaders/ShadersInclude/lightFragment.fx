@@ -56,6 +56,8 @@
             // Diffuse contribution
             #ifdef HEMILIGHT{X}
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, light{X}.vLightDiffuse.rgb, light{X}.vLightGround);
+            #elif defined(SS_TRANSLUCENCY)
+                info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, light{X}.vLightDiffuse.rgb, transmittance);
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, light{X}.vLightDiffuse.rgb);
             #endif
