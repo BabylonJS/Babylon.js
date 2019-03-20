@@ -157,9 +157,19 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
                 var parsedMaterial = parsedData.materials[index];
                 var mat = Material.Parse(parsedMaterial, scene, rootUrl);
-                container.materials.push(mat);
-                log += (index === 0 ? "\n\tMaterials:" : "");
-                log += "\n\t\t" + mat.toString(fullDetails);
+                if (mat) {
+                    container.materials.push(mat);
+                    log += (index === 0 ? "\n\tMaterials:" : "");
+                    log += "\n\t\t" + mat.toString(fullDetails);
+
+                    // Textures
+                    var textures = mat.getActiveTextures();
+                    textures.forEach((t) => {
+                        if (container.textures.indexOf(t) == -1) {
+                            container.textures.push(t);
+                        }
+                    });
+                }
             }
         }
 
@@ -168,8 +178,17 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedMultiMaterial = parsedData.multiMaterials[index];
                 var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
                 container.multiMaterials.push(mmat);
+
                 log += (index === 0 ? "\n\tMultiMaterials:" : "");
                 log += "\n\t\t" + mmat.toString(fullDetails);
+
+                // Textures
+                var textures = mmat.getActiveTextures();
+                textures.forEach((t) => {
+                    if (container.textures.indexOf(t) == -1) {
+                        container.textures.push(t);
+                    }
+                });
             }
         }
 

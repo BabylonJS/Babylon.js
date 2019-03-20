@@ -92,6 +92,12 @@ varying vec2 vBumpUV;
     #endif
 #endif
 
+#ifdef SUBSURFACE
+    #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0 
+        varying vec2 vThicknessUV;
+    #endif
+#endif
+
 // Output
 varying vec3 vPositionW;
 #if DEBUGMODE > 0
@@ -358,6 +364,19 @@ void main(void) {
         else
         {
             vAnisotropyUV = vec2(anisotropyMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+#endif
+
+#ifdef SUBSURFACE
+    #if defined(SS_THICKNESSANDMASK_TEXTURE) && SS_THICKNESSANDMASK_TEXTUREDIRECTUV == 0 
+        if (vThicknessInfos.x == 0.)
+        {
+            vThicknessUV = vec2(thicknessMatrix * vec4(uv, 1.0, 0.0));
+        }
+        else
+        {
+            vThicknessUV = vec2(thicknessMatrix * vec4(uv2, 1.0, 0.0));
         }
     #endif
 #endif

@@ -84,6 +84,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "ClearCoat Tint Map", value: 28 },
             { label: "Sheen Map", value: 29 },
             { label: "Anisotropic Map", value: 30 },
+            { label: "Thickness Map", value: 31 },
             // Env
             { label: "Env Refraction", value: 40 },
             { label: "Env Reflection", value: 41 },
@@ -103,6 +104,8 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "ClearCoat Color", value: 65 },
             { label: "ClearCoat Roughness", value: 66 },
             { label: "ClearCoat NdotV", value: 67 },
+            { label: "Transmittance", value: 68 },
+            { label: "Refraction Transmittance", value: 69 },
             // Misc
             { label: "SEO", value: 70 },
             { label: "EHO", value: 71 },
@@ -193,6 +196,39 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         </div>
                     }
                 </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="SUBSURFACE">
+                    <TextureLinkLineComponent label="Thickness" texture={material.subSurface.thicknessTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                    <SliderLineComponent label="Min Thickness" target={material.subSurface} propertyName="minimumThickness" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Max Thickness" target={material.subSurface} propertyName="maximumThickness" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Mask From Thickness" target={material.subSurface} propertyName="useMaskFromThicknessTexture"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent label="Tint Color" target={material.subSurface} propertyName="tintColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+
+                    <CheckBoxLineComponent label="Refraction Enabled" target={material.subSurface} propertyName="isRefractionEnabled"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    {
+                        material.subSurface.isRefractionEnabled &&
+                        <div className="fragment">
+                            <SliderLineComponent label="Intensity" target={material.subSurface} propertyName="refractionIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <SliderLineComponent label="Index of Refraction" target={material.subSurface} propertyName="indexOfRefraction" minimum={1} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <SliderLineComponent label="Tint at Distance" target={material.subSurface} propertyName="tintColorAtDistance" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <CheckBoxLineComponent label="Link refraction with transparency" target={material.subSurface} propertyName="linkRefractionWithTransparency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        </div>
+                    }
+
+                    <CheckBoxLineComponent label="Transluency Enabled" target={material.subSurface} propertyName="isTranslucencyEnabled"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    {
+                        material.subSurface.isTranslucencyEnabled &&
+                        <div className="fragment">
+                            <SliderLineComponent label="Intensity" target={material.subSurface} propertyName="translucencyIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <Color3LineComponent label="Diffusion Distance" target={material.subSurface} propertyName="diffusionDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        </div>
+                    }
+                </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="LEVELS" closed={true}>
                     <SliderLineComponent label="Environment" target={material} propertyName="environmentIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Specular" target={material} propertyName="specularIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -215,7 +251,6 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Alpha from albedo" target={material} propertyName="useAlphaFromAlbedoTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Ambient in grayscale" target={material} propertyName="useAmbientInGrayScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Radiance over alpha" target={material} propertyName="useRadianceOverAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Link refraction with transparency" target={material} propertyName="linkRefractionWithTransparency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Micro-surface from ref. map alpha" target={material} propertyName="useMicroSurfaceFromReflectivityMapAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Specular over alpha" target={material} propertyName="useSpecularOverAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Specular anti-aliasing" target={material} propertyName="enableSpecularAntiAliasing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

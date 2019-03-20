@@ -46,6 +46,22 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
     return toLinearSpace(textureColor);
 }
 
+#ifdef SS_TRANSLUCENCY
+    vec3 computeDiffuseAndTransmittedLighting(preLightingInfo info, vec3 lightColor, vec3 transmittance) {
+        float NdotL = absEps(info.NdotLUnclamped);
+
+        // Use wrap lighting to simulate SSS.
+        float wrapNdotL = computeWrappedDiffuseNdotL(NdotL, 0.02);
+
+        // Remap transmittance from tr to 1. if ndotl is negative.
+        float trAdapt = step(0., info.NdotLUnclamped);
+        vec3 transmittanceNdotL = mix(transmittance * wrapNdotL, vec3(wrapNdotL), trAdapt);
+
+        float diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
+        return diffuseTerm * transmittanceNdotL * info.attenuation * lightColor;
+    }
+#endif
+
 #ifdef SPECULARTERM
     vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
         float NdotH = saturateEps(dot(N, info.H));
