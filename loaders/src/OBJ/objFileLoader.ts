@@ -451,6 +451,23 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return this.importMeshAsync(null, scene, data, rootUrl).then((result) => {
             var container = new AssetContainer(scene);
             result.meshes.forEach((mesh) => container.meshes.push(mesh));
+            result.meshes.forEach((mesh) => {
+                var material = mesh.material;
+                if (material) {
+                    // Materials
+                    if (container.materials.indexOf(material) == -1) {
+                        container.materials.push(material);
+
+                        // Textures
+                        var textures = material.getActiveTextures();
+                        textures.forEach((t) => {
+                            if (container.textures.indexOf(t) == -1) {
+                                container.textures.push(t);
+                            }
+                        });
+                    }
+                }
+            });
             container.removeAllFromScene();
             return container;
         });

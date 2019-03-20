@@ -211,7 +211,7 @@
 - Add missing dependencies for files to support including them from a direct path (eg. import "@babylonjs/core/Helpers/sceneHelpers";) ([TrevorDev](https://github.com/TrevorDev))
 - AssetContainer should not dispose objects it doesn't contain. Support for environmentTexture add/remove ([TrevorDev](https://github.com/TrevorDev))
 - Fix `mesh.visibility` not working properly when certain material properties are set that changes the interpretation of alpha (e.g. refraction, specular over alpha, etc.) ([bghgary](https://github.com/bghgary))
-- Fix material and texture leak when loading/removing GLTF with AssetContainer ([TrevorDev](https://github.com/TrevorDev))
+- Fix material and texture leak when loading/removing GLTF/obj/babylon files with AssetContainer ([TrevorDev](https://github.com/TrevorDev))
 - Avoid exception when removing impostor during cannon world step ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
