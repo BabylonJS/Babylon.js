@@ -7,18 +7,9 @@ import { PhysicsRaycastResult } from "./physicsRaycastResult";
 import { _DevTools } from '../Misc/devTools';
 
 // Worker loader
-/*
-declare module "worker-loader!*" {
-  class WebpackWorker extends Worker {
-    constructor();
-  }
-
-  export default WebpackWorker;
-}
-*/
-// import PhysicsWorker from "worker-loader!./physicsWorker";
-import PhysicsWorker = require('worker-loader!./physicsWorker');
-//import PhysicsWorker from './physicsWorkerLoader';
+//import PhysicsWorker from "worker-loader!./physicsWorker";
+//import PhysicsWorker = require('worker-loader!./physicsWorker');
+import PhysicsWorker from './physicsWorkerLoader';
 
 /**
  * Class used to control physics engine

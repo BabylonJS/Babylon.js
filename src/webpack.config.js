@@ -12,12 +12,10 @@ var config = babylonWebpackConfig({
 
     // Worker loader - https://github.com/webpack-contrib/worker-loader
     moduleRules: [
-        /*
         {
-            loader: 'worker-loader'
+            loader: 'worker-loader',
             options: { inline: true }
-        }
-        */
+        },
         /*
         { // https://github.com/webpack-contrib/worker-loader/issues/94#issuecomment-445277682
             test: /physicsWorker\.ts/,
@@ -33,12 +31,14 @@ var config = babylonWebpackConfig({
           			    }
             		}
           	],
-        }
+        },
         */
+        /*
         {
             test: /physicsWorker\.ts/,
             use: { loader: 'worker-loader' }
-        }
+        },
+        */
     ],
 });
 

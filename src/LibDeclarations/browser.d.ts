@@ -66,3 +66,11 @@ interface Math {
     fround(x: number): number;
     imul(a: number, b: number): number;
 }
+
+declare module "worker-loader!*" {
+  class WebpackWorker extends Worker {
+    constructor();
+  }
+
+  export default WebpackWorker;
+}

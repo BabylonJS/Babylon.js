@@ -197,6 +197,3 @@ gui/dist/
 /Viewer/tests/tsc.cmd
 /Viewer/tests/tsserver
 /Viewer/tests/tsserver.cmd
-
-# physics worker
-!src/Physics/*.d.ts
