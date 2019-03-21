@@ -161,7 +161,7 @@ jobs:
   - script: 'gulp tests-babylon-unit'
     workingDirectory: Tools/Gulp
     displayName: 'Unit Tests'
-  - script: 'gulp tests-validation-virtualscreen'
+  - script: 'gulp tests-validation-browserstack'
     workingDirectory: Tools/Gulp
     displayName: 'Browser Stack Tests'
     env:
