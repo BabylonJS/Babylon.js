@@ -72,8 +72,10 @@
         gl_FragColor.rgb = sheenMapData.rgb;
     #elif DEBUGMODE == 30 && defined(ANISOTROPIC) && defined(ANISOTROPIC_TEXTURE)
         gl_FragColor.rgb = anisotropyMapData.rgb;
+    #elif DEBUGMODE == 31 && defined(SUBSURFACE) && defined(SS_THICKNESSANDMASK_TEXTURE)
+        gl_FragColor.rgb = thicknessMap.rgb;
 // Env
-    #elif DEBUGMODE == 40 && defined(REFRACTION)
+    #elif DEBUGMODE == 40 && defined(SS_REFRACTION)
         // Base color.
         gl_FragColor.rgb = environmentRefraction.rgb;
         #define DEBUGMODE_GAMMA
@@ -119,6 +121,10 @@
         gl_FragColor.rgb = vec3(clearCoatRoughness);
     #elif DEBUGMODE == 67 && defined(CLEARCOAT)
         gl_FragColor.rgb = vec3(clearCoatNdotV);
+    #elif DEBUGMODE == 68 && defined(SUBSURFACE) && defined(SS_TRANSLUCENCY)
+        gl_FragColor.rgb = transmittance;
+    #elif DEBUGMODE == 69 && defined(SUBSURFACE) && defined(SS_REFRACTION)
+        gl_FragColor.rgb = refractionTransmittance;
 // Misc
     #elif DEBUGMODE == 70 && defined(RADIANCEOCCLUSION)
         gl_FragColor.rgb = vec3(seo);

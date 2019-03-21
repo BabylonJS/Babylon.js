@@ -748,6 +748,22 @@ var OBJFileLoader = /** @class */ (function () {
         return this.importMeshAsync(null, scene, data, rootUrl).then(function (result) {
             var container = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
             result.meshes.forEach(function (mesh) { return container.meshes.push(mesh); });
+            result.meshes.forEach(function (mesh) {
+                var material = mesh.material;
+                if (material) {
+                    // Materials
+                    if (container.materials.indexOf(material) == -1) {
+                        container.materials.push(material);
+                        // Textures
+                        var textures = material.getActiveTextures();
+                        textures.forEach(function (t) {
+                            if (container.textures.indexOf(t) == -1) {
+                                container.textures.push(t);
+                            }
+                        });
+                    }
+                }
+            });
             container.removeAllFromScene();
             return container;
         });
@@ -813,7 +829,7 @@ var OBJFileLoader = /** @class */ (function () {
                 arr[obj[0]] = { normals: [], idx: [], uv: [] };
             }
             var idx = arr[obj[0]].normals.indexOf(obj[1]);
-            if (idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
+            if (idx != 1 && (obj[2] === arr[obj[0]].uv[idx])) {
                 return arr[obj[0]].idx[idx];
             }
             return -1;
@@ -848,7 +864,7 @@ var OBJFileLoader = /** @class */ (function () {
                 ]);
             }
             //If it not exists
-            if (_index == -1) {
+            if (_index === -1) {
                 //Add an new indice.
                 //The array of indices is only an array with his length equal to the number of triangles - 1.
                 //We add vertices data in this order
@@ -1272,7 +1288,7 @@ var OBJFileLoader = /** @class */ (function () {
             //check meshesNames (stlFileLoader)
             if (meshesNames && meshesFromObj[j].name) {
                 if (meshesNames instanceof Array) {
-                    if (meshesNames.indexOf(meshesFromObj[j].name) == -1) {
+                    if (meshesNames.indexOf(meshesFromObj[j].name) === -1) {
                         continue;
                     }
                 }
@@ -1338,7 +1354,7 @@ var OBJFileLoader = /** @class */ (function () {
                                 startIndex = _index + 1;
                             }
                             //If the material is not used dispose it
-                            if (_index == -1 && _indices.length == 0) {
+                            if (_index === -1 && _indices.length === 0) {
                                 //If the material is not needed, remove it
                                 materialsFromMTLFile.materials[n].dispose();
                             }
@@ -7628,12 +7644,23 @@ var GLTFFileLoader = /** @class */ (function () {
         return this._parseAsync(scene, data, rootUrl, fileName).then(function (loaderData) {
             _this._log("Loading " + (fileName || ""));
             _this._loader = _this._getLoader(loaderData);
+            // Get materials/textures when loading to add to container
+            var materials = [];
+            _this.onMaterialLoadedObservable.add(function (material) {
+                materials.push(material);
+            });
+            var textures = [];
+            _this.onTextureLoadedObservable.add(function (texture) {
+                textures.push(texture);
+            });
             return _this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then(function (result) {
                 var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
+                Array.prototype.push.apply(container.materials, materials);
+                Array.prototype.push.apply(container.textures, textures);
                 container.removeAllFromScene();
                 return container;
             });

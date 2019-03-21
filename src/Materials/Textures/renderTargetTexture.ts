@@ -556,6 +556,8 @@ export class RenderTargetTexture extends Texture {
      *   - or an object containing a ratio { ratio: number }
      */
     public resize(size: number | { width: number, height: number } | { ratio: number }): void {
+        var wasCube = this.isCube;
+
         this.releaseInternalTexture();
         let scene = this.getScene();
 
@@ -565,7 +567,7 @@ export class RenderTargetTexture extends Texture {
 
         this._processSizeParameter(size);
 
-        if (this.isCube) {
+        if (wasCube) {
             this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
         } else {
             this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
@@ -1002,40 +1004,3 @@ export class RenderTargetTexture extends Texture {
 Texture._CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean) => {
     return new RenderTargetTexture(name, renderTargetSize, scene, generateMipMaps);
 };
-
-/**
- * Renders to multiple views with a single draw call
- * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
- */
-export class MultiviewRenderTarget extends RenderTargetTexture {
-    /**
-     * Creates a multiview render target
-     * @param scene scene used with the render target
-     * @param size the size of the render target (used for each view)
-     */
-    constructor(scene: Scene, size: number | { width: number, height: number } | { ratio: number } = 512) {
-        super("multiview rtt", size, scene, false, true, InternalTexture.DATASOURCE_UNKNOWN, false, undefined, false, false, true, undefined, true);
-        var internalTexture = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
-        internalTexture.isMultiview = true;
-        this._texture = internalTexture;
-    }
-
-    /**
-     * @hidden
-     * @param faceIndex the face index, if its a cube texture
-     */
-    public _bindFrameBuffer(faceIndex: number = 0) {
-        if (!this._texture) {
-            return;
-        }
-        this.getScene()!.getEngine().bindMultiviewFramebuffer(this._texture);
-    }
-
-    /**
-     * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
-     * @returns the view count
-     */
-    public getViewCount() {
-        return 2;
-    }
-}

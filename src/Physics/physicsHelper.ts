@@ -61,15 +61,23 @@ export class PhysicsHelper {
         }
 
         var event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
+        var affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
 
         impostors.forEach((impostor) => {
-            var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin);
-            if (!impostorForceAndContactPoint) {
+            var impostorHitData = event.getImpostorHitData(impostor, origin);
+            if (!impostorHitData) {
                 return;
             }
 
-            impostor.applyImpulse(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            impostor.applyImpulse(impostorHitData.force, impostorHitData.contactPoint);
+
+            affectedImpostorsWithData.push({
+                impostor: impostor,
+                hitData: impostorHitData,
+            });
         });
+
+        event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
 
         event.dispose(false);
 
@@ -103,15 +111,23 @@ export class PhysicsHelper {
         }
 
         var event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
+        var affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
 
         impostors.forEach((impostor) => {
-            var impostorForceAndContactPoint = event.getImpostorForceAndContactPoint(impostor, origin);
-            if (!impostorForceAndContactPoint) {
+            var impostorHitData = event.getImpostorHitData(impostor, origin);
+            if (!impostorHitData) {
                 return;
             }
 
-            impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            impostor.applyForce(impostorHitData.force, impostorHitData.contactPoint);
+
+            affectedImpostorsWithData.push({
+                impostor: impostor,
+                hitData: impostorHitData,
+            });
         });
+
+        event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
 
         event.dispose(false);
 
@@ -252,9 +268,9 @@ class PhysicsRadialExplosionEvent {
      * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
      * @param impostor A physics imposter
      * @param origin the origin of the explosion
-     * @returns {Nullable<PhysicsForceAndContactPoint>} A physics force and contact point, or null
+     * @returns {Nullable<PhysicsHitData>} A physics force and contact point, or null
      */
-    public getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsForceAndContactPoint> {
+    public getImpostorHitData(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsHitData> {
         if (impostor.mass === 0) {
             return null;
         }
@@ -290,7 +306,17 @@ class PhysicsRadialExplosionEvent {
 
         var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
 
-        return { force: force, contactPoint: contactPoint };
+        return { force: force, contactPoint: contactPoint, distanceFromOrigin: distanceFromOrigin };
+    }
+
+    /**
+     * Triggers affecterd impostors callbacks
+     * @param affectedImpostorsWithData defines the list of affected impostors (including associated data)
+     */
+    public triggerAffectedImpostorsCallback(affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>) {
+        if (this._options.affectedImpostorsCallback) {
+            this._options.affectedImpostorsCallback(affectedImpostorsWithData);
+        }
     }
 
     /**
@@ -495,7 +521,7 @@ class PhysicsUpdraftEvent {
         }
     }
 
-    private getImpostorForceAndContactPoint(impostor: PhysicsImpostor): Nullable<PhysicsForceAndContactPoint> {
+    private getImpostorHitData(impostor: PhysicsImpostor): Nullable<PhysicsHitData> {
         if (impostor.mass === 0) {
             return null;
         }
@@ -512,21 +538,23 @@ class PhysicsUpdraftEvent {
             var direction = impostorObjectCenter.subtract(this._originTop);
         }
 
+        var distanceFromOrigin = Vector3.Distance(this._origin, impostorObjectCenter);
+
         var multiplier = this._options.strength * -1;
 
         var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
 
-        return { force: force, contactPoint: impostorObjectCenter };
+        return { force: force, contactPoint: impostorObjectCenter, distanceFromOrigin: distanceFromOrigin };
     }
 
     private _tick() {
         this._physicsEngine.getImpostors().forEach((impostor) => {
-            var impostorForceAndContactPoint = this.getImpostorForceAndContactPoint(impostor);
-            if (!impostorForceAndContactPoint) {
+            var impostorHitData = this.getImpostorHitData(impostor);
+            if (!impostorHitData) {
                 return;
             }
 
-            impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            impostor.applyForce(impostorHitData.force, impostorHitData.contactPoint);
         });
     }
 
@@ -625,7 +653,7 @@ class PhysicsVortexEvent {
         }
     }
 
-    private getImpostorForceAndContactPoint(impostor: PhysicsImpostor): Nullable<PhysicsForceAndContactPoint> {
+    private getImpostorHitData(impostor: PhysicsImpostor): Nullable<PhysicsHitData> {
         if (impostor.mass === 0) {
             return null;
         }
@@ -670,17 +698,17 @@ class PhysicsVortexEvent {
         var force = new Vector3(forceX, forceY, forceZ);
         force = force.multiplyByFloats(this._options.strength, this._options.strength, this._options.strength);
 
-        return { force: force, contactPoint: impostorObjectCenter };
+        return { force: force, contactPoint: impostorObjectCenter, distanceFromOrigin: absoluteDistanceFromOrigin };
     }
 
     private _tick() {
         this._physicsEngine.getImpostors().forEach((impostor) => {
-            var impostorForceAndContactPoint = this.getImpostorForceAndContactPoint(impostor);
-            if (!impostorForceAndContactPoint) {
+            var impostorHitData = this.getImpostorHitData(impostor);
+            if (!impostorHitData) {
                 return;
             }
 
-            impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            impostor.applyForce(impostorHitData.force, impostorHitData.contactPoint);
         });
     }
 
@@ -730,6 +758,11 @@ export class PhysicsRadialExplosionEventOptions {
      * Sphere options for the radial explosion.
      */
     sphere: { segments: number, diameter: number } = { segments: 32, diameter: 1 };
+
+    /**
+     * Sphere options for the radial explosion.
+     */
+    affectedImpostorsCallback: (affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>) => void;
 }
 
 /**
@@ -822,10 +855,10 @@ export enum PhysicsUpdraftMode {
 }
 
 /**
- * Interface for a physics force and contact point
+ * Interface for a physics hit data
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
-export interface PhysicsForceAndContactPoint {
+export interface PhysicsHitData {
     /**
      * The force applied at the contact point
      */
@@ -834,6 +867,10 @@ export interface PhysicsForceAndContactPoint {
      * The contact point
      */
     contactPoint: Vector3;
+    /**
+     * The distance from the origin to the contact point
+     */
+    distanceFromOrigin: number;
 }
 
 /**
@@ -878,4 +915,20 @@ export interface PhysicsVortexEventData {
      * A cylinder used for the vortex event
      */
     cylinder: Mesh;
+}
+
+/**
+ * Interface for an affected physics impostor
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
+ */
+export interface PhysicsAffectedImpostorWithData {
+    /**
+     * The impostor affected by the effect
+     */
+    impostor: PhysicsImpostor;
+
+    /**
+     * The data about the hit/horce from the explosion
+     */
+    hitData: PhysicsHitData;
 }
