@@ -1,6 +1,12 @@
 trigger:
 - master
 
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - master
+
 jobs:
 - job: WhatsNewUpdate
   displayName: 'What s New Update'
