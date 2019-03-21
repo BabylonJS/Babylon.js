@@ -951,7 +951,7 @@ declare module BabylonViewer {
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 declare module BabylonViewer {
@@ -1234,6 +1234,15 @@ declare module BabylonViewer {
       */
     export abstract class AbstractViewerWithTemplate extends AbstractViewer {
         protected getConfigurationLoader(): ConfigurationLoader;
+    }
+}
+declare module BabylonViewer {
+    export class ConfigurationContainer {
+        configuration: ViewerConfiguration;
+        viewerId: string;
+        mainColor: BABYLON.Color3;
+        reflectionColor: BABYLON.Color3;
+        scene?: BABYLON.Scene;
     }
 }
 declare module BabylonViewer {
@@ -1583,6 +1592,20 @@ declare module BabylonViewer {
         *
         */
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
+}
+declare module BabylonViewer {
+    /**
+        * A custom upgrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedUpgrade(sceneManager: SceneManager): boolean;
+    /**
+        * A custom degrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedDegrade(sceneManager: SceneManager): boolean;
 }
 declare module BabylonViewer {
     export interface IEnvironmentMapConfiguration {
