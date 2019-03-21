@@ -626,8 +626,17 @@ function showError(errorMessage, errorEvent) {
 
                     if (scene) {
                         if (showInspector) {
-                            if (!scene.debugLayer.isVisible()) {
-                                scene.debugLayer.show({ embedMode: true });
+                            if(scene.then){
+                                // Handle if scene is a promise
+                                scene.then((s)=>{
+                                    if (!s.debugLayer.isVisible()) {
+                                        s.debugLayer.show({ embedMode: true });
+                                    }
+                                })
+                            }else{
+                                if (!scene.debugLayer.isVisible()) {
+                                    scene.debugLayer.show({ embedMode: true });
+                                }
                             }
                         }
                     }

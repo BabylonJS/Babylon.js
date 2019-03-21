@@ -384,7 +384,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor the imposter to create the physics body on
      */
     public generatePhysicsBody(impostor: PhysicsImpostor) {
-        impostor._pluginData = { toDispose: [] };
+        // Note: this method will not be called on child imposotrs for compound impostors
+
+        impostor._pluginData.toDispose = [];
 
         //parent-child relationship
         if (impostor.parent) {
@@ -458,9 +460,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         if (this.world) {
             this.world.removeRigidBody(impostor.physicsBody);
 
-            impostor._pluginData.toDispose.forEach((d: any) => {
-                this.bjsAMMO.destroy(d);
-            });
+            if (impostor._pluginData) {
+                impostor._pluginData.toDispose.forEach((d: any) => {
+                    this.bjsAMMO.destroy(d);
+                });
+            }
         }
     }
 
@@ -1102,7 +1106,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @returns mass
      */
     public getBodyMass(impostor: PhysicsImpostor): number {
-        return impostor._pluginData.mass;
+        return impostor._pluginData.mass || 0;
     }
 
     /**
@@ -1111,7 +1115,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @returns friction value
      */
     public getBodyFriction(impostor: PhysicsImpostor): number {
-        return impostor._pluginData.friction;
+        return impostor._pluginData.friction || 0;
     }
 
     /**
@@ -1135,7 +1139,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @returns restitution value
      */
     public getBodyRestitution(impostor: PhysicsImpostor): number {
-        return impostor._pluginData.restitution;
+        return impostor._pluginData.restitution || 0;
     }
 
     /**
@@ -1158,7 +1162,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             Logger.Warn("Pressure is not a property of a rigid body");
             return 0;
         }
-        return impostor._pluginData.pressure;
+        return impostor._pluginData.pressure || 0;
     }
 
     /**
@@ -1193,7 +1197,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             Logger.Warn("Stiffness is not a property of a rigid body");
             return 0;
         }
-        return impostor._pluginData.stiffness;
+        return impostor._pluginData.stiffness || 0;
     }
 
     /**
@@ -1223,7 +1227,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             Logger.Warn("Velocity iterations is not a property of a rigid body");
             return 0;
         }
-        return impostor._pluginData.velocityIterations;
+        return impostor._pluginData.velocityIterations || 0;
     }
 
     /**
@@ -1252,7 +1256,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             Logger.Warn("Position iterations is not a property of a rigid body");
             return 0;
         }
-        return impostor._pluginData.positionIterations;
+        return impostor._pluginData.positionIterations || 0;
     }
 
     /**
