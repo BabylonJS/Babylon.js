@@ -694,7 +694,7 @@ function showError(errorMessage, errorEvent) {
 
         var addTexturesToZip = function(zip, index, textures, folder, then) {
 
-            if (index === textures.length) {
+            if (index === textures.length || !textures[index].name) {
                 then();
                 return;
             }
