@@ -6,7 +6,7 @@ var fs = require("fs");
  * Tests the whats new file to ensure changes have been made in the PR.
  */
 gulp.task("tests-whatsnew", function(done) {
-    console.log(process.env["System.PullRequest.PullRequestId"])
+    console.log(process.env["AZURE_PULLREQUESTID"])
     // Only checks on Travis
     if (!process.env.TRAVIS) {
         done();
