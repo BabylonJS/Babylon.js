@@ -1,19 +1,25 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - master
 
 pool:
   vmImage: 'Ubuntu-16.04'
+  demands: npm
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    workingDir: Tools/Gulp
+    verbose: false
+
+- script: 'gulp typescript-all'
+  workingDirectory: Tools/Gulp
+  displayName: 'Build'
 
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+   export DISPLAY=:99
+   Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+   sleep 3 # give xvfb some time to start
+   gulp tests-validation-virtualscreen
+  workingDirectory: Tools/Gulp
+  displayName: 'Visual Tests'
