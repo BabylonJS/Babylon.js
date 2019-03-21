@@ -1075,7 +1075,7 @@ export class TransformNode extends Node {
         if (!camera) {
             camera = (<Camera>this.getScene().activeCamera);
         }
-        return this.absolutePosition.subtract(camera.position).length();
+        return this.absolutePosition.subtract(camera.globalPosition).length();
     }
 
     /**
