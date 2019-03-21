@@ -51041,6 +51041,13 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var chromaticAberrationPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
     /**
      * The ChromaticAberrationPostProcess separates the rgb channels in an image to produce chromatic distortion around the edges of the screen
      */

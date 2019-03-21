@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -36010,7 +36010,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
@@ -36311,7 +36311,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
@@ -36725,7 +36725,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
@@ -37366,6 +37366,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "ClearCoat Tint Map", value: 28 },
             { label: "Sheen Map", value: 29 },
             { label: "Anisotropic Map", value: 30 },
+            { label: "Thickness Map", value: 31 },
             // Env
             { label: "Env Refraction", value: 40 },
             { label: "Env Reflection", value: 41 },
@@ -37385,6 +37386,8 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "ClearCoat Color", value: 65 },
             { label: "ClearCoat Roughness", value: 66 },
             { label: "ClearCoat NdotV", value: 67 },
+            { label: "Transmittance", value: 68 },
+            { label: "Refraction Transmittance", value: 69 },
             // Misc
             { label: "SEO", value: 70 },
             { label: "EHO", value: 71 },
@@ -37443,6 +37446,24 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.sheen, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Color", target: material.sheen, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Texture", texture: material.sheen.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SUBSURFACE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Thickness", texture: material.subSurface.thicknessTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Min Thickness", target: material.subSurface, propertyName: "minimumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Max Thickness", target: material.subSurface, propertyName: "maximumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Mask From Thickness", target: material.subSurface, propertyName: "useMaskFromThicknessTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.subSurface, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Refraction Enabled", target: material.subSurface, propertyName: "isRefractionEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.subSurface.isRefractionEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.subSurface, propertyName: "refractionIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Index of Refraction", target: material.subSurface, propertyName: "indexOfRefraction", minimum: 1, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Tint at Distance", target: material.subSurface, propertyName: "tintColorAtDistance", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link refraction with transparency", target: material.subSurface, propertyName: "linkRefractionWithTransparency", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Transluency Enabled", target: material.subSurface, propertyName: "isTranslucencyEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.subSurface.isTranslucencyEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.subSurface, propertyName: "translucencyIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffusion Distance", target: material.subSurface, propertyName: "diffusionDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Environment", target: material, propertyName: "environmentIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Specular", target: material, propertyName: "specularIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37458,7 +37479,6 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Alpha from albedo", target: material, propertyName: "useAlphaFromAlbedoTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Ambient in grayscale", target: material, propertyName: "useAmbientInGrayScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Radiance over alpha", target: material, propertyName: "useRadianceOverAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link refraction with transparency", target: material, propertyName: "linkRefractionWithTransparency", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Micro-surface from ref. map alpha", target: material, propertyName: "useMicroSurfaceFromReflectivityMapAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Specular over alpha", target: material, propertyName: "useSpecularOverAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Specular anti-aliasing", target: material, propertyName: "enableSpecularAntiAliasing", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
@@ -37728,7 +37748,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/valueLineComponent */ "./components/actionTabs/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 
@@ -42186,14 +42206,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/adtInstrumentation":
+/***/ "babylonjs-gui/2D/controls/image":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
 
 /***/ }),
 
