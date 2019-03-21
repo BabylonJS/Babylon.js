@@ -9,7 +9,7 @@ pr:
 
 jobs:
 - job: WhatsNewUpdate
-  displayName: 'What s New Update'
+  displayName: '1. What s New Update'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
@@ -26,7 +26,7 @@ jobs:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
 
 - job: DocumentationCheck
-  displayName: 'Documentation Check'
+  displayName: '2. Documentation Check'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
@@ -41,6 +41,7 @@ jobs:
     displayName: 'Typedoc check'
 
 - job: Linting
+  displayName: '3. Linting'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
@@ -55,6 +56,7 @@ jobs:
     displayName: 'Full Lint'
 
 - job: Build
+  displayName: '4. Build'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
@@ -69,6 +71,7 @@ jobs:
     displayName: 'Typescript all'
 
 - job: Tests
+  displayName: '5. Core Tests'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
@@ -92,8 +95,32 @@ jobs:
     workingDirectory: Tools/Gulp
     displayName: 'Visual Tests'
 
+- job: ModuleTests
+  displayName: '6. Module Tests'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+  - script: 'gulp tests-modules'
+    workingDirectory: Tools/Gulp
+    displayName: 'Tests modules'
+  - script: 'sudo gulp localdev-es6'
+    workingDirectory: Tools/Gulp
+    displayName: 'Npm link ES6'
+  - script: 'gulp tests-es6Modules'
+    workingDirectory: Tools/Gulp
+    displayName: 'Tests ES6'
+
 - job: ViewerTests
-  displayName: 'Viewer Tests'
+  displayName: '7. Viewer Tests'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
