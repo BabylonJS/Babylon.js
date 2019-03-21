@@ -366,7 +366,7 @@ export class PBRSubSurfaceConfiguration {
             return this._refractionTexture;
         }
 
-        if (this._linkRefractionWithTransparency) {
+        if (this._isRefractionEnabled) {
             return scene.environmentTexture;
         }
 
@@ -377,7 +377,7 @@ export class PBRSubSurfaceConfiguration {
      * Returns true if alpha blending should be disabled.
      */
     public get disableAlphaBlending(): boolean {
-        return this._linkRefractionWithTransparency;
+        return this.isRefractionEnabled && this._linkRefractionWithTransparency;
     }
 
     /**
