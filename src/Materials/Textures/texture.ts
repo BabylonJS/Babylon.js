@@ -548,7 +548,7 @@ export class Texture extends BaseTexture {
      */
     public clone(): Texture {
         return SerializationHelper.Clone(() => {
-            return new Texture(this._texture ? this._texture.url : null, this.getScene(), this._noMipmap, this._invertY, this.samplingMode);
+            return new Texture(this._texture ? this._texture.url : null, this.getScene(), this._noMipmap, this._invertY, this.samplingMode, undefined, undefined, this._texture ? this._texture._buffer : undefined);
         }, this);
     }
 

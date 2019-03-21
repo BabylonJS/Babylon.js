@@ -451,6 +451,23 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return this.importMeshAsync(null, scene, data, rootUrl).then((result) => {
             var container = new AssetContainer(scene);
             result.meshes.forEach((mesh) => container.meshes.push(mesh));
+            result.meshes.forEach((mesh) => {
+                var material = mesh.material;
+                if (material) {
+                    // Materials
+                    if (container.materials.indexOf(material) == -1) {
+                        container.materials.push(material);
+
+                        // Textures
+                        var textures = material.getActiveTextures();
+                        textures.forEach((t) => {
+                            if (container.textures.indexOf(t) == -1) {
+                                container.textures.push(t);
+                            }
+                        });
+                    }
+                }
+            });
             container.removeAllFromScene();
             return container;
         });
@@ -515,7 +532,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             if (!arr[obj[0]]) { arr[obj[0]] = { normals: [], idx: [], uv: [] }; }
             var idx = arr[obj[0]].normals.indexOf(obj[1]);
 
-            if (idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
+            if (idx != 1 && (obj[2] === arr[obj[0]].uv[idx])) {
                 return arr[obj[0]].idx[idx];
             }
             return -1;
@@ -558,7 +575,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
 
             //If it not exists
-            if (_index == -1) {
+            if (_index === -1) {
                 //Add an new indice.
                 //The array of indices is only an array with his length equal to the number of triangles - 1.
                 //We add vertices data in this order
@@ -847,7 +864,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             if (line.length === 0 || line.charAt(0) === '#') {
                 continue;
 
-            //Get information about one position possible for the vertices
+                //Get information about one position possible for the vertices
             } else if (this.vertexPattern.test(line)) {
                 result = line.match(/[^ ]+/g)!;  // match will return non-null due to passing regex pattern
 
@@ -1068,7 +1085,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             //check meshesNames (stlFileLoader)
             if (meshesNames && meshesFromObj[j].name) {
                 if (meshesNames instanceof Array) {
-                    if (meshesNames.indexOf(meshesFromObj[j].name) == -1) {
+                    if (meshesNames.indexOf(meshesFromObj[j].name) === -1) {
                         continue;
                     }
                 }
@@ -1138,7 +1155,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                 startIndex = _index + 1;
                             }
                             //If the material is not used dispose it
-                            if (_index == -1 && _indices.length == 0) {
+                            if (_index === -1 && _indices.length === 0) {
                                 //If the material is not needed, remove it
                                 materialsFromMTLFile.materials[n].dispose();
                             } else {

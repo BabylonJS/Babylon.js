@@ -251,11 +251,14 @@ uniform float averageLuminance;
 void main()
 {
 	vec4 color = texture2D(textureAdderSampler, vUV);
+
+	#ifndef AUTO_EXPOSURE
 	vec4 adjustedColor = color / averageLuminance;
 
 	color = adjustedColor;
 	color.a = 1.0;
-
+	#endif
+	
 	gl_FragColor = color;
 }
 #endif

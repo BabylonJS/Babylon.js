@@ -1,0 +1,118 @@
+trigger:
+- master
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - master
+
+jobs:
+- job: WhatsNewUpdate
+  displayName: 'What s New Update'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp tests-whatsnew'
+    workingDirectory: Tools/Gulp
+    displayName: 'Whats new'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+
+- job: DocumentationCheck
+  displayName: 'Documentation Check'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typedoc-check'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typedoc check'
+
+- job: Linting
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp fullLint'
+    workingDirectory: Tools/Gulp
+    displayName: 'Full Lint'
+
+- job: Build
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+
+- job: Tests
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+  - script: 'gulp tests-babylon-unit'
+    workingDirectory: Tools/Gulp
+    displayName: 'Unit Tests'
+  - script: |
+      export DISPLAY=:99
+      Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      sleep 3 # give xvfb some time to start
+      gulp tests-validation-virtualscreen
+    workingDirectory: Tools/Gulp
+    displayName: 'Visual Tests'
+
+- job: ViewerTests
+  displayName: 'Viewer Tests'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+  - script: 'gulp tests-viewer-unit'
+    workingDirectory: Tools/Gulp
+    displayName: 'Unit Tests'
+  - script: |
+      export DISPLAY=:99
+      Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      sleep 3 # give xvfb some time to start
+      gulp tests-viewer-validation-virtualscreen
+    workingDirectory: Tools/Gulp
+    displayName: 'Visual Tests'
