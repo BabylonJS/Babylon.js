@@ -16,6 +16,8 @@ jobs:
   - script: 'gulp tests-whatsnew'
     workingDirectory: Tools/Gulp
     displayName: 'Whats new'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
 
 - job: DocumentationCheck
   displayName: 'Documentation Check'
