@@ -207,7 +207,7 @@ export class PhysicsImpostor {
     public static IDENTITY_QUATERNION = Quaternion.Identity();
 
     /** @hidden */
-    public _pluginData: any;
+    public _pluginData: any = {};
 
     private _physicsEngine: Nullable<IPhysicsEngine>;
     //The native cannon/oimo/energy physics body object.
