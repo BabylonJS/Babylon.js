@@ -585,7 +585,7 @@
     "nodeEditor": {
         "libraries": [
             {
-                "output": "babylon.nodeEditor.bundle.js",
+                "output": "babylon.nodeEditor.js",
                 "entry": "./legacy/legacy.ts"
             }
         ],
@@ -623,13 +623,13 @@
                 "packageName": "@babylonjs/nodeEditor",
                 "readme": "dist/preview release/nodeEditor/readme-es6.md",
                 "packagesFiles": [
-                    "babylon.nodeEditor.bundle.max.js",
-                    "babylon.nodeEditor.bundle.max.js.map",
+                    "babylon.nodeEditor.max.js",
+                    "babylon.nodeEditor.max.js.map",
                     "babylon.nodeEditor.module.d.ts",
                     "readme.md"
                 ],
                 "typings": "babylon.nodeEditor.module.d.ts",
-                "index": "babylon.nodeEditor.bundle.max.js"
+                "index": "babylon.nodeEditor.max.js"
             }
         }
     },

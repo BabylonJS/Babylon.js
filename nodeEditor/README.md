@@ -4,9 +4,9 @@ An extension to easily create or update any NodeMaterial.
 
 ## Usage
 ### Online method
-Call the method `Create` of the `BABYLON.NoteMaterial` class: 
+Call the method `Show` of the `BABYLON.NoteMaterial` class: 
 ```
-BABYLON.NoteMaterial.Create();
+BABYLON.NoteMaterial.Show({hostElement: document.getElementById("host")});
 ```
 This method will retrieve dynamically the library `nodeEditor.js`, download it and add
 it to the html page.
