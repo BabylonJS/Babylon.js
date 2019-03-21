@@ -4,6 +4,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
+import "../Shaders/rgbdDecode.fragment";
 
 /**
  * Class used to host texture specific utilities
