@@ -43579,6 +43579,13 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var rgbdDecodePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
     /**
      * Class used to host texture specific utilities
      */
@@ -45709,13 +45716,6 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var rgbdEncodePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var rgbdDecodePixelShader: {
         name: string;
         shader: string;
     };

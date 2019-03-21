@@ -1,0 +1,25 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+  demands: npm
+
+steps:
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    workingDir: Tools/Gulp
+    verbose: false
+
+- script: 'gulp typescript-all'
+  workingDirectory: Tools/Gulp
+  displayName: 'Build'
+
+- script: |
+   export DISPLAY=:99
+   Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+   sleep 3 # give xvfb some time to start
+   gulp tests-validation-virtualscreen
+  workingDirectory: Tools/Gulp
+  displayName: 'Visual Tests'
