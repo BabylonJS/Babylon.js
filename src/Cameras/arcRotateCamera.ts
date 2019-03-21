@@ -80,8 +80,9 @@ export class ArcRotateCamera extends TargetCamera {
     protected _upToYMatrix: Matrix;
     protected _YToUpMatrix: Matrix;
 
-    /**The vector the camera should consider as up. (default is Vector3(0, 1, 0) aka Vector3.Up())
-     * Setting this will copy the given vec to the camera's upVector, and set rotation matrices to and from the Y up.  
+    /**
+     * The vector the camera should consider as up. (default is Vector3(0, 1, 0) as returned by Vector3.Up())
+     * Setting this will copy the given vector to the camera's upVector, and set rotation matrices to and from Y up.
      * DO NOT set the up vector using copyFrom or copyFromFloats, as this bypasses setting the above matrices.
      */
     set upVector(vec: Vector3) {
@@ -94,18 +95,21 @@ export class ArcRotateCamera extends TargetCamera {
 
         vec.normalize();
         this._upVector.copyFrom(vec);
-        this.setMatUp(); // still more efficient to calculate this once
+        this.setMatUp();
     }
 
     get upVector() {
         return this._upVector;
     }
 
-    setMatUp() {
+    /**
+     * Sets the Y-up to camera up-vector rotation matrix, and the up-vector to Y-up rotation matrix.
+     */
+    public setMatUp() {
         // from y-up to custom-up (used in _getViewMatrix)
         Matrix.RotationAlignToRef(Vector3.UpReadOnly, this._upVector, this._YToUpMatrix);
 
-        // from custom-up to y-up (used in rebuildAnglesAndRadians)
+        // from custom-up to y-up (used in rebuildAnglesAndRadius)
         Matrix.RotationAlignToRef(this._upVector, Vector3.UpReadOnly, this._upToYMatrix);
     }
 
@@ -906,7 +910,7 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Alpha
         if (this._computationVector.x === 0 && this._computationVector.z === 0) {
-            this.alpha = Math.PI / 2; // avoid division by zero, and set to acos(0)
+            this.alpha = Math.PI / 2; // avoid division by zero when looking along up axis, and set to acos(0)
         } else {
             this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
         }
