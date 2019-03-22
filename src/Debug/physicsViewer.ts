@@ -212,6 +212,11 @@ export class PhysicsViewer {
             return null;
         }
 
+        // Only create child impostor debug meshes when evaluating the parent
+        if (targetMesh && targetMesh.parent && (targetMesh.parent as Mesh).physicsImpostor) {
+            return null;
+        }
+
         var mesh: Nullable<AbstractMesh> = null;
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
@@ -230,6 +235,16 @@ export class PhysicsViewer {
             case PhysicsImpostor.MeshImpostor:
                 if (targetMesh) {
                     mesh = this._getDebugMeshMesh(targetMesh, utilityLayerScene);
+                }
+                break;
+            case PhysicsImpostor.NoImpostor:
+                if (targetMesh) {
+                    // Handle compound impostors
+                    var childMeshes = targetMesh.getChildMeshes().filter((c) => {return c.physicsImpostor ? 1 : 0; });
+                    childMeshes.forEach((m) => {
+                        var a = this._getDebugBoxMesh(utilityLayerScene);
+                        a.parent = m;
+                    });
                 }
                 break;
         }
