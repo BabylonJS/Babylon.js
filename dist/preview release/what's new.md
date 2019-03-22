@@ -169,7 +169,7 @@
 
 ### Infrastructure
 
-- Adding Azure DevOps Build ([Sebavan](https://github.com/Sebavan))
+- Migrating CI to Azure DevOps pipelines ([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 
