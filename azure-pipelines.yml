@@ -99,6 +99,11 @@ jobs:
       gulp tests-validation-virtualscreen
     workingDirectory: Tools/Gulp
     displayName: 'Visual Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ValidationTests.xml'
   - script: 'gulp tests-validation-browserstack'
     workingDirectory: Tools/Gulp
     displayName: 'Browser Stack Tests'
@@ -130,6 +135,11 @@ jobs:
   - script: 'gulp tests-es6Modules'
     workingDirectory: Tools/Gulp
     displayName: 'Tests ES6'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ModuleTests.xml'
 
 - job: ViewerTests
   displayName: '7. Viewer Tests'
@@ -148,6 +158,11 @@ jobs:
   - script: 'gulp tests-viewer-unit'
     workingDirectory: Tools/Gulp
     displayName: 'Unit Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ViewerUnitTests.xml'
   - script: |
       export DISPLAY=:99
       Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
@@ -155,3 +170,8 @@ jobs:
       gulp tests-viewer-validation-virtualscreen
     workingDirectory: Tools/Gulp
     displayName: 'Visual Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ViewerValidationTests.xml'
