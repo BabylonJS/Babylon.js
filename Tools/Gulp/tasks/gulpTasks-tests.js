@@ -45,13 +45,13 @@ gulp.task("tests-validation-virtualscreen", function(done) {
  * Launches the KARMA validation tests in browser stack for remote and cross devices validation tests.
  */
 gulp.task("tests-validation-browserstack", function(done) {
-
-    console.log(process.env.TRAVIS_BUILD_NUMBER,
-        process.env.BROWSER_STACK_USERNAME,
-        process.env.BROWSER_STACK_ACCESS_KEY,
-        process.env.BROWSER_STACK_ACCESS_TEST,)
-
     if (!process.env.BROWSER_STACK_USERNAME) {
+        done();
+        return;
+    }
+
+    // not in safe build
+    if (process.env.BROWSER_STACK_USERNAME === "$(babylon.browserStack.userName)") {
         done();
         return;
     }
