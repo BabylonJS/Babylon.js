@@ -51,11 +51,12 @@ module.exports = function (config) {
         reporters: ['progress', 'junit'],
 
         plugins: [
-            // Karma will require() these plugins
             'karma-mocha',
             'karma-chai',
             'karma-sinon',
             'karma-chrome-launcher',
+            'karma-firefox-launcher',
+
             require('../../Tools/Gulp/helpers/gulp-karmaJunitPlugin')
         ],
 
