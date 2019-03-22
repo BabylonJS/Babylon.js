@@ -168,3 +168,4 @@ jobs:
       TRAVIS_BUILD_NUMBER: $(Build.BuildNumber)
       BROWSER_STACK_USERNAME: $(babylon.browserStack.userName)
       BROWSER_STACK_ACCESS_KEY: $(babylon.browserStack.userToken)
+      BROWSER_STACK_ACCESS_TEST: $(babylon.browserStack.test)

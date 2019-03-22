@@ -48,7 +48,8 @@ gulp.task("tests-validation-browserstack", function(done) {
 
     console.log(process.env.TRAVIS_BUILD_NUMBER,
         process.env.BROWSER_STACK_USERNAME,
-        process.env.BROWSER_STACK_ACCESS_KEY)
+        process.env.BROWSER_STACK_ACCESS_KEY,
+        process.env.BROWSER_STACK_ACCESS_TEST,)
 
     if (!process.env.BROWSER_STACK_USERNAME) {
         done();
