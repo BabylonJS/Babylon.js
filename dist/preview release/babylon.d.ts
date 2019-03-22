@@ -7822,6 +7822,10 @@ declare module BABYLON {
          */
         addRotation(x: number, y: number, z: number): TransformNode;
         /**
+         * @hidden
+         */
+        protected _getEffectiveParent(): Nullable<Node>;
+        /**
          * Computes the world matrix of the node
          * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
          * @returns the world matrix
@@ -24116,6 +24120,10 @@ declare module BABYLON {
          * @returns a string representation of the current mesh
          */
         toString(fullDetails?: boolean): string;
+        /**
+         * @hidden
+         */
+        protected _getEffectiveParent(): Nullable<Node>;
         /** @hidden */
         _getActionManagerForTrigger(trigger?: number, initialCall?: boolean): Nullable<AbstractActionManager>;
         /** @hidden */
