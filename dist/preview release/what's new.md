@@ -157,8 +157,6 @@
 
 - Added support for exporting `KHR_lights_punctual`
 
-### Viewer
-
 ### Post-Processes Library
 - Added the [Ocean](https://doc.babylonjs.com/extensions/oceanpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
 
@@ -168,6 +166,12 @@
 - Fixed fresnel term computation in `WaterMaterial` ([julien-moreau](https://github.com/julien-moreau))
 - Fixed `TerrainMaterial.isReadyForSubMesh` to remove WebGL warnings ([julien-moreau](https://github.com/julien-moreau))
 - Fixed `MixMaterial.isReadyForSubMesh` to remove WebGL warnings ([dad72](https://github.com/dad72))
+
+### Infrastructure
+
+- Adding Azure DevOps Build ([Sebavan](https://github.com/Sebavan))
+
+### Viewer
 
 ## Bug fixes
 - Fixed ArcRotateCamera.setTarget (position was sometimes wrong) ([Deltakosh](https://github.com/deltakosh))
