@@ -87,6 +87,11 @@ jobs:
   - script: 'gulp tests-babylon-unit'
     workingDirectory: Tools/Gulp
     displayName: 'Unit Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/UnitTests.xml'
   - script: |
       export DISPLAY=:99
       Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
@@ -94,6 +99,13 @@ jobs:
       gulp tests-validation-virtualscreen
     workingDirectory: Tools/Gulp
     displayName: 'Visual Tests'
+  - script: 'gulp tests-validation-browserstack'
+    workingDirectory: Tools/Gulp
+    displayName: 'Browser Stack Tests'
+    env:
+      TRAVIS_BUILD_NUMBER: $(Build.BuildNumber)
+      BROWSER_STACK_USERNAME: $(babylon.browserStack.userName)
+      BROWSER_STACK_ACCESS_KEY: $(babylon.browserStack.userToken)
 
 - job: ModuleTests
   displayName: '6. Module Tests'
