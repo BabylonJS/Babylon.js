@@ -37,7 +37,7 @@ module.exports = function (config) {
         reporters: ['progress', 'junit'],
 
         junitReporter: {
-            outputDir: '.temp/testResults', // results will be saved as $outputDir/$browserName.xml
+            outputDir: '../.temp/testResults', // results will be saved as $outputDir/$browserName.xml
             outputFile: 'ViewerValidationTests.xml', // if included, results will be saved as $outputDir/$browserName/$outputFile
             suite: 'Viewer Validation Tests', // suite will become the package name attribute in xml testsuite element
             useBrowserName: false, // add browser name to report and classes names
