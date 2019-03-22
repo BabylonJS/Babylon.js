@@ -3930,6 +3930,12 @@ export class Scene extends AbstractScene implements IAnimatable {
                 continue;
             }
 
+            // Compute world matrix if LOD is billboard
+            if (meshLOD !== mesh && meshLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
+                meshLOD.parent = mesh;
+                meshLOD.computeWorldMatrix();
+            }
+
             mesh._preActivate();
 
             if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {

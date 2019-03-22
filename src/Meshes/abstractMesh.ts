@@ -1018,7 +1018,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns a Matrix
      */
     public getWorldMatrix(): Matrix {
-        if (this._masterMesh) {
+        if (this._masterMesh && this.billboardMode === TransformNode.BILLBOARDMODE_NONE) {
             return this._masterMesh.getWorldMatrix();
         }
 
