@@ -218,8 +218,8 @@
 - Fix `mesh.visibility` not working properly when certain material properties are set that changes the interpretation of alpha (e.g. refraction, specular over alpha, etc.) ([bghgary](https://github.com/bghgary))
 - Fix material and texture leak when loading/removing GLTF/obj/babylon files with AssetContainer ([TrevorDev](https://github.com/TrevorDev))
 - Avoid exception when removing impostor during cannon world step ([TrevorDev](https://github.com/TrevorDev))
-- Fix code branch, that does not try to (re)load a `EquiRectangularCubeTexture`/`HDRCubeTexture` when the caching returns an empty or corrupt `InternalTexture` ([Dennis Dervisis](https://github.com/ddervisis))
-- Add error eventlistener (bubbling up the onError callback chain) in case an `EquiRectangularCubeTexture` can not be loaded, because of a wrong path or IO problems ([Dennis Dervisis](https://github.com/ddervisis))
+- Fix code branch, that does not try to (re)load an `EquiRectangularCubeTexture`/`HDRCubeTexture` when the caching returns an empty or corrupt `InternalTexture` ([Dennis Dervisis](https://github.com/ddervisis))
+- Add error eventlistener (bubbling up the onError callback chain) in case an `EquiRectangularCubeTexture` cannot be loaded, because of a wrong path or IO problems ([Dennis Dervisis](https://github.com/ddervisis))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
