@@ -1105,6 +1105,10 @@ void main(void) {
     finalDiffuse *= surfaceAlbedo.rgb;
     finalDiffuse = max(finalDiffuse, 0.0);
 
+// _____________________________ Ambient ________________________________________
+    vec3 finalAmbient = diffuseBase;
+    finalAmbient *= surfaceAlbedo.rgb;
+
 // _____________________________ Emissive ________________________________________
     vec3 finalEmissive = vEmissiveColor;
 #ifdef EMISSIVE
@@ -1124,7 +1128,7 @@ void main(void) {
 // _____________________________ Composition _____________________________________
     // Reflection already includes the environment intensity.
     vec4 finalColor = vec4(
-        vAmbientColor			* ambientOcclusionColor +
+        finalAmbient			* ambientOcclusionColor +
         finalDiffuse			* ambientOcclusionForDirectDiffuse * vLightingIntensity.x +
 #ifndef UNLIT
     #ifdef REFLECTION

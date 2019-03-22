@@ -50,6 +50,12 @@ gulp.task("tests-validation-browserstack", function(done) {
         return;
     }
 
+    // not in safe build
+    if (process.env.BROWSER_STACK_USERNAME === "$(babylon.browserStack.userName)") {
+        done();
+        return;
+    }
+
     var kamaServerOptions = {
         configFile: rootDir + "tests/validation/karma.conf.browserstack.js",
         singleRun: true
