@@ -1106,7 +1106,7 @@ void main(void) {
     finalDiffuse = max(finalDiffuse, 0.0);
 
 // _____________________________ Ambient ________________________________________
-    vec3 finalAmbient = diffuseBase;
+    vec3 finalAmbient = vAmbientColor;
     finalAmbient *= surfaceAlbedo.rgb;
 
 // _____________________________ Emissive ________________________________________
