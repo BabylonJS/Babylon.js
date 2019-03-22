@@ -24,6 +24,7 @@ jobs:
     displayName: 'Whats new'
     env:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      BROWSER_STACK_USERNAME: $(babylon.browserStack.userName)
 
 - job: DocumentationCheck
   displayName: '2. Documentation Check'
