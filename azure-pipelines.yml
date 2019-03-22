@@ -87,6 +87,11 @@ jobs:
   - script: 'gulp tests-babylon-unit'
     workingDirectory: Tools/Gulp
     displayName: 'Unit Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/UnitTests.xml'
   - script: |
       export DISPLAY=:99
       Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
