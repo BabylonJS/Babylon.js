@@ -42,6 +42,32 @@ gulp.task("tests-validation-virtualscreen", function(done) {
 });
 
 /**
+ * Launches the KARMA validation tests in ff or virtual screen ff on travis for a quick analysis during the build.
+ */
+gulp.task("tests-validation-virtualscreenWebGL1", function(done) {
+    var kamaServerOptions = {
+        configFile: rootDir + "tests/validation/karma.conf.js",
+        singleRun: true,
+        browsers: ['Firefox'],
+        client: {
+            args: ["--disableWebGL2Support"]
+        },
+        junitReporter: {
+            outputDir: '.temp/testResults', // results will be saved as $outputDir/$browserName.xml
+            outputFile: 'ValidationTests1.xml', // if included, results will be saved as $outputDir/$browserName/$outputFile
+            suite: 'Validation Tests WebGL1', // suite will become the package name attribute in xml testsuite element
+            useBrowserName: false, // add browser name to report and classes names
+            nameFormatter: undefined, // function (browser, result) to customize the name attribute in xml testcase element
+            classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
+            properties: {} // key value pair of properties to add to the <properties> section of the report
+        }
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
  * Launches the KARMA validation tests in browser stack for remote and cross devices validation tests.
  */
 gulp.task("tests-validation-browserstack", function(done) {

@@ -57,22 +57,7 @@ jobs:
     displayName: 'Full Lint'
 
 - job: Build
-  displayName: '4. Build'
-  pool:
-    vmImage: 'Ubuntu-16.04'
-    demands: npm
-  steps:
-  - task: Npm@1
-    displayName: 'npm install'
-    inputs:
-      workingDir: Tools/Gulp
-      verbose: false
-  - script: 'gulp typescript-all'
-    workingDirectory: Tools/Gulp
-    displayName: 'Typescript all'
-
-- job: Tests
-  displayName: '5. Core Tests'
+  displayName: '4. Build and Unit Tests'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
@@ -93,6 +78,48 @@ jobs:
     inputs:
       testRunner: JUnit
       testResultsFiles: '.temp/testResults/UnitTests.xml'
+
+- job: TestsWebGL1
+  displayName: '5. Validation Tests WebGL1'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+  - script: |
+      export DISPLAY=:99
+      Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      sleep 3 # give xvfb some time to start
+      gulp tests-validation-virtualscreenWebGL1
+    workingDirectory: Tools/Gulp
+    displayName: 'Visual Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ValidationTests1.xml'
+
+- job: TestsWebGL2
+  displayName: '6. Validation Tests WebGL2'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
   - script: |
       export DISPLAY=:99
       Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
@@ -104,7 +131,7 @@ jobs:
     condition: succeededOrFailed()
     inputs:
       testRunner: JUnit
-      testResultsFiles: '.temp/testResults/ValidationTests.xml'
+      testResultsFiles: '.temp/testResults/ValidationTests2.xml'
   # - script: 'gulp tests-validation-browserstack'
   #   workingDirectory: Tools/Gulp
   #   displayName: 'Browser Stack Tests'
@@ -114,7 +141,7 @@ jobs:
   #     BROWSER_STACK_ACCESS_KEY: $(babylon.browserStack.userToken)
 
 - job: ModuleTests
-  displayName: '6. Module Tests'
+  displayName: '7. Module Tests'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
@@ -148,7 +175,7 @@ jobs:
       testResultsFiles: '.temp/testResults/ModuleTestsWebpack.xml'
 
 - job: ViewerTests
-  displayName: '7. Viewer Tests'
+  displayName: '8. Viewer Tests'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
