@@ -43,7 +43,7 @@ module.exports = function (config) {
             'karma-chrome-launcher',
             'karma-firefox-launcher',
 
-            require('../../Tools/Gulp/helpers/gulp-karmaJunitPlugin')
+            require('../../../Tools/Gulp/helpers/gulp-karmaJunitPlugin')
         ],
 
         junitReporter: {
