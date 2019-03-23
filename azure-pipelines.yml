@@ -105,13 +105,13 @@ jobs:
     inputs:
       testRunner: JUnit
       testResultsFiles: '.temp/testResults/ValidationTests.xml'
-  - script: 'gulp tests-validation-browserstack'
-    workingDirectory: Tools/Gulp
-    displayName: 'Browser Stack Tests'
-    env:
-      TRAVIS_BUILD_NUMBER: $(Build.BuildNumber)
-      BROWSER_STACK_USERNAME: $(babylon.browserStack.userName)
-      BROWSER_STACK_ACCESS_KEY: $(babylon.browserStack.userToken)
+  # - script: 'gulp tests-validation-browserstack'
+  #   workingDirectory: Tools/Gulp
+  #   displayName: 'Browser Stack Tests'
+  #   env:
+  #     TRAVIS_BUILD_NUMBER: $(Build.BuildNumber)
+  #     BROWSER_STACK_USERNAME: $(babylon.browserStack.userName)
+  #     BROWSER_STACK_ACCESS_KEY: $(babylon.browserStack.userToken)
 
 - job: ModuleTests
   displayName: '6. Module Tests'
