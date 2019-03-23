@@ -140,7 +140,12 @@ jobs:
     condition: succeededOrFailed()
     inputs:
       testRunner: JUnit
-      testResultsFiles: '.temp/testResults/ModuleTests.xml'
+      testResultsFiles: '.temp/testResults/ModuleTestsVanilla.xml'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ModuleTestsWebpack.xml'
 
 - job: ViewerTests
   displayName: '7. Viewer Tests'
