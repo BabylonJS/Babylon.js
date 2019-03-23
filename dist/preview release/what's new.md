@@ -170,6 +170,7 @@
 ### Infrastructure
 
 - Migrating CI to Azure DevOps pipelines ([Sebavan](https://github.com/Sebavan))
+- Test both WebGL1 and WebGL2 ([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 
