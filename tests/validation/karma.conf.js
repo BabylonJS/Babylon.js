@@ -56,8 +56,8 @@ module.exports = function (config) {
 
         junitReporter: {
             outputDir: '.temp/testResults', // results will be saved as $outputDir/$browserName.xml
-            outputFile: 'ValidationTests.xml', // if included, results will be saved as $outputDir/$browserName/$outputFile
-            suite: 'Validation Tests', // suite will become the package name attribute in xml testsuite element
+            outputFile: 'ValidationTests2.xml', // if included, results will be saved as $outputDir/$browserName/$outputFile
+            suite: 'Validation Tests WebGL2', // suite will become the package name attribute in xml testsuite element
             useBrowserName: false, // add browser name to report and classes names
             nameFormatter: undefined, // function (browser, result) to customize the name attribute in xml testcase element
             classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
