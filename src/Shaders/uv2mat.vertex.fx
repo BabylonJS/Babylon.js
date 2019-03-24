@@ -1,0 +1,15 @@
+﻿// Attributes
+in vec3 position;
+in vec2 uv2;
+
+// Uniforms
+uniform mat4 worldViewProjection;
+
+out vec2 vUV2;
+
+void main(void) {
+    vec4 worldPos = worldViewProjection * vec4(position, 1.0);
+
+    vUV2 = uv2;
+	gl_Position = worldPos;
+}

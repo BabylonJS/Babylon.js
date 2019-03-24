@@ -10,6 +10,7 @@ export * from "./multiMaterial";
 export * from "./PBR/index";
 export * from "./pushMaterial";
 export * from "./shaderMaterial";
+export * from "./uv2Material";
 export * from "./standardMaterial";
 export * from "./Textures/index";
 export * from "./uniformBuffer";

@@ -1,5 +1,5 @@
 ﻿var jsEditor;
-var defaultScene = "scripts/basic scene.js";
+var defaultScene = "scripts/radiosity.js";
 var monacoMode = "javascript";
 
 function getRunCode(jsEditor, callBack) {
