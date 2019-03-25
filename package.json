@@ -9,7 +9,7 @@
     ],
     "name": "babylonjs",
     "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
-    "version": "4.0.0-beta.2",
+    "version": "4.0.0-beta.3",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -70,7 +70,7 @@
         "gulp-tslint": "^8.1.3",
         "gulp-typedoc": "^2.2.1",
         "gulp-typescript": "4.0.2",
-        "karma": "^3.1.1",
+        "karma": "^4.0.1",
         "karma-browserstack-launcher": "^1.4.0",
         "karma-chai": "^0.1.0",
         "karma-chrome-launcher": "^2.2.0",
@@ -103,6 +103,7 @@
         "webpack-cli": "^3.1.2",
         "webpack-dev-server": "^3.1.14",
         "webpack-stream": "5.0.0",
-        "xhr2": "^0.1.4"
+        "xhr2": "^0.1.4",
+        "xmlbuilder": "8.2.2"
     }
 }

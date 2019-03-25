@@ -3,8 +3,9 @@ import { Vector3, Vector2, Color4, Vector4 } from "../../Maths/math";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { PolygonMeshBuilder } from "../polygonMesh";
-import { FloatArray, IndicesArray } from "../../types";
+import { FloatArray, IndicesArray, Nullable } from "../../types";
 import { VertexBuffer } from "../../Meshes/buffer";
+import { EngineStore } from '../../Engines/engineStore';
 
 declare var earcut: any;
 
@@ -109,7 +110,7 @@ export class PolygonBuilder {
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, }, scene: Scene, earcutInjection = earcut): Mesh {
+    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
         var shape = options.shape;
         var holes = options.holes || [];
@@ -125,7 +126,7 @@ export class PolygonBuilder {
             contours.pop();
         }
 
-        var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene, earcutInjection);
+        var polygonTriangulation = new PolygonMeshBuilder(name, contours, scene || EngineStore.LastCreatedScene!, earcutInjection);
         for (var hNb = 0; hNb < holes.length; hNb++) {
             hole = [];
             for (var hPoint = 0; hPoint < holes[hNb].length; hPoint++) {
@@ -151,7 +152,7 @@ export class PolygonBuilder {
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene, earcutInjection = earcut): Mesh {
+    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
         return PolygonBuilder.CreatePolygon(name, options, scene, earcutInjection);
     }
 }

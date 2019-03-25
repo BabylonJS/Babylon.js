@@ -857,6 +857,13 @@ export class TransformNode extends Node {
     }
 
     /**
+     * @hidden
+     */
+    protected _getEffectiveParent(): Nullable<Node> {
+        return this.parent;
+    }
+
+    /**
      * Computes the world matrix of the node
      * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
      * @returns the world matrix
@@ -880,6 +887,7 @@ export class TransformNode extends Node {
         this._currentRenderId = this.getScene().getRenderId();
         this._childUpdateId++;
         this._isDirty = false;
+        let parent = this._getEffectiveParent();
 
         // Scaling
         Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
@@ -931,13 +939,13 @@ export class TransformNode extends Node {
         this._tempMatrix.multiplyToRef(this._tempMatrix2, this._localMatrix);
 
         // Parent
-        if (this.parent && this.parent.getWorldMatrix) {
+        if (parent && parent.getWorldMatrix) {
             // We do not want parent rotation
             if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard) {
                 if (this._transformToBoneReferal) {
-                    this.parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), Tmp.Matrix[7]);
+                    parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), Tmp.Matrix[7]);
                 } else {
-                    Tmp.Matrix[7].copyFrom(this.parent.getWorldMatrix());
+                    Tmp.Matrix[7].copyFrom(parent.getWorldMatrix());
                 }
 
                 // Extract scaling and translation from parent
@@ -950,10 +958,10 @@ export class TransformNode extends Node {
                 this._localMatrix.multiplyToRef(Tmp.Matrix[7], this._worldMatrix);
             } else {
                 if (this._transformToBoneReferal) {
-                    this._localMatrix.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
+                    this._localMatrix.multiplyToRef(parent.getWorldMatrix(), Tmp.Matrix[6]);
                     Tmp.Matrix[6].multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), this._worldMatrix);
                 } else {
-                    this._localMatrix.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
+                    this._localMatrix.multiplyToRef(parent.getWorldMatrix(), this._worldMatrix);
                 }
             }
 
@@ -1002,8 +1010,8 @@ export class TransformNode extends Node {
         if (!this.ignoreNonUniformScaling) {
             if (this.scaling.isNonUniform) {
                 this._updateNonUniformScalingState(true);
-            } else if (this.parent && (<TransformNode>this.parent)._nonUniformScaling) {
-                this._updateNonUniformScalingState((<TransformNode>this.parent)._nonUniformScaling);
+            } else if (parent && (<TransformNode>parent)._nonUniformScaling) {
+                this._updateNonUniformScalingState((<TransformNode>parent)._nonUniformScaling);
             } else {
                 this._updateNonUniformScalingState(false);
             }
