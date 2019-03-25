@@ -33,6 +33,7 @@ export class PhysicsViewer {
 
     private _debugBoxMesh: Mesh;
     private _debugSphereMesh: Mesh;
+    private _debugCylinderMesh: Mesh;
     private _debugMaterial: StandardMaterial;
     private _debugMeshMeshes = new Array<Mesh>();
 
@@ -198,14 +199,14 @@ export class PhysicsViewer {
     }
 
     private _getDebugCylinderMesh(scene: Scene): AbstractMesh {
-        if (!this._debugSphereMesh) {
-            this._debugSphereMesh = CylinderBuilder.CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
-            this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
-            this._debugSphereMesh.material = this._getDebugMaterial(scene);
-            this._debugSphereMesh.setEnabled(false);
+        if (!this._debugCylinderMesh) {
+            this._debugCylinderMesh = CylinderBuilder.CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
+            this._debugCylinderMesh.rotationQuaternion = Quaternion.Identity();
+            this._debugCylinderMesh.material = this._getDebugMaterial(scene);
+            this._debugCylinderMesh.setEnabled(false);
         }
 
-        return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
+        return this._debugCylinderMesh.createInstance('physicsBodyBoxViewInstance');
     }
 
     private _getDebugMeshMesh(mesh: Mesh, scene: Scene): AbstractMesh {
@@ -282,6 +283,9 @@ export class PhysicsViewer {
         }
         if (this._debugSphereMesh) {
             this._debugSphereMesh.dispose();
+        }
+        if (this._debugCylinderMesh) {
+            this._debugCylinderMesh.dispose();
         }
         if (this._debugMaterial) {
             this._debugMaterial.dispose();
