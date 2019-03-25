@@ -261,7 +261,7 @@ export class PhysicsViewer {
                 break;
             case PhysicsImpostor.CylinderImpostor:
                 mesh = this._getDebugCylinderMesh(utilityLayerScene);
-                var bi = impostor.object.getBoundingInfo()
+                var bi = impostor.object.getBoundingInfo();
                 mesh.scaling.x = bi.boundingBox.maximum.x - bi.boundingBox.minimum.x;
                 mesh.scaling.y = bi.boundingBox.maximum.y - bi.boundingBox.minimum.y;
                 mesh.scaling.z = bi.boundingBox.maximum.z - bi.boundingBox.minimum.z;
