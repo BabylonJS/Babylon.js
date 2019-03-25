@@ -11,6 +11,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { CylinderBuilder } from '../Meshes/Builders/cylinderBuilder';
 
 /**
      * Used to show the physics impostor around the specific mesh
@@ -196,6 +197,17 @@ export class PhysicsViewer {
         return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
     }
 
+    private _getDebugCylinderMesh(scene: Scene): AbstractMesh {
+        if (!this._debugSphereMesh) {
+            this._debugSphereMesh = CylinderBuilder.CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
+            this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
+            this._debugSphereMesh.material = this._getDebugMaterial(scene);
+            this._debugSphereMesh.setEnabled(false);
+        }
+
+        return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
+    }
+
     private _getDebugMeshMesh(mesh: Mesh, scene: Scene): AbstractMesh {
         var wireframeOver = new Mesh(mesh.name, scene, null, mesh);
         wireframeOver.position = Vector3.Zero();
@@ -246,6 +258,13 @@ export class PhysicsViewer {
                         a.parent = m;
                     });
                 }
+                break;
+            case PhysicsImpostor.CylinderImpostor:
+                mesh = this._getDebugCylinderMesh(utilityLayerScene);
+                var bi = impostor.object.getBoundingInfo()
+                mesh.scaling.x = bi.boundingBox.maximum.x - bi.boundingBox.minimum.x;
+                mesh.scaling.y = bi.boundingBox.maximum.y - bi.boundingBox.minimum.y;
+                mesh.scaling.z = bi.boundingBox.maximum.z - bi.boundingBox.minimum.z;
                 break;
         }
         return mesh;
