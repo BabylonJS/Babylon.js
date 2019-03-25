@@ -57,7 +57,7 @@
   - Added an option `useClonedMeshhMap` in the `Scene` constructor options. When set to true, each `Mesh` will have and will keep up-to-date a map of cloned meshes. This is to avoid browsing all the meshes of the scene to retrieve the ones that have the current mesh as source mesh. Disabled by default
   - Added `blockfreeActiveMeshesAndRenderingGroups` property in the `Scene`, following the same model as `blockMaterialDirtyMechanism`. This is to avoid calling `Scene.freeActiveMeshes` and `Scene.freeRenderingGroups` for each disposed mesh when we dispose several meshes in a row. One have to set `blockfreeActiveMeshesAndRenderingGroups` to `true` just before disposing the meshes, and set it back to `false` just after
   - Prevented code from doing useless and possible time consuming computation when disposing the `ShaderMaterial` of a `LinesMesh`
-  - Make a better use of the `isIdentity` cached value wihtin a `Matrix`
+  - Make a better use of the `isIdentity` cached value within a `Matrix`
   - Make sure we browse all the submeshes only once in `Material.markAsDirty` function
   - Added an `Vector3.UnprojectRayToRef` static function to avoid computing and inverting the projection matrix twice when updating a Ray.
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
@@ -169,7 +169,8 @@
 
 ### Infrastructure
 
-- Adding Azure DevOps Build ([Sebavan](https://github.com/Sebavan))
+- Migrating CI to Azure DevOps pipelines ([Sebavan](https://github.com/Sebavan))
+- Test both WebGL1 and WebGL2 ([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 
