@@ -26,10 +26,17 @@
 
     // Move the sphere upward 1/2 its height
     sphere.position.y = 1;
+    sphere.position.x = -2;
 
     // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
     var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
-    ground.material = sphere.material;
+    ground.material = new BABYLON.StandardMaterial("gg", scene);
+    var pr = new BABYLON.PatchRenderer(scene);
+    
+    ground.material.diffuseTexture = pr._patchMap;
+    
+    var sphere = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
+    sphere.position.x += 2;
     
     return scene;
 
