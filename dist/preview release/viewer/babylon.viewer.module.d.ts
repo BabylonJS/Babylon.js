@@ -230,11 +230,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
+            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<string> | Promise<Template>;
+            hideOverlayScreen(): Promise<Template> | Promise<string>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -251,11 +251,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<string> | Promise<Template>;
+            showLoadingScreen(): Promise<Template> | Promise<string>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<string> | Promise<Template>;
+            hideLoadingScreen(): Promise<Template> | Promise<string>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }

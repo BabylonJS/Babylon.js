@@ -5,7 +5,7 @@ import { VertexData } from "../mesh.vertexData";
 import { PolygonMeshBuilder } from "../polygonMesh";
 import { FloatArray, IndicesArray, Nullable } from "../../types";
 import { VertexBuffer } from "../../Meshes/buffer";
-import { EngineStore } from '../../Engines';
+import { EngineStore } from '../../Engines/engineStore';
 
 declare var earcut: any;
 

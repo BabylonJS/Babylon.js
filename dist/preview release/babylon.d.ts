@@ -35453,7 +35453,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             updatable?: boolean;
             sourcePlane?: Plane;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -39169,7 +39169,7 @@ declare module BABYLON {
                 h: number;
             };
             updatable?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a ground mesh from a height map
          * * The parameter `url` sets the URL of the height map image resource.
@@ -39199,7 +39199,7 @@ declare module BABYLON {
             alphaFilter?: number;
             updatable?: boolean;
             onReady?: (mesh: GroundMesh) => void;
-        }, scene: Scene): GroundMesh;
+        }, scene?: Nullable<Scene>): GroundMesh;
     }
 }
 declare module BABYLON {
@@ -42445,7 +42445,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -48114,7 +48114,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             instance?: Mesh;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         private static _ExtrudeShapeGeneric;
     }
 }
@@ -49651,7 +49651,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene, earcutInjection?: any): Mesh;
+        }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction.
          * * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements)
@@ -49672,7 +49672,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene, earcutInjection?: any): Mesh;
+        }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
     }
 }
 declare module BABYLON {
@@ -49713,7 +49713,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             cap?: number;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -49758,7 +49758,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             instance?: Mesh;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -49792,7 +49792,7 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
             updatable?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -49882,7 +49882,7 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
             updatable?: boolean;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a plane polygonal mesh.  By default, this is a disc
          * * The parameter `radius` sets the radius size (float) of the polygon (default 0.5)
@@ -49932,7 +49932,7 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
             updatable?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a ribbon mesh. The ribbon is a parametric shape.  It has no predefined shape. Its final shape will depend on the input parameters
          * * The parameter `pathArray` is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry
@@ -50013,7 +50013,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a torus mesh
          * * The parameter `diameter` sets the diameter size (float) of the torus (default 1)
@@ -50036,7 +50036,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a torus knot mesh
          * * The parameter `radius` sets the global radius size (float) of the torus knot (default 2)
@@ -50063,7 +50063,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
          * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
@@ -50209,7 +50209,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             instance?: Mesh;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates lathe mesh.
          * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe
@@ -50243,7 +50243,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             cap?: number;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a plane mesh
          * * The parameter `size` sets the size (float) of both sides of the plane at once (default 1)
@@ -50267,7 +50267,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             updatable?: boolean;
             sourcePlane?: Plane;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a ground mesh
          * * The parameters `width` and `height` (floats, default 1) set the width and height sizes of the ground
@@ -50286,7 +50286,7 @@ declare module BABYLON {
             subdivisionsX?: number;
             subdivisionsY?: number;
             updatable?: boolean;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a tiled ground mesh
          * * The parameters `xmin` and `xmax` (floats, default -1 and 1) set the ground minimum and maximum X coordinates
@@ -50314,7 +50314,7 @@ declare module BABYLON {
                 h: number;
             };
             updatable?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a ground mesh from a height map
          * * The parameter `url` sets the URL of the height map image resource.
@@ -50344,7 +50344,7 @@ declare module BABYLON {
             alphaFilter?: number;
             updatable?: boolean;
             onReady?: (mesh: GroundMesh) => void;
-        }, scene: Scene): GroundMesh;
+        }, scene?: Nullable<Scene>): GroundMesh;
         /**
          * Creates a polygon mesh
          * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh
@@ -50369,7 +50369,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene, earcutInjection?: any): Mesh;
+        }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction.
          * * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements)
@@ -50390,7 +50390,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene, earcutInjection?: any): Mesh;
+        }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates a tube mesh.
          * The tube is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters
@@ -50428,7 +50428,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             instance?: Mesh;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a polyhedron mesh
          * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embbeded types. Please refer to the type sheet in the tutorial to choose the wanted type
@@ -50462,7 +50462,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a decal mesh.
          * A decal is a mesh usually applied as a model onto the surface of another mesh. So don't forget the parameter `sourceMesh` depicting the decal
