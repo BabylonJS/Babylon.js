@@ -135,6 +135,8 @@
 - Added customShaderNameResolve to PBRMaterialBase to allow subclasses to specify custom shader information [MackeyK24](https://github.com/mackeyk24))
 - Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))
 - Added `auto-exposure` support in `StandardRenderingPipeline` when `HDR` is enabled ([julien-moreau](https://github.com/julien-moreau))
+- Added `Matrix.RotationAlignToRef` method to obtain rotation matrix from one vector to another ([sable](https://github.com/thscott))
+- ArcRotateCamera will now cache the necessary matrices when modifying its upVector, instead of calculating them each time they're needed ([sable](https://github.com/thscott))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
@@ -218,7 +220,9 @@
 - AssetContainer should not dispose objects it doesn't contain. Support for environmentTexture add/remove ([TrevorDev](https://github.com/TrevorDev))
 - Fix `mesh.visibility` not working properly when certain material properties are set that changes the interpretation of alpha (e.g. refraction, specular over alpha, etc.) ([bghgary](https://github.com/bghgary))
 - Fix material and texture leak when loading/removing GLTF/obj/babylon files with AssetContainer ([TrevorDev](https://github.com/TrevorDev))
-- Avoid exception when removing impostor during Cannon world step ([TrevorDev](https://github.com/TrevorDev))
+- Avoid exception when removing impostor during cannon world step ([TrevorDev](https://github.com/TrevorDev))
+- Fix ArcRotateCamera divide by zero error (when looking along up axis) in rebuildAnglesAndRadius ([sable](https://github.com/thscott))
+- Fix ArcRotateCamera rebuildAnglesAndRadius when upVector modified ([sable](https://github.com/thscott))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
