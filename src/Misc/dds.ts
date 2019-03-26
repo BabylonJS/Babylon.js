@@ -533,7 +533,8 @@ export class DDSTools {
             mipmapCount = Math.max(1, header[off_mipmapCount]);
         }
 
-        for (var face = 0; face < faces; face++) {
+        const startFace = currentFace || 0;
+        for (var face = startFace; face < faces; face++) {
             width = header[off_width];
             height = header[off_height];
 
