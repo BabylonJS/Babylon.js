@@ -27,11 +27,14 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 
+    /** The draco compression used to decode vertex data. */
+    public dracoCompression?: DracoCompression;
+
     /** Defines whether this extension is enabled. */
     public enabled = DracoCompression.DecoderAvailable;
 
     private _loader: GLTFLoader;
-    private _dracoCompression?: DracoCompression;
+    private _dracoCompressionOwned = false;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
@@ -40,9 +43,9 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose(): void {
-        if (this._dracoCompression) {
-            this._dracoCompression.dispose();
-            delete this._dracoCompression;
+        if (this.dracoCompression && this._dracoCompressionOwned) {
+            this.dracoCompression.dispose();
+            delete this.dracoCompression;
         }
 
         delete this._loader;
@@ -90,11 +93,12 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             var bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView).then((data) => {
-                    if (!this._dracoCompression) {
-                        this._dracoCompression = new DracoCompression();
+                    if (!this.dracoCompression) {
+                        this.dracoCompression = new DracoCompression();
+                        this._dracoCompressionOwned = true;
                     }
 
-                    return this._dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
+                    return this.dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
                         const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);
                         babylonVertexData.applyToGeometry(babylonGeometry);
                         return babylonGeometry;

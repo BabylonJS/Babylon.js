@@ -139,6 +139,7 @@
 - Add `EquiRectangularCubeTextureAssetTask` to be able to load `EquiRectangularCubeTextures`s via Asset Manager ([Dennis Dervisis](https://github.com/ddervisis))
 - Added `Matrix.RotationAlignToRef` method to obtain rotation matrix from one vector to another ([sable](https://github.com/thscott))
 - ArcRotateCamera will now cache the necessary matrices when modifying its upVector, instead of calculating them each time they're needed ([sable](https://github.com/thscott))
+- Update `DracoCompression` to use web workers ([bghgary](https://github.com/bghgary))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
