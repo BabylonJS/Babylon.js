@@ -57,7 +57,7 @@
   - Added an option `useClonedMeshhMap` in the `Scene` constructor options. When set to true, each `Mesh` will have and will keep up-to-date a map of cloned meshes. This is to avoid browsing all the meshes of the scene to retrieve the ones that have the current mesh as source mesh. Disabled by default
   - Added `blockfreeActiveMeshesAndRenderingGroups` property in the `Scene`, following the same model as `blockMaterialDirtyMechanism`. This is to avoid calling `Scene.freeActiveMeshes` and `Scene.freeRenderingGroups` for each disposed mesh when we dispose several meshes in a row. One have to set `blockfreeActiveMeshesAndRenderingGroups` to `true` just before disposing the meshes, and set it back to `false` just after
   - Prevented code from doing useless and possible time consuming computation when disposing the `ShaderMaterial` of a `LinesMesh`
-  - Make a better use of the `isIdentity` cached value wihtin a `Matrix`
+  - Make a better use of the `isIdentity` cached value within a `Matrix`
   - Make sure we browse all the submeshes only once in `Material.markAsDirty` function
   - Added an `Vector3.UnprojectRayToRef` static function to avoid computing and inverting the projection matrix twice when updating a Ray.
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
@@ -137,6 +137,8 @@
 - Added `auto-exposure` support in `StandardRenderingPipeline` when `HDR` is enabled ([julien-moreau](https://github.com/julien-moreau))
 - Add `EquiRectangularCubeTexture` class to enable the usage of browser-canvas supported images as `CubeTexture`'s ([Dennis Dervisis](https://github.com/ddervisis))
 - Add `EquiRectangularCubeTextureAssetTask` to be able to load `EquiRectangularCubeTextures`s via Asset Manager ([Dennis Dervisis](https://github.com/ddervisis))
+- Added `Matrix.RotationAlignToRef` method to obtain rotation matrix from one vector to another ([sable](https://github.com/thscott))
+- ArcRotateCamera will now cache the necessary matrices when modifying its upVector, instead of calculating them each time they're needed ([sable](https://github.com/thscott))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
@@ -170,7 +172,8 @@
 
 ### Infrastructure
 
-- Adding Azure DevOps Build ([Sebavan](https://github.com/Sebavan))
+- Migrating CI to Azure DevOps pipelines ([Sebavan](https://github.com/Sebavan))
+- Test both WebGL1 and WebGL2 ([Sebavan](https://github.com/Sebavan))
 
 ### Viewer
 
@@ -219,6 +222,8 @@
 - Fix `mesh.visibility` not working properly when certain material properties are set that changes the interpretation of alpha (e.g. refraction, specular over alpha, etc.) ([bghgary](https://github.com/bghgary))
 - Fix material and texture leak when loading/removing GLTF/obj/babylon files with AssetContainer ([TrevorDev](https://github.com/TrevorDev))
 - Avoid exception when removing impostor during cannon world step ([TrevorDev](https://github.com/TrevorDev))
+- Fix ArcRotateCamera divide by zero error (when looking along up axis) in rebuildAnglesAndRadius ([sable](https://github.com/thscott))
+- Fix ArcRotateCamera rebuildAnglesAndRadius when upVector modified ([sable](https://github.com/thscott))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
