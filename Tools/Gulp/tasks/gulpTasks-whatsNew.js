@@ -27,6 +27,12 @@ gulp.task("tests-whatsnew", function(done) {
         }
     }
 
+    // Only on PR not once in.
+    if (process.env.BROWSER_STACK_USERNAME !== "$(babylon.browserStack.userName)") {
+        done();
+        return;
+    };
+
     // Compare what's new with the current one in the preview release folder.
     const https = require("https");
     const url = "https://rawgit.com/BabylonJS/Babylon.js/master/dist/preview%20release/what's%20new.md";
