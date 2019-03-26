@@ -7,6 +7,8 @@ import { VertexData } from "../../Meshes/mesh.vertexData";
 declare var DracoDecoderModule: any;
 declare var WebAssembly: any;
 
+declare function importScripts(...urls: string[]): void;
+
 /**
  * Configuration for Draco compression
  */
@@ -110,10 +112,25 @@ export class DracoCompression implements IDisposable {
     }
 
     /**
+     * Default number of workers to create when creating the draco compression object.
+     */
+    public static DefaultNumWorkers = DracoCompression.GetDefaultNumWorkers();
+
+    private static GetDefaultNumWorkers(): number {
+        const hardwareConcurrency = navigator && navigator.hardwareConcurrency;
+        if (!hardwareConcurrency) {
+            return 1;
+        }
+
+        // Use 50% of the available logical processors but capped at 4.
+        return Math.min(Math.floor(hardwareConcurrency * 0.5), 4);
+    }
+
+    /**
      * Constructor
      * @param numWorkers The number of workers for async operations
      */
-    constructor(numWorkers = 4) {
+    constructor(numWorkers = DracoCompression.DefaultNumWorkers) {
         if (!URL || !URL.createObjectURL) {
             throw new Error("Object URLs are not available");
         }
@@ -167,7 +184,7 @@ export class DracoCompression implements IDisposable {
      * Stop all async operations and release resources.
      */
     public dispose(): void {
-        this._workerPoolPromise.then(workerPool => {
+        this._workerPoolPromise.then((workerPool) => {
             workerPool.dispose();
         });
 
@@ -189,7 +206,7 @@ export class DracoCompression implements IDisposable {
      * @returns A promise that resolves with the decoded vertex data
      */
     public decodeMeshAsync(data: ArrayBufferView, attributes: { [kind: string]: number }): Promise<VertexData> {
-        return this._workerPoolPromise.then(workerPool => {
+        return this._workerPoolPromise.then((workerPool) => {
             return new Promise<VertexData>((resolve, reject) => {
                 workerPool.push((worker, onComplete) => {
                     const vertexData = new VertexData();
@@ -260,7 +277,7 @@ export class DracoCompression implements IDisposable {
         }
 
         function decodeMesh(data: ArrayBufferView, attributes: { [kind: string]: number }): void {
-            decoderModulePromise.then(decoderModule => {
+            decoderModulePromise.then((decoderModule) => {
                 const buffer = new decoderModule.DecoderBuffer();
                 buffer.Init(data, data.byteLength);
 
@@ -338,7 +355,7 @@ export class DracoCompression implements IDisposable {
             });
         }
 
-        _self.onmessage = event => {
+        _self.onmessage = (event) => {
             const data = event.data;
             switch (data.id) {
                 case "initDecoder": {
@@ -358,7 +375,7 @@ export class DracoCompression implements IDisposable {
         if (decoder && decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") {
             const wasmBinaryUrl = Tools.GetAbsoluteUrl(decoder.wasmBinaryUrl);
             return new Promise((resolve, reject) => {
-                Tools.LoadFile(wasmBinaryUrl, data => {
+                Tools.LoadFile(wasmBinaryUrl, (data) => {
                     resolve(data as ArrayBuffer);
                 }, undefined, undefined, true, (request, exception) => {
                     reject(exception);
