@@ -1,5 +1,6 @@
 ﻿// Attributes
 in vec2 vUV2;
+uniform sampler2D itemBuffer;
 
 const float resolution = 8.0;
 

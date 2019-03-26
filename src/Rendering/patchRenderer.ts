@@ -1,15 +1,16 @@
-import { Color4 } from "../Maths/math";
 import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SmartArray } from "../Misc/smartArray";
 import { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
 import { Vector3 } from "../Maths/math"
 import { Matrix } from "../Maths/math"
+import { Nullable } from "../types";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
@@ -47,11 +48,14 @@ class Patch {
 export class PatchRenderer {
     private _scene: Scene;
     private _patchMap: RenderTargetTexture;
-    private _effect: Effect;
+    private _uvMap: MultiRenderTarget;
+    private _uV2Effect: Effect;
+    private _radiosityEffect: Effect;
     private _near: number;
     private _far: number;
 
     private _cachedDefines: string;
+    private _currentRenderedMap: RenderTargetTexture;
 
     /**
      * Specifiess that the depth renderer will only be used within
@@ -63,6 +67,14 @@ export class PatchRenderer {
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _DevTools.WarnImport("patchRendererSceneComponent");
+    }
+
+    public getCurrentRenderWidth() : number {
+        return this._currentRenderedMap.getRenderWidth()
+    }
+
+    public getCurrentRenderHeight() : number {
+        return this._currentRenderedMap.getRenderHeight()
     }
 
     /**
@@ -105,76 +117,113 @@ export class PatchRenderer {
         this._patchMap.ignoreCameraViewport = true;
         this._patchMap.useCameraPostProcesses = false;
 
-        // set default depth value to 1.0 (far away)
-        this._patchMap.onClearObservable.add((engine) => {
-            engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
-        });
+        // // set default depth value to 1.0 (far away)
+        // this._patchMap.onClearObservable.add((engine) => {
+        //     engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
+        // });
 
-        // Custom render function
-        var renderSubMeshFromPatch = (subMesh: SubMesh, patch: Patch): void => {
+        var uniformCb = (effect: Effect, data: any[]) => {
+            var patch = data[0];
 
-            var mesh = subMesh.getRenderingMesh();
-            var scene = this._scene;
-            var engine = scene.getEngine();
-            let material = subMesh.getMaterial();
-
-            if (!material) {
-                return;
-            }
-
-            // Culling and reverse (right handed system)
-            engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
-            engine.setDirectViewport(0, 0, this._patchMap.getRenderWidth(), this._patchMap.getRenderHeight())
-            // Managing instances
-            var batch = mesh._getInstancesRenderList(subMesh._id);
-
-            if (batch.mustReturn) {
-                return;
-            }
-
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-
-            if (this.isReady(subMesh, hardwareInstancedRendering) && patch) {
-                engine.enableEffect(this._effect);
-                mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
-
-                this._effect.setMatrix("view", patch.viewMatrix);
-                this._effect.setFloat2("nearFar", this._near, this._far);
-
-                // Alpha test
-                if (material && material.needAlphaTesting()) {
-                    var alphaTexture = material.getAlphaTestTexture();
-
-                    if (alphaTexture) {
-                        this._effect.setTexture("diffuseSampler", alphaTexture);
-                        this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
-                    }
-                }
-
-                // Bones
-                if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-                }
-
-                // Draw
-                mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                    (isInstance, world) => this._effect.setMatrix("world", world));
-            }
+            effect.setMatrix("view", patch.viewMatrix);
+            effect.setFloat2("nearFar", this._near, this._far);
         };
 
         // for loop on all patches
         this._patchMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
             var index;
             // var testPatch = new Patch(this._scene.activeCamera ? this._scene.activeCamera.position : new Vector3(0, 0, 0), new Vector3(0, -1, 0));
-
+            this._currentRenderedMap = this._patchMap;
             for (index = 0; index < opaqueSubMeshes.length; index++) {
-                renderSubMeshFromPatch(opaqueSubMeshes.data[index], testPatch);
+                this._renderSubMeshWithEffect(uniformCb, this.isPatchEffectReady.bind(this), opaqueSubMeshes.data[index], testPatch);
             }
 
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
-                renderSubMeshFromPatch(alphaTestSubMeshes.data[index], testPatch);
+               this._renderSubMeshWithEffect(uniformCb, this.isPatchEffectReady.bind(this), alphaTestSubMeshes.data[index], testPatch);
             }
         };
+
+        this.createMaps();
+    }
+
+    private _renderSubMeshWithEffect = (uniformCallback: (effect: Effect, ...args: any[]) => void, 
+        isEffectReady: (subMesh: SubMesh, ...args: any[]) => Effect, 
+        subMesh: SubMesh, 
+        ...args: any[]): void => {
+
+        var mesh = subMesh.getRenderingMesh();
+        var scene = this._scene;
+        var engine = scene.getEngine();
+        let material = subMesh.getMaterial();
+
+        if (!material) {
+            return;
+        }
+
+        // Culling and reverse (right handed system)
+        engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
+        engine.setDirectViewport(0, 0, this.getCurrentRenderWidth(), this.getCurrentRenderHeight())
+        // Managing instances
+        var batch = mesh._getInstancesRenderList(subMesh._id);
+
+        if (batch.mustReturn) {
+            return;
+        }
+
+        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+        var effect : Effect;
+
+        if (effect = isEffectReady(subMesh, hardwareInstancedRendering)) {
+            engine.enableEffect(effect);
+            mesh._bind(subMesh, effect, Material.TriangleFillMode);
+
+            uniformCallback(effect, args);
+
+            // Alpha test
+            if (material && material.needAlphaTesting()) {
+                var alphaTexture = material.getAlphaTestTexture();
+
+                if (alphaTexture) {
+                    effect.setTexture("diffuseSampler", alphaTexture);
+                    effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                }
+            }
+
+            // Bones
+            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+                effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+            }
+
+            // Draw
+            mesh._processRendering(subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+                (isInstance, world) => effect.setMatrix("world", world));
+        }
+    };
+
+    public createMaps() {
+        this._uvMap = new MultiRenderTarget("patch", 16, 3, this._scene, { samplingModes: [Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST] });
+        this._uvMap.renderList = this._scene.meshes;
+        this._uvMap.refreshRate = 1;
+        this._uvMap.ignoreCameraViewport = true;
+        var uniformCb = (effect: Effect, data: any[]) : void => {
+        }
+
+        this._uvMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
+            var index;
+            // var testPatch = new Patch(this._scene.activeCamera ? this._scene.activeCamera.position : new Vector3(0, 0, 0), new Vector3(0, -1, 0));
+            this._currentRenderedMap = this._uvMap;
+
+            for (index = 0; index < opaqueSubMeshes.length; index++) {
+                this._renderSubMeshWithEffect(uniformCb, this.isRadiosityDataEffectReady.bind(this), opaqueSubMeshes.data[index]);
+            }
+
+            for (index = 0; index < alphaTestSubMeshes.length; index++) {
+               this._renderSubMeshWithEffect(uniformCb, this.isRadiosityDataEffectReady.bind(this), alphaTestSubMeshes.data[index]);
+            }
+        };
+        this._scene.customRenderTargets.push(this._uvMap);
+
+       //this._uvMap.render(false, true);
     }
 
     /**
@@ -183,7 +232,7 @@ export class PatchRenderer {
      * @param useInstances If multiple world instances should be used
      * @returns if the depth renderer is ready to render the depth map
      */
-    public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+    public isPatchEffectReady(subMesh: SubMesh, useInstances: boolean): Nullable<Effect> {
         var material: any = subMesh.getMaterial();
         var defines = [];
 
@@ -231,13 +280,52 @@ export class PatchRenderer {
         var join = defines.join("\n");
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
-            this._effect = this._scene.getEngine().createEffect("uv2mat",
+            this._uV2Effect = this._scene.getEngine().createEffect("uv2mat",
                 attribs,
                 ["world", "mBones", "view", "nearFar", "diffuseMatrix"],
                 ["diffuseSampler"], join);
         }
 
-        return this._effect.isReady();
+        if (this._uV2Effect.isReady()) {
+            return this._uV2Effect;
+        }
+
+        return null;
+    }
+
+    public isRadiosityDataEffectReady(subMesh: SubMesh, useInstances: boolean): Nullable<Effect> {
+        var mesh = subMesh.getMesh();
+        if (!mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+            return null;
+        }
+
+        var defines: any[] = [];
+        var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind, VertexBuffer.UV2Kind];
+
+        // Instances
+        // if (useInstances) {
+        //     defines.push("#define INSTANCES");
+        //     attribs.push("world0");
+        //     attribs.push("world1");
+        //     attribs.push("world2");
+        //     attribs.push("world3");
+        // }
+
+        // Get correct effect
+        var join = defines.join("\n");
+        if (this._cachedDefines !== join) {
+            this._cachedDefines = join;
+            this._radiosityEffect = this._scene.getEngine().createEffect("buildRadiosity",
+                attribs,
+                ["world"],
+                [], join);
+        }
+
+        if (this._radiosityEffect.isReady()) {
+            return this._radiosityEffect;
+        }
+
+        return null;
     }
 
     /**

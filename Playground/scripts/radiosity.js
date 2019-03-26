@@ -19,14 +19,13 @@
     light.intensity = 0.7;
 
     // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
-    var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
-    sphere.material = new BABYLON.StandardMaterial("gg", scene);
-    sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
-    console.log(sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
+    // var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+    // sphere.material = new BABYLON.StandardMaterial("gg", scene);
+    // sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
 
-    // Move the sphere upward 1/2 its height
-    sphere.position.y = 1;
-    sphere.position.x = -2;
+    // // Move the sphere upward 1/2 its height
+    // sphere.position.y = 1;
+    // sphere.position.x = -2;
 
     // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
     var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
@@ -36,9 +35,9 @@
     
     ground.material.diffuseTexture = pr._patchMap;
     
-    var sphere = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
-    sphere.position.x += 2;
-    sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
+    // var sphere = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
+    // sphere.position.x += 2;
+    // sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
 
     return scene;
 
