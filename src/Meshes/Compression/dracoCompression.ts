@@ -201,11 +201,13 @@ export class DracoCompression implements IDisposable {
 
    /**
      * Decode Draco compressed mesh data to vertex data.
-     * @param data The array buffer view for the Draco compression data
-     * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids(
+     * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
+     * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
      * @returns A promise that resolves with the decoded vertex data
      */
-    public decodeMeshAsync(data: ArrayBufferView, attributes: { [kind: string]: number }): Promise<VertexData> {
+    public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: { [kind: string]: number }): Promise<VertexData> {
+        const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+
         return this._workerPoolPromise.then((workerPool) => {
             return new Promise<VertexData>((resolve, reject) => {
                 workerPool.push((worker, onComplete) => {
@@ -236,10 +238,10 @@ export class DracoCompression implements IDisposable {
                     worker.addEventListener("error", onError);
                     worker.addEventListener("message", onMessage);
 
-                    const dataCopy = new Uint8Array(data.byteLength);
-                    dataCopy.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+                    const dataViewCopy = new Uint8Array(dataView.byteLength);
+                    dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
 
-                    worker.postMessage({ id: "decodeMesh", data: dataCopy, attributes: attributes }, [dataCopy.buffer]);
+                    worker.postMessage({ id: "decodeMesh", dataView: dataViewCopy, attributes: attributes }, [dataViewCopy.buffer]);
                 });
             });
         });
@@ -276,10 +278,10 @@ export class DracoCompression implements IDisposable {
             _self.postMessage("done");
         }
 
-        function decodeMesh(data: ArrayBufferView, attributes: { [kind: string]: number }): void {
+        function decodeMesh(dataView: ArrayBufferView, attributes: { [kind: string]: number }): void {
             decoderModulePromise.then((decoderModule) => {
                 const buffer = new decoderModule.DecoderBuffer();
-                buffer.Init(data, data.byteLength);
+                buffer.Init(dataView, dataView.byteLength);
 
                 const decoder = new decoderModule.Decoder();
                 let geometry: any;
@@ -363,7 +365,7 @@ export class DracoCompression implements IDisposable {
                     break;
                 }
                 case "decodeMesh": {
-                    decodeMesh(data.data, data.attributes);
+                    decodeMesh(data.dataView, data.attributes);
                     break;
                 }
             }
