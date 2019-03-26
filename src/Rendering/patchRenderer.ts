@@ -48,6 +48,8 @@ export class PatchRenderer {
     private _scene: Scene;
     private _patchMap: RenderTargetTexture;
     private _effect: Effect;
+    private _near: number;
+    private _far: number;
 
     private _cachedDefines: string;
 
@@ -71,11 +73,14 @@ export class PatchRenderer {
      */
     constructor(scene: Scene) {
         this._scene = scene;
+        this._near = 0.1;
+        this._far = 1000;
+
         // PatchRenderer._SceneComponentInitialization(this._scene);
         Patch.projectionMatrix = Matrix.PerspectiveFovLH(Patch.fov,
             1, // squared texture
-            0.1, // minZ
-            1000, // maxZ
+            this._near,
+            this._far,
         );
 
         // Render target
@@ -97,8 +102,6 @@ export class PatchRenderer {
         scene.customRenderTargets.push(this._patchMap);
         var testPatch = new Patch(new Vector3(0, 5, 0), new Vector3(0, -1, 0));
 
-        // Camera to get depth map from to support multiple concurrent cameras
-        //this._patchMap.activeCamera = this._camera;
         this._patchMap.ignoreCameraViewport = true;
         this._patchMap.useCameraPostProcesses = false;
 
@@ -135,7 +138,8 @@ export class PatchRenderer {
                 engine.enableEffect(this._effect);
                 mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
 
-                this._effect.setMatrix("viewProjection", patch.viewProjectionMatrix);
+                this._effect.setMatrix("view", patch.viewMatrix);
+                this._effect.setFloat2("nearFar", this._near, this._far);
 
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
@@ -183,7 +187,7 @@ export class PatchRenderer {
         var material: any = subMesh.getMaterial();
         var defines = [];
 
-        var attribs = [VertexBuffer.PositionKind];
+        var attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
 
         var mesh = subMesh.getMesh();
 
@@ -229,7 +233,7 @@ export class PatchRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("uv2mat",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix"],
+                ["world", "mBones", "view", "nearFar", "diffuseMatrix"],
                 ["diffuseSampler"], join);
         }
 
