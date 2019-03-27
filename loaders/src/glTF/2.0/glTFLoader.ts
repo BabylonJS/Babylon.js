@@ -2165,7 +2165,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _extensionsLoadSkinAsync(context: string, node: INode, skin: ISkin): Nullable<Promise<void>> {
-        return this._applyExtensions(skin, "loadSkin", (extension) => extension.loadSkinAsync && extension.loadSkinAsync(context, node, skin));
+        return this._applyExtensions(skin, "loadSkin", (extension) => extension._loadSkinAsync && extension._loadSkinAsync(context, node, skin));
     }
 
     private _extensionsLoadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {
