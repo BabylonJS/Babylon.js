@@ -156,6 +156,7 @@ export class TransformNode extends Node {
 
     public set rotation(newRotation: Vector3) {
         this._rotation = newRotation;
+        this._rotationQuaternion = null;
         this._isDirty = true;
     }
 
@@ -258,9 +259,7 @@ export class TransformNode extends Node {
             if (!this._cache.rotationQuaternion.equals(this._rotationQuaternion)) {
                 return false;
             }
-        }
-
-        if (!this._cache.rotation.equals(this._rotation)) {
+        } else if (!this._cache.rotation.equals(this._rotation)) {
             return false;
         }
 
@@ -289,10 +288,7 @@ export class TransformNode extends Node {
     * @param property if set to "rotation" the objects rotationQuaternion will be set to null
     * @returns this transform node
     */
-    public markAsDirty(property: string): TransformNode {
-        if (property === "rotation") {
-            this.rotationQuaternion = null;
-        }
+   public markAsDirty(property: string): TransformNode {
         this._currentRenderId = Number.MAX_VALUE;
         this._isDirty = true;
         return this;
@@ -895,7 +891,7 @@ export class TransformNode extends Node {
 
         // Rotate, if quaternion is set and rotation was used
         if (this._rotationQuaternion) {
-            var len = this.rotation.length();
+            var len = this.rotation.lengthSquared();
             if (len) {
                 this._rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z));
                 this._rotation.copyFromFloats(0, 0, 0);
