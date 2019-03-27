@@ -267,7 +267,7 @@ declare module BABYLON {
      * Constant used to define the minimal number value in Babylon.js
      * @ignorenaming
      */
-    export const Epsilon = 0.001;
+    let Epsilon: number;
     /**
      * Class used to hold a RBG color
      */
@@ -2938,6 +2938,14 @@ declare module BABYLON {
          * @returns the current updated matrix
          */
         setTranslationFromFloats(x: number, y: number, z: number): Matrix;
+        /**
+         * Adds the translation vector (using 3 floats) in the current matrix
+         * @param x defines the 1st component of the translation
+         * @param y defines the 2nd component of the translation
+         * @param z defines the 3rd component of the translation
+         * @returns the current updated matrix
+         */
+        addTranslationFromFloats(x: number, y: number, z: number): Matrix;
         /**
          * Inserts the translation vector in the current matrix
          * @param vector3 defines the translation to insert
@@ -7472,6 +7480,7 @@ declare module BABYLON {
         private _up;
         private _right;
         private _rightInverted;
+        private _usePivotMatrix;
         private _position;
         private _rotation;
         private _rotationQuaternion;
@@ -7517,8 +7526,6 @@ declare module BABYLON {
         private _pivotMatrix;
         private _pivotMatrixInverse;
         protected _postMultiplyPivotMatrix: boolean;
-        private _tempMatrix;
-        private _tempMatrix2;
         protected _isWorldMatrixFrozen: boolean;
         /** @hidden */
         _indexInSceneTransformNodesArray: number;

@@ -15,7 +15,8 @@ export const ToLinearSpace = 2.2;
  * Constant used to define the minimal number value in Babylon.js
  * @ignorenaming
  */
-export const Epsilon = 0.001;
+let Epsilon = 0.001;
+export { Epsilon };
 
 /**
  * Class used to hold a RBG color
