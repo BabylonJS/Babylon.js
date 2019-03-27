@@ -5,6 +5,7 @@ import { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
+import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
@@ -23,19 +24,26 @@ import { _DevTools } from '../Misc/devTools';
 
 class Patch {
 
-    constructor(p: Vector3, n: Vector3) {
+    constructor(p: Vector3, n: Vector3, id: number) {
         // World space
         this.position = p.clone();
         this.normal = n.clone().normalize();
+        this.id = id;
 
         // TODO : test is LH or RH
         this.viewMatrix = Matrix.LookAtLH(this.position, this.position.add(this.normal), Vector3.Up());
         // this.viewMatrix.invert();
 
         this.viewProjectionMatrix = this.viewMatrix.multiply(Patch.projectionMatrix);
-
     }
 
+    public toString() {
+        return `Position: ${this.position.x} ${this.position.y} ${this.position.z}\n` +
+            `Normal: ${this.normal.x} ${this.normal.y} ${this.normal.z}\n` +
+            `Id: ${this.id}\n`;
+    }
+
+    public id: number;
     public position: Vector3
     public normal: Vector3;
     public viewMatrix: Matrix;
@@ -48,11 +56,13 @@ class Patch {
 export class PatchRenderer {
     private _scene: Scene;
     private _patchMap: RenderTargetTexture;
-    private _uvMap: MultiRenderTarget;
     private _uV2Effect: Effect;
     private _radiosityEffect: Effect;
     private _near: number;
     private _far: number;
+
+    private _patches: Patch[] = [];
+    private _patchOffset: number = 0;
 
     private _cachedDefines: string;
     private _currentRenderedMap: RenderTargetTexture;
@@ -69,11 +79,11 @@ export class PatchRenderer {
         throw _DevTools.WarnImport("patchRendererSceneComponent");
     }
 
-    public getCurrentRenderWidth() : number {
+    public getCurrentRenderWidth(): number {
         return this._currentRenderedMap.getRenderWidth()
     }
 
-    public getCurrentRenderHeight() : number {
+    public getCurrentRenderHeight(): number {
         return this._currentRenderedMap.getRenderHeight()
     }
 
@@ -97,9 +107,9 @@ export class PatchRenderer {
 
         // Render target
         var texture = new RenderTargetTexture("test", 1024, scene, true,
-            true, 
-            Constants.TEXTURETYPE_UNSIGNED_INT, 
-            false, 
+            true,
+            Constants.TEXTURETYPE_UNSIGNED_INT,
+            false,
             Texture.NEAREST_SAMPLINGMODE
         );
 
@@ -112,7 +122,7 @@ export class PatchRenderer {
         this._patchMap.renderList = this._scene.meshes;
 
         scene.customRenderTargets.push(this._patchMap);
-        var testPatch = new Patch(new Vector3(0, 5, 0), new Vector3(0, -1, 0));
+        var testPatch = new Patch(new Vector3(0, 5, 0), new Vector3(0, -1, 0), -1);
 
         this._patchMap.ignoreCameraViewport = true;
         this._patchMap.useCameraPostProcesses = false;
@@ -139,16 +149,16 @@ export class PatchRenderer {
             }
 
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
-               this._renderSubMeshWithEffect(uniformCb, this.isPatchEffectReady.bind(this), alphaTestSubMeshes.data[index], testPatch);
+                this._renderSubMeshWithEffect(uniformCb, this.isPatchEffectReady.bind(this), alphaTestSubMeshes.data[index], testPatch);
             }
         };
 
         this.createMaps();
     }
 
-    private _renderSubMeshWithEffect = (uniformCallback: (effect: Effect, ...args: any[]) => void, 
-        isEffectReady: (subMesh: SubMesh, ...args: any[]) => Effect, 
-        subMesh: SubMesh, 
+    private _renderSubMeshWithEffect = (uniformCallback: (effect: Effect, ...args: any[]) => void,
+        isEffectReady: (subMesh: SubMesh, ...args: any[]) => Effect,
+        subMesh: SubMesh,
         ...args: any[]): void => {
 
         var mesh = subMesh.getRenderingMesh();
@@ -171,7 +181,7 @@ export class PatchRenderer {
         }
 
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-        var effect : Effect;
+        var effect: Effect;
 
         if (effect = isEffectReady(subMesh, hardwareInstancedRendering)) {
             engine.enableEffect(effect);
@@ -201,29 +211,90 @@ export class PatchRenderer {
     };
 
     public createMaps() {
-        this._uvMap = new MultiRenderTarget("patch", 16, 3, this._scene, { samplingModes: [Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST] });
-        this._uvMap.renderList = this._scene.meshes;
-        this._uvMap.refreshRate = 1;
-        this._uvMap.ignoreCameraViewport = true;
-        var uniformCb = (effect: Effect, data: any[]) : void => {
+        var meshes = this._scene.meshes;
+
+        for (let i = 0; i < meshes.length; i++) {
+            var mesh = meshes[i];
+
+            var worldTexelRatio = 16 * mesh.scaling.x; // arbitrary, for testing
+            var residualTexture = new MultiRenderTarget("patch",
+                worldTexelRatio,
+                5,
+                this._scene,
+                {
+                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST],
+                    types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_UNSIGNED_INT]
+                }
+            );
+            (<any>mesh).residualTexture = residualTexture;
+            residualTexture.renderList = [mesh];
+            residualTexture.refreshRate = 1;
+            residualTexture.ignoreCameraViewport = true;
+            (<any>residualTexture).patchOffset = this._patchOffset;
+
+            // TODO : merge functions ?
+            var uniformCb = (effect: Effect, data: any[]): void => {
+                var mesh = (<SubMesh>data[0]).getMesh();
+                var worldTexelRatio = 16 * mesh.scaling.x; // arbitrary, for testing
+                var res = (<any>mesh).residualTexture;
+                effect.setFloat("texSize", worldTexelRatio);
+                effect.setFloat("patchOffset", res.patchOffset);
+            }
+
+            residualTexture.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
+                var index;
+                // var testPatch = new Patch(this._scene.activeCamera ? this._scene.activeCamera.position : new Vector3(0, 0, 0), new Vector3(0, -1, 0));
+                for (index = 0; index < opaqueSubMeshes.length; index++) {
+                    this._currentRenderedMap = (<any>opaqueSubMeshes.data[index].getMesh()).residualTexture;
+                    this._renderSubMeshWithEffect(uniformCb, this.isRadiosityDataEffectReady.bind(this), opaqueSubMeshes.data[index], opaqueSubMeshes.data[index]);
+                }
+
+                for (index = 0; index < alphaTestSubMeshes.length; index++) {
+                    this._currentRenderedMap = (<any>alphaTestSubMeshes.data[index].getMesh()).residualTexture;
+                    this._renderSubMeshWithEffect(uniformCb, this.isRadiosityDataEffectReady.bind(this), alphaTestSubMeshes.data[index], opaqueSubMeshes.data[index]);
+                }
+            };
+
+            this._scene.customRenderTargets.push(residualTexture);
+
+            // Upper bound of what indexes could be taken by patch filling
+            this._patchOffset += worldTexelRatio * worldTexelRatio;
         }
 
-        this._uvMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
-            var index;
-            // var testPatch = new Patch(this._scene.activeCamera ? this._scene.activeCamera.position : new Vector3(0, 0, 0), new Vector3(0, -1, 0));
-            this._currentRenderedMap = this._uvMap;
+        // this._uvMap = new MultiRenderTarget("patch",
+        //     16,
+        //     3,
+        //     this._scene,
+        //     {
+        //         samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST],
+        //         types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT]
+        //     }
+        // );
 
-            for (index = 0; index < opaqueSubMeshes.length; index++) {
-                this._renderSubMeshWithEffect(uniformCb, this.isRadiosityDataEffectReady.bind(this), opaqueSubMeshes.data[index]);
-            }
+        // this._uvMap.renderList = this._scene.meshes;
+        // this._uvMap.refreshRate = 1;
+        // this._uvMap.ignoreCameraViewport = true;
+        // var uniformCb = (effect: Effect, data: any[]): void => {
+        //     effect.setFloat("texSize", this._uvMap.getRenderWidth());
+        //     effect.setFloat("patchOffset", this._patchOffset);
+        // }
 
-            for (index = 0; index < alphaTestSubMeshes.length; index++) {
-               this._renderSubMeshWithEffect(uniformCb, this.isRadiosityDataEffectReady.bind(this), alphaTestSubMeshes.data[index]);
-            }
-        };
-        this._scene.customRenderTargets.push(this._uvMap);
+        // this._uvMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
+        //     var index;
+        //     // var testPatch = new Patch(this._scene.activeCamera ? this._scene.activeCamera.position : new Vector3(0, 0, 0), new Vector3(0, -1, 0));
+        //     this._currentRenderedMap = this._uvMap;
 
-       //this._uvMap.render(false, true);
+        //     for (index = 0; index < opaqueSubMeshes.length; index++) {
+        //         this._renderSubMeshWithEffect(uniformCb, this.isRadiosityDataEffectReady.bind(this), opaqueSubMeshes.data[index]);
+        //     }
+
+        //     for (index = 0; index < alphaTestSubMeshes.length; index++) {
+        //         this._renderSubMeshWithEffect(uniformCb, this.isRadiosityDataEffectReady.bind(this), alphaTestSubMeshes.data[index]);
+        //     }
+        // };
+        // this._scene.customRenderTargets.push(this._uvMap);
+
+        //this._uvMap.render(false, true);
     }
 
     /**
@@ -313,11 +384,12 @@ export class PatchRenderer {
 
         // Get correct effect
         var join = defines.join("\n");
+
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
             this._radiosityEffect = this._scene.getEngine().createEffect("buildRadiosity",
                 attribs,
-                ["world"],
+                ["world", "texSize", "worldTexelRatio", "patchOffset"],
                 [], join);
         }
 
@@ -326,6 +398,43 @@ export class PatchRenderer {
         }
 
         return null;
+    }
+
+    public encodeId(n: number) {
+        var id = new Vector3();
+        var remain = n;
+        id.x = remain % 256;
+        remain = Math.floor(remain / 256);
+        id.y = remain % 256;
+        remain = Math.floor(remain / 256);
+        id.z = remain % 256;
+
+        return id;
+    }
+
+    public decodeId(v: Vector3) {
+        return (v.x + 256 * v.y + 65536 * v.z);
+    }
+
+    public buildPatchesForSubMesh(submesh: SubMesh) {
+        // Read pixels
+        var mesh = submesh.getMesh();
+        var map = (<MultiRenderTarget>(<any>mesh).residualTexture);
+        var size = map.getSize();
+        var width = size.width;
+        var height = size.height;
+        var engine = this._scene.getEngine();
+
+        var positions = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[0], width, height);
+        var normals = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[1], width, height);
+        var ids = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[2], width, height);
+
+        for (let i = 0; i < positions.length; i += 4) {
+            this._patches.push(new Patch(new Vector3(positions[i], positions[i + 1], positions[i + 2]),
+                new Vector3(normals[i], normals[i + 1], normals[i + 2]),
+                this.decodeId(new Vector3(ids[i], ids[i + 1], ids[i + 2]))));
+            console.log(this._patches[this._patches.length - 1].toString());
+        }
     }
 
     /**

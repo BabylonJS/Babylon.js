@@ -16,7 +16,7 @@
     var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
 
     // Default intensity is 1. Let's dim the light a small amount
-    light.intensity = 0.7;
+    light.intensity = 0;
 
     // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
     // var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
@@ -31,10 +31,32 @@
     var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
     ground.material = new BABYLON.StandardMaterial("gg", scene);
     ground.setVerticesData(BABYLON.VertexBuffer.UV2Kind, ground.getVerticesData(BABYLON.VertexBuffer.UVKind));
+
+    var wall = BABYLON.Mesh.CreateGround("wall", 6, 6, 2, scene);
+    wall.material = new BABYLON.StandardMaterial("gg", scene);
+    wall.setVerticesData(BABYLON.VertexBuffer.UV2Kind, ground.getVerticesData(BABYLON.VertexBuffer.UVKind));
+
+    var ceiling = BABYLON.Mesh.CreateGround("ceiling", 6, 6, 2, scene);
+    ceiling.material = new BABYLON.StandardMaterial("gg", scene);
+    ceiling.setVerticesData(BABYLON.VertexBuffer.UV2Kind, ground.getVerticesData(BABYLON.VertexBuffer.UVKind));
+
+    wall.rotation.z = Math.PI / 2;
+    ceiling.rotation.x = - 3 * Math.PI / 4;
+
+    wall.position.x += 5;
+    ceiling.position.z += 5;
+    ceiling.position.y += 2.5;
+    ceiling.scaling.scaleInPlace(0.25);
+
+    //ground.material.diffuseTexture = pr._patchMap;
     var pr = new BABYLON.PatchRenderer(scene);
+    ground.material.emissiveTexture = ground.residualTexture.textures[2];
+    wall.material.emissiveTexture = wall.residualTexture.textures[2];
+    ceiling.material.emissiveTexture = ceiling.residualTexture.textures[2];
     
-    ground.material.diffuseTexture = pr._patchMap;
-    
+    setTimeout(pr.buildPatchesForSubMesh.bind(pr, ground.subMeshes[0]), 1000);
+    setTimeout(pr.buildPatchesForSubMesh.bind(pr, wall.subMeshes[0]), 2000);
+    setTimeout(pr.buildPatchesForSubMesh.bind(pr, ceiling.subMeshes[0]), 3000);
     // var sphere = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
     // sphere.position.x += 2;
     // sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
