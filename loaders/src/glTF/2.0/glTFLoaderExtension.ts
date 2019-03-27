@@ -111,7 +111,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param skin The glTF skin property
      * @returns A promise that resolves with the loaded Babylon skeleton when the load is complete or null if not handled
      */
-    loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
+    _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
 
     /**
      * Define this method to modify the default behavior when loading uris.
