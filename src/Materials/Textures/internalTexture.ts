@@ -2,7 +2,6 @@ import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
-import { IInternalTextureTracker } from "../../Materials/Textures/internalTextureTracker";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
@@ -15,7 +14,7 @@ declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTe
  * Class used to store data associated with WebGL texture data for the engine
  * This class should not be used directly
  */
-export class InternalTexture implements IInternalTextureTracker {
+export class InternalTexture {
 
     /** hidden */
     public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> => {
@@ -148,22 +147,11 @@ export class InternalTexture implements IInternalTextureTracker {
      */
     public invertY: boolean;
 
-    /**
-     * Gets or set the previous tracker in the list
-     */
-    public previous: Nullable<IInternalTextureTracker> = null;
-    /**
-     * Gets or set the next tracker in the list
-     */
-    public next: Nullable<IInternalTextureTracker> = null;
-
     // Private
     /** @hidden */
     public _invertVScale = false;
     /** @hidden */
-    public _initialSlot = -1;
-    /** @hidden */
-    public _designatedSlot = -1;
+    public _associatedChannel = -1;
     /** @hidden */
     public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
     /** @hidden */
@@ -225,7 +213,7 @@ export class InternalTexture implements IInternalTextureTracker {
     /** @hidden */
     public _colorTextureArray: Nullable<WebGLTexture>;
     /** @hidden */
-    public _depthStencilTextureArray:  Nullable<WebGLTexture>;
+    public _depthStencilTextureArray: Nullable<WebGLTexture>;
 
     // The following three fields helps sharing generated fixed LODs for texture filtering
     // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
@@ -468,8 +456,6 @@ export class InternalTexture implements IInternalTextureTracker {
         if (this._references === 0) {
             this._engine._releaseTexture(this);
             this._webGLTexture = null;
-            this.previous = null;
-            this.next = null;
         }
     }
 }
