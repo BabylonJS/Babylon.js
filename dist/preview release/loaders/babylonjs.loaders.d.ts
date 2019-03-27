@@ -1545,10 +1545,12 @@ declare module BABYLON.GLTF2.Loader.Extensions {
     export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
+        /** The draco compression used to decode vertex data. */
+        dracoCompression?: DracoCompression;
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         private _loader;
-        private _dracoCompression?;
+        private _dracoCompressionOwned;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */

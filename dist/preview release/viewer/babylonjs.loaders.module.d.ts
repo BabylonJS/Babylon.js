@@ -1628,6 +1628,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/EXT_lights_image_based" {
     }
 }
 declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_draco_mesh_compression" {
+    import { DracoCompression } from "babylonjs/Meshes/Compression/dracoCompression";
     import { Nullable } from "babylonjs/types";
     import { Geometry } from "babylonjs/Meshes/geometry";
     import { Mesh } from "babylonjs/Meshes/mesh";
@@ -1640,10 +1641,12 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_draco_mesh_compression
     export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
+        /** The draco compression used to decode vertex data. */
+        dracoCompression?: DracoCompression;
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         private _loader;
-        private _dracoCompression?;
+        private _dracoCompressionOwned;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -3784,10 +3787,12 @@ declare module BABYLON.GLTF2.Loader.Extensions {
     export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
+        /** The draco compression used to decode vertex data. */
+        dracoCompression?: DracoCompression;
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         private _loader;
-        private _dracoCompression?;
+        private _dracoCompressionOwned;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */

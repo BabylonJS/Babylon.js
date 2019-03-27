@@ -3257,6 +3257,14 @@ declare module BABYLON {
          */
         static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Matrix): void;
         /**
+         * Takes normalised vectors and returns a rotation matrix to align "from" with "to".
+         * Taken from http://www.iquilezles.org/www/articles/noacos/noacos.htm
+         * @param from defines the vector to align
+         * @param to defines the vector to align to
+         * @param result defines the target matrix
+         */
+        static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void;
+        /**
          * Creates a rotation matrix
          * @param yaw defines the yaw angle in radians (Y axis)
          * @param pitch defines the pitch angle in radians (X axis)
@@ -6158,38 +6166,10 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Internal interface used to track InternalTexture already bound to the GL context
-     */
-    export interface IInternalTextureTracker {
-        /**
-         * Gets or set the previous tracker in the list
-         */
-        previous: Nullable<IInternalTextureTracker>;
-        /**
-         * Gets or set the next tracker in the list
-         */
-        next: Nullable<IInternalTextureTracker>;
-    }
-    /**
-     * Internal class used by the engine to get list of InternalTexture already bound to the GL context
-     */
-    export class DummyInternalTextureTracker {
-        /**
-         * Gets or set the previous tracker in the list
-         */
-        previous: Nullable<IInternalTextureTracker>;
-        /**
-         * Gets or set the next tracker in the list
-         */
-        next: Nullable<IInternalTextureTracker>;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store data associated with WebGL texture data for the engine
      * This class should not be used directly
      */
-    export class InternalTexture implements IInternalTextureTracker {
+    export class InternalTexture {
         /** hidden */
         static _UpdateRGBDAsync: (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: SphericalPolynomial | null, lodScale: number, lodOffset: number) => Promise<void>;
         /**
@@ -6316,20 +6296,10 @@ declare module BABYLON {
          * Gets a boolean indicating if the texture is inverted on Y axis
          */
         invertY: boolean;
-        /**
-         * Gets or set the previous tracker in the list
-         */
-        previous: Nullable<IInternalTextureTracker>;
-        /**
-         * Gets or set the next tracker in the list
-         */
-        next: Nullable<IInternalTextureTracker>;
         /** @hidden */
         _invertVScale: boolean;
         /** @hidden */
-        _initialSlot: number;
-        /** @hidden */
-        _designatedSlot: number;
+        _associatedChannel: number;
         /** @hidden */
         _dataSource: number;
         /** @hidden */
@@ -24026,6 +23996,10 @@ declare module BABYLON {
          */
         alwaysSelectAsActiveMesh: boolean;
         /**
+         * Gets or sets a boolean indicating that the bounding info does not need to be kept in sync (for performance reason)
+         */
+        doNotSyncBoundingInfo: boolean;
+        /**
          * Gets or sets the current action manager
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions
          */
@@ -27251,12 +27225,6 @@ declare module BABYLON {
         /** @hidden */
         _badDesktopOS: boolean;
         /**
-         * Gets or sets a value indicating if we want to disable texture binding optimization.
-         * This could be required on some buggy drivers which wants to have textures bound in a progressive order.
-         * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is
-         */
-        disableTextureBindingOptimization: boolean;
-        /**
          * Gets the audio engine
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
@@ -27305,8 +27273,6 @@ declare module BABYLON {
         private _loadingScreen;
         /** @hidden */
         _drawCalls: PerfCounter;
-        /** @hidden */
-        _textureCollisions: PerfCounter;
         private _glVersion;
         private _glRenderer;
         private _glVendor;
@@ -27389,8 +27355,6 @@ declare module BABYLON {
         private _currentInstanceLocations;
         private _currentInstanceBuffers;
         private _textureUnits;
-        private _firstBoundInternalTextureTracker;
-        private _lastBoundInternalTextureTracker;
         private _workingCanvas;
         private _workingContext;
         private _rescalePostProcess;
@@ -28652,10 +28616,6 @@ declare module BABYLON {
          * @param effect defines the effect to bind
          */
         bindSamplers(effect: Effect): void;
-        private _moveBoundTextureOnTop;
-        private _getCorrectTextureChannel;
-        private _linkTrackers;
-        private _removeDesignatedSlot;
         private _activateCurrentTexture;
         /** @hidden */
         _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate?: boolean, force?: boolean): boolean;
@@ -31111,6 +31071,12 @@ declare module BABYLON {
         * @return The decoded base64 data.
         */
         static DecodeBase64(uri: string): ArrayBuffer;
+        /**
+         * Gets the absolute url.
+         * @param url the input url
+         * @return the absolute url
+         */
+        static GetAbsoluteUrl(url: string): string;
         /**
          * No log
          */
@@ -34906,6 +34872,19 @@ declare module BABYLON {
          * Define the current local position of the camera in the scene
          */
         position: Vector3;
+        protected _upVector: Vector3;
+        protected _upToYMatrix: Matrix;
+        protected _YToUpMatrix: Matrix;
+        /**
+         * The vector the camera should consider as up. (default is Vector3(0, 1, 0) as returned by Vector3.Up())
+         * Setting this will copy the given vector to the camera's upVector, and set rotation matrices to and from Y up.
+         * DO NOT set the up vector using copyFrom or copyFromFloats, as this bypasses setting the above matrices.
+         */
+        upVector: Vector3;
+        /**
+         * Sets the Y-up to camera up-vector rotation matrix, and the up-vector to Y-up rotation matrix.
+         */
+        setMatUp(): void;
         /**
          * Current inertia value on the longitudinal axis.
          * The bigger this number the longer it will take for the camera to stop.
@@ -35124,8 +35103,6 @@ declare module BABYLON {
         protected _collisionTriggered: boolean;
         protected _targetBoundingCenter: Nullable<Vector3>;
         private _computationVector;
-        private _tempAxisVector;
-        private _tempAxisRotationMatrix;
         /**
          * Instantiates a new ArcRotateCamera in a given scene
          * @param name Defines the name of the camera
@@ -40846,6 +40823,7 @@ declare module BABYLON.Debug {
         private _utilityLayer;
         private _debugBoxMesh;
         private _debugSphereMesh;
+        private _debugCylinderMesh;
         private _debugMaterial;
         private _debugMeshMeshes;
         /**
@@ -40870,6 +40848,7 @@ declare module BABYLON.Debug {
         private _getDebugMaterial;
         private _getDebugBoxMesh;
         private _getDebugSphereMesh;
+        private _getDebugCylinderMesh;
         private _getDebugMeshMesh;
         private _getDebugMesh;
         /** Releases all resources */
@@ -46353,10 +46332,6 @@ declare module BABYLON {
          */
         readonly drawCallsCounter: PerfCounter;
         /**
-         * Gets the perf counter used for texture collisions
-         */
-        readonly textureCollisionsCounter: PerfCounter;
-        /**
          * Instantiates a new scene instrumentation.
          * This class can be used to get instrumentation data from a Babylon engine
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
@@ -49222,6 +49197,31 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Helper class to push actions to a pool of workers.
+     */
+    export class WorkerPool implements IDisposable {
+        private _workerInfos;
+        private _pendingActions;
+        /**
+         * Constructor
+         * @param workers Array of workers to use for actions
+         */
+        constructor(workers: Array<Worker>);
+        /**
+         * Terminates all workers and clears any pending actions.
+         */
+        dispose(): void;
+        /**
+         * Pushes an action to the worker pool. If all the workers are active, the action will be
+         * pended until a worker has completed its action.
+         * @param action The action to perform. Call onComplete when the action is complete.
+         */
+        push(action: (worker: Worker, onComplete: () => void) => void): void;
+        private _execute;
+    }
+}
+declare module BABYLON {
+    /**
      * Configuration for Draco compression
      */
     export interface IDracoCompressionConfiguration {
@@ -49282,7 +49282,7 @@ declare module BABYLON {
      * @see https://www.babylonjs-playground.com/#N3EK4B#0
      */
     export class DracoCompression implements IDisposable {
-        private static _DecoderModulePromise;
+        private _workerPoolPromise;
         /**
          * The configuration. Defaults to the following urls:
          * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
@@ -49295,25 +49295,38 @@ declare module BABYLON {
          */
         static readonly DecoderAvailable: boolean;
         /**
-         * Constructor
+         * Default number of workers to create when creating the draco compression object.
          */
-        constructor();
+        static DefaultNumWorkers: number;
+        private static GetDefaultNumWorkers;
+        /**
+         * Constructor
+         * @param numWorkers The number of workers for async operations
+         */
+        constructor(numWorkers?: number);
         /**
          * Stop all async operations and release resources.
          */
         dispose(): void;
         /**
-         * Decode Draco compressed mesh data to vertex data.
-         * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
-         * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
-         * @returns A promise that resolves with the decoded vertex data
+         * Returns a promise that resolves when ready. Call this manually to ensure draco compression is ready before use.
+         * @returns a promise that resolves when ready
          */
+        whenReadyAsync(): Promise<void>;
+        /**
+          * Decode Draco compressed mesh data to vertex data.
+          * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
+          * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+          * @returns A promise that resolves with the decoded vertex data
+          */
         decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: {
             [kind: string]: number;
         }): Promise<VertexData>;
-        private static _GetDecoderModule;
-        private static _LoadScriptAsync;
-        private static _LoadFileAsync;
+        /**
+         * The worker function that gets converted to a blob url to pass into a worker.
+         */
+        private static _Worker;
+        private _loadDecoderWasmBinaryAsync;
     }
 }
 declare module BABYLON {
@@ -55955,31 +55968,6 @@ declare module BABYLON {
         private _handleDataAvailable;
         private _handleError;
         private _handleStop;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper class to push actions to a pool of workers.
-     */
-    export class WorkerPool implements IDisposable {
-        private _workerInfos;
-        private _pendingActions;
-        /**
-         * Constructor
-         * @param workers Array of workers to use for actions
-         */
-        constructor(workers: Array<Worker>);
-        /**
-         * Terminates all workers and clears any pending actions.
-         */
-        dispose(): void;
-        /**
-         * Pushes an action to the worker pool. If all the workers are active, the action will be
-         * pended until a worker has completed its action.
-         * @param action The action to perform. Call onComplete when the action is complete.
-         */
-        push(action: (worker: Worker, onComplete: () => void) => void): void;
-        private _execute;
     }
 }
 declare module BABYLON {

@@ -186,6 +186,7 @@ export class TransformNode extends Node {
         if (quaternion) {
             this.rotation.setAll(0.0);
         }
+        this._isDirty = true;
     }
 
     /**
@@ -879,8 +880,8 @@ export class TransformNode extends Node {
         }
 
         this._updateCache();
-        this._cache.position.copyFrom(this.position);
-        this._cache.scaling.copyFrom(this.scaling);
+        this._cache.position.copyFrom(this._position);
+        this._cache.scaling.copyFrom(this._scaling);
         this._cache.pivotMatrixUpdated = false;
         this._cache.billboardMode = this.billboardMode;
         this._cache.infiniteDistance = this.infiniteDistance;
@@ -890,25 +891,25 @@ export class TransformNode extends Node {
         let parent = this._getEffectiveParent();
 
         // Scaling
-        Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
+        Matrix.ScalingToRef(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
 
         // Rotation
 
         //rotate, if quaternion is set and rotation was used
-        if (this.rotationQuaternion) {
+        if (this._rotationQuaternion) {
             var len = this.rotation.length();
             if (len) {
-                this.rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z));
-                this.rotation.copyFromFloats(0, 0, 0);
+                this._rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z));
+                this._rotation.copyFromFloats(0, 0, 0);
             }
         }
 
-        if (this.rotationQuaternion) {
-            this.rotationQuaternion.toRotationMatrix(Tmp.Matrix[0]);
-            this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
+        if (this._rotationQuaternion) {
+            this._rotationQuaternion.toRotationMatrix(Tmp.Matrix[0]);
+            this._cache.rotationQuaternion.copyFrom(this._rotationQuaternion);
         } else {
-            Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, Tmp.Matrix[0]);
-            this._cache.rotation.copyFrom(this.rotation);
+            Matrix.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, Tmp.Matrix[0]);
+            this._cache.rotation.copyFrom(this._rotation);
         }
 
         // Translation
@@ -920,10 +921,10 @@ export class TransformNode extends Node {
 
             var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
-            Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
-                this.position.z + cameraGlobalPosition.z, this._tempMatrix2);
+            Matrix.TranslationToRef(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y,
+                this._position.z + cameraGlobalPosition.z, this._tempMatrix2);
         } else {
-            Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._tempMatrix2);
+            Matrix.TranslationToRef(this._position.x, this._position.y, this._position.z, this._tempMatrix2);
         }
 
         // Composing transformations
@@ -1008,7 +1009,7 @@ export class TransformNode extends Node {
 
         // Normal matrix
         if (!this.ignoreNonUniformScaling) {
-            if (this.scaling.isNonUniform) {
+            if (this._scaling.isNonUniform) {
                 this._updateNonUniformScalingState(true);
             } else if (parent && (<TransformNode>parent)._nonUniformScaling) {
                 this._updateNonUniformScalingState((<TransformNode>parent)._nonUniformScaling);
