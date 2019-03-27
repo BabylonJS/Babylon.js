@@ -96,7 +96,8 @@ export class RuntimeAnimation {
     /**
      * The active target of the runtime animation
      */
-    private _activeTarget: any;
+    private _activeTargets: any[];
+    private _currentActiveTarget: any;
 
     /**
      * The target path of the runtime animation
@@ -158,7 +159,7 @@ export class RuntimeAnimation {
      * Gets the actual target of the runtime animation
      */
     public get target(): any {
-        return this._activeTarget;
+        return this._currentActiveTarget;
     }
 
     /**
@@ -173,8 +174,23 @@ export class RuntimeAnimation {
         this._target = target;
         this._scene = scene;
         this._host = host;
+        this._activeTargets = [];
 
         animation._runtimeAnimations.push(this);
+
+        // Check data
+        if (this._target instanceof Array) {
+            var index = 0;
+            for (const target of this._target) {
+                this._preparePath(target, index);
+                this._getOriginalValues(index);
+                index++;
+            }
+        }
+        else {
+            this._preparePath(this._target);
+            this._getOriginalValues();
+        }
 
         // Cloning events locally
         var events = animation.getEvents();
@@ -186,6 +202,30 @@ export class RuntimeAnimation {
 
         this._correctLoopMode = this._getCorrectLoopMode();
         this._enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
+
+        if (this._enableBlending) {
+            this._activeBlendingProcessor = this._blendingProcessor;
+        } else {
+            this._activeBlendingProcessor = this._noBlendingProcessor;
+        }
+    }
+
+    private _preparePath(target: any, targetIndex = 0) {
+        let targetPropertyPath = this._animation.targetPropertyPath;
+
+        if (targetPropertyPath.length > 1) {
+            var property = target[targetPropertyPath[0]];
+
+            for (var index = 1; index < targetPropertyPath.length - 1; index++) {
+                property = property[targetPropertyPath[index]];
+            }
+
+            this._targetPath = targetPropertyPath[targetPropertyPath.length - 1];
+            this._activeTargets[targetIndex] = property;
+        } else {
+            this._targetPath = targetPropertyPath[0];
+            this._activeTargets[targetIndex] = target;
+        }
     }
 
     /**
@@ -285,56 +325,33 @@ export class RuntimeAnimation {
         }
     }
 
-    private _setValue(target: any, currentValue: any, weight: number, targetIndex = 0): void {
-        // Set value
-        var path: any;
-        var destination: any;
+    private _getOriginalValues(targetIndex = 0) {
+        let originalValue: any;
+        let target = this._activeTargets[targetIndex];
 
-        if (!this._targetPath) {
-            let targetPropertyPath = this._animation.targetPropertyPath;
-
-            if (targetPropertyPath.length > 1) {
-                var property = target[targetPropertyPath[0]];
-
-                for (var index = 1; index < targetPropertyPath.length - 1; index++) {
-                    property = property[targetPropertyPath[index]];
-                }
-
-                path = targetPropertyPath[targetPropertyPath.length - 1];
-                destination = property;
-            } else {
-                path = targetPropertyPath[0];
-                destination = target;
-            }
-
-            this._targetPath = path;
-            this._activeTarget = destination;
+        if (target.getRestPose && this._targetPath === "_matrix") { // For bones
+            originalValue = target.getRestPose();
         } else {
-            path = this._targetPath;
-            destination = this._activeTarget;
-        }
-        this._weight = weight;
-
-        if (this._originalValue[targetIndex] === undefined) {
-            let originalValue: any;
-
-            if (destination.getRestPose && path === "_matrix") { // For bones
-                originalValue = destination.getRestPose();
-            } else {
-                originalValue = destination[path];
-            }
-
-            if (originalValue && originalValue.clone) {
-                this._originalValue[targetIndex] = originalValue.clone();
-            } else {
-                this._originalValue[targetIndex] = originalValue;
-            }
+            originalValue = target[this._targetPath];
         }
 
-        // Blending
-        if (this._enableBlending && this._blendingFactor <= 1.0) {
+        if (originalValue && originalValue.clone) {
+            this._originalValue[targetIndex] = originalValue.clone();
+        } else {
+            this._originalValue[targetIndex] = originalValue;
+        }
+    }
+
+    private _activeBlendingProcessor: (currentValue: any, target: any) => void;
+
+    private _noBlendingProcessor = (currentValue: any) => {
+        this._currentValue = currentValue;
+    }
+
+    private _blendingProcessor = (currentValue: any, target: any) => {
+        if (this._blendingFactor <= 1.0) {
             if (!this._originalBlendValue) {
-                let originalValue = destination[path];
+                let originalValue = this._currentActiveTarget[this._targetPath];
 
                 if (originalValue.clone) {
                     this._originalBlendValue = originalValue.clone();
@@ -366,6 +383,17 @@ export class RuntimeAnimation {
         } else {
             this._currentValue = currentValue;
         }
+    }
+
+    private _setValue(target: any, currentValue: any, weight: number, targetIndex = 0): void {
+        // Set value
+        var path = this._targetPath;
+        var destination = this._activeTargets[targetIndex];
+        this._currentActiveTarget = destination;
+
+        this._weight = weight;
+
+        this._activeBlendingProcessor(currentValue, target);
 
         if (weight !== -1.0) {
             this._scene._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
