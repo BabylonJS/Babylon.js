@@ -588,10 +588,12 @@ export class RuntimeAnimation {
             }
 
             // Need to reset animation events
-            for (var index = 0; index < events.length; index++) {
-                if (!events[index].onlyOnce) {
-                    // reset event, the animation is looping
-                    events[index].isDone = false;
+            if (events.length) {
+                for (var index = 0; index < events.length; index++) {
+                    if (!events[index].onlyOnce) {
+                        // reset event, the animation is looping
+                        events[index].isDone = false;
+                    }
                 }
             }
         }
@@ -603,25 +605,28 @@ export class RuntimeAnimation {
         this.setValue(currentValue, weight);
 
         // Check events
-        for (var index = 0; index < events.length; index++) {
-            // Make sure current frame has passed event frame and that event frame is within the current range
-            // Also, handle both forward and reverse animations
-            if (
-                (range > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
-                (range < 0 && currentFrame <= events[index].frame && events[index].frame <= from)
-            ) {
-                var event = events[index];
-                if (!event.isDone) {
-                    // If event should be done only once, remove it.
-                    if (event.onlyOnce) {
-                        events.splice(index, 1);
-                        index--;
-                    }
-                    event.isDone = true;
-                    event.action(currentFrame);
-                } // Don't do anything if the event has already be done.
+        if (events.length) {
+            for (var index = 0; index < events.length; index++) {
+                // Make sure current frame has passed event frame and that event frame is within the current range
+                // Also, handle both forward and reverse animations
+                if (
+                    (range > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
+                    (range < 0 && currentFrame <= events[index].frame && events[index].frame <= from)
+                ) {
+                    var event = events[index];
+                    if (!event.isDone) {
+                        // If event should be done only once, remove it.
+                        if (event.onlyOnce) {
+                            events.splice(index, 1);
+                            index--;
+                        }
+                        event.isDone = true;
+                        event.action(currentFrame);
+                    } // Don't do anything if the event has already be done.
+                }
             }
         }
+
         if (!returnValue) {
             this._stopped = true;
         }

@@ -241,12 +241,13 @@ export class Effect {
     private _engine: Engine;
     private _uniformBuffersNames: { [key: string]: number } = {};
     private _uniformsNames: string[];
-    private _samplers: string[];
+    private _samplerList: string[];
+    private _samplers: { [key: string]: number } = {}
     private _isReady = false;
     private _compilationError = "";
     private _attributesNames: string[];
     private _attributes: number[];
-    private _uniforms: Nullable<WebGLUniformLocation>[];
+    private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
     /**
      * Key for the effect.
      * @hidden
@@ -291,7 +292,7 @@ export class Effect {
 
             this._attributesNames = options.attributes;
             this._uniformsNames = options.uniformsNames.concat(options.samplers);
-            this._samplers = options.samplers.slice();
+            this._samplerList = options.samplers.slice();
             this.defines = options.defines;
             this.onError = options.onError;
             this.onCompiled = options.onCompiled;
@@ -308,7 +309,7 @@ export class Effect {
             this._engine = <Engine>engine;
             this.defines = (defines == null ? "" : defines);
             this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
-            this._samplers = samplers ? <string[]>samplers.slice() : [];
+            this._samplerList = samplers ? <string[]>samplers.slice() : [];
             this._attributesNames = (<string[]>attributesNamesOrOptions);
 
             this.onError = onError;
@@ -453,7 +454,7 @@ export class Effect {
      * @returns the location of the uniform.
      */
     public getUniform(uniformName: string): Nullable<WebGLUniformLocation> {
-        return this._uniforms[this._uniformsNames.indexOf(uniformName)];
+        return this._uniforms[uniformName];
     }
 
     /**
@@ -461,7 +462,7 @@ export class Effect {
      * @returns The array of sampler variable neames.
      */
     public getSamplers(): string[] {
-        return this._samplers;
+        return this._samplerList;
     }
 
     /**
@@ -834,20 +835,29 @@ export class Effect {
                     }
                 }
 
-                this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
+                let uniforms = engine.getUniforms(this._program, this._uniformsNames);
+
+                this._uniformsNames.forEach((name, index) => {
+                    this._uniforms[name] = uniforms[index];
+                });
+
                 this._attributes = engine.getAttributes(this._program, attributesNames);
 
                 var index: number;
                 for (index = 0; index < this._samplers.length; index++) {
-                    var sampler = this.getUniform(this._samplers[index]);
+                    var sampler = this.getUniform(this._samplerList[index]);
 
                     if (sampler == null) {
-                        this._samplers.splice(index, 1);
+                        this._samplerList.splice(index, 1);
                         index--;
                     }
                 }
 
                 engine.bindSamplers(this);
+
+                this._samplerList.forEach((name, i) => {
+                    this._samplers[name] = i;
+                });
 
                 this._compilationError = "";
                 this._isReady = true;
@@ -926,7 +936,7 @@ export class Effect {
      * @hidden
      */
     public _bindTexture(channel: string, texture: InternalTexture): void {
-        this._engine._bindTexture(this._samplers.indexOf(channel), texture);
+        this._engine._bindTexture(this._samplers[channel], texture);
     }
 
     /**
@@ -935,7 +945,7 @@ export class Effect {
      * @param texture Texture to set.
      */
     public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
-        this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        this._engine.setTexture(this._samplers[channel], this._uniforms[channel], texture);
     }
 
     /**
@@ -944,7 +954,7 @@ export class Effect {
      * @param texture Texture to set.
      */
     public setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void {
-        this._engine.setDepthStencilTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        this._engine.setDepthStencilTexture(this._samplers[channel], this._uniforms[channel], texture);
     }
 
     /**
@@ -960,7 +970,7 @@ export class Effect {
             }
         }
 
-        this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
+        this._engine.setTextureArray(this._samplers[channel], this._uniforms[channel], textures);
     }
 
     /**
@@ -969,7 +979,7 @@ export class Effect {
      * @param postProcess Post process to get the input texture from.
      */
     public setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void {
-        this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
+        this._engine.setTextureFromPostProcess(this._samplers[channel], postProcess);
     }
 
     /**
@@ -979,7 +989,7 @@ export class Effect {
      * @param postProcess Post process to get the output texture from.
      */
     public setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void {
-        this._engine.setTextureFromPostProcessOutput(this._samplers.indexOf(channel), postProcess);
+        this._engine.setTextureFromPostProcessOutput(this._samplers[channel], postProcess);
     }
 
     /** @hidden */

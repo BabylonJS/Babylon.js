@@ -227,7 +227,7 @@ export class TransformNode extends Node {
         this._rotationQuaternion = quaternion;
         //reset the rotation vector.
         if (quaternion) {
-            this.rotation.setAll(0.0);
+            this._rotation.setAll(0.0);
         }
         this._isDirty = true;
     }
