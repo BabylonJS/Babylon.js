@@ -5293,11 +5293,34 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix): void {
-        Matrix.ScalingToRef(scale.x, scale.y, scale.z, MathTmp.Matrix[1]);
-        rotation.toRotationMatrix(MathTmp.Matrix[0]);
-        MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], result);
+        let m = result._m;
+        var x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w;
+        var x2 = x + x, y2 = y + y, z2 = z + z;
+        var xx = x * x2, xy = x * y2, xz = x * z2;
+        var yy = y * y2, yz = y * z2, zz = z * z2;
+        var wx = w * x2, wy = w * y2, wz = w * z2;
 
-        result.setTranslation(translation);
+        var sx = scale.x, sy = scale.y, sz = scale.z;
+
+        m[0] = (1 - (yy + zz)) * sx;
+        m[1] = (xy + wz) * sx;
+        m[2] = (xz - wy) * sx;
+        m[3] = 0;
+
+        m[4] = (xy - wz) * sy;
+        m[5] = (1 - (xx + zz)) * sy;
+        m[6] = (yz + wx) * sy;
+        m[7] = 0;
+
+        m[8] = (xz + wy) * sz;
+        m[9] = (yz - wx) * sz;
+        m[10] = (1 - (xx + yy)) * sz;
+        m[11] = 0;
+
+        m[12] = translation.x;
+        m[13] = translation.y;
+        m[14] = translation.z;
+        m[15] = 1;
     }
 
     /**
