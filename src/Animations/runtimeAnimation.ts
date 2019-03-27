@@ -123,6 +123,9 @@ export class RuntimeAnimation {
      */
     private _previousRatio: number = 0;
 
+    private _enableBlending: boolean;
+    private _correctLoopMode: number | undefined;
+
     /**
      * Gets the current frame of the runtime animation
      */
@@ -180,6 +183,9 @@ export class RuntimeAnimation {
                 this._events.push(e._clone());
             });
         }
+
+        this._correctLoopMode = this._getCorrectLoopMode();
+        this._enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
     }
 
     /**
@@ -284,24 +290,29 @@ export class RuntimeAnimation {
         var path: any;
         var destination: any;
 
-        let targetPropertyPath = this._animation.targetPropertyPath;
+        if (!this._targetPath) {
+            let targetPropertyPath = this._animation.targetPropertyPath;
 
-        if (targetPropertyPath.length > 1) {
-            var property = target[targetPropertyPath[0]];
+            if (targetPropertyPath.length > 1) {
+                var property = target[targetPropertyPath[0]];
 
-            for (var index = 1; index < targetPropertyPath.length - 1; index++) {
-                property = property[targetPropertyPath[index]];
+                for (var index = 1; index < targetPropertyPath.length - 1; index++) {
+                    property = property[targetPropertyPath[index]];
+                }
+
+                path = targetPropertyPath[targetPropertyPath.length - 1];
+                destination = property;
+            } else {
+                path = targetPropertyPath[0];
+                destination = target;
             }
 
-            path = targetPropertyPath[targetPropertyPath.length - 1];
-            destination = property;
+            this._targetPath = path;
+            this._activeTarget = destination;
         } else {
-            path = targetPropertyPath[0];
-            destination = target;
+            path = this._targetPath;
+            destination = this._activeTarget;
         }
-
-        this._targetPath = path;
-        this._activeTarget = destination;
         this._weight = weight;
 
         if (this._originalValue[targetIndex] === undefined) {
@@ -321,8 +332,7 @@ export class RuntimeAnimation {
         }
 
         // Blending
-        const enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
-        if (enableBlending && this._blendingFactor <= 1.0) {
+        if (this._enableBlending && this._blendingFactor <= 1.0) {
             if (!this._originalBlendValue) {
                 let originalValue = destination[path];
 
@@ -393,7 +403,7 @@ export class RuntimeAnimation {
             frame = keys[keys.length - 1].frame;
         }
 
-        var currentValue = this._interpolate(frame, 0, this._getCorrectLoopMode());
+        var currentValue = this._interpolate(frame, 0, this._correctLoopMode);
 
         this.setValue(currentValue, -1);
     }
@@ -464,7 +474,7 @@ export class RuntimeAnimation {
         } else {
             // Get max value if required
 
-            if (this._getCorrectLoopMode() !== Animation.ANIMATIONLOOPMODE_CYCLE) {
+            if (this._correctLoopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
 
                 var keyOffset = to.toString() + from.toString();
                 if (!this._offsetsCache[keyOffset]) {
@@ -559,7 +569,7 @@ export class RuntimeAnimation {
         }
 
         const repeatCount = range === 0 ? 0 : (ratio / range) >> 0;
-        const currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
+        const currentValue = this._interpolate(currentFrame, repeatCount, this._correctLoopMode, offsetValue, highLimitValue);
 
         // Set value
         this.setValue(currentValue, weight);
