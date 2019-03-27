@@ -40,6 +40,7 @@ export class TransformNode extends Node {
     private _up = new Vector3(0, 1, 0);
     private _right = new Vector3(1, 0, 0);
     private _rightInverted = new Vector3(-1, 0, 0);
+    private _usePivotMatrix = false;
 
     // Properties
     @serializeAsVector3("position")
@@ -106,8 +107,6 @@ export class TransformNode extends Node {
     private _pivotMatrix = Matrix.Identity();
     private _pivotMatrixInverse: Matrix;
     protected _postMultiplyPivotMatrix = false;
-    private _tempMatrix = Matrix.Identity();
-    private _tempMatrix2 = Matrix.Identity();
 
     protected _isWorldMatrixFrozen = false;
 
@@ -239,10 +238,6 @@ export class TransformNode extends Node {
 
     /** @hidden */
     public _isSynchronized(): boolean {
-        if (this._isDirty) {
-            return false;
-        }
-
         if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
             return false;
         }
@@ -328,6 +323,7 @@ export class TransformNode extends Node {
     */
     public setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix = true): TransformNode {
         this._pivotMatrix.copyFrom(matrix);
+        this._usePivotMatrix = !this._pivotMatrix.isIdentity();
         this._cache.pivotMatrixUpdated = true;
         this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
 
@@ -874,7 +870,7 @@ export class TransformNode extends Node {
             return this._worldMatrix;
         }
 
-        if (!force && this.isSynchronized()) {
+        if (!this._isDirty && !force && this.isSynchronized()) {
             this._currentRenderId = this.getScene().getRenderId();
             return this._worldMatrix;
         }
@@ -891,53 +887,50 @@ export class TransformNode extends Node {
         let parent = this._getEffectiveParent();
 
         // Scaling
-        Matrix.ScalingToRef(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
+        let scaleMatrix = Tmp.Matrix[1];
+        Matrix.ScalingToRef(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant, scaleMatrix);
 
         // Rotation
+        let rotationMatrix = Tmp.Matrix[0];
 
-        //rotate, if quaternion is set and rotation was used
+        // Rotate, if quaternion is set and rotation was used
         if (this._rotationQuaternion) {
             var len = this.rotation.length();
             if (len) {
                 this._rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z));
                 this._rotation.copyFromFloats(0, 0, 0);
             }
-        }
-
-        if (this._rotationQuaternion) {
-            this._rotationQuaternion.toRotationMatrix(Tmp.Matrix[0]);
+            this._rotationQuaternion.toRotationMatrix(rotationMatrix);
             this._cache.rotationQuaternion.copyFrom(this._rotationQuaternion);
         } else {
-            Matrix.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, Tmp.Matrix[0]);
+            Matrix.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, rotationMatrix);
             this._cache.rotation.copyFrom(this._rotation);
+        }
+
+        // Composing transformations
+        if (this._usePivotMatrix) {
+            this._pivotMatrix.multiplyToRef(scaleMatrix, Tmp.Matrix[4]);
+            Tmp.Matrix[4].multiplyToRef(rotationMatrix, this._localMatrix);
+
+            // Post multiply inverse of pivotMatrix
+            if (this._postMultiplyPivotMatrix) {
+                this._localMatrix.multiplyToRef(this._pivotMatrixInverse, this._localMatrix);
+            }
+        } else {
+            scaleMatrix.multiplyToRef(rotationMatrix, this._localMatrix);
         }
 
         // Translation
         let camera = (<Camera>this.getScene().activeCamera);
 
         if (this.infiniteDistance && !this.parent && camera) {
-
             var cameraWorldMatrix = camera.getWorldMatrix();
-
             var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
-            Matrix.TranslationToRef(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y,
-                this._position.z + cameraGlobalPosition.z, this._tempMatrix2);
+            this._localMatrix.addTranslationFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
         } else {
-            Matrix.TranslationToRef(this._position.x, this._position.y, this._position.z, this._tempMatrix2);
+            this._localMatrix.addTranslationFromFloats(this._position.x, this._position.y, this._position.z);
         }
-
-        // Composing transformations
-        this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
-        Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], this._tempMatrix);
-
-        // Post multiply inverse of pivotMatrix
-        if (this._postMultiplyPivotMatrix) {
-            this._tempMatrix.multiplyToRef(this._pivotMatrixInverse, this._tempMatrix);
-        }
-
-        // Local world
-        this._tempMatrix.multiplyToRef(this._tempMatrix2, this._localMatrix);
 
         // Parent
         if (parent && parent.getWorldMatrix) {

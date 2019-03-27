@@ -4701,6 +4701,21 @@ export class Matrix {
     }
 
     /**
+     * Adds the translation vector (using 3 floats) in the current matrix
+     * @param x defines the 1st component of the translation
+     * @param y defines the 2nd component of the translation
+     * @param z defines the 3rd component of the translation
+     * @returns the current updated matrix
+     */
+    public addTranslationFromFloats(x: number, y: number, z: number): Matrix {
+        this._m[12] += x;
+        this._m[13] += y;
+        this._m[14] += z;
+        this._markAsUpdated();
+        return this;
+    }
+
+    /**
      * Inserts the translation vector in the current matrix
      * @param vector3 defines the translation to insert
      * @returns the current updated matrix
@@ -5489,10 +5504,10 @@ export class Matrix {
         const k = 1 / (1 + c);
 
         const m = result._m;
-        m[0]  = v.x * v.x * k + c;   m[1]  = v.y * v.x * k - v.z; m[2]  = v.z * v.x * k + v.y; m[3]  = 0;
-        m[4]  = v.x * v.y * k + v.z; m[5]  = v.y * v.y * k + c;   m[6]  = v.z * v.y * k - v.x; m[7]  = 0;
-        m[8]  = v.x * v.z * k - v.y; m[9]  = v.y * v.z * k + v.x; m[10] = v.z * v.z * k + c;   m[11] = 0;
-        m[12] = 0;               m[13] = 0;               m[14] = 0;               m[15] = 1;
+        m[0] = v.x * v.x * k + c; m[1] = v.y * v.x * k - v.z; m[2] = v.z * v.x * k + v.y; m[3] = 0;
+        m[4] = v.x * v.y * k + v.z; m[5] = v.y * v.y * k + c; m[6] = v.z * v.y * k - v.x; m[7] = 0;
+        m[8] = v.x * v.z * k - v.y; m[9] = v.y * v.z * k + v.x; m[10] = v.z * v.z * k + c; m[11] = 0;
+        m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
 
         result._markAsUpdated();
     }

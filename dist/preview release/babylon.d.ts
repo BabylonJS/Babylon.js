@@ -18327,6 +18327,8 @@ declare module BABYLON {
          * The previous ratio of the runtime animation
          */
         private _previousRatio;
+        private _enableBlending;
+        private _correctLoopMode;
         /**
          * Gets the current frame of the runtime animation
          */
