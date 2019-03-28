@@ -156,7 +156,6 @@
   - Skinned meshes now set an override mesh instead of reparenting to the `__root__` transform node
   - Loaded bones are linked with the transform node created for the corresponding glTF node
 - Improve load performance by blocking material dirtying during load ([bghgary](https://github.com/bghgary))
-- Add `EquiRectangularCubeTextureAssetTask` to be able to load `EquiRectangularCubeTexture`s via Asset Manager ([Dennis Dervisis](https://github.com/ddervisis))
 
 ### glTF Serializer
 
