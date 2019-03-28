@@ -4,7 +4,7 @@ import { BaseTexture } from './baseTexture';
 import { Texture } from './texture';
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
-import { Tools } from 'Misc/tools';
+import { Tools } from '../../Misc/tools';
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
