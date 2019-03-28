@@ -76,7 +76,6 @@ export class _CreationDataStorage {
  **/
 class _InstanceDataStorage {
     public visibleInstances: any = {};
-    public renderIdForInstances = new Array<number>();
     public batchCache = new _InstancesBatch();
     public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
     public instancesBuffer: Nullable<Buffer>;
@@ -1382,27 +1381,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var currentRenderId = scene.getRenderId();
             var defaultRenderId = (scene._isInIntermediateRendering() ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
             batchCache.visibleInstances[subMeshId] = visibleInstances[currentRenderId];
-            var selfRenderId = this._renderId;
 
             if (!batchCache.visibleInstances[subMeshId] && defaultRenderId) {
                 batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
-                currentRenderId = Math.max(defaultRenderId, currentRenderId);
-                selfRenderId = Math.max(visibleInstances.selfDefaultRenderId, currentRenderId);
             }
-
-            let visibleInstancesForSubMesh = batchCache.visibleInstances[subMeshId];
-            if (visibleInstancesForSubMesh && visibleInstancesForSubMesh.length) {
-                if (this._instanceDataStorage.renderIdForInstances[subMeshId] === currentRenderId) {
-                    batchCache.mustReturn = true;
-                    return batchCache;
-                }
-
-                if (currentRenderId !== selfRenderId) {
-                    batchCache.renderSelf[subMeshId] = false;
-                }
-
-            }
-            this._instanceDataStorage.renderIdForInstances[subMeshId] = currentRenderId;
         }
         batchCache.hardwareInstancedRendering[subMeshId] = this._instanceDataStorage.hardwareInstancedRendering && (batchCache.visibleInstances[subMeshId] !== null) && (batchCache.visibleInstances[subMeshId] !== undefined);
         this._instanceDataStorage._previousBatch = batchCache;

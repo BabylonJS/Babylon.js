@@ -3896,7 +3896,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             for (let i = 0; i < len; i++) {
                 let mesh = this._activeMeshes.data[i];
                 mesh.computeWorldMatrix();
-                mesh._activate(this._renderId);
             }
 
             return;
