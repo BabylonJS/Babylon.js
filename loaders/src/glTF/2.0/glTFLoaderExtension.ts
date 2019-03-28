@@ -109,7 +109,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param context The context when loading the asset
      * @param node The glTF node property
      * @param skin The glTF skin property
-     * @returns A promise that resolves with the loaded Babylon skeleton when the load is complete or null if not handled
+     * @returns A promise that resolves when the load is complete or null if not handled
      */
     _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
 

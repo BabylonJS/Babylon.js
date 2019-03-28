@@ -134,7 +134,6 @@
 - Added LoadScriptAsync tools helper function [MackeyK24](https://github.com/mackeyk24))  
 - Added customShaderNameResolve to PBRMaterialBase to allow subclasses to specify custom shader information [MackeyK24](https://github.com/mackeyk24))
 - Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))
-- Added LoadSkinAsync to GLTF2 loaders to allow custom skinning support [MackeyK24](https://github.com/mackeyk24))
 - Added `auto-exposure` support in `StandardRenderingPipeline` when `HDR` is enabled ([julien-moreau](https://github.com/julien-moreau))
 
 ### OBJ Loader
