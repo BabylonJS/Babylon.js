@@ -350,7 +350,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
         }
 
         // Cache the determinant
-        this._worldMatrixDeterminant = this._worldMatrix.determinant();
+        this._worldMatrixDeterminantIsDirty = true;
 
         return this._worldMatrix;
     }

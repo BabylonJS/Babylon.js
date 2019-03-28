@@ -40984,6 +40984,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
     function SceneExplorerComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._once = true;
+        _this._hooked = false;
         _this.state = { filter: null, selectedEntity: null, scene: _this.props.scene };
         _this.sceneMutationFunc = _this.processMutation.bind(_this);
         return _this;
@@ -41010,12 +41011,14 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["EngineStore"].LastCreatedEngine.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
         }
         var scene = this.state.scene;
+        scene.onNewSkeletonAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewCameraAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewLightAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewMaterialAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewMeshAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewTextureAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewTransformNodeAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onSkeletonRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onMeshRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onCameraRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onLightRemovedObservable.removeCallback(this.sceneMutationFunc);
@@ -41108,6 +41111,23 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             this._onNewSceneAddedObserver = babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["EngineStore"].LastCreatedEngine.onNewSceneAddedObservable.addOnce(function (scene) { return _this.setState({ scene: scene }); });
             return null;
         }
+        if (!this._hooked) {
+            this._hooked = true;
+            scene.onNewSkeletonAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
+            scene.onSkeletonRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
+            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
+            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
+        }
         var guiElements = scene.textures.filter(function (t) { return t.getClassName() === "AdvancedDynamicTexture"; });
         var textures = scene.textures.filter(function (t) { return t.getClassName() !== "AdvancedDynamicTexture"; });
         var postProcessses = scene.postProcesses;
@@ -41162,19 +41182,6 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         if (this._once) {
             this._once = false;
-            var scene = this.state.scene;
-            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
-            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
-            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
-            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
-            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(function () {
                 var element = document.getElementById("sceneExplorer");
