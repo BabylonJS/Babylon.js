@@ -6,7 +6,6 @@ export * from "./equiRectangularCubeTexture";
 export * from "./hdrCubeTexture";
 export * from "./internalTexture";
 export * from "./internalTextureLoader";
-export * from "./internalTextureTracker";
 export * from "./Loaders/index";
 export * from "./mirrorTexture";
 export * from "./multiRenderTarget";

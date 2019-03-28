@@ -100,7 +100,7 @@ export class ShapeBuilder {
      * @see https://doc.babylonjs.com/how_to/parametric_shapes
      * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
      */
-    public static ExtrudeShapeCustom(name: string, options: { shape: Vector3[], path: Vector3[], scaleFunction?: any, rotationFunction?: any, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
+    public static ExtrudeShapeCustom(name: string, options: { shape: Vector3[], path: Vector3[], scaleFunction?: any, rotationFunction?: any, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var path = options.path;
         var shape = options.shape;
         var scaleFunction = options.scaleFunction || (() => { return 1; });

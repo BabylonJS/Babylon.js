@@ -487,6 +487,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public alwaysSelectAsActiveMesh = false;
 
     /**
+     * Gets or sets a boolean indicating that the bounding info does not need to be kept in sync (for performance reason)
+     */
+    public doNotSyncBoundingInfo = false;
+
+    /**
      * Gets or sets the current action manager
      * @see http://doc.babylonjs.com/how_to/how_to_use_actions
      */
@@ -1284,6 +1289,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     protected _afterComputeWorldMatrix(): void {
+        if (this.doNotSyncBoundingInfo) {
+            return;
+        }
         // Bounding info
         this._updateBoundingInfo();
     }

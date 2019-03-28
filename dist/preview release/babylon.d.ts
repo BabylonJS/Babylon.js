@@ -267,7 +267,7 @@ declare module BABYLON {
      * Constant used to define the minimal number value in Babylon.js
      * @ignorenaming
      */
-    export const Epsilon = 0.001;
+    let Epsilon: number;
     /**
      * Class used to hold a RBG color
      */
@@ -2939,6 +2939,14 @@ declare module BABYLON {
          */
         setTranslationFromFloats(x: number, y: number, z: number): Matrix;
         /**
+         * Adds the translation vector (using 3 floats) in the current matrix
+         * @param x defines the 1st component of the translation
+         * @param y defines the 2nd component of the translation
+         * @param z defines the 3rd component of the translation
+         * @returns the current updated matrix
+         */
+        addTranslationFromFloats(x: number, y: number, z: number): Matrix;
+        /**
          * Inserts the translation vector in the current matrix
          * @param vector3 defines the translation to insert
          * @returns the current updated matrix
@@ -3256,6 +3264,14 @@ declare module BABYLON {
          * @param result defines the target matrix
          */
         static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Matrix): void;
+        /**
+         * Takes normalised vectors and returns a rotation matrix to align "from" with "to".
+         * Taken from http://www.iquilezles.org/www/articles/noacos/noacos.htm
+         * @param from defines the vector to align
+         * @param to defines the vector to align to
+         * @param result defines the target matrix
+         */
+        static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void;
         /**
          * Creates a rotation matrix
          * @param yaw defines the yaw angle in radians (Y axis)
@@ -6158,38 +6174,10 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Internal interface used to track InternalTexture already bound to the GL context
-     */
-    export interface IInternalTextureTracker {
-        /**
-         * Gets or set the previous tracker in the list
-         */
-        previous: Nullable<IInternalTextureTracker>;
-        /**
-         * Gets or set the next tracker in the list
-         */
-        next: Nullable<IInternalTextureTracker>;
-    }
-    /**
-     * Internal class used by the engine to get list of InternalTexture already bound to the GL context
-     */
-    export class DummyInternalTextureTracker {
-        /**
-         * Gets or set the previous tracker in the list
-         */
-        previous: Nullable<IInternalTextureTracker>;
-        /**
-         * Gets or set the next tracker in the list
-         */
-        next: Nullable<IInternalTextureTracker>;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store data associated with WebGL texture data for the engine
      * This class should not be used directly
      */
-    export class InternalTexture implements IInternalTextureTracker {
+    export class InternalTexture {
         /** hidden */
         static _UpdateRGBDAsync: (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: SphericalPolynomial | null, lodScale: number, lodOffset: number) => Promise<void>;
         /**
@@ -6316,20 +6304,10 @@ declare module BABYLON {
          * Gets a boolean indicating if the texture is inverted on Y axis
          */
         invertY: boolean;
-        /**
-         * Gets or set the previous tracker in the list
-         */
-        previous: Nullable<IInternalTextureTracker>;
-        /**
-         * Gets or set the next tracker in the list
-         */
-        next: Nullable<IInternalTextureTracker>;
         /** @hidden */
         _invertVScale: boolean;
         /** @hidden */
-        _initialSlot: number;
-        /** @hidden */
-        _designatedSlot: number;
+        _associatedChannel: number;
         /** @hidden */
         _dataSource: number;
         /** @hidden */
@@ -7502,6 +7480,7 @@ declare module BABYLON {
         private _up;
         private _right;
         private _rightInverted;
+        private _usePivotMatrix;
         private _position;
         private _rotation;
         private _rotationQuaternion;
@@ -7547,8 +7526,6 @@ declare module BABYLON {
         private _pivotMatrix;
         private _pivotMatrixInverse;
         protected _postMultiplyPivotMatrix: boolean;
-        private _tempMatrix;
-        private _tempMatrix2;
         protected _isWorldMatrixFrozen: boolean;
         /** @hidden */
         _indexInSceneTransformNodesArray: number;
@@ -18357,6 +18334,8 @@ declare module BABYLON {
          * The previous ratio of the runtime animation
          */
         private _previousRatio;
+        private _enableBlending;
+        private _correctLoopMode;
         /**
          * Gets the current frame of the runtime animation
          */
@@ -24026,6 +24005,10 @@ declare module BABYLON {
          */
         alwaysSelectAsActiveMesh: boolean;
         /**
+         * Gets or sets a boolean indicating that the bounding info does not need to be kept in sync (for performance reason)
+         */
+        doNotSyncBoundingInfo: boolean;
+        /**
          * Gets or sets the current action manager
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions
          */
@@ -27251,12 +27234,6 @@ declare module BABYLON {
         /** @hidden */
         _badDesktopOS: boolean;
         /**
-         * Gets or sets a value indicating if we want to disable texture binding optimization.
-         * This could be required on some buggy drivers which wants to have textures bound in a progressive order.
-         * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is
-         */
-        disableTextureBindingOptimization: boolean;
-        /**
          * Gets the audio engine
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
@@ -27305,8 +27282,6 @@ declare module BABYLON {
         private _loadingScreen;
         /** @hidden */
         _drawCalls: PerfCounter;
-        /** @hidden */
-        _textureCollisions: PerfCounter;
         private _glVersion;
         private _glRenderer;
         private _glVendor;
@@ -27389,8 +27364,6 @@ declare module BABYLON {
         private _currentInstanceLocations;
         private _currentInstanceBuffers;
         private _textureUnits;
-        private _firstBoundInternalTextureTracker;
-        private _lastBoundInternalTextureTracker;
         private _workingCanvas;
         private _workingContext;
         private _rescalePostProcess;
@@ -28652,10 +28625,6 @@ declare module BABYLON {
          * @param effect defines the effect to bind
          */
         bindSamplers(effect: Effect): void;
-        private _moveBoundTextureOnTop;
-        private _getCorrectTextureChannel;
-        private _linkTrackers;
-        private _removeDesignatedSlot;
         private _activateCurrentTexture;
         /** @hidden */
         _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate?: boolean, force?: boolean): boolean;
@@ -31111,6 +31080,12 @@ declare module BABYLON {
         * @return The decoded base64 data.
         */
         static DecodeBase64(uri: string): ArrayBuffer;
+        /**
+         * Gets the absolute url.
+         * @param url the input url
+         * @return the absolute url
+         */
+        static GetAbsoluteUrl(url: string): string;
         /**
          * No log
          */
@@ -34906,6 +34881,19 @@ declare module BABYLON {
          * Define the current local position of the camera in the scene
          */
         position: Vector3;
+        protected _upVector: Vector3;
+        protected _upToYMatrix: Matrix;
+        protected _YToUpMatrix: Matrix;
+        /**
+         * The vector the camera should consider as up. (default is Vector3(0, 1, 0) as returned by Vector3.Up())
+         * Setting this will copy the given vector to the camera's upVector, and set rotation matrices to and from Y up.
+         * DO NOT set the up vector using copyFrom or copyFromFloats, as this bypasses setting the above matrices.
+         */
+        upVector: Vector3;
+        /**
+         * Sets the Y-up to camera up-vector rotation matrix, and the up-vector to Y-up rotation matrix.
+         */
+        setMatUp(): void;
         /**
          * Current inertia value on the longitudinal axis.
          * The bigger this number the longer it will take for the camera to stop.
@@ -35124,8 +35112,6 @@ declare module BABYLON {
         protected _collisionTriggered: boolean;
         protected _targetBoundingCenter: Nullable<Vector3>;
         private _computationVector;
-        private _tempAxisVector;
-        private _tempAxisRotationMatrix;
         /**
          * Instantiates a new ArcRotateCamera in a given scene
          * @param name Defines the name of the camera
@@ -35453,7 +35439,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             updatable?: boolean;
             sourcePlane?: Plane;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -39169,7 +39155,7 @@ declare module BABYLON {
                 h: number;
             };
             updatable?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a ground mesh from a height map
          * * The parameter `url` sets the URL of the height map image resource.
@@ -39199,7 +39185,7 @@ declare module BABYLON {
             alphaFilter?: number;
             updatable?: boolean;
             onReady?: (mesh: GroundMesh) => void;
-        }, scene: Scene): GroundMesh;
+        }, scene?: Nullable<Scene>): GroundMesh;
     }
 }
 declare module BABYLON {
@@ -40846,6 +40832,7 @@ declare module BABYLON.Debug {
         private _utilityLayer;
         private _debugBoxMesh;
         private _debugSphereMesh;
+        private _debugCylinderMesh;
         private _debugMaterial;
         private _debugMeshMeshes;
         /**
@@ -40870,6 +40857,7 @@ declare module BABYLON.Debug {
         private _getDebugMaterial;
         private _getDebugBoxMesh;
         private _getDebugSphereMesh;
+        private _getDebugCylinderMesh;
         private _getDebugMeshMesh;
         private _getDebugMesh;
         /** Releases all resources */
@@ -42445,7 +42433,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -46353,10 +46341,6 @@ declare module BABYLON {
          */
         readonly drawCallsCounter: PerfCounter;
         /**
-         * Gets the perf counter used for texture collisions
-         */
-        readonly textureCollisionsCounter: PerfCounter;
-        /**
          * Instantiates a new scene instrumentation.
          * This class can be used to get instrumentation data from a Babylon engine
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
@@ -48114,7 +48098,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             instance?: Mesh;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         private static _ExtrudeShapeGeneric;
     }
 }
@@ -49222,6 +49206,31 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Helper class to push actions to a pool of workers.
+     */
+    export class WorkerPool implements IDisposable {
+        private _workerInfos;
+        private _pendingActions;
+        /**
+         * Constructor
+         * @param workers Array of workers to use for actions
+         */
+        constructor(workers: Array<Worker>);
+        /**
+         * Terminates all workers and clears any pending actions.
+         */
+        dispose(): void;
+        /**
+         * Pushes an action to the worker pool. If all the workers are active, the action will be
+         * pended until a worker has completed its action.
+         * @param action The action to perform. Call onComplete when the action is complete.
+         */
+        push(action: (worker: Worker, onComplete: () => void) => void): void;
+        private _execute;
+    }
+}
+declare module BABYLON {
+    /**
      * Configuration for Draco compression
      */
     export interface IDracoCompressionConfiguration {
@@ -49282,7 +49291,7 @@ declare module BABYLON {
      * @see https://www.babylonjs-playground.com/#N3EK4B#0
      */
     export class DracoCompression implements IDisposable {
-        private static _DecoderModulePromise;
+        private _workerPoolPromise;
         /**
          * The configuration. Defaults to the following urls:
          * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
@@ -49295,25 +49304,38 @@ declare module BABYLON {
          */
         static readonly DecoderAvailable: boolean;
         /**
-         * Constructor
+         * Default number of workers to create when creating the draco compression object.
          */
-        constructor();
+        static DefaultNumWorkers: number;
+        private static GetDefaultNumWorkers;
+        /**
+         * Constructor
+         * @param numWorkers The number of workers for async operations
+         */
+        constructor(numWorkers?: number);
         /**
          * Stop all async operations and release resources.
          */
         dispose(): void;
         /**
-         * Decode Draco compressed mesh data to vertex data.
-         * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
-         * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
-         * @returns A promise that resolves with the decoded vertex data
+         * Returns a promise that resolves when ready. Call this manually to ensure draco compression is ready before use.
+         * @returns a promise that resolves when ready
          */
+        whenReadyAsync(): Promise<void>;
+        /**
+          * Decode Draco compressed mesh data to vertex data.
+          * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
+          * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+          * @returns A promise that resolves with the decoded vertex data
+          */
         decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: {
             [kind: string]: number;
         }): Promise<VertexData>;
-        private static _GetDecoderModule;
-        private static _LoadScriptAsync;
-        private static _LoadFileAsync;
+        /**
+         * The worker function that gets converted to a blob url to pass into a worker.
+         */
+        private static _Worker;
+        private _loadDecoderWasmBinaryAsync;
     }
 }
 declare module BABYLON {
@@ -49651,7 +49673,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene, earcutInjection?: any): Mesh;
+        }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction.
          * * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements)
@@ -49672,7 +49694,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene, earcutInjection?: any): Mesh;
+        }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
     }
 }
 declare module BABYLON {
@@ -49713,7 +49735,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             cap?: number;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -49758,7 +49780,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             instance?: Mesh;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -49792,7 +49814,7 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
             updatable?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -49882,7 +49904,7 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
             updatable?: boolean;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a plane polygonal mesh.  By default, this is a disc
          * * The parameter `radius` sets the radius size (float) of the polygon (default 0.5)
@@ -49932,7 +49954,7 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
             updatable?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a ribbon mesh. The ribbon is a parametric shape.  It has no predefined shape. Its final shape will depend on the input parameters
          * * The parameter `pathArray` is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry
@@ -50013,7 +50035,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a torus mesh
          * * The parameter `diameter` sets the diameter size (float) of the torus (default 1)
@@ -50036,7 +50058,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a torus knot mesh
          * * The parameter `radius` sets the global radius size (float) of the torus knot (default 2)
@@ -50063,7 +50085,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
          * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
@@ -50209,7 +50231,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             instance?: Mesh;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates lathe mesh.
          * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe
@@ -50243,7 +50265,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             cap?: number;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a plane mesh
          * * The parameter `size` sets the size (float) of both sides of the plane at once (default 1)
@@ -50267,7 +50289,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             updatable?: boolean;
             sourcePlane?: Plane;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a ground mesh
          * * The parameters `width` and `height` (floats, default 1) set the width and height sizes of the ground
@@ -50286,7 +50308,7 @@ declare module BABYLON {
             subdivisionsX?: number;
             subdivisionsY?: number;
             updatable?: boolean;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a tiled ground mesh
          * * The parameters `xmin` and `xmax` (floats, default -1 and 1) set the ground minimum and maximum X coordinates
@@ -50314,7 +50336,7 @@ declare module BABYLON {
                 h: number;
             };
             updatable?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a ground mesh from a height map
          * * The parameter `url` sets the URL of the height map image resource.
@@ -50344,7 +50366,7 @@ declare module BABYLON {
             alphaFilter?: number;
             updatable?: boolean;
             onReady?: (mesh: GroundMesh) => void;
-        }, scene: Scene): GroundMesh;
+        }, scene?: Nullable<Scene>): GroundMesh;
         /**
          * Creates a polygon mesh
          * The polygon's shape will depend on the input parameters and is constructed parallel to a ground mesh
@@ -50369,7 +50391,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene, earcutInjection?: any): Mesh;
+        }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction.
          * * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements)
@@ -50390,7 +50412,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene, earcutInjection?: any): Mesh;
+        }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates a tube mesh.
          * The tube is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters
@@ -50428,7 +50450,7 @@ declare module BABYLON {
             backUVs?: Vector4;
             instance?: Mesh;
             invertUV?: boolean;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a polyhedron mesh
          * * The parameter `type` (positive integer, max 14, default 0) sets the polyhedron type to build among the 15 embbeded types. Please refer to the type sheet in the tutorial to choose the wanted type
@@ -50462,7 +50484,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
-        }, scene: Scene): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a decal mesh.
          * A decal is a mesh usually applied as a model onto the surface of another mesh. So don't forget the parameter `sourceMesh` depicting the decal
@@ -55955,31 +55977,6 @@ declare module BABYLON {
         private _handleDataAvailable;
         private _handleError;
         private _handleStop;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper class to push actions to a pool of workers.
-     */
-    export class WorkerPool implements IDisposable {
-        private _workerInfos;
-        private _pendingActions;
-        /**
-         * Constructor
-         * @param workers Array of workers to use for actions
-         */
-        constructor(workers: Array<Worker>);
-        /**
-         * Terminates all workers and clears any pending actions.
-         */
-        dispose(): void;
-        /**
-         * Pushes an action to the worker pool. If all the workers are active, the action will be
-         * pended until a worker has completed its action.
-         * @param action The action to perform. Call onComplete when the action is complete.
-         */
-        push(action: (worker: Worker, onComplete: () => void) => void): void;
-        private _execute;
     }
 }
 declare module BABYLON {
