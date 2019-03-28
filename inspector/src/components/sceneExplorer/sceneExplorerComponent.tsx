@@ -53,6 +53,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
 
     private _once = true;
+    private _hooked = false;
 
     private sceneMutationFunc: () => void;
 
@@ -91,6 +92,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         const scene = this.state.scene;
 
+        scene.onNewSkeletonAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewCameraAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewLightAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewMaterialAddedObservable.removeCallback(this.sceneMutationFunc);
@@ -98,6 +100,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         scene.onNewTextureAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewTransformNodeAddedObservable.removeCallback(this.sceneMutationFunc);
 
+        scene.onSkeletonRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onMeshRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onCameraRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onLightRemovedObservable.removeCallback(this.sceneMutationFunc);
@@ -202,6 +205,25 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return null;
         }
 
+        if (!this._hooked) {
+            this._hooked = true;
+            scene.onNewSkeletonAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
+
+            scene.onSkeletonRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
+            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
+            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
+        }
+
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
         let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
         let postProcessses = scene.postProcesses;
@@ -282,22 +304,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (this._once) {
             this._once = false;
-            const scene = this.state.scene;
-
-            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
-
-            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
-            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
-            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
-            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
-
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(() => {
                 const element = document.getElementById("sceneExplorer");

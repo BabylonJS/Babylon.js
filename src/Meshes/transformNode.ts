@@ -56,8 +56,11 @@ export class TransformNode extends Node {
     protected _isDirty = false;
     private _transformToBoneReferal: Nullable<TransformNode>;
 
+    @serialize("billboardMode")
+    private _billboardMode = TransformNode.BILLBOARDMODE_NONE;
+
     /**
-    * Set the billboard mode. Default is 0.
+    * Gets or sets the billboard mode. Default is 0.
     *
     * | Value | Type | Description |
     * | --- | --- | --- |
@@ -68,14 +71,36 @@ export class TransformNode extends Node {
     * | 7 | BILLBOARDMODE_ALL |  |
     *
     */
-    @serialize()
-    public billboardMode = TransformNode.BILLBOARDMODE_NONE;
+    public get billboardMode() {
+        return this._billboardMode;
+    }
 
+    public set billboardMode(value: number) {
+        if (this._billboardMode === value) {
+            return;
+        }
+        this._billboardMode = value;
+
+        this._connectBillboardProcessors();
+    }
+
+    private _preserveParentRotationForBillboard = false;
     /**
      * Gets or sets a boolean indicating that parent rotation should be preserved when using billboards.
      * This could be useful for glTF objects where parent rotation helps converting from right handed to left handed
      */
-    public preserveParentRotationForBillboard = false;
+    public get preserveParentRotationForBillboard() {
+        return this._preserveParentRotationForBillboard;
+    }
+
+    public set preserveParentRotationForBillboard(value: boolean) {
+        if (value === this._preserveParentRotationForBillboard) {
+            return;
+        }
+        this._preserveParentRotationForBillboard = value;
+
+        this._connectBillboardProcessors();
+    }
 
     /**
      * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
@@ -96,6 +121,12 @@ export class TransformNode extends Node {
     @serialize()
     public ignoreNonUniformScaling = false;
 
+    /**
+     * Gets or sets a boolean indicating that even if rotationQuaternion is defined, you can keep updating rotation property and Babylon.js will just mix both
+     */
+    @serialize()
+    public reIntegrateRotationIntoRotationQuaternion = false;
+
     // Cache
     /** @hidden */
     public _poseMatrix: Matrix;
@@ -106,13 +137,21 @@ export class TransformNode extends Node {
     private _pivotMatrix = Matrix.Identity();
     private _pivotMatrixInverse: Matrix;
     protected _postMultiplyPivotMatrix = false;
-    private _tempMatrix = Matrix.Identity();
-    private _tempMatrix2 = Matrix.Identity();
 
     protected _isWorldMatrixFrozen = false;
 
     /** @hidden */
     public _indexInSceneTransformNodesArray = -1;
+
+    private _connectBillboardProcessors() {
+        if (this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard) {
+            this._activeParentProcessor = this._billboardParentProcessor;
+            this._activeBillboardPostProcessor = this._billboardPostProcessor;
+        } else {
+            this._activeParentProcessor = this._defaultParentProcessor;
+            this._activeBillboardPostProcessor = () => { };
+        }
+    }
 
     /**
     * An event triggered after the world matrix is updated
@@ -125,6 +164,9 @@ export class TransformNode extends Node {
         if (isPure) {
             this.getScene().addTransformNode(this);
         }
+
+        this._activeParentProcessor = this._defaultParentProcessor;
+        this._activeCompositionProcess = this._defaultCompositionProcessor;
     }
 
     /**
@@ -157,6 +199,7 @@ export class TransformNode extends Node {
 
     public set rotation(newRotation: Vector3) {
         this._rotation = newRotation;
+        this._rotationQuaternion = null;
         this._isDirty = true;
     }
 
@@ -239,10 +282,6 @@ export class TransformNode extends Node {
 
     /** @hidden */
     public _isSynchronized(): boolean {
-        if (this._isDirty) {
-            return false;
-        }
-
         if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
             return false;
         }
@@ -263,9 +302,7 @@ export class TransformNode extends Node {
             if (!this._cache.rotationQuaternion.equals(this._rotationQuaternion)) {
                 return false;
             }
-        }
-
-        if (!this._cache.rotation.equals(this._rotation)) {
+        } else if (!this._cache.rotation.equals(this._rotation)) {
             return false;
         }
 
@@ -295,9 +332,6 @@ export class TransformNode extends Node {
     * @returns this transform node
     */
     public markAsDirty(property: string): TransformNode {
-        if (property === "rotation") {
-            this.rotationQuaternion = null;
-        }
         this._currentRenderId = Number.MAX_VALUE;
         this._isDirty = true;
         return this;
@@ -328,6 +362,11 @@ export class TransformNode extends Node {
     */
     public setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix = true): TransformNode {
         this._pivotMatrix.copyFrom(matrix);
+        if (this._pivotMatrix.isIdentity()) {
+            this._activeCompositionProcess = this._defaultCompositionProcessor;
+        } else {
+            this._activeCompositionProcess = this._pivotCompositionProcessor;
+        }
         this._cache.pivotMatrixUpdated = true;
         this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
 
@@ -864,148 +903,176 @@ export class TransformNode extends Node {
         return this.parent;
     }
 
+    private _activeCompositionProcess: (scaling: Vector3, rotation: Quaternion, translation: Vector3) => void;
+
+    private _defaultCompositionProcessor = (scaling: Vector3, rotation: Quaternion, translation: Vector3) => {
+        Matrix.ComposeToRef(scaling, rotation, translation, this._localMatrix);
+    }
+
+    private _pivotCompositionProcessor = (scaling: Vector3, rotation: Quaternion, translation: Vector3) => {
+        let scaleMatrix = Tmp.Matrix[1];
+        Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, scaleMatrix);
+
+        // Rotation
+        let rotationMatrix = Tmp.Matrix[0];
+        rotation.toRotationMatrix(rotationMatrix);
+
+        // Composing transformations
+        this._pivotMatrix.multiplyToRef(scaleMatrix, Tmp.Matrix[4]);
+        Tmp.Matrix[4].multiplyToRef(rotationMatrix, this._localMatrix);
+
+        // Post multiply inverse of pivotMatrix
+        if (this._postMultiplyPivotMatrix) {
+            this._localMatrix.multiplyToRef(this._pivotMatrixInverse, this._localMatrix);
+        }
+
+        this._localMatrix.addTranslationFromFloats(translation.x, translation.y, translation.z);
+    }
+
+    // Billboards
+    private _activeParentProcessor: (parent: Node) => void;
+    private _activeBillboardPostProcessor = () => { };
+
+    private _defaultParentProcessor = (parent: Node) => {
+        if (this._transformToBoneReferal) {
+            this._localMatrix.multiplyToRef(parent.getWorldMatrix(), Tmp.Matrix[6]);
+            Tmp.Matrix[6].multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), this._worldMatrix);
+        } else {
+            this._localMatrix.multiplyToRef(parent.getWorldMatrix(), this._worldMatrix);
+        }
+    }
+
+    private _billboardParentProcessor = (parent: Node) => {
+        if (this._transformToBoneReferal) {
+            parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), Tmp.Matrix[7]);
+        } else {
+            Tmp.Matrix[7].copyFrom(parent.getWorldMatrix());
+        }
+
+        // Extract scaling and translation from parent
+        let translation = Tmp.Vector3[5];
+        let scale = Tmp.Vector3[6];
+        Tmp.Matrix[7].decompose(scale, undefined, translation);
+        Matrix.ScalingToRef(scale.x, scale.y, scale.z, Tmp.Matrix[7]);
+        Tmp.Matrix[7].setTranslation(translation);
+
+        this._localMatrix.multiplyToRef(Tmp.Matrix[7], this._worldMatrix);
+    }
+
+    private _billboardPostProcessor = () => {
+        let camera = (<Camera>this.getScene().activeCamera);
+        if (!camera) {
+            return;
+        }
+        let storedTranslation = Tmp.Vector3[0];
+        this._worldMatrix.getTranslationToRef(storedTranslation); // Save translation
+
+        // Cancel camera rotation
+        Tmp.Matrix[1].copyFrom(camera.getViewMatrix());
+        Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
+        Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
+
+        if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
+            Tmp.Matrix[0].decompose(undefined, Tmp.Quaternion[0], undefined);
+            let eulerAngles = Tmp.Vector3[1];
+            Tmp.Quaternion[0].toEulerAnglesToRef(eulerAngles);
+
+            if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) !== TransformNode.BILLBOARDMODE_X) {
+                eulerAngles.x = 0;
+            }
+
+            if ((this.billboardMode & TransformNode.BILLBOARDMODE_Y) !== TransformNode.BILLBOARDMODE_Y) {
+                eulerAngles.y = 0;
+            }
+
+            if ((this.billboardMode & TransformNode.BILLBOARDMODE_Z) !== TransformNode.BILLBOARDMODE_Z) {
+                eulerAngles.z = 0;
+            }
+
+            Matrix.RotationYawPitchRollToRef(eulerAngles.y, eulerAngles.x, eulerAngles.z, Tmp.Matrix[0]);
+        }
+        this._worldMatrix.setTranslationFromFloats(0, 0, 0);
+        this._worldMatrix.multiplyToRef(Tmp.Matrix[0], this._worldMatrix);
+
+        // Restore translation
+        this._worldMatrix.setTranslation(Tmp.Vector3[0]);
+    }
+
     /**
      * Computes the world matrix of the node
      * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
      * @returns the world matrix
      */
     public computeWorldMatrix(force?: boolean): Matrix {
+        let currentRenderId = this.getScene().getRenderId();
+
         if (this._isWorldMatrixFrozen) {
             return this._worldMatrix;
         }
 
-        if (!force && this.isSynchronized()) {
-            this._currentRenderId = this.getScene().getRenderId();
+        if (!this._isDirty && !force && this.isSynchronized()) {
+            this._currentRenderId = currentRenderId;
             return this._worldMatrix;
         }
 
         this._updateCache();
-        this._cache.position.copyFrom(this._position);
-        this._cache.scaling.copyFrom(this._scaling);
         this._cache.pivotMatrixUpdated = false;
         this._cache.billboardMode = this.billboardMode;
         this._cache.infiniteDistance = this.infiniteDistance;
-        this._currentRenderId = this.getScene().getRenderId();
+
+        this._currentRenderId = currentRenderId;
         this._childUpdateId++;
         this._isDirty = false;
         let parent = this._getEffectiveParent();
 
         // Scaling
-        Matrix.ScalingToRef(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
-
-        // Rotation
-
-        //rotate, if quaternion is set and rotation was used
-        if (this._rotationQuaternion) {
-            var len = this.rotation.length();
-            if (len) {
-                this._rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z));
-                this._rotation.copyFromFloats(0, 0, 0);
-            }
-        }
-
-        if (this._rotationQuaternion) {
-            this._rotationQuaternion.toRotationMatrix(Tmp.Matrix[0]);
-            this._cache.rotationQuaternion.copyFrom(this._rotationQuaternion);
-        } else {
-            Matrix.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, Tmp.Matrix[0]);
-            this._cache.rotation.copyFrom(this._rotation);
-        }
+        let scaling: Vector3 = this._cache.scaling;
+        let translation: Vector3 = this._cache.position;
 
         // Translation
         let camera = (<Camera>this.getScene().activeCamera);
 
         if (this.infiniteDistance && !this.parent && camera) {
-
             var cameraWorldMatrix = camera.getWorldMatrix();
-
             var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
-            Matrix.TranslationToRef(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y,
-                this._position.z + cameraGlobalPosition.z, this._tempMatrix2);
+            translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
         } else {
-            Matrix.TranslationToRef(this._position.x, this._position.y, this._position.z, this._tempMatrix2);
+            translation.copyFrom(this._position);
         }
 
-        // Composing transformations
-        this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
-        Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], this._tempMatrix);
+        // Scaling
+        scaling.copyFromFloats(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant);
 
-        // Post multiply inverse of pivotMatrix
-        if (this._postMultiplyPivotMatrix) {
-            this._tempMatrix.multiplyToRef(this._pivotMatrixInverse, this._tempMatrix);
+        // Rotation
+        let rotation: Quaternion = this._cache.rotationQuaternion;
+        if (this._rotationQuaternion) {
+            if (this.reIntegrateRotationIntoRotationQuaternion) {
+                var len = this.rotation.lengthSquared();
+                if (len) {
+                    this._rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z));
+                    this._rotation.copyFromFloats(0, 0, 0);
+                }
+            }
+            rotation.copyFrom(this._rotationQuaternion);
+        } else {
+            Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, rotation);
+            this._cache.rotation.copyFrom(this._rotation);
         }
 
-        // Local world
-        this._tempMatrix.multiplyToRef(this._tempMatrix2, this._localMatrix);
+        // Compose
+        this._activeCompositionProcess(scaling, rotation, translation);
 
         // Parent
         if (parent && parent.getWorldMatrix) {
-            // We do not want parent rotation
-            if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard) {
-                if (this._transformToBoneReferal) {
-                    parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), Tmp.Matrix[7]);
-                } else {
-                    Tmp.Matrix[7].copyFrom(parent.getWorldMatrix());
-                }
-
-                // Extract scaling and translation from parent
-                let translation = Tmp.Vector3[5];
-                let scale = Tmp.Vector3[6];
-                Tmp.Matrix[7].decompose(scale, undefined, translation);
-                Matrix.ScalingToRef(scale.x, scale.y, scale.z, Tmp.Matrix[7]);
-                Tmp.Matrix[7].setTranslation(translation);
-
-                this._localMatrix.multiplyToRef(Tmp.Matrix[7], this._worldMatrix);
-            } else {
-                if (this._transformToBoneReferal) {
-                    this._localMatrix.multiplyToRef(parent.getWorldMatrix(), Tmp.Matrix[6]);
-                    Tmp.Matrix[6].multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), this._worldMatrix);
-                } else {
-                    this._localMatrix.multiplyToRef(parent.getWorldMatrix(), this._worldMatrix);
-                }
-            }
-
+            this._activeParentProcessor(parent);
             this._markSyncedWithParent();
         } else {
             this._worldMatrix.copyFrom(this._localMatrix);
         }
 
         // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
-        if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE && camera) {
-            let storedTranslation = Tmp.Vector3[0];
-            this._worldMatrix.getTranslationToRef(storedTranslation); // Save translation
-
-            // Cancel camera rotation
-            Tmp.Matrix[1].copyFrom(camera.getViewMatrix());
-            Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
-            Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
-
-            if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
-                Tmp.Matrix[0].decompose(undefined, Tmp.Quaternion[0], undefined);
-                let eulerAngles = Tmp.Vector3[1];
-                Tmp.Quaternion[0].toEulerAnglesToRef(eulerAngles);
-
-                if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) !== TransformNode.BILLBOARDMODE_X) {
-                    eulerAngles.x = 0;
-                }
-
-                if ((this.billboardMode & TransformNode.BILLBOARDMODE_Y) !== TransformNode.BILLBOARDMODE_Y) {
-                    eulerAngles.y = 0;
-                }
-
-                if ((this.billboardMode & TransformNode.BILLBOARDMODE_Z) !== TransformNode.BILLBOARDMODE_Z) {
-                    eulerAngles.z = 0;
-                }
-
-                Matrix.RotationYawPitchRollToRef(eulerAngles.y, eulerAngles.x, eulerAngles.z, Tmp.Matrix[0]);
-            }
-            this._worldMatrix.setTranslationFromFloats(0, 0, 0);
-            this._worldMatrix.multiplyToRef(Tmp.Matrix[0], this._worldMatrix);
-
-            // Restore translation
-            this._worldMatrix.setTranslation(Tmp.Vector3[0]);
-        }
+        this._activeBillboardPostProcessor();
 
         // Normal matrix
         if (!this.ignoreNonUniformScaling) {
@@ -1033,7 +1100,7 @@ export class TransformNode extends Node {
         }
 
         // Cache the determinant
-        this._worldMatrixDeterminant = this._worldMatrix.determinant();
+        this._worldMatrixDeterminantIsDirty = true;
 
         return this._worldMatrix;
     }
