@@ -939,6 +939,11 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadSkinAsync(context: string, node: INode, skin: ISkin): Promise<void> {
+        const extensionPromise = this._extensionsLoadSkinAsync(context, node, skin);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
+
         const assignSkeleton = (skeleton: Skeleton) => {
             this._forEachPrimitive(node, (babylonMesh) => {
                 babylonMesh.skeleton = skeleton;
@@ -2164,6 +2169,10 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _extensionsLoadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
         return this._applyExtensions(animation, "loadAnimation", (extension) => extension.loadAnimationAsync && extension.loadAnimationAsync(context, animation));
+    }
+
+    private _extensionsLoadSkinAsync(context: string, node: INode, skin: ISkin): Nullable<Promise<void>> {
+        return this._applyExtensions(skin, "loadSkin", (extension) => extension._loadSkinAsync && extension._loadSkinAsync(context, node, skin));
     }
 
     private _extensionsLoadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {

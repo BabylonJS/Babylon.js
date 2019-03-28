@@ -4695,6 +4695,10 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._loadSkinAsync = function (context, node, skin) {
         var _this = this;
+        var extensionPromise = this._extensionsLoadSkinAsync(context, node, skin);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
         var assignSkeleton = function (skeleton) {
             _this._forEachPrimitive(node, function (babylonMesh) {
                 babylonMesh.skeleton = skeleton;
@@ -5752,6 +5756,9 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._extensionsLoadAnimationAsync = function (context, animation) {
         return this._applyExtensions(animation, "loadAnimation", function (extension) { return extension.loadAnimationAsync && extension.loadAnimationAsync(context, animation); });
+    };
+    GLTFLoader.prototype._extensionsLoadSkinAsync = function (context, node, skin) {
+        return this._applyExtensions(skin, "loadSkin", function (extension) { return extension._loadSkinAsync && extension._loadSkinAsync(context, node, skin); });
     };
     GLTFLoader.prototype._extensionsLoadUriAsync = function (context, property, uri) {
         return this._applyExtensions(property, "loadUri", function (extension) { return extension._loadUriAsync && extension._loadUriAsync(context, property, uri); });

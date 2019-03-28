@@ -7480,15 +7480,15 @@ declare module BABYLON {
         private _up;
         private _right;
         private _rightInverted;
-        private _usePivotMatrix;
         private _position;
         private _rotation;
         private _rotationQuaternion;
         protected _scaling: Vector3;
         protected _isDirty: boolean;
         private _transformToBoneReferal;
+        private _billboardMode;
         /**
-        * Set the billboard mode. Default is 0.
+        * Gets or sets the billboard mode. Default is 0.
         *
         * | Value | Type | Description |
         * | --- | --- | --- |
@@ -7500,6 +7500,7 @@ declare module BABYLON {
         *
         */
         billboardMode: number;
+        private _preserveParentRotationForBillboard;
         /**
          * Gets or sets a boolean indicating that parent rotation should be preserved when using billboards.
          * This could be useful for glTF objects where parent rotation helps converting from right handed to left handed
@@ -7518,6 +7519,10 @@ declare module BABYLON {
          * By default the system will update normals to compensate
          */
         ignoreNonUniformScaling: boolean;
+        /**
+         * Gets or sets a boolean indicating that even if rotationQuaternion is defined, you can keep updating rotation property and Babylon.js will just mix both
+         */
+        reIntegrateRotationIntoRotationQuaternion: boolean;
         /** @hidden */
         _poseMatrix: Matrix;
         /** @hidden */
@@ -7529,6 +7534,7 @@ declare module BABYLON {
         protected _isWorldMatrixFrozen: boolean;
         /** @hidden */
         _indexInSceneTransformNodesArray: number;
+        private _connectBillboardProcessors;
         /**
         * An event triggered after the world matrix is updated
         */
@@ -7802,6 +7808,14 @@ declare module BABYLON {
          * @hidden
          */
         protected _getEffectiveParent(): Nullable<Node>;
+        private _activeCompositionProcess;
+        private _defaultCompositionProcessor;
+        private _pivotCompositionProcessor;
+        private _activeParentProcessor;
+        private _activeBillboardPostProcessor;
+        private _defaultParentProcessor;
+        private _billboardParentProcessor;
+        private _billboardPostProcessor;
         /**
          * Computes the world matrix of the node
          * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
@@ -18313,7 +18327,8 @@ declare module BABYLON {
         /**
          * The active target of the runtime animation
          */
-        private _activeTarget;
+        private _activeTargets;
+        private _currentActiveTarget;
         /**
          * The target path of the runtime animation
          */
@@ -18364,6 +18379,7 @@ declare module BABYLON {
          * @param host defines the initiating Animatable
          */
         constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
+        private _preparePath;
         /**
          * Gets the animation from the runtime animation
          */
@@ -18398,6 +18414,10 @@ declare module BABYLON {
          * @param weight defines the weight to apply to this value (Defaults to 1.0)
          */
         setValue(currentValue: any, weight?: number): void;
+        private _getOriginalValues;
+        private _activeBlendingProcessor;
+        private _noBlendingProcessor;
+        private _blendingProcessor;
         private _setValue;
         /**
          * Gets the loop pmode of the runtime animation
@@ -24822,6 +24842,8 @@ declare module BABYLON {
         _worldMatrix: Matrix;
         /** @hidden */
         _worldMatrixDeterminant: number;
+        /** @hidden */
+        _worldMatrixDeterminantIsDirty: boolean;
         /** @hidden */
         private _sceneRootNodesIndex;
         /**
