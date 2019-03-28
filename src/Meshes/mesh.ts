@@ -1398,19 +1398,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        var matricesCount = visibleInstances.length + 1;
-        var bufferSize = matricesCount * 16 * 4;
-
         let instanceStorage = this._instanceDataStorage;
         var currentInstancesBufferSize = instanceStorage.instancesBufferSize;
         var instancesBuffer = instanceStorage.instancesBuffer;
+        if (!instanceStorage.isFrozen || !instanceStorage.instancesData) {
+            var matricesCount = visibleInstances.length + 1;
+            var bufferSize = matricesCount * 16 * 4;
 
-        while (instanceStorage.instancesBufferSize < bufferSize) {
-            instanceStorage.instancesBufferSize *= 2;
-        }
 
-        if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
-            instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+            while (instanceStorage.instancesBufferSize < bufferSize) {
+                instanceStorage.instancesBufferSize *= 2;
+            }
+
+            if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+                instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+            }
         }
 
         var offset = 0;
@@ -1445,7 +1447,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
         } else {
-            instancesBuffer.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+            instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
 
         this._bind(subMesh, effect, fillMode);
