@@ -576,7 +576,7 @@ export class Animation {
             return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
         }
 
-        const keys = this.getKeys();
+        const keys = this._keys;
         if (keys.length === 1) {
             return this._getKeyValue(keys[0].value);
         }
