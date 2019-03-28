@@ -6357,7 +6357,6 @@ export class Engine {
      */
     public bindSamplers(effect: Effect): void {
         this.setProgram(effect.getProgram());
-
         var samplers = effect.getSamplers();
         for (var index = 0; index < samplers.length; index++) {
             var uniform = effect.getUniform(samplers[index]);
@@ -6365,7 +6364,7 @@ export class Engine {
             if (uniform) {
                 this._boundUniforms[index] = uniform;
             }
-        }
+        }        
         this._currentEffect = null;
     }
 
@@ -6414,7 +6413,7 @@ export class Engine {
 
     /** @hidden */
     public _bindTexture(channel: number, texture: Nullable<InternalTexture>): void {
-        if (channel < 0) {
+        if (channel === undefined) {
             return;
         }
 
@@ -6465,7 +6464,7 @@ export class Engine {
      * @param texture The texture to apply
      */
     public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void {
-        if (channel < 0) {
+        if (channel === undefined) {
             return;
         }
 
@@ -6483,7 +6482,7 @@ export class Engine {
      * @param texture The render target texture containing the depth stencil texture to apply
      */
     public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void {
-        if (channel < 0) {
+        if (channel === undefined) {
             return;
         }
 
@@ -6642,7 +6641,7 @@ export class Engine {
      * @param textures defines the array of textures to bind
      */
     public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void {
-        if (channel < 0 || !uniform) {
+        if (channel === undefined || !uniform) {
             return;
         }
 
