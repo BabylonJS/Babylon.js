@@ -3869,6 +3869,10 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this._evaluateActiveMeshes();
         this._activeMeshesFrozen = true;
+
+        for (var mesh of this._activeMeshes.data) {
+            mesh._freeze();
+        }
         return this;
     }
 
@@ -3877,6 +3881,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public unfreezeActiveMeshes(): Scene {
+        for (var mesh of this._activeMeshes.data) {
+            mesh._unFreeze();
+        }
+
         this._activeMeshesFrozen = false;
         return this;
     }
@@ -3888,7 +3896,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             for (let i = 0; i < len; i++) {
                 let mesh = this._activeMeshes.data[i];
                 mesh.computeWorldMatrix();
-                mesh._activate(this._renderId);
             }
 
             return;
@@ -3918,6 +3925,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
+            mesh._isActive = false;
             if (mesh.isBlocked) {
                 continue;
             }
@@ -3952,12 +3960,14 @@ export class Scene extends AbstractScene implements IAnimatable {
                 this._activeMeshes.push(mesh);
                 this.activeCamera._activeMeshes.push(mesh);
 
-                mesh._activate(this._renderId);
                 if (meshLOD !== mesh) {
                     meshLOD._activate(this._renderId);
                 }
 
-                this._activeMesh(mesh, meshLOD);
+                if (mesh._activate(this._renderId)) {
+                    mesh._isActive = true;
+                    this._activeMesh(mesh, meshLOD);
+                }
             }
         }
 
