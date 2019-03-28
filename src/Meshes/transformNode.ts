@@ -91,7 +91,7 @@ export class TransformNode extends Node {
      */
     public get preserveParentRotationForBillboard() {
         return this._preserveParentRotationForBillboard;
-    };
+    }
 
     public set preserveParentRotationForBillboard(value: boolean) {
         if (value === this._preserveParentRotationForBillboard) {
@@ -100,7 +100,7 @@ export class TransformNode extends Node {
         this._preserveParentRotationForBillboard = value;
 
         this._connectBillboardProcessors();
-    };
+    }
 
     /**
      * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
@@ -980,7 +980,7 @@ export class TransformNode extends Node {
         } else {
             this._localMatrix.multiplyToRef(parent.getWorldMatrix(), this._worldMatrix);
         }
-    };
+    }
 
     private _billboardParentProcessor = (parent: Node) => {
         if (this._transformToBoneReferal) {

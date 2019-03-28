@@ -8,7 +8,7 @@ import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { IDisposable } from "babylonjs/scene";
 
-import { IScene, INode, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "./glTFLoaderInterfaces";
+import { IScene, INode, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 import { IProperty } from 'babylonjs-gltf2interface';
 
@@ -103,6 +103,15 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @returns A promise that resolves with the loaded Babylon animation group when the load is complete or null if not handled
      */
     loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
+
+    /**
+     * Define this method to modify the default behavior when loading skins.
+     * @param context The context when loading the asset
+     * @param node The glTF node property
+     * @param skin The glTF skin property
+     * @returns A promise that resolves when the load is complete or null if not handled
+     */
+    _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
 
     /**
      * Define this method to modify the default behavior when loading uris.
