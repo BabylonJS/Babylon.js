@@ -108,7 +108,6 @@ export class TransformNode extends Node {
     @serialize()
     public scalingDeterminant = 1;
 
-
     @serialize("infiniteDistance")
     private _infiniteDistance = false;
 

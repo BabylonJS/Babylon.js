@@ -6364,7 +6364,7 @@ export class Engine {
             if (uniform) {
                 this._boundUniforms[index] = uniform;
             }
-        }        
+        }
         this._currentEffect = null;
     }
 

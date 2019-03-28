@@ -7510,8 +7510,9 @@ declare module BABYLON {
          * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
          */
         scalingDeterminant: number;
+        private _infiniteDistance;
         /**
-         * Sets the distance of the object to max, often used by skybox
+         * Gets or sets the distance of the object to max, often used by skybox
          */
         infiniteDistance: boolean;
         /**
@@ -7808,9 +7809,12 @@ declare module BABYLON {
          * @hidden
          */
         protected _getEffectiveParent(): Nullable<Node>;
-        private _activeCompositionProcess;
+        private _activeCompositionProcessor;
         private _defaultCompositionProcessor;
         private _pivotCompositionProcessor;
+        private _translationProcessor;
+        private _defaultTranslationProcessor;
+        private _infiniteDistanceTranslationProcessor;
         private _activeParentProcessor;
         private _activeBillboardPostProcessor;
         private _defaultParentProcessor;
@@ -16610,7 +16614,7 @@ declare module BABYLON {
         /** @hidden */
         _preActivate(): InstancedMesh;
         /** @hidden */
-        _activate(renderId: number): InstancedMesh;
+        _activate(renderId: number): boolean;
         /**
          * Returns the current associated LOD AbstractMesh.
          */
@@ -17221,7 +17225,8 @@ declare module BABYLON {
         private _renderOpaque;
         private _renderAlphaTest;
         private _renderTransparent;
-        private _edgesRenderers;
+        /** @hidden */
+        _edgesRenderers: SmartArray<IEdgesRenderer>;
         onBeforeTransparentRendering: () => void;
         /**
          * Set the opaque sort comparison function.
@@ -18329,6 +18334,7 @@ declare module BABYLON {
          */
         private _activeTargets;
         private _currentActiveTarget;
+        private _directTarget;
         /**
          * The target path of the runtime animation
          */
@@ -18351,6 +18357,11 @@ declare module BABYLON {
         private _previousRatio;
         private _enableBlending;
         private _correctLoopMode;
+        private _keys;
+        private _minFrame;
+        private _maxFrame;
+        private _minValue;
+        private _maxValue;
         /**
          * Gets the current frame of the runtime animation
          */
@@ -18379,6 +18390,8 @@ declare module BABYLON {
          * @param host defines the initiating Animatable
          */
         constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
+        private _normalizationProcessor;
+        private _defaultNormalizationProcessor;
         private _preparePath;
         /**
          * Gets the animation from the runtime animation
@@ -18410,10 +18423,10 @@ declare module BABYLON {
         private _interpolate;
         /**
          * Apply the interpolated value to the target
-         * @param currentValue defines the value computed by the animation
-         * @param weight defines the weight to apply to this value (Defaults to 1.0)
          */
-        setValue(currentValue: any, weight?: number): void;
+        setValue: (currentValue: any, weight: number) => void;
+        private _setValueForArray;
+        private _setValueForDirect;
         private _getOriginalValues;
         private _activeBlendingProcessor;
         private _noBlendingProcessor;
@@ -20423,12 +20436,14 @@ declare module BABYLON {
      **/
     class _InstanceDataStorage {
         visibleInstances: any;
-        renderIdForInstances: number[];
         batchCache: _InstancesBatch;
         instancesBufferSize: number;
         instancesBuffer: Nullable<Buffer>;
         instancesData: Float32Array;
         overridenInstanceCount: number;
+        isFrozen: boolean;
+        _previousBatch: _InstancesBatch;
+        hardwareInstancedRendering: boolean;
     }
     /**
      * @hidden
@@ -20437,6 +20452,7 @@ declare module BABYLON {
         mustReturn: boolean;
         visibleInstances: Nullable<InstancedMesh[]>[];
         renderSelf: boolean[];
+        hardwareInstancedRendering: boolean[];
     }
     /**
      * Class used to represent renderable models
@@ -20929,6 +20945,10 @@ declare module BABYLON {
         _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */
         _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
+        /** @hidden */
+        _freeze(): void;
+        /** @hidden */
+        _unFreeze(): void;
         /**
          * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
          * @param subMesh defines the subMesh to render
@@ -23940,6 +23960,10 @@ declare module BABYLON {
         /** @hidden */
         _occlusionQuery: Nullable<WebGLQuery>;
         private _visibility;
+        /** @hidden */
+        _isActive: boolean;
+        /** @hidden */
+        _renderingGroup: RenderingGroup;
         /**
          * Gets or sets mesh visibility between 0 and 1 (default is 1)
          */
@@ -24266,7 +24290,11 @@ declare module BABYLON {
         /** @hidden */
         _preActivateForIntermediateRendering(renderId: number): void;
         /** @hidden */
-        _activate(renderId: number): void;
+        _activate(renderId: number): boolean;
+        /** @hidden */
+        _freeze(): void;
+        /** @hidden */
+        _unFreeze(): void;
         /**
          * Gets the current world matrix
          * @returns a Matrix
@@ -28979,6 +29007,7 @@ declare module BABYLON {
         private _engine;
         private _uniformBuffersNames;
         private _uniformsNames;
+        private _samplerList;
         private _samplers;
         private _isReady;
         private _compilationError;
