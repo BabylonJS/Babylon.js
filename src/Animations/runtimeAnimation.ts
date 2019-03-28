@@ -240,8 +240,8 @@ export class RuntimeAnimation {
     }
 
     private _normalizationProcessor = (returnValue: boolean, range: number, ratio: number, from: number, to: number) => {
-        return (returnValue && range !== 0) ? from + ratio % range : to;;
-    };
+        return (returnValue && range !== 0) ? from + ratio % range : to;
+    }
     private _defaultNormalizationProcessor = (returnValue: boolean, range: number, ratio: number, from: number, to: number) => {
         const syncRoot = this._host.syncRoot;
         const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
@@ -346,8 +346,6 @@ export class RuntimeAnimation {
 
     /**
      * Apply the interpolated value to the target
-     * @param currentValue defines the value computed by the animation
-     * @param weight defines the weight to apply to this value (Defaults to 1.0)
      */
     public setValue: (currentValue: any, weight: number) => void;
 
@@ -434,7 +432,7 @@ export class RuntimeAnimation {
             this._scene._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
         } else {
             destination[this._targetPath] = this._currentValue;
-       }
+        }
 
         if (target.markAsDirty) {
             target.markAsDirty(this._animation.targetProperty);
@@ -609,7 +607,7 @@ export class RuntimeAnimation {
                     }
                 }
             }
-       }
+        }
 
         const repeatCount = range === 0 ? 0 : (ratio / range) >> 0;
         const currentValue = this._interpolate(currentFrame, repeatCount, this._correctLoopMode, offsetValue, highLimitValue);
