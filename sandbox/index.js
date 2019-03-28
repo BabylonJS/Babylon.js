@@ -112,7 +112,7 @@ if (BABYLON.Engine.isSupported()) {
             }
             currentGroup = babylonScene.animationGroups[0];
             currentGroupIndex = 0;
-            document.getElementById(formatId(currentGroup.name + "-" + currentGroupIndex)).click();
+            currentGroup.play(true);
         }
 
         // Sync the slider with the current frame
@@ -213,6 +213,15 @@ if (BABYLON.Engine.isSupported()) {
         if (debugLayerEnabled) {
             currentScene.debugLayer.show();
         }
+
+        currentScene.dispatchAllSubMeshesOfActiveMeshes = true;
+        currentScene.meshes.forEach((mesh) => mesh.alwaysSelectAsActiveMesh = true);
+        currentScene.getEngine().disableTextureBindingOptimization = true;
+        currentScene.meshes.forEach((mesh) => mesh.doNotSyncBoundingInfo = true);
+        currentScene.materials.forEach((mat) => mat.freeze());
+
+        currentScene.meshes.forEach((mesh) => mesh.ignoreNonUniformScaling = true);
+        currentScene.transformNodes.forEach((node) => node.ignoreNonUniformScaling = true);
     };
 
     var sceneError = function(sceneFile, babylonScene, message) {

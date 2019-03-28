@@ -141,6 +141,8 @@ export class Node implements IBehaviorAware<Node> {
     public _worldMatrix = Matrix.Identity();
     /** @hidden */
     public _worldMatrixDeterminant = 0;
+    /** @hidden */
+    public _worldMatrixDeterminantIsDirty = true;
 
     /** @hidden */
     private _sceneRootNodesIndex = -1;
@@ -381,6 +383,10 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @hidden */
     public _getWorldMatrixDeterminant(): number {
+        if (this._worldMatrixDeterminantIsDirty) {
+            this._worldMatrixDeterminantIsDirty = false;
+            this._worldMatrixDeterminant = this._worldMatrix.determinant();
+        }
         return this._worldMatrixDeterminant;
     }
 

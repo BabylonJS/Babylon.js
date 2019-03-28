@@ -13,7 +13,6 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { IInternalTextureTracker, DummyInternalTextureTracker } from "../Materials/Textures/internalTextureTracker";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -246,9 +245,6 @@ export class Engine {
         { key: "Chrome\/63\.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
         { key: "Firefox\/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
         { key: "Firefox\/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
-        { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
-        { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
-        { key: "iPad", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         { key: "Chrome\/72.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Chrome\/73.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Chrome\/74.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
@@ -502,14 +498,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.0.0-beta.2";
+        return "babylonjs@4.0.0-beta.3";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-beta.2";
+        return "4.0.0-beta.3";
     }
 
     /**
@@ -735,13 +731,6 @@ export class Engine {
     public _badDesktopOS = false;
 
     /**
-     * Gets or sets a value indicating if we want to disable texture binding optimization.
-     * This could be required on some buggy drivers which wants to have textures bound in a progressive order.
-     * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is
-     */
-    public disableTextureBindingOptimization = false;
-
-    /**
      * Gets the audio engine
      * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
      * @ignorenaming
@@ -802,8 +791,6 @@ export class Engine {
 
     /** @hidden */
     public _drawCalls = new PerfCounter();
-    /** @hidden */
-    public _textureCollisions = new PerfCounter();
 
     private _glVersion: string;
     private _glRenderer: string;
@@ -908,8 +895,6 @@ export class Engine {
     private _currentInstanceLocations = new Array<number>();
     private _currentInstanceBuffers = new Array<WebGLBuffer>();
     private _textureUnits: Int32Array;
-    private _firstBoundInternalTextureTracker = new DummyInternalTextureTracker();
-    private _lastBoundInternalTextureTracker = new DummyInternalTextureTracker();
 
     private _workingCanvas: Nullable<HTMLCanvasElement>;
     private _workingContext: Nullable<CanvasRenderingContext2D>;
@@ -1089,9 +1074,6 @@ export class Engine {
                                     break;
                                 case "vao":
                                     this.disableVertexArrayObjects = true;
-                                    break;
-                                case "textureBindingOptimization":
-                                    this.disableTextureBindingOptimization = true;
                                     break;
                             }
                         }
@@ -1310,8 +1292,6 @@ export class Engine {
         for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
             this._currentBufferPointers[i] = new BufferPointer();
         }
-
-        this._linkTrackers(this._firstBoundInternalTextureTracker, this._lastBoundInternalTextureTracker);
 
         // Load WebVR Devices
         if (options.autoEnableWebVR) {
@@ -1605,18 +1585,7 @@ export class Engine {
             if (!this._boundTexturesCache.hasOwnProperty(key)) {
                 continue;
             }
-            let boundTexture = this._boundTexturesCache[key];
-            if (boundTexture) {
-                this._removeDesignatedSlot(boundTexture);
-            }
             this._boundTexturesCache[key] = null;
-        }
-
-        if (!this.disableTextureBindingOptimization) {
-            this._nextFreeTextureSlots = [];
-            for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
-                this._nextFreeTextureSlots.push(slot);
-            }
         }
 
         this._currentTextureChannel = -1;
@@ -2810,7 +2779,11 @@ export class Engine {
                 if (data instanceof ArrayBuffer) {
                     data = new Uint8Array(data, byteOffset, byteLength);
                 } else {
-                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
+                    let offset = data.byteOffset + byteOffset;
+
+                    if (offset || byteLength !== data.byteLength) {
+                        data = new Uint8Array(data.buffer, offset, byteLength);
+                    }
                 }
 
                 this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
@@ -6396,79 +6369,6 @@ export class Engine {
         this._currentEffect = null;
     }
 
-    private _moveBoundTextureOnTop(internalTexture: InternalTexture): void {
-        if (this.disableTextureBindingOptimization || this._lastBoundInternalTextureTracker.previous === internalTexture) {
-            return;
-        }
-
-        // Remove
-        this._linkTrackers(internalTexture.previous, internalTexture.next);
-
-        // Bind last to it
-        this._linkTrackers(this._lastBoundInternalTextureTracker.previous, internalTexture);
-
-        // Bind to dummy
-        this._linkTrackers(internalTexture, this._lastBoundInternalTextureTracker);
-    }
-
-    private _getCorrectTextureChannel(channel: number, internalTexture: Nullable<InternalTexture>): number {
-        if (!internalTexture) {
-            return -1;
-        }
-
-        internalTexture._initialSlot = channel;
-
-        if (this.disableTextureBindingOptimization) { // We want texture sampler ID === texture channel
-            if (channel !== internalTexture._designatedSlot) {
-                this._textureCollisions.addCount(1, false);
-            }
-        } else {
-            if (channel !== internalTexture._designatedSlot) {
-                if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
-                    return internalTexture._designatedSlot;
-                } else {
-                    // No slot for this texture, let's pick a new one (if we find a free slot)
-                    if (this._nextFreeTextureSlots.length) {
-                        return this._nextFreeTextureSlots[0];
-                    }
-
-                    // We need to recycle the oldest bound texture, sorry.
-                    this._textureCollisions.addCount(1, false);
-                    return this._removeDesignatedSlot(<InternalTexture>this._firstBoundInternalTextureTracker.next);
-                }
-            }
-        }
-
-        return channel;
-    }
-
-    private _linkTrackers(previous: Nullable<IInternalTextureTracker>, next: Nullable<IInternalTextureTracker>) {
-        previous!.next = next;
-        next!.previous = previous;
-    }
-
-    private _removeDesignatedSlot(internalTexture: InternalTexture): number {
-        let currentSlot = internalTexture._designatedSlot;
-        if (currentSlot === -1) {
-            return -1;
-        }
-
-        internalTexture._designatedSlot = -1;
-
-        if (this.disableTextureBindingOptimization) {
-            return -1;
-        }
-
-        // Remove from bound list
-        this._linkTrackers(internalTexture.previous, internalTexture.next);
-
-        // Free the slot
-        this._boundTexturesCache[currentSlot] = null;
-        this._nextFreeTextureSlots.push(currentSlot);
-
-        return currentSlot;
-    }
-
     private _activateCurrentTexture() {
         if (this._currentTextureChannel !== this._activeChannel) {
             this._gl.activeTexture(this._gl.TEXTURE0 + this._activeChannel);
@@ -6479,18 +6379,14 @@ export class Engine {
     /** @hidden */
     public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
         var wasPreviouslyBound = false;
-        if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
-            this._activeChannel = texture._designatedSlot;
+        let isTextureForRendering = texture && texture._associatedChannel > -1;
+        if (forTextureDataUpdate && isTextureForRendering) {
+            this._activeChannel = texture!._associatedChannel;
         }
 
         let currentTextureBound = this._boundTexturesCache[this._activeChannel];
-        let isTextureForRendering = texture && texture._initialSlot > -1;
 
         if (currentTextureBound !== texture || force) {
-            if (currentTextureBound) {
-                this._removeDesignatedSlot(currentTextureBound);
-            }
-
             this._activateCurrentTexture();
 
             if (texture && texture.isMultiview) {
@@ -6502,17 +6398,7 @@ export class Engine {
             this._boundTexturesCache[this._activeChannel] = texture;
 
             if (texture) {
-                if (!this.disableTextureBindingOptimization) {
-                    let slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
-                    if (slotIndex > -1) {
-                        this._nextFreeTextureSlots.splice(slotIndex, 1);
-                    }
-
-                    this._linkTrackers(this._lastBoundInternalTextureTracker.previous, texture);
-                    this._linkTrackers(texture, this._lastBoundInternalTextureTracker);
-                }
-
-                texture._designatedSlot = this._activeChannel;
+                texture._associatedChannel = this._activeChannel;
             }
         } else if (forTextureDataUpdate) {
             wasPreviouslyBound = true;
@@ -6520,7 +6406,7 @@ export class Engine {
         }
 
         if (isTextureForRendering && !forTextureDataUpdate) {
-            this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
+            this._bindSamplerUniformToChannel(texture!._associatedChannel, this._activeChannel);
         }
 
         return wasPreviouslyBound;
@@ -6533,7 +6419,7 @@ export class Engine {
         }
 
         if (texture) {
-            channel = this._getCorrectTextureChannel(channel, texture);
+            texture._associatedChannel = channel;
         }
 
         this._activeChannel = channel;
@@ -6674,15 +6560,14 @@ export class Engine {
             internalTexture = this.emptyTexture;
         }
 
-        if (!isPartOfTextureArray) {
-            channel = this._getCorrectTextureChannel(channel, internalTexture);
+        if (!isPartOfTextureArray && internalTexture) {
+            internalTexture._associatedChannel = channel;
         }
 
         let needToBind = true;
         if (this._boundTexturesCache[channel] === internalTexture) {
-            this._moveBoundTextureOnTop(internalTexture);
             if (!isPartOfTextureArray) {
-                this._bindSamplerUniformToChannel(internalTexture._initialSlot, channel);
+                this._bindSamplerUniformToChannel(internalTexture._associatedChannel, channel);
             }
 
             needToBind = false;
@@ -6765,7 +6650,14 @@ export class Engine {
             this._textureUnits = new Int32Array(textures.length);
         }
         for (let i = 0; i < textures.length; i++) {
-            this._textureUnits[i] = this._getCorrectTextureChannel(channel + i, textures[i].getInternalTexture());
+            let texture = textures[i].getInternalTexture();
+
+            if (texture) {
+                this._textureUnits[channel + i] = channel + i;
+                texture._associatedChannel = channel + i;
+            } else {
+                this._textureUnits[channel + i] = -1;
+            }
         }
         this._gl.uniform1iv(uniform, this._textureUnits);
 

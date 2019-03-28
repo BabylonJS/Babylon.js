@@ -2282,6 +2282,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.onPreKeyboardObservable.clear();
         this.onPointerObservable.clear();
         this.onPrePointerObservable.clear();
+
+        // Cursor
+        canvas.style.cursor = this.defaultCursor;
     }
 
     /**
@@ -3932,7 +3935,6 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             // Compute world matrix if LOD is billboard
             if (meshLOD !== mesh && meshLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
-                meshLOD.parent = mesh;
                 meshLOD.computeWorldMatrix();
             }
 
