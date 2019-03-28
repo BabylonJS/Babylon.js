@@ -1462,6 +1462,17 @@ export class Tools {
         return bufferView.buffer;
     }
 
+    /**
+     * Gets the absolute url.
+     * @param url the input url
+     * @return the absolute url
+     */
+    public static GetAbsoluteUrl(url: string): string {
+        const a = document.createElement("a");
+        a.href = url;
+        return a.href;
+    }
+
     // Logs
     /**
      * No log
