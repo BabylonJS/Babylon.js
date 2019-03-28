@@ -92,7 +92,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
     /**
      * Load the image data, by putting the image on a canvas and extracting its buffer.
      */
-    private loadImage(loadTextureCallback: () => void, onError: (message?: string, exception?: any) => void): void {
+    private loadImage(loadTextureCallback: () => void, onError: Nullable<(message?: string, exception?: any) => void>): void {
         const canvas = document.createElement('canvas');
         const image = new Image();
 
@@ -112,7 +112,9 @@ export class EquiRectangularCubeTexture extends BaseTexture {
             loadTextureCallback();
         });
         image.addEventListener('error', (error) => {
-            onError(`${this.getClassName()} could not be loaded`, error);
+            if (onError) {
+                onError(`${this.getClassName()} could not be loaded`, error);
+            }
         });
         image.src = this.url;
     }
