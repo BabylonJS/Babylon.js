@@ -170,7 +170,15 @@ export class Animatable {
         for (var index = 0; index < animations.length; index++) {
             var animation = animations[index];
 
-            this._runtimeAnimations.push(new RuntimeAnimation(target, animation, this._scene, this));
+            let newRuntimeAnimation = new RuntimeAnimation(target, animation, this._scene, this);
+            newRuntimeAnimation._onLoop = () => {
+                this.onAnimationLoopObservable.notifyObservers(this);
+                if (this.onAnimationLoop) {
+                    this.onAnimationLoop();
+                }
+            }
+
+            this._runtimeAnimations.push(newRuntimeAnimation);
         }
     }
 
@@ -387,13 +395,7 @@ export class Animatable {
         for (index = 0; index < runtimeAnimations.length; index++) {
             var animation = runtimeAnimations[index];
             var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame,
-                this.toFrame, this.loopAnimation, this._speedRatio, this._weight,
-                () => {
-                    this.onAnimationLoopObservable.notifyObservers(this);
-                    if (this.onAnimationLoop) {
-                        this.onAnimationLoop();
-                    }
-                }
+                this.toFrame, this.loopAnimation, this._speedRatio, this._weight
             );
             running = running || isRunning;
         }
@@ -781,9 +783,9 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
         currentQuaternion.scaleAndAddToRef(scale, finalQuaternion);
         currentPosition.scaleAndAddToRef(scale, finalPosition);
     }
-
-    Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, originalAnimation._workValue);
-    return originalAnimation._workValue;
+    let workValue = originalAnimation._animationState.workValue;
+    Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, workValue);
+    return workValue;
 };
 
 Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
