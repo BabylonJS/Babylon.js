@@ -34,7 +34,8 @@ export class RenderingGroup {
     private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
     private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
-    private _edgesRenderers = new SmartArray<IEdgesRenderer>(16);
+    /** @hidden */
+    public _edgesRenderers = new SmartArray<IEdgesRenderer>(16);
 
     public onBeforeTransparentRendering: () => void;
 
@@ -362,6 +363,8 @@ export class RenderingGroup {
 
             this._opaqueSubMeshes.push(subMesh); // Opaque
         }
+
+        mesh._renderingGroup = this;
 
         if (mesh._edgesRenderer && mesh._edgesRenderer.isEnabled) {
             this._edgesRenderers.push(mesh._edgesRenderer);
