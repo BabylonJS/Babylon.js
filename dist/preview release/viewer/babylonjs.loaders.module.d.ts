@@ -1203,7 +1203,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderExtension" {
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { IDisposable } from "babylonjs/scene";
-    import { IScene, INode, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IScene, INode, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "babylonjs-loaders/glTF/glTFFileLoader";
     import { IProperty } from 'babylonjs-gltf2interface';
     /**
@@ -1287,6 +1287,14 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderExtension" {
          * @returns A promise that resolves with the loaded Babylon animation group when the load is complete or null if not handled
          */
         loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
+        /**
+         * Define this method to modify the default behavior when loading skins.
+         * @param context The context when loading the asset
+         * @param node The glTF node property
+         * @param skin The glTF skin property
+         * @returns A promise that resolves when the load is complete or null if not handled
+         */
+        _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
         /**
          * Define this method to modify the default behavior when loading uris.
          * @param context The context when loading the asset
@@ -1556,6 +1564,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         private _extensionsLoadMaterialPropertiesAsync;
         private _extensionsLoadTextureInfoAsync;
         private _extensionsLoadAnimationAsync;
+        private _extensionsLoadSkinAsync;
         private _extensionsLoadUriAsync;
         /**
          * Helper method called by a loader extension to load an glTF extension.
@@ -3461,6 +3470,14 @@ declare module BABYLON.GLTF2 {
          */
         loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
         /**
+         * Define this method to modify the default behavior when loading skins.
+         * @param context The context when loading the asset
+         * @param node The glTF node property
+         * @param skin The glTF skin property
+         * @returns A promise that resolves when the load is complete or null if not handled
+         */
+        _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
+        /**
          * Define this method to modify the default behavior when loading uris.
          * @param context The context when loading the asset
          * @param property The glTF property associated with the uri
@@ -3713,6 +3730,7 @@ declare module BABYLON.GLTF2 {
         private _extensionsLoadMaterialPropertiesAsync;
         private _extensionsLoadTextureInfoAsync;
         private _extensionsLoadAnimationAsync;
+        private _extensionsLoadSkinAsync;
         private _extensionsLoadUriAsync;
         /**
          * Helper method called by a loader extension to load an glTF extension.

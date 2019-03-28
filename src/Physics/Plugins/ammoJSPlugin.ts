@@ -86,7 +86,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         this._tmpAmmoConcreteContactResultCallback = new this.bjsAMMO.ConcreteContactResultCallback();
         this._tmpAmmoConcreteContactResultCallback.addSingleResult = () => { this._tmpContactCallbackResult = true; };
-        
+
         this._raycastResult = new PhysicsRaycastResult();
 
         // Create temp ammo variables

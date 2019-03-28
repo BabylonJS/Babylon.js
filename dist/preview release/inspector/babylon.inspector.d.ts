@@ -1654,6 +1654,7 @@ declare module INSPECTOR {
         private _onSelectionChangeObserver;
         private _onNewSceneAddedObserver;
         private _once;
+        private _hooked;
         private sceneMutationFunc;
         constructor(props: ISceneExplorerComponentProps);
         processMutation(): void;
