@@ -563,7 +563,13 @@ declare module "../scene" {
 }
 
 Scene.prototype._animate = function(): void {
-    if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
+    if (!this.animationsEnabled) {
+        return;
+    }
+
+    const animatables = this._activeAnimatables;
+    const animatablesLength = animatables.length;
+    if (animatablesLength === 0) {
         return;
     }
 
@@ -575,11 +581,14 @@ Scene.prototype._animate = function(): void {
         }
         this._animationTimeLast = now;
     }
+
     var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
     this._animationTime += deltaTime;
+    const animationTime = this._animationTime;
     this._animationTimeLast = now;
-    for (var index = 0; index < this._activeAnimatables.length; index++) {
-        this._activeAnimatables[index]._animate(this._animationTime);
+
+    for (let index = 0; index < animatablesLength; index++) {
+        animatables[index]._animate(animationTime);
     }
 
     // Late animation bindings
