@@ -25,6 +25,7 @@ import { AbstractActionManager } from '../Actions/abstractActionManager';
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
 declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
+declare type RenderingGroup = import("../Rendering/renderingGroup").RenderingGroup;
 
 /** @hidden */
 class _FacetDataStorage {
@@ -266,6 +267,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _occlusionQuery: Nullable<WebGLQuery>;
 
     private _visibility = 1.0;
+
+    /** @hidden */
+    public _isActive = false;
+    /** @hidden */
+    public _renderingGroup: RenderingGroup;
 
     /**
      * Gets or sets mesh visibility between 0 and 1 (default is 1)
@@ -1025,8 +1031,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _activate(renderId: number): void {
+    public _activate(renderId: number): boolean {
         this._renderId = renderId;
+        return true;
+    }
+
+    /** @hidden */
+    public _freeze() {
+        // Do nothing
+    }
+
+    /** @hidden */
+    public _unFreeze() {
+        // Do nothing
     }
 
     /**

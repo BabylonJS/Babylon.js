@@ -108,11 +108,29 @@ export class TransformNode extends Node {
     @serialize()
     public scalingDeterminant = 1;
 
+    @serialize("infiniteDistance")
+    private _infiniteDistance = false;
+
     /**
-     * Sets the distance of the object to max, often used by skybox
+     * Gets or sets the distance of the object to max, often used by skybox
      */
-    @serialize()
-    public infiniteDistance = false;
+    public get infiniteDistance() {
+        return this._infiniteDistance;
+    }
+
+    public set infiniteDistance(value: boolean) {
+        if (this._infiniteDistance === value) {
+            return;
+        }
+
+        this._infiniteDistance = value;
+
+        if (value) {
+            this._translationProcessor = this._infiniteDistanceTranslationProcessor;
+        } else {
+            this._translationProcessor = this._defaultTranslationProcessor;
+        }
+    }
 
     /**
      * Gets or sets a boolean indicating that non uniform scaling (when at least one component is different from others) should be ignored.
@@ -166,7 +184,8 @@ export class TransformNode extends Node {
         }
 
         this._activeParentProcessor = this._defaultParentProcessor;
-        this._activeCompositionProcess = this._defaultCompositionProcessor;
+        this._activeCompositionProcessor = this._defaultCompositionProcessor;
+        this._translationProcessor = this._defaultTranslationProcessor;
     }
 
     /**
@@ -227,7 +246,7 @@ export class TransformNode extends Node {
         this._rotationQuaternion = quaternion;
         //reset the rotation vector.
         if (quaternion) {
-            this.rotation.setAll(0.0);
+            this._rotation.setAll(0.0);
         }
         this._isDirty = true;
     }
@@ -363,9 +382,9 @@ export class TransformNode extends Node {
     public setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix = true): TransformNode {
         this._pivotMatrix.copyFrom(matrix);
         if (this._pivotMatrix.isIdentity()) {
-            this._activeCompositionProcess = this._defaultCompositionProcessor;
+            this._activeCompositionProcessor = this._defaultCompositionProcessor;
         } else {
-            this._activeCompositionProcess = this._pivotCompositionProcessor;
+            this._activeCompositionProcessor = this._pivotCompositionProcessor;
         }
         this._cache.pivotMatrixUpdated = true;
         this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
@@ -903,7 +922,7 @@ export class TransformNode extends Node {
         return this.parent;
     }
 
-    private _activeCompositionProcess: (scaling: Vector3, rotation: Quaternion, translation: Vector3) => void;
+    private _activeCompositionProcessor: (scaling: Vector3, rotation: Quaternion, translation: Vector3) => void;
 
     private _defaultCompositionProcessor = (scaling: Vector3, rotation: Quaternion, translation: Vector3) => {
         Matrix.ComposeToRef(scaling, rotation, translation, this._localMatrix);
@@ -927,6 +946,26 @@ export class TransformNode extends Node {
         }
 
         this._localMatrix.addTranslationFromFloats(translation.x, translation.y, translation.z);
+    }
+
+    // Infinite distance
+    private _translationProcessor: (translation: Vector3) => void;
+
+    private _defaultTranslationProcessor = (translation: Vector3) => {
+        translation.copyFrom(this._position);
+    }
+
+    private _infiniteDistanceTranslationProcessor = (translation: Vector3) => {
+        let camera = (<Camera>this.getScene().activeCamera);
+
+        if (!this.parent && camera) {
+            var cameraWorldMatrix = camera.getWorldMatrix();
+            var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
+
+            translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
+        } else {
+            translation.copyFrom(this._position);
+        }
     }
 
     // Billboards
@@ -1006,7 +1045,7 @@ export class TransformNode extends Node {
     public computeWorldMatrix(force?: boolean): Matrix {
         let currentRenderId = this.getScene().getRenderId();
 
-        if (this._isWorldMatrixFrozen) {
+        if (this._isWorldMatrixFrozen && !this._isDirty) {
             return this._worldMatrix;
         }
 
@@ -1030,16 +1069,7 @@ export class TransformNode extends Node {
         let translation: Vector3 = this._cache.position;
 
         // Translation
-        let camera = (<Camera>this.getScene().activeCamera);
-
-        if (this.infiniteDistance && !this.parent && camera) {
-            var cameraWorldMatrix = camera.getWorldMatrix();
-            var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
-
-            translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
-        } else {
-            translation.copyFrom(this._position);
-        }
+        this._translationProcessor(translation);
 
         // Scaling
         scaling.copyFromFloats(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant);
@@ -1061,7 +1091,7 @@ export class TransformNode extends Node {
         }
 
         // Compose
-        this._activeCompositionProcess(scaling, rotation, translation);
+        this._activeCompositionProcessor(scaling, rotation, translation);
 
         // Parent
         if (parent && parent.getWorldMatrix) {
