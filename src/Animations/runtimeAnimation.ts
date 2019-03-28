@@ -434,7 +434,7 @@ export class RuntimeAnimation {
             this._scene._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
         } else {
             destination[this._targetPath] = this._currentValue;
-       }
+        }
 
         if (target.markAsDirty) {
             target.markAsDirty(this._animation.targetProperty);
@@ -609,7 +609,7 @@ export class RuntimeAnimation {
                     }
                 }
             }
-       }
+        }
 
         const repeatCount = range === 0 ? 0 : (ratio / range) >> 0;
         const currentValue = this._interpolate(currentFrame, repeatCount, this._correctLoopMode, offsetValue, highLimitValue);
