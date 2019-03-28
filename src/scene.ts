@@ -2282,6 +2282,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.onPreKeyboardObservable.clear();
         this.onPointerObservable.clear();
         this.onPrePointerObservable.clear();
+
+        // Cursor
+        canvas.style.cursor = this.defaultCursor;
     }
 
     /**

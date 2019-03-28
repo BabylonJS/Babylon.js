@@ -273,6 +273,10 @@ export class GLTFLoader implements IGLTFLoader {
 
             const promises = new Array<Promise<any>>();
 
+            // Block the marking of materials dirty until the scene is loaded.
+            const oldBlockMaterialDirtyMechanism = this._babylonScene.blockMaterialDirtyMechanism;
+            this._babylonScene.blockMaterialDirtyMechanism = true;
+
             if (nodes) {
                 promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
             }
@@ -280,6 +284,9 @@ export class GLTFLoader implements IGLTFLoader {
                 const scene = ArrayItem.Get(`/scene`, this._gltf.scenes, this._gltf.scene || 0);
                 promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
             }
+
+            // Restore the blocking of material dirty.
+            this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
 
             if (this._parent.compileMaterials) {
                 promises.push(this._compileMaterialsAsync());

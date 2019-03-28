@@ -36,6 +36,16 @@ module.exports = function (config) {
 
         reporters: ['progress', 'junit'],
 
+        plugins: [
+            'karma-mocha',
+            'karma-chai',
+            'karma-sinon',
+            'karma-chrome-launcher',
+            'karma-firefox-launcher',
+
+            require('../../Tools/Gulp/helpers/gulp-karmaJunitPlugin')
+        ],
+
         junitReporter: {
             outputDir: '.temp/testResults', // results will be saved as $outputDir/$browserName.xml
             outputFile: 'ModuleTests.xml', // if included, results will be saved as $outputDir/$browserName/$outputFile
