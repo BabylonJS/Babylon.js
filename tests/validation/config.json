@@ -294,6 +294,11 @@
       "referenceImage": "customRTT.png"
     },
     {
+      "title": "Draco Mesh Compression",
+      "playgroundId": "#22MFU2#4",
+      "referenceImage": "draco.png"
+    },
+    {
       "title": "GLTF Normals",
       "scriptToRun": "/Demos/GLTFNormals/index.js",
       "functionToCall": "createScene",
