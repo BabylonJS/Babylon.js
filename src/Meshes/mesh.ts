@@ -76,12 +76,14 @@ export class _CreationDataStorage {
  **/
 class _InstanceDataStorage {
     public visibleInstances: any = {};
-    public renderIdForInstances = new Array<number>();
     public batchCache = new _InstancesBatch();
     public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
     public instancesBuffer: Nullable<Buffer>;
     public instancesData: Float32Array;
     public overridenInstanceCount: number;
+    public isFrozen: boolean;
+    public _previousBatch: _InstancesBatch;
+    public hardwareInstancedRendering: boolean;
 }
 
 /**
@@ -91,6 +93,7 @@ export class _InstancesBatch {
     public mustReturn = false;
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
     public renderSelf = new Array<boolean>();
+    public hardwareInstancedRendering = new Array<boolean>();
 }
 
 /**
@@ -437,6 +440,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.parent = parent;
         }
 
+        this._instanceDataStorage.hardwareInstancedRendering = this.getEngine().getCaps().instancedArrays;
     }
 
     // Methods
@@ -1363,6 +1367,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
+        if (this._instanceDataStorage.isFrozen && this._instanceDataStorage._previousBatch) {
+            return this._instanceDataStorage._previousBatch;
+        }
         var scene = this.getScene();
         let batchCache = this._instanceDataStorage.batchCache;
         batchCache.mustReturn = false;
@@ -1374,29 +1381,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var currentRenderId = scene.getRenderId();
             var defaultRenderId = (scene._isInIntermediateRendering() ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
             batchCache.visibleInstances[subMeshId] = visibleInstances[currentRenderId];
-            var selfRenderId = this._renderId;
 
             if (!batchCache.visibleInstances[subMeshId] && defaultRenderId) {
                 batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
-                currentRenderId = Math.max(defaultRenderId, currentRenderId);
-                selfRenderId = Math.max(visibleInstances.selfDefaultRenderId, currentRenderId);
             }
-
-            let visibleInstancesForSubMesh = batchCache.visibleInstances[subMeshId];
-            if (visibleInstancesForSubMesh && visibleInstancesForSubMesh.length) {
-                if (this._instanceDataStorage.renderIdForInstances[subMeshId] === currentRenderId) {
-                    batchCache.mustReturn = true;
-                    return batchCache;
-                }
-
-                if (currentRenderId !== selfRenderId) {
-                    batchCache.renderSelf[subMeshId] = false;
-                }
-
-            }
-            this._instanceDataStorage.renderIdForInstances[subMeshId] = currentRenderId;
         }
-
+        batchCache.hardwareInstancedRendering[subMeshId] = this._instanceDataStorage.hardwareInstancedRendering && (batchCache.visibleInstances[subMeshId] !== null) && (batchCache.visibleInstances[subMeshId] !== undefined);
+        this._instanceDataStorage._previousBatch = batchCache;
         return batchCache;
     }
 
@@ -1502,6 +1493,25 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
+    /** @hidden */
+    public _freeze() {
+        this._instanceDataStorage.isFrozen = true;
+
+        if (!this.subMeshes) {
+            return;
+        }
+
+        // Prepare batches
+        for (var index = 0; index < this.subMeshes.length; index++) {
+            this._getInstancesRenderList(index);
+        }
+    }
+
+    /** @hidden */
+    public _unFreeze() {
+        this._instanceDataStorage.isFrozen = false;
+    }
+
     /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
@@ -1531,7 +1541,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var engine = scene.getEngine();
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
 
         // Material
         let material = subMesh.getMaterial();
@@ -2420,7 +2430,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 for (var j = 0; j < 3; j++) {
                     a = vertexIndex[j];
                     b = vertexIndex[(j + 1) % 3];
-                    if (side[a] === undefined  && side[b] ===  undefined) {
+                    if (side[a] === undefined && side[b] === undefined) {
                         side[a] = new Array();
                         side[b] = new Array();
                     }
@@ -2432,7 +2442,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                             side[b] = new Array();
                         }
                     }
-                    if (side[a][b]  === undefined  && side[b][a] === undefined) {
+                    if (side[a][b] === undefined && side[b][a] === undefined) {
                         side[a][b] = [];
                         deltaPosition.x = (positions[3 * b] - positions[3 * a]) / segments;
                         deltaPosition.y = (positions[3 * b + 1] - positions[3 * a + 1]) / segments;
