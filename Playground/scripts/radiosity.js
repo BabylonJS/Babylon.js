@@ -28,20 +28,21 @@
     // sphere.position.x = -2;
 
     // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
-    var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
+    var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 40, scene);
     ground.material = new BABYLON.StandardMaterial("gg", scene);
     ground.setVerticesData(BABYLON.VertexBuffer.UV2Kind, ground.getVerticesData(BABYLON.VertexBuffer.UVKind));
 
-    var wall = BABYLON.Mesh.CreateGround("wall", 6, 6, 2, scene);
+    var wall = BABYLON.Mesh.CreateGround("wall", 6, 6, 40, scene);
     wall.material = new BABYLON.StandardMaterial("gg", scene);
     wall.setVerticesData(BABYLON.VertexBuffer.UV2Kind, ground.getVerticesData(BABYLON.VertexBuffer.UVKind));
 
-    var ceiling = BABYLON.Mesh.CreateGround("ceiling", 6, 6, 2, scene);
+    var ceiling = BABYLON.Mesh.CreateGround("ceiling", 6, 6, 40, scene);
     ceiling.material = new BABYLON.StandardMaterial("gg", scene);
     ceiling.setVerticesData(BABYLON.VertexBuffer.UV2Kind, ground.getVerticesData(BABYLON.VertexBuffer.UVKind));
 
     wall.rotation.z = Math.PI / 2;
     ceiling.rotation.x = - 3 * Math.PI / 4;
+    ceiling.emissive = new BABYLON.Vector3(10, 10, 10);
 
     wall.position.x += 5;
     ceiling.position.z += 5;
@@ -49,18 +50,30 @@
     ceiling.scaling.scaleInPlace(0.25);
 
     //ground.material.diffuseTexture = pr._patchMap;
-    var pr = new BABYLON.PatchRenderer(scene);
-    ground.material.emissiveTexture = ground.residualTexture.textures[2];
-    wall.material.emissiveTexture = wall.residualTexture.textures[2];
-    ceiling.material.emissiveTexture = ceiling.residualTexture.textures[2];
-    
-    setTimeout(pr.buildPatchesForSubMesh.bind(pr, ground.subMeshes[0]), 1000);
-    setTimeout(pr.buildPatchesForSubMesh.bind(pr, wall.subMeshes[0]), 2000);
-    setTimeout(pr.buildPatchesForSubMesh.bind(pr, ceiling.subMeshes[0]), 3000);
-    // var sphere = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
-    // sphere.position.x += 2;
-    // sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
+    var fn = () => {
+        var pr = new BABYLON.PatchRenderer(scene);
+        // var sphere = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
+        // sphere.position.x += 2;
+        // sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
 
+        scene.onAfterRenderObservable.add(pr.gatherRadiosity.bind(pr));
+    }
+
+    var fn2 = () => {
+        ground.material.emissiveTexture = ground.residualTexture.textures[4];
+        wall.material.emissiveTexture = wall.residualTexture.textures[4];
+        ceiling.material.emissiveTexture = ceiling.residualTexture.textures[4];
+
+        var map = ground.residualTexture;
+        var size = map.getSize();
+        var width = size.width;
+        var height = size.height;
+        var engine = scene.getEngine();
+        
+    }
+    setTimeout(fn, 1000);
+    setTimeout(fn2, 2000);
+    
     return scene;
 
 };

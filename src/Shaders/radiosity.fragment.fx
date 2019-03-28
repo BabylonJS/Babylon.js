@@ -15,25 +15,27 @@ uniform vec3 recvColor;  // reflectivity
 
 uniform mat4 view;
 
-const float resolution = 8.0;
 const float pi = 3.1415926535;
 
-vec3 id;          // ID of receiver, for item buffer
+vec3 id;          // ID of receiver
 vec3 worldPos;    // world pos of receiving element
 vec3 worldNormal; // world normal of receiving element
 
-bool visible()
+vec3 visible()
 {
-  vec3 proj = normalize((view * worldPos).xyz);
+  vec3 proj = normalize((view * vec4(worldPos, 1.0))).xyz;
 
   // Vector is in [-1,1], scale to [0..1] for texture lookup
   proj.xy = proj.xy * 0.5 + 0.5;
-
+  // proj.x += 0.5 / 4096.0;
+  // proj.y += 0.5 / 4096.0;
   // Look up projected point in hemisphere item buffer
-  vec3 xtex = tex2D(itemBuffer, proj.xy);
+  vec3 xtex = texture(itemBuffer, proj.xy, 5.).xyz;
 
   // Compare the value in item buffer to the ID of the fragment
-  return all(xtex == id);
+  // return vec3(xtex.x == id.x && xtex.y == id.y && xtex.z == id.z);
+  return vec3(xtex == id, 0., 0.);
+  //return xtex;
 }
 
 vec3 formFactorEnergy()
@@ -49,24 +51,24 @@ vec3 formFactorEnergy()
   float cosj = -dot(shootNormal, r);
 
   // compute the disc approximation form factor
-  float fij = max(cosi * cosj, 0) / (pi * distance2 + shootDArea);
+  float fij = max(cosi * cosj, 0.) / (pi * distance2 + shootDArea);
 
-  fij *= visible();   // returns visibility as 0 or 1
-
+  fij *= float(visible());   // returns visibility as 0 or 1
 
   // Modulate shooter's energy by the receiver's reflectivity
   // and the area of the shooter.
 
-  vec3 delta = shooterEnergy * recvColor * shootDArea * fij;
+  vec3 delta = 20. * shootEnergy * shootDArea * fij; // * recvColor
 
   return delta;
 }
 
 void main(void) {
     // Draw in residual AND gathering with multidraw buffer at uv position
-
-    id = texture(idBuffer, vUV).xyz;
+    id = texture(idBuffer, vUV).xyz; 
     worldPos = texture(worldPosBuffer, vUV).xyz;
+    // worldPos.x -= 1.5 / 16.;
+    // worldPos.z += 1.5 / 16.;
     worldNormal = texture(worldNormalBuffer, vUV).xyz;
     
 	  gl_FragColor = vec4(formFactorEnergy(), 1.0);

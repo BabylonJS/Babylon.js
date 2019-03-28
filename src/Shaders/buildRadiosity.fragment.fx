@@ -11,6 +11,7 @@ layout(location = 0) out vec4 glFragData[5];
 uniform mat4 world;
 uniform float texSize;
 uniform float patchOffset;
+uniform vec3 emissive;
 
 vec3 encode() {
 	float halfPixelSize = 0.5 / texSize;
@@ -28,6 +29,6 @@ void main(void) {
 	glFragData[0] = vec4(worldPosition.xyz / worldPosition.w, 1.0);
 	glFragData[1] = vec4(normalize(worldNormal.xyz), 1.0);
 	glFragData[2] = vec4(encode(), 1.0);
-	glFragData[3] = vec4(encode(), 1.0);
-	glFragData[4] = vec4(encode(), 1.0);
+	glFragData[3] = vec4(emissive, 1.0);
+	glFragData[4] = vec4(emissive, 1.0);
 }
