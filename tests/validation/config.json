@@ -2,6 +2,12 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Weighted animations",
+      "playgroundId": "#LL5BIQ#72",
+      "renderCount": 50,
+      "referenceImage": "weighted animations.png"
+    },
+    {
       "title": "Anisotropic",
       "playgroundId": "#MAXCNU#1",
       "referenceImage": "anisotropic.png"
