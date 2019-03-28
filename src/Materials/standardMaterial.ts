@@ -1276,7 +1276,9 @@ export class StandardMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        this.bindOnlyWorldMatrix(world);
+        if (!defines.INSTANCES) {
+            this.bindOnlyWorldMatrix(world);
+        }
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
