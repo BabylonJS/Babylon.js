@@ -10,7 +10,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/ind
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { _TypeStore } from '../../Misc/typeStore';
-import { Tools } from 'Misc/tools';
+import { Tools } from '../../Misc/tools';
 
 /**
  * This represents a texture coming from an HDR input.
