@@ -2277,12 +2277,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         canvas.removeEventListener("keydown", this._onKeyDown);
         canvas.removeEventListener("keyup", this._onKeyUp);
 
-        // Observables
-        this.onKeyboardObservable.clear();
-        this.onPreKeyboardObservable.clear();
-        this.onPointerObservable.clear();
-        this.onPrePointerObservable.clear();
-
         // Cursor
         canvas.style.cursor = this.defaultCursor;
     }
