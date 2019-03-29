@@ -56,37 +56,35 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         });
     }
 
+    updateVector3() {
+        const store = this.props.target[this.props.propertyName].clone();
+        this.props.target[this.props.propertyName] = this.state.value;
+
+        this.setState({ value: store });
+
+        this.raiseOnPropertyChanged(store);
+    }
+
+
     updateStateX(value: number) {
         this._localChange = true;
 
-        const store = this.state.value.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.value.x = value;
-        this.setState({ value: this.state.value });
-
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     }
 
     updateStateY(value: number) {
         this._localChange = true;
 
-        const store = this.state.value.clone();
-        this.props.target[this.props.propertyName].y = value;
         this.state.value.y = value;
-        this.setState({ value: this.state.value });
-
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     }
 
     updateStateZ(value: number) {
         this._localChange = true;
 
-        const store = this.state.value.clone();
-        this.props.target[this.props.propertyName].z = value;
         this.state.value.z = value;
-        this.setState({ value: this.state.value });
-
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     }
 
     render() {
