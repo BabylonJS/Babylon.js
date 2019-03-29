@@ -4113,6 +4113,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
+            let needRebind = false;
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -4122,6 +4123,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                         this._renderId++;
                         var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
                         renderTarget.render((<boolean>hasSpecialRenderTargetCamera), this.dumpNextRenderTargets);
+                        needRebind = true;
                     }
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -4136,7 +4138,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             this._intermediateRendering = false;
 
             // Restore framebuffer after rendering to targets
-            this._bindFrameBuffer();
+            if (needRebind) {
+                this._bindFrameBuffer();
+            }
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
