@@ -4107,6 +4107,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
+            let needRebind = false;
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -4116,6 +4117,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                         this._renderId++;
                         var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
                         renderTarget.render((<boolean>hasSpecialRenderTargetCamera), this.dumpNextRenderTargets);
+                        needRebind = true;
                     }
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -4130,7 +4132,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             this._intermediateRendering = false;
 
             // Restore framebuffer after rendering to targets
-            this._bindFrameBuffer();
+            if (needRebind) {
+                this._bindFrameBuffer();
+            }
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4249,34 +4253,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Nothing to do as long as Animatable have not been imported.
     }
 
-    /**
-     * Render the scene
-     * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
-     */
-    public render(updateCameras = true): void {
-        if (this.isDisposed) {
-            return;
-        }
-
-        this._frameId++;
-
-        // Register components that have been associated lately to the scene.
-        this._registerTransientComponents();
-
-        this._activeParticles.fetchNewFrame();
-        this._totalVertices.fetchNewFrame();
-        this._activeIndices.fetchNewFrame();
-        this._activeBones.fetchNewFrame();
-        this._meshesForIntersections.reset();
-        this.resetCachedMaterial();
-
-        this.onBeforeAnimationsObservable.notifyObservers(this);
-
-        // Actions
-        if (this.actionManager) {
-            this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
-        }
-
+    /** Execute all animations (for a frame) */
+    public animate() {
         if (this._engine.isDeterministicLockStep()) {
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
 
@@ -4322,6 +4300,41 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             // Physics
             this._advancePhysicsEngineStep(deltaTime);
+        }
+    }
+
+    /**
+     * Render the scene
+     * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
+     * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
+     */
+    public render(updateCameras = true, ignoreAnimations = false): void {
+        if (this.isDisposed) {
+            return;
+        }
+
+        this._frameId++;
+
+        // Register components that have been associated lately to the scene.
+        this._registerTransientComponents();
+
+        this._activeParticles.fetchNewFrame();
+        this._totalVertices.fetchNewFrame();
+        this._activeIndices.fetchNewFrame();
+        this._activeBones.fetchNewFrame();
+        this._meshesForIntersections.reset();
+        this.resetCachedMaterial();
+
+        this.onBeforeAnimationsObservable.notifyObservers(this);
+
+        // Actions
+        if (this.actionManager) {
+            this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
+        }
+
+        // Animations
+        if (!ignoreAnimations) {
+            this.animate();
         }
 
         // Before camera update steps
