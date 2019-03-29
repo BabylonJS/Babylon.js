@@ -522,11 +522,6 @@ export class Material implements IAnimatable {
      */
     private _cachedDepthWriteState: boolean;
 
-    /**
-     * Stores the uniform buffer
-     */
-    protected _uniformBuffer: UniformBuffer;
-
     /** @hidden */
     public _indexInSceneMaterialArray = -1;
 
@@ -552,7 +547,6 @@ export class Material implements IAnimatable {
             this.sideOrientation = Material.CounterClockWiseSideOrientation;
         }
 
-        this._uniformBuffer = new UniformBuffer(this._scene.getEngine());
         this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
         if (!doNotAdd) {
@@ -1099,12 +1093,10 @@ export class Material implements IAnimatable {
             }
         }
 
-        this._uniformBuffer.dispose();
-
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
         if (forceDisposeEffect && this._effect) {
             if (!this._storeEffectOnSubMeshes) {
-                scene.getEngine()._releaseEffect(this._effect);
+                this._effect.dispose();
             }
 
             this._effect = null;
@@ -1127,12 +1119,11 @@ export class Material implements IAnimatable {
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
         if ((<Mesh>mesh).geometry) {
             var geometry = <Geometry>((<Mesh>mesh).geometry);
-            const scene = this.getScene();
             if (this._storeEffectOnSubMeshes) {
                 for (var subMesh of mesh.subMeshes) {
                     geometry._releaseVertexArrayObject(subMesh._materialEffect);
                     if (forceDisposeEffect && subMesh._materialEffect) {
-                        scene.getEngine()._releaseEffect(subMesh._materialEffect);
+                        subMesh._materialEffect.dispose();
                     }
                 }
             } else {

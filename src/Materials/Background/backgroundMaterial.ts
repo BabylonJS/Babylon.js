@@ -909,7 +909,7 @@ export class BackgroundMaterial extends PushMaterial {
             };
 
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect("background", <EffectCreationOptions>{
+            let effect = scene.getEngine().createEffect("background", <EffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -919,9 +919,10 @@ export class BackgroundMaterial extends PushMaterial {
                 onCompiled: onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
-            }, engine), defines);
+            }, engine);
+            subMesh.setEffect(effect, defines);
 
-            this.buildUniformLayout();
+            this.buildUniformLayout(effect);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -977,23 +978,23 @@ export class BackgroundMaterial extends PushMaterial {
     /**
      * Build the uniform buffer used in the material.
      */
-    public buildUniformLayout(): void {
+    public buildUniformLayout(effect: Effect): void {
         // Order is important !
-        this._uniformBuffer.addUniform("vPrimaryColor", 4);
-        this._uniformBuffer.addUniform("vPrimaryColorShadow", 4);
-        this._uniformBuffer.addUniform("vDiffuseInfos", 2);
-        this._uniformBuffer.addUniform("vReflectionInfos", 2);
-        this._uniformBuffer.addUniform("diffuseMatrix", 16);
-        this._uniformBuffer.addUniform("reflectionMatrix", 16);
-        this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
-        this._uniformBuffer.addUniform("fFovMultiplier", 1);
-        this._uniformBuffer.addUniform("pointSize", 1);
-        this._uniformBuffer.addUniform("shadowLevel", 1);
-        this._uniformBuffer.addUniform("alpha", 1);
-        this._uniformBuffer.addUniform("vBackgroundCenter", 3);
-        this._uniformBuffer.addUniform("vReflectionControl", 4);
+        effect._uniformBuffer.addUniform("vPrimaryColor", 4);
+        effect._uniformBuffer.addUniform("vPrimaryColorShadow", 4);
+        effect._uniformBuffer.addUniform("vDiffuseInfos", 2);
+        effect._uniformBuffer.addUniform("vReflectionInfos", 2);
+        effect._uniformBuffer.addUniform("diffuseMatrix", 16);
+        effect._uniformBuffer.addUniform("reflectionMatrix", 16);
+        effect._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
+        effect._uniformBuffer.addUniform("fFovMultiplier", 1);
+        effect._uniformBuffer.addUniform("pointSize", 1);
+        effect._uniformBuffer.addUniform("shadowLevel", 1);
+        effect._uniformBuffer.addUniform("alpha", 1);
+        effect._uniformBuffer.addUniform("vBackgroundCenter", 3);
+        effect._uniformBuffer.addUniform("vReflectionControl", 4);
 
-        this._uniformBuffer.create();
+        effect._uniformBuffer.create();
     }
 
     /**
@@ -1001,11 +1002,11 @@ export class BackgroundMaterial extends PushMaterial {
      */
     public unbind(): void {
         if (this._diffuseTexture && this._diffuseTexture.isRenderTarget) {
-            this._uniformBuffer.setTexture("diffuseSampler", null);
+            this._activeEffect._uniformBuffer.setTexture("diffuseSampler", null);
         }
 
         if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-            this._uniformBuffer.setTexture("reflectionSampler", null);
+            this._activeEffect._uniformBuffer.setTexture("reflectionSampler", null);
         }
 
         super.unbind();
@@ -1045,26 +1046,27 @@ export class BackgroundMaterial extends PushMaterial {
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
         let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        let uniformBuffer = effect._uniformBuffer;
         if (mustRebind) {
-            this._uniformBuffer.bindToEffect(effect, "Material");
+            uniformBuffer.bindToEffect(effect, "Material");
 
             this.bindViewProjection(effect);
 
             let reflectionTexture = this._reflectionTexture;
-            if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
+            if (!uniformBuffer.useUbo || !this.isFrozen || !uniformBuffer.isSync) {
 
                 // Texture uniforms
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
+                        uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._diffuseTexture, uniformBuffer, "diffuse");
                     }
 
                     if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
-                        this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
-                        this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, this._reflectionBlur);
+                        uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
+                        uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, this._reflectionBlur);
 
-                        this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos",
+                        uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos",
                             reflectionTexture.getSize().width,
                             reflectionTexture.lodGenerationScale,
                             reflectionTexture.lodGenerationOffset);
@@ -1072,48 +1074,48 @@ export class BackgroundMaterial extends PushMaterial {
                 }
 
                 if (this.shadowLevel > 0) {
-                    this._uniformBuffer.updateFloat("shadowLevel", this.shadowLevel);
+                    uniformBuffer.updateFloat("shadowLevel", this.shadowLevel);
                 }
-                this._uniformBuffer.updateFloat("alpha", this.alpha);
+                uniformBuffer.updateFloat("alpha", this.alpha);
 
                 // Point size
                 if (this.pointsCloud) {
-                    this._uniformBuffer.updateFloat("pointSize", this.pointSize);
+                    uniformBuffer.updateFloat("pointSize", this.pointSize);
                 }
 
                 if (defines.USEHIGHLIGHTANDSHADOWCOLORS) {
-                    this._uniformBuffer.updateColor4("vPrimaryColor", this._primaryHighlightColor, 1.0);
-                    this._uniformBuffer.updateColor4("vPrimaryColorShadow", this._primaryShadowColor, 1.0);
+                    uniformBuffer.updateColor4("vPrimaryColor", this._primaryHighlightColor, 1.0);
+                    uniformBuffer.updateColor4("vPrimaryColorShadow", this._primaryShadowColor, 1.0);
                 }
                 else {
-                    this._uniformBuffer.updateColor4("vPrimaryColor", this._primaryColor, 1.0);
+                    uniformBuffer.updateColor4("vPrimaryColor", this._primaryColor, 1.0);
                 }
             }
 
-            this._uniformBuffer.updateFloat("fFovMultiplier", this._fovMultiplier);
+            uniformBuffer.updateFloat("fFovMultiplier", this._fovMultiplier);
 
             // Textures
             if (scene.texturesEnabled) {
                 if (this._diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
-                    this._uniformBuffer.setTexture("diffuseSampler", this._diffuseTexture);
+                    uniformBuffer.setTexture("diffuseSampler", this._diffuseTexture);
                 }
 
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     if (defines.REFLECTIONBLUR && defines.TEXTURELODSUPPORT) {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
+                        uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
                     }
                     else if (!defines.REFLECTIONBLUR) {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
+                        uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
                     }
                     else {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
-                        this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
-                        this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
+                        uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
+                        uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
+                        uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
                     }
 
                     if (defines.REFLECTIONFRESNEL) {
-                        this._uniformBuffer.updateFloat3("vBackgroundCenter", this.sceneCenter.x, this.sceneCenter.y, this.sceneCenter.z);
-                        this._uniformBuffer.updateFloat4("vReflectionControl", this._reflectionControls.x, this._reflectionControls.y, this._reflectionControls.z, this._reflectionControls.w);
+                        uniformBuffer.updateFloat3("vBackgroundCenter", this.sceneCenter.x, this.sceneCenter.y, this.sceneCenter.z);
+                        uniformBuffer.updateFloat4("vReflectionControl", this._reflectionControls.x, this._reflectionControls.y, this._reflectionControls.z, this._reflectionControls.w);
                     }
                 }
             }
@@ -1141,7 +1143,7 @@ export class BackgroundMaterial extends PushMaterial {
             }
         }
 
-        this._uniformBuffer.update();
+        uniformBuffer.update();
 
         this._afterBind(mesh, this._activeEffect);
     }
