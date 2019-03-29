@@ -568,8 +568,7 @@ Scene.prototype._animate = function(): void {
     }
 
     const animatables = this._activeAnimatables;
-    const animatablesLength = animatables.length;
-    if (animatablesLength === 0) {
+    if (animatables.length === 0) {
         return;
     }
 
@@ -587,7 +586,7 @@ Scene.prototype._animate = function(): void {
     const animationTime = this._animationTime;
     this._animationTimeLast = now;
 
-    for (let index = 0; index < animatablesLength; index++) {
+    for (let index = 0; index < animatables.length; index++) {
         animatables[index]._animate(animationTime);
     }
 
