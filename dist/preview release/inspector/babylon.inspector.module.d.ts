@@ -365,6 +365,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineCompo
         }): boolean;
         switchExpandState(): void;
         raiseOnPropertyChanged(previousValue: Vector3): void;
+        updateVector3(): void;
         updateStateX(value: number): void;
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
@@ -2515,6 +2516,7 @@ declare module INSPECTOR {
         }): boolean;
         switchExpandState(): void;
         raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
+        updateVector3(): void;
         updateStateX(value: number): void;
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
