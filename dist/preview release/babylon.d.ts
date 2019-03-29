@@ -49379,7 +49379,7 @@ declare module BABYLON {
           * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
           * @returns A promise that resolves with the decoded vertex data
           */
-        decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: {
+        decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: {
             [kind: string]: number;
         }): Promise<VertexData>;
         /**

@@ -34818,29 +34818,26 @@ var Vector3LineComponent = /** @class */ (function (_super) {
             initialValue: previousValue
         });
     };
+    Vector3LineComponent.prototype.updateVector3 = function () {
+        var store = this.props.target[this.props.propertyName].clone();
+        this.props.target[this.props.propertyName] = this.state.value;
+        this.setState({ value: store });
+        this.raiseOnPropertyChanged(store);
+    };
     Vector3LineComponent.prototype.updateStateX = function (value) {
         this._localChange = true;
-        var store = this.state.value.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.value.x = value;
-        this.setState({ value: this.state.value });
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     };
     Vector3LineComponent.prototype.updateStateY = function (value) {
         this._localChange = true;
-        var store = this.state.value.clone();
-        this.props.target[this.props.propertyName].y = value;
         this.state.value.y = value;
-        this.setState({ value: this.state.value });
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     };
     Vector3LineComponent.prototype.updateStateZ = function (value) {
         this._localChange = true;
-        var store = this.state.value.clone();
-        this.props.target[this.props.propertyName].z = value;
         this.state.value.z = value;
-        this.setState({ value: this.state.value });
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     };
     Vector3LineComponent.prototype.render = function () {
         var _this = this;
