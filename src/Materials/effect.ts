@@ -4,7 +4,6 @@ import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math
 import { Constants } from "../Engines/constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
-import { UniformBuffer } from './uniformBuffer';
 import { IDisposable } from 'scene';
 
 declare type Engine = import("../Engines/engine").Engine;
@@ -239,11 +238,6 @@ export class Effect implements IDisposable {
     /** @hidden */
     public _bonesComputationForcedToCPU = false;
 
-    /**
-     * Stores the uniform buffer
-     */
-    public _uniformBuffer: UniformBuffer;
-
     private static _uniqueIdSeed = 0;
     private _engine: Engine;
     private _uniformBuffersNames: { [key: string]: number } = {};
@@ -327,8 +321,6 @@ export class Effect implements IDisposable {
         }
 
         this.uniqueId = Effect._uniqueIdSeed++;
-        
-        this._uniformBuffer = new UniformBuffer(this._engine);
 
         var vertexSource: any;
         var fragmentSource: any;
@@ -1510,9 +1502,8 @@ export class Effect implements IDisposable {
         return this;
     }
 
+    /** Release all associated resources */
     public dispose() {
-        this._uniformBuffer.dispose();
-
         this._engine._releaseEffect(this);
     }
 
