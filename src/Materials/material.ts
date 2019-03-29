@@ -522,6 +522,11 @@ export class Material implements IAnimatable {
      */
     private _cachedDepthWriteState: boolean;
 
+    /**
+     * Stores the uniform buffer
+     */
+    protected _uniformBuffer: UniformBuffer;
+
     /** @hidden */
     public _indexInSceneMaterialArray = -1;
 
@@ -547,6 +552,7 @@ export class Material implements IAnimatable {
             this.sideOrientation = Material.CounterClockWiseSideOrientation;
         }
 
+        this._uniformBuffer = new UniformBuffer(this._scene.getEngine());
         this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
         if (!doNotAdd) {
@@ -1092,6 +1098,8 @@ export class Material implements IAnimatable {
                 }
             }
         }
+
+        this._uniformBuffer.dispose();
 
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
         if (forceDisposeEffect && this._effect) {

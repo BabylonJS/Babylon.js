@@ -82,8 +82,9 @@ class _InstanceDataStorage {
     public instancesData: Float32Array;
     public overridenInstanceCount: number;
     public isFrozen: boolean;
-    public _previousBatch: _InstancesBatch;
+    public previousBatch: _InstancesBatch;
     public hardwareInstancedRendering: boolean;
+    public sideOrientation: number;
 }
 
 /**
@@ -1367,8 +1368,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
-        if (this._instanceDataStorage.isFrozen && this._instanceDataStorage._previousBatch) {
-            return this._instanceDataStorage._previousBatch;
+        if (this._instanceDataStorage.isFrozen && this._instanceDataStorage.previousBatch) {
+            return this._instanceDataStorage.previousBatch;
         }
         var scene = this.getScene();
         let batchCache = this._instanceDataStorage.batchCache;
@@ -1387,7 +1388,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
         batchCache.hardwareInstancedRendering[subMeshId] = this._instanceDataStorage.hardwareInstancedRendering && (batchCache.visibleInstances[subMeshId] !== null) && (batchCache.visibleInstances[subMeshId] !== undefined);
-        this._instanceDataStorage._previousBatch = batchCache;
+        this._instanceDataStorage.previousBatch = batchCache;
         return batchCache;
     }
 
@@ -1544,22 +1545,25 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var engine = scene.getEngine();
         var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
+        let instanceDataStorage = this._instanceDataStorage;
 
         // Material
-        let material = subMesh.getMaterial();
+        if (!instanceDataStorage.isFrozen ||!this._effectiveMaterial) {
+            let material = subMesh.getMaterial();
 
-        if (!material) {
-            return this;
-        }
-
-        this._effectiveMaterial = material;
-
-        if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-            if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+            if (!material) {
                 return this;
             }
-        } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
-            return this;
+
+            this._effectiveMaterial = material;
+
+            if (this._effectiveMaterial._storeEffectOnSubMeshes) {
+                if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                    return this;
+                }
+            } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+                return this;
+            }
         }
 
         // Alpha mode
@@ -1584,12 +1588,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const effectiveMesh = this._effectiveMesh;
 
-        var sideOrientation = this.overrideMaterialSideOrientation;
-        if (sideOrientation == null) {
-            sideOrientation = this._effectiveMaterial.sideOrientation;
-            if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
-                sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+        var sideOrientation: Nullable<number>;
+        
+        if (!instanceDataStorage.isFrozen) {
+            sideOrientation = this.overrideMaterialSideOrientation;
+            if (sideOrientation == null) {
+                sideOrientation = this._effectiveMaterial.sideOrientation;
+                if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+                }
             }
+            instanceDataStorage.sideOrientation = sideOrientation!;
+        } else {
+            sideOrientation = instanceDataStorage.sideOrientation;
         }
 
         var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
