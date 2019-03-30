@@ -99,20 +99,7 @@ export class Gizmo implements IDisposable {
                     this._rootMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._rootMesh.rotation.y, this._rootMesh.rotation.x, this._rootMesh.rotation.z);
                 }
 
-                // Remove scaling before getting rotation matrix to get rotation matrix unmodified by scale
-                this._tempVector.copyFrom(effectiveMesh.scaling);
-                if (effectiveMesh.scaling.x < 0) {
-                    effectiveMesh.scaling.x *= -1;
-                }
-                if (effectiveMesh.scaling.y < 0) {
-                    effectiveMesh.scaling.y *= -1;
-                }
-                if (effectiveMesh.scaling.z < 0) {
-                    effectiveMesh.scaling.z *= -1;
-                }
                 effectiveMesh.computeWorldMatrix().getRotationMatrixToRef(this._tmpMatrix);
-                effectiveMesh.scaling.copyFrom(this._tempVector);
-                effectiveMesh.computeWorldMatrix();
                 Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this._rootMesh.rotationQuaternion);
             } else if (this._rootMesh.rotationQuaternion) {
                 this._rootMesh.rotationQuaternion.set(0, 0, 0, 1);

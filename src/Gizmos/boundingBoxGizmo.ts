@@ -382,9 +382,20 @@ export class BoundingBoxGizmo extends Gizmo {
     public updateBoundingBox() {
         if (this.attachedMesh) {
             PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
+
+            // Store original parent
             var originalParent = this.attachedMesh.parent;
             this.attachedMesh.setParent(null);
+
+            // Store original skelton override mesh
+            var originalSkeletonOverrideMesh = null;
+            if (this.attachedMesh.skeleton) {
+                originalSkeletonOverrideMesh = this.attachedMesh.skeleton.overrideMesh;
+                this.attachedMesh.skeleton.overrideMesh = null;
+            }
+
             this._update();
+
             // Rotate based on axis
             if (!this.attachedMesh.rotationQuaternion) {
                 this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
@@ -412,10 +423,17 @@ export class BoundingBoxGizmo extends Gizmo {
             this._lineBoundingBox.computeWorldMatrix();
             this._anchorMesh.position.copyFrom(this._lineBoundingBox.absolutePosition);
 
-            // restore position/rotation values
+            // Restore position/rotation values
             this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
             this.attachedMesh.position.copyFrom(this._tmpVector);
+
+            // Restore original parent
             this.attachedMesh.setParent(originalParent);
+
+            // Restore original skeleton override mesh
+            if (this.attachedMesh.skeleton) {
+                this.attachedMesh.skeleton.overrideMesh = originalSkeletonOverrideMesh;
+            }
         }
 
         this._updateRotationSpheres();
