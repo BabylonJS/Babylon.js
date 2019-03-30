@@ -2,6 +2,12 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Nested BBG",
+      "playgroundId": "#ZG0C8B#0",
+      "renderCount": 50,
+      "referenceImage": "nested_BBG.png"
+    },
+    {
       "title": "Weighted animations",
       "playgroundId": "#LL5BIQ#72",
       "renderCount": 50,
