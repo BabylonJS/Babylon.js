@@ -35,7 +35,7 @@ import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
-import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "./sceneComponent";
+import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
 import { Node } from "./node";
 import { MorphTarget } from "./Morph/morphTarget";
@@ -1256,7 +1256,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @hidden
      * Defines the actions happening during the per camera render target step.
      */
-    public _cameraDrawRenderTargetStage = Stage.Create<CameraStageAction>();
+    public _cameraDrawRenderTargetStage = Stage.Create<CameraStageFrameBufferAction>();
     /**
      * @hidden
      * Defines the actions happening just before the active camera is drawing.
@@ -4126,7 +4126,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             for (let step of this._cameraDrawRenderTargetStage) {
-                step.action(this.activeCamera);
+                needRebind = needRebind || step.action(this.activeCamera);
             }
 
             this._intermediateRendering = false;
