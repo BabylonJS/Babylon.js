@@ -766,10 +766,10 @@ export class Node implements IBehaviorAware<Node> {
         this._behaviors = [];
     }
 
-    protected _getBoudingInfoMin(){
+    protected _getBoudingInfoMin() {
         return new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     }
-    protected _getBoudingInfoMax(){
+    protected _getBoudingInfoMax() {
         return new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
     }
 

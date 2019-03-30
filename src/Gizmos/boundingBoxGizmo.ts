@@ -90,7 +90,7 @@ export class BoundingBoxGizmo extends Gizmo {
      * Mesh used as a pivot to rotate the attached mesh
      */
     private _anchorMesh: AbstractMesh;
-    
+
     private _existingMeshScale = new Vector3();
 
     // Dragging
