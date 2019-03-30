@@ -43,7 +43,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !transformNode.rotationQuaternion &&
-                        <Vector3LineComponent label="Rotation" target={transformNode} propertyName="rotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent label="Rotation" target={transformNode} propertyName="rotation" step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
                         transformNode.rotationQuaternion &&
