@@ -1129,20 +1129,20 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return new Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
     }
 
-    protected _getBoudingInfoMin(){
-        if(this.subMeshes){
+    protected _getBoudingInfoMin() {
+        if (this.subMeshes) {
             let boundingInfo = this.getBoundingInfo();
             return boundingInfo.boundingBox.minimumWorld;
-        }else{
+        }else {
             return new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         }
-        
+
     }
-    protected _getBoudingInfoMax(){
-        if(this.subMeshes){
+    protected _getBoudingInfoMax() {
+        if (this.subMeshes) {
             let boundingInfo = this.getBoundingInfo();
             return boundingInfo.boundingBox.maximumWorld;
-        }else{
+        }else {
             return new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         }
     }
