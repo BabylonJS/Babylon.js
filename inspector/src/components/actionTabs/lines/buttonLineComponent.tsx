@@ -1,8 +1,8 @@
 import * as React from "react";
 
 export interface IButtonLineComponentProps {
-    label: string,
-    onClick: () => void
+    label: string;
+    onClick: () => void;
 }
 
 export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
