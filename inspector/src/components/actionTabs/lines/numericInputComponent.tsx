@@ -1,9 +1,9 @@
 import * as React from "react";
 
 interface INumericInputComponentProps {
-    label: string,
-    value: number,
-    onChange: (value: number) => void
+    label: string;
+    value: number;
+    onChange: (value: number) => void;
 }
 
 export class NumericInputComponent extends React.Component<INumericInputComponentProps, { value: string }> {
