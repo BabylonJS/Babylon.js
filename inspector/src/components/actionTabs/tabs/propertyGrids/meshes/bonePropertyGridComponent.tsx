@@ -36,7 +36,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
                     <Vector3LineComponent label="Position" target={bone} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !bone.rotationQuaternion &&
-                        <Vector3LineComponent label="Rotation" target={bone} propertyName="rotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent label="Rotation" target={bone} propertyName="rotation" step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
                         bone.rotationQuaternion &&
