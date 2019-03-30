@@ -205,7 +205,7 @@ export class DracoCompression implements IDisposable {
      * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
      * @returns A promise that resolves with the decoded vertex data
      */
-    public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: { [kind: string]: number }): Promise<VertexData> {
+    public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<VertexData> {
         const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
         return this._workerPoolPromise.then((workerPool) => {
@@ -251,6 +251,13 @@ export class DracoCompression implements IDisposable {
      * The worker function that gets converted to a blob url to pass into a worker.
      */
     private static _Worker(): void {
+        const nativeAttributeTypes: { [kind: string]: string } = {
+            "position": "POSITION",
+            "normal": "NORMAL",
+            "color": "COLOR",
+            "uv": "TEX_COORD"
+        };
+
         // self is actually a DedicatedWorkerGlobalScope
         const _self = self as any as {
             onmessage: (event: MessageEvent) => void;
@@ -327,9 +334,7 @@ export class DracoCompression implements IDisposable {
                         }
                     }
 
-                    for (const kind in attributes) {
-                        const uniqueId = attributes[kind];
-                        const attribute = decoder.GetAttributeByUniqueId(geometry, uniqueId);
+                    const processAttribute = (kind: string, attribute: any) => {
                         const dracoData = new decoderModule.DracoFloat32Array();
                         try {
                             decoder.GetAttributeFloatForAllPoints(geometry, attribute, dracoData);
@@ -341,6 +346,23 @@ export class DracoCompression implements IDisposable {
                         }
                         finally {
                             decoderModule.destroy(dracoData);
+                        }
+                    };
+
+                    if (attributes) {
+                        for (const kind in attributes) {
+                            const id = attributes[kind];
+                            const attribute = decoder.GetAttributeByUniqueId(geometry, id);
+                            processAttribute(kind, attribute);
+                        }
+                    }
+                    else {
+                        for (const kind in nativeAttributeTypes) {
+                            const id = decoder.GetAttributeId(geometry, decoderModule[nativeAttributeTypes[kind]]);
+                            if (id !== -1) {
+                                const attribute = decoder.GetAttribute(geometry, id);
+                                processAttribute(kind, attribute);
+                            }
                         }
                     }
                 }
