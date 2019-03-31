@@ -395,7 +395,12 @@ export class _GLTFAnimation {
                     }
                     previousTime = time;
                     maxUsedFrame = time;
-                    value = animation._interpolate(f, 0, undefined, animation.loopMode);
+                    let state = {
+                        key: 0,
+                        repeatCount: 0,
+                        loopMode: animation.loopMode
+                    };
+                    value = animation._interpolate(f, state);
 
                     _GLTFAnimation._SetInterpolatedValue(babylonTransformNode, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion);
                 }

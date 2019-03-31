@@ -7528,6 +7528,7 @@ declare module BABYLON {
         _poseMatrix: Matrix;
         /** @hidden */
         _localMatrix: Matrix;
+        private _usePivotMatrix;
         private _absolutePosition;
         private _pivotMatrix;
         private _pivotMatrixInverse;
@@ -7535,7 +7536,6 @@ declare module BABYLON {
         protected _isWorldMatrixFrozen: boolean;
         /** @hidden */
         _indexInSceneTransformNodesArray: number;
-        private _connectBillboardProcessors;
         /**
         * An event triggered after the world matrix is updated
         */
@@ -7809,17 +7809,6 @@ declare module BABYLON {
          * @hidden
          */
         protected _getEffectiveParent(): Nullable<Node>;
-        private _activeCompositionProcessor;
-        private _defaultCompositionProcessor;
-        private _pivotCompositionProcessor;
-        private _translationProcessor;
-        private _defaultTranslationProcessor;
-        private _infiniteDistanceTranslationProcessor;
-        private _activeParentProcessor;
-        private _activeBillboardPostProcessor;
-        private _defaultParentProcessor;
-        private _billboardParentProcessor;
-        private _billboardPostProcessor;
         /**
          * Computes the world matrix of the node
          * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
@@ -11501,6 +11490,10 @@ declare module BABYLON {
      * Strong typing of a Camera related stage step action
      */
     export type CameraStageAction = (camera: Camera) => void;
+    /**
+     * Strong typing of a Camera Frame buffer related stage step action
+     */
+    export type CameraStageFrameBufferAction = (camera: Camera) => boolean;
     /**
      * Strong typing of a Render Target related stage step action
      */
@@ -18328,7 +18321,7 @@ declare module BABYLON {
          */
         private _currentValue;
         /** @hidden */
-        _workValue: any;
+        _animationState: _IAnimationState;
         /**
          * The active target of the runtime animation
          */
@@ -18356,12 +18349,12 @@ declare module BABYLON {
          */
         private _previousRatio;
         private _enableBlending;
-        private _correctLoopMode;
         private _keys;
         private _minFrame;
         private _maxFrame;
         private _minValue;
         private _maxValue;
+        private _targetIsArray;
         /**
          * Gets the current frame of the runtime animation
          */
@@ -18382,6 +18375,8 @@ declare module BABYLON {
          * Gets the actual target of the runtime animation
          */
         readonly target: any;
+        /** @hidden */
+        _onLoop: () => void;
         /**
          * Create a new RuntimeAnimation object
          * @param target defines the target of the animation
@@ -18390,8 +18385,6 @@ declare module BABYLON {
          * @param host defines the initiating Animatable
          */
         constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
-        private _normalizationProcessor;
-        private _defaultNormalizationProcessor;
         private _preparePath;
         /**
          * Gets the animation from the runtime animation
@@ -18412,25 +18405,12 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
-         * Interpolates the animation from the current frame
-         * @param currentFrame The frame to interpolate the animation to
-         * @param repeatCount The number of times that the animation should loop
-         * @param loopMode The type of looping mode to use
-         * @param offsetValue Animation offset value
-         * @param highLimitValue The high limit value
-         * @returns The interpolated value
-         */
-        private _interpolate;
-        /**
          * Apply the interpolated value to the target
+         * @param currentValue defines the value computed by the animation
+         * @param weight defines the weight to apply to this value (Defaults to 1.0)
          */
-        setValue: (currentValue: any, weight: number) => void;
-        private _setValueForArray;
-        private _setValueForDirect;
+        setValue(currentValue: any, weight: number): void;
         private _getOriginalValues;
-        private _activeBlendingProcessor;
-        private _noBlendingProcessor;
-        private _blendingProcessor;
         private _setValue;
         /**
          * Gets the loop pmode of the runtime animation
@@ -18457,7 +18437,7 @@ declare module BABYLON {
          * @param onLoop optional callback called when animation loops
          * @returns a boolean indicating if the animation is running
          */
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number, onLoop?: () => void): boolean;
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
     }
 }
 declare module BABYLON {
@@ -20442,8 +20422,9 @@ declare module BABYLON {
         instancesData: Float32Array;
         overridenInstanceCount: number;
         isFrozen: boolean;
-        _previousBatch: _InstancesBatch;
+        previousBatch: _InstancesBatch;
         hardwareInstancedRendering: boolean;
+        sideOrientation: number;
     }
     /**
      * @hidden
@@ -25099,6 +25080,17 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * @hidden
+     */
+    export class _IAnimationState {
+        key: number;
+        repeatCount: number;
+        workValue?: any;
+        loopMode?: number;
+        offsetValue?: any;
+        highLimitValue?: any;
+    }
+    /**
      * Class used to store any kind of animation
      */
     export class Animation {
@@ -25408,7 +25400,7 @@ declare module BABYLON {
         /**
          * @hidden Internal use only
          */
-        _interpolate(currentFrame: number, repeatCount: number, workValue?: any, loopMode?: number, offsetValue?: any, highLimitValue?: any): any;
+        _interpolate(currentFrame: number, state: _IAnimationState): any;
         /**
          * Defines the function to use to interpolate matrices
          * @param startValue defines the start matrix
@@ -28957,7 +28949,7 @@ declare module BABYLON {
     /**
      * Effect containing vertex and fragment shader that can be executed on an object.
      */
-    export class Effect {
+    export class Effect implements IDisposable {
         /**
          * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
          */
@@ -29411,6 +29403,8 @@ declare module BABYLON {
          * @returns this effect.
          */
         setDirectColor4(uniformName: string, color4: Color4): Effect;
+        /** Release all associated resources */
+        dispose(): void;
         /**
          * This function will add a new shader to the shader store
          * @param name the name of the shader
@@ -32428,7 +32422,7 @@ declare module BABYLON {
          * @hidden
          * Defines the actions happening during the per camera render target step.
          */
-        _cameraDrawRenderTargetStage: Stage<CameraStageAction>;
+        _cameraDrawRenderTargetStage: Stage<CameraStageFrameBufferAction>;
         /**
          * @hidden
          * Defines the actions happening just before the active camera is drawing.
@@ -33267,11 +33261,14 @@ declare module BABYLON {
         getDeterministicFrameTime: () => number;
         /** @hidden */
         _animate(): void;
+        /** Execute all animations (for a frame) */
+        animate(): void;
         /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
+         * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
          */
-        render(updateCameras?: boolean): void;
+        render(updateCameras?: boolean, ignoreAnimations?: boolean): void;
         /**
          * Freeze all materials
          * A frozen material will not be updatable but should be faster to render

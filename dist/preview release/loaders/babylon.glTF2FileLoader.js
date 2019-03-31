@@ -2333,17 +2333,17 @@ var GLTFLoader = /** @class */ (function () {
             var animationType;
             switch (channel.target.path) {
                 case "translation" /* TRANSLATION */: {
-                    targetPath = "position";
+                    targetPath = "_position";
                     animationType = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Animation"].ANIMATIONTYPE_VECTOR3;
                     break;
                 }
                 case "rotation" /* ROTATION */: {
-                    targetPath = "rotationQuaternion";
+                    targetPath = "_rotationQuaternion";
                     animationType = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Animation"].ANIMATIONTYPE_QUATERNION;
                     break;
                 }
                 case "scale" /* SCALE */: {
-                    targetPath = "scaling";
+                    targetPath = "_scaling";
                     animationType = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Animation"].ANIMATIONTYPE_VECTOR3;
                     break;
                 }
@@ -2359,7 +2359,7 @@ var GLTFLoader = /** @class */ (function () {
             var outputBufferOffset = 0;
             var getNextOutputValue;
             switch (targetPath) {
-                case "position": {
+                case "_position": {
                     getNextOutputValue = function () {
                         var value = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(data.output, outputBufferOffset);
                         outputBufferOffset += 3;
@@ -2367,7 +2367,7 @@ var GLTFLoader = /** @class */ (function () {
                     };
                     break;
                 }
-                case "rotationQuaternion": {
+                case "_rotationQuaternion": {
                     getNextOutputValue = function () {
                         var value = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArray(data.output, outputBufferOffset);
                         outputBufferOffset += 4;
@@ -2375,7 +2375,7 @@ var GLTFLoader = /** @class */ (function () {
                     };
                     break;
                 }
-                case "scaling": {
+                case "_scaling": {
                     getNextOutputValue = function () {
                         var value = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(data.output, outputBufferOffset);
                         outputBufferOffset += 3;

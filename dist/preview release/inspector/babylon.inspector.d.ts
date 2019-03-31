@@ -259,11 +259,15 @@ declare module INSPECTOR {
     interface INumericInputComponentProps {
         label: string;
         value: number;
+        step?: number;
         onChange: (value: number) => void;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: INumericInputComponentProps);
         shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
@@ -304,6 +308,7 @@ declare module INSPECTOR {
         label: string;
         target: any;
         propertyName: string;
+        step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
@@ -311,6 +316,9 @@ declare module INSPECTOR {
         isExpanded: boolean;
         value: BABYLON.Vector3;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: IVector3LineComponentProps);
         shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {

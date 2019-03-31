@@ -133,6 +133,7 @@ export class RuntimeAnimation {
     private _maxFrame: number;
     private _minValue: any;
     private _maxValue: any;
+    private _targetIsArray = false;
 
     /**
      * Gets the current frame of the runtime animation
@@ -193,15 +194,10 @@ export class RuntimeAnimation {
             key: 0,
             repeatCount: 0,
             loopMode: this._getCorrectLoopMode()
-        }
+        };
 
         if (this._animation.dataType === Animation.ANIMATIONTYPE_MATRIX) {
             this._animationState.workValue = Matrix.Zero();
-        }
-
-        // Normalization
-        if (this._host && this._host.syncRoot) {
-            this._normalizationProcessor = this._defaultNormalizationProcessor;
         }
 
         // Limits
@@ -225,12 +221,12 @@ export class RuntimeAnimation {
                 this._getOriginalValues(index);
                 index++;
             }
-            this.setValue = this._setValueForArray;
+            this._targetIsArray = true;
         }
         else {
             this._preparePath(this._target);
             this._getOriginalValues();
-            this.setValue = this._setValueForDirect;
+            this._targetIsArray = false;
             this._directTarget = this._activeTargets[0];
         }
 
@@ -243,21 +239,6 @@ export class RuntimeAnimation {
         }
 
         this._enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
-
-        if (this._enableBlending) {
-            this._activeBlendingProcessor = this._blendingProcessor;
-        } else {
-            this._activeBlendingProcessor = this._noBlendingProcessor;
-        }
-    }
-
-    private _normalizationProcessor = (returnValue: boolean, range: number, ratio: number, from: number, to: number) => {
-        return (returnValue && range !== 0) ? from + ratio % range : to;;
-    };
-    private _defaultNormalizationProcessor = (returnValue: boolean, range: number, ratio: number, from: number, to: number) => {
-        const syncRoot = this._host.syncRoot;
-        const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
-        return from + (to - from) * hostNormalizedFrame;
     }
 
     private _preparePath(target: any, targetIndex = 0) {
@@ -342,16 +323,14 @@ export class RuntimeAnimation {
      * @param currentValue defines the value computed by the animation
      * @param weight defines the weight to apply to this value (Defaults to 1.0)
      */
-    public setValue: (currentValue: any, weight: number) => void;
-
-    private _setValueForArray = (currentValue: any, weight = 1.0) => {
-        for (var index = 0; index < this._target.length; index++) {
-            const target = this._target[index];
-            this._setValue(target, this._activeTargets[index], currentValue, weight, index);
+    public setValue(currentValue: any, weight: number) {
+        if (this._targetIsArray) {
+            for (var index = 0; index < this._target.length; index++) {
+                const target = this._target[index];
+                this._setValue(target, this._activeTargets[index], currentValue, weight, index);
+            }
+            return;
         }
-    }
-
-    private _setValueForDirect = (currentValue: any, weight = 1.0) => {
         this._setValue(this._target, this._directTarget, currentValue, weight, 0);
     }
 
@@ -372,16 +351,15 @@ export class RuntimeAnimation {
         }
     }
 
-    private _activeBlendingProcessor: (currentValue: any, target: any) => void;
+    private _setValue(target: any, destination: any, currentValue: any, weight: number, targetIndex: number): void {
+        // Set value
+        this._currentActiveTarget = destination;
 
-    private _noBlendingProcessor = (currentValue: any) => {
-        this._currentValue = currentValue;
-    }
+        this._weight = weight;
 
-    private _blendingProcessor = (currentValue: any, target: any) => {
-        if (this._blendingFactor <= 1.0) {
+        if (this._enableBlending && this._blendingFactor <= 1.0) {
             if (!this._originalBlendValue) {
-                let originalValue = this._currentActiveTarget[this._targetPath];
+                let originalValue = destination[this._targetPath];
 
                 if (originalValue.clone) {
                     this._originalBlendValue = originalValue.clone();
@@ -413,15 +391,6 @@ export class RuntimeAnimation {
         } else {
             this._currentValue = currentValue;
         }
-    }
-
-    private _setValue(target: any, destination: any, currentValue: any, weight: number, targetIndex: number): void {
-        // Set value
-        this._currentActiveTarget = destination;
-
-        this._weight = weight;
-
-        this._activeBlendingProcessor(currentValue, target);
 
         if (weight !== -1.0) {
             this._scene._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
@@ -588,7 +557,15 @@ export class RuntimeAnimation {
         }
 
         // Compute value
-        let currentFrame = this._normalizationProcessor(returnValue, range, ratio, from, to);
+        let currentFrame: number ;
+
+        if (this._host && this._host.syncRoot) {
+            const syncRoot = this._host.syncRoot;
+            const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
+            currentFrame = from + (to - from) * hostNormalizedFrame;
+        } else {
+            currentFrame = (returnValue && range !== 0) ? from + ratio % range : to;
+        }
 
         // Reset events if looping
         const events = this._events;
