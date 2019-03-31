@@ -927,6 +927,7 @@ export class TransformNode extends Node {
         this._isDirty = false;
         let parent = this._getEffectiveParent();
         const useBillboardPath = this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard;
+        let camera = (<Camera>this.getScene().activeCamera);
 
         // Scaling
         let scaling: Vector3 = cache.scaling;
@@ -934,8 +935,6 @@ export class TransformNode extends Node {
 
         // Translation
         if (this._infiniteDistance) {
-            let camera = (<Camera>this.getScene().activeCamera);
-
             if (!this.parent && camera) {
                 var cameraWorldMatrix = camera.getWorldMatrix();
                 var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
@@ -1021,8 +1020,7 @@ export class TransformNode extends Node {
         }
 
         // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
-        if (useBillboardPath) {
-            let camera = (<Camera>this.getScene().activeCamera);
+        if (useBillboardPath && camera) {
             let storedTranslation = Tmp.Vector3[0];
             this._worldMatrix.getTranslationToRef(storedTranslation); // Save translation
 
