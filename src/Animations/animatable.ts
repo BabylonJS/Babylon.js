@@ -176,7 +176,7 @@ export class Animatable {
                 if (this.onAnimationLoop) {
                     this.onAnimationLoop();
                 }
-            }
+            };
 
             this._runtimeAnimations.push(newRuntimeAnimation);
         }

@@ -1406,7 +1406,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var matricesCount = visibleInstances.length + 1;
             var bufferSize = matricesCount * 16 * 4;
 
-
             while (instanceStorage.instancesBufferSize < bufferSize) {
                 instanceStorage.instancesBufferSize *= 2;
             }
@@ -1548,7 +1547,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let instanceDataStorage = this._instanceDataStorage;
 
         // Material
-        if (!instanceDataStorage.isFrozen ||!this._effectiveMaterial) {
+        if (!instanceDataStorage.isFrozen || !this._effectiveMaterial) {
             let material = subMesh.getMaterial();
 
             if (!material) {
@@ -1589,7 +1588,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const effectiveMesh = this._effectiveMesh;
 
         var sideOrientation: Nullable<number>;
-        
+
         if (!instanceDataStorage.isFrozen) {
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
