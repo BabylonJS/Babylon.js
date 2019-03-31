@@ -268,7 +268,11 @@ export class InstancedMesh extends AbstractMesh {
             this._sourceMesh._renderingGroup._edgesRenderers.push(this._edgesRenderer);
         }
 
-        return !this._sourceMesh._isActive;
+        if (!this._currentLOD._isActive) {
+            this._currentLOD._isActive = true;
+            return true;
+        }
+        return false;
     }
 
     /**
