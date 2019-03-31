@@ -4,6 +4,7 @@ import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math
 import { Constants } from "../Engines/constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
+import { IDisposable } from 'scene';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -181,7 +182,7 @@ export class EffectCreationOptions {
 /**
  * Effect containing vertex and fragment shader that can be executed on an object.
  */
-export class Effect {
+export class Effect implements IDisposable {
     /**
      * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
      */
@@ -1499,6 +1500,11 @@ export class Effect {
             this._engine.setDirectColor4(this._uniforms[uniformName], color4);
         }
         return this;
+    }
+
+    /** Release all associated resources */
+    public dispose() {
+        this._engine._releaseEffect(this);
     }
 
     /**
