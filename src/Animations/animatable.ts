@@ -170,7 +170,15 @@ export class Animatable {
         for (var index = 0; index < animations.length; index++) {
             var animation = animations[index];
 
-            this._runtimeAnimations.push(new RuntimeAnimation(target, animation, this._scene, this));
+            let newRuntimeAnimation = new RuntimeAnimation(target, animation, this._scene, this);
+            newRuntimeAnimation._onLoop = () => {
+                this.onAnimationLoopObservable.notifyObservers(this);
+                if (this.onAnimationLoop) {
+                    this.onAnimationLoop();
+                }
+            };
+
+            this._runtimeAnimations.push(newRuntimeAnimation);
         }
     }
 
@@ -387,13 +395,7 @@ export class Animatable {
         for (index = 0; index < runtimeAnimations.length; index++) {
             var animation = runtimeAnimations[index];
             var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame,
-                this.toFrame, this.loopAnimation, this._speedRatio, this._weight,
-                () => {
-                    this.onAnimationLoopObservable.notifyObservers(this);
-                    if (this.onAnimationLoop) {
-                        this.onAnimationLoop();
-                    }
-                }
+                this.toFrame, this.loopAnimation, this._speedRatio, this._weight
             );
             running = running || isRunning;
         }
@@ -561,7 +563,12 @@ declare module "../scene" {
 }
 
 Scene.prototype._animate = function(): void {
-    if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
+    if (!this.animationsEnabled) {
+        return;
+    }
+
+    const animatables = this._activeAnimatables;
+    if (animatables.length === 0) {
         return;
     }
 
@@ -573,11 +580,14 @@ Scene.prototype._animate = function(): void {
         }
         this._animationTimeLast = now;
     }
+
     var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
     this._animationTime += deltaTime;
+    const animationTime = this._animationTime;
     this._animationTimeLast = now;
-    for (var index = 0; index < this._activeAnimatables.length; index++) {
-        this._activeAnimatables[index]._animate(this._animationTime);
+
+    for (let index = 0; index < animatables.length; index++) {
+        animatables[index]._animate(animationTime);
     }
 
     // Late animation bindings
@@ -781,9 +791,9 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
         currentQuaternion.scaleAndAddToRef(scale, finalQuaternion);
         currentPosition.scaleAndAddToRef(scale, finalPosition);
     }
-
-    Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, originalAnimation._workValue);
-    return originalAnimation._workValue;
+    let workValue = originalAnimation._animationState.workValue;
+    Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, workValue);
+    return workValue;
 };
 
 Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
