@@ -1,6 +1,6 @@
 import { DeepImmutable } from "../types";
 import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "../Maths/math";
-import { Animation } from "./animation";
+import { Animation, _IAnimationState } from "./animation";
 import { AnimationEvent } from "./animationEvent";
 
 declare type Animatable = import("./animatable").Animatable;
@@ -92,7 +92,7 @@ export class RuntimeAnimation {
     private _currentValue: any;
 
     /** @hidden */
-    public _workValue: any;
+    public _animationState: _IAnimationState;
 
     /**
      * The active target of the runtime animation
@@ -127,7 +127,6 @@ export class RuntimeAnimation {
     private _previousRatio: number = 0;
 
     private _enableBlending: boolean;
-    private _correctLoopMode: number | undefined;
 
     private _keys: IAnimationKey[];
     private _minFrame: number;
@@ -170,6 +169,9 @@ export class RuntimeAnimation {
         return this._currentActiveTarget;
     }
 
+    /** @hidden */
+    public _onLoop: () => void;
+
     /**
      * Create a new RuntimeAnimation object
      * @param target defines the target of the animation
@@ -185,6 +187,17 @@ export class RuntimeAnimation {
         this._activeTargets = [];
 
         animation._runtimeAnimations.push(this);
+
+        // State
+        this._animationState = {
+            key: 0,
+            repeatCount: 0,
+            loopMode: this._getCorrectLoopMode()
+        }
+
+        if (this._animation.dataType === Animation.ANIMATIONTYPE_MATRIX) {
+            this._animationState.workValue = Matrix.Zero();
+        }
 
         // Normalization
         if (this._host && this._host.syncRoot) {
@@ -229,7 +242,6 @@ export class RuntimeAnimation {
             });
         }
 
-        this._correctLoopMode = this._getCorrectLoopMode();
         this._enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
 
         if (this._enableBlending) {
@@ -240,8 +252,8 @@ export class RuntimeAnimation {
     }
 
     private _normalizationProcessor = (returnValue: boolean, range: number, ratio: number, from: number, to: number) => {
-        return (returnValue && range !== 0) ? from + ratio % range : to;
-    }
+        return (returnValue && range !== 0) ? from + ratio % range : to;;
+    };
     private _defaultNormalizationProcessor = (returnValue: boolean, range: number, ratio: number, from: number, to: number) => {
         const syncRoot = this._host.syncRoot;
         const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
@@ -326,26 +338,9 @@ export class RuntimeAnimation {
     }
 
     /**
-     * Interpolates the animation from the current frame
-     * @param currentFrame The frame to interpolate the animation to
-     * @param repeatCount The number of times that the animation should loop
-     * @param loopMode The type of looping mode to use
-     * @param offsetValue Animation offset value
-     * @param highLimitValue The high limit value
-     * @returns The interpolated value
-     */
-    private _interpolate(currentFrame: number, repeatCount: number, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
-        this._currentFrame = currentFrame;
-
-        if (this._animation.dataType === Animation.ANIMATIONTYPE_MATRIX && !this._workValue) {
-            this._workValue = Matrix.Zero();
-        }
-
-        return this._animation._interpolate(currentFrame, repeatCount, this._workValue, loopMode, offsetValue, highLimitValue);
-    }
-
-    /**
      * Apply the interpolated value to the target
+     * @param currentValue defines the value computed by the animation
+     * @param weight defines the weight to apply to this value (Defaults to 1.0)
      */
     public setValue: (currentValue: any, weight: number) => void;
 
@@ -464,7 +459,7 @@ export class RuntimeAnimation {
             frame = keys[keys.length - 1].frame;
         }
 
-        var currentValue = this._interpolate(frame, 0, this._correctLoopMode);
+        var currentValue = this._animation._interpolate(frame, this._animationState);
 
         this.setValue(currentValue, -1);
     }
@@ -489,8 +484,9 @@ export class RuntimeAnimation {
      * @param onLoop optional callback called when animation loops
      * @returns a boolean indicating if the animation is running
      */
-    public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0, onLoop?: () => void): boolean {
-        let targetPropertyPath = this._animation.targetPropertyPath;
+    public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
+        let animation = this._animation;
+        let targetPropertyPath = animation.targetPropertyPath;
         if (!targetPropertyPath || targetPropertyPath.length < 1) {
             this._stopped = true;
             return false;
@@ -510,7 +506,7 @@ export class RuntimeAnimation {
         let offsetValue: any;
 
         // Compute ratio which represents the frame delta between from and to
-        const ratio = (delay * (this._animation.framePerSecond * speedRatio) / 1000.0) + this._ratioOffset;
+        const ratio = (delay * (animation.framePerSecond * speedRatio) / 1000.0) + this._ratioOffset;
         let highLimitValue = 0;
 
         this._previousDelay = delay;
@@ -518,16 +514,20 @@ export class RuntimeAnimation {
 
         if (!loop && (to > from && ratio >= range)) { // If we are out of range and not looping get back to caller
             returnValue = false;
-            highLimitValue = this._animation._getKeyValue(this._maxValue);
+            highLimitValue = animation._getKeyValue(this._maxValue);
         } else if (!loop && (from > to && ratio <= range)) {
             returnValue = false;
-            highLimitValue = this._animation._getKeyValue(this._minValue);
-        } else if (this._correctLoopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
+            highLimitValue = animation._getKeyValue(this._minValue);
+        } else if (this._animationState.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
             var keyOffset = to.toString() + from.toString();
             if (!this._offsetsCache[keyOffset]) {
-                var fromValue = this._interpolate(from, 0, Animation.ANIMATIONLOOPMODE_CYCLE);
-                var toValue = this._interpolate(to, 0, Animation.ANIMATIONLOOPMODE_CYCLE);
-                switch (this._animation.dataType) {
+                this._animationState.repeatCount = 0;
+                this._animationState.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
+                var fromValue = animation._interpolate(from, this._animationState);
+                var toValue = animation._interpolate(to, this._animationState);
+
+                this._animationState.loopMode = this._getCorrectLoopMode();
+                switch (animation.dataType) {
                     // Float
                     case Animation.ANIMATIONTYPE_FLOAT:
                         this._offsetsCache[keyOffset] = toValue - fromValue;
@@ -560,7 +560,7 @@ export class RuntimeAnimation {
         }
 
         if (offsetValue === undefined) {
-            switch (this._animation.dataType) {
+            switch (animation.dataType) {
                 // Float
                 case Animation.ANIMATIONTYPE_FLOAT:
                     offsetValue = 0;
@@ -594,9 +594,7 @@ export class RuntimeAnimation {
         const events = this._events;
         if (range > 0 && this.currentFrame > currentFrame ||
             range < 0 && this.currentFrame < currentFrame) {
-            if (onLoop) {
-                onLoop();
-            }
+            this._onLoop();
 
             // Need to reset animation events
             if (events.length) {
@@ -608,9 +606,12 @@ export class RuntimeAnimation {
                 }
             }
         }
+        this._currentFrame = currentFrame;
+        this._animationState.repeatCount = range === 0 ? 0 : (ratio / range) >> 0;
+        this._animationState.highLimitValue = highLimitValue;
+        this._animationState.offsetValue = offsetValue;
 
-        const repeatCount = range === 0 ? 0 : (ratio / range) >> 0;
-        const currentValue = this._interpolate(currentFrame, repeatCount, this._correctLoopMode, offsetValue, highLimitValue);
+        const currentValue = animation._interpolate(currentFrame, this._animationState);
 
         // Set value
         this.setValue(currentValue, weight);
