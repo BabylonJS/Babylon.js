@@ -8,11 +8,11 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 interface IVector2LineComponentProps {
-    label: string,
-    target: any,
-    propertyName: string,
-    onChange?: (newvalue: Vector2) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    label: string;
+    target: any;
+    propertyName: string;
+    onChange?: (newvalue: Vector2) => void;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, { isExpanded: boolean, value: Vector2 }> {

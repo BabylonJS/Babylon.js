@@ -222,7 +222,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !mesh.rotationQuaternion &&
-                        <Vector3LineComponent label="Rotation" target={mesh} propertyName="rotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent label="Rotation" target={mesh} propertyName="rotation" step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
                         mesh.rotationQuaternion &&
