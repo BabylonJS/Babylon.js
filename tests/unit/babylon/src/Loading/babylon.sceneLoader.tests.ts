@@ -269,9 +269,9 @@ describe('Babylon Scene Loader', function() {
                 expect(animationGroup.targetedAnimations, "animationGroup.targetedAnimations").to.have.lengthOf(7);
                 const influenceAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "influence");
                 expect(influenceAnimations, "influenceAnimations").to.have.lengthOf(2);
-                const rotationAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "rotationQuaternion");
+                const rotationAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "_rotationQuaternion");
                 expect(rotationAnimations, "rotationAnimations").to.have.lengthOf(4);
-                const positionAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "position");
+                const positionAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "_position");
                 expect(positionAnimations, "positionAnimations").to.have.lengthOf(1);
             });
         });
