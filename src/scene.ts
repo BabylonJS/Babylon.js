@@ -35,7 +35,7 @@ import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
-import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "./sceneComponent";
+import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
 import { Node } from "./node";
 import { MorphTarget } from "./Morph/morphTarget";
@@ -1256,7 +1256,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @hidden
      * Defines the actions happening during the per camera render target step.
      */
-    public _cameraDrawRenderTargetStage = Stage.Create<CameraStageAction>();
+    public _cameraDrawRenderTargetStage = Stage.Create<CameraStageFrameBufferAction>();
     /**
      * @hidden
      * Defines the actions happening just before the active camera is drawing.
@@ -2276,12 +2276,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Keyboard
         canvas.removeEventListener("keydown", this._onKeyDown);
         canvas.removeEventListener("keyup", this._onKeyUp);
-
-        // Observables
-        this.onKeyboardObservable.clear();
-        this.onPreKeyboardObservable.clear();
-        this.onPointerObservable.clear();
-        this.onPrePointerObservable.clear();
 
         // Cursor
         canvas.style.cursor = this.defaultCursor;
@@ -4132,7 +4126,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             for (let step of this._cameraDrawRenderTargetStage) {
-                step.action(this.activeCamera);
+                needRebind = needRebind || step.action(this.activeCamera);
             }
 
             this._intermediateRendering = false;
@@ -4259,34 +4253,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Nothing to do as long as Animatable have not been imported.
     }
 
-    /**
-     * Render the scene
-     * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
-     */
-    public render(updateCameras = true): void {
-        if (this.isDisposed) {
-            return;
-        }
-
-        this._frameId++;
-
-        // Register components that have been associated lately to the scene.
-        this._registerTransientComponents();
-
-        this._activeParticles.fetchNewFrame();
-        this._totalVertices.fetchNewFrame();
-        this._activeIndices.fetchNewFrame();
-        this._activeBones.fetchNewFrame();
-        this._meshesForIntersections.reset();
-        this.resetCachedMaterial();
-
-        this.onBeforeAnimationsObservable.notifyObservers(this);
-
-        // Actions
-        if (this.actionManager) {
-            this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
-        }
-
+    /** Execute all animations (for a frame) */
+    public animate() {
         if (this._engine.isDeterministicLockStep()) {
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
 
@@ -4332,6 +4300,41 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             // Physics
             this._advancePhysicsEngineStep(deltaTime);
+        }
+    }
+
+    /**
+     * Render the scene
+     * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
+     * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
+     */
+    public render(updateCameras = true, ignoreAnimations = false): void {
+        if (this.isDisposed) {
+            return;
+        }
+
+        this._frameId++;
+
+        // Register components that have been associated lately to the scene.
+        this._registerTransientComponents();
+
+        this._activeParticles.fetchNewFrame();
+        this._totalVertices.fetchNewFrame();
+        this._activeIndices.fetchNewFrame();
+        this._activeBones.fetchNewFrame();
+        this._meshesForIntersections.reset();
+        this.resetCachedMaterial();
+
+        this.onBeforeAnimationsObservable.notifyObservers(this);
+
+        // Actions
+        if (this.actionManager) {
+            this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
+        }
+
+        // Animations
+        if (!ignoreAnimations) {
+            this.animate();
         }
 
         // Before camera update steps

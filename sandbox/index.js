@@ -213,18 +213,6 @@ if (BABYLON.Engine.isSupported()) {
         if (debugLayerEnabled) {
             currentScene.debugLayer.show();
         }
-
-        currentScene.meshes.forEach((mesh) => {
-            mesh.doNotSyncBoundingInfo = true;
-        });
-        currentScene.materials.forEach((mat) => {
-            mat.freeze()
-        });
-
-        currentScene.meshes.forEach((mesh) => mesh.ignoreNonUniformScaling = true);
-        currentScene.transformNodes.forEach((node) => node.ignoreNonUniformScaling = true);
-
-        currentScene.freezeActiveMeshes();
     };
 
     var sceneError = function(sceneFile, babylonScene, message) {

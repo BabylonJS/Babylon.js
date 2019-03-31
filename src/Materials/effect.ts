@@ -248,7 +248,7 @@ export class Effect implements IDisposable {
     private _compilationError = "";
     private _attributesNames: string[];
     private _attributes: number[];
-    private _uniforms: {[key: string] :Nullable<WebGLUniformLocation>} = {};
+    private _uniforms: {[key: string] : Nullable<WebGLUniformLocation>} = {};
     /**
      * Key for the effect.
      * @hidden
@@ -855,7 +855,7 @@ export class Effect implements IDisposable {
 
                 this._samplerList.forEach((name, index) => {
                     this._samplers[name] = index;
-                })
+                });
 
                 engine.bindSamplers(this);
 

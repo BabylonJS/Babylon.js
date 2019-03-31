@@ -3,17 +3,17 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 interface ISliderLineComponentProps {
-    label: string,
-    target?: any,
-    propertyName?: string,
-    minimum: number,
-    maximum: number,
-    step: number,
-    directValue?: number,
-    onChange?: (value: number) => void,
-    onInput?: (value: number) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
-    decimalCount?: number
+    label: string;
+    target?: any;
+    propertyName?: string;
+    minimum: number;
+    maximum: number;
+    step: number;
+    directValue?: number;
+    onChange?: (value: number) => void;
+    onInput?: (value: number) => void;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    decimalCount?: number;
 }
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {

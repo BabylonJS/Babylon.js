@@ -7428,8 +7428,9 @@ declare module BABYLON {
          * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
          */
         scalingDeterminant: number;
+        private _infiniteDistance;
         /**
-         * Sets the distance of the object to max, often used by skybox
+         * Gets or sets the distance of the object to max, often used by skybox
          */
         infiniteDistance: boolean;
         /**
@@ -7720,9 +7721,12 @@ declare module BABYLON {
          * @hidden
          */
         protected _getEffectiveParent(): Nullable<Node>;
-        private _activeCompositionProcess;
+        private _activeCompositionProcessor;
         private _defaultCompositionProcessor;
         private _pivotCompositionProcessor;
+        private _translationProcessor;
+        private _defaultTranslationProcessor;
+        private _infiniteDistanceTranslationProcessor;
         private _activeParentProcessor;
         private _activeBillboardPostProcessor;
         private _defaultParentProcessor;
@@ -16354,7 +16358,7 @@ declare module BABYLON {
          */
         refreshBoundingInfo(applySkeleton?: boolean): InstancedMesh;
         /** @hidden */preActivate(): InstancedMesh;
-        /** @hidden */activate(renderId: number): InstancedMesh;
+        /** @hidden */activate(renderId: number): boolean;
         /**
          * Returns the current associated LOD AbstractMesh.
          */
@@ -16958,7 +16962,7 @@ declare module BABYLON {
         private _renderOpaque;
         private _renderAlphaTest;
         private _renderTransparent;
-        private _edgesRenderers;
+        /** @hidden */edgesRenderers: SmartArray<IEdgesRenderer>;
         onBeforeTransparentRendering: () => void;
         /**
          * Set the opaque sort comparison function.
@@ -18054,6 +18058,7 @@ declare module BABYLON {
          */
         private _activeTargets;
         private _currentActiveTarget;
+        private _directTarget;
         /**
          * The target path of the runtime animation
          */
@@ -18076,6 +18081,11 @@ declare module BABYLON {
         private _previousRatio;
         private _enableBlending;
         private _correctLoopMode;
+        private _keys;
+        private _minFrame;
+        private _maxFrame;
+        private _minValue;
+        private _maxValue;
         /**
          * Gets the current frame of the runtime animation
          */
@@ -18104,6 +18114,8 @@ declare module BABYLON {
          * @param host defines the initiating Animatable
          */
         constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
+        private _normalizationProcessor;
+        private _defaultNormalizationProcessor;
         private _preparePath;
         /**
          * Gets the animation from the runtime animation
@@ -18135,10 +18147,10 @@ declare module BABYLON {
         private _interpolate;
         /**
          * Apply the interpolated value to the target
-         * @param currentValue defines the value computed by the animation
-         * @param weight defines the weight to apply to this value (Defaults to 1.0)
          */
-        setValue(currentValue: any, weight?: number): void;
+        setValue: (currentValue: any, weight: number) => void;
+        private _setValueForArray;
+        private _setValueForDirect;
         private _getOriginalValues;
         private _activeBlendingProcessor;
         private _noBlendingProcessor;
@@ -20123,12 +20135,13 @@ declare module BABYLON {
      * @hidden
      **/private class _InstanceDataStorage {
         visibleInstances: any;
-        renderIdForInstances: number[];
         batchCache: _InstancesBatch;
         instancesBufferSize: number;
         instancesBuffer: Nullable<Buffer>;
         instancesData: Float32Array;
         overridenInstanceCount: number;
+        isFrozen: boolean;previousBatch: _InstancesBatch;
+        hardwareInstancedRendering: boolean;
     }
     /**
      * @hidden
@@ -20137,6 +20150,7 @@ declare module BABYLON {
         mustReturn: boolean;
         visibleInstances: Nullable<InstancedMesh[]>[];
         renderSelf: boolean[];
+        hardwareInstancedRendering: boolean[];
     }
     /**
      * Class used to represent renderable models
@@ -20609,6 +20623,8 @@ declare module BABYLON {
         /** @hidden */getInstancesRenderList(subMeshId: number): _InstancesBatch;
         /** @hidden */renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
+        /** @hidden */freeze(): void;
+        /** @hidden */unFreeze(): void;
         /**
          * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
          * @param subMesh defines the subMesh to render
@@ -23562,6 +23578,8 @@ declare module BABYLON {
         definedFacingForward: boolean;
         /** @hidden */occlusionQuery: Nullable<WebGLQuery>;
         private _visibility;
+        /** @hidden */isActive: boolean;
+        /** @hidden */renderingGroup: RenderingGroup;
         /**
          * Gets or sets mesh visibility between 0 and 1 (default is 1)
          */
@@ -23865,7 +23883,9 @@ declare module BABYLON {
         readonly useBones: boolean;
         /** @hidden */preActivate(): void;
         /** @hidden */preActivateForIntermediateRendering(renderId: number): void;
-        /** @hidden */activate(renderId: number): void;
+        /** @hidden */activate(renderId: number): boolean;
+        /** @hidden */freeze(): void;
+        /** @hidden */unFreeze(): void;
         /**
          * Gets the current world matrix
          * @returns a Matrix
@@ -28498,6 +28518,7 @@ declare module BABYLON {
         private _engine;
         private _uniformBuffersNames;
         private _uniformsNames;
+        private _samplerList;
         private _samplers;
         private _isReady;
         private _compilationError;
@@ -48662,7 +48683,7 @@ declare module BABYLON {
           * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
           * @returns A promise that resolves with the decoded vertex data
           */
-        decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: {
+        decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: {
             [kind: string]: number;
         }): Promise<VertexData>;
         /**
