@@ -407,6 +407,7 @@ export class Skeleton implements IAnimatable {
 
         for (var index = 0; index < this.bones.length; index++) {
             var bone = this.bones[index];
+            bone._childUpdateId++;
             var parentBone = bone.getParent();
 
             if (parentBone) {
