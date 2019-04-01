@@ -10,7 +10,6 @@ import { _DevTools } from './Misc/devTools';
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { IInspectable } from './Misc/iInspectable';
 import { Tools } from './Misc/tools';
-import { BoundingInfo } from './Culling/boundingInfo';
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -781,24 +780,7 @@ export class Node implements IBehaviorAware<Node> {
             }
         }
     }
-
-    /** @hidden */
-    public _boundingInfo: Nullable<BoundingInfo>;
-
-    /**
-     * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined
-     * @returns a BoundingInfo
-     */
-    public getBoundingInfo(): BoundingInfo {
-
-        if (!this._boundingInfo) {
-            this._boundingInfo = new BoundingInfo(new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE), new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE), this._worldMatrix);
-        }
-
-        return this._boundingInfo!;
-    }
-
-    /**
+        /**
      * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
      * @param includeDescendants Include bounding info from descendants as well (true by default)
      * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
@@ -812,14 +794,16 @@ export class Node implements IBehaviorAware<Node> {
 
         let min: Vector3;
         let max: Vector3;
-        let boundingInfo = this.getBoundingInfo();
 
-        if (!(this as any).subMeshes) {
-            min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-            max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-        } else {
+        let thisAbstractMesh = ((this as any) as AbstractMesh);
+        if (thisAbstractMesh.getBoundingInfo && thisAbstractMesh.subMeshes) {
+            // If this is an abstract mesh get its bounding info
+            let boundingInfo = thisAbstractMesh.getBoundingInfo();
             min = boundingInfo.boundingBox.minimumWorld;
             max = boundingInfo.boundingBox.maximumWorld;
+        }else {
+            min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         }
 
         if (includeDescendants) {
@@ -835,7 +819,7 @@ export class Node implements IBehaviorAware<Node> {
                 }
 
                 //make sure we have the needed params to get mix and max
-                if (!childMesh.getTotalVertices || childMesh.getTotalVertices() === 0) {
+                if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
                     continue;
                 }
 
