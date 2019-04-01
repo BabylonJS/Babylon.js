@@ -206,7 +206,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     break;
                 case 4:
                     manager.boundingBoxGizmoEnabled = true;
-                    if(manager.gizmos.boundingBoxGizmo){
+                    if (manager.gizmos.boundingBoxGizmo) {
                         manager.gizmos.boundingBoxGizmo.fixedDragMeshScreenSize = true
                     }
                     break;
