@@ -125,7 +125,8 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public _currentRenderId = -1;
     private _parentUpdateId = -1;
-    protected _childUpdateId = -1;
+    /** @hidden */
+    public _childUpdateId = -1;
 
     /** @hidden */
     public _waitingParentId: Nullable<string>;
