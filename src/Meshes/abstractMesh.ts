@@ -563,8 +563,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _masterMesh: Nullable<AbstractMesh>;
     /** @hidden */
-    public _boundingInfo: Nullable<BoundingInfo>;
-    /** @hidden */
     public _renderId = 0;
 
     /**
@@ -1127,24 +1125,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3 {
         var defForwardMult = this.definedFacingForward ? 1 : -1;
         return new Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
-    }
-
-    protected _getBoudingInfoMin() {
-        if (this.subMeshes) {
-            let boundingInfo = this.getBoundingInfo();
-            return boundingInfo.boundingBox.minimumWorld;
-        }else {
-            return new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        }
-
-    }
-    protected _getBoudingInfoMax() {
-        if (this.subMeshes) {
-            let boundingInfo = this.getBoundingInfo();
-            return boundingInfo.boundingBox.maximumWorld;
-        }else {
-            return new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-        }
     }
 
     /**
