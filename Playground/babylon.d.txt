@@ -24415,7 +24415,7 @@ declare module BABYLON {
         private _isReady;
         /** @hidden */currentRenderId: number;
         private _parentUpdateId;
-        protected _childUpdateId: number;
+        /** @hidden */childUpdateId: number;
         /** @hidden */waitingParentId: Nullable<string>;
         /** @hidden */scene: Scene;
         /** @hidden */cache: any;
@@ -40171,6 +40171,9 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            wrap?: boolean;
+            topBaseAt?: number;
+            bottomBaseAt?: number;
             updatable?: boolean;
         }, scene?: Nullable<Scene>): Mesh;
     }
