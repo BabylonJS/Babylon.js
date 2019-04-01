@@ -1897,7 +1897,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 let pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
                 if (pickResult) {
-                    act = (pickResult.hit && pickResult.pickedMesh) ? pickResult.pickedMesh.actionManager : null;
+                    act = (pickResult.hit && pickResult.pickedMesh) ? pickResult.pickedMesh._getActionManagerForTrigger() : null;
                 }
                 this._meshPickProceed = true;
             }
