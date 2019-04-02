@@ -156,6 +156,8 @@
 ### glTF Serializer
 
 - Added support for exporting `KHR_lights_punctual`
+- Exporting a GLTF from a Babylon scene with Right handed coordinate system should no longer cause the mesh normals to flip.
+([Nicholas Barlow](https://github.com/drigax))
 
 ### Post-Processes Library
 - Added the [Ocean](https://doc.babylonjs.com/extensions/oceanpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
