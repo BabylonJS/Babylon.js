@@ -795,7 +795,7 @@ export class Node implements IBehaviorAware<Node> {
         let min: Vector3;
         let max: Vector3;
 
-        let thisAbstractMesh = ((this as any) as AbstractMesh);
+        let thisAbstractMesh = (this as Node as AbstractMesh);
         if (thisAbstractMesh.getBoundingInfo && thisAbstractMesh.subMeshes) {
             // If this is an abstract mesh get its bounding info
             let boundingInfo = thisAbstractMesh.getBoundingInfo();
