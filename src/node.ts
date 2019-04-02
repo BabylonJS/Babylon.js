@@ -781,7 +781,7 @@ export class Node implements IBehaviorAware<Node> {
         }
     }
         /**
-     * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
+     * Return the minimum and maximum world vectors of the entire hierarchy under current node
      * @param includeDescendants Include bounding info from descendants as well (true by default)
      * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
      * @returns the new bounding vectors
