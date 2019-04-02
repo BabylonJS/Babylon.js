@@ -1195,7 +1195,7 @@ export class _Exporter {
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                         let sideOrientation = babylonMaterial.sideOrientation;
 
-                        if (this._convertToRightHandedSystem && sideOrientation === Material.ClockWiseSideOrientation) {
+                        if (this._convertToRightHandedSystem || sideOrientation === Material.ClockWiseSideOrientation) {
                             //Overwrite the indices to be counter-clockwise
                             let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) { byteOffset = 0; }
