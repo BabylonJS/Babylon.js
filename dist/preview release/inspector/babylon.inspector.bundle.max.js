@@ -40675,6 +40675,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                     break;
                 case 4:
                     manager.boundingBoxGizmoEnabled = true;
+                    if (manager.gizmos.boundingBoxGizmo) {
+                        manager.gizmos.boundingBoxGizmo.fixedDragMeshScreenSize = true;
+                    }
                     break;
             }
             if (this._selectedEntity && this._selectedEntity.getClassName) {

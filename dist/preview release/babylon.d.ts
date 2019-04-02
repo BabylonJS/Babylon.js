@@ -18915,7 +18915,7 @@ declare module BABYLON {
         /**
          * Clone the current skeleton
          * @param name defines the name of the new skeleton
-         * @param id defines the id of the enw skeleton
+         * @param id defines the id of the new skeleton
          * @returns the new skeleton
          */
         clone(name: string, id: string): Skeleton;
@@ -24322,16 +24322,6 @@ declare module BABYLON {
          */
         calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3;
         /**
-         * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
-         * @param includeDescendants Include bounding info from descendants as well (true by default)
-         * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
-         * @returns the new bounding vectors
-         */
-        getHierarchyBoundingVectors(includeDescendants?: boolean, predicate?: Nullable<(abstractMesh: AbstractMesh) => boolean>): {
-            min: Vector3;
-            max: Vector3;
-        };
-        /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
          * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
@@ -25077,6 +25067,16 @@ declare module BABYLON {
          * @param scene defines the hosting scene
          */
         static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void;
+        /**
+     * Return the minimum and maximum world vectors of the entire hierarchy under current node
+     * @param includeDescendants Include bounding info from descendants as well (true by default)
+     * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
+     * @returns the new bounding vectors
+     */
+        getHierarchyBoundingVectors(includeDescendants?: boolean, predicate?: Nullable<(abstractMesh: AbstractMesh) => boolean>): {
+            min: Vector3;
+            max: Vector3;
+        };
     }
 }
 declare module BABYLON {
@@ -42259,6 +42259,9 @@ declare module BABYLON {
          * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
          */
         scalePivot: Nullable<Vector3>;
+        /**
+         * Mesh used as a pivot to rotate the attached mesh
+         */
         private _anchorMesh;
         private _existingMeshScale;
         private _dragMesh;
