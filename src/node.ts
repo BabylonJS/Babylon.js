@@ -801,7 +801,7 @@ export class Node implements IBehaviorAware<Node> {
             let boundingInfo = thisAbstractMesh.getBoundingInfo();
             min = boundingInfo.boundingBox.minimumWorld;
             max = boundingInfo.boundingBox.maximumWorld;
-        }else {
+        } else {
             min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         }
