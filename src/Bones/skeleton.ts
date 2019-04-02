@@ -520,7 +520,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Clone the current skeleton
      * @param name defines the name of the new skeleton
-     * @param id defines the id of the enw skeleton
+     * @param id defines the id of the new skeleton
      * @returns the new skeleton
      */
     public clone(name: string, id: string): Skeleton {
