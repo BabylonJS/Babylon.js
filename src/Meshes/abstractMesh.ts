@@ -1130,64 +1130,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
-     * @param includeDescendants Include bounding info from descendants as well (true by default)
-     * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
-     * @returns the new bounding vectors
-     */
-    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3, max: Vector3 } {
-        // Ensures that all world matrix will be recomputed.
-        this.getScene().incrementRenderId();
-
-        this.computeWorldMatrix(true);
-
-        let min: Vector3;
-        let max: Vector3;
-        let boundingInfo = this.getBoundingInfo();
-
-        if (!this.subMeshes) {
-            min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-            max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-        } else {
-            min = boundingInfo.boundingBox.minimumWorld;
-            max = boundingInfo.boundingBox.maximumWorld;
-        }
-
-        if (includeDescendants) {
-            let descendants = this.getDescendants(false);
-
-            for (var descendant of descendants) {
-                let childMesh = <AbstractMesh>descendant;
-                childMesh.computeWorldMatrix(true);
-
-                // Filters meshes based on custom predicate function.
-                if (predicate && !predicate(childMesh)) {
-                    continue;
-                }
-
-                //make sure we have the needed params to get mix and max
-                if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
-                    continue;
-                }
-
-                let childBoundingInfo = childMesh.getBoundingInfo();
-                let boundingBox = childBoundingInfo.boundingBox;
-
-                var minBox = boundingBox.minimumWorld;
-                var maxBox = boundingBox.maximumWorld;
-
-                Tools.CheckExtends(minBox, min, max);
-                Tools.CheckExtends(maxBox, min, max);
-            }
-        }
-
-        return {
-            min: min,
-            max: max
-        };
-    }
-
-    /**
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
      * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
