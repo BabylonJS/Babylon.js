@@ -1,10 +1,16 @@
-﻿// Attributes
+﻿#version 300 es
+
+layout(location = 0) out vec4 glFragData[2];
+
+// Attributes
 in vec2 vUV;
 
 uniform sampler2D itemBuffer;
 uniform sampler2D idBuffer;
 uniform sampler2D worldPosBuffer;
 uniform sampler2D worldNormalBuffer;
+uniform sampler2D residualBuffer;
+uniform sampler2D gatheringBuffer;
 
 uniform vec3 shootPos;     // world-space position of shooter
 uniform vec3 shootNormal;  // world-space normal of shooter
@@ -58,7 +64,7 @@ vec3 formFactorEnergy()
   // Modulate shooter's energy by the receiver's reflectivity
   // and the area of the shooter.
 
-  vec3 delta = 20. * shootEnergy * shootDArea * fij; // * recvColor
+  vec3 delta = 1. * shootEnergy * shootDArea * fij; // * recvColor
 
   return delta;
 }
@@ -71,5 +77,7 @@ void main(void) {
     // worldPos.z += 1.5 / 16.;
     worldNormal = texture(worldNormalBuffer, vUV).xyz;
     
-	  gl_FragColor = vec4(formFactorEnergy(), 1.0);
+    vec3 energy = formFactorEnergy();
+	  glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, 1.0);
+    glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, 1.0);
 }

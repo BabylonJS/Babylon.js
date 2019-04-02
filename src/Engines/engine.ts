@@ -5285,9 +5285,9 @@ export class Engine {
             gl.bindTexture(gl.TEXTURE_2D, texture._webGLTexture);
 
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min); 
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT); // TO CHANGE
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
 
             gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
@@ -6820,6 +6820,20 @@ export class Engine {
     public readPixels(x: number, y: number, width: number, height: number): Uint8Array {
         var data = new Uint8Array(height * width * 4);
         this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
+        return data;
+    }
+
+    /**
+     * Reads pixels from the current frame buffer, bound with a float texture. Please note that this function can be slow
+     * @param x defines the x coordinate of the rectangle where pixels must be read
+     * @param y defines the y coordinate of the rectangle where pixels must be read
+     * @param width defines the width of the rectangle where pixels must be read
+     * @param height defines the height of the rectangle where pixels must be read
+     * @returns a Float32Array containing RGBA colors
+     */
+    public readPixelsFloat(x: number, y: number, width: number, height: number): Float32Array {
+        var data = new Float32Array(height * width * 4);
+        this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.FLOAT, data);
         return data;
     }
 
