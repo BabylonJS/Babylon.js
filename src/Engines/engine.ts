@@ -7335,6 +7335,12 @@ export class Engine {
                         return this._gl.RGB8UI;
                     case Engine.TEXTUREFORMAT_RGBA_INTEGER:
                         return this._gl.RGBA8UI;
+                    case Engine.TEXTUREFORMAT_ALPHA:
+                        return this._gl.ALPHA;
+                    case Engine.TEXTUREFORMAT_LUMINANCE:
+                        return this._gl.LUMINANCE;
+                    case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                        return this._gl.LUMINANCE_ALPHA;
                     default:
                         return this._gl.RGBA8;
                 }
