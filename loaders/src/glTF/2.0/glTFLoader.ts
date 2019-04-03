@@ -1,7 +1,7 @@
 import { IndicesArray, Nullable } from "babylonjs/types";
 import { Deferred } from "babylonjs/Misc/deferred";
 import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
-import { LoadFileError, IFileRequest, Tools } from "babylonjs/Misc/tools";
+import { LoadFileError, IFileRequest, IAnimatable, Tools } from "babylonjs/Misc/tools";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
@@ -1149,7 +1149,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, babylonAnimationGroup: AnimationGroup): Promise<void> {
+    private _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, babylonAnimationGroup: AnimationGroup, animationTargetOverride: Nullable<IAnimatable> = null): Promise<void> {
         if (channel.target.node == undefined) {
             return Promise.resolve();
         }
@@ -1289,8 +1289,13 @@ export class GLTFLoader implements IGLTFLoader {
                 const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                 babylonAnimation.setKeys(keys);
 
-                targetNode._babylonTransformNode!.animations.push(babylonAnimation);
-                babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonTransformNode!);
+                if (animationTargetOverride != null) {
+                    animationTargetOverride.animations.push(babylonAnimation);
+                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, animationTargetOverride);
+                } else {
+                    targetNode._babylonTransformNode!.animations.push(babylonAnimation);
+                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonTransformNode!);
+                }
             }
         });
     }
