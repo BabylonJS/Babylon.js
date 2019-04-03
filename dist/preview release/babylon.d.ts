@@ -37210,9 +37210,10 @@ declare module BABYLON {
          */
         constructor(name: string, position: Vector3, scene: Scene);
         /**
+         * @hidden
          * Disabled pointer input on first orientation sensor update (Default: true)
          */
-        disablePointerInputWhenUsingDeviceOrientation: boolean;
+        _disablePointerInputWhenUsingDeviceOrientation: boolean;
         private _dragFactor;
         /**
          * Enabled turning on the y axis when the orientation sensor is active
