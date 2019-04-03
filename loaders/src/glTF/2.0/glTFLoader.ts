@@ -1558,7 +1558,7 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _createDefaultMaterial(name: string, babylonDrawMode: number): Material {
         const babylonMaterial = new PBRMaterial(name, this._babylonScene);
-        babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+        babylonMaterial.sideOrientation = !this._babylonScene.useRightHandedSystem ? Material.ClockWiseSideOrientation : Material.CounterClockWiseSideOrientation;
         babylonMaterial.fillMode = babylonDrawMode;
         babylonMaterial.enableSpecularAntiAliasing = true;
         babylonMaterial.useRadianceOverAlpha = !this._parent.transparencyAsCoverage;
