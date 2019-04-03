@@ -27,6 +27,7 @@ import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
+import { SceneComponentConstants } from "../sceneComponent";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -241,7 +242,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
 
     // Morph
-    private _morphTargetManager: Nullable<MorphTargetManager>;
+    private _morphTargetManager: Nullable<MorphTargetManager> = null;
 
     /**
      * Gets or sets the morph target manager
@@ -261,10 +262,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Private
     /** @hidden */
-    public _creationDataStorage: Nullable<_CreationDataStorage>;
+    public _creationDataStorage: Nullable<_CreationDataStorage> = null;
 
     /** @hidden */
-    public _geometry: Nullable<Geometry>;
+    public _geometry: Nullable<Geometry> = null;
     /** @hidden */
     public _delayInfo: Array<string>;
     /** @hidden */
@@ -273,11 +274,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @hidden */
     public _instanceDataStorage = new _InstanceDataStorage();
 
-    private _effectiveMaterial: Material;
+    private _effectiveMaterial: Nullable<Material> = null;
 
     /** @hidden */
-    public _shouldGenerateFlatShading: boolean;
-    private _preActivateId: number;
+    public _shouldGenerateFlatShading: boolean = false;
+    private _preActivateId: number = -1;
 
     // Use by builder only to know what orientation were the mesh build in.
     /** @hidden */
@@ -296,7 +297,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Will be used to save a source mesh reference, If any
     private _source: Nullable<Mesh> = null;
     // Will be used to for fast cloned mesh lookup
-    private meshMap: Nullable<{ [id: string]: Mesh | undefined }>;
+    private meshMap: Nullable<{ [id: string]: Mesh | undefined }> = null;
 
     /**
      * Gets the source mesh (the one used to clone this one from)
@@ -2775,13 +2776,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Physics
         //TODO implement correct serialization for physics impostors.
-
-        let impostor = this.getPhysicsImpostor();
-        if (impostor) {
-            serializationObject.physicsMass = impostor.getParam("mass");
-            serializationObject.physicsFriction = impostor.getParam("friction");
-            serializationObject.physicsRestitution = impostor.getParam("mass");
-            serializationObject.physicsImpostor = impostor.type;
+        if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
+            let impostor = this.getPhysicsImpostor();
+            if (impostor) {
+                serializationObject.physicsMass = impostor.getParam("mass");
+                serializationObject.physicsFriction = impostor.getParam("friction");
+                serializationObject.physicsRestitution = impostor.getParam("mass");
+                serializationObject.physicsImpostor = impostor.type;
+            }
         }
 
         // Metadata
