@@ -371,7 +371,7 @@ export class Color3 {
     }
 
     /**
-     * Creates a new Vector3 from the starting index of the given array
+     * Creates a new Color3 from the starting index of the given array
      * @param array defines the source array
      * @param offset defines an offset in the source array
      * @returns a new Color3 object

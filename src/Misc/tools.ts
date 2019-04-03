@@ -44,7 +44,7 @@ export interface IAnimatable {
     /**
      * Array of animations
      */
-    animations: Array<Animation>;
+    animations: Nullable<Array<Animation>>;
 }
 
 /** Interface used by value gradients (color, factor, ...) */

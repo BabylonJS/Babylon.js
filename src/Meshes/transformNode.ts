@@ -49,12 +49,12 @@ export class TransformNode extends Node {
     private _rotation = Vector3.Zero();
 
     @serializeAsQuaternion("rotationQuaternion")
-    private _rotationQuaternion: Nullable<Quaternion>;
+    private _rotationQuaternion: Nullable<Quaternion> = null;
 
     @serializeAsVector3("scaling")
     protected _scaling = Vector3.One();
     protected _isDirty = false;
-    private _transformToBoneReferal: Nullable<TransformNode>;
+    private _transformToBoneReferal: Nullable<TransformNode> = null;
 
     @serialize("billboardMode")
     private _billboardMode = TransformNode.BILLBOARDMODE_NONE;
@@ -137,7 +137,7 @@ export class TransformNode extends Node {
 
     // Cache
     /** @hidden */
-    public _poseMatrix: Matrix;
+    public _poseMatrix: Nullable<Matrix> = null;
     /** @hidden */
     public _localMatrix = Matrix.Zero();
 
@@ -264,6 +264,10 @@ export class TransformNode extends Node {
      * @returns this TransformNode.
      */
     public updatePoseMatrix(matrix: Matrix): TransformNode {
+        if (!this._poseMatrix) {
+            this._poseMatrix = matrix.clone();
+            return this;
+        }
         this._poseMatrix.copyFrom(matrix);
         return this;
     }
@@ -273,6 +277,9 @@ export class TransformNode extends Node {
      * @returns the pose matrix
      */
     public getPoseMatrix(): Matrix {
+        if (!this._poseMatrix) {
+            this._poseMatrix = Matrix.Identity();
+        }
         return this._poseMatrix;
     }
 
