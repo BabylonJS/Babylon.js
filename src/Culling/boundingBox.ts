@@ -54,7 +54,7 @@ export class BoundingBox implements ICullable {
      */
     public readonly maximum: Vector3 = Vector3.Zero();
 
-    private _worldMatrix: DeepImmutable<Matrix>;
+    private _worldMatrix: DeepImmutable<Matrix>; 
     private static readonly TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
 
     /**
@@ -98,8 +98,10 @@ export class BoundingBox implements ICullable {
         // OBB
         max.addToRef(min, this.center).scaleInPlace(0.5);
         max.subtractToRef(min, this.extendSize).scaleInPlace(0.5);
+        
+        this._worldMatrix = worldMatrix || Matrix.IdentityReadOnly;
 
-        this._update(worldMatrix || Matrix.IdentityReadOnly);
+        this._update(this._worldMatrix);
     }
 
     /**
