@@ -1289,7 +1289,7 @@ export class GLTFLoader implements IGLTFLoader {
                 const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                 babylonAnimation.setKeys(keys);
 
-                if (animationTargetOverride != null) {
+                if (animationTargetOverride != null && animationTargetOverride.animations != null) {
                     animationTargetOverride.animations.push(babylonAnimation);
                     babylonAnimationGroup.addTargetedAnimation(babylonAnimation, animationTargetOverride);
                 } else {
