@@ -3365,7 +3365,7 @@ export class Engine {
      * @returns the new Effect
      */
     public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
-        onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect {
+        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
