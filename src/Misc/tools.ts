@@ -597,6 +597,85 @@ export class Tools {
         };
     }
 
+    // DOC TODO
+    public static WorldUniformUvScaling(positions: FloatArray, uvs: FloatArray, indices: number[], scale: Vector3, worldToTexelRatio: number) {
+        // world to texel in units/1texel
+        let v0 = new Vector3();
+        let v1 = new Vector3();
+        // let v2 = new Vector3();
+        let uv0 = new Vector2();
+        let uv1 = new Vector2();
+        // let uv2 = new Vector2();
+        // let i0, i1, i2;
+        let newUvs = [];
+
+        let lowestUv = new Vector2(+Infinity, +Infinity); // find lowest uv and scale down from there
+        let highestUv = new Vector2(-Infinity, -Infinity); // find lowest uv and scale down from there
+        let lowestUvVertexIndex = -1;
+
+        for (let i = 0; i < uvs.length; i+= 2) {
+            uv0.copyFromFloats(uvs[i], uvs[i + 1]);
+            if (uv0.x < lowestUv.x && uv0.y < lowestUv.y) {
+                lowestUvVertexIndex = i / 2;
+            }
+
+            lowestUv.copyFromFloats(Math.min(uv0.x, lowestUv.x), Math.min(uv0.y, lowestUv.y));
+            highestUv.copyFromFloats(Math.max(uv0.x, highestUv.x), Math.max(uv0.y, highestUv.y));
+        }
+
+        // Very unaccurate
+        let faceWorldToUvRatio;
+        let averageWorldToUvRatio = 0;
+        let numberOfFaces = 0;
+        for (let i = 0; i < indices.length; i += 3) {
+            v0.copyFromFloats(positions[indices[i] * 3], positions[indices[i] * 3 + 1], positions[indices[i] * 3 + 2]);
+            v1.copyFromFloats(positions[indices[i + 1] * 3], positions[indices[i + 1] * 3 + 1], positions[indices[i + 1] * 3 + 2]);
+            uv0.copyFromFloats(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
+            uv1.copyFromFloats(uvs[indices[i + 1] * 2], uvs[indices[i + 1] * 2 + 1]);
+            faceWorldToUvRatio = v1.subtract(v0).multiply(scale).length() / uv1.subtract(uv0).length();
+            averageWorldToUvRatio += faceWorldToUvRatio;
+            numberOfFaces++;
+        }
+
+        averageWorldToUvRatio /= numberOfFaces
+        
+        let uvExpand = highestUv.subtract(lowestUv);
+        let width = averageWorldToUvRatio * uvExpand.x;
+        let height = averageWorldToUvRatio * uvExpand.y;
+
+        let textureWidth = Tools.NearestPOT(width / worldToTexelRatio);
+        let textureHeight =Tools.NearestPOT(height / worldToTexelRatio);
+
+        // scale if needed
+        // for (let i = 0; i < uvs.length; i+= 2) {
+        //     uv0.copyFromFloats(uvs[i], uvs[i + 1]);
+        //     newUvs.push(uv0.subtractInPlace(lowestUv).scaleInPlace(localToTexelRatio / worldToTexelRatio));
+        // }
+
+        // legacy
+        // for (let faceIndex = 0; faceIndex < indices.length / 3; faceIndex++) {
+        //     i0 = indices[faceIndex * 3];
+        //     i1 = indices[faceIndex * 3 + 1];
+        //     i2 = indices[faceIndex * 3 + 2];
+
+        //     v0.copyFromFloats(positions[i0 * 3], positions[i0 * 3 + 1], positions[i0 * 3 + 2]);
+        //     uv0.copyFromFloats(uvs[i0 * 2], uvs[i0 * 2 + 1]);
+
+        //     v1.copyFromFloats(positions[i1 * 3], positions[i1 * 3 + 1], positions[i1 * 3 + 2]);
+        //     uv1.copyFromFloats(uvs[i1 * 2], uvs[i1 * 2 + 1]);
+
+        //     v2.copyFromFloats(positions[i2 * 3], positions[i2 * 3 + 1], positions[i2 * 3 + 2]);
+        //     uv2.copyFromFloats(uvs[i2 * 2], uvs[i2 * 2 + 1]);
+        // }
+
+        return {
+            uvs : uvs, 
+            textureSize : {
+            width: textureWidth,
+            height: textureHeight
+        };
+    }
+
     /**
      * Returns an array if obj is not an array
      * @param obj defines the object to evaluate as an array

@@ -80,6 +80,7 @@ export class PatchRenderer {
     private _nextShooterEffect: Effect;
     private _near: number;
     private _far: number;
+    private _texelSize: number;
 
     // private _patches: Patch[] = [];
     private _patchOffset: number = 0;
@@ -120,10 +121,11 @@ export class PatchRenderer {
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      */
-    constructor(scene: Scene) {
+    constructor(scene: Scene, texelSize : number) {
         this._scene = scene;
         this._near = 0.1;
         this._far = 1000;
+        this._texelSize = texelSize;
 
         // PatchRenderer._SceneComponentInitialization(this._scene);
         Patch.projectionMatrix = Matrix.PerspectiveFovLH(Patch.fov,
@@ -201,14 +203,14 @@ export class PatchRenderer {
         for (let i = 0; i < meshes.length; i++) {
             var mesh = meshes[i];
 
-            var worldTexelRatio = 16 * mesh.scaling.x; // arbitrary, for testing
+            var size = (<any>mesh).__lightmapSize; // todo : clean that up
             var residualTexture = new MultiRenderTarget("patch",
-                worldTexelRatio,
+                size,
                 7,
                 this._scene,
                 {
-                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST],
-                    types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_UNSIGNED_INT],
+                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST],
+                    types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT],
                     generateMipMaps: true
                 }
             );
@@ -223,14 +225,19 @@ export class PatchRenderer {
             // TODO : merge functions ?
             var uniformCb = (effect: Effect, data: any[]): void => {
                 var mesh = (<SubMesh>data[0]).getMesh();
-                var worldTexelRatio = 16 * mesh.scaling.x; // arbitrary, for testing
+                var width = (<any>mesh).__lightmapSize.width; // TODO : necessary only or individual patches mode
                 var res = (<any>mesh).residualTexture;
-                effect.setFloat("texSize", worldTexelRatio);
+                effect.setFloat("texSize", width);
                 effect.setFloat("patchOffset", res.patchOffset);
-                if ((<any>mesh).emissive) {
-                    effect.setVector3("emissive", (<any>mesh).emissive);
+                if ((<any>mesh).color) {
+                    effect.setVector3("color", (<any>mesh).color);
                 } else {
-                    effect.setVector3("emissive", new Vector3(0, 0, 0));
+                    effect.setVector3("color", new Vector3(0, 0, 0));
+                }
+                if ((<any>mesh).lightStrength) {
+                    effect.setVector3("lightStrength", (<any>mesh).lightStrength);
+                } else {
+                    effect.setFloat("lightStrength", 0.0);
                 }
             }
 
@@ -256,7 +263,7 @@ export class PatchRenderer {
             this._scene.customRenderTargets.push(residualTexture);
 
             // Upper bound of what indexes could be taken by patch filling
-            this._patchOffset += worldTexelRatio * worldTexelRatio;
+            this._patchOffset += size.width * size.height;
 
             this.buildVisibilityMap();
         }
@@ -268,6 +275,7 @@ export class PatchRenderer {
         }
 
         var mesh = subMesh.getRenderingMesh();
+        var area = this._texelSize * this._texelSize * Math.PI / 8;
         var mrt: MultiRenderTarget = (<any>mesh).residualTexture;
         // var residualEnergyTexture = mrt.textures[3]._texture as InternalTexture;
         // var gatheringTexture = mrt.textures[4]._texture as InternalTexture;
@@ -285,7 +293,7 @@ export class PatchRenderer {
         this._shootEffect.setVector3("shootPos", patch.position);
         this._shootEffect.setVector3("shootNormal", patch.normal);
         this._shootEffect.setVector3("shootEnergy", patch.residualEnergy);
-        this._shootEffect.setFloat("shootDArea", 9 * 9 / 16 / 16); // TODO
+        this._shootEffect.setFloat("shootDArea", area); // TODO
         this._shootEffect.setMatrix("view", patch.viewMatrix);
 
         engine.setDirectViewport(0, 0, destResidualTexture.width, destResidualTexture.height);
@@ -395,7 +403,7 @@ export class PatchRenderer {
         }
 
         var energyLeft = this.updatePatches(shooter);
-        if (energyLeft < 1e-5) {
+        if (energyLeft < 10) {
             return false;
         }
 
@@ -426,14 +434,14 @@ export class PatchRenderer {
         var data = [];
         for (let i = 0; i < mrt.getRenderWidth(); i++) {
             for (let j = 0; j < mrt.getRenderHeight(); j++) {
-                data.push(0, 0, 0, 255);
+                data.push(0, 0, 0, 1.0);
             }
         }
-        var buffer = new Uint8Array(data);
+        var buffer = new Float32Array(data);
         gl.bindTexture(gl.TEXTURE_2D, (<InternalTexture>residualEnergyTexture._texture)._webGLTexture);
         gl.texSubImage2D(
             gl.TEXTURE_2D, 0, 0, 0, mrt.getRenderWidth(), mrt.getRenderHeight(), gl.RGBA,
-            gl.UNSIGNED_BYTE, buffer);
+            gl.FLOAT, buffer);
         gl.generateMipmap(gl.TEXTURE_2D);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
@@ -611,7 +619,7 @@ export class PatchRenderer {
             this._cachedDefines = join;
             this._radiosityEffect = this._scene.getEngine().createEffect("buildRadiosity",
                 attribs,
-                ["world", "texSize", "worldTexelRatio", "patchOffset", "emissive"],
+                ["world", "texSize", "worldTexelRatio", "patchOffset", "color", "lightStrength"],
                 [], join);
         }
 
@@ -684,11 +692,11 @@ export class PatchRenderer {
         var width = size.width;
         var height = size.height;
         var engine = this._scene.getEngine();
-        var residualEnergy = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[3], width, height);
+        var residualEnergy = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[3], width, height);
         var sum = 0;
         for (let i = 0; i < residualEnergy.length; i += 4) {
-            subMesh.radiosityPatches[i / 4].residualEnergy.copyFromFloats(residualEnergy[i] / 255., residualEnergy[i + 1] / 255., residualEnergy[i + 2] / 255.);
-            sum += (residualEnergy[i] / 255. + residualEnergy[i + 1] / 255. + residualEnergy[i + 2] / 255.) / 3;
+            subMesh.radiosityPatches[i / 4].residualEnergy.copyFromFloats(residualEnergy[i], residualEnergy[i + 1], residualEnergy[i + 2]);
+            sum += (residualEnergy[i] + residualEnergy[i + 1] + residualEnergy[i + 2]) / 3;
         }
         console.log("Residual energy gathered from surface : " + sum);
 
