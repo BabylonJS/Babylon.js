@@ -35485,7 +35485,9 @@ var AnimationGridComponent = /** @class */ (function (_super) {
             _this._animations = new Array();
             animatables.forEach(function (animatable) {
                 var _a;
-                (_a = _this._animations).push.apply(_a, animatable.animations);
+                if (animatable.animations) {
+                    (_a = _this._animations).push.apply(_a, animatable.animations);
+                }
             });
             // Extract from and to
             if (_this._animations && _this._animations.length) {
@@ -40675,6 +40677,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                     break;
                 case 4:
                     manager.boundingBoxGizmoEnabled = true;
+                    if (manager.gizmos.boundingBoxGizmo) {
+                        manager.gizmos.boundingBoxGizmo.fixedDragMeshScreenSize = true;
+                    }
                     break;
             }
             if (this._selectedEntity && this._selectedEntity.getClassName) {
