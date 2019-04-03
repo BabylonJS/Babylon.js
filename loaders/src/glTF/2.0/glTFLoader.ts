@@ -1168,17 +1168,17 @@ export class GLTFLoader implements IGLTFLoader {
             let animationType: number;
             switch (channel.target.path) {
                 case AnimationChannelTargetPath.TRANSLATION: {
-                    targetPath = "_position";
+                    targetPath = "position";
                     animationType = Animation.ANIMATIONTYPE_VECTOR3;
                     break;
                 }
                 case AnimationChannelTargetPath.ROTATION: {
-                    targetPath = "_rotationQuaternion";
+                    targetPath = "rotationQuaternion";
                     animationType = Animation.ANIMATIONTYPE_QUATERNION;
                     break;
                 }
                 case AnimationChannelTargetPath.SCALE: {
-                    targetPath = "_scaling";
+                    targetPath = "scaling";
                     animationType = Animation.ANIMATIONTYPE_VECTOR3;
                     break;
                 }
@@ -1195,7 +1195,7 @@ export class GLTFLoader implements IGLTFLoader {
             let outputBufferOffset = 0;
             let getNextOutputValue: () => Vector3 | Quaternion | Array<number>;
             switch (targetPath) {
-                case "_position": {
+                case "position": {
                     getNextOutputValue = () => {
                         const value = Vector3.FromArray(data.output, outputBufferOffset);
                         outputBufferOffset += 3;
@@ -1203,7 +1203,7 @@ export class GLTFLoader implements IGLTFLoader {
                     };
                     break;
                 }
-                case "_rotationQuaternion": {
+                case "rotationQuaternion": {
                     getNextOutputValue = () => {
                         const value = Quaternion.FromArray(data.output, outputBufferOffset);
                         outputBufferOffset += 4;
@@ -1211,7 +1211,7 @@ export class GLTFLoader implements IGLTFLoader {
                     };
                     break;
                 }
-                case "_scaling": {
+                case "scaling": {
                     getNextOutputValue = () => {
                         const value = Vector3.FromArray(data.output, outputBufferOffset);
                         outputBufferOffset += 3;

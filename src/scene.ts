@@ -3736,7 +3736,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                     if (this._processedMaterials.indexOf(material) === -1) {
                         this._processedMaterials.push(material);
 
-                        this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures());
+                        this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
                     }
                 }
 
@@ -3926,7 +3926,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-            if (!mesh.isReady() || !mesh.isEnabled()) {
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.lengthSquared() === 0) {
                 continue;
             }
 

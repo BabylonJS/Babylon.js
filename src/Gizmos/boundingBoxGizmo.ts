@@ -85,7 +85,12 @@ export class BoundingBoxGizmo extends Gizmo {
      * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
      */
     public scalePivot: Nullable<Vector3> = null;
+
+    /**
+     * Mesh used as a pivot to rotate the attached mesh
+     */
     private _anchorMesh: AbstractMesh;
+
     private _existingMeshScale = new Vector3();
 
     // Dragging
@@ -416,6 +421,8 @@ export class BoundingBoxGizmo extends Gizmo {
             boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
 
             // Update gizmo to match bounding box scaling and rotation
+            // The position set here is the offset from the origin for the boundingbox when the attached mesh is at the origin
+            // The position of the gizmo is then set to the attachedMesh in gizmo._update
             this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
             this._lineBoundingBox.position.set((boundingMinMax.max.x + boundingMinMax.min.x) / 2, (boundingMinMax.max.y + boundingMinMax.min.y) / 2, (boundingMinMax.max.z + boundingMinMax.min.z) / 2);
             this._rotateSpheresParent.position.copyFrom(this._lineBoundingBox.position);

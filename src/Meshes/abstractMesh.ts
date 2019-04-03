@@ -264,14 +264,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public definedFacingForward = true;
 
     /** @hidden */
-    public _occlusionQuery: Nullable<WebGLQuery>;
+    public _occlusionQuery: Nullable<WebGLQuery> = null;
 
     private _visibility = 1.0;
 
     /** @hidden */
     public _isActive = false;
     /** @hidden */
-    public _renderingGroup: RenderingGroup;
+    public _renderingGroup: Nullable<RenderingGroup> = null;
 
     /**
      * Gets or sets mesh visibility between 0 and 1 (default is 1)
@@ -325,7 +325,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
     public renderingGroupId = 0;
-    private _material: Nullable<Material>;
+    private _material: Nullable<Material> = null;
 
     /** Gets or sets current material */
     public get material(): Nullable<Material> {
@@ -518,7 +518,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public ellipsoidOffset = new Vector3(0, 0, 0);
-    private _collider: Collider;
+    private _collider: Nullable<Collider> = null;
     private _oldPositionForCollisions = new Vector3(0, 0, 0);
     private _diffPositionForCollisions = new Vector3(0, 0, 0);
 
@@ -558,12 +558,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public edgesColor = new Color4(1, 0, 0, 1);
     /** @hidden */
-    public _edgesRenderer: Nullable<IEdgesRenderer>;
+    public _edgesRenderer: Nullable<IEdgesRenderer> = null;
 
     /** @hidden */
-    public _masterMesh: Nullable<AbstractMesh>;
+    public _masterMesh: Nullable<AbstractMesh> = null;
     /** @hidden */
-    public _boundingInfo: Nullable<BoundingInfo>;
+    public _boundingInfo: Nullable<BoundingInfo> = null;
     /** @hidden */
     public _renderId = 0;
 
@@ -589,14 +589,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     // Loading properties
     /** @hidden */
-    public _waitingActions: any;
+    public _waitingActions: Nullable<any> = null;
     /** @hidden */
-    public _waitingFreezeWorldMatrix: Nullable<boolean>;
+    public _waitingFreezeWorldMatrix: Nullable<boolean> = null;
 
     // Skeleton
-    private _skeleton: Nullable<Skeleton>;
+    private _skeleton: Nullable<Skeleton> = null;
     /** @hidden */
-    public _bonesTransformMatrices: Nullable<Float32Array>;
+    public _bonesTransformMatrices: Nullable<Float32Array> = null;
 
     /**
      * Gets or sets a skeleton to apply skining transformations
@@ -1130,64 +1130,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
-     * @param includeDescendants Include bounding info from descendants as well (true by default)
-     * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
-     * @returns the new bounding vectors
-     */
-    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3, max: Vector3 } {
-        // Ensures that all world matrix will be recomputed.
-        this.getScene().incrementRenderId();
-
-        this.computeWorldMatrix(true);
-
-        let min: Vector3;
-        let max: Vector3;
-        let boundingInfo = this.getBoundingInfo();
-
-        if (!this.subMeshes) {
-            min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-            max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-        } else {
-            min = boundingInfo.boundingBox.minimumWorld;
-            max = boundingInfo.boundingBox.maximumWorld;
-        }
-
-        if (includeDescendants) {
-            let descendants = this.getDescendants(false);
-
-            for (var descendant of descendants) {
-                let childMesh = <AbstractMesh>descendant;
-                childMesh.computeWorldMatrix(true);
-
-                // Filters meshes based on custom predicate function.
-                if (predicate && !predicate(childMesh)) {
-                    continue;
-                }
-
-                //make sure we have the needed params to get mix and max
-                if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
-                    continue;
-                }
-
-                let childBoundingInfo = childMesh.getBoundingInfo();
-                let boundingBox = childBoundingInfo.boundingBox;
-
-                var minBox = boundingBox.minimumWorld;
-                var maxBox = boundingBox.maximumWorld;
-
-                Tools.CheckExtends(minBox, min, max);
-                Tools.CheckExtends(maxBox, min, max);
-            }
-        }
-
-        return {
-            min: min,
-            max: max
-        };
-    }
-
-    /**
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
      * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
@@ -1396,7 +1338,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets Collider object used to compute collisions (not physics)
      * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
-    public get collider(): Collider {
+    public get collider(): Nullable<Collider> {
         return this._collider;
     }
 
@@ -1446,7 +1388,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // Transformation
-        if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
+        if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix!.equals(transformMatrix)) {
             subMesh._lastColliderTransformMatrix = transformMatrix.clone();
             subMesh._lastColliderWorldVertices = [];
             subMesh._trianglePlanes = [];

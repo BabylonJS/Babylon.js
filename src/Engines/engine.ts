@@ -3365,7 +3365,7 @@ export class Engine {
      * @returns the new Effect
      */
     public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
-        onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect {
+        onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
@@ -4841,7 +4841,7 @@ export class Engine {
                     texture._workingCanvas.height = texture.height;
                 }
 
-                texture._workingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
+                texture._workingContext!.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
 
                 this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
             } else {
@@ -7335,6 +7335,12 @@ export class Engine {
                         return this._gl.RGB8UI;
                     case Engine.TEXTUREFORMAT_RGBA_INTEGER:
                         return this._gl.RGBA8UI;
+                    case Engine.TEXTUREFORMAT_ALPHA:
+                        return this._gl.ALPHA;
+                    case Engine.TEXTUREFORMAT_LUMINANCE:
+                        return this._gl.LUMINANCE;
+                    case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                        return this._gl.LUMINANCE_ALPHA;
                     default:
                         return this._gl.RGBA8;
                 }
