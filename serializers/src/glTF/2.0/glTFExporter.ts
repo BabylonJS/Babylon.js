@@ -1195,8 +1195,8 @@ export class _Exporter {
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                         let sideOrientation = babylonMaterial.sideOrientation;
 
-                        if (this._convertToRightHandedSystem || sideOrientation === Material.ClockWiseSideOrientation) {
-                            //Overwrite the indices to be counter-clockwise
+                        // Only reverse the winding if we have a clockwise winding in a positive worldspace
+                        if (sideOrientation === Material.ClockWiseSideOrientation && babylonTransformNode._getWorldMatrixDeterminant() > 0){
                             let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) { byteOffset = 0; }
                             let babylonIndices: Nullable<IndicesArray> = null;
