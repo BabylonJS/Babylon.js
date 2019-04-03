@@ -77,43 +77,43 @@ export class InternalTexture {
     /**
      * Defines if the texture is ready
      */
-    public isReady: boolean;
+    public isReady: boolean = false;
     /**
      * Defines if the texture is a cube texture
      */
-    public isCube: boolean;
+    public isCube: boolean = false;
     /**
      * Defines if the texture contains 3D data
      */
-    public is3D: boolean;
+    public is3D: boolean = false;
     /**
      * Defines if the texture contains multiview data
      */
-    public isMultiview: boolean;
+    public isMultiview: boolean = false;
     /**
      * Gets the URL used to load this texture
      */
-    public url: string;
+    public url: string = "";
     /**
      * Gets the sampling mode of the texture
      */
-    public samplingMode: number;
+    public samplingMode: number = -1;
     /**
      * Gets a boolean indicating if the texture needs mipmaps generation
      */
-    public generateMipMaps: boolean;
+    public generateMipMaps: boolean = false;
     /**
      * Gets the number of samples used by the texture (WebGL2+ only)
      */
-    public samples: number;
+    public samples: number = 0;
     /**
      * Gets the type of the texture (int, float...)
      */
-    public type: number;
+    public type: number = -1;
     /**
      * Gets the format of the texture (RGB, RGBA...)
      */
-    public format: number;
+    public format: number = -1;
     /**
      * Observable called when the texture is loaded
      */
@@ -121,31 +121,31 @@ export class InternalTexture {
     /**
      * Gets the width of the texture
      */
-    public width: number;
+    public width: number = 0;
     /**
      * Gets the height of the texture
      */
-    public height: number;
+    public height: number = 0;
     /**
      * Gets the depth of the texture
      */
-    public depth: number;
+    public depth: number = 0;
     /**
      * Gets the initial width of the texture (It could be rescaled if the current system does not support non power of two textures)
      */
-    public baseWidth: number;
+    public baseWidth: number = 0;
     /**
      * Gets the initial height of the texture (It could be rescaled if the current system does not support non power of two textures)
      */
-    public baseHeight: number;
+    public baseHeight: number = 0;
     /**
      * Gets the initial depth of the texture (It could be rescaled if the current system does not support non power of two textures)
      */
-    public baseDepth: number;
+    public baseDepth: number = 0;
     /**
      * Gets a boolean indicating if the texture is inverted on Y axis
      */
-    public invertY: boolean;
+    public invertY: boolean = false;
 
     // Private
     /** @hidden */
@@ -155,51 +155,51 @@ export class InternalTexture {
     /** @hidden */
     public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
     /** @hidden */
-    public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
+    public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null;
     /** @hidden */
-    public _bufferView: Nullable<ArrayBufferView>;
+    public _bufferView: Nullable<ArrayBufferView> = null;
     /** @hidden */
-    public _bufferViewArray: Nullable<ArrayBufferView[]>;
+    public _bufferViewArray: Nullable<ArrayBufferView[]> = null;
     /** @hidden */
-    public _bufferViewArrayArray: Nullable<ArrayBufferView[][]>;
+    public _bufferViewArrayArray: Nullable<ArrayBufferView[][]> = null;
     /** @hidden */
-    public _size: number;
+    public _size: number = 0;
     /** @hidden */
-    public _extension: string;
+    public _extension: string = "";
     /** @hidden */
-    public _files: Nullable<string[]>;
+    public _files: Nullable<string[]> = null;
     /** @hidden */
-    public _workingCanvas: HTMLCanvasElement;
+    public _workingCanvas: Nullable<HTMLCanvasElement> = null;
     /** @hidden */
-    public _workingContext: CanvasRenderingContext2D;
+    public _workingContext: Nullable<CanvasRenderingContext2D> = null;
     /** @hidden */
-    public _framebuffer: Nullable<WebGLFramebuffer>;
+    public _framebuffer: Nullable<WebGLFramebuffer> = null;
     /** @hidden */
-    public _depthStencilBuffer: Nullable<WebGLRenderbuffer>;
+    public _depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
     /** @hidden */
-    public _MSAAFramebuffer: Nullable<WebGLFramebuffer>;
+    public _MSAAFramebuffer: Nullable<WebGLFramebuffer> = null;
     /** @hidden */
-    public _MSAARenderBuffer: Nullable<WebGLRenderbuffer>;
+    public _MSAARenderBuffer: Nullable<WebGLRenderbuffer> = null;
     /** @hidden */
-    public _attachments: Nullable<number[]>;
+    public _attachments: Nullable<number[]> = null;
     /** @hidden */
-    public _cachedCoordinatesMode: Nullable<number>;
+    public _cachedCoordinatesMode: Nullable<number> = null;
     /** @hidden */
-    public _cachedWrapU: Nullable<number>;
+    public _cachedWrapU: Nullable<number> = null;
     /** @hidden */
-    public _cachedWrapV: Nullable<number>;
+    public _cachedWrapV: Nullable<number> = null;
     /** @hidden */
-    public _cachedWrapR: Nullable<number>;
+    public _cachedWrapR: Nullable<number> = null;
     /** @hidden */
-    public _cachedAnisotropicFilteringLevel: Nullable<number>;
+    public _cachedAnisotropicFilteringLevel: Nullable<number> = null;
     /** @hidden */
-    public _isDisabled: boolean;
+    public _isDisabled: boolean = false;
     /** @hidden */
-    public _compression: Nullable<string>;
+    public _compression: Nullable<string> = null;
     /** @hidden */
-    public _generateStencilBuffer: boolean;
+    public _generateStencilBuffer: boolean = false;
     /** @hidden */
-    public _generateDepthBuffer: boolean;
+    public _generateDepthBuffer: boolean = false;
     /** @hidden */
     public _comparisonFunction: number = 0;
     /** @hidden */
@@ -211,24 +211,24 @@ export class InternalTexture {
 
     // Multiview
     /** @hidden */
-    public _colorTextureArray: Nullable<WebGLTexture>;
+    public _colorTextureArray: Nullable<WebGLTexture> = null;
     /** @hidden */
-    public _depthStencilTextureArray: Nullable<WebGLTexture>;
+    public _depthStencilTextureArray: Nullable<WebGLTexture> = null;
 
     // The following three fields helps sharing generated fixed LODs for texture filtering
     // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
     // They are at the level of the gl texture to benefit from the cache.
     /** @hidden */
-    public _lodTextureHigh: BaseTexture;
+    public _lodTextureHigh: Nullable<BaseTexture> = null;
     /** @hidden */
-    public _lodTextureMid: BaseTexture;
+    public _lodTextureMid: Nullable<BaseTexture> = null;
     /** @hidden */
-    public _lodTextureLow: BaseTexture;
+    public _lodTextureLow: Nullable<BaseTexture> = null;
     /** @hidden */
     public _isRGBD: boolean = false;
 
     /** @hidden */
-    public _webGLTexture: Nullable<WebGLTexture>;
+    public _webGLTexture: Nullable<WebGLTexture> = null;
     /** @hidden */
     public _references: number = 1;
 

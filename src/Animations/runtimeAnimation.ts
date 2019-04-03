@@ -1,4 +1,4 @@
-import { DeepImmutable } from "../types";
+import { DeepImmutable, Nullable } from "../types";
 import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "../Maths/math";
 import { Animation, _IAnimationState } from "./animation";
 import { AnimationEvent } from "./animationEvent";
@@ -59,7 +59,7 @@ export class RuntimeAnimation {
     /**
      * The original blend value of the runtime animation
      */
-    private _originalBlendValue: any;
+    private _originalBlendValue: Nullable<any> = null;
 
     /**
      * The offsets cache of the runtime animation
@@ -89,7 +89,7 @@ export class RuntimeAnimation {
     /**
      * The current value of the runtime animation
      */
-    private _currentValue: any;
+    private _currentValue: Nullable<any> = null;
 
     /** @hidden */
     public _animationState: _IAnimationState;
@@ -98,8 +98,8 @@ export class RuntimeAnimation {
      * The active target of the runtime animation
      */
     private _activeTargets: any[];
-    private _currentActiveTarget: any;
-    private _directTarget: any;
+    private _currentActiveTarget: Nullable<any> = null;
+    private _directTarget: Nullable<any> = null;
 
     /**
      * The target path of the runtime animation

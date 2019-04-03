@@ -20,7 +20,7 @@ export class Animatable {
     private _scene: Scene;
     private _speedRatio = 1;
     private _weight = -1.0;
-    private _syncRoot: Animatable;
+    private _syncRoot: Nullable<Animatable> = null;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
@@ -46,7 +46,7 @@ export class Animatable {
     /**
      * Gets the root Animatable used to synchronize and normalize animations
      */
-    public get syncRoot(): Animatable {
+    public get syncRoot(): Nullable<Animatable> {
         return this._syncRoot;
     }
 

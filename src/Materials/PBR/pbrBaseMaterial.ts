@@ -333,12 +333,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * AKA Diffuse Texture in standard nomenclature.
      */
-    protected _albedoTexture: BaseTexture;
+    protected _albedoTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Occlusion Texture in other nomenclature.
      */
-    protected _ambientTexture: BaseTexture;
+    protected _ambientTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Occlusion Texture Intensity in other nomenclature.
@@ -355,55 +355,55 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Stores the alpha values in a texture.
      */
-    protected _opacityTexture: BaseTexture;
+    protected _opacityTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the reflection values in a texture.
      */
-    protected _reflectionTexture: BaseTexture;
+    protected _reflectionTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the emissive values in a texture.
      */
-    protected _emissiveTexture: BaseTexture;
+    protected _emissiveTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Specular texture in other nomenclature.
      */
-    protected _reflectivityTexture: BaseTexture;
+    protected _reflectivityTexture: Nullable<BaseTexture> = null;
 
     /**
      * Used to switch from specular/glossiness to metallic/roughness workflow.
      */
-    protected _metallicTexture: BaseTexture;
+    protected _metallicTexture: Nullable<BaseTexture> = null;
 
     /**
      * Specifies the metallic scalar of the metallic/roughness workflow.
      * Can also be used to scale the metalness values of the metallic texture.
      */
-    protected _metallic: Nullable<number>;
+    protected _metallic: Nullable<number> = null;
 
     /**
      * Specifies the roughness scalar of the metallic/roughness workflow.
      * Can also be used to scale the roughness values of the metallic texture.
      */
-    protected _roughness: Nullable<number>;
+    protected _roughness: Nullable<number> = null;
 
     /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
      * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
      */
-    protected _microSurfaceTexture: BaseTexture;
+    protected _microSurfaceTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores surface normal data used to displace a mesh in a texture.
      */
-    protected _bumpTexture: BaseTexture;
+    protected _bumpTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the pre-calculated light information of a mesh in a texture.
      */
-    protected _lightmapTexture: BaseTexture;
+    protected _lightmapTexture: Nullable<BaseTexture> = null;
 
     /**
      * The color of a material in ambient lighting.
@@ -616,7 +616,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Keep track of the image processing observer to allow dispose and replace.
      */
-    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
+    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>> = null;
 
     /**
      * Attaches a new image processing configuration to the PBR Material.
@@ -661,7 +661,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Enables the use of logarithmic depth buffers, which is good for wide depth buffers.
      */
-    private _useLogarithmicDepth: boolean;
+    private _useLogarithmicDepth: boolean = false;
 
     /**
      * If set to true, no lighting calculations will be applied.
@@ -874,7 +874,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Gets the texture used for the alpha test.
      */
-    public getAlphaTestTexture(): BaseTexture {
+    public getAlphaTestTexture(): Nullable<BaseTexture> {
         return this._albedoTexture;
     }
 
@@ -1857,7 +1857,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // image processing
-            this._imageProcessingConfiguration.bind(this._activeEffect);
+            this._imageProcessingConfiguration!.bind(this._activeEffect);
 
             // Log. depth
             MaterialHelper.BindLogDepth(defines, this._activeEffect, scene);
