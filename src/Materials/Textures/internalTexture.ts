@@ -97,7 +97,7 @@ export class InternalTexture {
     /**
      * Gets the sampling mode of the texture
      */
-    public samplingMode: number = 0;
+    public samplingMode: number = -1;
     /**
      * Gets a boolean indicating if the texture needs mipmaps generation
      */
@@ -109,11 +109,11 @@ export class InternalTexture {
     /**
      * Gets the type of the texture (int, float...)
      */
-    public type: number = 0;
+    public type: number = -1;
     /**
      * Gets the format of the texture (RGB, RGBA...)
      */
-    public format: number = 0;
+    public format: number = -1;
     /**
      * Observable called when the texture is loaded
      */

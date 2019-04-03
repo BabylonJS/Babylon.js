@@ -3926,7 +3926,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-            if (!mesh.isReady() || !mesh.isEnabled()) {
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.lengthSquared() === 0) {
                 continue;
             }
 
