@@ -27,9 +27,9 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 	float t = sphereCoords.y;
 
  	#ifdef REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED
-		return vec3(1.0 - s, t, 0);
+		return vec3(reflectionMatrix * vec4(1.0 - s, t, 0, 0));
 	#else
-		return vec3(s, t, 0);
+		return vec3(reflectionMatrix * vec4(s, t, 0, 0));
 	#endif
 #endif
 
@@ -43,7 +43,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 	float s = sphereCoords.x * 0.5 + 0.5;
 	float t = sphereCoords.y;
 
-	return vec3(s, t, 0);
+	return vec3(reflectionMatrix * vec4(s, t, 0, 0));
 #endif
 
 #ifdef REFLECTIONMAP_SPHERICAL
@@ -90,7 +90,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 #endif
 
 #ifdef REFLECTIONMAP_SKYBOX
-	return vPositionUVW;
+	return vec3(reflectionMatrix * vec4(vPositionUVW, 0));
 #endif
 
 #ifdef REFLECTIONMAP_EXPLICIT
