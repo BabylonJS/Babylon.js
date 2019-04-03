@@ -4386,7 +4386,7 @@ export class Matrix {
      * It will be incremented every time the matrix data change.
      * You can use it to speed the comparison between two versions of the same matrix.
      */
-    public updateFlag: number;
+    public updateFlag: number = -1;
 
     private readonly _m: Float32Array = new Float32Array(16);
 
