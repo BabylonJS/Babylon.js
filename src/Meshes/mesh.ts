@@ -27,6 +27,7 @@ import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
+import { SceneComponentConstants } from "../sceneComponent";
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -2775,13 +2776,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Physics
         //TODO implement correct serialization for physics impostors.
-
-        let impostor = this.getPhysicsImpostor();
-        if (impostor) {
-            serializationObject.physicsMass = impostor.getParam("mass");
-            serializationObject.physicsFriction = impostor.getParam("friction");
-            serializationObject.physicsRestitution = impostor.getParam("mass");
-            serializationObject.physicsImpostor = impostor.type;
+        if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
+            let impostor = this.getPhysicsImpostor();
+            if (impostor) {
+                serializationObject.physicsMass = impostor.getParam("mass");
+                serializationObject.physicsFriction = impostor.getParam("friction");
+                serializationObject.physicsRestitution = impostor.getParam("mass");
+                serializationObject.physicsImpostor = impostor.type;
+            }
         }
 
         // Metadata
