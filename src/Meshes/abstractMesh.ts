@@ -264,14 +264,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public definedFacingForward = true;
 
     /** @hidden */
-    public _occlusionQuery: Nullable<WebGLQuery>;
+    public _occlusionQuery: Nullable<WebGLQuery> = null;
 
     private _visibility = 1.0;
 
     /** @hidden */
     public _isActive = false;
     /** @hidden */
-    public _renderingGroup: RenderingGroup;
+    public _renderingGroup: Nullable<RenderingGroup> = null;
 
     /**
      * Gets or sets mesh visibility between 0 and 1 (default is 1)
@@ -325,7 +325,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
     public renderingGroupId = 0;
-    private _material: Nullable<Material>;
+    private _material: Nullable<Material> = null;
 
     /** Gets or sets current material */
     public get material(): Nullable<Material> {
@@ -518,7 +518,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public ellipsoidOffset = new Vector3(0, 0, 0);
-    private _collider: Collider;
+    private _collider: Nullable<Collider> = null;
     private _oldPositionForCollisions = new Vector3(0, 0, 0);
     private _diffPositionForCollisions = new Vector3(0, 0, 0);
 
@@ -558,12 +558,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public edgesColor = new Color4(1, 0, 0, 1);
     /** @hidden */
-    public _edgesRenderer: Nullable<IEdgesRenderer>;
+    public _edgesRenderer: Nullable<IEdgesRenderer> = null;
 
     /** @hidden */
-    public _masterMesh: Nullable<AbstractMesh>;
+    public _masterMesh: Nullable<AbstractMesh> = null;
     /** @hidden */
-    public _boundingInfo: Nullable<BoundingInfo>;
+    public _boundingInfo: Nullable<BoundingInfo> = null;
     /** @hidden */
     public _renderId = 0;
 
@@ -589,14 +589,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     // Loading properties
     /** @hidden */
-    public _waitingActions: any;
+    public _waitingActions: Nullable<any> = null;
     /** @hidden */
-    public _waitingFreezeWorldMatrix: Nullable<boolean>;
+    public _waitingFreezeWorldMatrix: Nullable<boolean> = null;
 
     // Skeleton
-    private _skeleton: Nullable<Skeleton>;
+    private _skeleton: Nullable<Skeleton> = null;
     /** @hidden */
-    public _bonesTransformMatrices: Nullable<Float32Array>;
+    public _bonesTransformMatrices: Nullable<Float32Array> = null;
 
     /**
      * Gets or sets a skeleton to apply skining transformations
@@ -1396,7 +1396,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets Collider object used to compute collisions (not physics)
      * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
-    public get collider(): Collider {
+    public get collider(): Nullable<Collider> {
         return this._collider;
     }
 
@@ -1446,7 +1446,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // Transformation
-        if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
+        if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix!.equals(transformMatrix)) {
             subMesh._lastColliderTransformMatrix = transformMatrix.clone();
             subMesh._lastColliderWorldVertices = [];
             subMesh._trianglePlanes = [];

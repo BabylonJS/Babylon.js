@@ -22,9 +22,9 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
  */
 export class BaseSubMesh {
     /** @hidden */
-    public _materialDefines: Nullable<MaterialDefines>;
+    public _materialDefines: Nullable<MaterialDefines> = null;
     /** @hidden */
-    public _materialEffect: Nullable<Effect>;
+    public _materialEffect: Nullable<Effect> = null;
 
     /**
      * Gets associated effect
@@ -55,28 +55,28 @@ export class BaseSubMesh {
  */
 export class SubMesh extends BaseSubMesh implements ICullable {
     /** @hidden */
-    public _linesIndexCount: number;
+    public _linesIndexCount: number = 0;
     private _mesh: AbstractMesh;
     private _renderingMesh: Mesh;
     private _boundingInfo: BoundingInfo;
-    private _linesIndexBuffer: Nullable<WebGLBuffer>;
+    private _linesIndexBuffer: Nullable<WebGLBuffer> = null;
     /** @hidden */
-    public _lastColliderWorldVertices: Nullable<Vector3[]>;
+    public _lastColliderWorldVertices: Nullable<Vector3[]> = null;
     /** @hidden */
     public _trianglePlanes: Plane[];
     /** @hidden */
-    public _lastColliderTransformMatrix: Matrix;
+    public _lastColliderTransformMatrix: Nullable<Matrix> = null;
 
     /** @hidden */
     public _renderId = 0;
     /** @hidden */
-    public _alphaIndex: number;
+    public _alphaIndex: number = 0;
     /** @hidden */
-    public _distanceToCamera: number;
+    public _distanceToCamera: number = 0;
     /** @hidden */
     public _id: number;
 
-    private _currentMaterial: Nullable<Material>;
+    private _currentMaterial: Nullable<Material> = null;
 
     /**
      * Add a new submesh to a mesh

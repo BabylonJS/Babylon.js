@@ -54,7 +54,7 @@ export class BoundingBox implements ICullable {
      */
     public readonly maximum: Vector3 = Vector3.Zero();
 
-    private _worldMatrix: DeepImmutable<Matrix>;
+    private _worldMatrix: DeepImmutable<Matrix>; 
     private static readonly TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
 
     /**
