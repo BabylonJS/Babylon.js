@@ -82,6 +82,9 @@ export class AxisScaleGizmo extends Gizmo {
         var tmpSnapEvent = { snapDistance: 0 };
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedMesh) {
+                // Drag strength is modified by the scale of the gizmo (eg. for small objects like boombox the strength will be increased to match the behavior of larger objects)
+                var dragStrength = event.dragDistance*((this.scaleRatio*3)/this._rootMesh.scaling.length());
+                
                 // Snapping logic
                 var snapped = false;
                 var dragSteps = 0;
@@ -94,9 +97,9 @@ export class AxisScaleGizmo extends Gizmo {
                     tmpVector.copyFrom(dragAxis);
                 }
                 if (this.snapDistance == 0) {
-                    tmpVector.scaleToRef(event.dragDistance, tmpVector);
+                    tmpVector.scaleToRef(dragStrength, tmpVector);
                 } else {
-                    currentSnapDragDistance += event.dragDistance;
+                    currentSnapDragDistance += dragStrength;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
                         dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
                         if (currentSnapDragDistance < 0) {
