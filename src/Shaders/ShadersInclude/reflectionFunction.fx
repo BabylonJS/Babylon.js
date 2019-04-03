@@ -24,7 +24,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 	float lat = acos(direction.y);
 	vec2 sphereCoords = vec2(lon, lat) * RECIPROCAL_PI2 * 2.0;
 	float s = sphereCoords.x * 0.5 + 0.5;
-	float t = sphereCoords.y;	
+	float t = sphereCoords.y;
 
  	#ifdef REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED
 		return vec3(1.0 - s, t, 0);
@@ -41,7 +41,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 	float lat = acos(r.y);
 	vec2 sphereCoords = vec2(lon, lat) * RECIPROCAL_PI2 * 2.0;
 	float s = sphereCoords.x * 0.5 + 0.5;
-	float t = sphereCoords.y;		
+	float t = sphereCoords.y;
 
 	return vec3(s, t, 0);
 #endif
@@ -55,7 +55,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 
 	float m = 2.0 * length(r);
 
-	return vec3(r.x / m + 0.5, 1.0 - r.y / m - 0.5, 0);
+	return vec3(reflectionMatrix * vec4(r.x / m + 0.5, 1.0 - r.y / m - 0.5, 0, 0));
 #endif
 
 #ifdef REFLECTIONMAP_PLANAR
@@ -76,7 +76,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
     #endif
 
     coords = vec3(reflectionMatrix * vec4(coords, 0));
-    
+
     #ifdef INVERTCUBICMAP
         coords.y *= -1.0;
     #endif
