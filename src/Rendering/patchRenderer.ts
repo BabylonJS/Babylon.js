@@ -285,7 +285,7 @@ export class PatchRenderer {
         this._shootEffect.setVector3("shootPos", patch.position);
         this._shootEffect.setVector3("shootNormal", patch.normal);
         this._shootEffect.setVector3("shootEnergy", patch.residualEnergy);
-        this._shootEffect.setFloat("shootDArea", 12 * 12 / 16 / 16); // TODO
+        this._shootEffect.setFloat("shootDArea", 9 * 9 / 16 / 16); // TODO
         this._shootEffect.setMatrix("view", patch.viewMatrix);
 
         engine.setDirectViewport(0, 0, destResidualTexture.width, destResidualTexture.height);
@@ -468,7 +468,7 @@ export class PatchRenderer {
 
             this._nextShooterEffect.setTexture("polygonIdSampler", idTexture);
             this._nextShooterEffect.setTexture("unshotRadiositySampler", unshotTexture);
-            this._nextShooterEffect.setFloat("lod", Math.round(Math.log(mrt.getRenderWidth() / Math.log(2))));
+            this._nextShooterEffect.setFloat("lod", Math.round(Math.log(mrt.getRenderWidth()) / Math.log(2)));
             this._nextShooterEffect.setFloat("area", mrt.getRenderWidth() * mrt.getRenderHeight()); // TODO : REAL POLYGON AREA
 
             engine.setDirectViewport(0, 0, 1, 1);

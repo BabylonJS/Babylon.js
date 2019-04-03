@@ -11,5 +11,5 @@ void main(void) {
 	vec3 smpl = texture(unshotRadiositySampler, vUV, lod).xyz;
 	float invEnergy = 1.0 / ( area * (smpl.x + smpl.y + smpl.z) + 1.);
 	// gl_FragColor = vec4(usr, invEnergy);
-	gl_FragColor = vec4(usr, gl_FragCoord.z);
+	gl_FragColor = vec4(usr, invEnergy);
 }
