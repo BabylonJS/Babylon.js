@@ -35485,7 +35485,9 @@ var AnimationGridComponent = /** @class */ (function (_super) {
             _this._animations = new Array();
             animatables.forEach(function (animatable) {
                 var _a;
-                (_a = _this._animations).push.apply(_a, animatable.animations);
+                if (animatable.animations) {
+                    (_a = _this._animations).push.apply(_a, animatable.animations);
+                }
             });
             // Extract from and to
             if (_this._animations && _this._animations.length) {
