@@ -2037,13 +2037,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    export interface IObserversConfiguration {
-        onEngineInit?: string;
-        onSceneInit?: string;
-        onModelLoaded?: string;
-    }
-}
-declare module BabylonViewer {
     export interface ISceneConfiguration {
             debug?: boolean;
             clearColor?: {

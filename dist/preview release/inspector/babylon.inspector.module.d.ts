@@ -856,25 +856,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cam
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent" {
-    import * as React from "react";
-    import { TransformNode } from "babylonjs/Meshes/transformNode";
-    import { GlobalState } from "babylonjs-inspector/components/globalState";
-    interface IAxisViewerComponentProps {
-        node: TransformNode;
-        globalState: GlobalState;
-    }
-    export class AxesViewerComponent extends React.Component<IAxisViewerComponentProps, {
-        displayAxis: boolean;
-    }> {
-        constructor(props: IAxisViewerComponentProps);
-        shouldComponentUpdate(nextProps: IAxisViewerComponentProps, nextState: {
-            displayAxis: boolean;
-        }): boolean;
-        displayAxes(): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -2898,22 +2879,6 @@ declare module INSPECTOR {
     }
     export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRotateCameraPropertyGridComponentProps> {
         constructor(props: IArcRotateCameraPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IAxisViewerComponentProps {
-        node: BABYLON.TransformNode;
-        globalState: GlobalState;
-    }
-    export class AxesViewerComponent extends React.Component<IAxisViewerComponentProps, {
-        displayAxis: boolean;
-    }> {
-        constructor(props: IAxisViewerComponentProps);
-        shouldComponentUpdate(nextProps: IAxisViewerComponentProps, nextState: {
-            displayAxis: boolean;
-        }): boolean;
-        displayAxes(): void;
         render(): JSX.Element;
     }
 }
