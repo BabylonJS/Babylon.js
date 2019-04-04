@@ -1,7 +1,9 @@
 import { Scene } from "../../scene";
 import { Engine } from "../../Engines/engine";
-import { Texture } from "../../Materials/Textures/texture";
+import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
+import "../../Engines/Extensions/engine.rawTexture";
+
 /**
  * Raw texture can help creating a texture directly from an array of data.
  * This can be super useful if you either get the data from an uncompressed source or
@@ -44,7 +46,7 @@ export class RawTexture extends Texture {
      * @param data Define the new data of the texture
      */
     public update(data: ArrayBufferView): void {
-        this._engine.updateRawTexture(this._texture, data, this._texture!.format, this._texture!.invertY, undefined, this._texture!.type);
+        this._engine.updateRawTexture(this._texture, data, this._texture!.format, this._texture!.invertY, null, this._texture!.type);
     }
 
     /**

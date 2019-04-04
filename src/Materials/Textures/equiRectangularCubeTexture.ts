@@ -5,6 +5,7 @@ import { Texture } from './texture';
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Tools } from '../../Misc/tools';
+import "../../Engines/Extensions/engine.rawTexture";
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.

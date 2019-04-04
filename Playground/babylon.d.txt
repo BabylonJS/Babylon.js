@@ -17878,6 +17878,150 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface Engine {
+            /**
+             * Creates a raw texture
+             * @param data defines the data to store in the texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param format defines the format of the data
+             * @param generateMipMaps defines if the engine should generate the mip levels
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+             * @param compression defines the compression used (null by default)
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             * @returns the raw texture inside an InternalTexture
+             */
+            createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, type: number): InternalTexture;
+            /**
+             * Update a raw texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store in the texture
+             * @param format defines the format of the data
+             * @param invertY defines if data must be stored with Y axis inverted
+             */
+            updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean): void;
+            /**
+             * Update a raw texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store in the texture
+             * @param format defines the format of the data
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param compression defines the compression used (null by default)
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             */
+            updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, type: number): void;
+            /**
+             * Creates a new raw cube texture
+             * @param data defines the array of data to use to create each face
+             * @param size defines the size of the textures
+             * @param format defines the format of the data
+             * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+             * @param generateMipMaps  defines if the engine should generate the mip levels
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+             * @param compression defines the compression used (null by default)
+             * @returns the cube texture as an InternalTexture
+             */
+            createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>): InternalTexture;
+            /**
+             * Update a raw cube texture
+             * @param texture defines the texture to udpdate
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             * @param invertY defines if data must be stored with Y axis inverted
+             */
+            updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean): void;
+            /**
+             * Update a raw cube texture
+             * @param texture defines the texture to udpdate
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param compression defines the compression used (null by default)
+             */
+            updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string>): void;
+            /**
+             * Update a raw cube texture
+             * @param texture defines the texture to udpdate
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param compression defines the compression used (null by default)
+             * @param level defines which level of the texture to update
+             */
+            updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string>, level: number): void;
+            /**
+             * Creates a new raw cube texture from a specified url
+             * @param url defines the url where the data is located
+             * @param scene defines the current scene
+             * @param size defines the size of the textures
+             * @param format defines the format of the data
+             * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+             * @param noMipmap defines if the engine should avoid generating the mip levels
+             * @param callback defines a callback used to extract texture data from loaded data
+             * @param mipmapGenerator defines to provide an optional tool to generate mip levels
+             * @param onLoad defines a callback called when texture is loaded
+             * @param onError defines a callback called if there is an error
+             * @returns the cube texture as an InternalTexture
+             */
+            createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad: Nullable<() => void>, onError: Nullable<(message?: string, exception?: any) => void>): InternalTexture;
+            /**
+             * Creates a new raw cube texture from a specified url
+             * @param url defines the url where the data is located
+             * @param scene defines the current scene
+             * @param size defines the size of the textures
+             * @param format defines the format of the data
+             * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+             * @param noMipmap defines if the engine should avoid generating the mip levels
+             * @param callback defines a callback used to extract texture data from loaded data
+             * @param mipmapGenerator defines to provide an optional tool to generate mip levels
+             * @param onLoad defines a callback called when texture is loaded
+             * @param onError defines a callback called if there is an error
+             * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @returns the cube texture as an InternalTexture
+             */
+            createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad: Nullable<() => void>, onError: Nullable<(message?: string, exception?: any) => void>, samplingMode: number, invertY: boolean): InternalTexture;
+            /**
+             * Creates a new raw 3D texture
+             * @param data defines the data used to create the texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param depth defines the depth of the texture
+             * @param format defines the format of the texture
+             * @param generateMipMaps defines if the engine must generate mip levels
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+             * @param compression defines the compressed used (can be null)
+             * @param textureType defines the compressed used (can be null)
+             * @returns a new raw 3D texture (stored in an InternalTexture)
+             */
+            createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number): InternalTexture;
+            /**
+             * Update a raw 3D texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param invertY defines if data must be stored with Y axis inverted
+             */
+            updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean): void;
+            /**
+             * Update a raw 3D texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param compression defines the used compression (can be null)
+             * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+             */
+            updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, textureType: number): void;
+        }
+}
+declare module BABYLON {
     /**
      * Raw texture can help creating a texture directly from an array of data.
      * This can be super useful if you either get the data from an uncompressed source or
@@ -26857,8 +27001,7 @@ declare module BABYLON {
          */
         onVRRequestPresentStart: Observable<Engine>;
         private _hardwareScalingLevel;
-        /** @hidden */
-        protected _caps: EngineCapabilities;
+        /** @hidden */caps: EngineCapabilities;
         private _pointerLockRequested;
         private _isStencilEnable;
         private _colorWrite;
@@ -26883,7 +27026,7 @@ declare module BABYLON {
         private _onContextLost;
         private _onContextRestored;
         private _contextWasLost;
-        private _doNotHandleContextLost;
+        /** @hidden */doNotHandleContextLost: boolean;
         /**
          * Gets or sets a boolean indicating if resources should be retained to be able to handle context lost events
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#handling-webgl-context-lost
@@ -26913,7 +27056,7 @@ declare module BABYLON {
         protected _alphaState: _AlphaState;
         /** @hidden */
         protected _alphaMode: number;
-        protected _internalTexturesCache: InternalTexture[];
+        /** @hidden */internalTexturesCache: InternalTexture[];
         /** @hidden */
         protected _activeChannel: number;
         private _currentTextureChannel;
@@ -27912,7 +28055,10 @@ declare module BABYLON {
          * @returns The extension selected.
          */
         setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
-        private _getSamplingParameters;
+        /** @hidden */getSamplingParameters(samplingMode: number, generateMipMaps: boolean): {
+            min: number;
+            mag: number;
+        };
         private _partialLoadImg;
         private _cascadeLoadImgs;
         /** @hidden */createTexture(): WebGLTexture;
@@ -27938,30 +28084,6 @@ declare module BABYLON {
          */
         createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
         private _rescaleTexture;
-        /**
-         * Update a raw texture
-         * @param texture defines the texture to update
-         * @param data defines the data to store in the texture
-         * @param format defines the format of the data
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         */
-        updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
-        /**
-         * Creates a raw texture
-         * @param data defines the data to store in the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param format defines the format of the data
-         * @param generateMipMaps defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-         * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         * @returns the raw texture inside an InternalTexture
-         */
-        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
         private _unpackFlipYCached;
         /**
          * In case you are sharing the context with other applications, it might
@@ -28111,75 +28233,9 @@ declare module BABYLON {
         /**
          * @hidden
          */setCubeMapTextureParams(loadMipmap: boolean): void;
-        /**
-         * Update a raw cube texture
-         * @param texture defines the texture to udpdate
-         * @param data defines the data to store
-         * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the compression used (null by default)
-         * @param level defines which level of the texture to update
-         */
-        updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression?: Nullable<string>, level?: number): void;
-        /**
-         * Creates a new raw cube texture
-         * @param data defines the array of data to use to create each face
-         * @param size defines the size of the textures
-         * @param format defines the format of the data
-         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-         * @param generateMipMaps  defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compression used (null by default)
-         * @returns the cube texture as an InternalTexture
-         */
-        createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>): InternalTexture;
-        /**
-         * Creates a new raw cube texture from a specified url
-         * @param url defines the url where the data is located
-         * @param scene defines the current scene
-         * @param size defines the size of the textures
-         * @param format defines the format of the data
-         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-         * @param noMipmap defines if the engine should avoid generating the mip levels
-         * @param callback defines a callback used to extract texture data from loaded data
-         * @param mipmapGenerator defines to provide an optional tool to generate mip levels
-         * @param onLoad defines a callback called when texture is loaded
-         * @param onError defines a callback called if there is an error
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @returns the cube texture as an InternalTexture
-         */
-        createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, samplingMode?: number, invertY?: boolean): InternalTexture;
-        /**
-         * Update a raw 3D texture
-         * @param texture defines the texture to update
-         * @param data defines the data to store
-         * @param format defines the data format
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, textureType?: number): void;
-        /**
-         * Creates a new raw 3D texture
-         * @param data defines the data used to create the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the depth of the texture
-         * @param format defines the format of the texture
-         * @param generateMipMaps defines if the engine must generate mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compressed used (can be null)
-         * @param textureType defines the compressed used (can be null)
-         * @returns a new raw 3D texture (stored in an InternalTexture)
-         */
-        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number): InternalTexture;
         private _prepareWebGLTextureContinuation;
         private _prepareWebGLTexture;
-        private _convertRGBtoRGBATextureData;
+        /** @hidden */convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView;
         /** @hidden */releaseFramebufferObjects(texture: InternalTexture): void;
         /** @hidden */releaseTexture(texture: InternalTexture): void;
         private setProgram;
@@ -28357,7 +28413,7 @@ declare module BABYLON {
         private _canRenderToHalfFloatFramebuffer;
         private _canRenderToFramebuffer;
         /** @hidden */getWebGLTextureType(type: number): number;
-        private _getInternalFormat;
+        /** @hidden */getInternalFormat(format: number): number;
         /** @hidden */getRGBABufferInternalSizedFormat(type: number, format?: number): number;
         /** @hidden */getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
@@ -39824,7 +39880,6 @@ declare module BABYLON {
          * Ratio for the scale of the gizmo (Default: 1)
          */
         scaleRatio: number;
-        private _tmpMatrix;
         /**
          * If a custom mesh has been set (Default: false)
          */
@@ -39854,6 +39909,7 @@ declare module BABYLON {
         protected _interactionsEnabled: boolean;
         protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
         private _beforeRenderObserver;
+        private _tempVector;
         /**
          * Creates a gizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -39861,9 +39917,7 @@ declare module BABYLON {
         constructor(
         /** The utility layer the gizmo will be added to */
         gizmoLayer?: UtilityLayerRenderer);
-        private _tempVector;
         /**
-         * @hidden
          * Updates the gizmo to match the attached mesh's position/rotation
          */
         protected _update(): void;
