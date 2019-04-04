@@ -171,6 +171,9 @@ function runTest(index, done) {
         done(false);
     }
 
+    // Clear the plugin activated observables in case it is registered in the test.
+    BABYLON.SceneLoader.OnPluginActivatedObservable.clear();
+
     var test = config.tests[index];
     var container = document.createElement("div");
     container.id = "container#" + index;
