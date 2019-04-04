@@ -12,6 +12,8 @@ import { Constants } from "../Engines/constants";
 import { Vector3 } from "../Maths/math"
 import { Color4 } from "../Maths/math"
 import { Matrix } from "../Maths/math"
+import { Camera } from "../Cameras/camera"
+
 import { Nullable } from "../types";
 // import { Tools } from "../misc/tools"
 import "../Shaders/depth.fragment";
@@ -275,10 +277,8 @@ export class PatchRenderer {
         }
 
         var mesh = subMesh.getRenderingMesh();
-        var area = this._texelSize * this._texelSize * Math.PI / 8;
+        var area = this._texelSize * this._texelSize * Math.PI / 8; // TODO : check why /4 diverges
         var mrt: MultiRenderTarget = (<any>mesh).residualTexture;
-        // var residualEnergyTexture = mrt.textures[3]._texture as InternalTexture;
-        // var gatheringTexture = mrt.textures[4]._texture as InternalTexture;
         var destResidualTexture = mrt.textures[5]._texture as InternalTexture;
         var destGatheringTexture = mrt.textures[6]._texture as InternalTexture;
         var engine = this._scene.getEngine();
@@ -421,7 +421,9 @@ export class PatchRenderer {
                 this.renderToRadiosityTexture(this._patchedSubMeshes[j], shooter.radiosityPatches[i]);
             }
         }
-
+        var engine = this._scene.getEngine();
+        engine.restoreDefaultFramebuffer();
+        engine.setViewport((<Camera>this._scene.activeCamera).viewport);
         this._isCurrentlyGathering = false;
         return true;
     }

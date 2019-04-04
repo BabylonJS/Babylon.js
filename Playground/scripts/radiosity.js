@@ -1,5 +1,5 @@
 ﻿var meshes = [];
-var texelSize = 0.25;
+var texelSize = 0.75;
 
 var prepareForBaking = function(mesh) {
     var scaling = mesh.scaling || new BABYLON.Vector3(1, 1, 1);
@@ -8,8 +8,8 @@ var prepareForBaking = function(mesh) {
     var uvs = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
     var indices = mesh.getIndices();
 
-    var { uv2s, textureSize } = BABYLON.Tools.WorldUniformUvScaling(positions, uvs, indices, scaling, texelSize);
-    mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, mesh.getVerticesData(BABYLON.VertexBuffer.UVKind));
+    var { uvs, textureSize } = BABYLON.Tools.WorldUniformUvScaling(positions, uvs, indices, scaling, texelSize);
+    mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, uvs);
     meshes.push(mesh);
     mesh.__lightmapSize = textureSize;
 

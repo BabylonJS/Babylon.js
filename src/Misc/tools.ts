@@ -611,13 +611,13 @@ export class Tools {
 
         let lowestUv = new Vector2(+Infinity, +Infinity); // find lowest uv and scale down from there
         let highestUv = new Vector2(-Infinity, -Infinity); // find lowest uv and scale down from there
-        let lowestUvVertexIndex = -1;
+        // let lowestUvVertexIndex = -1;
 
         for (let i = 0; i < uvs.length; i+= 2) {
             uv0.copyFromFloats(uvs[i], uvs[i + 1]);
-            if (uv0.x < lowestUv.x && uv0.y < lowestUv.y) {
-                lowestUvVertexIndex = i / 2;
-            }
+            // if (uv0.x < lowestUv.x && uv0.y < lowestUv.y) {
+            //     lowestUvVertexIndex = i / 2;
+            // }
 
             lowestUv.copyFromFloats(Math.min(uv0.x, lowestUv.x), Math.min(uv0.y, lowestUv.y));
             highestUv.copyFromFloats(Math.max(uv0.x, highestUv.x), Math.max(uv0.y, highestUv.y));
@@ -646,11 +646,12 @@ export class Tools {
         let textureWidth = Tools.NearestPOT(width / worldToTexelRatio);
         let textureHeight =Tools.NearestPOT(height / worldToTexelRatio);
 
-        // scale if needed
-        // for (let i = 0; i < uvs.length; i+= 2) {
-        //     uv0.copyFromFloats(uvs[i], uvs[i + 1]);
-        //     newUvs.push(uv0.subtractInPlace(lowestUv).scaleInPlace(localToTexelRatio / worldToTexelRatio));
-        // }
+        // scale to use full extent of texture
+        for (let i = 0; i < uvs.length; i+= 2) {
+            uv0.copyFromFloats(uvs[i], uvs[i + 1]);
+            uv0.subtractInPlace(lowestUv);
+            newUvs.push(uv0.x / uvExpand.x, uv0.y / uvExpand.y);
+        }
 
         // legacy
         // for (let faceIndex = 0; faceIndex < indices.length / 3; faceIndex++) {
@@ -669,10 +670,11 @@ export class Tools {
         // }
 
         return {
-            uvs : uvs, 
+            uvs : newUvs, 
             textureSize : {
             width: textureWidth,
             height: textureHeight
+            }
         };
     }
 
