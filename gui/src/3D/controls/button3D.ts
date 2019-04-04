@@ -22,6 +22,7 @@ export class Button3D extends AbstractButton3D {
     private _content: Control;
     private _contentResolution = 512;
     private _contentScaleRatio = 2;
+    private _pressed = false;
 
     /**
      * Gets or sets the texture resolution used to render content (512 by default)
@@ -91,8 +92,10 @@ export class Button3D extends AbstractButton3D {
             if (!this.mesh) {
                 return;
             }
-
-            this.mesh.scaling.scaleInPlace(0.95);
+            if (!this._pressed) {
+                this.mesh.scaling.scaleInPlace(0.95);
+                this._pressed = true;
+            }
         };
 
         this.pointerUpAnimation = () => {
@@ -100,7 +103,10 @@ export class Button3D extends AbstractButton3D {
                 return;
             }
 
-            this.mesh.scaling.scaleInPlace(1.0 / 0.95);
+            if (this._pressed) {
+                this.mesh.scaling.scaleInPlace(1.0 / 0.95);
+                this._pressed = false;
+            }
         };
     }
 
