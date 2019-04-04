@@ -27,9 +27,9 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 	float t = sphereCoords.y;
 
  	#ifdef REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED
-		return vec3(reflectionMatrix * vec4(1.0 - s, t, 0, 0));
+		return vec3(1.0 - s, t, 0);
 	#else
-		return vec3(reflectionMatrix * vec4(s, t, 0, 0));
+		return vec3(s, t, 0);
 	#endif
 #endif
 
@@ -37,13 +37,14 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 
 	vec3 cameraToVertex = normalize(worldPos.xyz - vEyePosition.xyz);
 	vec3 r = normalize(reflect(cameraToVertex, worldNormal));
+	r = vec3(reflectionMatrix * vec4(r, 0));
 	float lon = atan(r.z, r.x);
 	float lat = acos(r.y);
 	vec2 sphereCoords = vec2(lon, lat) * RECIPROCAL_PI2 * 2.0;
 	float s = sphereCoords.x * 0.5 + 0.5;
 	float t = sphereCoords.y;
 
-	return vec3(reflectionMatrix * vec4(s, t, 0, 0));
+	return vec3(s, t, 0);
 #endif
 
 #ifdef REFLECTIONMAP_SPHERICAL
@@ -51,11 +52,12 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 	vec3 viewNormal = normalize(vec3(view * vec4(worldNormal, 0.0)));
 
 	vec3 r = reflect(viewDir, viewNormal);
+	r = vec3(reflectionMatrix * vec4(r, 0));
 	r.z = r.z - 1.0;
 
 	float m = 2.0 * length(r);
 
-	return vec3(reflectionMatrix * vec4(r.x / m + 0.5, 1.0 - r.y / m - 0.5, 0, 0));
+	return vec3(r.x / m + 0.5, 1.0 - r.y / m - 0.5, 0);
 #endif
 
 #ifdef REFLECTIONMAP_PLANAR
