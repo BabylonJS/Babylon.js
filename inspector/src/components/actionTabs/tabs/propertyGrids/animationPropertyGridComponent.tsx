@@ -52,7 +52,9 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             this._animations = new Array<Animation>();
 
             animatables.forEach((animatable: IAnimatable) => {
-                this._animations!.push(...animatable.animations);
+                if (animatable.animations) {
+                    this._animations!.push(...animatable.animations);
+                }
             });
 
             // Extract from and to

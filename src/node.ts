@@ -118,7 +118,7 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * Callback raised when the node is ready to be used
      */
-    public onReady: (node: Node) => void;
+    public onReady: Nullable<(node: Node) => void> = null;
 
     private _isEnabled = true;
     private _isParentEnabled = true;
@@ -130,14 +130,14 @@ export class Node implements IBehaviorAware<Node> {
     public _childUpdateId = -1;
 
     /** @hidden */
-    public _waitingParentId: Nullable<string>;
+    public _waitingParentId: Nullable<string> = null;
     /** @hidden */
     public _scene: Scene;
     /** @hidden */
-    public _cache: any;
+    public _cache: any = {};
 
-    private _parentNode: Nullable<Node>;
-    private _children: Node[];
+    private _parentNode: Nullable<Node> = null;
+    private _children: Nullable<Node[]> = null;
 
     /** @hidden */
     public _worldMatrix = Matrix.Identity();
@@ -253,7 +253,7 @@ export class Node implements IBehaviorAware<Node> {
     */
     public onDisposeObservable = new Observable<Node>();
 
-    private _onDisposeObserver: Nullable<Observer<Node>>;
+    private _onDisposeObserver: Nullable<Observer<Node>> = null;
     /**
      * Sets a callback that will be raised when the node will be disposed
      */

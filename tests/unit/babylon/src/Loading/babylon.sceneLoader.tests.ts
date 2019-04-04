@@ -269,9 +269,9 @@ describe('Babylon Scene Loader', function() {
                 expect(animationGroup.targetedAnimations, "animationGroup.targetedAnimations").to.have.lengthOf(7);
                 const influenceAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "influence");
                 expect(influenceAnimations, "influenceAnimations").to.have.lengthOf(2);
-                const rotationAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "_rotationQuaternion");
+                const rotationAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "rotationQuaternion");
                 expect(rotationAnimations, "rotationAnimations").to.have.lengthOf(4);
-                const positionAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "_position");
+                const positionAnimations = animationGroup.targetedAnimations.filter((_) => _.animation.targetProperty === "position");
                 expect(positionAnimations, "positionAnimations").to.have.lengthOf(1);
             });
         });
@@ -539,12 +539,12 @@ describe('Babylon Scene Loader', function() {
             `;
 
             var scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, () => { }, ".obj").then(container => {
                 expect(container.meshes.length).to.eq(1);
                 let tetrahedron = container.meshes[0];
 
-                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-                var colors : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                var positions: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var colors: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
 
                 expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
                 assert.isNull(colors, 'expecting colors vertex buffer to be null')
@@ -569,11 +569,11 @@ describe('Babylon Scene Loader', function() {
             `;
 
             var scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, () => { }, ".obj").then(container => {
                 expect(container.meshes.length).to.eq(1);
                 let tetrahedron = container.meshes[0];
 
-                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var positions: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
                 expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
             })

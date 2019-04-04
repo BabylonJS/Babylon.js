@@ -484,7 +484,7 @@ declare module BABYLON {
          */
         static FromHexString(hex: string): Color3;
         /**
-         * Creates a new Vector3 from the starting index of the given array
+         * Creates a new Color3 from the starting index of the given array
          * @param array defines the source array
          * @param offset defines an offset in the source array
          * @returns a new Color3 object
@@ -6289,8 +6289,8 @@ declare module BABYLON {
         /** @hidden */size: number;
         /** @hidden */extension: string;
         /** @hidden */files: Nullable<string[]>;
-        /** @hidden */workingCanvas: HTMLCanvasElement;
-        /** @hidden */workingContext: CanvasRenderingContext2D;
+        /** @hidden */workingCanvas: Nullable<HTMLCanvasElement>;
+        /** @hidden */workingContext: Nullable<CanvasRenderingContext2D>;
         /** @hidden */framebuffer: Nullable<WebGLFramebuffer>;
         /** @hidden */depthStencilBuffer: Nullable<WebGLRenderbuffer>;
         /** @hidden */MSAAFramebuffer: Nullable<WebGLFramebuffer>;
@@ -6311,9 +6311,9 @@ declare module BABYLON {
         /** @hidden */lodGenerationOffset: number;
         /** @hidden */colorTextureArray: Nullable<WebGLTexture>;
         /** @hidden */depthStencilTextureArray: Nullable<WebGLTexture>;
-        /** @hidden */lodTextureHigh: BaseTexture;
-        /** @hidden */lodTextureMid: BaseTexture;
-        /** @hidden */lodTextureLow: BaseTexture;
+        /** @hidden */lodTextureHigh: Nullable<BaseTexture>;
+        /** @hidden */lodTextureMid: Nullable<BaseTexture>;
+        /** @hidden */lodTextureLow: Nullable<BaseTexture>;
         /** @hidden */isRGBD: boolean;
         /** @hidden */webGLTexture: Nullable<WebGLTexture>;
         /** @hidden */references: number;
@@ -7442,7 +7442,7 @@ declare module BABYLON {
          * Gets or sets a boolean indicating that even if rotationQuaternion is defined, you can keep updating rotation property and Babylon.js will just mix both
          */
         reIntegrateRotationIntoRotationQuaternion: boolean;
-        /** @hidden */poseMatrix: Matrix;
+        /** @hidden */poseMatrix: Nullable<Matrix>;
         /** @hidden */localMatrix: Matrix;
         private _usePivotMatrix;
         private _absolutePosition;
@@ -17736,7 +17736,7 @@ declare module BABYLON {
          * List of inspectable custom properties (used by the Inspector)
          * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
          */
-        inspectableCustomProperties: IInspectable[];
+        inspectableCustomProperties: Nullable<IInspectable[]>;
         private _noMipmap;
         /** @hidden */invertY: boolean;
         private _rowGenerationMatrix;
@@ -18207,7 +18207,7 @@ declare module BABYLON {
         /**
          * Gets the root Animatable used to synchronize and normalize animations
          */
-        readonly syncRoot: Animatable;
+        readonly syncRoot: Nullable<Animatable>;
         /**
          * Gets the current frame of the first RuntimeAnimation
          * Used to synchronize Animatables
@@ -21337,15 +21337,15 @@ declare module BABYLON {
         /**
          * Callback triggered when the material is compiled
          */
-        onCompiled: (effect: Effect) => void;
+        onCompiled: Nullable<(effect: Effect) => void>;
         /**
          * Callback triggered when an error occurs
          */
-        onError: (effect: Effect, errors: string) => void;
+        onError: Nullable<(effect: Effect, errors: string) => void>;
         /**
          * Callback triggered to get the render target textures
          */
-        getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+        getRenderTargetTextures: Nullable<() => SmartArray<RenderTargetTexture>>;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
@@ -21360,7 +21360,7 @@ declare module BABYLON {
         /**
          * Stores the animations for the material
          */
-        animations: Array<Animation>;
+        animations: Nullable<Array<Animation>>;
         /**
         * An event triggered when the material is disposed
         */
@@ -21797,7 +21797,7 @@ declare module BABYLON {
         private _linesIndexBuffer;
         /** @hidden */lastColliderWorldVertices: Nullable<Vector3[]>;
         /** @hidden */trianglePlanes: Plane[];
-        /** @hidden */lastColliderTransformMatrix: Matrix;
+        /** @hidden */lastColliderTransformMatrix: Nullable<Matrix>;
         /** @hidden */renderId: number;
         /** @hidden */alphaIndex: number;
         /** @hidden */distanceToCamera: number;
@@ -23560,7 +23560,7 @@ declare module BABYLON {
         /** @hidden */occlusionQuery: Nullable<WebGLQuery>;
         private _visibility;
         /** @hidden */isActive: boolean;
-        /** @hidden */renderingGroup: RenderingGroup;
+        /** @hidden */renderingGroup: Nullable<RenderingGroup>;
         /**
          * Gets or sets mesh visibility between 0 and 1 (default is 1)
          */
@@ -23703,7 +23703,7 @@ declare module BABYLON {
         /** @hidden */unIndexed: boolean;
         /** @hidden */lightSources: Light[];
         /** @hidden */protected readonly _positions: Nullable<Vector3[]>;
-        /** @hidden */waitingActions: any;
+        /** @hidden */waitingActions: Nullable<any>;
         /** @hidden */waitingFreezeWorldMatrix: Nullable<boolean>;
         private _skeleton;
         /** @hidden */bonesTransformMatrices: Nullable<Float32Array>;
@@ -23962,7 +23962,7 @@ declare module BABYLON {
          * Gets Collider object used to compute collisions (not physics)
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
          */
-        readonly collider: Collider;
+        readonly collider: Nullable<Collider>;
         /**
          * Move the mesh using collision engine
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
@@ -24399,7 +24399,7 @@ declare module BABYLON {
         /**
          * Callback raised when the node is ready to be used
          */
-        onReady: (node: Node) => void;
+        onReady: Nullable<(node: Node) => void>;
         private _isEnabled;
         private _isParentEnabled;
         private _isReady;
@@ -27614,7 +27614,7 @@ declare module BABYLON {
          * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
          * @returns the new Effect
          */
-        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect;
+        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
         private _compileShader;
         private _compileRawShader;
         /**
@@ -30050,7 +30050,7 @@ declare module BABYLON {
         /**
          * Array of animations
          */
-        animations: Array<Animation>;
+        animations: Nullable<Array<Animation>>;
     }
     /** Interface used by value gradients (color, factor, ...) */
     export interface IValueGradient {
@@ -36579,9 +36579,9 @@ declare module BABYLON {
          */
         constructor(name: string, position: Vector3, scene: Scene);
         /**
+         * @hidden
          * Disabled pointer input on first orientation sensor update (Default: true)
-         */
-        disablePointerInputWhenUsingDeviceOrientation: boolean;
+         */disablePointerInputWhenUsingDeviceOrientation: boolean;
         private _dragFactor;
         /**
          * Enabled turning on the y axis when the orientation sensor is active
@@ -44085,11 +44085,11 @@ declare module BABYLON {
         /**
          * AKA Diffuse Texture in standard nomenclature.
          */
-        protected _albedoTexture: BaseTexture;
+        protected _albedoTexture: Nullable<BaseTexture>;
         /**
          * AKA Occlusion Texture in other nomenclature.
          */
-        protected _ambientTexture: BaseTexture;
+        protected _ambientTexture: Nullable<BaseTexture>;
         /**
          * AKA Occlusion Texture Intensity in other nomenclature.
          */
@@ -44103,23 +44103,23 @@ declare module BABYLON {
         /**
          * Stores the alpha values in a texture.
          */
-        protected _opacityTexture: BaseTexture;
+        protected _opacityTexture: Nullable<BaseTexture>;
         /**
          * Stores the reflection values in a texture.
          */
-        protected _reflectionTexture: BaseTexture;
+        protected _reflectionTexture: Nullable<BaseTexture>;
         /**
          * Stores the emissive values in a texture.
          */
-        protected _emissiveTexture: BaseTexture;
+        protected _emissiveTexture: Nullable<BaseTexture>;
         /**
          * AKA Specular texture in other nomenclature.
          */
-        protected _reflectivityTexture: BaseTexture;
+        protected _reflectivityTexture: Nullable<BaseTexture>;
         /**
          * Used to switch from specular/glossiness to metallic/roughness workflow.
          */
-        protected _metallicTexture: BaseTexture;
+        protected _metallicTexture: Nullable<BaseTexture>;
         /**
          * Specifies the metallic scalar of the metallic/roughness workflow.
          * Can also be used to scale the metalness values of the metallic texture.
@@ -44134,15 +44134,15 @@ declare module BABYLON {
          * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
          */
-        protected _microSurfaceTexture: BaseTexture;
+        protected _microSurfaceTexture: Nullable<BaseTexture>;
         /**
          * Stores surface normal data used to displace a mesh in a texture.
          */
-        protected _bumpTexture: BaseTexture;
+        protected _bumpTexture: Nullable<BaseTexture>;
         /**
          * Stores the pre-calculated light information of a mesh in a texture.
          */
-        protected _lightmapTexture: BaseTexture;
+        protected _lightmapTexture: Nullable<BaseTexture>;
         /**
          * The color of a material in ambient lighting.
          */
@@ -44445,7 +44445,7 @@ declare module BABYLON {
         /**
          * Gets the texture used for the alpha test.
          */
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         /**
          * Specifies that the submesh is ready to be used.
          * @param mesh - BJS mesh.
