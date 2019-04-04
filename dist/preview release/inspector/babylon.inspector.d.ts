@@ -697,22 +697,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface IAxisViewerComponentProps {
-        node: BABYLON.TransformNode;
-        globalState: GlobalState;
-    }
-    export class AxesViewerComponent extends React.Component<IAxisViewerComponentProps, {
-        displayAxis: boolean;
-    }> {
-        constructor(props: IAxisViewerComponentProps);
-        shouldComponentUpdate(nextProps: IAxisViewerComponentProps, nextState: {
-            displayAxis: boolean;
-        }): boolean;
-        displayAxes(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
     interface IMeshPropertyGridComponentProps {
         globalState: GlobalState;
         mesh: BABYLON.Mesh;

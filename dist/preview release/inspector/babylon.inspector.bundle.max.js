@@ -37885,85 +37885,6 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent.tsx":
-/*!*********************************************************************************!*\
-  !*** ./components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent.tsx ***!
-  \*********************************************************************************/
-/*! exports provided: AxesViewerComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AxesViewerComponent", function() { return AxesViewerComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
-
-
-
-
-
-
-var AxesViewerComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AxesViewerComponent, _super);
-    function AxesViewerComponent(props) {
-        var _this = _super.call(this, props) || this;
-        var node = _this.props.node;
-        if (!node.reservedDataStore) {
-            node.reservedDataStore = {};
-        }
-        _this.state = { displayAxis: (node.reservedDataStore && node.reservedDataStore.axisViewer) ? true : false };
-        return _this;
-    }
-    AxesViewerComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (nextProps.node !== this.props.node) {
-            nextState.displayAxis = (nextProps.node.reservedDataStore && nextProps.node.reservedDataStore.axisViewer) ? true : false;
-        }
-        return true;
-    };
-    AxesViewerComponent.prototype.displayAxes = function () {
-        var node = this.props.node;
-        var scene = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultUtilityLayer.utilityLayerScene;
-        if (node.reservedDataStore.axisViewer) {
-            node.reservedDataStore.axisViewer.dispose();
-            node.reservedDataStore.axisViewer = null;
-            scene.onBeforeRenderObservable.remove(node.reservedDataStore.onBeforeRenderObserver);
-            node.reservedDataStore.onBeforeRenderObserver = null;
-            this.setState({ displayAxis: false });
-            return;
-        }
-        var viewer = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["AxesViewer"](scene);
-        node.reservedDataStore.axisViewer = viewer;
-        var x = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, 0, 0);
-        var y = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 1, 0);
-        var z = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 0, 1);
-        viewer.xAxis.reservedDataStore = { hidden: true };
-        viewer.yAxis.reservedDataStore = { hidden: true };
-        viewer.zAxis.reservedDataStore = { hidden: true };
-        node.reservedDataStore.onBeforeRenderObserver = scene.onBeforeRenderObservable.add(function () {
-            var cameraMatrix = scene.activeCamera.getWorldMatrix();
-            var matrix = node.getWorldMatrix();
-            var extend = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Tmp"].Vector3[0];
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformCoordinatesFromFloatsToRef(0, 0, 1, cameraMatrix, extend);
-            viewer.scaleLines = extend.length() / 10;
-            viewer.update(node.getAbsolutePosition(), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformNormal(x, matrix), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformNormal(y, matrix), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformNormal(z, matrix));
-        });
-        this.setState({ displayAxis: true });
-    };
-    AxesViewerComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Display axes", isSelected: function () { return _this.state.displayAxis; }, onSelect: function () { return _this.displayAxes(); } }));
-    };
-    return AxesViewerComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
 /***/ "./components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx":
 /*!***************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx ***!
@@ -38034,10 +37955,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/quaternionLineComponent */ "./components/actionTabs/lines/quaternionLineComponent.tsx");
-/* harmony import */ var _axesViewerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./axesViewerComponent */ "./components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent.tsx");
-/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
-/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
-
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 
 
 
@@ -38195,7 +38114,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
         var renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: mesh, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: mesh, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "ID", value: mesh.id }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: mesh.uniqueId.toString() }),
@@ -38217,7 +38136,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Scaling", target: mesh, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "DISPLAY", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Visibility", target: mesh, propertyName: "visibility", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Alpha index", target: mesh, propertyName: "alphaIndex", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Alpha index", target: mesh, propertyName: "alphaIndex", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Receive shadows", target: mesh, propertyName: "receiveShadows", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].ColorKind) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use vertex colors", target: mesh, propertyName: "useVertexColors", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -38240,16 +38159,15 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "has matrix indices", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].MatricesIndicesKind) ? "Yes" : "No" })),
             mesh.physicsImpostor != null &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "PHYSICS", closed: true },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Mass", target: mesh.physicsImpostor, propertyName: "mass", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Friction", target: mesh.physicsImpostor, propertyName: "friction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Restitution", target: mesh.physicsImpostor, propertyName: "restitution", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Mass", target: mesh.physicsImpostor, propertyName: "mass", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Friction", target: mesh.physicsImpostor, propertyName: "friction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Restitution", target: mesh.physicsImpostor, propertyName: "restitution", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: this.convertPhysicsTypeToString() })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEBUG", closed: true },
                 mesh.material &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display normals", isSelected: function () { return displayNormals; }, onSelect: function () { return _this.displayNormals(); } }),
                 mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render vertex normals", isSelected: function () { return renderNormalVectors; }, onSelect: function () { return _this.renderNormalVectors(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_axesViewerComponent__WEBPACK_IMPORTED_MODULE_9__["AxesViewerComponent"], { globalState: this.props.globalState, node: mesh }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render wireframe over mesh", isSelected: function () { return renderWireframeOver; }, onSelect: function () { return _this.renderWireframeOver(); } }))));
     };
     return MeshPropertyGridComponent;
@@ -38390,9 +38308,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/quaternionLineComponent */ "./components/actionTabs/lines/quaternionLineComponent.tsx");
-/* harmony import */ var _axesViewerComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./axesViewerComponent */ "./components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent.tsx");
-/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
-
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 
 
 
@@ -38409,7 +38325,7 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
     TransformNodePropertyGridComponent.prototype.render = function () {
         var transformNode = this.props.transformNode;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: transformNode, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: transformNode, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "ID", value: transformNode.id }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Unique ID", value: transformNode.uniqueId.toString() }),
@@ -38421,9 +38337,7 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Rotation", target: transformNode, propertyName: "rotation", step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 transformNode.rotationQuaternion &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_6__["QuaternionLineComponent"], { label: "Rotation", target: transformNode, propertyName: "rotationQuaternion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: transformNode, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEBUG", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_axesViewerComponent__WEBPACK_IMPORTED_MODULE_7__["AxesViewerComponent"], { globalState: this.props.globalState, node: transformNode }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: transformNode, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return TransformNodePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
