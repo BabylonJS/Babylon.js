@@ -643,8 +643,8 @@ export class Tools {
         let width = averageWorldToUvRatio * uvExpand.x;
         let height = averageWorldToUvRatio * uvExpand.y;
 
-        let textureWidth = Tools.NearestPOT(width / worldToTexelRatio);
-        let textureHeight =Tools.NearestPOT(height / worldToTexelRatio);
+        let textureWidth = Math.max(1, Tools.NearestPOT(width / worldToTexelRatio));
+        let textureHeight = Math.max(1, Tools.NearestPOT(height / worldToTexelRatio));
 
         // scale to use full extent of texture
         for (let i = 0; i < uvs.length; i+= 2) {

@@ -27,7 +27,7 @@ vec3 id;          // ID of receiver
 vec3 worldPos;    // world pos of receiving element
 vec3 worldNormal; // world normal of receiving element
 
-vec3 visible()
+float visible()
 {
   vec3 proj = normalize((view * vec4(worldPos, 1.0))).xyz;
 
@@ -36,11 +36,11 @@ vec3 visible()
   // proj.x += 0.5 / 4096.0;
   // proj.y += 0.5 / 4096.0;
   // Look up projected point in hemisphere item buffer
-  vec3 xtex = texture(itemBuffer, proj.xy, 5.).xyz;
+  vec3 xtex = texture(itemBuffer, proj.xy).xyz;
 
   // Compare the value in item buffer to the ID of the fragment
   // return vec3(xtex.x == id.x && xtex.y == id.y && xtex.z == id.z);
-  return vec3(xtex == id, 0., 0.);
+  return float(xtex == id);
   //return xtex;
 }
 

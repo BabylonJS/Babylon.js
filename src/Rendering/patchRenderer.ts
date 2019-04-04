@@ -1,3 +1,4 @@
+import { Mesh } from "../Meshes/mesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SmartArray } from "../Misc/smartArray";
@@ -75,6 +76,7 @@ declare module "../meshes/submesh" {
 
 export class PatchRenderer {
     private _scene: Scene;
+    private _meshes: Mesh[];
     private _patchMap: RenderTargetTexture;
     private _uV2Effect: Effect;
     private _radiosityEffect: Effect;
@@ -123,11 +125,12 @@ export class PatchRenderer {
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      */
-    constructor(scene: Scene, texelSize : number) {
+    constructor(scene: Scene, meshes: Mesh[], texelSize : number) {
         this._scene = scene;
         this._near = 0.1;
         this._far = 1000;
         this._texelSize = texelSize;
+        this._meshes = meshes;
 
         // PatchRenderer._SceneComponentInitialization(this._scene);
         Patch.projectionMatrix = Matrix.PerspectiveFovLH(Patch.fov,
@@ -156,7 +159,7 @@ export class PatchRenderer {
         }
 
         // Culling and reverse (right handed system)
-        engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
+        engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
         engine.setDirectViewport(0, 0, this.getCurrentRenderWidth(), this.getCurrentRenderHeight())
         // Managing instances
         var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -200,7 +203,7 @@ export class PatchRenderer {
 
     public createMaps() {
         this._nextShooterTexture = new RenderTargetTexture("nextShooter", 1, this._scene, false, true, Constants.TEXTURETYPE_FLOAT);
-        var meshes = this._scene.meshes;
+        var meshes = this._meshes;
 
         for (let i = 0; i < meshes.length; i++) {
             var mesh = meshes[i];
@@ -297,6 +300,7 @@ export class PatchRenderer {
         this._shootEffect.setMatrix("view", patch.viewMatrix);
 
         engine.setDirectViewport(0, 0, destResidualTexture.width, destResidualTexture.height);
+        engine.setState(false); // TODO : no BFC ?
         var gl = engine._gl;
         let fb = gl.createFramebuffer();
 
@@ -410,10 +414,10 @@ export class PatchRenderer {
         this._isCurrentlyGathering = true;
         this.consumeEnergyInTexture(shooter);
 
-
         for (let i = 0; i < shooter.radiosityPatches.length; i++) {
             this._currentPatch = shooter.radiosityPatches[i];
             this._patchMap.render(false);
+            // this._scene.customRenderTargets.push(this._patchMap);
             for (let j = 0; j < this._patchedSubMeshes.length; j++) {
                 if (this._patchedSubMeshes[j] === shooter) {
                     continue;
@@ -465,8 +469,8 @@ export class PatchRenderer {
         vb[VertexBuffer.PositionKind] = this._vertexBuffer;
         engine.bindBuffers(vb, this._indexBuffer, this._nextShooterEffect);
 
-        for (let i = 0; i < this._scene.meshes.length; i++) {
-            var mesh = this._scene.meshes[i];
+        for (let i = 0; i < this._meshes.length; i++) {
+            var mesh = this._meshes[i];
             var mrt: MultiRenderTarget = (<any>mesh).residualTexture;
 
             if (!mrt) {
@@ -710,14 +714,10 @@ export class PatchRenderer {
         this._patchMap.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._patchMap.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._patchMap.renderParticles = false;
-        this._patchMap.renderList = this._scene.meshes;
+        this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
         this._patchMap.ignoreCameraViewport = true;
         this._patchMap.useCameraPostProcesses = false;
-
-        this._patchMap.onClearObservable.add((engine) => {
-            engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
-        });
 
         var uniformCb = (effect: Effect, data: any[]) => {
             var patch = data[0];
@@ -731,6 +731,7 @@ export class PatchRenderer {
         this._patchMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
             var index;
             this._currentRenderedMap = this._patchMap;
+            this._scene.getEngine().clear(new Color4(0, 0, 0, 0), true, true);
             for (index = 0; index < opaqueSubMeshes.length; index++) {
                 this._renderSubMeshWithEffect(uniformCb, this.isPatchEffectReady.bind(this), opaqueSubMeshes.data[index], this._currentPatch, opaqueSubMeshes.data[index]);
             }
