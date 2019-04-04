@@ -2234,11 +2234,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/lightConfiguration' {
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/observersConfiguration' {
-    export interface IObserversConfiguration {
-        onEngineInit?: string;
-        onSceneInit?: string;
-        onModelLoaded?: string;
-    }
+    
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/sceneConfiguration' {
