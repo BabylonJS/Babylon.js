@@ -228,6 +228,7 @@
 - Fix ArcRotateCamera rebuildAnglesAndRadius when upVector modified ([sable](https://github.com/thscott))
 - Fix code branch, that does not try to (re)load an `EquiRectangularCubeTexture`/`HDRCubeTexture` when the caching returns an empty or corrupt `InternalTexture` ([Dennis Dervisis](https://github.com/ddervisis))
 - Add error eventlistener (bubbling up the onError callback chain) in case an `EquiRectangularCubeTexture` cannot be loaded, because of a wrong path or IO problems ([Dennis Dervisis](https://github.com/ddervisis))
+- 3D GUI buttons no longer will scale up when pressing with multitouch devices ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
