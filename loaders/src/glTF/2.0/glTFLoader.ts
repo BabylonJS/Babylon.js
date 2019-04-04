@@ -1150,7 +1150,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * Loads a glTF animation channel.
+     * @hidden Loads a glTF animation channel.
      * @param context The context when loading the asset
      * @param animationContext The context of the animation when loading the asset
      * @param animation The glTF animation property
