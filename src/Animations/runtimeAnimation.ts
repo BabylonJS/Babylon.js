@@ -428,6 +428,7 @@ export class RuntimeAnimation {
             frame = keys[keys.length - 1].frame;
         }
 
+        this._currentFrame = frame;
         var currentValue = this._animation._interpolate(frame, this._animationState);
 
         this.setValue(currentValue, -1);
@@ -557,7 +558,7 @@ export class RuntimeAnimation {
         }
 
         // Compute value
-        let currentFrame: number ;
+        let currentFrame: number;
 
         if (this._host && this._host.syncRoot) {
             const syncRoot = this._host.syncRoot;
