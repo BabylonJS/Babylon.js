@@ -19,7 +19,9 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 
+
 declare type Animation = import("../Animations/animation").Animation;
+declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
 
 declare var BABYLON: any;
 
@@ -1091,7 +1093,7 @@ export class Material implements IAnimatable {
             else {
                 const meshes = scene.meshes;
                 for (let mesh of meshes) {
-                    if (mesh.material === this) {
+                    if (mesh.material === this && !(mesh as InstancedMesh).sourceMesh) {
                         mesh.material = null;
                         this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                     }
