@@ -105,7 +105,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
 
     /**
-     * Define this method to modify the default behavior when loading skins.
+     * @hidden Define this method to modify the default behavior when loading skins.
      * @param context The context when loading the asset
      * @param node The glTF node property
      * @param skin The glTF skin property
@@ -114,7 +114,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
 
     /**
-     * Define this method to modify the default behavior when loading uris.
+     * @hidden Define this method to modify the default behavior when loading uris.
      * @param context The context when loading the asset
      * @param property The glTF property associated with the uri
      * @param uri The uri to load

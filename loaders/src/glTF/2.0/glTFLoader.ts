@@ -1,7 +1,7 @@
 import { IndicesArray, Nullable } from "babylonjs/types";
 import { Deferred } from "babylonjs/Misc/deferred";
 import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
-import { LoadFileError, IFileRequest, Tools } from "babylonjs/Misc/tools";
+import { LoadFileError, IFileRequest, IAnimatable, Tools } from "babylonjs/Misc/tools";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
@@ -1149,7 +1149,17 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, babylonAnimationGroup: AnimationGroup): Promise<void> {
+    /**
+     * @hidden Loads a glTF animation channel.
+     * @param context The context when loading the asset
+     * @param animationContext The context of the animation when loading the asset
+     * @param animation The glTF animation property
+     * @param channel The glTF animation channel property
+     * @param babylonAnimationGroup The babylon animation group property
+     * @param animationTargetOverride The babylon animation channel target override property. My be null.
+     * @returns A void promise when the channel load is complete
+     */
+    public _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, babylonAnimationGroup: AnimationGroup, animationTargetOverride: Nullable<IAnimatable> = null): Promise<void> {
         if (channel.target.node == undefined) {
             return Promise.resolve();
         }
@@ -1289,8 +1299,13 @@ export class GLTFLoader implements IGLTFLoader {
                 const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                 babylonAnimation.setKeys(keys);
 
-                targetNode._babylonTransformNode!.animations.push(babylonAnimation);
-                babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonTransformNode!);
+                if (animationTargetOverride != null && animationTargetOverride.animations != null) {
+                    animationTargetOverride.animations.push(babylonAnimation);
+                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, animationTargetOverride);
+                } else {
+                    targetNode._babylonTransformNode!.animations.push(babylonAnimation);
+                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonTransformNode!);
+                }
             }
         });
     }
