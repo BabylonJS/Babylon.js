@@ -17,3 +17,4 @@ export * from "./refractionTexture";
 export * from "./renderTargetTexture";
 export * from "./texture";
 export * from "./videoTexture";
+export * from "./htmlElementTexture";
