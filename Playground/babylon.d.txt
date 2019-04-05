@@ -48618,6 +48618,68 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the options related to the creation of an HtmlElementTexture
+     */
+    export interface IHtmlElementTextureOptions {
+        /**
+         * Defines wether mip maps should be created or not.
+         */
+        generateMipMaps?: boolean;
+        /**
+         * Defines the sampling mode of the texture.
+         */
+        samplingMode?: number;
+        /**
+         * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
+         */
+        engine: Nullable<Engine>;
+        /**
+         * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
+         */
+        scene: Nullable<Scene>;
+    }
+    /**
+     * This represents the smallest workload to use an already existing element (Canvas or Video) as a texture.
+     * To be as efficient as possible depending on your constraints nothing aside the first upload
+     * is automatically managed.
+     * It is a cheap VideoTexture or DynamicTexture if you prefer to keep full control of the elements
+     * in your application.
+     *
+     * As the update is not automatic, you need to call them manually.
+     */
+    export class HtmlElementTexture extends BaseTexture {
+        /**
+         * The texture URL.
+         */
+        element: HTMLVideoElement | HTMLCanvasElement;
+        private static readonly DefaultOptions;
+        private _textureMatrix;
+        private _engine;
+        private _isVideo;
+        private _generateMipMaps;
+        private _samplingMode;
+        /**
+         * Instantiates a HtmlElementTexture from the following parameters.
+         *
+         * @param name Defines the name of the texture
+         * @param element Defines the video or canvas the texture is filled with
+         * @param options Defines the other none mandatory texture creation options
+         */
+        constructor(name: string, element: HTMLVideoElement | HTMLCanvasElement, options: IHtmlElementTextureOptions);
+        private _createInternalTexture;
+        /**
+         * Returns the texture matrix used in most of the material.
+         */
+        getTextureMatrix(): Matrix;
+        /**
+         * Updates the content of the texture.
+         * @param invertY Defines wether the texture should be inverted on Y (false by default on video and true on canvas)
+         */
+        update(invertY?: Nullable<boolean>): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Helper class to push actions to a pool of workers.
      */
     export class WorkerPool implements IDisposable {
@@ -60594,14 +60656,14 @@ declare module BABYLON.GLTF2 {
          */
         loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
         /**
-         * Define this method to modify the default behavior when loading skins.
+         * @hidden Define this method to modify the default behavior when loading skins.
          * @param context The context when loading the asset
          * @param node The glTF node property
          * @param skin The glTF skin property
          * @returns A promise that resolves when the load is complete or null if not handled
          */loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
         /**
-         * Define this method to modify the default behavior when loading uris.
+         * @hidden Define this method to modify the default behavior when loading uris.
          * @param context The context when loading the asset
          * @param property The glTF property associated with the uri
          * @param uri The uri to load
@@ -60746,7 +60808,16 @@ declare module BABYLON.GLTF2 {
          * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
          */
         loadAnimationAsync(context: string, animation: IAnimation): Promise<AnimationGroup>;
-        private _loadAnimationChannelAsync;
+        /**
+         * @hidden Loads a glTF animation channel.
+         * @param context The context when loading the asset
+         * @param animationContext The context of the animation when loading the asset
+         * @param animation The glTF animation property
+         * @param channel The glTF animation channel property
+         * @param babylonAnimationGroup The babylon animation group property
+         * @param animationTargetOverride The babylon animation channel target override property. My be null.
+         * @returns A void promise when the channel load is complete
+         */loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, babylonAnimationGroup: AnimationGroup, animationTargetOverride?: Nullable<IAnimatable>): Promise<void>;
         private _loadAnimationSamplerAsync;
         private _loadBufferAsync;
         /**
