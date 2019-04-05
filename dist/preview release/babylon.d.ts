@@ -8322,6 +8322,124 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This represents the required contract to create a new type of texture loader.
+     */
+    export interface IInternalTextureLoader {
+        /**
+         * Defines wether the loader supports cascade loading the different faces.
+         */
+        supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @param fallback defines the fallback internal texture if any
+         * @param isBase64 defines whether the texture is encoded as a base64
+         * @param isBuffer defines whether the texture data are stored as a buffer
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        /**
+         * Transform the url before loading if required.
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the transformed texture
+         */
+        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
+        /**
+         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the fallback texture
+         */
+        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
+        /**
+         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         */
+        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        /**
+         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         */
+        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
+    }
+}
+declare module BABYLON {
+        interface Engine {
+            /**
+             * Creates a depth stencil cube texture.
+             * This is only available in WebGL 2.
+             * @param size The size of face edge in the cube texture.
+             * @param options The options defining the cube texture.
+             * @returns The cube texture
+             */
+            _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture;
+            /**
+             * Creates a cube texture
+             * @param rootUrl defines the url where the files to load is located
+             * @param scene defines the current scene
+             * @param files defines the list of files to load (1 per face)
+             * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+             * @param onLoad defines an optional callback raised when the texture is loaded
+             * @param onError defines an optional callback raised if there is an issue to load the texture
+             * @param format defines the format of the data
+             * @param forcedExtension defines the extension to use to pick the right loader
+             * @param createPolynomials if a polynomial sphere should be created for the cube texture
+             * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+             * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+             * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+             * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (defualt: empty array)
+             * @returns the cube texture as an InternalTexture
+             */
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, excludeLoaders: Array<IInternalTextureLoader>): InternalTexture;
+            /**
+             * Creates a cube texture
+             * @param rootUrl defines the url where the files to load is located
+             * @param scene defines the current scene
+             * @param files defines the list of files to load (1 per face)
+             * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+             * @param onLoad defines an optional callback raised when the texture is loaded
+             * @param onError defines an optional callback raised if there is an issue to load the texture
+             * @param format defines the format of the data
+             * @param forcedExtension defines the extension to use to pick the right loader
+             * @returns the cube texture as an InternalTexture
+             */
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any): InternalTexture;
+            /**
+             * Creates a cube texture
+             * @param rootUrl defines the url where the files to load is located
+             * @param scene defines the current scene
+             * @param files defines the list of files to load (1 per face)
+             * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+             * @param onLoad defines an optional callback raised when the texture is loaded
+             * @param onError defines an optional callback raised if there is an issue to load the texture
+             * @param format defines the format of the data
+             * @param forcedExtension defines the extension to use to pick the right loader
+             * @param createPolynomials if a polynomial sphere should be created for the cube texture
+             * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+             * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+             * @returns the cube texture as an InternalTexture
+             */
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
+            /** @hidden */
+            _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+            /** @hidden */
+            _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
+            /** @hidden */
+            _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
+            /** @hidden */
+            _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+        }
+}
+declare module BABYLON {
+    /**
      * Class for creating a cube texture
      */
     export class CubeTexture extends BaseTexture {
@@ -13881,6 +13999,17 @@ declare module BABYLON {
         dispose(): void;
         private _beforeClear;
     }
+}
+declare module BABYLON {
+        interface Engine {
+            /**
+             * Creates a new render target cube texture
+             * @param size defines the size of the texture
+             * @param options defines the options used to create the texture
+             * @returns a new render target cube texture stored in an InternalTexture
+             */
+            createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture;
+        }
 }
 declare module BABYLON {
     /** @hidden */
@@ -26256,169 +26385,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * This represents the required contract to create a new type of texture loader.
-     */
-    export interface IInternalTextureLoader {
-        /**
-         * Defines wether the loader supports cascade loading the different faces.
-         */
-        supportCascades: boolean;
-        /**
-         * This returns if the loader support the current file information.
-         * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
-         * @returns true if the loader can load the specified file
-         */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
-        /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param createPolynomials will be true if polynomials have been requested
-         * @param onLoad defines the callback to trigger once the texture is ready
-         * @param onError defines the callback to trigger in case of error
-         */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
-        /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param callback defines the method to call once ready to upload
-         */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Creation options of the multi render target texture.
-     */
-    export interface IMultiRenderTargetOptions {
-        /**
-         * Define if the texture needs to create mip maps after render.
-         */
-        generateMipMaps?: boolean;
-        /**
-         * Define the types of all the draw buffers we want to create
-         */
-        types?: number[];
-        /**
-         * Define the sampling modes of all the draw buffers we want to create
-         */
-        samplingModes?: number[];
-        /**
-         * Define if a depth buffer is required
-         */
-        generateDepthBuffer?: boolean;
-        /**
-         * Define if a stencil buffer is required
-         */
-        generateStencilBuffer?: boolean;
-        /**
-         * Define if a depth texture is required instead of a depth buffer
-         */
-        generateDepthTexture?: boolean;
-        /**
-         * Define the number of desired draw buffers
-         */
-        textureCount?: number;
-        /**
-         * Define if aspect ratio should be adapted to the texture or stay the scene one
-         */
-        doNotChangeAspectRatio?: boolean;
-        /**
-         * Define the default type of the buffers we are creating
-         */
-        defaultType?: number;
-    }
-    /**
-     * A multi render target, like a render target provides the ability to render to a texture.
-     * Unlike the render target, it can render to several draw buffers in one draw.
-     * This is specially interesting in deferred rendering or for any effects requiring more than
-     * just one color from a single pass.
-     */
-    export class MultiRenderTarget extends RenderTargetTexture {
-        private _internalTextures;
-        private _textures;
-        private _multiRenderTargetOptions;
-        /**
-         * Get if draw buffers are currently supported by the used hardware and browser.
-         */
-        readonly isSupported: boolean;
-        /**
-         * Get the list of textures generated by the multi render target.
-         */
-        readonly textures: Texture[];
-        /**
-         * Get the depth texture generated by the multi render target if options.generateDepthTexture has been set
-         */
-        readonly depthTexture: Texture;
-        /**
-         * Set the wrapping mode on U of all the textures we are rendering to.
-         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
-         */
-        wrapU: number;
-        /**
-         * Set the wrapping mode on V of all the textures we are rendering to.
-         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
-         */
-        wrapV: number;
-        /**
-         * Instantiate a new multi render target texture.
-         * A multi render target, like a render target provides the ability to render to a texture.
-         * Unlike the render target, it can render to several draw buffers in one draw.
-         * This is specially interesting in deferred rendering or for any effects requiring more than
-         * just one color from a single pass.
-         * @param name Define the name of the texture
-         * @param size Define the size of the buffers to render to
-         * @param count Define the number of target we are rendering into
-         * @param scene Define the scene the texture belongs to
-         * @param options Define the options used to create the multi render target
-         */
-        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions);
-        /** @hidden */
-        _rebuild(): void;
-        private _createInternalTextures;
-        private _createTextures;
-        /**
-         * Define the number of samples used if MSAA is enabled.
-         */
-        samples: number;
-        /**
-         * Resize all the textures in the multi render target.
-         * Be carrefull as it will recreate all the data in the new texture.
-         * @param size Define the new size
-         */
-        resize(size: any): void;
-        protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
-        /**
-         * Dispose the render targets and their associated resources
-         */
-        dispose(): void;
-        /**
-         * Release all the underlying texture used as draw buffers.
-         */
-        releaseInternalTextures(): void;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to work with sound analyzer using fast fourier transform (FFT)
      * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
      */
@@ -27544,7 +27510,7 @@ declare module BABYLON {
         /** @hidden */
         protected _cachedEffectForVertexBuffers: Nullable<Effect>;
         /** @hidden */
-        protected _currentRenderTarget: Nullable<InternalTexture>;
+        _currentRenderTarget: Nullable<InternalTexture>;
         private _uintIndicesCurrentlySet;
         private _currentBoundBuffer;
         /** @hidden */
@@ -27553,8 +27519,10 @@ declare module BABYLON {
         private _currentInstanceLocations;
         private _currentInstanceBuffers;
         private _textureUnits;
-        private _workingCanvas;
-        private _workingContext;
+        /** @hidden */
+        _workingCanvas: Nullable<HTMLCanvasElement>;
+        /** @hidden */
+        _workingContext: Nullable<CanvasRenderingContext2D>;
         private _rescalePostProcess;
         private _dummyFramebuffer;
         private _externalData;
@@ -27570,7 +27538,8 @@ declare module BABYLON {
         private _maxSimultaneousTextures;
         private _activeRequests;
         private _texturesSupported;
-        private _textureFormatInUse;
+        /** @hidden */
+        _textureFormatInUse: Nullable<string>;
         /**
          * Gets the list of texture formats supported
          */
@@ -27625,7 +27594,8 @@ declare module BABYLON {
          * Returns true if the stencil buffer has been enabled through the creation option of the context.
          */
         readonly isStencilEnable: boolean;
-        private _prepareWorkingCanvas;
+        /** @hidden */
+        _prepareWorkingCanvas(): void;
         /**
          * Reset the texture cache to empty state
          */
@@ -27979,7 +27949,8 @@ declare module BABYLON {
          * @param lodLevel defines le lod level to bind to the frame buffer
          */
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture, lodLevel?: number): void;
-        private bindUnboundFramebuffer;
+        /** @hidden */
+        _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
         /**
          * Unbind the current render target texture from the webGL context
          * @param texture defines the render target texture to unbind
@@ -27987,14 +27958,6 @@ declare module BABYLON {
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
          */
         unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
-        /**
-         * Unbind a list of render target textures from the webGL context
-         * This is used only when drawBuffer extension or webGL2 are active
-         * @param textures defines the render target textures to unbind
-         * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
-         * @param onBeforeUnbind defines a function which will be called before the effective unbind
-         */
-        unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
         /**
          * Force the mipmap generation for the given render target texture
          * @param texture defines the render target texture to use
@@ -28532,8 +28495,6 @@ declare module BABYLON {
             min: number;
             mag: number;
         };
-        private _partialLoadImg;
-        private _cascadeLoadImgs;
         /** @hidden */
         _createTexture(): WebGLTexture;
         /**
@@ -28609,7 +28570,11 @@ declare module BABYLON {
          * @param comparisonFunction The comparison function to set, 0 if no comparison required
          */
         updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
-        private _setupDepthStencilTexture;
+        /** @hidden */
+        _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | {
+            width: number;
+            height: number;
+        }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void;
         /**
          * Creates a depth stencil texture.
          * This is only available in WebGL 2 or with the depth texture extension available.
@@ -28630,14 +28595,6 @@ declare module BABYLON {
          */
         private _createDepthStencilTexture;
         /**
-         * Creates a depth stencil cube texture.
-         * This is only available in WebGL 2.
-         * @param size The size of face edge in the cube texture.
-         * @param options The options defining the cube texture.
-         * @returns The cube texture
-         */
-        private _createDepthStencilCubeTexture;
-        /**
          * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
          * @param renderTarget The render target to set the frame buffer for
          */
@@ -28652,15 +28609,8 @@ declare module BABYLON {
             width: number;
             height: number;
         }, options: boolean | RenderTargetCreationOptions): InternalTexture;
-        /**
-         * Create a multi render target texture
-         * @see http://doc.babylonjs.com/features/webgl2#multiple-render-target
-         * @param size defines the size of the texture
-         * @param options defines the creation options
-         * @returns the cube texture as an InternalTexture
-         */
-        createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[];
-        private _setupFramebufferDepthAttachments;
+        /** @hidden */
+        _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples?: number): Nullable<WebGLRenderbuffer>;
         /**
          * Updates the sample count of a render target texture
          * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
@@ -28669,14 +28619,6 @@ declare module BABYLON {
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
         updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
-        /**
-         * Update the sample count for a given multiple render target texture
-         * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
-         * @param textures defines the textures to update
-         * @param samples defines the sample count to set
-         * @returns the effective sample count (could be 0 if multisample render targets are not supported)
-         */
-        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
         /** @hidden */
         _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
@@ -28685,31 +28627,6 @@ declare module BABYLON {
         _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
-        /**
-         * Creates a new render target cube texture
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target cube texture stored in an InternalTexture
-         */
-        createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture;
-        /**
-         * Creates a cube texture
-         * @param rootUrl defines the url where the files to load is located
-         * @param scene defines the current scene
-         * @param files defines the list of files to load (1 per face)
-         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
-         * @param onLoad defines an optional callback raised when the texture is loaded
-         * @param onError defines an optional callback raised if there is an issue to load the texture
-         * @param format defines the format of the data
-         * @param forcedExtension defines the extension to use to pick the right loader
-         * @param createPolynomials if a polynomial sphere should be created for the cube texture
-         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
-         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
-         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (defualt: empty array)
-         * @returns the cube texture as an InternalTexture
-         */
-        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
         /**
          * @hidden
          */
@@ -28912,8 +28829,6 @@ declare module BABYLON {
         _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /** @hidden */
         _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
-        private _partialLoadFile;
-        private _cascadeLoadFiles;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
@@ -41478,6 +41393,146 @@ declare module BABYLON {
              * @param value defines the webGL buffer to bind
              */
             bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void;
+        }
+}
+declare module BABYLON {
+    /**
+     * Creation options of the multi render target texture.
+     */
+    export interface IMultiRenderTargetOptions {
+        /**
+         * Define if the texture needs to create mip maps after render.
+         */
+        generateMipMaps?: boolean;
+        /**
+         * Define the types of all the draw buffers we want to create
+         */
+        types?: number[];
+        /**
+         * Define the sampling modes of all the draw buffers we want to create
+         */
+        samplingModes?: number[];
+        /**
+         * Define if a depth buffer is required
+         */
+        generateDepthBuffer?: boolean;
+        /**
+         * Define if a stencil buffer is required
+         */
+        generateStencilBuffer?: boolean;
+        /**
+         * Define if a depth texture is required instead of a depth buffer
+         */
+        generateDepthTexture?: boolean;
+        /**
+         * Define the number of desired draw buffers
+         */
+        textureCount?: number;
+        /**
+         * Define if aspect ratio should be adapted to the texture or stay the scene one
+         */
+        doNotChangeAspectRatio?: boolean;
+        /**
+         * Define the default type of the buffers we are creating
+         */
+        defaultType?: number;
+    }
+    /**
+     * A multi render target, like a render target provides the ability to render to a texture.
+     * Unlike the render target, it can render to several draw buffers in one draw.
+     * This is specially interesting in deferred rendering or for any effects requiring more than
+     * just one color from a single pass.
+     */
+    export class MultiRenderTarget extends RenderTargetTexture {
+        private _internalTextures;
+        private _textures;
+        private _multiRenderTargetOptions;
+        /**
+         * Get if draw buffers are currently supported by the used hardware and browser.
+         */
+        readonly isSupported: boolean;
+        /**
+         * Get the list of textures generated by the multi render target.
+         */
+        readonly textures: Texture[];
+        /**
+         * Get the depth texture generated by the multi render target if options.generateDepthTexture has been set
+         */
+        readonly depthTexture: Texture;
+        /**
+         * Set the wrapping mode on U of all the textures we are rendering to.
+         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
+         */
+        wrapU: number;
+        /**
+         * Set the wrapping mode on V of all the textures we are rendering to.
+         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
+         */
+        wrapV: number;
+        /**
+         * Instantiate a new multi render target texture.
+         * A multi render target, like a render target provides the ability to render to a texture.
+         * Unlike the render target, it can render to several draw buffers in one draw.
+         * This is specially interesting in deferred rendering or for any effects requiring more than
+         * just one color from a single pass.
+         * @param name Define the name of the texture
+         * @param size Define the size of the buffers to render to
+         * @param count Define the number of target we are rendering into
+         * @param scene Define the scene the texture belongs to
+         * @param options Define the options used to create the multi render target
+         */
+        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions);
+        /** @hidden */
+        _rebuild(): void;
+        private _createInternalTextures;
+        private _createTextures;
+        /**
+         * Define the number of samples used if MSAA is enabled.
+         */
+        samples: number;
+        /**
+         * Resize all the textures in the multi render target.
+         * Be carrefull as it will recreate all the data in the new texture.
+         * @param size Define the new size
+         */
+        resize(size: any): void;
+        protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
+        /**
+         * Dispose the render targets and their associated resources
+         */
+        dispose(): void;
+        /**
+         * Release all the underlying texture used as draw buffers.
+         */
+        releaseInternalTextures(): void;
+    }
+}
+declare module BABYLON {
+        interface Engine {
+            /**
+             * Unbind a list of render target textures from the webGL context
+             * This is used only when drawBuffer extension or webGL2 are active
+             * @param textures defines the render target textures to unbind
+             * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
+             * @param onBeforeUnbind defines a function which will be called before the effective unbind
+             */
+            unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
+            /**
+             * Create a multi render target texture
+             * @see http://doc.babylonjs.com/features/webgl2#multiple-render-target
+             * @param size defines the size of the texture
+             * @param options defines the creation options
+             * @returns the cube texture as an InternalTexture
+             */
+            createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[];
+            /**
+             * Update the sample count for a given multiple render target texture
+             * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
+             * @param textures defines the textures to update
+             * @param samples defines the sample count to set
+             * @returns the effective sample count (could be 0 if multisample render targets are not supported)
+             */
+            updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
         }
 }
 declare module BABYLON {
