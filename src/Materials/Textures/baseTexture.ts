@@ -667,7 +667,9 @@ export class BaseTexture implements IAnimatable {
         }
 
         // Animations
-        this._scene.stopAnimation(this);
+        if (this._scene.stopAnimation) {
+            this._scene.stopAnimation(this);
+        }
 
         // Remove from scene
         this._scene._removePendingData(this);
