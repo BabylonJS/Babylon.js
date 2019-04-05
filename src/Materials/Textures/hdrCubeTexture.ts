@@ -11,6 +11,7 @@ import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
+import "../../Engines/Extensions/engine.rawTexture";
 
 /**
  * This represents a texture coming from an HDR input.
