@@ -64,19 +64,18 @@ export class TrailMesh extends Mesh {
         if (this._generator._boundingInfo) {
             meshCenter = this._generator._boundingInfo.boundingBox.centerWorld;
         }
-        let alpha: number = 2 * Math.PI / this._sectionPolygonPointsCount;
         for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
             positions.push(
-                meshCenter.x + Math.cos(i * alpha) * this._dimensions[0],
-                meshCenter.y + Math.sin(i * alpha) * this._dimensions[1],
+                meshCenter.x,
+                meshCenter.y,
                 meshCenter.z
             );
         }
         for (let i: number = 1; i <= this._length; i++) {
             for (let j: number = 0; j < this._sectionPolygonPointsCount; j++) {
                 positions.push(
-                    meshCenter.x + Math.cos(j * alpha) * this._dimensions[0],
-                    meshCenter.y + Math.sin(j * alpha) * this._dimensions[1],
+                    meshCenter.x,
+                    meshCenter.y,
                     meshCenter.z
                 );
             }
