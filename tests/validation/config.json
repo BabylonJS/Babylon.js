@@ -375,6 +375,17 @@
       "referenceImage": "glTFSerializerTextureTransform.png"
     },
     {
+      "title": "GLTF Serializer with Negative World Matrix",
+      "playgroundId": "#KX53VK#23",
+      "referenceImage": "glTFSerializerNegativeWorldMatrix.png"
+    },
+    {
+      "title": "GLTF Serializer with Negative World Matrix (Right Handed)",
+      "playgroundId": "#KX53VK#23",
+      "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
+      "referenceImage": "glTFSerializerNegativeWorldMatrix_Right.png"
+    },
+    {
       "title": "GLTF Texture Sampler",
       "playgroundId": "#a68vz0#16",
       "referenceImage": "gltfTextureSampler.png"
