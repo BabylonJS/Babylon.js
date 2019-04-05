@@ -15,6 +15,7 @@ import { Texture } from "../../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
+import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Shaders/procedural.vertex";
 
 /**

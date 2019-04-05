@@ -11,6 +11,8 @@ import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
 
+import "../Engines/Extensions/engine.renderTarget";
+
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 

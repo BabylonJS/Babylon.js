@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5820,8 +5820,22 @@ var GLTFLoader = /** @class */ (function () {
             return node._babylonTransformNode;
         });
     };
+    /**
+     * @hidden Define this method to modify the default behavior when loading data for mesh primitives.
+     * @param context The context when loading the asset
+     * @param name The mesh name when loading the asset
+     * @param node The glTF node when loading the asset
+     * @param mesh The glTF mesh when loading the asset
+     * @param primitive The glTF mesh primitive property
+     * @param assign A function called synchronously after parsing the glTF properties
+     * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
+     */
     GLTFLoader.prototype._loadMeshPrimitiveAsync = function (context, name, node, mesh, primitive, assign) {
         var _this = this;
+        var extensionPromise = this._extensionsLoadMeshPrimitiveAsync(context, name, node, mesh, primitive, assign);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
         this.logOpen("" + context);
         var canInstance = (node.skin == undefined && !mesh.primitives[0].targets);
         var babylonAbstractMesh;
@@ -7090,6 +7104,9 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._extensionsLoadVertexDataAsync = function (context, primitive, babylonMesh) {
         return this._applyExtensions(primitive, "loadVertexData", function (extension) { return extension._loadVertexDataAsync && extension._loadVertexDataAsync(context, primitive, babylonMesh); });
+    };
+    GLTFLoader.prototype._extensionsLoadMeshPrimitiveAsync = function (context, name, node, mesh, primitive, assign) {
+        return this._applyExtensions(primitive, "loadMeshPrimitive", function (extension) { return extension._loadMeshPrimitiveAsync && extension._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assign); });
     };
     GLTFLoader.prototype._extensionsLoadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) {
         return this._applyExtensions(material, "loadMaterial", function (extension) { return extension._loadMaterialAsync && extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign); });
