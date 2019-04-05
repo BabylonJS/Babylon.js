@@ -6576,7 +6576,7 @@ export class Engine {
         if (!DomManagement.IsWindowObjectExist()) {
             return;
         }
-        const loadingScreen = this.loadingScreen;
+        const loadingScreen = this._loadingScreen;
         if (loadingScreen) {
             loadingScreen.hideLoadingUI();
         }
