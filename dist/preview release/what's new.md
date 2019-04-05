@@ -8,7 +8,7 @@
 - Added [support for AmmoJS](https://doc.babylonjs.com/how_to/using_the_physics_engine) as a physics plugin (Composite objects, motors, joints) ([TrevorDev](https://github.com/TrevorDev))
   - Added support for soft bodies, which are 3D softbody, 2D cloth and 1D rope, in Ammo physics plugin. [Doc](https://doc.babylonjs.com/how_to/soft_bodies) ([JohnK](https://github.com/BabylonJSGuide))
   - Added support for [Convex Hull Impostor][https://github.com/kripken/ammo.js/blob/master/bullet/src/BulletCollision/CollisionShapes/btConvexHullShape.h] using Ammo.js plugin ([MackeyK24](https://github.com/mackeyk24))
-  - Added AmmoJSPlugin scene file loader [MackeyK24](https://github.com/mackeyk24))
+  - Added AmmoJSPlugin scene file loader ([MackeyK24](https://github.com/mackeyk24))
 - Added support for [WebXR](https://doc.babylonjs.com/how_to/webxr) ([TrevorDev](https://github.com/TrevorDev))
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
@@ -158,6 +158,7 @@
   - Skinned meshes now set an override mesh instead of reparenting to the `__root__` transform node
   - Loaded bones are linked with the transform node created for the corresponding glTF node
 - Improve load performance by blocking material dirtying during load ([bghgary](https://github.com/bghgary))
+- Added animation group target override to support custom animation targets ([MackeyK24](https://github.com/mackeyk24))
 
 ### glTF Serializer
 
@@ -211,7 +212,7 @@
 - CannonJS ignores connectedPivot joint parameter ([TrevorDev](https://github.com/TrevorDev))
 - Fix case sensitive paths ([mrdunk](https://github.com))
 - Fix more case sensitive paths ([mrdunk](https://github.com))
-- Attaching a BoundingBoxGizmo on a child node should not remove its parent ([TrevorDev](https://github.com/TrevorDev))
+- Attaching a BoundingBoxGizmo on a child node shouldn't remove its parent ([TrevorDev](https://github.com/TrevorDev))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with Oimo and Cannon ([TrevorDev](https://github.com/TrevorDev))
 - Warn of motor with maxForce in Oimo plugin and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
@@ -229,6 +230,7 @@
 - Fix ArcRotateCamera rebuildAnglesAndRadius when upVector modified ([sable](https://github.com/thscott))
 - Fix code branch, that does not try to (re)load an `EquiRectangularCubeTexture`/`HDRCubeTexture` when the caching returns an empty or corrupt `InternalTexture` ([Dennis Dervisis](https://github.com/ddervisis))
 - Add error eventlistener (bubbling up the onError callback chain) in case an `EquiRectangularCubeTexture` cannot be loaded, because of a wrong path or IO problems ([Dennis Dervisis](https://github.com/ddervisis))
+- 3D GUI buttons no longer will scale up when pressing with a multitouch device ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))

@@ -4531,7 +4531,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.importedMeshesFiles = new Array<string>();
 
-        this.stopAllAnimations();
+        if (this.stopAllAnimations) {
+            this.stopAllAnimations();
+        }
 
         this.resetCachedMaterial();
 
@@ -4639,8 +4641,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Release materials
-        if (this.defaultMaterial) {
-            this.defaultMaterial.dispose();
+        if (this._defaultMaterial) {
+            this._defaultMaterial.dispose();
         }
         while (this.multiMaterials.length) {
             this.multiMaterials[0].dispose();
