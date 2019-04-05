@@ -141,7 +141,7 @@
 - Added `Matrix.RotationAlignToRef` method to obtain rotation matrix from one vector to another ([sable](https://github.com/thscott))
 - ArcRotateCamera will now cache the necessary matrices when modifying its upVector, instead of calculating them each time they're needed ([sable](https://github.com/thscott))
 - Update `DracoCompression` to use web workers ([bghgary](https://github.com/bghgary))
-- Add `reflectionMatrix` support for more/all `coordinatesMode`'s ([Dennis Dervisis](https://github.com/ddervisis))
+- Add `reflectionMatrix` support for more `coordinatesMode`'s ([Dennis Dervisis](https://github.com/ddervisis))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
