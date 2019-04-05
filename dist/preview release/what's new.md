@@ -158,6 +158,7 @@
   - Loaded bones are linked with the transform node created for the corresponding glTF node
 - Improve load performance by blocking material dirtying during load ([bghgary](https://github.com/bghgary))
 - Added animation group target override to support custom animation targets ([MackeyK24](https://github.com/mackeyk24))
+- Added loadMeshPrimitiveAsync extension support ([MackeyK24](https://github.com/mackeyk24))
 
 ### glTF Serializer
 
