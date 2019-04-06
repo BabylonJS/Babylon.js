@@ -1196,7 +1196,7 @@ export class _Exporter {
                         let sideOrientation = babylonMaterial.sideOrientation;
 
                         // Only reverse the winding if we have a clockwise winding
-``                      if (sideOrientation === Material.ClockWiseSideOrientation) {
+                        if (sideOrientation === Material.ClockWiseSideOrientation) {
                             let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) { byteOffset = 0; }
                             let babylonIndices: Nullable<IndicesArray> = null;
