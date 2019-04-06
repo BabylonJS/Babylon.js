@@ -491,12 +491,12 @@
     },
     {
       "title": "GLTF Serializer with Negative World Matrix",
-      "playgroundId": "#KX53VK#23",
+      "playgroundId": "#KX53VK#24",
       "referenceImage": "glTFSerializerNegativeWorldMatrix.png"
     },
     {
       "title": "GLTF Serializer with Negative World Matrix (Right Handed)",
-      "playgroundId": "#KX53VK#23",
+      "playgroundId": "#KX53VK#24",
       "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
       "referenceImage": "glTFSerializerNegativeWorldMatrix_Right.png"
     },,
