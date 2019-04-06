@@ -15,6 +15,7 @@ import { Texture } from "../../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
+import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Shaders/procedural.vertex";
 
 /**
@@ -201,9 +202,7 @@ export class ProceduralTexture extends Texture {
         if (this._effect === undefined) {
             return;
         }
-
-        var engine = this._engine;
-        engine._releaseEffect(this._effect);
+        this._effect.dispose();
     }
 
     protected _getDefines(): string {

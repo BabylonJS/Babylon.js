@@ -112,7 +112,7 @@ if (BABYLON.Engine.isSupported()) {
             }
             currentGroup = babylonScene.animationGroups[0];
             currentGroupIndex = 0;
-            document.getElementById(formatId(currentGroup.name + "-" + currentGroupIndex)).click();
+            currentGroup.play(true);
         }
 
         // Sync the slider with the current frame

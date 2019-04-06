@@ -35,7 +35,7 @@ import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
-import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction } from "./sceneComponent";
+import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
 import { Node } from "./node";
 import { MorphTarget } from "./Morph/morphTarget";
@@ -1256,7 +1256,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @hidden
      * Defines the actions happening during the per camera render target step.
      */
-    public _cameraDrawRenderTargetStage = Stage.Create<CameraStageAction>();
+    public _cameraDrawRenderTargetStage = Stage.Create<CameraStageFrameBufferAction>();
     /**
      * @hidden
      * Defines the actions happening just before the active camera is drawing.
@@ -1897,7 +1897,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 let pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
                 if (pickResult) {
-                    act = (pickResult.hit && pickResult.pickedMesh) ? pickResult.pickedMesh.actionManager : null;
+                    act = (pickResult.hit && pickResult.pickedMesh) ? pickResult.pickedMesh._getActionManagerForTrigger() : null;
                 }
                 this._meshPickProceed = true;
             }
@@ -2277,11 +2277,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         canvas.removeEventListener("keydown", this._onKeyDown);
         canvas.removeEventListener("keyup", this._onKeyUp);
 
-        // Observables
-        this.onKeyboardObservable.clear();
-        this.onPreKeyboardObservable.clear();
-        this.onPointerObservable.clear();
-        this.onPrePointerObservable.clear();
+        // Cursor
+        canvas.style.cursor = this.defaultCursor;
     }
 
     /**
@@ -3739,7 +3736,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                     if (this._processedMaterials.indexOf(material) === -1) {
                         this._processedMaterials.push(material);
 
-                        this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures());
+                        this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
                     }
                 }
 
@@ -3866,6 +3863,10 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this._evaluateActiveMeshes();
         this._activeMeshesFrozen = true;
+
+        for (var mesh of this._activeMeshes.data) {
+            mesh._freeze();
+        }
         return this;
     }
 
@@ -3874,12 +3875,23 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public unfreezeActiveMeshes(): Scene {
+        for (var mesh of this._activeMeshes.data) {
+            mesh._unFreeze();
+        }
+
         this._activeMeshesFrozen = false;
         return this;
     }
 
     private _evaluateActiveMeshes(): void {
         if (this._activeMeshesFrozen && this._activeMeshes.length) {
+
+            const len = this._activeMeshes.length;
+            for (let i = 0; i < len; i++) {
+                let mesh = this._activeMeshes.data[i];
+                mesh.computeWorldMatrix();
+            }
+
             return;
         }
 
@@ -3907,13 +3919,14 @@ export class Scene extends AbstractScene implements IAnimatable {
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
+            mesh._isActive = false;
             if (mesh.isBlocked) {
                 continue;
             }
 
             this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-            if (!mesh.isReady() || !mesh.isEnabled()) {
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.lengthSquared() === 0) {
                 continue;
             }
 
@@ -3941,12 +3954,14 @@ export class Scene extends AbstractScene implements IAnimatable {
                 this._activeMeshes.push(mesh);
                 this.activeCamera._activeMeshes.push(mesh);
 
-                mesh._activate(this._renderId);
                 if (meshLOD !== mesh) {
                     meshLOD._activate(this._renderId);
                 }
 
-                this._activeMesh(mesh, meshLOD);
+                if (mesh._activate(this._renderId)) {
+                    mesh._isActive = true;
+                    this._activeMesh(mesh, meshLOD);
+                }
             }
         }
 
@@ -4092,6 +4107,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
+            let needRebind = false;
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -4101,6 +4117,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                         this._renderId++;
                         var hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
                         renderTarget.render((<boolean>hasSpecialRenderTargetCamera), this.dumpNextRenderTargets);
+                        needRebind = true;
                     }
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -4109,13 +4126,15 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             for (let step of this._cameraDrawRenderTargetStage) {
-                step.action(this.activeCamera);
+                needRebind = needRebind || step.action(this.activeCamera);
             }
 
             this._intermediateRendering = false;
 
             // Restore framebuffer after rendering to targets
-            this._bindFrameBuffer();
+            if (needRebind) {
+                this._bindFrameBuffer();
+            }
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4234,34 +4253,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Nothing to do as long as Animatable have not been imported.
     }
 
-    /**
-     * Render the scene
-     * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
-     */
-    public render(updateCameras = true): void {
-        if (this.isDisposed) {
-            return;
-        }
-
-        this._frameId++;
-
-        // Register components that have been associated lately to the scene.
-        this._registerTransientComponents();
-
-        this._activeParticles.fetchNewFrame();
-        this._totalVertices.fetchNewFrame();
-        this._activeIndices.fetchNewFrame();
-        this._activeBones.fetchNewFrame();
-        this._meshesForIntersections.reset();
-        this.resetCachedMaterial();
-
-        this.onBeforeAnimationsObservable.notifyObservers(this);
-
-        // Actions
-        if (this.actionManager) {
-            this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
-        }
-
+    /** Execute all animations (for a frame) */
+    public animate() {
         if (this._engine.isDeterministicLockStep()) {
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
 
@@ -4307,6 +4300,41 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             // Physics
             this._advancePhysicsEngineStep(deltaTime);
+        }
+    }
+
+    /**
+     * Render the scene
+     * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
+     * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
+     */
+    public render(updateCameras = true, ignoreAnimations = false): void {
+        if (this.isDisposed) {
+            return;
+        }
+
+        this._frameId++;
+
+        // Register components that have been associated lately to the scene.
+        this._registerTransientComponents();
+
+        this._activeParticles.fetchNewFrame();
+        this._totalVertices.fetchNewFrame();
+        this._activeIndices.fetchNewFrame();
+        this._activeBones.fetchNewFrame();
+        this._meshesForIntersections.reset();
+        this.resetCachedMaterial();
+
+        this.onBeforeAnimationsObservable.notifyObservers(this);
+
+        // Actions
+        if (this.actionManager) {
+            this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
+        }
+
+        // Animations
+        if (!ignoreAnimations) {
+            this.animate();
         }
 
         // Before camera update steps
@@ -4503,7 +4531,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.importedMeshesFiles = new Array<string>();
 
-        this.stopAllAnimations();
+        if (this.stopAllAnimations) {
+            this.stopAllAnimations();
+        }
 
         this.resetCachedMaterial();
 
@@ -4611,8 +4641,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Release materials
-        if (this.defaultMaterial) {
-            this.defaultMaterial.dispose();
+        if (this._defaultMaterial) {
+            this._defaultMaterial.dispose();
         }
         while (this.multiMaterials.length) {
             this.multiMaterials[0].dispose();

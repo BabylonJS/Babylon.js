@@ -2,6 +2,17 @@
   "root": "https://rawgit.com/BabylonJS/Website/master",
   "tests": [
     {
+      "title": "Nested BBG",
+      "playgroundId": "#ZG0C8B#1",
+      "referenceImage": "nested_BBG.png"
+    },
+    {
+      "title": "Weighted animations",
+      "playgroundId": "#LL5BIQ#72",
+      "renderCount": 50,
+      "referenceImage": "weighted animations.png"
+    },
+    {
       "title": "Anisotropic",
       "playgroundId": "#MAXCNU#1",
       "referenceImage": "anisotropic.png"
@@ -294,85 +305,189 @@
       "referenceImage": "customRTT.png"
     },
     {
+      "title": "Draco Mesh Compression",
+      "playgroundId": "#22MFU2#4",
+      "referenceImage": "draco.png"
+    },
+    {
       "title": "GLTF Normals",
       "scriptToRun": "/Demos/GLTFNormals/index.js",
       "functionToCall": "createScene",
       "referenceImage": "gltfnormals.png"
     },
     {
+      "title": "GLTF Animation Node",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Animation_Node, __page__, 0",
+      "referenceImage": "gltfAnimationNode.png"
+    },
+    {
+      "title": "GLTF Animation Node Misc",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Animation_NodeMisc, __page__, 0",
+      "referenceImage": "gltfAnimationNodeMisc.png"
+    },
+    {
+      "title": "GLTF Animation Skin (0)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Animation_Skin, __page__, 0",
+      "referenceImage": "gltfAnimationSkin0.png"
+    },
+    {
+      "title": "GLTF Animation Skin (1)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Animation_Skin, __page__, 1",
+      "referenceImage": "gltfAnimationSkin1.png"
+    },
+    {
+      "title": "GLTF Animation Skin Type",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Animation_SkinType, __page__, 0",
+      "referenceImage": "gltfAnimationSkinType.png"
+    },
+    {
       "title": "GLTF Buffer Interleaved",
-      "playgroundId": "#a68vz0#3",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Buffer_Interleaved, __page__, 0",
       "referenceImage": "gltfBufferInterleaved.png"
     },
     {
       "title": "GLTF Material",
-      "playgroundId": "#a68vz0#2",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material, __page__, 0",
       "referenceImage": "gltfMaterial.png"
     },
     {
       "title": "GLTF Material Alpha Blend",
-      "playgroundId": "#a68vz0#4",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material_AlphaBlend, __page__, 0",
       "referenceImage": "gltfMaterialAlphaBlend.png"
     },
     {
       "title": "GLTF Material Alpha Mask",
-      "playgroundId": "#a68vz0#5",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material_AlphaMask, __page__, 0",
       "referenceImage": "gltfMaterialAlphaMask.png"
     },
     {
-      "title": "GLTF Material Double Sided",
-      "playgroundId": "#a68vz0#7",
-      "referenceImage": "gltfMaterialDoubleSided.png"
+      "title": "GLTF Material Double Sided (Front)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material_DoubleSided, __page__, 0",
+      "referenceImage": "gltfMaterialDoubleSidedFront.png"
     },
     {
       "title": "GLTF Material Double Sided (Back)",
-      "playgroundId": "#a68vz0#6",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material_DoubleSided, __page__, 0, alpha = Math.PI / 2, alpha = -Math.PI / 2",
       "referenceImage": "gltfMaterialDoubleSidedBack.png"
     },
     {
+      "title": "GLTF Material Metallic Roughness (0)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material_MetallicRoughness, __page__, 0",
+      "referenceImage": "gltfMaterialMetallicRoughness0.png"
+    },
+    {
+      "title": "GLTF Material Metallic Roughness (1)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material_MetallicRoughness, __page__, 1",
+      "referenceImage": "gltfMaterialMetallicRoughness1.png"
+    },
+    {
       "title": "GLTF Material Mixed",
-      "playgroundId": "#a68vz0#8",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material_Mixed, __page__, 0",
       "referenceImage": "gltfMaterialMixed.png"
     },
     {
-      "title": "GLTF Mesh Primitives",
-      "playgroundId": "#a68vz0#9",
-      "referenceImage": "gltfMeshPrimitives.png"
+      "title": "GLTF Material Specular Glossiness (0)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material_SpecularGlossiness, __page__, 0",
+      "referenceImage": "gltfMaterialSpecularGlossiness0.png"
     },
     {
-      "title": "GLTF Mesh Primitive Mode",
-      "playgroundId": "#a68vz0#10",
-      "referenceImage": "gltfMeshPrimitiveMode.png"
+      "title": "GLTF Material Specular Glossiness (1)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Material_SpecularGlossiness, __page__, 1",
+      "referenceImage": "gltfMaterialSpecularGlossiness1.png"
+    },
+    {
+      "title": "GLTF Mesh Primitive Attribute",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Mesh_PrimitiveAttribute, __page__, 0",
+      "referenceImage": "gltfMeshPrimitiveAttribute.png"
+    },
+    {
+      "title": "GLTF Mesh Primitive Mode (0)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Mesh_PrimitiveMode, __page__, 0",
+      "referenceImage": "gltfMeshPrimitiveMode0.png"
+    },
+    {
+      "title": "GLTF Mesh Primitive Mode (1)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Mesh_PrimitiveMode, __page__, 1",
+      "referenceImage": "gltfMeshPrimitiveMode1.png"
     },
     {
       "title": "GLTF Mesh Primitive Vertex Color",
-      "playgroundId": "#a68vz0#11",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Mesh_PrimitiveVertexColor, __page__, 0",
       "referenceImage": "gltfMeshPrimitiveVertexColor.png"
     },
     {
-      "title": "GLTF Mesh Primitives UV",
-      "playgroundId": "#a68vz0#12",
-      "referenceImage": "gltfMeshPrimitivesUV.png"
+      "title": "GLTF Mesh Primitives",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Mesh_Primitives, __page__, 0",
+      "referenceImage": "gltfMeshPrimitives.png"
     },
     {
-      "title": "GLTF Primitive Attribute",
-      "playgroundId": "#a68vz0#13",
-      "referenceImage": "gltfPrimitiveAttribute.png"
+      "title": "GLTF Mesh Primitives UV (0)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Mesh_PrimitivesUV, __page__, 0",
+      "referenceImage": "gltfMeshPrimitivesUV0.png"
     },
     {
-      "title": "GLTF Metallic Roughness",
-      "playgroundId": "#a68vz0#14",
-      "referenceImage": "gltfMaterialMetallicRoughness.png"
+      "title": "GLTF Mesh Primitives UV (1)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Mesh_PrimitivesUV, __page__, 1",
+      "referenceImage": "gltfMeshPrimitivesUV1.png"
     },
     {
-      "title": "GLTF Specular Glossiness",
-      "playgroundId": "#a68vz0#15",
-      "referenceImage": "gltfMaterialSpecularGlossiness.png"
+      "title": "GLTF Node Attribute (0)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Node_Attribute, __page__, 0",
+      "referenceImage": "gltfNodeAttribute0.png"
     },
     {
-      "title": "GLTF Serializer Texture Transform",
-      "playgroundId": "#S5SWJB#32",
-      "referenceImage": "glTFSerializerTextureTransform.png"
+      "title": "GLTF Node Attribute (1)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Node_Attribute, __page__, 1",
+      "referenceImage": "gltfNodeAttribute1.png"
+    },
+    {
+      "title": "GLTF Node NegativeScale (0)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Node_NegativeScale, __page__, 0",
+      "referenceImage": "gltfNodeNegativeScale0.png"
+    },
+    {
+      "title": "GLTF Node NegativeScale (1)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Node_NegativeScale, __page__, 1",
+      "referenceImage": "gltfNodeNegativeScale1.png"
+    },
+    {
+      "title": "GLTF Texture Sampler (0)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Texture_Sampler, __page__, 0",
+      "referenceImage": "gltfTextureSampler0.png"
+    },
+    {
+      "title": "GLTF Texture Sampler (1)",
+      "playgroundId": "#DS8AA7#15",
+      "replace": "__folder__, Texture_Sampler, __page__, 1",
+      "referenceImage": "gltfTextureSampler1.png"
     },
     {
       "title": "GLTF Serializer with Negative World Matrix",
@@ -384,12 +499,7 @@
       "playgroundId": "#KX53VK#23",
       "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
       "referenceImage": "glTFSerializerNegativeWorldMatrix_Right.png"
-    },
-    {
-      "title": "GLTF Texture Sampler",
-      "playgroundId": "#a68vz0#16",
-      "referenceImage": "gltfTextureSampler.png"
-    },
+    },,
     {
       "title": "GLTF Buggy with Draco Mesh Compression",
       "playgroundId": "#JNW207#1",

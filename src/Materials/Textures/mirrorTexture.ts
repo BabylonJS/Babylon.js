@@ -175,7 +175,7 @@ export class MirrorTexture extends RenderTargetTexture {
             scene.getEngine().cullBackFaces = true;
             scene._mirroredCameraPosition = null;
 
-            delete scene.clipPlane;
+            scene.clipPlane = null;
         });
     }
 

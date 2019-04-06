@@ -1,6 +1,6 @@
 import { Scene } from "./scene";
 import { Nullable } from "./types";
-import { Matrix } from "./Maths/math";
+import { Matrix, Vector3 } from "./Maths/math";
 import { Engine } from "./Engines/engine";
 import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
@@ -9,6 +9,7 @@ import { EngineStore } from "./Engines/engineStore";
 import { _DevTools } from './Misc/devTools';
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { IInspectable } from './Misc/iInspectable';
+import { Tools } from './Misc/tools';
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -117,7 +118,7 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * Callback raised when the node is ready to be used
      */
-    public onReady: (node: Node) => void;
+    public onReady: Nullable<(node: Node) => void> = null;
 
     private _isEnabled = true;
     private _isParentEnabled = true;
@@ -125,22 +126,25 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public _currentRenderId = -1;
     private _parentUpdateId = -1;
-    protected _childUpdateId = -1;
+    /** @hidden */
+    public _childUpdateId = -1;
 
     /** @hidden */
-    public _waitingParentId: Nullable<string>;
+    public _waitingParentId: Nullable<string> = null;
     /** @hidden */
     public _scene: Scene;
     /** @hidden */
-    public _cache: any;
+    public _cache: any = {};
 
-    private _parentNode: Nullable<Node>;
-    private _children: Node[];
+    private _parentNode: Nullable<Node> = null;
+    private _children: Nullable<Node[]> = null;
 
     /** @hidden */
     public _worldMatrix = Matrix.Identity();
     /** @hidden */
     public _worldMatrixDeterminant = 0;
+    /** @hidden */
+    public _worldMatrixDeterminantIsDirty = true;
 
     /** @hidden */
     private _sceneRootNodesIndex = -1;
@@ -249,7 +253,7 @@ export class Node implements IBehaviorAware<Node> {
     */
     public onDisposeObservable = new Observable<Node>();
 
-    private _onDisposeObserver: Nullable<Observer<Node>>;
+    private _onDisposeObserver: Nullable<Observer<Node>> = null;
     /**
      * Sets a callback that will be raised when the node will be disposed
      */
@@ -381,6 +385,10 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @hidden */
     public _getWorldMatrixDeterminant(): number {
+        if (this._worldMatrixDeterminantIsDirty) {
+            this._worldMatrixDeterminantIsDirty = false;
+            this._worldMatrixDeterminant = this._worldMatrix.determinant();
+        }
         return this._worldMatrixDeterminant;
     }
 
@@ -772,5 +780,64 @@ export class Node implements IBehaviorAware<Node> {
                 node.createAnimationRange(data.name, data.from, data.to);
             }
         }
+    }
+        /**
+     * Return the minimum and maximum world vectors of the entire hierarchy under current node
+     * @param includeDescendants Include bounding info from descendants as well (true by default)
+     * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
+     * @returns the new bounding vectors
+     */
+    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3, max: Vector3 } {
+        // Ensures that all world matrix will be recomputed.
+        this.getScene().incrementRenderId();
+
+        this.computeWorldMatrix(true);
+
+        let min: Vector3;
+        let max: Vector3;
+
+        let thisAbstractMesh = (this as Node as AbstractMesh);
+        if (thisAbstractMesh.getBoundingInfo && thisAbstractMesh.subMeshes) {
+            // If this is an abstract mesh get its bounding info
+            let boundingInfo = thisAbstractMesh.getBoundingInfo();
+            min = boundingInfo.boundingBox.minimumWorld;
+            max = boundingInfo.boundingBox.maximumWorld;
+        } else {
+            min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        }
+
+        if (includeDescendants) {
+            let descendants = this.getDescendants(false);
+
+            for (var descendant of descendants) {
+                let childMesh = <AbstractMesh>descendant;
+                childMesh.computeWorldMatrix(true);
+
+                // Filters meshes based on custom predicate function.
+                if (predicate && !predicate(childMesh)) {
+                    continue;
+                }
+
+                //make sure we have the needed params to get mix and max
+                if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
+                    continue;
+                }
+
+                let childBoundingInfo = childMesh.getBoundingInfo();
+                let boundingBox = childBoundingInfo.boundingBox;
+
+                var minBox = boundingBox.minimumWorld;
+                var maxBox = boundingBox.maximumWorld;
+
+                Tools.CheckExtends(minBox, min, max);
+                Tools.CheckExtends(maxBox, min, max);
+            }
+        }
+
+        return {
+            min: min,
+            max: max
+        };
     }
 }
