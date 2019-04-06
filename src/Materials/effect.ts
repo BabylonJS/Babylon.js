@@ -4,6 +4,7 @@ import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math
 import { Constants } from "../Engines/constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
+import { IDisposable } from '../scene';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -181,7 +182,7 @@ export class EffectCreationOptions {
 /**
  * Effect containing vertex and fragment shader that can be executed on an object.
  */
-export class Effect {
+export class Effect implements IDisposable {
     /**
      * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
      */
@@ -241,12 +242,13 @@ export class Effect {
     private _engine: Engine;
     private _uniformBuffersNames: { [key: string]: number } = {};
     private _uniformsNames: string[];
-    private _samplers: string[];
+    private _samplerList: string[];
+    private _samplers: {[key: string]: number} = {};
     private _isReady = false;
     private _compilationError = "";
     private _attributesNames: string[];
     private _attributes: number[];
-    private _uniforms: Nullable<WebGLUniformLocation>[];
+    private _uniforms: {[key: string] : Nullable<WebGLUniformLocation>} = {};
     /**
      * Key for the effect.
      * @hidden
@@ -291,7 +293,7 @@ export class Effect {
 
             this._attributesNames = options.attributes;
             this._uniformsNames = options.uniformsNames.concat(options.samplers);
-            this._samplers = options.samplers.slice();
+            this._samplerList = options.samplers.slice();
             this.defines = options.defines;
             this.onError = options.onError;
             this.onCompiled = options.onCompiled;
@@ -308,7 +310,7 @@ export class Effect {
             this._engine = <Engine>engine;
             this.defines = (defines == null ? "" : defines);
             this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
-            this._samplers = samplers ? <string[]>samplers.slice() : [];
+            this._samplerList = samplers ? <string[]>samplers.slice() : [];
             this._attributesNames = (<string[]>attributesNamesOrOptions);
 
             this.onError = onError;
@@ -453,7 +455,7 @@ export class Effect {
      * @returns the location of the uniform.
      */
     public getUniform(uniformName: string): Nullable<WebGLUniformLocation> {
-        return this._uniforms[this._uniformsNames.indexOf(uniformName)];
+        return this._uniforms[uniformName];
     }
 
     /**
@@ -461,7 +463,7 @@ export class Effect {
      * @returns The array of sampler variable neames.
      */
     public getSamplers(): string[] {
-        return this._samplers;
+        return this._samplerList;
     }
 
     /**
@@ -834,18 +836,26 @@ export class Effect {
                     }
                 }
 
-                this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
+                let uniforms = engine.getUniforms(this._program, this._uniformsNames);
+                uniforms.forEach((uniform, index) => {
+                    this._uniforms[this._uniformsNames[index]] = uniform;
+                });
+
                 this._attributes = engine.getAttributes(this._program, attributesNames);
 
                 var index: number;
-                for (index = 0; index < this._samplers.length; index++) {
-                    var sampler = this.getUniform(this._samplers[index]);
+                for (index = 0; index < this._samplerList.length; index++) {
+                    var sampler = this.getUniform(this._samplerList[index]);
 
                     if (sampler == null) {
-                        this._samplers.splice(index, 1);
+                        this._samplerList.splice(index, 1);
                         index--;
                     }
                 }
+
+                this._samplerList.forEach((name, index) => {
+                    this._samplers[name] = index;
+                });
 
                 engine.bindSamplers(this);
 
@@ -926,7 +936,7 @@ export class Effect {
      * @hidden
      */
     public _bindTexture(channel: string, texture: InternalTexture): void {
-        this._engine._bindTexture(this._samplers.indexOf(channel), texture);
+        this._engine._bindTexture(this._samplers[channel], texture);
     }
 
     /**
@@ -935,7 +945,7 @@ export class Effect {
      * @param texture Texture to set.
      */
     public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
-        this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        this._engine.setTexture(this._samplers[channel], this._uniforms[channel], texture);
     }
 
     /**
@@ -944,7 +954,7 @@ export class Effect {
      * @param texture Texture to set.
      */
     public setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void {
-        this._engine.setDepthStencilTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        this._engine.setDepthStencilTexture(this._samplers[channel], this._uniforms[channel], texture);
     }
 
     /**
@@ -953,14 +963,16 @@ export class Effect {
      * @param textures Textures to set.
      */
     public setTextureArray(channel: string, textures: BaseTexture[]): void {
-        if (this._samplers.indexOf(channel + "Ex") === -1) {
-            var initialPos = this._samplers.indexOf(channel);
+        let exName = channel + "Ex";
+        if (this._samplerList.indexOf(exName) === -1) {
+            var initialPos = this._samplers[channel];
             for (var index = 1; index < textures.length; index++) {
-                this._samplers.splice(initialPos + index, 0, channel + "Ex");
+                this._samplerList.splice(initialPos + index, 0, exName);
+                this._samplers[exName] = initialPos + index;
             }
         }
 
-        this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
+        this._engine.setTextureArray(this._samplers[channel], this._uniforms[channel], textures);
     }
 
     /**
@@ -969,7 +981,7 @@ export class Effect {
      * @param postProcess Post process to get the input texture from.
      */
     public setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void {
-        this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
+        this._engine.setTextureFromPostProcess(this._samplers[channel], postProcess);
     }
 
     /**
@@ -979,7 +991,7 @@ export class Effect {
      * @param postProcess Post process to get the output texture from.
      */
     public setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void {
-        this._engine.setTextureFromPostProcessOutput(this._samplers.indexOf(channel), postProcess);
+        this._engine.setTextureFromPostProcessOutput(this._samplers[channel], postProcess);
     }
 
     /** @hidden */
@@ -1110,7 +1122,7 @@ export class Effect {
 
         this._valueCache[uniformName] = value;
 
-        this._engine.setInt(this.getUniform(uniformName), value);
+        this._engine.setInt(this._uniforms[uniformName], value);
 
         return this;
     }
@@ -1123,7 +1135,7 @@ export class Effect {
      */
     public setIntArray(uniformName: string, array: Int32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setIntArray(this.getUniform(uniformName), array);
+        this._engine.setIntArray(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1136,7 +1148,7 @@ export class Effect {
      */
     public setIntArray2(uniformName: string, array: Int32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setIntArray2(this.getUniform(uniformName), array);
+        this._engine.setIntArray2(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1149,7 +1161,7 @@ export class Effect {
      */
     public setIntArray3(uniformName: string, array: Int32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setIntArray3(this.getUniform(uniformName), array);
+        this._engine.setIntArray3(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1162,7 +1174,7 @@ export class Effect {
      */
     public setIntArray4(uniformName: string, array: Int32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setIntArray4(this.getUniform(uniformName), array);
+        this._engine.setIntArray4(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1175,7 +1187,7 @@ export class Effect {
      */
     public setFloatArray(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray(this.getUniform(uniformName), array);
+        this._engine.setFloatArray(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1188,7 +1200,7 @@ export class Effect {
      */
     public setFloatArray2(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray2(this.getUniform(uniformName), array);
+        this._engine.setFloatArray2(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1201,7 +1213,7 @@ export class Effect {
      */
     public setFloatArray3(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray3(this.getUniform(uniformName), array);
+        this._engine.setFloatArray3(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1214,7 +1226,7 @@ export class Effect {
      */
     public setFloatArray4(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray4(this.getUniform(uniformName), array);
+        this._engine.setFloatArray4(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1227,7 +1239,7 @@ export class Effect {
      */
     public setArray(uniformName: string, array: number[]): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setArray(this.getUniform(uniformName), array);
+        this._engine.setArray(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1240,7 +1252,7 @@ export class Effect {
      */
     public setArray2(uniformName: string, array: number[]): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setArray2(this.getUniform(uniformName), array);
+        this._engine.setArray2(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1253,7 +1265,7 @@ export class Effect {
      */
     public setArray3(uniformName: string, array: number[]): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setArray3(this.getUniform(uniformName), array);
+        this._engine.setArray3(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1266,7 +1278,7 @@ export class Effect {
      */
     public setArray4(uniformName: string, array: number[]): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setArray4(this.getUniform(uniformName), array);
+        this._engine.setArray4(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1283,7 +1295,7 @@ export class Effect {
         }
 
         this._valueCache[uniformName] = null;
-        this._engine.setMatrices(this.getUniform(uniformName), matrices);
+        this._engine.setMatrices(this._uniforms[uniformName], matrices);
 
         return this;
     }
@@ -1296,7 +1308,7 @@ export class Effect {
      */
     public setMatrix(uniformName: string, matrix: Matrix): Effect {
         if (this._cacheMatrix(uniformName, matrix)) {
-            this._engine.setMatrix(this.getUniform(uniformName), matrix);
+            this._engine.setMatrix(this._uniforms[uniformName], matrix);
         }
         return this;
     }
@@ -1309,7 +1321,7 @@ export class Effect {
      */
     public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix3x3(this.getUniform(uniformName), matrix);
+        this._engine.setMatrix3x3(this._uniforms[uniformName], matrix);
 
         return this;
     }
@@ -1322,7 +1334,7 @@ export class Effect {
      */
     public setMatrix2x2(uniformName: string, matrix: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix2x2(this.getUniform(uniformName), matrix);
+        this._engine.setMatrix2x2(this._uniforms[uniformName], matrix);
 
         return this;
     }
@@ -1341,7 +1353,7 @@ export class Effect {
 
         this._valueCache[uniformName] = value;
 
-        this._engine.setFloat(this.getUniform(uniformName), value);
+        this._engine.setFloat(this._uniforms[uniformName], value);
 
         return this;
     }
@@ -1360,7 +1372,7 @@ export class Effect {
 
         this._valueCache[uniformName] = bool;
 
-        this._engine.setBool(this.getUniform(uniformName), bool ? 1 : 0);
+        this._engine.setBool(this._uniforms[uniformName], bool ? 1 : 0);
 
         return this;
     }
@@ -1373,7 +1385,7 @@ export class Effect {
      */
     public setVector2(uniformName: string, vector2: Vector2): Effect {
         if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
-            this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
+            this._engine.setFloat2(this._uniforms[uniformName], vector2.x, vector2.y);
         }
         return this;
     }
@@ -1387,7 +1399,7 @@ export class Effect {
      */
     public setFloat2(uniformName: string, x: number, y: number): Effect {
         if (this._cacheFloat2(uniformName, x, y)) {
-            this._engine.setFloat2(this.getUniform(uniformName), x, y);
+            this._engine.setFloat2(this._uniforms[uniformName], x, y);
         }
         return this;
     }
@@ -1400,7 +1412,7 @@ export class Effect {
      */
     public setVector3(uniformName: string, vector3: Vector3): Effect {
         if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
-            this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
+            this._engine.setFloat3(this._uniforms[uniformName], vector3.x, vector3.y, vector3.z);
         }
         return this;
     }
@@ -1415,7 +1427,7 @@ export class Effect {
      */
     public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
         if (this._cacheFloat3(uniformName, x, y, z)) {
-            this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
+            this._engine.setFloat3(this._uniforms[uniformName], x, y, z);
         }
         return this;
     }
@@ -1428,7 +1440,7 @@ export class Effect {
      */
     public setVector4(uniformName: string, vector4: Vector4): Effect {
         if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
-            this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
+            this._engine.setFloat4(this._uniforms[uniformName], vector4.x, vector4.y, vector4.z, vector4.w);
         }
         return this;
     }
@@ -1444,7 +1456,7 @@ export class Effect {
      */
     public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
         if (this._cacheFloat4(uniformName, x, y, z, w)) {
-            this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
+            this._engine.setFloat4(this._uniforms[uniformName], x, y, z, w);
         }
         return this;
     }
@@ -1458,7 +1470,7 @@ export class Effect {
     public setColor3(uniformName: string, color3: Color3): Effect {
 
         if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-            this._engine.setColor3(this.getUniform(uniformName), color3);
+            this._engine.setColor3(this._uniforms[uniformName], color3);
         }
         return this;
     }
@@ -1472,7 +1484,7 @@ export class Effect {
      */
     public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
         if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-            this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
+            this._engine.setColor4(this._uniforms[uniformName], color3, alpha);
         }
         return this;
     }
@@ -1485,9 +1497,14 @@ export class Effect {
      */
     public setDirectColor4(uniformName: string, color4: Color4): Effect {
         if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
-            this._engine.setDirectColor4(this.getUniform(uniformName), color4);
+            this._engine.setDirectColor4(this._uniforms[uniformName], color4);
         }
         return this;
+    }
+
+    /** Release all associated resources */
+    public dispose() {
+        this._engine._releaseEffect(this);
     }
 
     /**

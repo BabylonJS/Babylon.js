@@ -758,7 +758,7 @@ export class InputText extends Control implements IFocusableControl {
         this._isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
         try {
-            ev.clipboardData.setData("text/plain", this._highlightedText);
+            ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         }
         catch { } //pass
         this._host.clipboardData = this._highlightedText;
@@ -773,7 +773,7 @@ export class InputText extends Control implements IFocusableControl {
         this._cursorOffset = this.text.length - this._startHighlightIndex;
         //when write permission to clipbaord data is denied
         try {
-            ev.clipboardData.setData("text/plain", this._highlightedText);
+            ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         }
         catch { } //pass
 

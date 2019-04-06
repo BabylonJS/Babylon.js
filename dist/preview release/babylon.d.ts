@@ -267,7 +267,7 @@ declare module BABYLON {
      * Constant used to define the minimal number value in Babylon.js
      * @ignorenaming
      */
-    export const Epsilon = 0.001;
+    let Epsilon: number;
     /**
      * Class used to hold a RBG color
      */
@@ -484,7 +484,7 @@ declare module BABYLON {
          */
         static FromHexString(hex: string): Color3;
         /**
-         * Creates a new Vector3 from the starting index of the given array
+         * Creates a new Color3 from the starting index of the given array
          * @param array defines the source array
          * @param offset defines an offset in the source array
          * @returns a new Color3 object
@@ -2939,6 +2939,14 @@ declare module BABYLON {
          */
         setTranslationFromFloats(x: number, y: number, z: number): Matrix;
         /**
+         * Adds the translation vector (using 3 floats) in the current matrix
+         * @param x defines the 1st component of the translation
+         * @param y defines the 2nd component of the translation
+         * @param z defines the 3rd component of the translation
+         * @returns the current updated matrix
+         */
+        addTranslationFromFloats(x: number, y: number, z: number): Matrix;
+        /**
          * Inserts the translation vector in the current matrix
          * @param vector3 defines the translation to insert
          * @returns the current updated matrix
@@ -3256,6 +3264,14 @@ declare module BABYLON {
          * @param result defines the target matrix
          */
         static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Matrix): void;
+        /**
+         * Takes normalised vectors and returns a rotation matrix to align "from" with "to".
+         * Taken from http://www.iquilezles.org/www/articles/noacos/noacos.htm
+         * @param from defines the vector to align
+         * @param to defines the vector to align to
+         * @param result defines the target matrix
+         */
+        static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void;
         /**
          * Creates a rotation matrix
          * @param yaw defines the yaw angle in radians (Y axis)
@@ -6158,38 +6174,10 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Internal interface used to track InternalTexture already bound to the GL context
-     */
-    export interface IInternalTextureTracker {
-        /**
-         * Gets or set the previous tracker in the list
-         */
-        previous: Nullable<IInternalTextureTracker>;
-        /**
-         * Gets or set the next tracker in the list
-         */
-        next: Nullable<IInternalTextureTracker>;
-    }
-    /**
-     * Internal class used by the engine to get list of InternalTexture already bound to the GL context
-     */
-    export class DummyInternalTextureTracker {
-        /**
-         * Gets or set the previous tracker in the list
-         */
-        previous: Nullable<IInternalTextureTracker>;
-        /**
-         * Gets or set the next tracker in the list
-         */
-        next: Nullable<IInternalTextureTracker>;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store data associated with WebGL texture data for the engine
      * This class should not be used directly
      */
-    export class InternalTexture implements IInternalTextureTracker {
+    export class InternalTexture {
         /** hidden */
         static _UpdateRGBDAsync: (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: SphericalPolynomial | null, lodScale: number, lodOffset: number) => Promise<void>;
         /**
@@ -6316,20 +6304,10 @@ declare module BABYLON {
          * Gets a boolean indicating if the texture is inverted on Y axis
          */
         invertY: boolean;
-        /**
-         * Gets or set the previous tracker in the list
-         */
-        previous: Nullable<IInternalTextureTracker>;
-        /**
-         * Gets or set the next tracker in the list
-         */
-        next: Nullable<IInternalTextureTracker>;
         /** @hidden */
         _invertVScale: boolean;
         /** @hidden */
-        _initialSlot: number;
-        /** @hidden */
-        _designatedSlot: number;
+        _associatedChannel: number;
         /** @hidden */
         _dataSource: number;
         /** @hidden */
@@ -6347,9 +6325,9 @@ declare module BABYLON {
         /** @hidden */
         _files: Nullable<string[]>;
         /** @hidden */
-        _workingCanvas: HTMLCanvasElement;
+        _workingCanvas: Nullable<HTMLCanvasElement>;
         /** @hidden */
-        _workingContext: CanvasRenderingContext2D;
+        _workingContext: Nullable<CanvasRenderingContext2D>;
         /** @hidden */
         _framebuffer: Nullable<WebGLFramebuffer>;
         /** @hidden */
@@ -6391,11 +6369,11 @@ declare module BABYLON {
         /** @hidden */
         _depthStencilTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
-        _lodTextureHigh: BaseTexture;
+        _lodTextureHigh: Nullable<BaseTexture>;
         /** @hidden */
-        _lodTextureMid: BaseTexture;
+        _lodTextureMid: Nullable<BaseTexture>;
         /** @hidden */
-        _lodTextureLow: BaseTexture;
+        _lodTextureLow: Nullable<BaseTexture>;
         /** @hidden */
         _isRGBD: boolean;
         /** @hidden */
@@ -7508,8 +7486,9 @@ declare module BABYLON {
         protected _scaling: Vector3;
         protected _isDirty: boolean;
         private _transformToBoneReferal;
+        private _billboardMode;
         /**
-        * Set the billboard mode. Default is 0.
+        * Gets or sets the billboard mode. Default is 0.
         *
         * | Value | Type | Description |
         * | --- | --- | --- |
@@ -7521,6 +7500,7 @@ declare module BABYLON {
         *
         */
         billboardMode: number;
+        private _preserveParentRotationForBillboard;
         /**
          * Gets or sets a boolean indicating that parent rotation should be preserved when using billboards.
          * This could be useful for glTF objects where parent rotation helps converting from right handed to left handed
@@ -7530,8 +7510,9 @@ declare module BABYLON {
          * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
          */
         scalingDeterminant: number;
+        private _infiniteDistance;
         /**
-         * Sets the distance of the object to max, often used by skybox
+         * Gets or sets the distance of the object to max, often used by skybox
          */
         infiniteDistance: boolean;
         /**
@@ -7539,16 +7520,19 @@ declare module BABYLON {
          * By default the system will update normals to compensate
          */
         ignoreNonUniformScaling: boolean;
+        /**
+         * Gets or sets a boolean indicating that even if rotationQuaternion is defined, you can keep updating rotation property and Babylon.js will just mix both
+         */
+        reIntegrateRotationIntoRotationQuaternion: boolean;
         /** @hidden */
-        _poseMatrix: Matrix;
+        _poseMatrix: Nullable<Matrix>;
         /** @hidden */
         _localMatrix: Matrix;
+        private _usePivotMatrix;
         private _absolutePosition;
         private _pivotMatrix;
         private _pivotMatrixInverse;
         protected _postMultiplyPivotMatrix: boolean;
-        private _tempMatrix;
-        private _tempMatrix2;
         protected _isWorldMatrixFrozen: boolean;
         /** @hidden */
         _indexInSceneTransformNodesArray: number;
@@ -8335,6 +8319,124 @@ declare module BABYLON {
          */
         step?: number;
     }
+}
+declare module BABYLON {
+    /**
+     * This represents the required contract to create a new type of texture loader.
+     */
+    export interface IInternalTextureLoader {
+        /**
+         * Defines wether the loader supports cascade loading the different faces.
+         */
+        supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @param fallback defines the fallback internal texture if any
+         * @param isBase64 defines whether the texture is encoded as a base64
+         * @param isBuffer defines whether the texture data are stored as a buffer
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        /**
+         * Transform the url before loading if required.
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the transformed texture
+         */
+        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
+        /**
+         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the fallback texture
+         */
+        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
+        /**
+         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         */
+        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        /**
+         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         */
+        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
+    }
+}
+declare module BABYLON {
+        interface Engine {
+            /**
+             * Creates a depth stencil cube texture.
+             * This is only available in WebGL 2.
+             * @param size The size of face edge in the cube texture.
+             * @param options The options defining the cube texture.
+             * @returns The cube texture
+             */
+            _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture;
+            /**
+             * Creates a cube texture
+             * @param rootUrl defines the url where the files to load is located
+             * @param scene defines the current scene
+             * @param files defines the list of files to load (1 per face)
+             * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+             * @param onLoad defines an optional callback raised when the texture is loaded
+             * @param onError defines an optional callback raised if there is an issue to load the texture
+             * @param format defines the format of the data
+             * @param forcedExtension defines the extension to use to pick the right loader
+             * @param createPolynomials if a polynomial sphere should be created for the cube texture
+             * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+             * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+             * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+             * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (defualt: empty array)
+             * @returns the cube texture as an InternalTexture
+             */
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, excludeLoaders: Array<IInternalTextureLoader>): InternalTexture;
+            /**
+             * Creates a cube texture
+             * @param rootUrl defines the url where the files to load is located
+             * @param scene defines the current scene
+             * @param files defines the list of files to load (1 per face)
+             * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+             * @param onLoad defines an optional callback raised when the texture is loaded
+             * @param onError defines an optional callback raised if there is an issue to load the texture
+             * @param format defines the format of the data
+             * @param forcedExtension defines the extension to use to pick the right loader
+             * @returns the cube texture as an InternalTexture
+             */
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any): InternalTexture;
+            /**
+             * Creates a cube texture
+             * @param rootUrl defines the url where the files to load is located
+             * @param scene defines the current scene
+             * @param files defines the list of files to load (1 per face)
+             * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+             * @param onLoad defines an optional callback raised when the texture is loaded
+             * @param onError defines an optional callback raised if there is an issue to load the texture
+             * @param format defines the format of the data
+             * @param forcedExtension defines the extension to use to pick the right loader
+             * @param createPolynomials if a polynomial sphere should be created for the cube texture
+             * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+             * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+             * @returns the cube texture as an InternalTexture
+             */
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
+            /** @hidden */
+            _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+            /** @hidden */
+            _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
+            /** @hidden */
+            _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
+            /** @hidden */
+            _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+        }
 }
 declare module BABYLON {
     /**
@@ -11507,6 +11609,10 @@ declare module BABYLON {
      */
     export type CameraStageAction = (camera: Camera) => void;
     /**
+     * Strong typing of a Camera Frame buffer related stage step action
+     */
+    export type CameraStageFrameBufferAction = (camera: Camera) => boolean;
+    /**
      * Strong typing of a Render Target related stage step action
      */
     export type RenderTargetStageAction = (renderTarget: RenderTargetTexture) => void;
@@ -13893,6 +13999,17 @@ declare module BABYLON {
         dispose(): void;
         private _beforeClear;
     }
+}
+declare module BABYLON {
+        interface Engine {
+            /**
+             * Creates a new render target cube texture
+             * @param size defines the size of the texture
+             * @param options defines the options used to create the texture
+             * @returns a new render target cube texture stored in an InternalTexture
+             */
+            createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture;
+        }
 }
 declare module BABYLON {
     /** @hidden */
@@ -16619,7 +16736,7 @@ declare module BABYLON {
         /** @hidden */
         _preActivate(): InstancedMesh;
         /** @hidden */
-        _activate(renderId: number): InstancedMesh;
+        _activate(renderId: number): boolean;
         /**
          * Returns the current associated LOD AbstractMesh.
          */
@@ -17230,7 +17347,8 @@ declare module BABYLON {
         private _renderOpaque;
         private _renderAlphaTest;
         private _renderTransparent;
-        private _edgesRenderers;
+        /** @hidden */
+        _edgesRenderers: SmartArray<IEdgesRenderer>;
         onBeforeTransparentRendering: () => void;
         /**
          * Set the opaque sort comparison function.
@@ -18020,7 +18138,7 @@ declare module BABYLON {
          * List of inspectable custom properties (used by the Inspector)
          * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
          */
-        inspectableCustomProperties: IInspectable[];
+        inspectableCustomProperties: Nullable<IInspectable[]>;
         private _noMipmap;
         /** @hidden */
         _invertY: boolean;
@@ -18162,6 +18280,150 @@ declare module BABYLON {
          */
         static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number): Texture;
     }
+}
+declare module BABYLON {
+        interface Engine {
+            /**
+             * Creates a raw texture
+             * @param data defines the data to store in the texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param format defines the format of the data
+             * @param generateMipMaps defines if the engine should generate the mip levels
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+             * @param compression defines the compression used (null by default)
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             * @returns the raw texture inside an InternalTexture
+             */
+            createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, type: number): InternalTexture;
+            /**
+             * Update a raw texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store in the texture
+             * @param format defines the format of the data
+             * @param invertY defines if data must be stored with Y axis inverted
+             */
+            updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean): void;
+            /**
+             * Update a raw texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store in the texture
+             * @param format defines the format of the data
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param compression defines the compression used (null by default)
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             */
+            updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, type: number): void;
+            /**
+             * Creates a new raw cube texture
+             * @param data defines the array of data to use to create each face
+             * @param size defines the size of the textures
+             * @param format defines the format of the data
+             * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+             * @param generateMipMaps  defines if the engine should generate the mip levels
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+             * @param compression defines the compression used (null by default)
+             * @returns the cube texture as an InternalTexture
+             */
+            createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>): InternalTexture;
+            /**
+             * Update a raw cube texture
+             * @param texture defines the texture to udpdate
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             * @param invertY defines if data must be stored with Y axis inverted
+             */
+            updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean): void;
+            /**
+             * Update a raw cube texture
+             * @param texture defines the texture to udpdate
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param compression defines the compression used (null by default)
+             */
+            updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string>): void;
+            /**
+             * Update a raw cube texture
+             * @param texture defines the texture to udpdate
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param compression defines the compression used (null by default)
+             * @param level defines which level of the texture to update
+             */
+            updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string>, level: number): void;
+            /**
+             * Creates a new raw cube texture from a specified url
+             * @param url defines the url where the data is located
+             * @param scene defines the current scene
+             * @param size defines the size of the textures
+             * @param format defines the format of the data
+             * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+             * @param noMipmap defines if the engine should avoid generating the mip levels
+             * @param callback defines a callback used to extract texture data from loaded data
+             * @param mipmapGenerator defines to provide an optional tool to generate mip levels
+             * @param onLoad defines a callback called when texture is loaded
+             * @param onError defines a callback called if there is an error
+             * @returns the cube texture as an InternalTexture
+             */
+            createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad: Nullable<() => void>, onError: Nullable<(message?: string, exception?: any) => void>): InternalTexture;
+            /**
+             * Creates a new raw cube texture from a specified url
+             * @param url defines the url where the data is located
+             * @param scene defines the current scene
+             * @param size defines the size of the textures
+             * @param format defines the format of the data
+             * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+             * @param noMipmap defines if the engine should avoid generating the mip levels
+             * @param callback defines a callback used to extract texture data from loaded data
+             * @param mipmapGenerator defines to provide an optional tool to generate mip levels
+             * @param onLoad defines a callback called when texture is loaded
+             * @param onError defines a callback called if there is an error
+             * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @returns the cube texture as an InternalTexture
+             */
+            createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad: Nullable<() => void>, onError: Nullable<(message?: string, exception?: any) => void>, samplingMode: number, invertY: boolean): InternalTexture;
+            /**
+             * Creates a new raw 3D texture
+             * @param data defines the data used to create the texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param depth defines the depth of the texture
+             * @param format defines the format of the texture
+             * @param generateMipMaps defines if the engine must generate mip levels
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+             * @param compression defines the compressed used (can be null)
+             * @param textureType defines the compressed used (can be null)
+             * @returns a new raw 3D texture (stored in an InternalTexture)
+             */
+            createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number): InternalTexture;
+            /**
+             * Update a raw 3D texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param invertY defines if data must be stored with Y axis inverted
+             */
+            updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean): void;
+            /**
+             * Update a raw 3D texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param compression defines the used compression (can be null)
+             * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+             */
+            updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, textureType: number): void;
+        }
 }
 declare module BABYLON {
     /**
@@ -18332,11 +18594,13 @@ declare module BABYLON {
          */
         private _currentValue;
         /** @hidden */
-        _workValue: any;
+        _animationState: _IAnimationState;
         /**
          * The active target of the runtime animation
          */
-        private _activeTarget;
+        private _activeTargets;
+        private _currentActiveTarget;
+        private _directTarget;
         /**
          * The target path of the runtime animation
          */
@@ -18357,6 +18621,13 @@ declare module BABYLON {
          * The previous ratio of the runtime animation
          */
         private _previousRatio;
+        private _enableBlending;
+        private _keys;
+        private _minFrame;
+        private _maxFrame;
+        private _minValue;
+        private _maxValue;
+        private _targetIsArray;
         /**
          * Gets the current frame of the runtime animation
          */
@@ -18377,6 +18648,8 @@ declare module BABYLON {
          * Gets the actual target of the runtime animation
          */
         readonly target: any;
+        /** @hidden */
+        _onLoop: () => void;
         /**
          * Create a new RuntimeAnimation object
          * @param target defines the target of the animation
@@ -18385,6 +18658,7 @@ declare module BABYLON {
          * @param host defines the initiating Animatable
          */
         constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
+        private _preparePath;
         /**
          * Gets the animation from the runtime animation
          */
@@ -18404,21 +18678,12 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
-         * Interpolates the animation from the current frame
-         * @param currentFrame The frame to interpolate the animation to
-         * @param repeatCount The number of times that the animation should loop
-         * @param loopMode The type of looping mode to use
-         * @param offsetValue Animation offset value
-         * @param highLimitValue The high limit value
-         * @returns The interpolated value
-         */
-        private _interpolate;
-        /**
          * Apply the interpolated value to the target
          * @param currentValue defines the value computed by the animation
          * @param weight defines the weight to apply to this value (Defaults to 1.0)
          */
-        setValue(currentValue: any, weight?: number): void;
+        setValue(currentValue: any, weight: number): void;
+        private _getOriginalValues;
         private _setValue;
         /**
          * Gets the loop pmode of the runtime animation
@@ -18445,7 +18710,7 @@ declare module BABYLON {
          * @param onLoop optional callback called when animation loops
          * @returns a boolean indicating if the animation is running
          */
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number, onLoop?: () => void): boolean;
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
     }
 }
 declare module BABYLON {
@@ -18493,7 +18758,7 @@ declare module BABYLON {
         /**
          * Gets the root Animatable used to synchronize and normalize animations
          */
-        readonly syncRoot: Animatable;
+        readonly syncRoot: Nullable<Animatable>;
         /**
          * Gets the current frame of the first RuntimeAnimation
          * Used to synchronize Animatables
@@ -18923,7 +19188,7 @@ declare module BABYLON {
         /**
          * Clone the current skeleton
          * @param name defines the name of the new skeleton
-         * @param id defines the id of the enw skeleton
+         * @param id defines the id of the new skeleton
          * @returns the new skeleton
          */
         clone(name: string, id: string): Skeleton;
@@ -20424,12 +20689,15 @@ declare module BABYLON {
      **/
     class _InstanceDataStorage {
         visibleInstances: any;
-        renderIdForInstances: number[];
         batchCache: _InstancesBatch;
         instancesBufferSize: number;
         instancesBuffer: Nullable<Buffer>;
         instancesData: Float32Array;
         overridenInstanceCount: number;
+        isFrozen: boolean;
+        previousBatch: _InstancesBatch;
+        hardwareInstancedRendering: boolean;
+        sideOrientation: number;
     }
     /**
      * @hidden
@@ -20438,6 +20706,7 @@ declare module BABYLON {
         mustReturn: boolean;
         visibleInstances: Nullable<InstancedMesh[]>[];
         renderSelf: boolean[];
+        hardwareInstancedRendering: boolean[];
     }
     /**
      * Class used to represent renderable models
@@ -20930,6 +21199,10 @@ declare module BABYLON {
         _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */
         _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
+        /** @hidden */
+        _freeze(): void;
+        /** @hidden */
+        _unFreeze(): void;
         /**
          * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
          * @param subMesh defines the subMesh to render
@@ -21669,15 +21942,15 @@ declare module BABYLON {
         /**
          * Callback triggered when the material is compiled
          */
-        onCompiled: (effect: Effect) => void;
+        onCompiled: Nullable<(effect: Effect) => void>;
         /**
          * Callback triggered when an error occurs
          */
-        onError: (effect: Effect, errors: string) => void;
+        onError: Nullable<(effect: Effect, errors: string) => void>;
         /**
          * Callback triggered to get the render target textures
          */
-        getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+        getRenderTargetTextures: Nullable<() => SmartArray<RenderTargetTexture>>;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
@@ -21693,7 +21966,7 @@ declare module BABYLON {
         /**
          * Stores the animations for the material
          */
-        animations: Array<Animation>;
+        animations: Nullable<Array<Animation>>;
         /**
         * An event triggered when the material is disposed
         */
@@ -22140,7 +22413,7 @@ declare module BABYLON {
         /** @hidden */
         _trianglePlanes: Plane[];
         /** @hidden */
-        _lastColliderTransformMatrix: Matrix;
+        _lastColliderTransformMatrix: Nullable<Matrix>;
         /** @hidden */
         _renderId: number;
         /** @hidden */
@@ -23941,6 +24214,10 @@ declare module BABYLON {
         /** @hidden */
         _occlusionQuery: Nullable<WebGLQuery>;
         private _visibility;
+        /** @hidden */
+        _isActive: boolean;
+        /** @hidden */
+        _renderingGroup: Nullable<RenderingGroup>;
         /**
          * Gets or sets mesh visibility between 0 and 1 (default is 1)
          */
@@ -24026,6 +24303,10 @@ declare module BABYLON {
          */
         alwaysSelectAsActiveMesh: boolean;
         /**
+         * Gets or sets a boolean indicating that the bounding info does not need to be kept in sync (for performance reason)
+         */
+        doNotSyncBoundingInfo: boolean;
+        /**
          * Gets or sets the current action manager
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions
          */
@@ -24088,7 +24369,7 @@ declare module BABYLON {
         /** @hidden */
         readonly _positions: Nullable<Vector3[]>;
         /** @hidden */
-        _waitingActions: any;
+        _waitingActions: Nullable<any>;
         /** @hidden */
         _waitingFreezeWorldMatrix: Nullable<boolean>;
         private _skeleton;
@@ -24263,7 +24544,11 @@ declare module BABYLON {
         /** @hidden */
         _preActivateForIntermediateRendering(renderId: number): void;
         /** @hidden */
-        _activate(renderId: number): void;
+        _activate(renderId: number): boolean;
+        /** @hidden */
+        _freeze(): void;
+        /** @hidden */
+        _unFreeze(): void;
         /**
          * Gets the current world matrix
          * @returns a Matrix
@@ -24309,16 +24594,6 @@ declare module BABYLON {
          * @returns the new rotation vector
          */
         calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3;
-        /**
-         * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
-         * @param includeDescendants Include bounding info from descendants as well (true by default)
-         * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
-         * @returns the new bounding vectors
-         */
-        getHierarchyBoundingVectors(includeDescendants?: boolean, predicate?: Nullable<(abstractMesh: AbstractMesh) => boolean>): {
-            min: Vector3;
-            max: Vector3;
-        };
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
@@ -24375,7 +24650,7 @@ declare module BABYLON {
          * Gets Collider object used to compute collisions (not physics)
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
          */
-        readonly collider: Collider;
+        readonly collider: Nullable<Collider>;
         /**
          * Move the mesh using collision engine
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
@@ -24819,14 +25094,15 @@ declare module BABYLON {
         /**
          * Callback raised when the node is ready to be used
          */
-        onReady: (node: Node) => void;
+        onReady: Nullable<(node: Node) => void>;
         private _isEnabled;
         private _isParentEnabled;
         private _isReady;
         /** @hidden */
         _currentRenderId: number;
         private _parentUpdateId;
-        protected _childUpdateId: number;
+        /** @hidden */
+        _childUpdateId: number;
         /** @hidden */
         _waitingParentId: Nullable<string>;
         /** @hidden */
@@ -24839,6 +25115,8 @@ declare module BABYLON {
         _worldMatrix: Matrix;
         /** @hidden */
         _worldMatrixDeterminant: number;
+        /** @hidden */
+        _worldMatrixDeterminantIsDirty: boolean;
         /** @hidden */
         private _sceneRootNodesIndex;
         /**
@@ -25062,9 +25340,30 @@ declare module BABYLON {
          * @param scene defines the hosting scene
          */
         static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void;
+        /**
+     * Return the minimum and maximum world vectors of the entire hierarchy under current node
+     * @param includeDescendants Include bounding info from descendants as well (true by default)
+     * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
+     * @returns the new bounding vectors
+     */
+        getHierarchyBoundingVectors(includeDescendants?: boolean, predicate?: Nullable<(abstractMesh: AbstractMesh) => boolean>): {
+            min: Vector3;
+            max: Vector3;
+        };
     }
 }
 declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export class _IAnimationState {
+        key: number;
+        repeatCount: number;
+        workValue?: any;
+        loopMode?: number;
+        offsetValue?: any;
+        highLimitValue?: any;
+    }
     /**
      * Class used to store any kind of animation
      */
@@ -25375,7 +25674,7 @@ declare module BABYLON {
         /**
          * @hidden Internal use only
          */
-        _interpolate(currentFrame: number, repeatCount: number, workValue?: any, loopMode?: number, offsetValue?: any, highLimitValue?: any): any;
+        _interpolate(currentFrame: number, state: _IAnimationState): any;
         /**
          * Defines the function to use to interpolate matrices
          * @param startValue defines the start matrix
@@ -26082,169 +26381,6 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * This represents the required contract to create a new type of texture loader.
-     */
-    export interface IInternalTextureLoader {
-        /**
-         * Defines wether the loader supports cascade loading the different faces.
-         */
-        supportCascades: boolean;
-        /**
-         * This returns if the loader support the current file information.
-         * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
-         * @returns true if the loader can load the specified file
-         */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
-        /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param createPolynomials will be true if polynomials have been requested
-         * @param onLoad defines the callback to trigger once the texture is ready
-         * @param onError defines the callback to trigger in case of error
-         */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
-        /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param callback defines the method to call once ready to upload
-         */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Creation options of the multi render target texture.
-     */
-    export interface IMultiRenderTargetOptions {
-        /**
-         * Define if the texture needs to create mip maps after render.
-         */
-        generateMipMaps?: boolean;
-        /**
-         * Define the types of all the draw buffers we want to create
-         */
-        types?: number[];
-        /**
-         * Define the sampling modes of all the draw buffers we want to create
-         */
-        samplingModes?: number[];
-        /**
-         * Define if a depth buffer is required
-         */
-        generateDepthBuffer?: boolean;
-        /**
-         * Define if a stencil buffer is required
-         */
-        generateStencilBuffer?: boolean;
-        /**
-         * Define if a depth texture is required instead of a depth buffer
-         */
-        generateDepthTexture?: boolean;
-        /**
-         * Define the number of desired draw buffers
-         */
-        textureCount?: number;
-        /**
-         * Define if aspect ratio should be adapted to the texture or stay the scene one
-         */
-        doNotChangeAspectRatio?: boolean;
-        /**
-         * Define the default type of the buffers we are creating
-         */
-        defaultType?: number;
-    }
-    /**
-     * A multi render target, like a render target provides the ability to render to a texture.
-     * Unlike the render target, it can render to several draw buffers in one draw.
-     * This is specially interesting in deferred rendering or for any effects requiring more than
-     * just one color from a single pass.
-     */
-    export class MultiRenderTarget extends RenderTargetTexture {
-        private _internalTextures;
-        private _textures;
-        private _multiRenderTargetOptions;
-        /**
-         * Get if draw buffers are currently supported by the used hardware and browser.
-         */
-        readonly isSupported: boolean;
-        /**
-         * Get the list of textures generated by the multi render target.
-         */
-        readonly textures: Texture[];
-        /**
-         * Get the depth texture generated by the multi render target if options.generateDepthTexture has been set
-         */
-        readonly depthTexture: Texture;
-        /**
-         * Set the wrapping mode on U of all the textures we are rendering to.
-         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
-         */
-        wrapU: number;
-        /**
-         * Set the wrapping mode on V of all the textures we are rendering to.
-         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
-         */
-        wrapV: number;
-        /**
-         * Instantiate a new multi render target texture.
-         * A multi render target, like a render target provides the ability to render to a texture.
-         * Unlike the render target, it can render to several draw buffers in one draw.
-         * This is specially interesting in deferred rendering or for any effects requiring more than
-         * just one color from a single pass.
-         * @param name Define the name of the texture
-         * @param size Define the size of the buffers to render to
-         * @param count Define the number of target we are rendering into
-         * @param scene Define the scene the texture belongs to
-         * @param options Define the options used to create the multi render target
-         */
-        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions);
-        /** @hidden */
-        _rebuild(): void;
-        private _createInternalTextures;
-        private _createTextures;
-        /**
-         * Define the number of samples used if MSAA is enabled.
-         */
-        samples: number;
-        /**
-         * Resize all the textures in the multi render target.
-         * Be carrefull as it will recreate all the data in the new texture.
-         * @param size Define the new size
-         */
-        resize(size: any): void;
-        protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
-        /**
-         * Dispose the render targets and their associated resources
-         */
-        dispose(): void;
-        /**
-         * Release all the underlying texture used as draw buffers.
-         */
-        releaseInternalTextures(): void;
     }
 }
 declare module BABYLON {
@@ -27251,12 +27387,6 @@ declare module BABYLON {
         /** @hidden */
         _badDesktopOS: boolean;
         /**
-         * Gets or sets a value indicating if we want to disable texture binding optimization.
-         * This could be required on some buggy drivers which wants to have textures bound in a progressive order.
-         * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is
-         */
-        disableTextureBindingOptimization: boolean;
-        /**
          * Gets the audio engine
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          * @ignorenaming
@@ -27298,15 +27428,13 @@ declare module BABYLON {
         onVRRequestPresentStart: Observable<Engine>;
         private _hardwareScalingLevel;
         /** @hidden */
-        protected _caps: EngineCapabilities;
+        _caps: EngineCapabilities;
         private _pointerLockRequested;
         private _isStencilEnable;
         private _colorWrite;
         private _loadingScreen;
         /** @hidden */
         _drawCalls: PerfCounter;
-        /** @hidden */
-        _textureCollisions: PerfCounter;
         private _glVersion;
         private _glRenderer;
         private _glVendor;
@@ -27326,7 +27454,8 @@ declare module BABYLON {
         private _onContextLost;
         private _onContextRestored;
         private _contextWasLost;
-        private _doNotHandleContextLost;
+        /** @hidden */
+        _doNotHandleContextLost: boolean;
         /**
          * Gets or sets a boolean indicating if resources should be retained to be able to handle context lost events
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#handling-webgl-context-lost
@@ -27356,7 +27485,8 @@ declare module BABYLON {
         protected _alphaState: _AlphaState;
         /** @hidden */
         protected _alphaMode: number;
-        protected _internalTexturesCache: InternalTexture[];
+        /** @hidden */
+        _internalTexturesCache: InternalTexture[];
         /** @hidden */
         protected _activeChannel: number;
         private _currentTextureChannel;
@@ -27380,7 +27510,7 @@ declare module BABYLON {
         /** @hidden */
         protected _cachedEffectForVertexBuffers: Nullable<Effect>;
         /** @hidden */
-        protected _currentRenderTarget: Nullable<InternalTexture>;
+        _currentRenderTarget: Nullable<InternalTexture>;
         private _uintIndicesCurrentlySet;
         private _currentBoundBuffer;
         /** @hidden */
@@ -27389,10 +27519,10 @@ declare module BABYLON {
         private _currentInstanceLocations;
         private _currentInstanceBuffers;
         private _textureUnits;
-        private _firstBoundInternalTextureTracker;
-        private _lastBoundInternalTextureTracker;
-        private _workingCanvas;
-        private _workingContext;
+        /** @hidden */
+        _workingCanvas: Nullable<HTMLCanvasElement>;
+        /** @hidden */
+        _workingContext: Nullable<CanvasRenderingContext2D>;
         private _rescalePostProcess;
         private _dummyFramebuffer;
         private _externalData;
@@ -27408,7 +27538,8 @@ declare module BABYLON {
         private _maxSimultaneousTextures;
         private _activeRequests;
         private _texturesSupported;
-        private _textureFormatInUse;
+        /** @hidden */
+        _textureFormatInUse: Nullable<string>;
         /**
          * Gets the list of texture formats supported
          */
@@ -27463,7 +27594,8 @@ declare module BABYLON {
          * Returns true if the stencil buffer has been enabled through the creation option of the context.
          */
         readonly isStencilEnable: boolean;
-        private _prepareWorkingCanvas;
+        /** @hidden */
+        _prepareWorkingCanvas(): void;
         /**
          * Reset the texture cache to empty state
          */
@@ -27817,7 +27949,8 @@ declare module BABYLON {
          * @param lodLevel defines le lod level to bind to the frame buffer
          */
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture, lodLevel?: number): void;
-        private bindUnboundFramebuffer;
+        /** @hidden */
+        _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
         /**
          * Unbind the current render target texture from the webGL context
          * @param texture defines the render target texture to unbind
@@ -27825,14 +27958,6 @@ declare module BABYLON {
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
          */
         unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
-        /**
-         * Unbind a list of render target textures from the webGL context
-         * This is used only when drawBuffer extension or webGL2 are active
-         * @param textures defines the render target textures to unbind
-         * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
-         * @param onBeforeUnbind defines a function which will be called before the effective unbind
-         */
-        unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
         /**
          * Force the mipmap generation for the given render target texture
          * @param texture defines the render target texture to use
@@ -28065,7 +28190,7 @@ declare module BABYLON {
          * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
          * @returns the new Effect
          */
-        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect;
+        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
         private _compileShader;
         private _compileRawShader;
         /**
@@ -28365,9 +28490,11 @@ declare module BABYLON {
          * @returns The extension selected.
          */
         setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
-        private _getSamplingParameters;
-        private _partialLoadImg;
-        private _cascadeLoadImgs;
+        /** @hidden */
+        _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): {
+            min: number;
+            mag: number;
+        };
         /** @hidden */
         _createTexture(): WebGLTexture;
         /**
@@ -28392,30 +28519,6 @@ declare module BABYLON {
          */
         createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
         private _rescaleTexture;
-        /**
-         * Update a raw texture
-         * @param texture defines the texture to update
-         * @param data defines the data to store in the texture
-         * @param format defines the format of the data
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         */
-        updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
-        /**
-         * Creates a raw texture
-         * @param data defines the data to store in the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param format defines the format of the data
-         * @param generateMipMaps defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-         * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         * @returns the raw texture inside an InternalTexture
-         */
-        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
         private _unpackFlipYCached;
         /**
          * In case you are sharing the context with other applications, it might
@@ -28467,7 +28570,11 @@ declare module BABYLON {
          * @param comparisonFunction The comparison function to set, 0 if no comparison required
          */
         updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
-        private _setupDepthStencilTexture;
+        /** @hidden */
+        _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | {
+            width: number;
+            height: number;
+        }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void;
         /**
          * Creates a depth stencil texture.
          * This is only available in WebGL 2 or with the depth texture extension available.
@@ -28488,14 +28595,6 @@ declare module BABYLON {
          */
         private _createDepthStencilTexture;
         /**
-         * Creates a depth stencil cube texture.
-         * This is only available in WebGL 2.
-         * @param size The size of face edge in the cube texture.
-         * @param options The options defining the cube texture.
-         * @returns The cube texture
-         */
-        private _createDepthStencilCubeTexture;
-        /**
          * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
          * @param renderTarget The render target to set the frame buffer for
          */
@@ -28510,15 +28609,8 @@ declare module BABYLON {
             width: number;
             height: number;
         }, options: boolean | RenderTargetCreationOptions): InternalTexture;
-        /**
-         * Create a multi render target texture
-         * @see http://doc.babylonjs.com/features/webgl2#multiple-render-target
-         * @param size defines the size of the texture
-         * @param options defines the creation options
-         * @returns the cube texture as an InternalTexture
-         */
-        createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[];
-        private _setupFramebufferDepthAttachments;
+        /** @hidden */
+        _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples?: number): Nullable<WebGLRenderbuffer>;
         /**
          * Updates the sample count of a render target texture
          * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
@@ -28527,14 +28619,6 @@ declare module BABYLON {
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
         updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
-        /**
-         * Update the sample count for a given multiple render target texture
-         * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
-         * @param textures defines the textures to update
-         * @param samples defines the sample count to set
-         * @returns the effective sample count (could be 0 if multisample render targets are not supported)
-         */
-        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
         /** @hidden */
         _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
@@ -28544,103 +28628,13 @@ declare module BABYLON {
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
         /**
-         * Creates a new render target cube texture
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target cube texture stored in an InternalTexture
-         */
-        createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture;
-        /**
-         * Creates a cube texture
-         * @param rootUrl defines the url where the files to load is located
-         * @param scene defines the current scene
-         * @param files defines the list of files to load (1 per face)
-         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
-         * @param onLoad defines an optional callback raised when the texture is loaded
-         * @param onError defines an optional callback raised if there is an issue to load the texture
-         * @param format defines the format of the data
-         * @param forcedExtension defines the extension to use to pick the right loader
-         * @param createPolynomials if a polynomial sphere should be created for the cube texture
-         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
-         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
-         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (defualt: empty array)
-         * @returns the cube texture as an InternalTexture
-         */
-        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
-        /**
          * @hidden
          */
         _setCubeMapTextureParams(loadMipmap: boolean): void;
-        /**
-         * Update a raw cube texture
-         * @param texture defines the texture to udpdate
-         * @param data defines the data to store
-         * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the compression used (null by default)
-         * @param level defines which level of the texture to update
-         */
-        updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression?: Nullable<string>, level?: number): void;
-        /**
-         * Creates a new raw cube texture
-         * @param data defines the array of data to use to create each face
-         * @param size defines the size of the textures
-         * @param format defines the format of the data
-         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-         * @param generateMipMaps  defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compression used (null by default)
-         * @returns the cube texture as an InternalTexture
-         */
-        createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>): InternalTexture;
-        /**
-         * Creates a new raw cube texture from a specified url
-         * @param url defines the url where the data is located
-         * @param scene defines the current scene
-         * @param size defines the size of the textures
-         * @param format defines the format of the data
-         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-         * @param noMipmap defines if the engine should avoid generating the mip levels
-         * @param callback defines a callback used to extract texture data from loaded data
-         * @param mipmapGenerator defines to provide an optional tool to generate mip levels
-         * @param onLoad defines a callback called when texture is loaded
-         * @param onError defines a callback called if there is an error
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @returns the cube texture as an InternalTexture
-         */
-        createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, samplingMode?: number, invertY?: boolean): InternalTexture;
-        /**
-         * Update a raw 3D texture
-         * @param texture defines the texture to update
-         * @param data defines the data to store
-         * @param format defines the data format
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, textureType?: number): void;
-        /**
-         * Creates a new raw 3D texture
-         * @param data defines the data used to create the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the depth of the texture
-         * @param format defines the format of the texture
-         * @param generateMipMaps defines if the engine must generate mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compressed used (can be null)
-         * @param textureType defines the compressed used (can be null)
-         * @returns a new raw 3D texture (stored in an InternalTexture)
-         */
-        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number): InternalTexture;
         private _prepareWebGLTextureContinuation;
         private _prepareWebGLTexture;
-        private _convertRGBtoRGBATextureData;
+        /** @hidden */
+        _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView;
         /** @hidden */
         _releaseFramebufferObjects(texture: InternalTexture): void;
         /** @hidden */
@@ -28652,10 +28646,6 @@ declare module BABYLON {
          * @param effect defines the effect to bind
          */
         bindSamplers(effect: Effect): void;
-        private _moveBoundTextureOnTop;
-        private _getCorrectTextureChannel;
-        private _linkTrackers;
-        private _removeDesignatedSlot;
         private _activateCurrentTexture;
         /** @hidden */
         _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate?: boolean, force?: boolean): boolean;
@@ -28829,7 +28819,8 @@ declare module BABYLON {
         private _canRenderToFramebuffer;
         /** @hidden */
         _getWebGLTextureType(type: number): number;
-        private _getInternalFormat;
+        /** @hidden */
+        _getInternalFormat(format: number): number;
         /** @hidden */
         _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
         /** @hidden */
@@ -28838,8 +28829,6 @@ declare module BABYLON {
         _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /** @hidden */
         _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
-        private _partialLoadFile;
-        private _cascadeLoadFiles;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
@@ -28938,7 +28927,7 @@ declare module BABYLON {
     /**
      * Effect containing vertex and fragment shader that can be executed on an object.
      */
-    export class Effect {
+    export class Effect implements IDisposable {
         /**
          * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
          */
@@ -28988,6 +28977,7 @@ declare module BABYLON {
         private _engine;
         private _uniformBuffersNames;
         private _uniformsNames;
+        private _samplerList;
         private _samplers;
         private _isReady;
         private _compilationError;
@@ -29391,6 +29381,8 @@ declare module BABYLON {
          * @returns this effect.
          */
         setDirectColor4(uniformName: string, color4: Color4): Effect;
+        /** Release all associated resources */
+        dispose(): void;
         /**
          * This function will add a new shader to the shader store
          * @param name the name of the shader
@@ -30572,7 +30564,7 @@ declare module BABYLON {
         /**
          * Array of animations
          */
-        animations: Array<Animation>;
+        animations: Nullable<Array<Animation>>;
     }
     /** Interface used by value gradients (color, factor, ...) */
     export interface IValueGradient {
@@ -31111,6 +31103,12 @@ declare module BABYLON {
         * @return The decoded base64 data.
         */
         static DecodeBase64(uri: string): ArrayBuffer;
+        /**
+         * Gets the absolute url.
+         * @param url the input url
+         * @return the absolute url
+         */
+        static GetAbsoluteUrl(url: string): string;
         /**
          * No log
          */
@@ -32402,7 +32400,7 @@ declare module BABYLON {
          * @hidden
          * Defines the actions happening during the per camera render target step.
          */
-        _cameraDrawRenderTargetStage: Stage<CameraStageAction>;
+        _cameraDrawRenderTargetStage: Stage<CameraStageFrameBufferAction>;
         /**
          * @hidden
          * Defines the actions happening just before the active camera is drawing.
@@ -33241,11 +33239,14 @@ declare module BABYLON {
         getDeterministicFrameTime: () => number;
         /** @hidden */
         _animate(): void;
+        /** Execute all animations (for a frame) */
+        animate(): void;
         /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
+         * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
          */
-        render(updateCameras?: boolean): void;
+        render(updateCameras?: boolean, ignoreAnimations?: boolean): void;
         /**
          * Freeze all materials
          * A frozen material will not be updatable but should be faster to render
@@ -34906,6 +34907,19 @@ declare module BABYLON {
          * Define the current local position of the camera in the scene
          */
         position: Vector3;
+        protected _upVector: Vector3;
+        protected _upToYMatrix: Matrix;
+        protected _YToUpMatrix: Matrix;
+        /**
+         * The vector the camera should consider as up. (default is Vector3(0, 1, 0) as returned by Vector3.Up())
+         * Setting this will copy the given vector to the camera's upVector, and set rotation matrices to and from Y up.
+         * DO NOT set the up vector using copyFrom or copyFromFloats, as this bypasses setting the above matrices.
+         */
+        upVector: Vector3;
+        /**
+         * Sets the Y-up to camera up-vector rotation matrix, and the up-vector to Y-up rotation matrix.
+         */
+        setMatUp(): void;
         /**
          * Current inertia value on the longitudinal axis.
          * The bigger this number the longer it will take for the camera to stop.
@@ -35124,8 +35138,6 @@ declare module BABYLON {
         protected _collisionTriggered: boolean;
         protected _targetBoundingCenter: Nullable<Vector3>;
         private _computationVector;
-        private _tempAxisVector;
-        private _tempAxisRotationMatrix;
         /**
          * Instantiates a new ArcRotateCamera in a given scene
          * @param name Defines the name of the camera
@@ -37175,9 +37187,10 @@ declare module BABYLON {
          */
         constructor(name: string, position: Vector3, scene: Scene);
         /**
+         * @hidden
          * Disabled pointer input on first orientation sensor update (Default: true)
          */
-        disablePointerInputWhenUsingDeviceOrientation: boolean;
+        _disablePointerInputWhenUsingDeviceOrientation: boolean;
         private _dragFactor;
         /**
          * Enabled turning on the y axis when the orientation sensor is active
@@ -40437,7 +40450,6 @@ declare module BABYLON {
          * Ratio for the scale of the gizmo (Default: 1)
          */
         scaleRatio: number;
-        private _tmpMatrix;
         /**
          * If a custom mesh has been set (Default: false)
          */
@@ -40467,6 +40479,7 @@ declare module BABYLON {
         protected _interactionsEnabled: boolean;
         protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
         private _beforeRenderObserver;
+        private _tempVector;
         /**
          * Creates a gizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -40474,9 +40487,7 @@ declare module BABYLON {
         constructor(
         /** The utility layer the gizmo will be added to */
         gizmoLayer?: UtilityLayerRenderer);
-        private _tempVector;
         /**
-         * @hidden
          * Updates the gizmo to match the attached mesh's position/rotation
          */
         protected _update(): void;
@@ -40787,6 +40798,9 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            wrap?: boolean;
+            topBaseAt?: number;
+            bottomBaseAt?: number;
             updatable?: boolean;
         }, scene?: Nullable<Scene>): Mesh;
     }
@@ -40846,6 +40860,7 @@ declare module BABYLON.Debug {
         private _utilityLayer;
         private _debugBoxMesh;
         private _debugSphereMesh;
+        private _debugCylinderMesh;
         private _debugMaterial;
         private _debugMeshMeshes;
         /**
@@ -40870,6 +40885,7 @@ declare module BABYLON.Debug {
         private _getDebugMaterial;
         private _getDebugBoxMesh;
         private _getDebugSphereMesh;
+        private _getDebugCylinderMesh;
         private _getDebugMeshMesh;
         private _getDebugMesh;
         /** Releases all resources */
@@ -41377,6 +41393,146 @@ declare module BABYLON {
              * @param value defines the webGL buffer to bind
              */
             bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void;
+        }
+}
+declare module BABYLON {
+    /**
+     * Creation options of the multi render target texture.
+     */
+    export interface IMultiRenderTargetOptions {
+        /**
+         * Define if the texture needs to create mip maps after render.
+         */
+        generateMipMaps?: boolean;
+        /**
+         * Define the types of all the draw buffers we want to create
+         */
+        types?: number[];
+        /**
+         * Define the sampling modes of all the draw buffers we want to create
+         */
+        samplingModes?: number[];
+        /**
+         * Define if a depth buffer is required
+         */
+        generateDepthBuffer?: boolean;
+        /**
+         * Define if a stencil buffer is required
+         */
+        generateStencilBuffer?: boolean;
+        /**
+         * Define if a depth texture is required instead of a depth buffer
+         */
+        generateDepthTexture?: boolean;
+        /**
+         * Define the number of desired draw buffers
+         */
+        textureCount?: number;
+        /**
+         * Define if aspect ratio should be adapted to the texture or stay the scene one
+         */
+        doNotChangeAspectRatio?: boolean;
+        /**
+         * Define the default type of the buffers we are creating
+         */
+        defaultType?: number;
+    }
+    /**
+     * A multi render target, like a render target provides the ability to render to a texture.
+     * Unlike the render target, it can render to several draw buffers in one draw.
+     * This is specially interesting in deferred rendering or for any effects requiring more than
+     * just one color from a single pass.
+     */
+    export class MultiRenderTarget extends RenderTargetTexture {
+        private _internalTextures;
+        private _textures;
+        private _multiRenderTargetOptions;
+        /**
+         * Get if draw buffers are currently supported by the used hardware and browser.
+         */
+        readonly isSupported: boolean;
+        /**
+         * Get the list of textures generated by the multi render target.
+         */
+        readonly textures: Texture[];
+        /**
+         * Get the depth texture generated by the multi render target if options.generateDepthTexture has been set
+         */
+        readonly depthTexture: Texture;
+        /**
+         * Set the wrapping mode on U of all the textures we are rendering to.
+         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
+         */
+        wrapU: number;
+        /**
+         * Set the wrapping mode on V of all the textures we are rendering to.
+         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
+         */
+        wrapV: number;
+        /**
+         * Instantiate a new multi render target texture.
+         * A multi render target, like a render target provides the ability to render to a texture.
+         * Unlike the render target, it can render to several draw buffers in one draw.
+         * This is specially interesting in deferred rendering or for any effects requiring more than
+         * just one color from a single pass.
+         * @param name Define the name of the texture
+         * @param size Define the size of the buffers to render to
+         * @param count Define the number of target we are rendering into
+         * @param scene Define the scene the texture belongs to
+         * @param options Define the options used to create the multi render target
+         */
+        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions);
+        /** @hidden */
+        _rebuild(): void;
+        private _createInternalTextures;
+        private _createTextures;
+        /**
+         * Define the number of samples used if MSAA is enabled.
+         */
+        samples: number;
+        /**
+         * Resize all the textures in the multi render target.
+         * Be carrefull as it will recreate all the data in the new texture.
+         * @param size Define the new size
+         */
+        resize(size: any): void;
+        protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
+        /**
+         * Dispose the render targets and their associated resources
+         */
+        dispose(): void;
+        /**
+         * Release all the underlying texture used as draw buffers.
+         */
+        releaseInternalTextures(): void;
+    }
+}
+declare module BABYLON {
+        interface Engine {
+            /**
+             * Unbind a list of render target textures from the webGL context
+             * This is used only when drawBuffer extension or webGL2 are active
+             * @param textures defines the render target textures to unbind
+             * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
+             * @param onBeforeUnbind defines a function which will be called before the effective unbind
+             */
+            unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
+            /**
+             * Create a multi render target texture
+             * @see http://doc.babylonjs.com/features/webgl2#multiple-render-target
+             * @param size defines the size of the texture
+             * @param options defines the creation options
+             * @returns the cube texture as an InternalTexture
+             */
+            createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[];
+            /**
+             * Update the sample count for a given multiple render target texture
+             * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
+             * @param textures defines the textures to update
+             * @param samples defines the sample count to set
+             * @returns the effective sample count (could be 0 if multisample render targets are not supported)
+             */
+            updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
         }
 }
 declare module BABYLON {
@@ -42219,6 +42375,9 @@ declare module BABYLON {
          * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
          */
         scalePivot: Nullable<Vector3>;
+        /**
+         * Mesh used as a pivot to rotate the attached mesh
+         */
         private _anchorMesh;
         private _existingMeshScale;
         private _dragMesh;
@@ -44724,11 +44883,11 @@ declare module BABYLON {
         /**
          * AKA Diffuse Texture in standard nomenclature.
          */
-        protected _albedoTexture: BaseTexture;
+        protected _albedoTexture: Nullable<BaseTexture>;
         /**
          * AKA Occlusion Texture in other nomenclature.
          */
-        protected _ambientTexture: BaseTexture;
+        protected _ambientTexture: Nullable<BaseTexture>;
         /**
          * AKA Occlusion Texture Intensity in other nomenclature.
          */
@@ -44742,23 +44901,23 @@ declare module BABYLON {
         /**
          * Stores the alpha values in a texture.
          */
-        protected _opacityTexture: BaseTexture;
+        protected _opacityTexture: Nullable<BaseTexture>;
         /**
          * Stores the reflection values in a texture.
          */
-        protected _reflectionTexture: BaseTexture;
+        protected _reflectionTexture: Nullable<BaseTexture>;
         /**
          * Stores the emissive values in a texture.
          */
-        protected _emissiveTexture: BaseTexture;
+        protected _emissiveTexture: Nullable<BaseTexture>;
         /**
          * AKA Specular texture in other nomenclature.
          */
-        protected _reflectivityTexture: BaseTexture;
+        protected _reflectivityTexture: Nullable<BaseTexture>;
         /**
          * Used to switch from specular/glossiness to metallic/roughness workflow.
          */
-        protected _metallicTexture: BaseTexture;
+        protected _metallicTexture: Nullable<BaseTexture>;
         /**
          * Specifies the metallic scalar of the metallic/roughness workflow.
          * Can also be used to scale the metalness values of the metallic texture.
@@ -44773,15 +44932,15 @@ declare module BABYLON {
          * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
          */
-        protected _microSurfaceTexture: BaseTexture;
+        protected _microSurfaceTexture: Nullable<BaseTexture>;
         /**
          * Stores surface normal data used to displace a mesh in a texture.
          */
-        protected _bumpTexture: BaseTexture;
+        protected _bumpTexture: Nullable<BaseTexture>;
         /**
          * Stores the pre-calculated light information of a mesh in a texture.
          */
-        protected _lightmapTexture: BaseTexture;
+        protected _lightmapTexture: Nullable<BaseTexture>;
         /**
          * The color of a material in ambient lighting.
          */
@@ -45084,7 +45243,7 @@ declare module BABYLON {
         /**
          * Gets the texture used for the alpha test.
          */
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         /**
          * Specifies that the submesh is ready to be used.
          * @param mesh - BJS mesh.
@@ -46352,10 +46511,6 @@ declare module BABYLON {
          * Gets the perf counter used for draw calls
          */
         readonly drawCallsCounter: PerfCounter;
-        /**
-         * Gets the perf counter used for texture collisions
-         */
-        readonly textureCollisionsCounter: PerfCounter;
         /**
          * Instantiates a new scene instrumentation.
          * This class can be used to get instrumentation data from a Babylon engine
@@ -49222,6 +49377,93 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the options related to the creation of an HtmlElementTexture
+     */
+    export interface IHtmlElementTextureOptions {
+        /**
+         * Defines wether mip maps should be created or not.
+         */
+        generateMipMaps?: boolean;
+        /**
+         * Defines the sampling mode of the texture.
+         */
+        samplingMode?: number;
+        /**
+         * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
+         */
+        engine: Nullable<Engine>;
+        /**
+         * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
+         */
+        scene: Nullable<Scene>;
+    }
+    /**
+     * This represents the smallest workload to use an already existing element (Canvas or Video) as a texture.
+     * To be as efficient as possible depending on your constraints nothing aside the first upload
+     * is automatically managed.
+     * It is a cheap VideoTexture or DynamicTexture if you prefer to keep full control of the elements
+     * in your application.
+     *
+     * As the update is not automatic, you need to call them manually.
+     */
+    export class HtmlElementTexture extends BaseTexture {
+        /**
+         * The texture URL.
+         */
+        element: HTMLVideoElement | HTMLCanvasElement;
+        private static readonly DefaultOptions;
+        private _textureMatrix;
+        private _engine;
+        private _isVideo;
+        private _generateMipMaps;
+        private _samplingMode;
+        /**
+         * Instantiates a HtmlElementTexture from the following parameters.
+         *
+         * @param name Defines the name of the texture
+         * @param element Defines the video or canvas the texture is filled with
+         * @param options Defines the other none mandatory texture creation options
+         */
+        constructor(name: string, element: HTMLVideoElement | HTMLCanvasElement, options: IHtmlElementTextureOptions);
+        private _createInternalTexture;
+        /**
+         * Returns the texture matrix used in most of the material.
+         */
+        getTextureMatrix(): Matrix;
+        /**
+         * Updates the content of the texture.
+         * @param invertY Defines wether the texture should be inverted on Y (false by default on video and true on canvas)
+         */
+        update(invertY?: Nullable<boolean>): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper class to push actions to a pool of workers.
+     */
+    export class WorkerPool implements IDisposable {
+        private _workerInfos;
+        private _pendingActions;
+        /**
+         * Constructor
+         * @param workers Array of workers to use for actions
+         */
+        constructor(workers: Array<Worker>);
+        /**
+         * Terminates all workers and clears any pending actions.
+         */
+        dispose(): void;
+        /**
+         * Pushes an action to the worker pool. If all the workers are active, the action will be
+         * pended until a worker has completed its action.
+         * @param action The action to perform. Call onComplete when the action is complete.
+         */
+        push(action: (worker: Worker, onComplete: () => void) => void): void;
+        private _execute;
+    }
+}
+declare module BABYLON {
+    /**
      * Configuration for Draco compression
      */
     export interface IDracoCompressionConfiguration {
@@ -49282,7 +49524,7 @@ declare module BABYLON {
      * @see https://www.babylonjs-playground.com/#N3EK4B#0
      */
     export class DracoCompression implements IDisposable {
-        private static _DecoderModulePromise;
+        private _workerPoolPromise;
         /**
          * The configuration. Defaults to the following urls:
          * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
@@ -49295,25 +49537,38 @@ declare module BABYLON {
          */
         static readonly DecoderAvailable: boolean;
         /**
-         * Constructor
+         * Default number of workers to create when creating the draco compression object.
          */
-        constructor();
+        static DefaultNumWorkers: number;
+        private static GetDefaultNumWorkers;
+        /**
+         * Constructor
+         * @param numWorkers The number of workers for async operations
+         */
+        constructor(numWorkers?: number);
         /**
          * Stop all async operations and release resources.
          */
         dispose(): void;
         /**
-         * Decode Draco compressed mesh data to vertex data.
-         * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
-         * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
-         * @returns A promise that resolves with the decoded vertex data
+         * Returns a promise that resolves when ready. Call this manually to ensure draco compression is ready before use.
+         * @returns a promise that resolves when ready
          */
-        decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes: {
+        whenReadyAsync(): Promise<void>;
+        /**
+          * Decode Draco compressed mesh data to vertex data.
+          * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
+          * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+          * @returns A promise that resolves with the decoded vertex data
+          */
+        decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: {
             [kind: string]: number;
         }): Promise<VertexData>;
-        private static _GetDecoderModule;
-        private static _LoadScriptAsync;
-        private static _LoadFileAsync;
+        /**
+         * The worker function that gets converted to a blob url to pass into a worker.
+         */
+        private static _Worker;
+        private _loadDecoderWasmBinaryAsync;
     }
 }
 declare module BABYLON {
@@ -55955,31 +56210,6 @@ declare module BABYLON {
         private _handleDataAvailable;
         private _handleError;
         private _handleStop;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper class to push actions to a pool of workers.
-     */
-    export class WorkerPool implements IDisposable {
-        private _workerInfos;
-        private _pendingActions;
-        /**
-         * Constructor
-         * @param workers Array of workers to use for actions
-         */
-        constructor(workers: Array<Worker>);
-        /**
-         * Terminates all workers and clears any pending actions.
-         */
-        dispose(): void;
-        /**
-         * Pushes an action to the worker pool. If all the workers are active, the action will be
-         * pended until a worker has completed its action.
-         * @param action The action to perform. Call onComplete when the action is complete.
-         */
-        push(action: (worker: Worker, onComplete: () => void) => void): void;
-        private _execute;
     }
 }
 declare module BABYLON {

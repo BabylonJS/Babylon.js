@@ -171,6 +171,9 @@ function runTest(index, done) {
         done(false);
     }
 
+    // Clear the plugin activated observables in case it is registered in the test.
+    BABYLON.SceneLoader.OnPluginActivatedObservable.clear();
+
     var test = config.tests[index];
     var container = document.createElement("div");
     container.id = "container#" + index;
@@ -265,6 +268,16 @@ function runTest(index, done) {
                             code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
                             code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
                             code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
+
+                            if (test.replace) {
+                                var split = test.replace.split(",");
+                                for (var i = 0; i < split.length; i += 2) {
+                                    var source = split[i].trim();
+                                    var destination = split[i + 1].trim();
+                                    code = code.replace(source, destination);
+                                }
+                            }
+
                             currentScene = eval(code + "\r\ncreateScene(engine)");
 
                             if (currentScene.then) {

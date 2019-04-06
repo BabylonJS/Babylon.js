@@ -5,12 +5,11 @@ import { Observable, Observer } from "../Misc/observable";
 import { Color4, Vector2 } from "../Maths/math";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
-import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
-
 import "../Shaders/postprocess.vertex";
 import { IInspectable } from '../Misc/iInspectable';
 
+declare type Scene  = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
 declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
 declare type Engine = import("../Engines/engine").Engine;
