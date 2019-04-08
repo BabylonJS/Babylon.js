@@ -22139,9 +22139,10 @@ declare module BABYLON {
         getMaterial(): Nullable<Material>;
         /**
          * Sets a new updated BoundingInfo object to the submesh
+         * @param data defines an optional position array to use to determine the bounding info
          * @returns the SubMesh
          */
-        refreshBoundingInfo(): SubMesh;
+        refreshBoundingInfo(data?: Nullable<FloatArray>): SubMesh;
         /** @hidden */checkCollision(collider: Collider): boolean;
         /**
          * Updates the submesh BoundingInfo
