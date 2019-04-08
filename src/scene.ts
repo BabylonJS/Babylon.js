@@ -3959,7 +3959,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 }
 
                 if (mesh._activate(this._renderId)) {
-                    mesh._isActive = true;
+                    meshLOD._isActive = true;
                     this._activeMesh(mesh, meshLOD);
                 }
             }
