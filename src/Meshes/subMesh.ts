@@ -7,6 +7,7 @@ import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
+import { DataBuffer } from './dataBuffer';
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -59,7 +60,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     private _mesh: AbstractMesh;
     private _renderingMesh: Mesh;
     private _boundingInfo: BoundingInfo;
-    private _linesIndexBuffer: Nullable<WebGLBuffer> = null;
+    private _linesIndexBuffer: Nullable<DataBuffer> = null;
     /** @hidden */
     public _lastColliderWorldVertices: Nullable<Vector3[]> = null;
     /** @hidden */
@@ -310,7 +311,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     /**
      * @hidden
      */
-    public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): WebGLBuffer {
+    public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): DataBuffer {
         if (!this._linesIndexBuffer) {
             var linesIndices = [];
 

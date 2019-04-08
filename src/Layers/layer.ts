@@ -16,6 +16,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
 import "../Shaders/layer.fragment";
 import "../Shaders/layer.vertex";
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 /**
  * This represents a full screen 2d layer.
@@ -78,7 +79,7 @@ export class Layer {
 
     private _scene: Scene;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
     private _alphaTestEffect: Effect;
 
