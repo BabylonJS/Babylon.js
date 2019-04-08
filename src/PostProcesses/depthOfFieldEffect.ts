@@ -145,6 +145,14 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     }
 
     /**
+    * Get the current class name of the current effet
+    * @returns "DepthOfFieldEffect"
+    */
+    public getClassName(): string {
+        return "DepthOfFieldEffect";
+    }
+
+    /**
      * Depth texture to be used to compute the circle of confusion. This must be set here or in the constructor in order for the post process to function.
      */
     public set depthTexture(value: RenderTargetTexture) {

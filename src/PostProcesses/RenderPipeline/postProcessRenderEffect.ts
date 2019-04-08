@@ -129,7 +129,7 @@ export class PostProcessRenderEffect {
     }
 
     /**
-     * Detatches the effect on cameras
+     * Detaches the effect on cameras
      * @param cameras The camera to detatch from.
      * @hidden
      */
