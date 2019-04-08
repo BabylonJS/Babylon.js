@@ -10,6 +10,7 @@ import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+import { Texture } from '../Materials';
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -171,8 +172,19 @@ export class SpotLight extends ShadowLight {
     * Sets the projection texture of the light.
     */
     public set projectionTexture(value: Nullable<BaseTexture>) {
+        if (this._projectionTexture === value) {
+            return;
+        }
         this._projectionTexture = value;
         this._projectionTextureDirty = true;
+        if (this._projectionTexture && !this._projectionTexture.isReady()) {
+            let texture = this._projectionTexture as Texture;
+            if (texture.onLoadObservable) {
+                texture.onLoadObservable.addOnce(() => {
+                    this._markMeshesAsLightDirty();
+                })
+            }
+        }
     }
 
     private _projectionTextureViewLightDirty = true;
@@ -388,6 +400,6 @@ export class SpotLight extends ShadowLight {
      */
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["SPOTLIGHT" + lightIndex] = true;
-        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture ? true : false;
+        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture && this.projectionTexture.isReady() ? true : false;
     }
 }
