@@ -4,6 +4,7 @@ import { Matrix, Vector3, Color3, Vector4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { DataBuffer } from '../Meshes/dataBuffer';
 /**
  * Uniform buffer objects.
  *
@@ -16,7 +17,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
  */
 export class UniformBuffer {
     private _engine: Engine;
-    private _buffer: Nullable<WebGLBuffer>;
+    private _buffer: Nullable<DataBuffer>;
     private _data: number[];
     private _bufferData: Float32Array;
     private _dynamic?: boolean;
@@ -201,7 +202,7 @@ export class UniformBuffer {
      * The underlying WebGL Uniform buffer.
      * @returns the webgl buffer
      */
-    public getBuffer(): Nullable<WebGLBuffer> {
+    public getBuffer(): Nullable<DataBuffer> {
         return this._buffer;
     }
 
