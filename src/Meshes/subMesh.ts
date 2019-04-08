@@ -1,5 +1,5 @@
 import { Tools } from "../Misc/tools";
-import { Nullable, IndicesArray, DeepImmutable } from "../types";
+import { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
 import { Matrix, Vector3, Plane } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "./buffer";
@@ -205,15 +205,19 @@ export class SubMesh extends BaseSubMesh implements ICullable {
 
     /**
      * Sets a new updated BoundingInfo object to the submesh
+     * @param data defines an optional position array to use to determine the bounding info
      * @returns the SubMesh
      */
-    public refreshBoundingInfo(): SubMesh {
+    public refreshBoundingInfo(data: Nullable<FloatArray> = null): SubMesh {
         this._lastColliderWorldVertices = null;
 
         if (this.IsGlobal || !this._renderingMesh || !this._renderingMesh.geometry) {
             return this;
         }
-        var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
+
+        if (!data) {
+            data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
+        }
 
         if (!data) {
             this._boundingInfo = this._mesh.getBoundingInfo();
