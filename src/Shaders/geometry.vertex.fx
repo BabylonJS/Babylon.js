@@ -31,6 +31,7 @@ varying vec3 vPosition;
 
 #ifdef VELOCITY
 uniform mat4 previousWorldViewProjection;
+uniform mat4 currentWorldViewProjection;
 varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;
 #endif
@@ -41,7 +42,7 @@ void main(void)
 
 	#ifdef VELOCITY
 	// Compute velocity before bones computation
-	vCurrentPosition = viewProjection * finalWorld * vec4(position, 1.0);
+	vCurrentPosition = currentWorldViewProjection * vec4(position, 1.0);
 	vPreviousPosition = previousWorldViewProjection * vec4(position, 1.0);
 	#endif
 
