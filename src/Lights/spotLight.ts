@@ -10,7 +10,7 @@ import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
-import { Texture } from '../Materials';
+import { Texture } from '../Materials/Textures/texture';
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -182,7 +182,7 @@ export class SpotLight extends ShadowLight {
             if (texture.onLoadObservable) {
                 texture.onLoadObservable.addOnce(() => {
                     this._markMeshesAsLightDirty();
-                })
+                });
             }
         }
     }
