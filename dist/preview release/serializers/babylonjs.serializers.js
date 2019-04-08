@@ -2343,8 +2343,8 @@ var _Exporter = /** @class */ (function () {
                     }
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                         var sideOrientation = babylonMaterial.sideOrientation;
-                        if (this._convertToRightHandedSystem && sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation) {
-                            //Overwrite the indices to be counter-clockwise
+                        // Only reverse the winding if we have a clockwise winding
+                        if (sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation) {
                             var byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) {
                                 byteOffset = 0;
