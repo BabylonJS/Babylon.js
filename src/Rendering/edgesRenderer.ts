@@ -14,6 +14,7 @@ import { Node } from "../node";
 
 import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
@@ -154,7 +155,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     protected _indicesCount: number;
 
     protected _lineShader: ShaderMaterial;
-    protected _ib: WebGLBuffer;
+    protected _ib: DataBuffer;
     protected _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
     protected _checkVerticesInsteadOfIndices = false;
 

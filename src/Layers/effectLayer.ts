@@ -26,6 +26,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
 import { _DevTools } from '../Misc/devTools';
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -70,7 +71,7 @@ export interface IEffectLayerOptions {
 export abstract class EffectLayer {
 
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _cachedDefines: string;
     private _effectLayerMapGenerationEffect: Effect;
     private _effectLayerOptions: IEffectLayerOptions;
