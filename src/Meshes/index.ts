@@ -17,3 +17,5 @@ export * from "./subMesh";
 export * from "./meshLODLevel";
 export * from "./transformNode";
 export * from "./Builders/index";
+export * from "./dataBuffer";
+export * from "./WebGL/webGLDataBuffer";
