@@ -13165,6 +13165,84 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        /**
+         * Defines the interface used by display changed events
+         */
+        interface IDisplayChangedEventArgs {
+            /** Gets the vrDisplay object (if any) */
+            vrDisplay: Nullable<any>;
+            /** Gets a boolean indicating if webVR is supported */
+            vrSupported: boolean;
+        }
+        interface Engine {
+            /** @hidden */
+            _vrDisplay: any;
+            /** @hidden */
+            _vrSupported: boolean;
+            /** @hidden */
+            _oldSize: Size;
+            /** @hidden */
+            _oldHardwareScaleFactor: number;
+            /** @hidden */
+            _vrExclusivePointerMode: boolean;
+            /** @hidden */
+            _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
+            /** @hidden */
+            _onVRDisplayPointerRestricted: () => void;
+            /** @hidden */
+            _onVRDisplayPointerUnrestricted: () => void;
+            /** @hidden */
+            _onVrDisplayConnect: Nullable<(display: any) => void>;
+            /** @hidden */
+            _onVrDisplayDisconnect: Nullable<() => void>;
+            /** @hidden */
+            _onVrDisplayPresentChange: Nullable<() => void>;
+            /**
+             * Observable signaled when VR display mode changes
+             */
+            onVRDisplayChangedObservable: Observable<IDisplayChangedEventArgs>;
+            /**
+             * Observable signaled when VR request present is complete
+             */
+            onVRRequestPresentComplete: Observable<boolean>;
+            /**
+             * Observable signaled when VR request present starts
+             */
+            onVRRequestPresentStart: Observable<Engine>;
+            /**
+             * Gets a boolean indicating that the engine is currently in VR exclusive mode for the pointers
+             * @see https://docs.microsoft.com/en-us/microsoft-edge/webvr/essentials#mouse-input
+             */
+            isInVRExclusivePointerMode: boolean;
+            /**
+             * Gets a boolean indicating if a webVR device was detected
+             * @returns true if a webVR device was detected
+             */
+            isVRDevicePresent(): boolean;
+            /**
+             * Gets the current webVR device
+             * @returns the current webVR device (or null)
+             */
+            getVRDevice(): any;
+            /**
+             * Initializes a webVR display and starts listening to display change events
+             * The onVRDisplayChangedObservable will be notified upon these changes
+             * @returns A promise containing a VRDisplay and if vr is supported
+             */
+            initWebVRAsync(): Promise<IDisplayChangedEventArgs>;
+            /** @hidden */
+            _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs>;
+            /**
+             * Call this function to switch to webVR mode
+             * Will do nothing if webVR is not supported or if there is no webVR device
+             * @see http://doc.babylonjs.com/how_to/webvr_camera
+             */
+            enableVR(): void;
+            /** @hidden */
+            _onVRFullScreenTriggered(): void;
+        }
+}
+declare module BABYLON {
     /**
      * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
      * IMPORTANT!! The data is right-hand data.
@@ -27063,15 +27141,6 @@ declare module BABYLON {
         useHighPrecisionFloats?: boolean;
     }
     /**
-     * Defines the interface used by display changed events
-     */
-    export interface IDisplayChangedEventArgs {
-        /** Gets the vrDisplay object (if any) */
-        vrDisplay: Nullable<any>;
-        /** Gets a boolean indicating if webVR is supported */
-        vrSupported: boolean;
-    }
-    /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
      */
     export class Engine {
@@ -27392,17 +27461,6 @@ declare module BABYLON {
          * Observable event triggered before each texture is initialized
          */
         onBeforeTextureInitObservable: Observable<Texture>;
-        private _vrDisplay;
-        private _vrSupported;
-        private _oldSize;
-        private _oldHardwareScaleFactor;
-        private _vrExclusivePointerMode;
-        private _webVRInitPromise;
-        /**
-         * Gets a boolean indicating that the engine is currently in VR exclusive mode for the pointers
-         * @see https://docs.microsoft.com/en-us/microsoft-edge/webvr/essentials#mouse-input
-         */
-        readonly isInVRExclusivePointerMode: boolean;
         /**
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
@@ -27474,23 +27532,6 @@ declare module BABYLON {
         private _onCanvasFocus;
         private _onFullscreenChange;
         private _onPointerLockChange;
-        private _onVRDisplayPointerRestricted;
-        private _onVRDisplayPointerUnrestricted;
-        private _onVrDisplayConnect;
-        private _onVrDisplayDisconnect;
-        private _onVrDisplayPresentChange;
-        /**
-         * Observable signaled when VR display mode changes
-         */
-        onVRDisplayChangedObservable: Observable<IDisplayChangedEventArgs>;
-        /**
-         * Observable signaled when VR request present is complete
-         */
-        onVRRequestPresentComplete: Observable<boolean>;
-        /**
-         * Observable signaled when VR request present starts
-         */
-        onVRRequestPresentStart: Observable<Engine>;
         private _hardwareScalingLevel;
         /** @hidden */
         _caps: EngineCapabilities;
@@ -27591,7 +27632,8 @@ declare module BABYLON {
         private _rescalePostProcess;
         private _dummyFramebuffer;
         private _externalData;
-        private _bindedRenderFunction;
+        /** @hidden */
+        _bindedRenderFunction: any;
         private _vaoRecordInProgress;
         private _mustWipeVertexAttributes;
         private _emptyTexture;
@@ -27641,6 +27683,31 @@ declare module BABYLON {
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        /**
+         * Initializes a webVR display and starts listening to display change events
+         * The onVRDisplayChangedObservable will be notified upon these changes
+         * @returns The onVRDisplayChangedObservable
+         */
+        initWebVR(): Observable<IDisplayChangedEventArgs>;
+        /** @hidden */
+        _prepareVRComponent(): void;
+        /** @hidden */
+        _connectVREvents(canvas: HTMLCanvasElement, document: any): void;
+        /** @hidden */
+        _submitVRFrame(): void;
+        /**
+         * Call this function to leave webVR mode
+         * Will do nothing if webVR is not supported or if there is no webVR device
+         * @see http://doc.babylonjs.com/how_to/webvr_camera
+         */
+        disableVR(): void;
+        /**
+         * Gets a boolean indicating that the system is in VR mode and is presenting
+         * @returns true if VR mode is engaged
+         */
+        isVRPresenting(): boolean;
+        /** @hidden */
+        _requestVRFrame(): void;
         private _disableTouchAction;
         private _rebuildInternalTextures;
         private _rebuildEffects;
@@ -27967,42 +28034,6 @@ declare module BABYLON {
          * @param height defines the new canvas' height
          */
         setSize(width: number, height: number): void;
-        /**
-         * Gets a boolean indicating if a webVR device was detected
-         * @returns true if a webVR device was detected
-         */
-        isVRDevicePresent(): boolean;
-        /**
-         * Gets the current webVR device
-         * @returns the current webVR device (or null)
-         */
-        getVRDevice(): any;
-        /**
-         * Initializes a webVR display and starts listening to display change events
-         * The onVRDisplayChangedObservable will be notified upon these changes
-         * @returns The onVRDisplayChangedObservable
-         */
-        initWebVR(): Observable<IDisplayChangedEventArgs>;
-        /**
-         * Initializes a webVR display and starts listening to display change events
-         * The onVRDisplayChangedObservable will be notified upon these changes
-         * @returns A promise containing a VRDisplay and if vr is supported
-         */
-        initWebVRAsync(): Promise<IDisplayChangedEventArgs>;
-        /**
-         * Call this function to switch to webVR mode
-         * Will do nothing if webVR is not supported or if there is no webVR device
-         * @see http://doc.babylonjs.com/how_to/webvr_camera
-         */
-        enableVR(): void;
-        /**
-         * Call this function to leave webVR mode
-         * Will do nothing if webVR is not supported or if there is no webVR device
-         * @see http://doc.babylonjs.com/how_to/webvr_camera
-         */
-        disableVR(): void;
-        private _onVRFullScreenTriggered;
-        private _getVRDisplaysAsync;
         /**
          * Binds the frame buffer to the specified texture.
          * @param texture The texture to render to or null for the default canvas
@@ -40371,7 +40402,7 @@ declare module BABYLON {
      */
     export class OctreeSceneComponent {
         /**
-         * The component name helpfull to identify the component in the list of scene components.
+         * The component name help to identify the component in the list of scene components.
          */
         readonly name: string;
         /**
