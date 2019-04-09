@@ -1,5 +1,5 @@
 import { Nullable, FloatArray, IndicesArray } from "../types";
-import { Vector3 } from "../Maths/math";
+import { Vector3, Matrix, Tmp } from "../Maths/math";
 import { Logger } from "../Misc/logger";
 import { Camera } from "../Cameras/camera";
 import { Node } from "../node";
@@ -8,6 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import { Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
+import { TransformNode } from './transformNode';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     return new InstancedMesh(name, mesh);
@@ -269,10 +270,23 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         if (!this._currentLOD._isActive) {
+            this._currentLOD._onlyForInstances = true;
             this._currentLOD._isActive = true;
             return true;
         }
         return false;
+    }
+
+    public getWorldMatrix(): Matrix {
+        if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
+            this._worldMatrix.getTranslationToRef(Tmp.Vector3[0]);
+            this._worldMatrix.copyFrom(this._currentLOD.getWorldMatrix());
+            this._worldMatrix.setTranslation(Tmp.Vector3[0]);
+
+            return this._worldMatrix;
+        }
+
+        return super.getWorldMatrix();
     }
 
     /**
