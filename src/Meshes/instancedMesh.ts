@@ -278,12 +278,12 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     public getWorldMatrix(): Matrix {
-        if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
-            this._worldMatrix.getTranslationToRef(Tmp.Vector3[0]);
-            this._worldMatrix.copyFrom(this._currentLOD.getWorldMatrix());
-            this._worldMatrix.setTranslation(Tmp.Vector3[0]);
-
-            return this._worldMatrix;
+        if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE && this._currentLOD._masterMesh !== this) {
+            let tempMaster = this._currentLOD._masterMesh;
+            this._currentLOD._masterMesh = this;
+            Tmp.Matrix[0].copyFrom(this._currentLOD.computeWorldMatrix(true));
+            this._currentLOD._masterMesh = tempMaster;
+            return Tmp.Matrix[0];
         }
 
         return super.getWorldMatrix();
