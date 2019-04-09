@@ -28,6 +28,7 @@ import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
 import { SceneComponentConstants } from "../sceneComponent";
+import { MeshLODLevel } from './meshLODLevel';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -36,24 +37,6 @@ declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysi
 declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
 
 declare var earcut: any;
-
-/**
- * Class used to represent a specific level of detail of a mesh
- * @see http://doc.babylonjs.com/how_to/how_to_use_lod
- */
-export class MeshLODLevel {
-    /**
-     * Creates a new LOD level
-     * @param distance defines the distance where this level should star being displayed
-     * @param mesh defines the mesh to use to render this level
-     */
-    constructor(
-        /** Defines the distance where this level should star being displayed */
-        public distance: number,
-        /** Defines the mesh to use to render this level */
-        public mesh: Nullable<Mesh>) {
-    }
-}
 
 /**
  * @hidden
@@ -1324,6 +1307,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
 
+        this._isActive = false;
+
         return this;
     }
 
@@ -1375,7 +1360,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var scene = this.getScene();
         let batchCache = this._instanceDataStorage.batchCache;
         batchCache.mustReturn = false;
-        batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
+        batchCache.renderSelf[subMeshId] = !this._onlyForInstances && this.isEnabled() && this.isVisible;
         batchCache.visibleInstances[subMeshId] = null;
 
         if (this._instanceDataStorage.visibleInstances) {

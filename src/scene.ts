@@ -3919,7 +3919,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         const len = meshes.length;
         for (let i = 0; i < len; i++) {
             const mesh = meshes.data[i];
-            mesh._isActive = false;
             if (mesh.isBlocked) {
                 continue;
             }
@@ -3957,9 +3956,10 @@ export class Scene extends AbstractScene implements IAnimatable {
                 if (meshLOD !== mesh) {
                     meshLOD._activate(this._renderId);
                 }
+                meshLOD._onlyForInstances = false;
 
                 if (mesh._activate(this._renderId)) {
-                    mesh._isActive = true;
+                    meshLOD._isActive = true;
                     this._activeMesh(mesh, meshLOD);
                 }
             }

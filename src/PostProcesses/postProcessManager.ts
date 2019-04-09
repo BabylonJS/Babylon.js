@@ -4,8 +4,9 @@ import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { PostProcess } from "./postProcess";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Constants } from "../Engines/constants";
+import { DataBuffer } from '../Meshes/dataBuffer';
 
-declare type Scene  = import("../scene").Scene;
+declare type Scene = import("../scene").Scene;
 
 /**
  * PostProcessManager is used to manage one or more post processes or post process pipelines
@@ -13,7 +14,7 @@ declare type Scene  = import("../scene").Scene;
  */
 export class PostProcessManager {
     private _scene: Scene;
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
 
     /**

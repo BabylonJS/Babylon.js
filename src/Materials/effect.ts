@@ -5,6 +5,8 @@ import { Constants } from "../Engines/constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
 import { IDisposable } from '../scene';
+import { IPipelineContext } from '../Engines/IPipelineContext';
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -243,12 +245,12 @@ export class Effect implements IDisposable {
     private _uniformBuffersNames: { [key: string]: number } = {};
     private _uniformsNames: string[];
     private _samplerList: string[];
-    private _samplers: {[key: string]: number} = {};
+    private _samplers: { [key: string]: number } = {};
     private _isReady = false;
     private _compilationError = "";
     private _attributesNames: string[];
     private _attributes: number[];
-    private _uniforms: {[key: string] : Nullable<WebGLUniformLocation>} = {};
+    private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
     /**
      * Key for the effect.
      * @hidden
@@ -265,9 +267,9 @@ export class Effect implements IDisposable {
      * Compiled shader to webGL program.
      * @hidden
      */
-    public _program: WebGLProgram;
+    public _pipelineContext: IPipelineContext;
     private _valueCache: { [key: string]: any };
-    private static _baseCache: { [key: number]: WebGLBuffer } = {};
+    private static _baseCache: { [key: number]: DataBuffer } = {};
 
     /**
      * Instantiates an effect.
@@ -382,10 +384,7 @@ export class Effect implements IDisposable {
      * @returns if the effect is compiled and prepared.
      */
     public isReady(): boolean {
-        if (!this._isReady && this._program && this._program.isParallelCompiled) {
-            return this._engine._isProgramCompiled(this._program);
-        }
-        return this._isReady;
+        return this._isReady && this._pipelineContext.isReady;
     }
 
     /**
@@ -397,11 +396,11 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * The compiled webGL program for the effect
-     * @returns the webGL program.
+     * The pipeline context for this effect
+     * @returns the associated pipeline context
      */
-    public getProgram(): WebGLProgram {
-        return this._program;
+    public getPipelineContext(): IPipelineContext {
+        return this._pipelineContext;
     }
 
     /**
@@ -488,7 +487,7 @@ export class Effect implements IDisposable {
             func(effect);
         });
 
-        if (!this._program || this._program.isParallelCompiled) {
+        if (!this._pipelineContext || this._pipelineContext.isAsync) {
             setTimeout(() => {
                 this._checkIsReady();
             }, 16);
@@ -772,7 +771,7 @@ export class Effect implements IDisposable {
      * @param onError Callback called on error.
      * @hidden
      */
-    public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) {
+    public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) {
         this._isReady = false;
 
         this._vertexSourceCodeOverride = vertexSourceCode;
@@ -789,21 +788,11 @@ export class Effect implements IDisposable {
             }
 
             if (onCompiled) {
-                onCompiled(this._program);
+                onCompiled(this._pipelineContext);
             }
         };
         this._fallbacks = null;
         this._prepareEffect();
-    }
-
-    /**
-     * Gets the uniform locations of the the specified variable names
-     * @param names THe names of the variables to lookup.
-     * @returns Array of locations in the same order as variable names.
-     */
-    public getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[] {
-        let engine = this._engine;
-        return engine.getUniforms(this._program, names);
     }
 
     /**
@@ -816,32 +805,36 @@ export class Effect implements IDisposable {
         let fallbacks = this._fallbacks;
         this._valueCache = {};
 
-        var previousProgram = this._program;
+        var previousPipelineContext = this._pipelineContext;
 
         try {
             let engine = this._engine;
 
+            if (!this._pipelineContext) {
+                this._pipelineContext = engine.createPipelineContext();
+            }
+
+            let rebuildRebind = this._rebuildProgram.bind(this);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, true, rebuildRebind, null, this._transformFeedbackVaryings);
             }
             else {
-                this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines, undefined, this._transformFeedbackVaryings);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCode, this._fragmentSourceCode, false, rebuildRebind, defines, this._transformFeedbackVaryings);
             }
-            this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 
-            engine._executeWhenProgramIsCompiled(this._program, () => {
+            engine._executeWhenRenderingStateIsCompiled(this._pipelineContext, () => {
                 if (engine.supportsUniformBuffers) {
                     for (var name in this._uniformBuffersNames) {
                         this.bindUniformBlock(name, this._uniformBuffersNames[name]);
                     }
                 }
 
-                let uniforms = engine.getUniforms(this._program, this._uniformsNames);
+                let uniforms = engine.getUniforms(this._pipelineContext, this._uniformsNames);
                 uniforms.forEach((uniform, index) => {
                     this._uniforms[this._uniformsNames[index]] = uniform;
                 });
 
-                this._attributes = engine.getAttributes(this._program, attributesNames);
+                this._attributes = engine.getAttributes(this._pipelineContext, attributesNames);
 
                 var index: number;
                 for (index = 0; index < this._samplerList.length; index++) {
@@ -872,12 +865,12 @@ export class Effect implements IDisposable {
                     this._fallbacks.unBindMesh();
                 }
 
-                if (previousProgram) {
-                    this.getEngine()._deleteProgram(previousProgram);
+                if (previousPipelineContext) {
+                    this.getEngine()._deletePipelineContext(previousPipelineContext);
                 }
             });
 
-            if (this._program.isParallelCompiled) {
+            if (this._pipelineContext.isAsync) {
                 this._checkIsReady();
             }
 
@@ -893,8 +886,8 @@ export class Effect implements IDisposable {
                 return " " + attribute;
             }));
             Logger.Error("Error: " + this._compilationError);
-            if (previousProgram) {
-                this._program = previousProgram;
+            if (previousPipelineContext) {
+                this._pipelineContext = previousPipelineContext;
                 this._isReady = true;
                 if (this.onError) {
                     this.onError(this, this._compilationError);
@@ -1090,7 +1083,7 @@ export class Effect implements IDisposable {
      * @param buffer Buffer to bind.
      * @param name Name of the uniform variable to bind to.
      */
-    public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
+    public bindUniformBuffer(buffer: DataBuffer, name: string): void {
         let bufferName = this._uniformBuffersNames[name];
         if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
             return;
@@ -1105,7 +1098,7 @@ export class Effect implements IDisposable {
      * @param index Index to bind.
      */
     public bindUniformBlock(blockName: string, index: number): void {
-        this._engine.bindUniformBlock(this._program, blockName, index);
+        this._engine.bindUniformBlock(this._pipelineContext, blockName, index);
     }
 
     /**
