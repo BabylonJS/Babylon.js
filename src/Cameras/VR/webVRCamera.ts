@@ -19,6 +19,9 @@ import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiv
 // Side effect import to define the stereoscopic mode.
 import "../RigModes/webVRRigMode";
 
+// Side effect import to add webvr support to engine
+import "../../Engines/Extensions/engine.webVR";
+
 Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
     return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
 });
@@ -287,7 +290,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             if (!this.getScene().getEngine().getCaps().multiview) {
                 Logger.Warn("Multiview is not supported, falling back to standard rendering");
                 this._useMultiviewToSingleView = false;
-            }else {
+            } else {
                 this._useMultiviewToSingleView = true;
                 this._rigPostProcess = new VRMultiviewToSingleviewPostProcess("VRMultiviewToSingleview", this, 1.0);
             }
