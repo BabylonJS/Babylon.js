@@ -5229,6 +5229,42 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to store and describe the pipeline context associated with an effect
+     */
+    export interface IPipelineContext {
+        /**
+         * Gets a boolean indicating that this pipeline context is supporting asynchronous creating
+         */
+        isAsync: boolean;
+        /**
+         * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
+         */
+        isReady: boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store gfx data (like WebGLBuffer)
+     */
+    export class DataBuffer {
+        /**
+         * Gets or sets the number of objects referencing this buffer
+         */
+        references: number;
+        /** Gets or sets the size of the underlying buffer */
+        capacity: number;
+        /**
+         * Gets or sets a boolean indicating if the buffer contains 32bits indices
+         */
+        is32Bits: boolean;
+        /**
+         * Gets the underlying buffer
+         */
+        readonly underlyingResource: any;
+    }
+}
+declare module BABYLON {
+    /**
      * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
      */
     export class PerformanceMonitor {
@@ -5495,7 +5531,7 @@ declare module BABYLON {
          * Gets underlying native buffer
          * @returns underlying native buffer
          */
-        getBuffer(): Nullable<WebGLBuffer>;
+        getBuffer(): Nullable<DataBuffer>;
         /**
          * Gets the stride in float32 units (i.e. byte stride / 4).
          * May not be an integer if the byte stride is not divisible by 4.
@@ -5624,7 +5660,7 @@ declare module BABYLON {
          * Gets underlying native buffer
          * @returns underlying native buffer
          */
-        getBuffer(): Nullable<WebGLBuffer>;
+        getBuffer(): Nullable<DataBuffer>;
         /**
          * Gets the stride in float32 units (i.e. byte stride / 4).
          * May not be an integer if the byte stride is not divisible by 4.
@@ -16737,6 +16773,7 @@ declare module BABYLON {
         _preActivate(): InstancedMesh;
         /** @hidden */
         _activate(renderId: number): boolean;
+        getWorldMatrix(): Matrix;
         /**
          * Returns the current associated LOD AbstractMesh.
          */
@@ -17251,7 +17288,7 @@ declare module BABYLON {
         protected _epsilon: number;
         protected _indicesCount: number;
         protected _lineShader: ShaderMaterial;
-        protected _ib: WebGLBuffer;
+        protected _ib: DataBuffer;
         protected _buffers: {
             [key: string]: Nullable<VertexBuffer>;
         };
@@ -19437,6 +19474,28 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to represent a specific level of detail of a mesh
+     * @see http://doc.babylonjs.com/how_to/how_to_use_lod
+     */
+    export class MeshLODLevel {
+        /** Defines the distance where this level should star being displayed */
+        distance: number;
+        /** Defines the mesh to use to render this level */
+        mesh: Nullable<Mesh>;
+        /**
+         * Creates a new LOD level
+         * @param distance defines the distance where this level should star being displayed
+         * @param mesh defines the mesh to use to render this level
+         */
+        constructor(
+        /** Defines the distance where this level should star being displayed */
+        distance: number, 
+        /** Defines the mesh to use to render this level */
+        mesh: Nullable<Mesh>);
+    }
+}
+declare module BABYLON {
+    /**
      * Mesh representing the gorund
      */
     export class GroundMesh extends Mesh {
@@ -20648,26 +20707,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * Class used to represent a specific level of detail of a mesh
-     * @see http://doc.babylonjs.com/how_to/how_to_use_lod
-     */
-    export class MeshLODLevel {
-        /** Defines the distance where this level should star being displayed */
-        distance: number;
-        /** Defines the mesh to use to render this level */
-        mesh: Nullable<Mesh>;
-        /**
-         * Creates a new LOD level
-         * @param distance defines the distance where this level should star being displayed
-         * @param mesh defines the mesh to use to render this level
-         */
-        constructor(
-        /** Defines the distance where this level should star being displayed */
-        distance: number, 
-        /** Defines the mesh to use to render this level */
-        mesh: Nullable<Mesh>);
-    }
     /**
      * @hidden
      **/
@@ -22524,7 +22563,7 @@ declare module BABYLON {
         /**
          * @hidden
          */
-        _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): WebGLBuffer;
+        _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): DataBuffer;
         /**
          * Checks if the submesh intersects with a ray
          * @param ray defines the ray to test
@@ -22704,7 +22743,7 @@ declare module BABYLON {
         setVerticesBuffer(buffer: VertexBuffer, totalVertices?: Nullable<number>): void;
         /**
          * Update a specific vertex buffer
-         * This function will directly update the underlying WebGLBuffer according to the passed numeric array or Float32Array
+         * This function will directly update the underlying DataBuffer according to the passed numeric array or Float32Array
          * It will do nothing if the buffer is not updatable
          * @param kind defines the data kind (Position, normal, etc...)
          * @param data defines the data to use
@@ -22722,7 +22761,7 @@ declare module BABYLON {
         updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean): void;
         private _updateBoundingInfo;
         /** @hidden */
-        _bind(effect: Nullable<Effect>, indexToBind?: Nullable<WebGLBuffer>): void;
+        _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>): void;
         /**
          * Gets total number of vertices
          * @returns the total number of vertices
@@ -22796,7 +22835,7 @@ declare module BABYLON {
          * Gets the index buffer
          * @return the index buffer
          */
-        getIndexBuffer(): Nullable<WebGLBuffer>;
+        getIndexBuffer(): Nullable<DataBuffer>;
         /** @hidden */
         _releaseVertexArrayObject(effect?: Nullable<Effect>): void;
         /**
@@ -24217,6 +24256,8 @@ declare module BABYLON {
         private _visibility;
         /** @hidden */
         _isActive: boolean;
+        /** @hidden */
+        _onlyForInstances: boolean;
         /** @hidden */
         _renderingGroup: Nullable<RenderingGroup>;
         /**
@@ -26254,7 +26295,7 @@ declare module BABYLON {
          * The underlying WebGL Uniform buffer.
          * @returns the webgl buffer
          */
-        getBuffer(): Nullable<WebGLBuffer>;
+        getBuffer(): Nullable<DataBuffer>;
         /**
          * std140 layout specifies how to align data within an UBO structure.
          * See https://khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
@@ -26701,6 +26742,29 @@ declare module BABYLON {
          */
         loadingUIBackgroundColor: string;
         private _resizeLoadingUI;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGLPipelineContext implements IPipelineContext {
+        engine: Engine;
+        program: Nullable<WebGLProgram>;
+        context?: WebGLRenderingContext;
+        vertexShader?: WebGLShader;
+        fragmentShader?: WebGLShader;
+        isParallelCompiled: boolean;
+        onCompiled?: () => void;
+        transformFeedback?: WebGLTransformFeedback | null;
+        readonly isAsync: boolean;
+        readonly isReady: boolean;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGLDataBuffer extends DataBuffer {
+        private _buffer;
+        constructor(resource: WebGLBuffer);
+        readonly underlyingResource: any;
     }
 }
 declare module BABYLON {
@@ -27507,7 +27571,7 @@ declare module BABYLON {
         /** @hidden */
         protected _cachedVertexBuffers: any;
         /** @hidden */
-        protected _cachedIndexBuffer: Nullable<WebGLBuffer>;
+        protected _cachedIndexBuffer: Nullable<DataBuffer>;
         /** @hidden */
         protected _cachedEffectForVertexBuffers: Nullable<Effect>;
         /** @hidden */
@@ -27978,14 +28042,14 @@ declare module BABYLON {
          * @param elements defines the content of the uniform buffer
          * @returns the webGL uniform buffer
          */
-        createUniformBuffer(elements: FloatArray): WebGLBuffer;
+        createUniformBuffer(elements: FloatArray): DataBuffer;
         /**
          * Create a dynamic uniform buffer
          * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
          * @param elements defines the content of the uniform buffer
          * @returns the webGL uniform buffer
          */
-        createDynamicUniformBuffer(elements: FloatArray): WebGLBuffer;
+        createDynamicUniformBuffer(elements: FloatArray): DataBuffer;
         /**
          * Update an existing uniform buffer
          * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
@@ -27994,27 +28058,27 @@ declare module BABYLON {
          * @param offset defines the offset in the uniform buffer where update should start
          * @param count defines the size of the data to update
          */
-        updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: FloatArray, offset?: number, count?: number): void;
+        updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void;
         private _resetVertexBufferBinding;
         /**
          * Creates a vertex buffer
          * @param data the data for the vertex buffer
          * @returns the new WebGL static buffer
          */
-        createVertexBuffer(data: DataArray): WebGLBuffer;
+        createVertexBuffer(data: DataArray): DataBuffer;
         /**
          * Creates a dynamic vertex buffer
          * @param data the data for the dynamic vertex buffer
          * @returns the new WebGL dynamic buffer
          */
-        createDynamicVertexBuffer(data: DataArray): WebGLBuffer;
+        createDynamicVertexBuffer(data: DataArray): DataBuffer;
         /**
          * Update a dynamic index buffer
          * @param indexBuffer defines the target index buffer
          * @param indices defines the data to update
          * @param offset defines the offset in the target index buffer where update should start
          */
-        updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset?: number): void;
+        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
         /**
          * Updates a dynamic vertex buffer.
          * @param vertexBuffer the vertex buffer to update
@@ -28022,7 +28086,7 @@ declare module BABYLON {
          * @param byteOffset the byte offset of the data
          * @param byteLength the byte length of the data
          */
-        updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
+        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
         private _resetIndexBufferBinding;
         /**
          * Creates a new index buffer
@@ -28030,30 +28094,30 @@ declare module BABYLON {
          * @param updatable defines if the index buffer must be updatable
          * @returns a new webGL buffer
          */
-        createIndexBuffer(indices: IndicesArray, updatable?: boolean): WebGLBuffer;
+        createIndexBuffer(indices: IndicesArray, updatable?: boolean): DataBuffer;
         /**
          * Bind a webGL buffer to the webGL context
          * @param buffer defines the buffer to bind
          */
-        bindArrayBuffer(buffer: Nullable<WebGLBuffer>): void;
+        bindArrayBuffer(buffer: Nullable<DataBuffer>): void;
         /**
          * Bind an uniform buffer to the current webGL context
          * @param buffer defines the buffer to bind
          */
-        bindUniformBuffer(buffer: Nullable<WebGLBuffer>): void;
+        bindUniformBuffer(buffer: Nullable<DataBuffer>): void;
         /**
          * Bind a buffer to the current webGL context at a given location
          * @param buffer defines the buffer to bind
          * @param location defines the index where to bind the buffer
          */
-        bindUniformBufferBase(buffer: WebGLBuffer, location: number): void;
+        bindUniformBufferBase(buffer: DataBuffer, location: number): void;
         /**
          * Bind a specific block at a given index in a specific shader program
-         * @param shaderProgram defines the shader program
+         * @param pipelineContext defines the pipeline context to use
          * @param blockName defines the block name
          * @param index defines the index where to bind the block
          */
-        bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void;
+        bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
         private bindIndexBuffer;
         private bindBuffer;
         /**
@@ -28074,14 +28138,14 @@ declare module BABYLON {
          */
         recordVertexArrayObject(vertexBuffers: {
             [key: string]: VertexBuffer;
-        }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): WebGLVertexArrayObject;
+        }, indexBuffer: Nullable<DataBuffer>, effect: Effect): WebGLVertexArrayObject;
         /**
          * Bind a specific vertex array object
          * @see http://doc.babylonjs.com/features/webgl2#vertex-array-objects
          * @param vertexArrayObject defines the vertex array object to bind
          * @param indexBuffer defines the index buffer to bind
          */
-        bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: Nullable<WebGLBuffer>): void;
+        bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: Nullable<DataBuffer>): void;
         /**
          * Bind webGl buffers directly to the webGL context
          * @param vertexBuffer defines the vertex buffer to bind
@@ -28090,7 +28154,7 @@ declare module BABYLON {
          * @param vertexStrideSize defines the vertex stride of the vertex buffer
          * @param effect defines the effect associated with the vertex buffer
          */
-        bindBuffersDirectly(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void;
+        bindBuffersDirectly(vertexBuffer: DataBuffer, indexBuffer: DataBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void;
         private _unbindVertexArrayObject;
         /**
          * Bind a list of vertex buffers to the webGL context
@@ -28100,7 +28164,7 @@ declare module BABYLON {
          */
         bindBuffers(vertexBuffers: {
             [key: string]: Nullable<VertexBuffer>;
-        }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): void;
+        }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void;
         /**
          * Unbind all instance attributes
          */
@@ -28111,13 +28175,13 @@ declare module BABYLON {
          */
         releaseVertexArrayObject(vao: WebGLVertexArrayObject): void;
         /** @hidden */
-        _releaseBuffer(buffer: WebGLBuffer): boolean;
+        _releaseBuffer(buffer: DataBuffer): boolean;
         /**
          * Creates a webGL buffer to use with instanciation
          * @param capacity defines the size of the buffer
          * @returns the webGL buffer
          */
-        createInstancesBuffer(capacity: number): WebGLBuffer;
+        createInstancesBuffer(capacity: number): DataBuffer;
         /**
          * Delete a webGL buffer used with instanciation
          * @param buffer defines the webGL buffer to delete
@@ -28129,7 +28193,7 @@ declare module BABYLON {
          * @param data defines the data to store in the buffer
          * @param offsetLocations defines the offsets or attributes information used to determine where data must be stored in the buffer
          */
-        updateAndBindInstancesBuffer(instancesBuffer: WebGLBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void;
+        updateAndBindInstancesBuffer(instancesBuffer: DataBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void;
         /**
          * Apply all cached states (depth, culling, stencil and alpha)
          */
@@ -28177,7 +28241,7 @@ declare module BABYLON {
         /** @hidden */
         _releaseEffect(effect: Effect): void;
         /** @hidden */
-        _deleteProgram(program: WebGLProgram): void;
+        _deletePipelineContext(pipelineContext: IPipelineContext): void;
         /**
          * Create a new effect (used to store vertex/fragment shaders)
          * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
@@ -28196,15 +28260,17 @@ declare module BABYLON {
         private _compileRawShader;
         /**
          * Directly creates a webGL program
+         * @param pipelineContext  defines the pipeline context to attach to
          * @param vertexCode defines the vertex shader code to use
          * @param fragmentCode defines the fragment shader code to use
          * @param context defines the webGL context to use (if not set, the current one will be used)
          * @param transformFeedbackVaryings defines the list of transform feedback varyings to use
          * @returns the new webGL program
          */
-        createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
         /**
          * Creates a webGL program
+         * @param pipelineContext  defines the pipeline context to attach to
          * @param vertexCode  defines the vertex shader code to use
          * @param fragmentCode defines the fragment shader code to use
          * @param defines defines the string containing the defines to use to compile the shaders
@@ -28212,27 +28278,34 @@ declare module BABYLON {
          * @param transformFeedbackVaryings defines the list of transform feedback varyings to use
          * @returns the new webGL program
          */
-        createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        /**
+         * Creates a new pipeline context
+         * @returns the new pipeline
+         */
+        createPipelineContext(): WebGLPipelineContext;
         private _createShaderProgram;
-        private _finalizeProgram;
+        private _finalizePipelineContext;
         /** @hidden */
-        _isProgramCompiled(shaderProgram: WebGLProgram): boolean;
+        _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>): void;
         /** @hidden */
-        _executeWhenProgramIsCompiled(shaderProgram: WebGLProgram, action: () => void): void;
+        _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean;
+        /** @hidden */
+        _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void): void;
         /**
          * Gets the list of webGL uniform locations associated with a specific program based on a list of uniform names
-         * @param shaderProgram defines the webGL program to use
+         * @param pipelineContext defines the pipeline context to use
          * @param uniformsNames defines the list of uniform names
          * @returns an array of webGL uniform locations
          */
-        getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): Nullable<WebGLUniformLocation>[];
+        getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[];
         /**
          * Gets the lsit of active attributes for a given webGL program
-         * @param shaderProgram defines the webGL program to use
+         * @param pipelineContext defines the pipeline context to use
          * @param attributesNames defines the list of attribute names to get
          * @returns an array of indices indicating the offset of each attribute
          */
-        getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[];
+        getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[];
         /**
          * Activates an effect, mkaing it the current one (ie. the one used for rendering)
          * @param effect defines the effect to activate
@@ -29001,7 +29074,7 @@ declare module BABYLON {
          * Compiled shader to webGL program.
          * @hidden
          */
-        _program: WebGLProgram;
+        _pipelineContext: IPipelineContext;
         private _valueCache;
         private static _baseCache;
         /**
@@ -29034,10 +29107,10 @@ declare module BABYLON {
          */
         getEngine(): Engine;
         /**
-         * The compiled webGL program for the effect
-         * @returns the webGL program.
+         * The pipeline context for this effect
+         * @returns the associated pipeline context
          */
-        getProgram(): WebGLProgram;
+        getPipelineContext(): IPipelineContext;
         /**
          * The set of names of attribute variables for the shader.
          * @returns An array of attribute names.
@@ -29105,13 +29178,7 @@ declare module BABYLON {
          * @param onError Callback called on error.
          * @hidden
          */
-        _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void): void;
-        /**
-         * Gets the uniform locations of the the specified variable names
-         * @param names THe names of the variables to lookup.
-         * @returns Array of locations in the same order as variable names.
-         */
-        getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[];
+        _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void): void;
         /**
          * Prepares the effect
          * @hidden
@@ -29172,7 +29239,7 @@ declare module BABYLON {
          * @param buffer Buffer to bind.
          * @param name Name of the uniform variable to bind to.
          */
-        bindUniformBuffer(buffer: WebGLBuffer, name: string): void;
+        bindUniformBuffer(buffer: DataBuffer, name: string): void;
         /**
          * Binds block to a uniform.
          * @param blockName Name of the block to bind.
@@ -41137,15 +41204,15 @@ declare module BABYLON {
          */
         getHardwareScalingLevel(): number;
         constructor(options?: NullEngineOptions);
-        createVertexBuffer(vertices: FloatArray): WebGLBuffer;
-        createIndexBuffer(indices: IndicesArray): WebGLBuffer;
+        createVertexBuffer(vertices: FloatArray): DataBuffer;
+        createIndexBuffer(indices: IndicesArray): DataBuffer;
         clear(color: Color4, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
         getRenderWidth(useScreen?: boolean): number;
         getRenderHeight(useScreen?: boolean): number;
         setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void;
-        createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram;
-        getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
-        getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[];
+        createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram;
+        getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[];
+        getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[];
         bindSamplers(effect: Effect): void;
         enableEffect(effect: Effect): void;
         setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
@@ -41175,7 +41242,7 @@ declare module BABYLON {
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
         bindBuffers(vertexBuffers: {
             [key: string]: VertexBuffer;
-        }, indexBuffer: WebGLBuffer, effect: Effect): void;
+        }, indexBuffer: DataBuffer, effect: Effect): void;
         wipeCaches(bruteForce?: boolean): void;
         draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void;
         drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
@@ -41189,7 +41256,7 @@ declare module BABYLON {
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
         unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
-        createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer;
+        createDynamicVertexBuffer(vertices: FloatArray): DataBuffer;
         updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
         areAllEffectsReady(): boolean;
         /**
@@ -41216,7 +41283,7 @@ declare module BABYLON {
         /** @hidden */
         _bindTexture(channel: number, texture: InternalTexture): void;
         /** @hidden */
-        _releaseBuffer(buffer: WebGLBuffer): boolean;
+        _releaseBuffer(buffer: DataBuffer): boolean;
         releaseEffects(): void;
         displayLoadingUI(): void;
         hideLoadingUI(): void;
@@ -52088,7 +52155,7 @@ declare module BABYLON {
          */
         _attachCameras(cameras: Camera[]): void;
         /**
-         * Detatches the effect on cameras
+         * Detaches the effect on cameras
          * @param cameras The camera to detatch from.
          * @hidden
          */
@@ -52570,6 +52637,11 @@ declare module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel?: DepthOfFieldEffectBlurLevel, pipelineTextureType?: number, blockCompilation?: boolean);
+        /**
+        * Get the current class name of the current effet
+        * @returns "DepthOfFieldEffect"
+        */
+        getClassName(): string;
         /**
          * Depth texture to be used to compute the circle of confusion. This must be set here or in the constructor in order for the post process to function.
          */
@@ -56410,13 +56482,6 @@ interface Math {
     fround(x: number): number;
     imul(a: number, b: number): number;
 }
-interface WebGLProgram {
-    context?: WebGLRenderingContext;
-    vertexShader?: WebGLShader;
-    fragmentShader?: WebGLShader;
-    isParallelCompiled: boolean;
-    onCompiled?: () => void;
-}
 interface WebGLRenderingContext {
     drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
     drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
@@ -56469,13 +56534,7 @@ interface WebGLRenderingContext {
     QUERY_RESULT_AVAILABLE: number;
     QUERY_RESULT: number;
 }
-interface WebGLBuffer {
-    references: number;
-    capacity: number;
-    is32Bits: boolean;
-}
 interface WebGLProgram {
-    transformFeedback?: WebGLTransformFeedback | null;
     __SPECTOR_rebuildProgram?: ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void) | null;
 }
 interface EXT_disjoint_timer_query {

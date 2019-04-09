@@ -16,6 +16,7 @@ import "../Meshes/Builders/boxBuilder";
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 declare module "../scene" {
     export interface Scene {
@@ -123,7 +124,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
     private _colorShader: ShaderMaterial;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: WebGLBuffer;
+    private _indexBuffer: DataBuffer;
 
     /**
      * Instantiates a new bounding box renderer in a scene.
