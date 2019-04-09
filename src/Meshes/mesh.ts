@@ -1307,6 +1307,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
 
+        this._isActive = false;
+
         return this;
     }
 
@@ -1358,7 +1360,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var scene = this.getScene();
         let batchCache = this._instanceDataStorage.batchCache;
         batchCache.mustReturn = false;
-        batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
+        batchCache.renderSelf[subMeshId] = !this._onlyForInstances && this.isEnabled() && this.isVisible;
         batchCache.visibleInstances[subMeshId] = null;
 
         if (this._instanceDataStorage.visibleInstances) {
