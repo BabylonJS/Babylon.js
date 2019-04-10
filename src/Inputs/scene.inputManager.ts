@@ -1,18 +1,20 @@
-import { Observable } from '../Misc/observable';
+import { Observable, Observer } from '../Misc/observable';
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from '../Events/pointerEvents';
 import { Nullable } from '../types';
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { PickingInfo } from '../Collisions/pickingInfo';
 import { Vector2, Matrix } from '../Maths/math';
-import { Scene } from '../scene';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Constants } from '../Engines/constants';
 import { ActionEvent } from '../Actions/actionEvent';
 import { Tools } from '../Misc/tools';
+import { Engine } from '../Engines/engine';
+import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from '../Events/keyboardEvents';
 
+declare type Scene = import("../scene").Scene;
 
 /** @hidden */
-export class _ClickInfo {
+class _ClickInfo {
     private _singleClick = false;
     private _doubleClick = false;
     private _hasSwiped = false;
@@ -45,7 +47,20 @@ export class _ClickInfo {
     }
 }
 
+/**
+ * Class used to manage all inputs for the scene.
+ */
 export class InputManager {
+    /** The distance in pixel that you have to move to prevent some events */
+    public static DragMovementThreshold = 10; // in pixels
+    /** Time in milliseconds to wait to raise long press events if button is still pressed */
+    public static LongPressDelay = 500; // in milliseconds
+    /** Time in milliseconds with two consecutive clicks will be considered as a double click */
+    public static DoubleClickDelay = 300; // in milliseconds
+    /** If you need to check double click without raising a single click at first click, enable this flag */
+    public static ExclusiveDoubleClickMode = false;
+
+    // Pointers
     private _wheelEventName = "";
     private _onPointerMove: (evt: PointerEvent) => void;
     private _onPointerDown: (evt: PointerEvent) => void;
@@ -79,9 +94,18 @@ export class InputManager {
     private _previousStartingPointerTime = 0;
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
 
+    // Keyboard
+    private _onKeyDown: (evt: KeyboardEvent) => void;
+    private _onKeyUp: (evt: KeyboardEvent) => void;
+    private _onCanvasFocusObserver: Nullable<Observer<Engine>>;
+    private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
+
     private _scene: Scene;
 
-    /** Creates a new InputManager */
+    /**
+     * Creates a new InputManager
+     * @param scene defines the hosting scene
+     */
     public constructor(scene: Scene) {
         this._scene = scene;
     }
@@ -93,6 +117,9 @@ export class InputManager {
         return this._pointerOverMesh;
     }
 
+    /**
+     * Gets the pointer coordinates in 2D without any translation (ie. straight out of the pointer event)
+     */
     public get unTranslatedPointer(): Vector2 {
         return new Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
     }
@@ -264,13 +291,13 @@ export class InputManager {
 
                         if (pickResult && pickResult.hit && pickResult.pickedMesh && actionManager) {
                             if (this._totalPointersPressed !== 0 &&
-                                ((Date.now() - this._startingPointerTime) > Scene.LongPressDelay) &&
+                                ((Date.now() - this._startingPointerTime) > InputManager.LongPressDelay) &&
                                 !this._isPointerSwiping()) {
                                 this._startingPointerTime = 0;
                                 actionManager.processTrigger(Constants.ACTION_OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             }
                         }
-                    }, Scene.LongPressDelay);
+                    }, InputManager.LongPressDelay);
                 }
             }
         }
@@ -297,8 +324,8 @@ export class InputManager {
 
     /** @hidden */
     public _isPointerSwiping(): boolean {
-        return Math.abs(this._startingPointerPosition.x - this._pointerX) > Scene.DragMovementThreshold ||
-            Math.abs(this._startingPointerPosition.y - this._pointerY) > Scene.DragMovementThreshold;
+        return Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
+            Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
     }
 
     /**
@@ -307,7 +334,6 @@ export class InputManager {
      * @param pickResult pickingInfo of the object wished to simulate pointer event on
      * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      * @param doubleTap indicates that the pointer up event should be considered as part of a double click (false by default)
-     * @returns the current scene
      */
     public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit, doubleTap?: boolean): void {
         let evt = new PointerEvent("pointerup", pointerEventInit);
@@ -325,7 +351,6 @@ export class InputManager {
 
         this._processPointerUp(pickResult, evt, clickInfo);
     }
-
 
     private _processPointerUp(pickResult: Nullable<PickingInfo>, evt: PointerEvent, clickInfo: _ClickInfo): void {
         let scene = this._scene;
@@ -410,7 +435,6 @@ export class InputManager {
         return this._pointerCaptures[pointerId];
     }
 
-
     /**
     * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
     * @param attachUp defines if you want to attach events to pointerup
@@ -424,6 +448,8 @@ export class InputManager {
         if (!canvas) {
             return;
         }
+
+        let engine = scene.getEngine();
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
@@ -439,7 +465,7 @@ export class InputManager {
 
         this._delayedSimpleClick = (btn: number, clickInfo: _ClickInfo, cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void) => {
             // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
-            if ((Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay && !this._doubleClickOccured) ||
+            if ((Date.now() - this._previousStartingPointerTime > InputManager.DoubleClickDelay && !this._doubleClickOccured) ||
                 btn !== this._previousButtonPressed) {
                 this._doubleClickOccured = false;
                 clickInfo.singleClick = true;
@@ -470,7 +496,7 @@ export class InputManager {
                 clickInfo.hasSwiped = this._isPointerSwiping();
 
                 if (!clickInfo.hasSwiped) {
-                    let checkSingleClickImmediately = !Scene.ExclusiveDoubleClickMode;
+                    let checkSingleClickImmediately = !InputManager.ExclusiveDoubleClickMode;
 
                     if (!checkSingleClickImmediately) {
                         checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) &&
@@ -486,7 +512,7 @@ export class InputManager {
 
                     if (checkSingleClickImmediately) {
                         // single click detected if double click delay is over or two different successive keys pressed without exclusive double click or no double click required
-                        if (Date.now() - this._previousStartingPointerTime > Scene.DoubleClickDelay ||
+                        if (Date.now() - this._previousStartingPointerTime > InputManager.DoubleClickDelay ||
                             btn !== this._previousButtonPressed) {
                             clickInfo.singleClick = true;
                             cb(clickInfo, this._currentPickResult);
@@ -497,7 +523,7 @@ export class InputManager {
                     else {
                         // wait that no double click has been raised during the double click delay
                         this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-                        this._delayedSimpleClickTimeout = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), Scene.DoubleClickDelay);
+                        this._delayedSimpleClickTimeout = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), InputManager.DoubleClickDelay);
                     }
 
                     let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) ||
@@ -511,7 +537,7 @@ export class InputManager {
                     if (checkDoubleClick) {
                         // two successive keys pressed are equal, double click delay is not over and double click has not just occurred
                         if (btn === this._previousButtonPressed &&
-                            Date.now() - this._previousStartingPointerTime < Scene.DoubleClickDelay &&
+                            Date.now() - this._previousStartingPointerTime < InputManager.DoubleClickDelay &&
                             !this._doubleClickOccured
                         ) {
                             // pointer has not moved for 2 clicks, it's a double click
@@ -521,7 +547,7 @@ export class InputManager {
                                 this._doubleClickOccured = true;
                                 clickInfo.doubleClick = true;
                                 clickInfo.ignore = false;
-                                if (Scene.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout) {
+                                if (InputManager.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout) {
                                     clearTimeout(this._previousDelayedSimpleClickTimeout);
                                 }
                                 this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
@@ -534,7 +560,7 @@ export class InputManager {
                                 this._previousStartingPointerPosition.x = this._startingPointerPosition.x;
                                 this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
                                 this._previousButtonPressed = btn;
-                                if (Scene.ExclusiveDoubleClickMode) {
+                                if (InputManager.ExclusiveDoubleClickMode) {
                                     if (this._previousDelayedSimpleClickTimeout) {
                                         clearTimeout(this._previousDelayedSimpleClickTimeout);
                                     }
@@ -695,6 +721,64 @@ export class InputManager {
             });
         };
 
+        this._onKeyDown = (evt: KeyboardEvent) => {
+            let type = KeyboardEventTypes.KEYDOWN;
+            if (scene.onPreKeyboardObservable.hasObservers()) {
+                let pi = new KeyboardInfoPre(type, evt);
+                scene.onPreKeyboardObservable.notifyObservers(pi, type);
+                if (pi.skipOnPointerObservable) {
+                    return;
+                }
+            }
+
+            if (scene.onKeyboardObservable.hasObservers()) {
+                let pi = new KeyboardInfo(type, evt);
+                scene.onKeyboardObservable.notifyObservers(pi, type);
+            }
+
+            if (scene.actionManager) {
+                scene.actionManager.processTrigger(Constants.ACTION_OnKeyDownTrigger, ActionEvent.CreateNewFromScene(scene, evt));
+            }
+        };
+
+        this._onKeyUp = (evt: KeyboardEvent) => {
+            let type = KeyboardEventTypes.KEYUP;
+            if (scene.onPreKeyboardObservable.hasObservers()) {
+                let pi = new KeyboardInfoPre(type, evt);
+                scene.onPreKeyboardObservable.notifyObservers(pi, type);
+                if (pi.skipOnPointerObservable) {
+                    return;
+                }
+            }
+
+            if (scene.onKeyboardObservable.hasObservers()) {
+                let pi = new KeyboardInfo(type, evt);
+                scene.onKeyboardObservable.notifyObservers(pi, type);
+            }
+
+            if (scene.actionManager) {
+                scene.actionManager.processTrigger(Constants.ACTION_OnKeyUpTrigger, ActionEvent.CreateNewFromScene(scene, evt));
+            }
+        };
+
+        // Keyboard events
+        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(() => {
+            if (!canvas) {
+                return;
+            }
+            canvas.addEventListener("keydown", this._onKeyDown, false);
+            canvas.addEventListener("keyup", this._onKeyUp, false);
+        });
+
+        this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
+            if (!canvas) {
+                return;
+            }
+            canvas.removeEventListener("keydown", this._onKeyDown);
+            canvas.removeEventListener("keyup", this._onKeyUp);
+        });
+
+        // Pointer events
         var eventPrefix = Tools.GetPointerPrefix();
 
         if (attachMove) {
@@ -717,18 +801,38 @@ export class InputManager {
         }
     }
 
-    /** Detaches all event handlers*/
+    /**
+     * Detaches all event handlers
+     */
     public detachControl() {
-        var eventPrefix = Tools.GetPointerPrefix();
-        var canvas = this._scene.getEngine().getRenderingCanvas();
+        const eventPrefix = Tools.GetPointerPrefix();
+        const canvas = this._scene.getEngine().getRenderingCanvas();
+        const engine = this._scene.getEngine();
 
         if (!canvas) {
             return;
         }
 
+        // Pointer
         canvas.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
         canvas.removeEventListener(eventPrefix + "down", <any>this._onPointerDown);
         window.removeEventListener(eventPrefix + "up", <any>this._onPointerUp);
+
+        // Blur / Focus
+        if (this._onCanvasBlurObserver) {
+            engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
+        }
+
+        if (this._onCanvasFocusObserver) {
+            engine.onCanvasFocusObservable.remove(this._onCanvasFocusObserver);
+        }
+
+        // Keyboard
+        canvas.removeEventListener("keydown", this._onKeyDown);
+        canvas.removeEventListener("keyup", this._onKeyUp);
+
+        // Cursor
+        canvas.style.cursor = this._scene.defaultCursor;
     }
 
     /**
