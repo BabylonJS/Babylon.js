@@ -6,7 +6,7 @@ import { Tools, ICustomAnimationFrameRequester, PerfCounter, IFileRequest } from
 import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Matrix, Color3, Color4, Viewport, Size, Vector4 } from "../Maths/math";
+import { Matrix, Color3, Color4, Viewport, Vector4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
 import { IDisplayChangedEventArgs } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -227,16 +227,6 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Defines that engine should compile shaders with high precision floats (if supported). True by default
      */
     useHighPrecisionFloats?: boolean;
-}
-
-/**
- * Defines the interface used by display changed events
- */
-export interface IDisplayChangedEventArgs {
-    /** Gets the vrDisplay object (if any) */
-    vrDisplay: Nullable<any>;
-    /** Gets a boolean indicating if webVR is supported */
-    vrSupported: boolean;
 }
 
 /**
@@ -643,23 +633,6 @@ export class Engine {
      */
     public onBeforeTextureInitObservable = new Observable<Texture>();
 
-    //WebVR
-
-    private _vrDisplay: any = undefined;
-    private _vrSupported: boolean = false;
-    private _oldSize: Size;
-    private _oldHardwareScaleFactor: number;
-    private _vrExclusivePointerMode = false;
-    private _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
-
-    /**
-     * Gets a boolean indicating that the engine is currently in VR exclusive mode for the pointers
-     * @see https://docs.microsoft.com/en-us/microsoft-edge/webvr/essentials#mouse-input
-     */
-    public get isInVRExclusivePointerMode(): boolean {
-        return this._vrExclusivePointerMode;
-    }
-
     // Uniform buffers list
 
     /**
@@ -761,27 +734,6 @@ export class Engine {
 
     private _onFullscreenChange: () => void;
     private _onPointerLockChange: () => void;
-
-    private _onVRDisplayPointerRestricted: () => void;
-    private _onVRDisplayPointerUnrestricted: () => void;
-
-    // VRDisplay connection
-    private _onVrDisplayConnect: Nullable<(display: any) => void>;
-    private _onVrDisplayDisconnect: Nullable<() => void>;
-    private _onVrDisplayPresentChange: Nullable<() => void>;
-
-    /**
-     * Observable signaled when VR display mode changes
-     */
-    public onVRDisplayChangedObservable = new Observable<IDisplayChangedEventArgs>();
-    /**
-     * Observable signaled when VR request present is complete
-     */
-    public onVRRequestPresentComplete = new Observable<boolean>();
-    /**
-     * Observable signaled when VR request present starts
-     */
-    public onVRRequestPresentStart = new Observable<Engine>();
 
     private _hardwareScalingLevel: number;
     /** @hidden */
@@ -911,7 +863,8 @@ export class Engine {
     private _dummyFramebuffer: WebGLFramebuffer;
 
     private _externalData: StringDictionary<Object>;
-    private _bindedRenderFunction: any;
+    /** @hidden */
+    public _bindedRenderFunction: any;
 
     private _vaoRecordInProgress = false;
     private _mustWipeVertexAttributes = false;
@@ -1273,23 +1226,7 @@ export class Engine {
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
-            this._onVRDisplayPointerRestricted = () => {
-                if (canvas) {
-                    canvas.requestPointerLock();
-                }
-            };
-
-            this._onVRDisplayPointerUnrestricted = () => {
-                if (!anyDoc.exitPointerLock) {
-                    return;
-                }
-                anyDoc.exitPointerLock();
-            };
-
-            if (DomManagement.IsWindowObjectExist()) {
-                window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
-                window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
-            }
+            this._connectVREvents(canvas, anyDoc);
         }
 
         // Create Audio Engine if needed.
@@ -1303,6 +1240,7 @@ export class Engine {
         }
 
         // Load WebVR Devices
+        this._prepareVRComponent();
         if (options.autoEnableWebVR) {
             this.initWebVR();
         }
@@ -1316,6 +1254,53 @@ export class Engine {
         console.log(`Babylon.js v${Engine.Version} - ${this.description}`);
 
         this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
+    }
+
+    // WebVR
+
+    /**
+     * Initializes a webVR display and starts listening to display change events
+     * The onVRDisplayChangedObservable will be notified upon these changes
+     * @returns The onVRDisplayChangedObservable
+     */
+    public initWebVR(): Observable<IDisplayChangedEventArgs> {
+        throw _DevTools.WarnImport("WebVRCamera");
+    }
+
+    /** @hidden */
+    public _prepareVRComponent() {
+        // Do nothing as the engine side effect will overload it
+    }
+
+    /** @hidden */
+    public _connectVREvents(canvas: HTMLCanvasElement, document: any) {
+        // Do nothing as the engine side effect will overload it
+    }
+
+    /** @hidden */
+    public _submitVRFrame() {
+        // Do nothing as the engine side effect will overload it
+    }
+    /**
+     * Call this function to leave webVR mode
+     * Will do nothing if webVR is not supported or if there is no webVR device
+     * @see http://doc.babylonjs.com/how_to/webvr_camera
+     */
+    public disableVR() {
+        // Do nothing as the engine side effect will overload it
+    }
+
+    /**
+     * Gets a boolean indicating that the system is in VR mode and is presenting
+     * @returns true if VR mode is engaged
+     */
+    public isVRPresenting() {
+        return false;
+    }
+
+    /** @hidden */
+    public _requestVRFrame() {
+        // Do nothing as the engine side effect will overload it
     }
 
     private _disableTouchAction(): void {
@@ -2007,8 +1992,8 @@ export class Engine {
             if (this.customAnimationFrameRequester) {
                 this.customAnimationFrameRequester.requestID = Tools.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
                 this._frameHandler = this.customAnimationFrameRequester.requestID;
-            } else if (this._vrDisplay && this._vrDisplay.isPresenting) {
-                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
+            } else if (this.isVRPresenting()) {
+                this._requestVRFrame();
             } else {
                 this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
             }
@@ -2201,15 +2186,7 @@ export class Engine {
             this.flushFramebuffer();
         }
 
-        // Submit frame to the vr device, if enabled
-        if (this._vrDisplay && this._vrDisplay.isPresenting) {
-            // TODO: We should only submit the frame if we read frameData successfully.
-            try {
-                this._vrDisplay.submitFrame();
-            } catch (e) {
-                Tools.Warn("webVR submitFrame has had an unexpected failure: " + e);
-            }
-        }
+        this._submitVRFrame();
 
         this.onEndFrameObservable.notifyObservers(this);
     }
@@ -2219,7 +2196,7 @@ export class Engine {
      */
     public resize(): void {
         // We're not resizing the size of the canvas while in VR mode & presenting
-        if (!(this._vrDisplay && this._vrDisplay.isPresenting)) {
+        if (!this.isVRPresenting()) {
             var width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
             var height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
 
@@ -2257,143 +2234,6 @@ export class Engine {
         if (this.onResizeObservable.hasObservers) {
             this.onResizeObservable.notifyObservers(this);
         }
-    }
-
-    // WebVR functions
-
-    /**
-     * Gets a boolean indicating if a webVR device was detected
-     * @returns true if a webVR device was detected
-     */
-    public isVRDevicePresent(): boolean {
-        return !!this._vrDisplay;
-    }
-
-    /**
-     * Gets the current webVR device
-     * @returns the current webVR device (or null)
-     */
-    public getVRDevice(): any {
-        return this._vrDisplay;
-    }
-
-    /**
-     * Initializes a webVR display and starts listening to display change events
-     * The onVRDisplayChangedObservable will be notified upon these changes
-     * @returns The onVRDisplayChangedObservable
-     */
-    public initWebVR(): Observable<IDisplayChangedEventArgs> {
-        this.initWebVRAsync();
-        return this.onVRDisplayChangedObservable;
-    }
-
-    /**
-     * Initializes a webVR display and starts listening to display change events
-     * The onVRDisplayChangedObservable will be notified upon these changes
-     * @returns A promise containing a VRDisplay and if vr is supported
-     */
-    public initWebVRAsync(): Promise<IDisplayChangedEventArgs> {
-        var notifyObservers = () => {
-            var eventArgs = {
-                vrDisplay: this._vrDisplay,
-                vrSupported: this._vrSupported
-            };
-            this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
-            this._webVRInitPromise = new Promise((res) => { res(eventArgs); });
-        };
-
-        if (!this._onVrDisplayConnect) {
-            this._onVrDisplayConnect = (event) => {
-                this._vrDisplay = event.display;
-                notifyObservers();
-            };
-            this._onVrDisplayDisconnect = () => {
-                this._vrDisplay.cancelAnimationFrame(this._frameHandler);
-                this._vrDisplay = undefined;
-                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
-                notifyObservers();
-            };
-            this._onVrDisplayPresentChange = () => {
-                this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
-            };
-            window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-            window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-            window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
-        }
-        this._webVRInitPromise = this._webVRInitPromise || this._getVRDisplaysAsync();
-        this._webVRInitPromise.then(notifyObservers);
-        return this._webVRInitPromise;
-    }
-
-    /**
-     * Call this function to switch to webVR mode
-     * Will do nothing if webVR is not supported or if there is no webVR device
-     * @see http://doc.babylonjs.com/how_to/webvr_camera
-     */
-    public enableVR() {
-        if (this._vrDisplay && !this._vrDisplay.isPresenting) {
-            var onResolved = () => {
-                this.onVRRequestPresentComplete.notifyObservers(true);
-                this._onVRFullScreenTriggered();
-            };
-            var onRejected = () => {
-                this.onVRRequestPresentComplete.notifyObservers(false);
-            };
-
-            this.onVRRequestPresentStart.notifyObservers(this);
-            this._vrDisplay.requestPresent([{ source: this.getRenderingCanvas() }]).then(onResolved).catch(onRejected);
-        }
-    }
-
-    /**
-     * Call this function to leave webVR mode
-     * Will do nothing if webVR is not supported or if there is no webVR device
-     * @see http://doc.babylonjs.com/how_to/webvr_camera
-     */
-    public disableVR() {
-        if (this._vrDisplay && this._vrDisplay.isPresenting) {
-            this._vrDisplay.exitPresent().then(this._onVRFullScreenTriggered).catch(this._onVRFullScreenTriggered);
-        }
-    }
-
-    private _onVRFullScreenTriggered = () => {
-        if (this._vrDisplay && this._vrDisplay.isPresenting) {
-            //get the old size before we change
-            this._oldSize = new Size(this.getRenderWidth(), this.getRenderHeight());
-            this._oldHardwareScaleFactor = this.getHardwareScalingLevel();
-
-            //get the width and height, change the render size
-            var leftEye = this._vrDisplay.getEyeParameters('left');
-            this.setHardwareScalingLevel(1);
-            this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
-        } else {
-            this.setHardwareScalingLevel(this._oldHardwareScaleFactor);
-            this.setSize(this._oldSize.width, this._oldSize.height);
-        }
-    }
-
-    private _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs> {
-        return new Promise((res) => {
-            if (navigator.getVRDisplays) {
-                navigator.getVRDisplays().then((devices: Array<any>) => {
-                    this._vrSupported = true;
-                    // note that devices may actually be an empty array. This is fine;
-                    // we expect this._vrDisplay to be undefined in this case.
-                    this._vrDisplay = devices[0];
-                    res({
-                        vrDisplay: this._vrDisplay,
-                        vrSupported: this._vrSupported
-                    });
-                });
-            } else {
-                this._vrDisplay = undefined;
-                this._vrSupported = false;
-                res({
-                    vrDisplay: this._vrDisplay,
-                    vrSupported: this._vrSupported
-                });
-            }
-        });
     }
 
     /**
@@ -5915,8 +5755,6 @@ export class Engine {
         if (DomManagement.IsWindowObjectExist()) {
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
-            window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
-            window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
             if (this._renderingCanvas) {
                 this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
                 this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
@@ -5935,19 +5773,6 @@ export class Engine {
             document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
             document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
             document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
-
-            if (this._onVrDisplayConnect) {
-                window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-                if (this._onVrDisplayDisconnect) {
-                    window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-                }
-
-                if (this._onVrDisplayPresentChange) {
-                    window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
-                }
-                this._onVrDisplayConnect = null;
-                this._onVrDisplayDisconnect = null;
-            }
         }
 
         // Remove from Instances

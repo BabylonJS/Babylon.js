@@ -117,7 +117,11 @@ export class DracoCompression implements IDisposable {
     public static DefaultNumWorkers = DracoCompression.GetDefaultNumWorkers();
 
     private static GetDefaultNumWorkers(): number {
-        const hardwareConcurrency = navigator && navigator.hardwareConcurrency;
+        if (typeof navigator === "undefined") {
+            return 1;
+        }
+
+        const hardwareConcurrency =  navigator.hardwareConcurrency;
         if (!hardwareConcurrency) {
             return 1;
         }
