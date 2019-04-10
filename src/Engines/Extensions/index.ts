@@ -5,3 +5,4 @@ export * from "./engine.rawTexture";
 export * from "./engine.multiRender";
 export * from "./engine.cubeTexture";
 export * from "./engine.renderTarget";
+export * from "./engine.webVR";
