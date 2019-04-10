@@ -1948,6 +1948,7 @@ declare module "babylonjs-loaders/glTF/index" {
     export { GLTF1, GLTF2 };
 }
 declare module "babylonjs-loaders/OBJ/objFileLoader" {
+    import { Vector2 } from "babylonjs/Maths/math";
     import { AnimationGroup } from "babylonjs/Animations/animationGroup";
     import { Skeleton } from "babylonjs/Bones/skeleton";
     import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
@@ -1996,9 +1997,17 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
          */
         OptimizeWithUV: boolean;
         /**
+         * Defines custom scaling of UV coordinates of loaded meshes.
+         */
+        UVScaling: Vector2;
+        /**
          * Invert model on y-axis (does a model scaling inversion)
          */
         InvertY: boolean;
+        /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        InvertTextureY: boolean;
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
@@ -2030,6 +2039,10 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
          */
         static INVERT_Y: boolean;
         /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
+        /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
         static IMPORT_VERTEX_COLORS: boolean;
@@ -2037,6 +2050,10 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
          * Compute the normals for the model, even if normals are present in the file.
          */
         static COMPUTE_NORMALS: boolean;
+        /**
+         * Defines custom scaling of UV coordinates of loaded meshes.
+         */
+        static UV_SCALING: Vector2;
         /**
          * Skip loading the materials even if defined in the OBJ file (materials are ignored).
          */
@@ -4106,9 +4123,17 @@ declare module BABYLON {
          */
         OptimizeWithUV: boolean;
         /**
+         * Defines custom scaling of UV coordinates of loaded meshes.
+         */
+        UVScaling: Vector2;
+        /**
          * Invert model on y-axis (does a model scaling inversion)
          */
         InvertY: boolean;
+        /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        InvertTextureY: boolean;
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
@@ -4140,6 +4165,10 @@ declare module BABYLON {
          */
         static INVERT_Y: boolean;
         /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
+        /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
         static IMPORT_VERTEX_COLORS: boolean;
@@ -4147,6 +4176,10 @@ declare module BABYLON {
          * Compute the normals for the model, even if normals are present in the file.
          */
         static COMPUTE_NORMALS: boolean;
+        /**
+         * Defines custom scaling of UV coordinates of loaded meshes.
+         */
+        static UV_SCALING: Vector2;
         /**
          * Skip loading the materials even if defined in the OBJ file (materials are ignored).
          */
