@@ -212,7 +212,7 @@ export class MTLFileLoader {
             url += value;
         }
 
-        return new Texture(url, scene);
+        return new Texture(url, scene, false, OBJFileLoader.INVERT_TEXTURE_Y);
     }
 }
 
@@ -235,9 +235,17 @@ type MeshLoadOptions = {
      */
     OptimizeWithUV: boolean,
     /**
+     * Defines custom scaling of UV coordinates of loaded meshes.
+     */
+    UVScaling: Vector2;
+    /**
      * Invert model on y-axis (does a model scaling inversion)
      */
     InvertY: boolean,
+    /**
+     * Invert Y-Axis of referenced textures on load
+     */
+    InvertTextureY: boolean;
     /**
      * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
      */
@@ -271,6 +279,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      */
     public static INVERT_Y = false;
     /**
+     * Invert Y-Axis of referenced textures on load
+     */
+    public static INVERT_TEXTURE_Y = true;
+    /**
      * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
      */
     public static IMPORT_VERTEX_COLORS = false;
@@ -278,7 +290,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Compute the normals for the model, even if normals are present in the file.
      */
     public static COMPUTE_NORMALS = false;
-
+    /**
+     * Defines custom scaling of UV coordinates of loaded meshes.
+     */
+    public static UV_SCALING = new Vector2(1, 1);
     /**
      * Skip loading the materials even if defined in the OBJ file (materials are ignored).
      */
@@ -348,6 +363,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             ComputeNormals: OBJFileLoader.COMPUTE_NORMALS,
             ImportVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
             InvertY: OBJFileLoader.INVERT_Y,
+            InvertTextureY: OBJFileLoader.INVERT_TEXTURE_Y,
+            UVScaling: OBJFileLoader.UV_SCALING,
             MaterialLoadingFailsSilently: OBJFileLoader.MATERIAL_LOADING_FAILS_SILENTLY,
             OptimizeWithUV: OBJFileLoader.OPTIMIZE_WITH_UV,
             SkipMaterials: OBJFileLoader.SKIP_MATERIALS
@@ -909,8 +926,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 // ["vt 0.1 0.2 0.3", "0.1", "0.2"]
                 //Add the Vector in the list of uvs
                 uvs.push(new Vector2(
-                    parseFloat(result[1]),
-                    parseFloat(result[2])
+                    parseFloat(result[1]) * OBJFileLoader.UV_SCALING.x,
+                    parseFloat(result[2]) * OBJFileLoader.UV_SCALING.y
                 ));
 
                 //Identify patterns of faces
