@@ -135,7 +135,7 @@ export class HtmlElementTexture extends BaseTexture {
 
             this._engine.updateVideoTexture(this._texture,
                 videoElement,
-                invertY === null ? false : invertY);
+                invertY === null ? true : invertY);
         }
         else {
             const canvasElement = this.element as HTMLCanvasElement;
