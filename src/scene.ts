@@ -29,7 +29,7 @@ import { Light } from "./Lights/light";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
-import { KeyboardInfoPre, KeyboardInfo, KeyboardEventTypes } from "./Events/keyboardEvents";
+import { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
@@ -635,15 +635,47 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._inputManager.unTranslatedPointer;
     }
 
-    /** The distance in pixel that you have to move to prevent some events */
-    public static DragMovementThreshold = 10; // in pixels
-    /** Time in milliseconds to wait to raise long press events if button is still pressed */
-    public static LongPressDelay = 500; // in milliseconds
-    /** Time in milliseconds with two consecutive clicks will be considered as a double click */
-    public static DoubleClickDelay = 300; // in milliseconds
-    /** If you need to check double click without raising a single click at first click, enable this flag */
-    public static ExclusiveDoubleClickMode = false;
+    /**
+     * Gets or sets the distance in pixel that you have to move to prevent some events. Default is 10 pixels
+     */
+    public static get DragMovementThreshold() {
+        return InputManager.DragMovementThreshold;
+    }
 
+    public static set DragMovementThreshold(value: number) {
+        InputManager.DragMovementThreshold = value;
+    }
+
+    /**
+     * Time in milliseconds to wait to raise long press events if button is still pressed. Default is 500 ms
+     */
+    public static get LongPressDelay() {
+        return InputManager.LongPressDelay;
+    }
+
+    public static set LongPressDelay(value: number) {
+        InputManager.LongPressDelay = value;
+    }
+
+    /**
+     * Time in milliseconds to wait to raise long press events if button is still pressed. Default is 300 ms
+     */
+    public static get DoubleClickDelay() {
+        return InputManager.DoubleClickDelay;
+    }
+
+    public static set DoubleClickDelay(value: number) {
+        InputManager.DoubleClickDelay = value;
+    }
+
+    /** If you need to check double click without raising a single click at first click, enable this flag */
+    public static get ExclusiveDoubleClickMode() {
+        return InputManager.ExclusiveDoubleClickMode;
+    }
+
+    public static set ExclusiveDoubleClickMode(value: boolean) {
+        InputManager.ExclusiveDoubleClickMode = value;
+    }
 
     // Mirror
     /** @hidden */
@@ -661,10 +693,6 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Observable event triggered each time an keyboard event is received from the hosting window
      */
     public onKeyboardObservable = new Observable<KeyboardInfo>();
-    private _onKeyDown: (evt: KeyboardEvent) => void;
-    private _onKeyUp: (evt: KeyboardEvent) => void;
-    private _onCanvasFocusObserver: Nullable<Observer<Engine>>;
-    private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
 
     // Coordinates system
 
@@ -1588,96 +1616,11 @@ export class Scene extends AbstractScene implements IAnimatable {
     */
     public attachControl(attachUp = true, attachDown = true, attachMove = true): void {
         this._inputManager.attachControl(attachUp, attachDown, attachMove);
-
-        this._onKeyDown = (evt: KeyboardEvent) => {
-            let type = KeyboardEventTypes.KEYDOWN;
-            if (this.onPreKeyboardObservable.hasObservers()) {
-                let pi = new KeyboardInfoPre(type, evt);
-                this.onPreKeyboardObservable.notifyObservers(pi, type);
-                if (pi.skipOnPointerObservable) {
-                    return;
-                }
-            }
-
-            if (this.onKeyboardObservable.hasObservers()) {
-                let pi = new KeyboardInfo(type, evt);
-                this.onKeyboardObservable.notifyObservers(pi, type);
-            }
-
-            if (this.actionManager) {
-                this.actionManager.processTrigger(Constants.ACTION_OnKeyDownTrigger, ActionEvent.CreateNewFromScene(this, evt));
-            }
-        };
-
-        this._onKeyUp = (evt: KeyboardEvent) => {
-            let type = KeyboardEventTypes.KEYUP;
-            if (this.onPreKeyboardObservable.hasObservers()) {
-                let pi = new KeyboardInfoPre(type, evt);
-                this.onPreKeyboardObservable.notifyObservers(pi, type);
-                if (pi.skipOnPointerObservable) {
-                    return;
-                }
-            }
-
-            if (this.onKeyboardObservable.hasObservers()) {
-                let pi = new KeyboardInfo(type, evt);
-                this.onKeyboardObservable.notifyObservers(pi, type);
-            }
-
-            if (this.actionManager) {
-                this.actionManager.processTrigger(Constants.ACTION_OnKeyUpTrigger, ActionEvent.CreateNewFromScene(this, evt));
-            }
-        };
-
-        var canvas = this._engine.getRenderingCanvas();
-
-        if (!canvas) {
-            return;
-        }
-
-        let engine = this.getEngine();
-        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(() => {
-            if (!canvas) {
-                return;
-            }
-            canvas.addEventListener("keydown", this._onKeyDown, false);
-            canvas.addEventListener("keyup", this._onKeyUp, false);
-        });
-
-        this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
-            if (!canvas) {
-                return;
-            }
-            canvas.removeEventListener("keydown", this._onKeyDown);
-            canvas.removeEventListener("keyup", this._onKeyUp);
-        });
     }
 
     /** Detaches all event handlers*/
     public detachControl() {
-        let engine = this.getEngine();
-        var canvas = engine.getRenderingCanvas();
-
-        if (!canvas) {
-            return;
-        }
-
         this._inputManager.detachControl();
-
-        if (this._onCanvasBlurObserver) {
-            engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
-        }
-
-        if (this._onCanvasFocusObserver) {
-            engine.onCanvasFocusObservable.remove(this._onCanvasFocusObserver);
-        }
-
-        // Keyboard
-        canvas.removeEventListener("keydown", this._onKeyDown);
-        canvas.removeEventListener("keyup", this._onKeyUp);
-
-        // Cursor
-        canvas.style.cursor = this.defaultCursor;
     }
 
     /**
