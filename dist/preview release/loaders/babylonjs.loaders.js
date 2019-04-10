@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -591,7 +591,7 @@ var MTLFileLoader = /** @class */ (function () {
         else {
             url += value;
         }
-        return new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Texture"](url, scene);
+        return new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Texture"](url, scene, false, OBJFileLoader.INVERT_TEXTURE_Y);
     };
     return MTLFileLoader;
 }());
@@ -656,6 +656,8 @@ var OBJFileLoader = /** @class */ (function () {
                 ComputeNormals: OBJFileLoader.COMPUTE_NORMALS,
                 ImportVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
                 InvertY: OBJFileLoader.INVERT_Y,
+                InvertTextureY: OBJFileLoader.INVERT_TEXTURE_Y,
+                UVScaling: OBJFileLoader.UV_SCALING,
                 MaterialLoadingFailsSilently: OBJFileLoader.MATERIAL_LOADING_FAILS_SILENTLY,
                 OptimizeWithUV: OBJFileLoader.OPTIMIZE_WITH_UV,
                 SkipMaterials: OBJFileLoader.SKIP_MATERIALS
@@ -1138,7 +1140,7 @@ var OBJFileLoader = /** @class */ (function () {
                 //Value of result
                 // ["vt 0.1 0.2 0.3", "0.1", "0.2"]
                 //Add the Vector in the list of uvs
-                uvs.push(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](parseFloat(result[1]), parseFloat(result[2])));
+                uvs.push(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](parseFloat(result[1]) * OBJFileLoader.UV_SCALING.x, parseFloat(result[2]) * OBJFileLoader.UV_SCALING.y));
                 //Identify patterns of faces
                 //Face could be defined in different type of pattern
             }
@@ -1401,6 +1403,10 @@ var OBJFileLoader = /** @class */ (function () {
      */
     OBJFileLoader.INVERT_Y = false;
     /**
+     * Invert Y-Axis of referenced textures on load
+     */
+    OBJFileLoader.INVERT_TEXTURE_Y = true;
+    /**
      * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
      */
     OBJFileLoader.IMPORT_VERTEX_COLORS = false;
@@ -1408,6 +1414,10 @@ var OBJFileLoader = /** @class */ (function () {
      * Compute the normals for the model, even if normals are present in the file.
      */
     OBJFileLoader.COMPUTE_NORMALS = false;
+    /**
+     * Defines custom scaling of UV coordinates of loaded meshes.
+     */
+    OBJFileLoader.UV_SCALING = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](1, 1);
     /**
      * Skip loading the materials even if defined in the OBJ file (materials are ignored).
      */
