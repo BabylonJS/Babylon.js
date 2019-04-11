@@ -384,7 +384,10 @@ export class Effect implements IDisposable {
      * @returns if the effect is compiled and prepared.
      */
     public isReady(): boolean {
-        return this._isReady && this._pipelineContext.isReady;
+        if (this._isReady) {
+            return true;
+        }
+        return this._pipelineContext.isReady;
     }
 
     /**
