@@ -171,7 +171,7 @@ export abstract class EffectLayer {
 
         // Generate Buffers
         this._generateIndexBuffer();
-        this._genrateVertexBuffer();
+        this._generateVertexBuffer();
     }
 
     /**
@@ -270,7 +270,7 @@ export abstract class EffectLayer {
     /**
      * Generates the vertex buffer of the full screen quad blending to the main canvas.
      */
-    private _genrateVertexBuffer(): void {
+    private _generateVertexBuffer(): void {
         // VBO
         var vertices = [];
         vertices.push(1, 1);
@@ -654,7 +654,7 @@ export abstract class EffectLayer {
             return;
         }
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
 
         this._setEmissiveTextureAndColor(mesh, subMesh, material);
 
