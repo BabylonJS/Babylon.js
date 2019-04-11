@@ -5321,6 +5321,8 @@ export class Matrix {
         m[13] = translation.y;
         m[14] = translation.z;
         m[15] = 1;
+
+        result._markAsUpdated();
     }
 
     /**
