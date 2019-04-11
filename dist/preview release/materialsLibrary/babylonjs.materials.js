@@ -4649,16 +4649,16 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
         var engine = scene.getEngine();
         // Ensure that active light is the first shadow light
         if (this._activeLight) {
-            for (var _i = 0, _a = mesh._lightSources; _i < _a.length; _i++) {
+            for (var _i = 0, _a = mesh.lightSources; _i < _a.length; _i++) {
                 var light = _a[_i];
                 if (light.shadowEnabled) {
                     if (this._activeLight === light) {
                         break; // We are good
                     }
-                    var lightPosition = mesh._lightSources.indexOf(this._activeLight);
+                    var lightPosition = mesh.lightSources.indexOf(this._activeLight);
                     if (lightPosition !== -1) {
-                        mesh._lightSources.splice(lightPosition, 1);
-                        mesh._lightSources.splice(0, 0, this._activeLight);
+                        mesh.lightSources.splice(lightPosition, 1);
+                        mesh.lightSources.splice(0, 0, this._activeLight);
                     }
                     break;
                 }

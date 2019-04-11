@@ -16459,6 +16459,8 @@ declare module BABYLON {
          * Returns the string "InstancedMesh".
          */
         getClassName(): string;
+        /** Gets the list of lights affecting that mesh */
+        readonly lightSources: Light[];resyncLightSources(): void;resyncLighSource(light: Light): void;removeLightSource(light: Light): void;
         /**
          * If the source mesh receives shadows
          */
@@ -24080,6 +24082,8 @@ declare module BABYLON {
         /** @hidden */intersectionsInProgress: AbstractMesh[];
         /** @hidden */unIndexed: boolean;
         /** @hidden */lightSources: Light[];
+        /** Gets the list of lights affecting that mesh */
+        readonly lightSources: Light[];
         /** @hidden */protected readonly _positions: Nullable<Vector3[]>;
         /** @hidden */waitingActions: Nullable<any>;
         /** @hidden */waitingFreezeWorldMatrix: Nullable<boolean>;
@@ -46178,7 +46182,7 @@ declare module BABYLON {
         /**
          * Generates the vertex buffer of the full screen quad blending to the main canvas.
          */
-        private _genrateVertexBuffer;
+        private _generateVertexBuffer;
         /**
          * Sets the main texture desired size which is the closest power of two
          * of the engine canvas size.
