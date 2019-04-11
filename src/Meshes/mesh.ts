@@ -400,11 +400,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             // Physics clone
-            var physicsEngine = this.getScene().getPhysicsEngine();
-            if (clonePhysicsImpostor && physicsEngine) {
-                var impostor = physicsEngine.getImpostorForPhysicsObject(source);
-                if (impostor) {
-                    this.physicsImpostor = impostor.clone(this);
+            if (scene.getPhysicsEngine) {
+                var physicsEngine = scene.getPhysicsEngine();
+                if (clonePhysicsImpostor && physicsEngine) {
+                    var impostor = physicsEngine.getImpostorForPhysicsObject(source);
+                    if (impostor) {
+                        this.physicsImpostor = impostor.clone(this);
+                    }
                 }
             }
 
@@ -863,7 +865,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Shadows
-        for (var light of this._lightSources) {
+        for (var light of this.lightSources) {
             let generator = light.getShadowGenerator();
 
             if (generator) {

@@ -2212,8 +2212,8 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Add light to all meshes (To support if the light is removed and then readded)
         for (var mesh of this.meshes) {
-            if (mesh._lightSources.indexOf(newLight) === -1) {
-                mesh._lightSources.push(newLight);
+            if (mesh.lightSources.indexOf(newLight) === -1) {
+                mesh.lightSources.push(newLight);
                 mesh._resyncLightSources();
             }
         }
