@@ -36,6 +36,8 @@ var BABYLONDEVTOOLS;
         var min;
         var babylonJSPath;
 
+        var coreOnly;
+
         var localDevES6FolderName;
         var localDevUMDFolderName;
 
@@ -47,6 +49,7 @@ var BABYLONDEVTOOLS;
             min = (document.location.href.toLowerCase().indexOf('dist=min') > 0);
             useDist = (min || useDist || document.location.href.toLowerCase().indexOf('dist=true') > 0);
             babylonJSPath = '';
+            coreOnly = false;
         }
 
         Loader.prototype.debugShortcut = function(engine) {
@@ -200,7 +203,7 @@ var BABYLONDEVTOOLS;
                 if (!useDist && module.isCore) {
                     this.loadCoreDev();
                 }
-                else {
+                else if (!coreOnly || module.isCore) {
                     this.loadLibrary(moduleName, module.libraries[i], module);
                 }
             }
@@ -229,6 +232,11 @@ var BABYLONDEVTOOLS;
             for (var i = 0; i < settings.modules.length; i++) {
                 this.loadModule(settings.modules[i], settings[settings.modules[i]]);
             }
+        }
+
+        Loader.prototype.loadCoreOnly = function() {
+            coreOnly = true;
+            return this;
         }
 
         Loader.prototype.load = function(newCallback) {

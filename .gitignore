@@ -180,6 +180,9 @@ localDev/src/*
 package-lock.json
 dist/preview release/package/
 
+# local dev WebGPU
+localDevWebGPU/src/*
+
 # viewer dist files
 /Viewer/dist/viewer.js
 /Viewer/dist/viewer.min.js
