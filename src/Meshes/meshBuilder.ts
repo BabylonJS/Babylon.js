@@ -65,7 +65,7 @@ export class MeshBuilder {
      * @returns the sphere mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
      */
-    public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: any): Mesh {
+    public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return SphereBuilder.CreateSphere(name, options, scene);
     }
 
@@ -102,7 +102,7 @@ export class MeshBuilder {
      * @returns the icosahedron mesh
      * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
      */
-    public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Scene): Mesh {
+    public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return IcoSphereBuilder.CreateIcoSphere(name, options, scene);
     }
 
@@ -160,7 +160,7 @@ export class MeshBuilder {
      * @returns the cylinder mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#cylinder-or-cone
      */
-    public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
+    public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
         return CylinderBuilder.CreateCylinder(name, options, scene);
     }
 
@@ -178,7 +178,7 @@ export class MeshBuilder {
      * @returns the torus mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#torus
      */
-    public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
+    public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
         return TorusBuilder.CreateTorus(name, options, scene);
     }
 
@@ -197,7 +197,7 @@ export class MeshBuilder {
      * @returns the torus knot mesh
      * @see  https://doc.babylonjs.com/how_to/set_shapes#torus-knot
      */
-    public static CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: any): Mesh {
+    public static CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
         return TorusKnotBuilder.CreateTorusKnot(name, options, scene);
     }
 
@@ -313,7 +313,7 @@ export class MeshBuilder {
      * @see https://doc.babylonjs.com/how_to/parametric_shapes
      * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
      */
-    public static ExtrudeShapeCustom(name: string, options: { shape: Vector3[], path: Vector3[], scaleFunction?: any, rotationFunction?: any, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
+    public static ExtrudeShapeCustom(name: string, options: { shape: Vector3[], path: Vector3[], scaleFunction?: any, rotationFunction?: any, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return ShapeBuilder.ExtrudeShapeCustom(name, options, scene);
     }
 
@@ -337,7 +337,7 @@ export class MeshBuilder {
      * @returns the lathe mesh
      * @see https://doc.babylonjs.com/how_to/parametric_shapes#lathe
      */
-    public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, clip?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, cap?: number, invertUV?: boolean }, scene: Scene): Mesh {
+    public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, clip?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, cap?: number, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return LatheBuilder.CreateLathe(name, options, scene);
     }
 
@@ -355,7 +355,7 @@ export class MeshBuilder {
      * @returns the plane mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#plane
      */
-    public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean, sourcePlane?: Plane }, scene: Scene): Mesh {
+    public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean, sourcePlane?: Plane }, scene: Nullable<Scene> = null): Mesh {
         return PlaneBuilder.CreatePlane(name, options, scene);
     }
 
@@ -370,7 +370,7 @@ export class MeshBuilder {
      * @returns the ground mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#ground
      */
-    public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number, updatable?: boolean }, scene: any): Mesh {
+    public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return GroundBuilder.CreateGround(name, options, scene);
     }
 
@@ -387,7 +387,7 @@ export class MeshBuilder {
      * @returns the tiled ground mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#tiled-ground
      */
-    public static CreateTiledGround(name: string, options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean }, scene: Scene): Mesh {
+    public static CreateTiledGround(name: string, options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return GroundBuilder.CreateTiledGround(name, options, scene);
     }
 
@@ -410,7 +410,7 @@ export class MeshBuilder {
      * @see https://doc.babylonjs.com/babylon101/height_map
      * @see https://doc.babylonjs.com/how_to/set_shapes#ground-from-a-height-map
      */
-    public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, alphaFilter?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
+    public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, alphaFilter?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Nullable<Scene> = null): GroundMesh {
         return GroundBuilder.CreateGroundFromHeightMap(name, url, options, scene);
     }
 
@@ -428,7 +428,7 @@ export class MeshBuilder {
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, }, scene: Scene, earcutInjection = earcut): Mesh {
+    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
         return PolygonBuilder.CreatePolygon(name, options, scene, earcutInjection);
     }
 
@@ -442,7 +442,7 @@ export class MeshBuilder {
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene, earcutInjection = earcut): Mesh {
+    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
         return PolygonBuilder.ExtrudePolygon(name, options, scene, earcutInjection);
     }
 
@@ -468,7 +468,7 @@ export class MeshBuilder {
      * @see https://doc.babylonjs.com/how_to/parametric_shapes
      * @see https://doc.babylonjs.com/how_to/set_shapes#tube
      */
-    public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Scene): Mesh {
+    public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return TubeBuilder.CreateTube(name, options, scene);
     }
 
@@ -491,7 +491,7 @@ export class MeshBuilder {
      * @returns the polyhedron mesh
      * @see https://doc.babylonjs.com/how_to/polyhedra_shapes
      */
-    public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Scene): Mesh {
+    public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
         return PolyhedronBuilder.CreatePolyhedron(name, options, scene);
     }
 

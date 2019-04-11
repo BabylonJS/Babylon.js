@@ -36,7 +36,7 @@ export class RefractionTexture extends RenderTargetTexture {
         });
 
         this.onAfterRenderObservable.add(() => {
-            delete scene.clipPlane;
+            scene.clipPlane = null;
         });
     }
 

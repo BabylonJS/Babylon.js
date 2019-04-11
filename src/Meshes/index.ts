@@ -14,5 +14,8 @@ export * from "./meshSimplification";
 export * from "./meshSimplificationSceneComponent";
 export * from "./polygonMesh";
 export * from "./subMesh";
+export * from "./meshLODLevel";
 export * from "./transformNode";
 export * from "./Builders/index";
+export * from "./dataBuffer";
+export * from "./WebGL/webGLDataBuffer";

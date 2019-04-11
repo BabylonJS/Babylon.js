@@ -26,6 +26,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
 import { _DevTools } from '../Misc/devTools';
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -70,7 +71,7 @@ export interface IEffectLayerOptions {
 export abstract class EffectLayer {
 
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _cachedDefines: string;
     private _effectLayerMapGenerationEffect: Effect;
     private _effectLayerOptions: IEffectLayerOptions;
@@ -170,7 +171,7 @@ export abstract class EffectLayer {
 
         // Generate Buffers
         this._generateIndexBuffer();
-        this._genrateVertexBuffer();
+        this._generateVertexBuffer();
     }
 
     /**
@@ -269,7 +270,7 @@ export abstract class EffectLayer {
     /**
      * Generates the vertex buffer of the full screen quad blending to the main canvas.
      */
-    private _genrateVertexBuffer(): void {
+    private _generateVertexBuffer(): void {
         // VBO
         var vertices = [];
         vertices.push(1, 1);
@@ -506,7 +507,7 @@ export abstract class EffectLayer {
             this._effectLayerMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
-                    "color", "morphTargetInfluences",
+                    "glowColor", "morphTargetInfluences",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
                 ["diffuseSampler", "emissiveSampler", "opacitySampler"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
@@ -653,7 +654,7 @@ export abstract class EffectLayer {
             return;
         }
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
 
         this._setEmissiveTextureAndColor(mesh, subMesh, material);
 
@@ -663,7 +664,7 @@ export abstract class EffectLayer {
 
             this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-            this._effectLayerMapGenerationEffect.setFloat4("color",
+            this._effectLayerMapGenerationEffect.setFloat4("glowColor",
                 this._emissiveTextureAndColor.color.r,
                 this._emissiveTextureAndColor.color.g,
                 this._emissiveTextureAndColor.color.b,

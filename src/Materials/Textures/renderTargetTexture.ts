@@ -15,6 +15,8 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 
+import "../../Engines/Extensions/engine.renderTarget";
+
 declare type Engine = import("../../Engines/engine").Engine;
 
 /**

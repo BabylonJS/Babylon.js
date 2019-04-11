@@ -87,6 +87,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this._tmpAmmoConcreteContactResultCallback = new this.bjsAMMO.ConcreteContactResultCallback();
         this._tmpAmmoConcreteContactResultCallback.addSingleResult = () => { this._tmpContactCallbackResult = true; };
 
+        this._raycastResult = new PhysicsRaycastResult();
+
         // Create temp ammo variables
         this._tmpAmmoTransform = new this.bjsAMMO.btTransform();
         this._tmpAmmoTransform.setIdentity();
@@ -856,6 +858,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             meshChildren.forEach((childMesh) => {
                 var childImpostor = childMesh.getPhysicsImpostor();
                 if (childImpostor) {
+                    if (childImpostor.type == PhysicsImpostor.MeshImpostor) {
+                        throw "A child MeshImpostor is not supported. Only primitive impostors are supported as children (eg. box or sphere)";
+                    }
                     var shape = this._createShape(childImpostor);
 
                     // Position needs to be scaled based on parent's scaling

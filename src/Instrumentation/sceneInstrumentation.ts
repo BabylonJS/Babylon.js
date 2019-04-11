@@ -459,13 +459,6 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for texture collisions
-     */
-    public get textureCollisionsCounter(): PerfCounter {
-        return this.scene.getEngine()._textureCollisions;
-    }
-
-    /**
      * Instantiates a new scene instrumentation.
      * This class can be used to get instrumentation data from a Babylon engine
      * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
@@ -508,7 +501,6 @@ export class SceneInstrumentation implements IDisposable {
             }
 
             this.scene.getEngine()._drawCalls.fetchNewFrame();
-            this.scene.getEngine()._textureCollisions.fetchNewFrame();
         });
 
         // After render

@@ -297,11 +297,15 @@ declare module "babylonjs-inspector/components/actionTabs/lines/numericInputComp
     interface INumericInputComponentProps {
         label: string;
         value: number;
+        step?: number;
         onChange: (value: number) => void;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: INumericInputComponentProps);
         shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
@@ -350,6 +354,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineCompo
         label: string;
         target: any;
         propertyName: string;
+        step?: number;
         onChange?: (newvalue: Vector3) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
@@ -357,6 +362,9 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineCompo
         isExpanded: boolean;
         value: Vector3;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: IVector3LineComponentProps);
         shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
@@ -365,6 +373,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineCompo
         }): boolean;
         switchExpandState(): void;
         raiseOnPropertyChanged(previousValue: Vector3): void;
+        updateVector3(): void;
         updateStateX(value: number): void;
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
@@ -844,25 +853,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cam
     }
     export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRotateCameraPropertyGridComponentProps> {
         constructor(props: IArcRotateCameraPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent" {
-    import * as React from "react";
-    import { TransformNode } from "babylonjs/Meshes/transformNode";
-    import { GlobalState } from "babylonjs-inspector/components/globalState";
-    interface IAxisViewerComponentProps {
-        node: TransformNode;
-        globalState: GlobalState;
-    }
-    export class AxesViewerComponent extends React.Component<IAxisViewerComponentProps, {
-        displayAxis: boolean;
-    }> {
-        constructor(props: IAxisViewerComponentProps);
-        shouldComponentUpdate(nextProps: IAxisViewerComponentProps, nextState: {
-            displayAxis: boolean;
-        }): boolean;
-        displayAxes(): void;
         render(): JSX.Element;
     }
 }
@@ -2111,6 +2101,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
         private _onSelectionChangeObserver;
         private _onNewSceneAddedObserver;
         private _once;
+        private _hooked;
         private sceneMutationFunc;
         constructor(props: ISceneExplorerComponentProps);
         processMutation(): void;
@@ -2454,11 +2445,15 @@ declare module INSPECTOR {
     interface INumericInputComponentProps {
         label: string;
         value: number;
+        step?: number;
         onChange: (value: number) => void;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: INumericInputComponentProps);
         shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
@@ -2499,6 +2494,7 @@ declare module INSPECTOR {
         label: string;
         target: any;
         propertyName: string;
+        step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
@@ -2506,6 +2502,9 @@ declare module INSPECTOR {
         isExpanded: boolean;
         value: BABYLON.Vector3;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: IVector3LineComponentProps);
         shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
@@ -2514,6 +2513,7 @@ declare module INSPECTOR {
         }): boolean;
         switchExpandState(): void;
         raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
+        updateVector3(): void;
         updateStateX(value: number): void;
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
@@ -2879,22 +2879,6 @@ declare module INSPECTOR {
     }
     export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRotateCameraPropertyGridComponentProps> {
         constructor(props: IArcRotateCameraPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IAxisViewerComponentProps {
-        node: BABYLON.TransformNode;
-        globalState: GlobalState;
-    }
-    export class AxesViewerComponent extends React.Component<IAxisViewerComponentProps, {
-        displayAxis: boolean;
-    }> {
-        constructor(props: IAxisViewerComponentProps);
-        shouldComponentUpdate(nextProps: IAxisViewerComponentProps, nextState: {
-            displayAxis: boolean;
-        }): boolean;
-        displayAxes(): void;
         render(): JSX.Element;
     }
 }
@@ -3849,6 +3833,7 @@ declare module INSPECTOR {
         private _onSelectionChangeObserver;
         private _onNewSceneAddedObserver;
         private _once;
+        private _hooked;
         private sceneMutationFunc;
         constructor(props: ISceneExplorerComponentProps);
         processMutation(): void;

@@ -10,6 +10,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/ind
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { _TypeStore } from '../../Misc/typeStore';
+import { Tools } from '../../Misc/tools';
+import "../../Engines/Extensions/engine.rawTexture";
 
 /**
  * This represents a texture coming from an HDR input.
@@ -139,6 +141,12 @@ export class HDRCubeTexture extends BaseTexture {
                 this.loadTexture();
             } else {
                 this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+            }
+        } else if (onLoad) {
+            if (this._texture.isReady) {
+                Tools.SetImmediate(() => onLoad());
+            } else {
+                this._texture.onLoadedObservable.add(onLoad);
             }
         }
     }

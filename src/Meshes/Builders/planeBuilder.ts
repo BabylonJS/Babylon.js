@@ -2,6 +2,7 @@ import { Scene } from "../../scene";
 import { Vector4, Plane } from "../../Maths/math";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
+import { Nullable } from '../../types';
 
 VertexData.CreatePlane = function(options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var indices = [];
@@ -86,7 +87,7 @@ export class PlaneBuilder {
      * @returns the plane mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#plane
      */
-    public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean, sourcePlane?: Plane }, scene: Scene): Mesh {
+    public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean, sourcePlane?: Plane }, scene: Nullable<Scene> = null): Mesh {
         var plane = new Mesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

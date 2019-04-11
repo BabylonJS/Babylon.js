@@ -11,6 +11,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { CylinderBuilder } from '../Meshes/Builders/cylinderBuilder';
 
 /**
      * Used to show the physics impostor around the specific mesh
@@ -32,6 +33,7 @@ export class PhysicsViewer {
 
     private _debugBoxMesh: Mesh;
     private _debugSphereMesh: Mesh;
+    private _debugCylinderMesh: Mesh;
     private _debugMaterial: StandardMaterial;
     private _debugMeshMeshes = new Array<Mesh>();
 
@@ -196,6 +198,17 @@ export class PhysicsViewer {
         return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
     }
 
+    private _getDebugCylinderMesh(scene: Scene): AbstractMesh {
+        if (!this._debugCylinderMesh) {
+            this._debugCylinderMesh = CylinderBuilder.CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
+            this._debugCylinderMesh.rotationQuaternion = Quaternion.Identity();
+            this._debugCylinderMesh.material = this._getDebugMaterial(scene);
+            this._debugCylinderMesh.setEnabled(false);
+        }
+
+        return this._debugCylinderMesh.createInstance('physicsBodyBoxViewInstance');
+    }
+
     private _getDebugMeshMesh(mesh: Mesh, scene: Scene): AbstractMesh {
         var wireframeOver = new Mesh(mesh.name, scene, null, mesh);
         wireframeOver.position = Vector3.Zero();
@@ -247,6 +260,13 @@ export class PhysicsViewer {
                     });
                 }
                 break;
+            case PhysicsImpostor.CylinderImpostor:
+                mesh = this._getDebugCylinderMesh(utilityLayerScene);
+                var bi = impostor.object.getBoundingInfo();
+                mesh.scaling.x = bi.boundingBox.maximum.x - bi.boundingBox.minimum.x;
+                mesh.scaling.y = bi.boundingBox.maximum.y - bi.boundingBox.minimum.y;
+                mesh.scaling.z = bi.boundingBox.maximum.z - bi.boundingBox.minimum.z;
+                break;
         }
         return mesh;
     }
@@ -263,6 +283,9 @@ export class PhysicsViewer {
         }
         if (this._debugSphereMesh) {
             this._debugSphereMesh.dispose();
+        }
+        if (this._debugCylinderMesh) {
+            this._debugCylinderMesh.dispose();
         }
         if (this._debugMaterial) {
             this._debugMaterial.dispose();
