@@ -3342,7 +3342,6 @@ export class Engine {
         context.deleteShader(vertexShader);
         context.deleteShader(fragmentShader);
 
-        pipelineContext.context = undefined;
         pipelineContext.vertexShader = undefined;
         pipelineContext.fragmentShader = undefined;
 
