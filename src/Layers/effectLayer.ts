@@ -507,7 +507,7 @@ export abstract class EffectLayer {
             this._effectLayerMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
-                    "color", "morphTargetInfluences",
+                    "glowColor", "morphTargetInfluences",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
                 ["diffuseSampler", "emissiveSampler", "opacitySampler"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
@@ -664,7 +664,7 @@ export abstract class EffectLayer {
 
             this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-            this._effectLayerMapGenerationEffect.setFloat4("color",
+            this._effectLayerMapGenerationEffect.setFloat4("glowColor",
                 this._emissiveTextureAndColor.color.r,
                 this._emissiveTextureAndColor.color.g,
                 this._emissiveTextureAndColor.color.b,
