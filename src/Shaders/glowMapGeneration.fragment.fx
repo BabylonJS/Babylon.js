@@ -14,12 +14,16 @@ varying vec2 vUVEmissive;
 uniform sampler2D emissiveSampler;
 #endif
 
-uniform vec4 color;
+#ifdef VERTEXALPHA
+    varying vec4 vColor;
+#endif
+
+uniform vec4 glowColor;
 
 void main(void)
 {
 
-vec4 finalColor = color;
+vec4 finalColor = glowColor;
 
 // _____________________________ Alpha Information _______________________________
 #ifdef DIFFUSE
