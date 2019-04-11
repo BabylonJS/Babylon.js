@@ -1,5 +1,5 @@
 import { Nullable, FloatArray, IndicesArray } from "../types";
-import { Vector3 } from "../Maths/math";
+import { Vector3, Matrix, Tmp } from "../Maths/math";
 import { Logger } from "../Misc/logger";
 import { Camera } from "../Cameras/camera";
 import { Node } from "../node";
@@ -8,6 +8,8 @@ import { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import { Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
+import { TransformNode } from './transformNode';
+import { Light } from '../Lights/light';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     return new InstancedMesh(name, mesh);
@@ -51,6 +53,23 @@ export class InstancedMesh extends AbstractMesh {
      */
     public getClassName(): string {
         return "InstancedMesh";
+    }
+
+    /** Gets the list of lights affecting that mesh */
+    public get lightSources(): Light[] {
+        return this._sourceMesh._lightSources;
+    }
+
+    public _resyncLightSources(): void {
+        // Do nothing as all the work will be done by source mesh
+    }
+
+    public _resyncLighSource(light: Light): void {
+        // Do nothing as all the work will be done by source mesh
+    }
+
+    public _removeLightSource(light: Light): void {
+        // Do nothing as all the work will be done by source mesh
     }
 
     // Methods
@@ -259,11 +278,33 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /** @hidden */
-    public _activate(renderId: number): InstancedMesh {
+    public _activate(renderId: number): boolean {
         if (this._currentLOD) {
             this._currentLOD._registerInstanceForRenderId(this, renderId);
         }
-        return this;
+
+        if (this._edgesRenderer && this._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
+            this._sourceMesh._renderingGroup._edgesRenderers.push(this._edgesRenderer);
+        }
+
+        if (!this._currentLOD._isActive) {
+            this._currentLOD._onlyForInstances = true;
+            this._currentLOD._isActive = true;
+            return true;
+        }
+        return false;
+    }
+
+    public getWorldMatrix(): Matrix {
+        if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE && this._currentLOD._masterMesh !== this) {
+            let tempMaster = this._currentLOD._masterMesh;
+            this._currentLOD._masterMesh = this;
+            Tmp.Matrix[0].copyFrom(this._currentLOD.computeWorldMatrix(true));
+            this._currentLOD._masterMesh = tempMaster;
+            return Tmp.Matrix[0];
+        }
+
+        return super.getWorldMatrix();
     }
 
     /**

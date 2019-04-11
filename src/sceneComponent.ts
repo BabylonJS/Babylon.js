@@ -161,6 +161,11 @@ export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMes
 export type CameraStageAction = (camera: Camera) => void;
 
 /**
+ * Strong typing of a Camera Frame buffer related stage step action
+ */
+export type CameraStageFrameBufferAction = (camera: Camera) => boolean;
+
+/**
  * Strong typing of a Render Target related stage step action
  */
 export type RenderTargetStageAction = (renderTarget: RenderTargetTexture) => void;

@@ -295,7 +295,7 @@ export class SpriteSceneComponent implements ISceneComponent {
                     if (spritePickResult.pickedSprite.actionManager) {
                         spritePickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt));
                         if (spritePickResult.pickedSprite.actionManager) {
-                            if (!this.scene._isPointerSwiping()) {
+                            if (!this.scene._inputManager._isPointerSwiping()) {
                                 spritePickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt));
                             }
                         }

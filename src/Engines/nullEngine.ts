@@ -10,6 +10,8 @@ import { Effect } from "../Materials/effect";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Constants } from "./constants";
+import { IPipelineContext } from './IPipelineContext';
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 declare const global: any;
 
@@ -144,20 +146,16 @@ export class NullEngine extends Engine {
         }
     }
 
-    public createVertexBuffer(vertices: FloatArray): WebGLBuffer {
-        return {
-            capacity: 0,
-            references: 1,
-            is32Bits: false
-        };
+    public createVertexBuffer(vertices: FloatArray): DataBuffer {
+        let buffer = new DataBuffer();
+        buffer.references = 1;
+        return buffer;
     }
 
-    public createIndexBuffer(indices: IndicesArray): WebGLBuffer {
-        return {
-            capacity: 0,
-            references: 1,
-            is32Bits: false
-        };
+    public createIndexBuffer(indices: IndicesArray): DataBuffer {
+        let buffer = new DataBuffer();
+        buffer.references = 1;
+        return buffer;
     }
 
     public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
@@ -183,19 +181,17 @@ export class NullEngine extends Engine {
         this._cachedViewport = viewport;
     }
 
-    public createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
+    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
         return {
-            transformFeedback: null,
             __SPECTOR_rebuildProgram: null,
-            isParallelCompiled: false
         };
     }
 
-    public getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[] {
+    public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
         return [];
     }
 
-    public getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[] {
+    public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
         return [];
     }
 
@@ -299,7 +295,7 @@ export class NullEngine extends Engine {
         this._alphaMode = mode;
     }
 
-    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: WebGLBuffer, effect: Effect): void {
+    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: DataBuffer, effect: Effect): void {
     }
 
     public wipeCaches(bruteForce?: boolean): void {
@@ -434,14 +430,11 @@ export class NullEngine extends Engine {
         this._currentFramebuffer = null;
     }
 
-    public createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer {
-        var vbo = {
-            capacity: 1,
-            references: 1,
-            is32Bits: false
-        };
-
-        return vbo;
+    public createDynamicVertexBuffer(vertices: FloatArray): DataBuffer {
+        let buffer = new DataBuffer();
+        buffer.references = 1;
+        buffer.capacity = 1;
+        return buffer;
     }
 
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
@@ -502,7 +495,7 @@ export class NullEngine extends Engine {
     }
 
     /** @hidden */
-    public _releaseBuffer(buffer: WebGLBuffer): boolean {
+    public _releaseBuffer(buffer: DataBuffer): boolean {
         buffer.references--;
 
         if (buffer.references === 0) {

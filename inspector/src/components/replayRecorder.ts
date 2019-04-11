@@ -23,35 +23,35 @@ export class ReplayRecorder {
 
         let value = event.value;
 
-        if (value.w) { // Quaternion
+        if (value.w !== undefined) { // Quaternion
             value = `new BABYLON.Quaternion(${value.x}, ${value.y}, ${value.z}, ${value.w})`;
-        } else if (value.z) { // Vector3
+        } else if (value.z !== undefined) { // Vector3
             value = `new BABYLON.Vector3(${value.x}, ${value.y}, ${value.z})`;
-        } else if (value.y) { // Vector2
+        } else if (value.y !== undefined) { // Vector2
             value = `new BABYLON.Vector2(${value.x}, ${value.y})`;
-        } else if (value.a) { // Color4
+        } else if (value.a !== undefined) { // Color4
             value = `new BABYLON.Color4(${value.r}, ${value.g}, ${value.b}, ${value.a})`;
-        } else if (value.b) { // Color3
+        } else if (value.b !== undefined) { // Color3
             value = `new BABYLON.Color3(${value.r}, ${value.g}, ${value.b})`;
         }
 
         let target = event.object.getClassName().toLowerCase();
 
-        if (event.object.uniqueId) {
+        if (event.object.id) {
             if (target === "Scene") {
                 target = `scene`;
-            } else if (target.indexOf("camera")) {
-                target = `scene.getCameraByUniqueID(${event.object.uniqueId})`;
-            } else if (target.indexOf("mesh")) {
-                target = `scene.getMeshByUniqueID(${event.object.uniqueId})`;
-            } else if (target.indexOf("light")) {
-                target = `scene.getLightByUniqueID(${event.object.uniqueId})`;
+            } else if (target.indexOf("camera") > -1) {
+                target = `scene.getCameraByID("${event.object.id}")`;
+            } else if (target.indexOf("mesh") > -1) {
+                target = `scene.getMeshByID("${event.object.id}")`;
+            } else if (target.indexOf("light") > -1) {
+                target = `scene.getLightByID("${event.object.id}")`;
             } else if (target === "transformnode") {
-                target = `scene.getTransformNodeByUniqueID(${event.object.uniqueId})`;
+                target = `scene.getTransformNodeByID("${event.object.id}")`;
             } else if (target === "skeleton") {
-                target = `scene.getSkeletonByUniqueId(${event.object.uniqueId})`;
-            } else if (target.indexOf("material")) {
-                target = `scene.getMaterialByUniqueID(${event.object.uniqueId})`;
+                target = `scene.getSkeletonById("${event.object.id}")`;
+            } else if (target.indexOf("material") > -1) {
+                target = `scene.getMaterialByID("${event.object.id}")`;
             }
         }
 

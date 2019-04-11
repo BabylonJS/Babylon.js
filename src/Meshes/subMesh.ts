@@ -1,5 +1,5 @@
 import { Tools } from "../Misc/tools";
-import { Nullable, IndicesArray, DeepImmutable } from "../types";
+import { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
 import { Matrix, Vector3, Plane } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "./buffer";
@@ -7,6 +7,7 @@ import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
+import { DataBuffer } from './dataBuffer';
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -22,9 +23,9 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
  */
 export class BaseSubMesh {
     /** @hidden */
-    public _materialDefines: Nullable<MaterialDefines>;
+    public _materialDefines: Nullable<MaterialDefines> = null;
     /** @hidden */
-    public _materialEffect: Nullable<Effect>;
+    public _materialEffect: Nullable<Effect> = null;
 
     /**
      * Gets associated effect
@@ -55,28 +56,28 @@ export class BaseSubMesh {
  */
 export class SubMesh extends BaseSubMesh implements ICullable {
     /** @hidden */
-    public _linesIndexCount: number;
+    public _linesIndexCount: number = 0;
     private _mesh: AbstractMesh;
     private _renderingMesh: Mesh;
     private _boundingInfo: BoundingInfo;
-    private _linesIndexBuffer: Nullable<WebGLBuffer>;
+    private _linesIndexBuffer: Nullable<DataBuffer> = null;
     /** @hidden */
-    public _lastColliderWorldVertices: Nullable<Vector3[]>;
+    public _lastColliderWorldVertices: Nullable<Vector3[]> = null;
     /** @hidden */
     public _trianglePlanes: Plane[];
     /** @hidden */
-    public _lastColliderTransformMatrix: Matrix;
+    public _lastColliderTransformMatrix: Nullable<Matrix> = null;
 
     /** @hidden */
     public _renderId = 0;
     /** @hidden */
-    public _alphaIndex: number;
+    public _alphaIndex: number = 0;
     /** @hidden */
-    public _distanceToCamera: number;
+    public _distanceToCamera: number = 0;
     /** @hidden */
     public _id: number;
 
-    private _currentMaterial: Nullable<Material>;
+    private _currentMaterial: Nullable<Material> = null;
 
     /**
      * Add a new submesh to a mesh
@@ -205,15 +206,19 @@ export class SubMesh extends BaseSubMesh implements ICullable {
 
     /**
      * Sets a new updated BoundingInfo object to the submesh
+     * @param data defines an optional position array to use to determine the bounding info
      * @returns the SubMesh
      */
-    public refreshBoundingInfo(): SubMesh {
+    public refreshBoundingInfo(data: Nullable<FloatArray> = null): SubMesh {
         this._lastColliderWorldVertices = null;
 
         if (this.IsGlobal || !this._renderingMesh || !this._renderingMesh.geometry) {
             return this;
         }
-        var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
+
+        if (!data) {
+            data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
+        }
 
         if (!data) {
             this._boundingInfo = this._mesh.getBoundingInfo();
@@ -306,7 +311,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     /**
      * @hidden
      */
-    public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): WebGLBuffer {
+    public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): DataBuffer {
         if (!this._linesIndexBuffer) {
             var linesIndices = [];
 

@@ -575,7 +575,9 @@ class QuadraticErrorSimplification implements ISimplifier {
                     if (uvs && uvs.length) {
                         newUVsData.push(uvs[(originalOffset * 2)]);
                         newUVsData.push(uvs[(originalOffset * 2) + 1]);
-                    } else if (colorsData && colorsData.length) {
+                    }
+
+                    if (colorsData && colorsData.length) {
                         newColorsData.push(colorsData[(originalOffset * 4)]);
                         newColorsData.push(colorsData[(originalOffset * 4) + 1]);
                         newColorsData.push(colorsData[(originalOffset * 4) + 2]);

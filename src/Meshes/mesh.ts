@@ -27,6 +27,8 @@ import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
+import { SceneComponentConstants } from "../sceneComponent";
+import { MeshLODLevel } from './meshLODLevel';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -35,24 +37,6 @@ declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysi
 declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
 
 declare var earcut: any;
-
-/**
- * Class used to represent a specific level of detail of a mesh
- * @see http://doc.babylonjs.com/how_to/how_to_use_lod
- */
-export class MeshLODLevel {
-    /**
-     * Creates a new LOD level
-     * @param distance defines the distance where this level should star being displayed
-     * @param mesh defines the mesh to use to render this level
-     */
-    constructor(
-        /** Defines the distance where this level should star being displayed */
-        public distance: number,
-        /** Defines the mesh to use to render this level */
-        public mesh: Nullable<Mesh>) {
-    }
-}
 
 /**
  * @hidden
@@ -76,12 +60,15 @@ export class _CreationDataStorage {
  **/
 class _InstanceDataStorage {
     public visibleInstances: any = {};
-    public renderIdForInstances = new Array<number>();
     public batchCache = new _InstancesBatch();
     public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
     public instancesBuffer: Nullable<Buffer>;
     public instancesData: Float32Array;
     public overridenInstanceCount: number;
+    public isFrozen: boolean;
+    public previousBatch: _InstancesBatch;
+    public hardwareInstancedRendering: boolean;
+    public sideOrientation: number;
 }
 
 /**
@@ -91,6 +78,7 @@ export class _InstancesBatch {
     public mustReturn = false;
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
     public renderSelf = new Array<boolean>();
+    public hardwareInstancedRendering = new Array<boolean>();
 }
 
 /**
@@ -237,7 +225,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
 
     // Morph
-    private _morphTargetManager: Nullable<MorphTargetManager>;
+    private _morphTargetManager: Nullable<MorphTargetManager> = null;
 
     /**
      * Gets or sets the morph target manager
@@ -257,10 +245,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Private
     /** @hidden */
-    public _creationDataStorage: Nullable<_CreationDataStorage>;
+    public _creationDataStorage: Nullable<_CreationDataStorage> = null;
 
     /** @hidden */
-    public _geometry: Nullable<Geometry>;
+    public _geometry: Nullable<Geometry> = null;
     /** @hidden */
     public _delayInfo: Array<string>;
     /** @hidden */
@@ -269,11 +257,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @hidden */
     public _instanceDataStorage = new _InstanceDataStorage();
 
-    private _effectiveMaterial: Material;
+    private _effectiveMaterial: Nullable<Material> = null;
 
     /** @hidden */
-    public _shouldGenerateFlatShading: boolean;
-    private _preActivateId: number;
+    public _shouldGenerateFlatShading: boolean = false;
+    private _preActivateId: number = -1;
 
     // Use by builder only to know what orientation were the mesh build in.
     /** @hidden */
@@ -292,7 +280,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Will be used to save a source mesh reference, If any
     private _source: Nullable<Mesh> = null;
     // Will be used to for fast cloned mesh lookup
-    private meshMap: Nullable<{ [id: string]: Mesh | undefined }>;
+    private meshMap: Nullable<{ [id: string]: Mesh | undefined }> = null;
 
     /**
      * Gets the source mesh (the one used to clone this one from)
@@ -412,11 +400,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             // Physics clone
-            var physicsEngine = this.getScene().getPhysicsEngine();
-            if (clonePhysicsImpostor && physicsEngine) {
-                var impostor = physicsEngine.getImpostorForPhysicsObject(source);
-                if (impostor) {
-                    this.physicsImpostor = impostor.clone(this);
+            if (scene.getPhysicsEngine) {
+                var physicsEngine = scene.getPhysicsEngine();
+                if (clonePhysicsImpostor && physicsEngine) {
+                    var impostor = physicsEngine.getImpostorForPhysicsObject(source);
+                    if (impostor) {
+                        this.physicsImpostor = impostor.clone(this);
+                    }
                 }
             }
 
@@ -437,6 +427,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.parent = parent;
         }
 
+        this._instanceDataStorage.hardwareInstancedRendering = this.getEngine().getCaps().instancedArrays;
     }
 
     // Methods
@@ -874,7 +865,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Shadows
-        for (var light of this._lightSources) {
+        for (var light of this.lightSources) {
             let generator = light.getShadowGenerator();
 
             if (generator) {
@@ -1318,6 +1309,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
 
+        this._isActive = false;
+
         return this;
     }
 
@@ -1363,10 +1356,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
+        if (this._instanceDataStorage.isFrozen && this._instanceDataStorage.previousBatch) {
+            return this._instanceDataStorage.previousBatch;
+        }
         var scene = this.getScene();
         let batchCache = this._instanceDataStorage.batchCache;
         batchCache.mustReturn = false;
-        batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
+        batchCache.renderSelf[subMeshId] = !this._onlyForInstances && this.isEnabled() && this.isVisible;
         batchCache.visibleInstances[subMeshId] = null;
 
         if (this._instanceDataStorage.visibleInstances) {
@@ -1374,29 +1370,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var currentRenderId = scene.getRenderId();
             var defaultRenderId = (scene._isInIntermediateRendering() ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
             batchCache.visibleInstances[subMeshId] = visibleInstances[currentRenderId];
-            var selfRenderId = this._renderId;
 
             if (!batchCache.visibleInstances[subMeshId] && defaultRenderId) {
                 batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
-                currentRenderId = Math.max(defaultRenderId, currentRenderId);
-                selfRenderId = Math.max(visibleInstances.selfDefaultRenderId, currentRenderId);
             }
-
-            let visibleInstancesForSubMesh = batchCache.visibleInstances[subMeshId];
-            if (visibleInstancesForSubMesh && visibleInstancesForSubMesh.length) {
-                if (this._instanceDataStorage.renderIdForInstances[subMeshId] === currentRenderId) {
-                    batchCache.mustReturn = true;
-                    return batchCache;
-                }
-
-                if (currentRenderId !== selfRenderId) {
-                    batchCache.renderSelf[subMeshId] = false;
-                }
-
-            }
-            this._instanceDataStorage.renderIdForInstances[subMeshId] = currentRenderId;
         }
-
+        batchCache.hardwareInstancedRendering[subMeshId] = this._instanceDataStorage.hardwareInstancedRendering && (batchCache.visibleInstances[subMeshId] !== null) && (batchCache.visibleInstances[subMeshId] !== undefined);
+        this._instanceDataStorage.previousBatch = batchCache;
         return batchCache;
     }
 
@@ -1407,19 +1387,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        var matricesCount = visibleInstances.length + 1;
-        var bufferSize = matricesCount * 16 * 4;
-
         let instanceStorage = this._instanceDataStorage;
         var currentInstancesBufferSize = instanceStorage.instancesBufferSize;
         var instancesBuffer = instanceStorage.instancesBuffer;
+        if (!instanceStorage.isFrozen || !instanceStorage.instancesData) {
+            var matricesCount = visibleInstances.length + 1;
+            var bufferSize = matricesCount * 16 * 4;
 
-        while (instanceStorage.instancesBufferSize < bufferSize) {
-            instanceStorage.instancesBufferSize *= 2;
-        }
+            while (instanceStorage.instancesBufferSize < bufferSize) {
+                instanceStorage.instancesBufferSize *= 2;
+            }
 
-        if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
-            instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+            if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+                instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+            }
         }
 
         var offset = 0;
@@ -1454,7 +1435,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
         } else {
-            instancesBuffer.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+            instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
 
         this._bind(subMesh, effect, fillMode);
@@ -1502,6 +1483,25 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
+    /** @hidden */
+    public _freeze() {
+        this._instanceDataStorage.isFrozen = true;
+
+        if (!this.subMeshes) {
+            return;
+        }
+
+        // Prepare batches
+        for (var index = 0; index < this.subMeshes.length; index++) {
+            this._getInstancesRenderList(index);
+        }
+    }
+
+    /** @hidden */
+    public _unFreeze() {
+        this._instanceDataStorage.isFrozen = false;
+    }
+
     /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
@@ -1531,23 +1531,26 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var engine = scene.getEngine();
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
+        let instanceDataStorage = this._instanceDataStorage;
 
         // Material
-        let material = subMesh.getMaterial();
+        if (!instanceDataStorage.isFrozen || !this._effectiveMaterial) {
+            let material = subMesh.getMaterial();
 
-        if (!material) {
-            return this;
-        }
-
-        this._effectiveMaterial = material;
-
-        if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-            if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+            if (!material) {
                 return this;
             }
-        } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
-            return this;
+
+            this._effectiveMaterial = material;
+
+            if (this._effectiveMaterial._storeEffectOnSubMeshes) {
+                if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                    return this;
+                }
+            } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+                return this;
+            }
         }
 
         // Alpha mode
@@ -1572,12 +1575,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const effectiveMesh = this._effectiveMesh;
 
-        var sideOrientation = this.overrideMaterialSideOrientation;
-        if (sideOrientation == null) {
-            sideOrientation = this._effectiveMaterial.sideOrientation;
-            if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
-                sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+        var sideOrientation: Nullable<number>;
+
+        if (!instanceDataStorage.isFrozen) {
+            sideOrientation = this.overrideMaterialSideOrientation;
+            if (sideOrientation == null) {
+                sideOrientation = this._effectiveMaterial.sideOrientation;
+                if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+                }
             }
+            instanceDataStorage.sideOrientation = sideOrientation!;
+        } else {
+            sideOrientation = instanceDataStorage.sideOrientation;
         }
 
         var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
@@ -2420,7 +2430,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 for (var j = 0; j < 3; j++) {
                     a = vertexIndex[j];
                     b = vertexIndex[(j + 1) % 3];
-                    if (side[a] === undefined  && side[b] ===  undefined) {
+                    if (side[a] === undefined && side[b] === undefined) {
                         side[a] = new Array();
                         side[b] = new Array();
                     }
@@ -2432,7 +2442,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                             side[b] = new Array();
                         }
                     }
-                    if (side[a][b]  === undefined  && side[b][a] === undefined) {
+                    if (side[a][b] === undefined && side[b][a] === undefined) {
                         side[a][b] = [];
                         deltaPosition.x = (positions[3 * b] - positions[3 * a]) / segments;
                         deltaPosition.y = (positions[3 * b + 1] - positions[3 * a + 1]) / segments;
@@ -2753,13 +2763,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Physics
         //TODO implement correct serialization for physics impostors.
-
-        let impostor = this.getPhysicsImpostor();
-        if (impostor) {
-            serializationObject.physicsMass = impostor.getParam("mass");
-            serializationObject.physicsFriction = impostor.getParam("friction");
-            serializationObject.physicsRestitution = impostor.getParam("mass");
-            serializationObject.physicsImpostor = impostor.type;
+        if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
+            let impostor = this.getPhysicsImpostor();
+            if (impostor) {
+                serializationObject.physicsMass = impostor.getParam("mass");
+                serializationObject.physicsFriction = impostor.getParam("friction");
+                serializationObject.physicsRestitution = impostor.getParam("mass");
+                serializationObject.physicsImpostor = impostor.type;
+            }
         }
 
         // Metadata

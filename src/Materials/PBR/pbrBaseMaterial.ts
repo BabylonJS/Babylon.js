@@ -333,12 +333,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * AKA Diffuse Texture in standard nomenclature.
      */
-    protected _albedoTexture: BaseTexture;
+    protected _albedoTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Occlusion Texture in other nomenclature.
      */
-    protected _ambientTexture: BaseTexture;
+    protected _ambientTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Occlusion Texture Intensity in other nomenclature.
@@ -355,55 +355,55 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Stores the alpha values in a texture.
      */
-    protected _opacityTexture: BaseTexture;
+    protected _opacityTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the reflection values in a texture.
      */
-    protected _reflectionTexture: BaseTexture;
+    protected _reflectionTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the emissive values in a texture.
      */
-    protected _emissiveTexture: BaseTexture;
+    protected _emissiveTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Specular texture in other nomenclature.
      */
-    protected _reflectivityTexture: BaseTexture;
+    protected _reflectivityTexture: Nullable<BaseTexture> = null;
 
     /**
      * Used to switch from specular/glossiness to metallic/roughness workflow.
      */
-    protected _metallicTexture: BaseTexture;
+    protected _metallicTexture: Nullable<BaseTexture> = null;
 
     /**
      * Specifies the metallic scalar of the metallic/roughness workflow.
      * Can also be used to scale the metalness values of the metallic texture.
      */
-    protected _metallic: Nullable<number>;
+    protected _metallic: Nullable<number> = null;
 
     /**
      * Specifies the roughness scalar of the metallic/roughness workflow.
      * Can also be used to scale the roughness values of the metallic texture.
      */
-    protected _roughness: Nullable<number>;
+    protected _roughness: Nullable<number> = null;
 
     /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
      * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
      */
-    protected _microSurfaceTexture: BaseTexture;
+    protected _microSurfaceTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores surface normal data used to displace a mesh in a texture.
      */
-    protected _bumpTexture: BaseTexture;
+    protected _bumpTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the pre-calculated light information of a mesh in a texture.
      */
-    protected _lightmapTexture: BaseTexture;
+    protected _lightmapTexture: Nullable<BaseTexture> = null;
 
     /**
      * The color of a material in ambient lighting.
@@ -616,7 +616,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Keep track of the image processing observer to allow dispose and replace.
      */
-    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
+    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>> = null;
 
     /**
      * Attaches a new image processing configuration to the PBR Material.
@@ -661,7 +661,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Enables the use of logarithmic depth buffers, which is good for wide depth buffers.
      */
-    private _useLogarithmicDepth: boolean;
+    private _useLogarithmicDepth: boolean = false;
 
     /**
      * If set to true, no lighting calculations will be applied.
@@ -874,7 +874,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Gets the texture used for the alpha test.
      */
-    public getAlphaTestTexture(): BaseTexture {
+    public getAlphaTestTexture(): Nullable<BaseTexture> {
         return this._albedoTexture;
     }
 
@@ -1526,44 +1526,45 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public buildUniformLayout(): void {
         // Order is important !
-        this._uniformBuffer.addUniform("vAlbedoInfos", 2);
-        this._uniformBuffer.addUniform("vAmbientInfos", 4);
-        this._uniformBuffer.addUniform("vOpacityInfos", 2);
-        this._uniformBuffer.addUniform("vEmissiveInfos", 2);
-        this._uniformBuffer.addUniform("vLightmapInfos", 2);
-        this._uniformBuffer.addUniform("vReflectivityInfos", 3);
-        this._uniformBuffer.addUniform("vMicroSurfaceSamplerInfos", 2);
-        this._uniformBuffer.addUniform("vReflectionInfos", 2);
-        this._uniformBuffer.addUniform("vReflectionPosition", 3);
-        this._uniformBuffer.addUniform("vReflectionSize", 3);
-        this._uniformBuffer.addUniform("vBumpInfos", 3);
-        this._uniformBuffer.addUniform("albedoMatrix", 16);
-        this._uniformBuffer.addUniform("ambientMatrix", 16);
-        this._uniformBuffer.addUniform("opacityMatrix", 16);
-        this._uniformBuffer.addUniform("emissiveMatrix", 16);
-        this._uniformBuffer.addUniform("lightmapMatrix", 16);
-        this._uniformBuffer.addUniform("reflectivityMatrix", 16);
-        this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
-        this._uniformBuffer.addUniform("bumpMatrix", 16);
-        this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
-        this._uniformBuffer.addUniform("reflectionMatrix", 16);
+        let ubo = this._uniformBuffer;
+        ubo.addUniform("vAlbedoInfos", 2);
+        ubo.addUniform("vAmbientInfos", 4);
+        ubo.addUniform("vOpacityInfos", 2);
+        ubo.addUniform("vEmissiveInfos", 2);
+        ubo.addUniform("vLightmapInfos", 2);
+        ubo.addUniform("vReflectivityInfos", 3);
+        ubo.addUniform("vMicroSurfaceSamplerInfos", 2);
+        ubo.addUniform("vReflectionInfos", 2);
+        ubo.addUniform("vReflectionPosition", 3);
+        ubo.addUniform("vReflectionSize", 3);
+        ubo.addUniform("vBumpInfos", 3);
+        ubo.addUniform("albedoMatrix", 16);
+        ubo.addUniform("ambientMatrix", 16);
+        ubo.addUniform("opacityMatrix", 16);
+        ubo.addUniform("emissiveMatrix", 16);
+        ubo.addUniform("lightmapMatrix", 16);
+        ubo.addUniform("reflectivityMatrix", 16);
+        ubo.addUniform("microSurfaceSamplerMatrix", 16);
+        ubo.addUniform("bumpMatrix", 16);
+        ubo.addUniform("vTangentSpaceParams", 2);
+        ubo.addUniform("reflectionMatrix", 16);
 
-        this._uniformBuffer.addUniform("vReflectionColor", 3);
-        this._uniformBuffer.addUniform("vAlbedoColor", 4);
-        this._uniformBuffer.addUniform("vLightingIntensity", 4);
+        ubo.addUniform("vReflectionColor", 3);
+        ubo.addUniform("vAlbedoColor", 4);
+        ubo.addUniform("vLightingIntensity", 4);
 
-        this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
-        this._uniformBuffer.addUniform("pointSize", 1);
-        this._uniformBuffer.addUniform("vReflectivityColor", 4);
-        this._uniformBuffer.addUniform("vEmissiveColor", 3);
-        this._uniformBuffer.addUniform("visibility", 1);
+        ubo.addUniform("vReflectionMicrosurfaceInfos", 3);
+        ubo.addUniform("pointSize", 1);
+        ubo.addUniform("vReflectivityColor", 4);
+        ubo.addUniform("vEmissiveColor", 3);
+        ubo.addUniform("visibility", 1);
 
-        PBRClearCoatConfiguration.PrepareUniformBuffer(this._uniformBuffer);
-        PBRAnisotropicConfiguration.PrepareUniformBuffer(this._uniformBuffer);
-        PBRSheenConfiguration.PrepareUniformBuffer(this._uniformBuffer);
-        PBRSubSurfaceConfiguration.PrepareUniformBuffer(this._uniformBuffer);
+        PBRClearCoatConfiguration.PrepareUniformBuffer(ubo);
+        PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
+        PBRSheenConfiguration.PrepareUniformBuffer(ubo);
+        PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
 
-        this._uniformBuffer.create();
+        ubo.create();
     }
 
     /**
@@ -1612,7 +1613,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        this.bindOnlyWorldMatrix(world);
+        if (!defines.INSTANCES) {
+            this.bindOnlyWorldMatrix(world);
+        }
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -1626,41 +1629,42 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
         let reflectionTexture: Nullable<BaseTexture> = null;
+        let ubo = this._uniformBuffer;
         if (mustRebind) {
             var engine = scene.getEngine();
-            this._uniformBuffer.bindToEffect(effect, "Material");
+            ubo.bindToEffect(effect, "Material");
 
             this.bindViewProjection(effect);
             reflectionTexture = this._getReflectionTexture();
 
-            if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
 
                 // Texture uniforms
                 if (scene.texturesEnabled) {
                     if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vAlbedoInfos", this._albedoTexture.coordinatesIndex, this._albedoTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._albedoTexture, this._uniformBuffer, "albedo");
+                        ubo.updateFloat2("vAlbedoInfos", this._albedoTexture.coordinatesIndex, this._albedoTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._albedoTexture, ubo, "albedo");
                     }
 
                     if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
-                        this._uniformBuffer.updateFloat4("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level, this._ambientTextureStrength, this._ambientTextureImpactOnAnalyticalLights);
-                        MaterialHelper.BindTextureMatrix(this._ambientTexture, this._uniformBuffer, "ambient");
+                        ubo.updateFloat4("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level, this._ambientTextureStrength, this._ambientTextureImpactOnAnalyticalLights);
+                        MaterialHelper.BindTextureMatrix(this._ambientTexture, ubo, "ambient");
                     }
 
                     if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
+                        ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._opacityTexture, ubo, "opacity");
                     }
 
                     if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
-                        this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
-                        this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
+                        ubo.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
+                        ubo.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
 
                         if ((<any>reflectionTexture).boundingBoxSize) {
                             let cubeTexture = <CubeTexture>reflectionTexture;
 
-                            this._uniformBuffer.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
-                            this._uniformBuffer.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
+                            ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
+                            ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
                         }
 
                         var polynomials = reflectionTexture.sphericalPolynomial;
@@ -1680,71 +1684,71 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             this._activeEffect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
                         }
 
-                        this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos",
+                        ubo.updateFloat3("vReflectionMicrosurfaceInfos",
                             reflectionTexture.getSize().width,
                             reflectionTexture.lodGenerationScale,
                             reflectionTexture.lodGenerationOffset);
                     }
 
                     if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._emissiveTexture, this._uniformBuffer, "emissive");
+                        ubo.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._emissiveTexture, ubo, "emissive");
                     }
 
                     if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._lightmapTexture, this._uniformBuffer, "lightmap");
+                        ubo.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
                     }
 
                     if (MaterialFlags.SpecularTextureEnabled) {
                         if (this._metallicTexture) {
-                            this._uniformBuffer.updateFloat3("vReflectivityInfos", this._metallicTexture.coordinatesIndex, this._metallicTexture.level, this._ambientTextureStrength);
-                            MaterialHelper.BindTextureMatrix(this._metallicTexture, this._uniformBuffer, "reflectivity");
+                            ubo.updateFloat3("vReflectivityInfos", this._metallicTexture.coordinatesIndex, this._metallicTexture.level, this._ambientTextureStrength);
+                            MaterialHelper.BindTextureMatrix(this._metallicTexture, ubo, "reflectivity");
                         }
                         else if (this._reflectivityTexture) {
-                            this._uniformBuffer.updateFloat3("vReflectivityInfos", this._reflectivityTexture.coordinatesIndex, this._reflectivityTexture.level, 1.0);
-                            MaterialHelper.BindTextureMatrix(this._reflectivityTexture, this._uniformBuffer, "reflectivity");
+                            ubo.updateFloat3("vReflectivityInfos", this._reflectivityTexture.coordinatesIndex, this._reflectivityTexture.level, 1.0);
+                            MaterialHelper.BindTextureMatrix(this._reflectivityTexture, ubo, "reflectivity");
                         }
 
                         if (this._microSurfaceTexture) {
-                            this._uniformBuffer.updateFloat2("vMicroSurfaceSamplerInfos", this._microSurfaceTexture.coordinatesIndex, this._microSurfaceTexture.level);
-                            MaterialHelper.BindTextureMatrix(this._microSurfaceTexture, this._uniformBuffer, "microSurfaceSampler");
+                            ubo.updateFloat2("vMicroSurfaceSamplerInfos", this._microSurfaceTexture.coordinatesIndex, this._microSurfaceTexture.level);
+                            MaterialHelper.BindTextureMatrix(this._microSurfaceTexture, ubo, "microSurfaceSampler");
                         }
                     }
 
                     if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
-                        this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level, this._parallaxScaleBias);
-                        MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
+                        ubo.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level, this._parallaxScaleBias);
+                        MaterialHelper.BindTextureMatrix(this._bumpTexture, ubo, "bump");
 
                         if (scene._mirroredCameraPosition) {
-                            this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
+                            ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                         } else {
-                            this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
+                            ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                         }
                     }
                 }
 
                 // Point size
                 if (this.pointsCloud) {
-                    this._uniformBuffer.updateFloat("pointSize", this.pointSize);
+                    ubo.updateFloat("pointSize", this.pointSize);
                 }
 
                 // Colors
                 if (defines.METALLICWORKFLOW) {
                     Tmp.Color3[0].r = (this._metallic === undefined || this._metallic === null) ? 1 : this._metallic;
                     Tmp.Color3[0].g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
-                    this._uniformBuffer.updateColor4("vReflectivityColor", Tmp.Color3[0], 0);
+                    ubo.updateColor4("vReflectivityColor", Tmp.Color3[0], 0);
                 }
                 else {
-                    this._uniformBuffer.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);
+                    ubo.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);
                 }
 
-                this._uniformBuffer.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
-                this._uniformBuffer.updateColor3("vReflectionColor", this._reflectionColor);
-                this._uniformBuffer.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
+                ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
+                ubo.updateColor3("vReflectionColor", this._reflectionColor);
+                ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
 
                 // Visibility
-                this._uniformBuffer.updateFloat("visibility", mesh.visibility);
+                ubo.updateFloat("visibility", mesh.visibility);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
@@ -1752,68 +1756,68 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._lightingInfos.z = this._environmentIntensity;
                 this._lightingInfos.w = this._specularIntensity;
 
-                this._uniformBuffer.updateVector4("vLightingIntensity", this._lightingInfos);
+                ubo.updateVector4("vLightingIntensity", this._lightingInfos);
             }
 
             // Textures
             if (scene.texturesEnabled) {
                 if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
-                    this._uniformBuffer.setTexture("albedoSampler", this._albedoTexture);
+                    ubo.setTexture("albedoSampler", this._albedoTexture);
                 }
 
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
-                    this._uniformBuffer.setTexture("ambientSampler", this._ambientTexture);
+                    ubo.setTexture("ambientSampler", this._ambientTexture);
                 }
 
                 if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
-                    this._uniformBuffer.setTexture("opacitySampler", this._opacityTexture);
+                    ubo.setTexture("opacitySampler", this._opacityTexture);
                 }
 
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     if (defines.LODBASEDMICROSFURACE) {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
+                        ubo.setTexture("reflectionSampler", reflectionTexture);
                     }
                     else {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
-                        this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
-                        this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
+                        ubo.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
+                        ubo.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
+                        ubo.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
                     }
                 }
 
                 if (defines.ENVIRONMENTBRDF) {
-                    this._uniformBuffer.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
+                    ubo.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
                 }
 
                 if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
-                    this._uniformBuffer.setTexture("emissiveSampler", this._emissiveTexture);
+                    ubo.setTexture("emissiveSampler", this._emissiveTexture);
                 }
 
                 if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
-                    this._uniformBuffer.setTexture("lightmapSampler", this._lightmapTexture);
+                    ubo.setTexture("lightmapSampler", this._lightmapTexture);
                 }
 
                 if (MaterialFlags.SpecularTextureEnabled) {
                     if (this._metallicTexture) {
-                        this._uniformBuffer.setTexture("reflectivitySampler", this._metallicTexture);
+                        ubo.setTexture("reflectivitySampler", this._metallicTexture);
                     }
                     else if (this._reflectivityTexture) {
-                        this._uniformBuffer.setTexture("reflectivitySampler", this._reflectivityTexture);
+                        ubo.setTexture("reflectivitySampler", this._reflectivityTexture);
                     }
 
                     if (this._microSurfaceTexture) {
-                        this._uniformBuffer.setTexture("microSurfaceSampler", this._microSurfaceTexture);
+                        ubo.setTexture("microSurfaceSampler", this._microSurfaceTexture);
                     }
                 }
 
                 if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
-                    this._uniformBuffer.setTexture("bumpSampler", this._bumpTexture);
+                    ubo.setTexture("bumpSampler", this._bumpTexture);
                 }
             }
 
-            this.subSurface.bindForSubMesh(this._uniformBuffer, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE);
-            this.clearCoat.bindForSubMesh(this._uniformBuffer, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
-            this.anisotropy.bindForSubMesh(this._uniformBuffer, scene, this.isFrozen);
-            this.sheen.bindForSubMesh(this._uniformBuffer, scene, this.isFrozen);
+            this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE);
+            this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
+            this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
+            this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
@@ -1853,13 +1857,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // image processing
-            this._imageProcessingConfiguration.bind(this._activeEffect);
+            this._imageProcessingConfiguration!.bind(this._activeEffect);
 
             // Log. depth
             MaterialHelper.BindLogDepth(defines, this._activeEffect, scene);
         }
 
-        this._uniformBuffer.update();
+        ubo.update();
 
         this._afterBind(mesh, this._activeEffect);
     }

@@ -7,10 +7,10 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 interface IQuaternionLineComponentProps {
-    label: string,
-    target: any,
-    propertyName: string,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    label: string;
+    target: any;
+    propertyName: string;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class QuaternionLineComponent extends React.Component<IQuaternionLineComponentProps, { isExpanded: boolean, value: Quaternion }> {
