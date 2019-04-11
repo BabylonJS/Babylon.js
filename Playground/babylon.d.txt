@@ -8461,6 +8461,10 @@ declare module BABYLON {
          */
         constructor(rootUrl: string, scene: Scene, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number);
         /**
+         * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
+         */
+        readonly isPrefiltered: boolean;
+        /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "CubeTexture"
          */
