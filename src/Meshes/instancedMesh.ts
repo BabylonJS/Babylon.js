@@ -9,6 +9,7 @@ import { Material } from "../Materials/material";
 import { Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from './transformNode';
+import { Light } from '../Lights/light';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     return new InstancedMesh(name, mesh);
@@ -52,6 +53,23 @@ export class InstancedMesh extends AbstractMesh {
      */
     public getClassName(): string {
         return "InstancedMesh";
+    }
+
+    /** Gets the list of lights affecting that mesh */
+    public get lightSources(): Light[] {
+        return this._sourceMesh._lightSources;
+    }
+
+    public _resyncLightSources(): void {
+        // Do nothing as all the work will be done by source mesh
+    }
+
+    public _resyncLighSource(light: Light): void {
+        // Do nothing as all the work will be done by source mesh
+    }
+
+    public _removeLightSource(light: Light): void {
+        // Do nothing as all the work will be done by source mesh
     }
 
     // Methods

@@ -586,6 +586,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _lightSources = new Array<Light>();
 
+    /** Gets the list of lights affecting that mesh */
+    public get lightSources(): Light[] {
+        return this._lightSources;
+    }
+
     /** @hidden */
     public get _positions(): Nullable<Vector3[]> {
         return null;

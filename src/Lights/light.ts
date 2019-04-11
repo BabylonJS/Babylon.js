@@ -688,7 +688,7 @@ export abstract class Light extends Node {
      */
     public _markMeshesAsLightDirty() {
         for (var mesh of this.getScene().meshes) {
-            if (mesh._lightSources.indexOf(this) !== -1) {
+            if (mesh.lightSources.indexOf(this) !== -1) {
                 mesh._markSubMeshesAsLightDirty();
             }
         }
