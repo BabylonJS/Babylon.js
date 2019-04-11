@@ -485,7 +485,7 @@ export class Color3 {
 /**
  * Class used to hold a RBGA color
  */
-export class Color4 {
+export class Color4 implements GPUColor {
     /**
      * Creates a new Color4 object from red, green, blue values, all between 0 and 1
      * @param r defines the red component (between 0 and 1, default is 0)
