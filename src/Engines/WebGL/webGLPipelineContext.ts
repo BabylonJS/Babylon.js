@@ -18,10 +18,13 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     public get isReady(): boolean {
-        if (this.program && this.isParallelCompiled) {
-            return this.engine._isRenderingStateCompiled(this);
+        if (this.program) {
+            if (this.isParallelCompiled) {
+                return this.engine._isRenderingStateCompiled(this);
+            }
+            return true;
         }
 
-        return true;
+        return false;
     }
 }
