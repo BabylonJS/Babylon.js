@@ -2098,7 +2098,30 @@ declare module 'babylonjs-viewer/configuration/interfaces/defaultRenderingPipeli
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/groundConfiguration' {
-    
+    export interface IGroundConfiguration {
+        size?: number;
+        receiveShadows?: boolean;
+        shadowLevel?: number;
+        shadowOnly?: boolean;
+        mirror?: boolean | {
+            sizeRatio?: number;
+            blurKernel?: number;
+            amount?: number;
+            fresnelWeight?: number;
+            fallOffDistance?: number;
+            textureType?: number;
+        };
+        texture?: string;
+        color?: {
+            r: number;
+            g: number;
+            b: number;
+        };
+        opacity?: number;
+        material?: {
+            [propName: string]: any;
+        };
+    }
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/imageProcessingConfiguration' {
@@ -2392,22 +2415,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/vrConfiguration' {
-    import { VRExperienceHelperOptions } from "babylonjs";
-    export interface IVRConfiguration {
-        disabled?: boolean;
-        objectScaleFactor?: number;
-        disableInteractions?: boolean;
-        disableTeleportation?: boolean;
-        overrideFloorMeshName?: string;
-        vrOptions?: VRExperienceHelperOptions;
-        modelHeightCorrection?: number | boolean;
-        rotateUsingControllers?: boolean;
-        cameraPosition?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-    }
+    
 }
 
 declare module 'babylonjs-viewer/labs/environmentSerializer' {
