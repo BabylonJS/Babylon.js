@@ -19,6 +19,8 @@
     .react-contextmenu-item {
         padding: 10px;
         cursor: pointer;
+        z-index: 99;
+        transform: scale(1);
 
         &:hover {
             background: #555555;
