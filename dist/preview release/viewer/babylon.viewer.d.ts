@@ -2209,23 +2209,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    export interface IVRConfiguration {
-        disabled?: boolean;
-        objectScaleFactor?: number;
-        disableInteractions?: boolean;
-        disableTeleportation?: boolean;
-        overrideFloorMeshName?: string;
-        vrOptions?: BABYLON.VRExperienceHelperOptions;
-        modelHeightCorrection?: number | boolean;
-        rotateUsingControllers?: boolean;
-        cameraPosition?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-    }
-}
-declare module BabylonViewer {
     /**
         * Spherical polynomial coefficients (counter part to spherical harmonic coefficients used in shader irradiance calculation)
         * @ignoreChildren
