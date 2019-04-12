@@ -15,6 +15,7 @@ import { GlobalState } from "../../components/globalState";
 import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
 import { Vector3 } from 'babylonjs/Maths/math';
 import { PointLight } from 'babylonjs/Lights/pointLight';
+import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 
 require("./sceneExplorer.scss");
 
@@ -252,6 +253,13 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             action: () => {
                 let newPointLight = new PointLight("point light", Vector3.Zero(), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newPointLight);
+            }
+        });
+        nodeContextMenus.push({
+            label: "Add new free camera",
+            action: () => {
+                let newFreeCamera = new FreeCamera("free camera", scene.activeCamera ? scene.activeCamera.globalPosition : new Vector3(0, 0, -5), scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             }
         });
 
