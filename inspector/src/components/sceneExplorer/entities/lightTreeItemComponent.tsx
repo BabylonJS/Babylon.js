@@ -36,8 +36,8 @@ export class LightTreeItemComponent extends React.Component<ILightTreeItemCompon
     toggleGizmo(): void {
         const light = this.props.light;
         if(light.reservedDataStore && light.reservedDataStore.lightGizmo){
-            if(light.getScene().reservedDataStore && light.getScene().reservedDataStore.gizmoManager){
-                light.getScene().reservedDataStore.gizmoManager.attachToMesh(null)
+            if (light.getScene().reservedDataStore && light.getScene().reservedDataStore.gizmoManager) {
+                light.getScene().reservedDataStore.gizmoManager.attachToMesh(null);
             }
             this.props.globalState.enableLightGizmo(light, false);
             this.setState({ isGizmoEnabled: false });
