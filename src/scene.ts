@@ -3451,6 +3451,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             this._intermediateRendering = true;
             let needRebind = false;
 
+            for (let step of this._cameraDrawRenderTargetStage) {
+                needRebind = needRebind || step.action(this.activeCamera);
+            }
+
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
@@ -3466,11 +3470,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
                 this._renderId++;
             }
-
-            for (let step of this._cameraDrawRenderTargetStage) {
-                needRebind = needRebind || step.action(this.activeCamera);
-            }
-
+            
             this._intermediateRendering = false;
 
             // Restore framebuffer after rendering to targets
