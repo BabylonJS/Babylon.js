@@ -1309,8 +1309,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
 
-        this._isActive = false;
-
         return this;
     }
 
@@ -1509,6 +1507,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+        this._isActive = false;
+
         if (this._checkOcclusionQuery()) {
             return this;
         }
