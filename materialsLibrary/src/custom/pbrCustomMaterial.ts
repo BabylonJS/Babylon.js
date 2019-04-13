@@ -209,12 +209,12 @@ export class PBRCustomMaterial extends PBRMaterial {
         this.CustomParts.Fragment_Before_Lights = shaderPart;
         return this;
     }
-	
+
     public Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_MetallicRoughness = shaderPart;
         return this;
     }
-	
+
     public Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_MicroSurface = shaderPart;
         return this;
