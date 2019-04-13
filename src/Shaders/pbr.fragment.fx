@@ -191,7 +191,9 @@ void main(void) {
             metallicRoughness.g *= microSurfaceTexel.r;
         #endif
 
-        // Compute microsurface form roughness.
+		#define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS
+		
+        // Compute microsurface from roughness.
         microSurface = 1.0 - metallicRoughness.g;
 
         // Diffuse is used as the base of the reflectivity.
@@ -239,11 +241,14 @@ void main(void) {
                     vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
                     microSurface *= microSurfaceTexel.r;
                 #endif
+				
+				#define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE
+				
             #endif
         #endif
     #endif
-
-    // Adapt microSurface.
+	
+	// Adapt microSurface.
     microSurface = saturate(microSurface);
     // Compute roughness.
     float roughness = 1. - microSurface;
