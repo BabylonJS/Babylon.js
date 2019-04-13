@@ -136,7 +136,7 @@
 - Added LoadScriptAsync tools helper function [MackeyK24](https://github.com/mackeyk24))
 - Added customShaderNameResolve to PBRMaterialBase to allow subclasses to specify custom shader information [MackeyK24](https://github.com/mackeyk24))
 - Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))
-- Added custom defines for roughness and microsurface in PBRCustomMaterial to material library to allow easy subclassing of PBR materials [Lockphase](https://github.com/lockphase)) 
+- Added custom defines for roughness and microsurface in PBRCustomMaterial [Lockphase](https://github.com/lockphase)) 
 - Added `auto-exposure` support in `StandardRenderingPipeline` when `HDR` is enabled ([julien-moreau](https://github.com/julien-moreau))
 - Add `EquiRectangularCubeTexture` class to enable the usage of browser-canvas supported images as `CubeTexture`'s ([Dennis Dervisis](https://github.com/ddervisis))
 - Add `EquiRectangularCubeTextureAssetTask` to be able to load `EquiRectangularCubeTextures`s via Asset Manager ([Dennis Dervisis](https://github.com/ddervisis))
