@@ -220,7 +220,7 @@ export class PBRCustomMaterial extends PBRMaterial {
         return this;
     }
     
-	public Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial {
+    public Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_Fog = shaderPart;
         return this;
     }
