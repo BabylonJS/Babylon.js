@@ -191,7 +191,7 @@ void main(void) {
             metallicRoughness.g *= microSurfaceTexel.r;
         #endif
 
-		#define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS
+        #define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS
 		
         // Compute microsurface from roughness.
         microSurface = 1.0 - metallicRoughness.g;
@@ -242,7 +242,7 @@ void main(void) {
                     microSurface *= microSurfaceTexel.r;
                 #endif
 				
-				#define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE
+                #define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE
 				
             #endif
         #endif
