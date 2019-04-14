@@ -288,6 +288,11 @@ export class SphericalHarmonics {
         result.l21 = polynomial.zx.scale(1.16538);
         result.l22 = polynomial.xx.scale(1.16538).subtract(polynomial.yy.scale(1.16538));
 
+        result.l1_1.scaleInPlace(-1);
+        result.l11.scaleInPlace(-1);
+        result.l2_1.scaleInPlace(-1);
+        result.l21.scaleInPlace(-1);
+
         result.scaleInPlace(Math.PI);
 
         return result;
@@ -394,16 +399,16 @@ export class SphericalPolynomial {
         var result = new SphericalPolynomial();
         result._harmonics = harmonics;
 
-        result.x = harmonics.l11.scale(1.02333);
-        result.y = harmonics.l1_1.scale(1.02333);
+        result.x = harmonics.l11.scale(1.02333).scale(-1);
+        result.y = harmonics.l1_1.scale(1.02333).scale(-1);
         result.z = harmonics.l10.scale(1.02333);
 
         result.xx = harmonics.l00.scale(0.886277).subtract(harmonics.l20.scale(0.247708)).add(harmonics.l22.scale(0.429043));
         result.yy = harmonics.l00.scale(0.886277).subtract(harmonics.l20.scale(0.247708)).subtract(harmonics.l22.scale(0.429043));
         result.zz = harmonics.l00.scale(0.886277).add(harmonics.l20.scale(0.495417));
 
-        result.yz = harmonics.l2_1.scale(0.858086);
-        result.zx = harmonics.l21.scale(0.858086);
+        result.yz = harmonics.l2_1.scale(0.858086).scale(-1);
+        result.zx = harmonics.l21.scale(0.858086).scale(-1);
         result.xy = harmonics.l2_2.scale(0.858086);
 
         result.scaleInPlace(1.0 / Math.PI);
