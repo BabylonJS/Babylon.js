@@ -11,4 +11,7 @@ export interface IPipelineContext {
      * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
      */
     isReady: boolean;
+
+    /** @hidden */
+    _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
 }

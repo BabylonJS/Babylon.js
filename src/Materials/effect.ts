@@ -793,9 +793,7 @@ export class Effect implements IDisposable {
                 scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
             }
 
-            if (onCompiled) {
-                onCompiled(this._pipelineContext);
-            }
+            this._pipelineContext._handlesSpectorRebuildCallback(onCompiled);
         };
         this._fallbacks = null;
         this._prepareEffect();
@@ -816,9 +814,7 @@ export class Effect implements IDisposable {
         try {
             let engine = this._engine;
 
-            if (!this._pipelineContext) {
-                this._pipelineContext = engine.createPipelineContext();
-            }
+            this._pipelineContext = engine.createPipelineContext();
 
             let rebuildRebind = this._rebuildProgram.bind(this);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
