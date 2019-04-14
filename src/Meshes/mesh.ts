@@ -3129,6 +3129,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 instance.position = Vector3.FromArray(parsedInstance.position);
 
+                if (parsedInstance.metadata !== undefined) {
+                    instance.metadata = parsedInstance.metadata;
+                }
+
                 if (parsedInstance.parentId) {
                     instance._waitingParentId = parsedInstance.parentId;
                 }
