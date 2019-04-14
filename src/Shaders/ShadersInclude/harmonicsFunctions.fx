@@ -17,7 +17,7 @@
         //   http://www-graphics.stanford.edu/papers/envmap/
         // The only difference is the integration of the reconstruction coefficients direcly
         // into the vectors as well as the 1 / pi multiplication to simulate a lambertian diffuse.
-        vec3 environmentIrradiance(vec3 normal) {
+        vec3 computeEnvironmentIrradiance(vec3 normal) {
             return vSphericalL00
 
                 + vSphericalL1_1 * (normal.y)
@@ -42,7 +42,7 @@
         uniform vec3 vSphericalZX;
 
         // By Matthew Jones.
-        vec3 environmentIrradiance(vec3 normal) {
+        vec3 computeEnvironmentIrradiance(vec3 normal) {
             // Fast method for evaluating a fixed spherical harmonics function on the sphere (e.g. irradiance or radiance).
             // Cost: 24 scalar operations on modern GPU "scalar" shader core, or 8 multiply-adds of 3D vectors:
             // "Function Cost 24	24x mad"

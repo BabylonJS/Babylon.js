@@ -38,17 +38,17 @@ import { Nullable } from "../types";
 //                         l - m
 // Leaving the trigonometric terms aside we can precompute the constants to :
 const SH3ylmBasisConstants = [
-    Math.sqrt(1  /  (4 * Math.PI)), // l00
+     Math.sqrt(1  /  (4 * Math.PI)), // l00
 
-    Math.sqrt(3  /  (4 * Math.PI)), // l1_1
-    Math.sqrt(3  /  (4 * Math.PI)), // l10
-    Math.sqrt(3  /  (4 * Math.PI)), // l11
+    -Math.sqrt(3  /  (4 * Math.PI)), // l1_1
+     Math.sqrt(3  /  (4 * Math.PI)), // l10
+    -Math.sqrt(3  /  (4 * Math.PI)), // l11
 
-    Math.sqrt(15 /  (4 * Math.PI)), // l2_2
-    Math.sqrt(15 /  (4 * Math.PI)), // l2_1
-    Math.sqrt(5  / (16 * Math.PI)), // l20
-    Math.sqrt(15 /  (4 * Math.PI)), // l21
-    Math.sqrt(15 / (16 * Math.PI)), // l22
+     Math.sqrt(15 /  (4 * Math.PI)), // l2_2
+    -Math.sqrt(15 /  (4 * Math.PI)), // l2_1
+     Math.sqrt(5  / (16 * Math.PI)), // l20
+    -Math.sqrt(15 /  (4 * Math.PI)), // l21
+     Math.sqrt(15 / (16 * Math.PI)), // l22
 ];
 
 // cm = cos(m * phi)
