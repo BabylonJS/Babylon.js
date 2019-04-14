@@ -491,7 +491,7 @@ void main(void) {
                     irradianceVector.z *= -1.0;
                 #endif
 
-                environmentIrradiance = environmentIrradianceJones(irradianceVector);
+                environmentIrradiance = environmentIrradiance(irradianceVector);
             #endif
         #endif
 
@@ -976,7 +976,7 @@ void main(void) {
             #endif
         #endif
 
-        vec3 refractionIrradiance = environmentIrradianceJones(-irradianceVector);
+        vec3 refractionIrradiance = environmentIrradiance(-irradianceVector);
         refractionIrradiance *= transmittance;
     #endif
 
