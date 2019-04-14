@@ -36,6 +36,9 @@ export class LightTreeItemComponent extends React.Component<ILightTreeItemCompon
     toggleGizmo(): void {
         const light = this.props.light;
         if(light.reservedDataStore && light.reservedDataStore.lightGizmo){
+            if (light.getScene().reservedDataStore && light.getScene().reservedDataStore.gizmoManager) {
+                light.getScene().reservedDataStore.gizmoManager.attachToMesh(null);
+            }
             this.props.globalState.enableLightGizmo(light, false);
             this.setState({ isGizmoEnabled: false });
         }else{
@@ -46,7 +49,7 @@ export class LightTreeItemComponent extends React.Component<ILightTreeItemCompon
 
     render() {
         const isEnabledElement = this.state.isEnabled ? <FontAwesomeIcon icon={faLightbubRegular} /> : <FontAwesomeIcon icon={faLightbubRegular} className="isNotActive" />;
-        const isGizmoEnabled = this.state.isGizmoEnabled ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEye} className="isNotActive" />;
+        const isGizmoEnabled = (this.state.isGizmoEnabled || (this.props.light && this.props.light.reservedDataStore && this.props.light.reservedDataStore.lightGizmo)) ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEye} className="isNotActive" />;
 
         return (
             <div className="lightTools">
