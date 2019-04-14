@@ -37,6 +37,7 @@
   - Added anisotropy support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added sheen support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added sub-surface support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+  - Added SH Harmonics support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
 - Added a STL exporter ([pryme8](https://github.com/pryme8))
 
 ## Optimizations
