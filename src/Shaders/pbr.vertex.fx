@@ -195,7 +195,7 @@ void main(void) {
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
         #endif
-        vEnvironmentIrradiance = environmentIrradiance(reflectionVector);
+        vEnvironmentIrradiance = computeEnvironmentIrradiance(reflectionVector);
     #endif
 #endif
 
