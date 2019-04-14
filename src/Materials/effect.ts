@@ -387,7 +387,10 @@ export class Effect implements IDisposable {
         if (this._isReady) {
             return true;
         }
-        return this._pipelineContext.isReady;
+        if (this._pipelineContext) {
+            return this._pipelineContext.isReady;
+        }
+        return false;
     }
 
     /**
