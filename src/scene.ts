@@ -3075,8 +3075,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._externalData.remove(key);
     }
 
-    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
-        if (this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
+        if (initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
             for (let step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3365,7 +3365,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             const len = subMeshes.length;
             for (let i = 0; i < len; i++) {
                 const subMesh = subMeshes.data[i];
-                this._evaluateSubMesh(subMesh, mesh);
+                this._evaluateSubMesh(subMesh, mesh, sourceMesh);
             }
         }
     }
