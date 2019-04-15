@@ -33466,7 +33466,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             _this.state = { isSelected: _this.props.isSelected() };
         }
         else {
-            _this.state = { isSelected: _this.props.target[_this.props.propertyName] };
+            _this.state = { isSelected: _this.props.target[_this.props.propertyName] === true };
         }
         return _this;
     }
@@ -33476,7 +33476,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             currentState = nextProps.isSelected();
         }
         else {
-            currentState = nextProps.target[nextProps.propertyName];
+            currentState = nextProps.target[nextProps.propertyName] === true;
         }
         if (currentState !== nextState.isSelected || this._localChange) {
             nextState.isSelected = currentState;
@@ -38177,6 +38177,11 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Edge width", minimum: 0, maximum: 10, step: 0.1, target: mesh, propertyName: "edgesWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Color3LineComponent"], { label: "Edge color", target: mesh, propertyName: "edgesColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "OUTLINE & OVERLAY", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render overlay", target: mesh, propertyName: "renderOverlay", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Color3LineComponent"], { label: "Overlay color", target: mesh, propertyName: "overlayColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render outline", target: mesh, propertyName: "renderOutline", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Color3LineComponent"], { label: "Outline color", target: mesh, propertyName: "outlineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEBUG", closed: true },
                 mesh.material &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display normals", isSelected: function () { return displayNormals; }, onSelect: function () { return _this.displayNormals(); } }),
