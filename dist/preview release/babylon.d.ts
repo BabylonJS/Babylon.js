@@ -16878,6 +16878,7 @@ declare module BABYLON {
         /** @hidden */
         _activate(renderId: number): boolean;
         getWorldMatrix(): Matrix;
+        readonly isAnInstance: boolean;
         /**
          * Returns the current associated LOD AbstractMesh.
          */
@@ -24697,6 +24698,10 @@ declare module BABYLON {
         getWorldMatrix(): Matrix;
         /** @hidden */
         _getWorldMatrixDeterminant(): number;
+        /**
+         * Gets a boolean indicating if this mesh is an instance or a regular mesh
+         */
+        readonly isAnInstance: boolean;
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
