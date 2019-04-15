@@ -19,6 +19,11 @@ var footer = document.getElementById("footer");
 var canvas = document.getElementById("renderCanvas");
 var canvasZone = document.getElementById("canvasZone");
 
+var skyboxes = [
+    "https://assets.babylonjs.com/environments/environmentSpecular.env",
+    "https://assets.babylonjs.com/environments/studio.env",
+]
+
 var indexOf = location.href.indexOf("?");
 if (indexOf !== -1) {
     var params = location.href.substr(indexOf + 1).split("&");
@@ -57,7 +62,7 @@ if (BABYLON.Engine.isSupported()) {
     var currentScene;
     var currentSkybox;
     var currentPluginName;
-    var skyboxPath = "https://assets.babylonjs.com/environments/environmentSpecular.env";
+    var skyboxPath = skyboxes[0];
     var debugLayerEnabled = false;
 
     engine.loadingUIBackgroundColor = "#a9b5bc";
