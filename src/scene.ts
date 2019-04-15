@@ -3480,7 +3480,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             for (let step of this._cameraDrawRenderTargetStage) {
-                needRebind = needRebind || step.action(this.activeCamera);
+                needRebind = step.action(this.activeCamera) || needRebind;
             }
 
             this._intermediateRendering = false;
