@@ -308,20 +308,20 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     private _afterRenderingMesh(mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch): void {
-        // Outline - step 2
-        if (mesh.renderOutline && this._savedDepthWrite) {
-            this._engine.setDepthWrite(true);
-            this._engine.setColorWrite(false);
-            this.render(subMesh, batch);
-            this._engine.setColorWrite(true);
-        }
-
         // Overlay
         if (mesh.renderOverlay) {
             var currentMode = this._engine.getAlphaMode();
             this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
             this.render(subMesh, batch, true);
             this._engine.setAlphaMode(currentMode);
+        }
+
+        // Outline - step 2
+        if (mesh.renderOutline && this._savedDepthWrite) {
+            this._engine.setDepthWrite(true);
+            this._engine.setColorWrite(false);
+            this.render(subMesh, batch);
+            this._engine.setColorWrite(true);
         }
     }
 }
