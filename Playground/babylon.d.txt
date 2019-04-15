@@ -18810,13 +18810,6 @@ declare module BABYLON {
              */
             getAllAnimatablesByTarget(target: any): Array<Animatable>;
             /**
-             * Will stop the animation of the given target
-             * @param target - the target
-             * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
-             * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-             */
-            stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
-            /**
             * Stops and removes all animations that have been applied to the scene
             */
             stopAllAnimations(): void;
@@ -32398,6 +32391,13 @@ declare module BABYLON {
          * @returns the index where the animation was in the animation list
          */
         removeAnimation(toRemove: Animation): number;
+        /**
+         * Will stop the animation of the given target
+         * @param target - the target
+         * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+         */
+        stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
         /**
          * Removes the given animation group from this scene.
          * @param toRemove The animation group to remove
