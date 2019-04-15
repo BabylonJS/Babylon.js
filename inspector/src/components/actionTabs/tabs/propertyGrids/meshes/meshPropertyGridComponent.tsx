@@ -21,6 +21,7 @@ import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
+import { Color3LineComponent } from '../../../lines/color3LineComponent';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -271,6 +272,17 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <TextLineComponent label="Type" value={this.convertPhysicsTypeToString()} />
                     </LineContainerComponent>
                 }
+                <LineContainerComponent globalState={this.props.globalState} title="EDGE RENDERING" closed={true}>
+                    <CheckBoxLineComponent label="Enable" target={mesh} isSelected={() => mesh.edgesRenderer != null} onSelect={value => {
+                        if (value) {
+                            mesh.enableEdgesRendering();
+                        } else {
+                            mesh.disableEdgesRendering();
+                        }
+                    }} />
+                    <SliderLineComponent label="Edge width" minimum={0} maximum={10} step={0.1} target={mesh} propertyName="edgesWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent label="Edge color" target={mesh} propertyName="edgesColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
                     {
                         mesh.material &&

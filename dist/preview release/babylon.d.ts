@@ -5240,6 +5240,8 @@ declare module BABYLON {
          * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
          */
         isReady: boolean;
+        /** @hidden */
+        _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
     }
 }
 declare module BABYLON {
@@ -16878,6 +16880,7 @@ declare module BABYLON {
         /** @hidden */
         _activate(renderId: number): boolean;
         getWorldMatrix(): Matrix;
+        readonly isAnInstance: boolean;
         /**
          * Returns the current associated LOD AbstractMesh.
          */
@@ -24698,6 +24701,10 @@ declare module BABYLON {
         /** @hidden */
         _getWorldMatrixDeterminant(): number;
         /**
+         * Gets a boolean indicating if this mesh is an instance or a regular mesh
+         */
+        readonly isAnInstance: boolean;
+        /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
          * Supports definition of mesh facing forward or backward
@@ -26856,6 +26863,7 @@ declare module BABYLON {
         transformFeedback?: WebGLTransformFeedback | null;
         readonly isAsync: boolean;
         readonly isReady: boolean;
+        _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
     }
 }
 declare module BABYLON {
