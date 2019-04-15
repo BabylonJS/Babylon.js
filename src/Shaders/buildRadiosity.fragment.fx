@@ -30,6 +30,7 @@ void main(void) {
 	glFragData[0] = vec4(worldPosition.xyz / worldPosition.w, 1.0);
 	glFragData[1] = vec4(normalize(worldNormal.xyz), 1.0);
 	glFragData[2] = vec4(encode(), 1.0);
+	// glFragData[2] = vec4(vUV, 0.0, 1.0);
 	glFragData[3] = vec4(color, lightStrength);
 	glFragData[4] = vec4(color, lightStrength);
 	glFragData[5] = vec4(0.0, 0.0, 0.0, 0.0); // offscreen textures

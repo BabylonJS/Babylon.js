@@ -647,7 +647,7 @@ export class Tools {
         let textureHeight = Math.max(1, Tools.NearestPOT(height / worldToTexelRatio));
 
         // scale to use full extent of texture
-        for (let i = 0; i < uvs.length; i+= 2) {
+        for (let i = 0; i < uvs.length; i += 2) {
             uv0.copyFromFloats(uvs[i], uvs[i + 1]);
             uv0.subtractInPlace(lowestUv);
             newUvs.push(uv0.x / uvExpand.x, uv0.y / uvExpand.y);

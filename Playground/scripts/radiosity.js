@@ -1,10 +1,10 @@
 ﻿var meshes = [];
-var texelSize = 3;
+var texelSize = 2;
 
 var prepareForBaking = function(mesh) {
     var scaling = mesh.scaling || new BABYLON.Vector3(1, 1, 1);
     mesh.material = new BABYLON.StandardMaterial("gg", scene);
-    mesh.material.backFaceCulling = false;
+    // mesh.material.backFaceCulling = false;
     var positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
     var uvs = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
     if (!positions || !uvs) {
@@ -23,7 +23,7 @@ var addGround = function(name, scaling) {
     if (scaling) {
         ground.scaling = scaling;        
     }
-    return prepareForBaking(ground);
+    return ground;
 }
 
 var createScene = function() {
@@ -56,7 +56,7 @@ var createScene = function() {
 
     // var ground = addGround("floor");
 
-    var wall = addGround("wall", new BABYLON.Vector3(6, 6, 6));
+    //var wall = addGround("wall", new BABYLON.Vector3(6, 6, 6));
     // var wall2 = addGround("wall2");
     // var wall3 = addGround("wall3");
     // var wall4 = addGround("wall4");
@@ -69,7 +69,7 @@ var createScene = function() {
     // var ceiling = addGround("ceiling");
 
 
-    wall.position.addInPlace(new BABYLON.Vector3(3, 2, 0));
+    // wall.position.addInPlace(new BABYLON.Vector3(3, 2, 0));
     // wall2.position.addInPlace(new BABYLON.Vector3(-3, 2, 0));
     // wall3.position.addInPlace(new BABYLON.Vector3(0, 2, -3));
     // ground.position.addInPlace(new BABYLON.Vector3(0, -1, 0));
@@ -78,23 +78,33 @@ var createScene = function() {
     // wall3.rotation.addInPlace(new BABYLON.Vector3(0, Math.PI / 2, Math.PI / 2));
 
     lamp.rotation.x = -3 * Math.PI / 4;
-    lamp.position.copyFromFloats(-5, 25, 5);
-    lamp.color = new BABYLON.Vector3(5000, 5000, 5000);
+    lamp.position.copyFromFloats(-5, 10, 5);
+    lamp.color = new BABYLON.Vector3(500, 500, 500);
 
     // ceiling.position.y += 5;
     // ceiling.rotation.x = -Math.PI;
 
+    var pr;
     BABYLON.SceneLoader.ImportMesh(
         "",
         "",
         "untitled.babylon",
         scene,
-        (meshes) => {
-            for (let i = 0; i < meshes.length; i++) {
-                if (!meshes[i].parent) {
-                    meshes[i].rotation.x += Math.PI / 2
+        (ms) => {
+            for (let i = 0; i < ms.length; i++) {
+                if (!ms[i].parent) {
+                    ms[i].rotation.x += Math.PI / 2
+                    ms[i].computeWorldMatrix(true);
                 }
-                prepareForBaking(meshes[i]);
+                //prepareForBaking(meshes[i]);
+            }
+            pr = new BABYLON.PatchRenderer(scene, ms, texelSize);
+            pr.createHTScene(0.1);
+            //pr._meshes = scene.meshes;
+            for (let i = 0; i < scene.meshes.length; i++) {
+                if (!scene.meshes[i].__lightmapSize) {
+                    prepareForBaking(scene.meshes[i]);
+                }
             }
         });
 
@@ -102,7 +112,6 @@ var createScene = function() {
             // meshes[i].material.diffuseTexture = new BABYLON.Texture("textures/albedo.png", scene);
             meshes[i].material.emissiveColor = new BABYLON.Vector3(0.5, 0.5, 0.5);
     }
-    var pr;
 
     var renderLoop = function() {
         if (engine.scenes.length === 0) {
@@ -125,7 +134,7 @@ var createScene = function() {
 
     //ground.material.diffuseTexture = pr._patchMap;
     var fn = () => {
-        pr = new BABYLON.PatchRenderer(scene, meshes, texelSize);
+        pr.createMaps();
         // var sphere = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
         // sphere.position.x += 2;
         // sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
@@ -140,7 +149,7 @@ var createScene = function() {
                 var energyLeft = pr.gatherRadiosity();
                 engine.runRenderLoop(renderLoop);
 
-                if (!energyLeft || passes > 6) {
+                if (!energyLeft || passes > 10) {
                     console.log("Converged ! ");
                     scene.onAfterRenderTargetsRenderObservable.remove(observer);
                 }
@@ -165,6 +174,16 @@ var createScene = function() {
     setTimeout(fn2, 3000);
     // setTimeout(fn3, 3000);
 
-    return scene;
+    scene.onPointerDown = (event) => {
+        var pi = scene.pick(event.offsetX, event.offsetY);
 
+        if (!pi.hit) {
+            return;
+        }
+        console.log(pi.bu, pi.bv);
+        console.log(pi.pickedMesh);
+        console.log(pi.pickedMesh.getVerticesData("normal"));
+    };
+
+    return scene;
 };
