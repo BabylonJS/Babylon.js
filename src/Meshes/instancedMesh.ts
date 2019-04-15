@@ -289,7 +289,6 @@ export class InstancedMesh extends AbstractMesh {
 
         if (!this._currentLOD._isActive) {
             this._currentLOD._onlyForInstances = true;
-            this._currentLOD._isActive = true;
             return true;
         }
         return false;
