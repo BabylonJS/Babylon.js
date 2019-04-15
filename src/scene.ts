@@ -3289,14 +3289,14 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshLOD = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
-            if (meshLOD === undefined || meshLOD === null) {
+            const meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
 
             // Compute world matrix if LOD is billboard
-            if (meshLOD !== mesh && meshLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
-                meshLOD.computeWorldMatrix();
+            if (meshToRender !== mesh && meshToRender.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
+                meshToRender.computeWorldMatrix();
             }
 
             mesh._preActivate();
@@ -3305,14 +3305,16 @@ export class Scene extends AbstractScene implements IAnimatable {
                 this._activeMeshes.push(mesh);
                 this.activeCamera._activeMeshes.push(mesh);
 
-                if (meshLOD !== mesh) {
-                    meshLOD._activate(this._renderId);
+                if (meshToRender !== mesh) {
+                    meshToRender._activate(this._renderId);
                 }
-                meshLOD._onlyForInstances = false;
 
                 if (mesh._activate(this._renderId)) {
-                    meshLOD._isActive = true;
-                    this._activeMesh(mesh, meshLOD);
+                    if (!mesh.isAnInstance) {
+                        meshToRender._onlyForInstances = false;
+                    }
+                    meshToRender._isActive = true;
+                    this._activeMesh(mesh, meshToRender);
                 }
             }
         }
