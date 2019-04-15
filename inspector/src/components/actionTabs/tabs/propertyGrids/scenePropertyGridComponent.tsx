@@ -147,7 +147,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                     <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
                     <FogPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="IMAGE PROCESSING">
+                <LineContainerComponent globalState={this.props.globalState} title="MATERIAL IMAGE PROCESSING">
                     <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Contrast" target={imageProcessing} propertyName="contrast" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Exposure" target={imageProcessing} propertyName="exposure" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Tone mapping" target={imageProcessing} propertyName="toneMappingEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
