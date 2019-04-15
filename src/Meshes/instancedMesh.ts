@@ -307,6 +307,10 @@ export class InstancedMesh extends AbstractMesh {
         return super.getWorldMatrix();
     }
 
+    public get isAnInstance(): boolean {
+        return true;
+    }
+
     /**
      * Returns the current associated LOD AbstractMesh.
      */
@@ -320,7 +324,7 @@ export class InstancedMesh extends AbstractMesh {
         this._currentLOD = <Mesh>this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
 
         if (this._currentLOD === this.sourceMesh) {
-            return this;
+            return this.sourceMesh;
         }
 
         return this._currentLOD;

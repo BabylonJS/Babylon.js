@@ -1076,6 +1076,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return super._getWorldMatrixDeterminant();
     }
 
+    /**
+     * Gets a boolean indicating if this mesh is an instance or a regular mesh
+     */
+    public get isAnInstance(): boolean {
+        return false;
+    }
+
     // ================================== Point of View Movement =================================
 
     /**
