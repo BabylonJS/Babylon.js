@@ -5224,6 +5224,7 @@ declare module BABYLON {
          * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
          */
         isReady: boolean;
+        /** @hidden */handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
     }
 }
 declare module BABYLON {
@@ -26387,7 +26388,7 @@ declare module BABYLON {
         onCompiled?: () => void;
         transformFeedback?: WebGLTransformFeedback | null;
         readonly isAsync: boolean;
-        readonly isReady: boolean;
+        readonly isReady: boolean;handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
     }
 }
 declare module BABYLON {
