@@ -61,17 +61,17 @@ var logOperation = (operation: string, producer: { file: string, name: string, v
     return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
 };
 
-var loadDetailLevels = (scene: Scene, mesh: any) => {
-    const mastermesh: Mesh = mesh;
+var loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
+    const mastermesh: Mesh = mesh as Mesh;
 
-    // Every value specified in the ids array of the extension points to another mesh which should be used as the lower LOD level.
+    // Every value specified in the ids array of the lod data points to another mesh which should be used as the lower LOD level.
     // The distances (or coverages) array values specified are used along with the lod mesh ids as a hint to determine the switching threshold for the various LODs.
-    if (mesh._waitingLods) {
-        if (mesh._waitingLods.ids && mesh._waitingLods.ids.length > 0) {
-            const lodmeshes: string[] = mesh._waitingLods.ids;
+    if (mesh._waitingData.lods) {
+        if (mesh._waitingData.lods.ids && mesh._waitingData.lods.ids.length > 0) {
+            const lodmeshes: string[] = mesh._waitingData.lods.ids;
             const wasenabled: boolean = mastermesh.isEnabled(false);
-            if (mesh._waitingLods.distances) {
-                const distances: number[] = mesh._waitingLods.distances;
+            if (mesh._waitingData.lods.distances) {
+                const distances: number[] = mesh._waitingData.lods.distances;
                 if (distances.length >= lodmeshes.length) {
                     const culling: number = (distances.length > lodmeshes.length) ? distances[distances.length - 1] : 0;
                     mastermesh.setEnabled(false);
@@ -93,7 +93,7 @@ var loadDetailLevels = (scene: Scene, mesh: any) => {
                 }
             }
         }
-        mesh._waitingLods = null;
+        mesh._waitingData.lods = null;
     }
 };
 
