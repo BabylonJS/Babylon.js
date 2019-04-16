@@ -16601,6 +16601,7 @@ declare module BABYLON {
         refreshBoundingInfo(applySkeleton?: boolean): InstancedMesh;
         /** @hidden */preActivate(): InstancedMesh;
         /** @hidden */activate(renderId: number): boolean;
+        /** @hidden */postActivate(): void;
         getWorldMatrix(): Matrix;
         readonly isAnInstance: boolean;
         /**
@@ -24097,8 +24098,11 @@ declare module BABYLON {
         /** Gets the list of lights affecting that mesh */
         readonly lightSources: Light[];
         /** @hidden */protected readonly _positions: Nullable<Vector3[]>;
-        /** @hidden */waitingActions: Nullable<any>;
-        /** @hidden */waitingFreezeWorldMatrix: Nullable<boolean>;
+        /** @hidden */waitingData: {
+            lods: Nullable<any>;
+            actions: Nullable<any>;
+            freezeWorldMatrix: Nullable<boolean>;
+        };
         private _skeleton;
         /** @hidden */bonesTransformMatrices: Nullable<Float32Array>;
         /**
@@ -24259,6 +24263,7 @@ declare module BABYLON {
         /** @hidden */preActivate(): void;
         /** @hidden */preActivateForIntermediateRendering(renderId: number): void;
         /** @hidden */activate(renderId: number): boolean;
+        /** @hidden */postActivate(): void;
         /** @hidden */freeze(): void;
         /** @hidden */unFreeze(): void;
         /**
@@ -49044,6 +49049,11 @@ declare module BABYLON {
          */
         static DefaultNumWorkers: number;
         private static GetDefaultNumWorkers;
+        private static _Default;
+        /**
+         * Default instance for the draco compression object.
+         */
+        static readonly Default: DracoCompression;
         /**
          * Constructor
          * @param numWorkers The number of workers for async operations
@@ -61270,12 +61280,11 @@ declare module BABYLON.GLTF2.Loader.Extensions {
     export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
-        /** The draco compression used to decode vertex data. */
+        /** The draco compression used to decode vertex data or DracoCompression.Default if not defined */
         dracoCompression?: DracoCompression;
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         private _loader;
-        private _dracoCompressionOwned;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
