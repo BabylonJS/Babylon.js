@@ -3109,6 +3109,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
         }
 
+        // Levels
+        if (parsedMesh.lodMeshIds) {
+            mesh._waitingLods = {
+                ids: parsedMesh.lodMeshIds,
+                distances: (parsedMesh.lodDistances) ? parsedMesh.lodDistances : null,
+                coverages: (parsedMesh.lodCoverages) ? parsedMesh.lodCoverages : null
+            };
+        }
+
         // Instances
         if (parsedMesh.instances) {
             for (var index = 0; index < parsedMesh.instances.length; index++) {
