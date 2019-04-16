@@ -66,7 +66,7 @@ var loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
 
     // Every value specified in the ids array of the lod data points to another mesh which should be used as the lower LOD level.
     // The distances (or coverages) array values specified are used along with the lod mesh ids as a hint to determine the switching threshold for the various LODs.
-    if (mesh._waitingData && mesh._waitingData.lods) {
+    if (mesh._waitingData.lods) {
         if (mesh._waitingData.lods.ids && mesh._waitingData.lods.ids.length > 0) {
             const lodmeshes: string[] = mesh._waitingData.lods.ids;
             const wasenabled: boolean = mastermesh.isEnabled(false);
