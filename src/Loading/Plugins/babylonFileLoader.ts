@@ -340,7 +340,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
                 mesh._waitingParentId = null;
             }
-            if (mesh._waitingLods) {
+            if (mesh._waitingData.lods) {
                 loadDetailLevels(scene, mesh);
             }
         }
@@ -348,9 +348,9 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         // freeze world matrix application
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var currentMesh = scene.meshes[index];
-            if (currentMesh._waitingFreezeWorldMatrix) {
+            if (currentMesh._waitingData.freezeWorldMatrix) {
                 currentMesh.freezeWorldMatrix();
-                currentMesh._waitingFreezeWorldMatrix = null;
+                currentMesh._waitingData.freezeWorldMatrix = null;
             } else {
                 currentMesh.computeWorldMatrix(true);
             }
@@ -391,9 +391,9 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         // Actions (scene) Done last as it can access other objects.
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var mesh = scene.meshes[index];
-            if (mesh._waitingActions) {
-                ActionManager.Parse(mesh._waitingActions, mesh, scene);
-                mesh._waitingActions = null;
+            if (mesh._waitingData.actions) {
+                ActionManager.Parse(mesh._waitingData.actions, mesh, scene);
+                mesh._waitingData.actions = null;
             }
         }
         if (parsedData.actions !== undefined && parsedData.actions !== null) {
@@ -564,7 +564,7 @@ SceneLoader.RegisterPlugin({
                         currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
                         currentMesh._waitingParentId = null;
                     }
-                    if (currentMesh._waitingLods) {
+                    if (currentMesh._waitingData.lods) {
                         loadDetailLevels(scene, currentMesh);
                     }
                 }
@@ -572,9 +572,9 @@ SceneLoader.RegisterPlugin({
                 // freeze and compute world matrix application
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingFreezeWorldMatrix) {
+                    if (currentMesh._waitingData.freezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
-                        currentMesh._waitingFreezeWorldMatrix = null;
+                        currentMesh._waitingData.freezeWorldMatrix = null;
                     } else {
                         currentMesh.computeWorldMatrix(true);
                     }
