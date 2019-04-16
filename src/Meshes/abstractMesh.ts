@@ -598,6 +598,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     // Loading properties
     /** @hidden */
+    public _waitingLods: Nullable<any> = null;
+    /** @hidden */
     public _waitingActions: Nullable<any> = null;
     /** @hidden */
     public _waitingFreezeWorldMatrix: Nullable<boolean> = null;

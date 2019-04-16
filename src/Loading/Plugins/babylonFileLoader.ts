@@ -61,6 +61,42 @@ var logOperation = (operation: string, producer: { file: string, name: string, v
     return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
 };
 
+var loadDetailLevels = (scene: Scene, mesh: any) => {
+    const mastermesh: Mesh = mesh;
+
+    // Every value specified in the ids array of the extension points to another mesh which should be used as the lower LOD level.
+    // The distances (or coverages) array values specified are used along with the lod mesh ids as a hint to determine the switching threshold for the various LODs.
+    if (mesh._waitingLods) {
+        if (mesh._waitingLods.ids && mesh._waitingLods.ids.length > 0) {
+            const lodmeshes: string[] = mesh._waitingLods.ids;
+            const wasenabled: boolean = mastermesh.isEnabled(false);
+            if (mesh._waitingLods.distances) {
+                const distances: number[] = mesh._waitingLods.distances;
+                if (distances.length >= lodmeshes.length) {
+                    const culling: number = (distances.length > lodmeshes.length) ? distances[distances.length - 1] : 0;
+                    mastermesh.setEnabled(false);
+                    for (let index = 0; index < lodmeshes.length; index++) {
+                        const lodid: string = lodmeshes[index];
+                        const lodmesh: Mesh = scene.getMeshByID(lodid) as Mesh;
+                        if (lodmesh != null) {
+                            mastermesh.addLODLevel(distances[index], lodmesh);
+                        }
+                    }
+                    if (culling > 0) {
+                        mastermesh.addLODLevel(culling, null);
+                    }
+                    if (wasenabled === true) {
+                        mastermesh.setEnabled(true);
+                    }
+                } else {
+                    Tools.Warn("Invalid level of detail distances for " + mesh.name);
+                }
+            }
+        }
+        mesh._waitingLods = null;
+    }
+};
+
 var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     var container = new AssetContainer(scene);
 
@@ -290,7 +326,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             }
         }
 
-        // Connect parents & children and parse actions
+        // Connect parents & children and parse actions and lods
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             var transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId) {
@@ -303,6 +339,9 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             if (mesh._waitingParentId) {
                 mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
                 mesh._waitingParentId = null;
+            }
+            if (mesh._waitingLods) {
+                loadDetailLevels(scene, mesh);
             }
         }
 
@@ -517,13 +556,16 @@ SceneLoader.RegisterPlugin({
                     }
                 }
 
-                // Connecting parents
+                // Connecting parents and lods
                 var currentMesh: AbstractMesh;
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
                         currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
                         currentMesh._waitingParentId = null;
+                    }
+                    if (currentMesh._waitingLods) {
+                        loadDetailLevels(scene, currentMesh);
                     }
                 }
 
