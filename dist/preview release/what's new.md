@@ -144,6 +144,7 @@
 - Added `Matrix.RotationAlignToRef` method to obtain rotation matrix from one vector to another ([sable](https://github.com/thscott))
 - ArcRotateCamera will now cache the necessary matrices when modifying its upVector, instead of calculating them each time they're needed ([sable](https://github.com/thscott))
 - Update `DracoCompression` to use web workers ([bghgary](https://github.com/bghgary))
+- Added `LOD Babylon Mesh Entities` to support to babylonFileLoader.ts ([MackeyK24](https://github.com/mackeyk24))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
