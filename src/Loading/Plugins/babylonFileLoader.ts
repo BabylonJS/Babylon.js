@@ -79,7 +79,6 @@ var loadDetailLevels = (scene: Scene, mesh: any) => {
                         const lodid: string = lodmeshes[index];
                         const lodmesh: Mesh = scene.getMeshByID(lodid) as Mesh;
                         if (lodmesh != null) {
-                            lodmesh.parent = mastermesh;
                             mastermesh.addLODLevel(distances[index], lodmesh);
                         }
                     }
