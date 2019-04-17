@@ -283,15 +283,18 @@ export class InstancedMesh extends AbstractMesh {
             this._currentLOD._registerInstanceForRenderId(this, renderId);
         }
 
-        if (this._edgesRenderer && this._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
-            this._sourceMesh._renderingGroup._edgesRenderers.push(this._edgesRenderer);
-        }
-
         if (!this._currentLOD._isActive) {
             this._currentLOD._onlyForInstances = true;
             return true;
         }
         return false;
+    }
+
+    /** @hidden */
+    public _postActivate(): void {
+        if (this._edgesRenderer && this._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
+            this._sourceMesh._renderingGroup._edgesRenderers.push(this._edgesRenderer);
+        }
     }
 
     public getWorldMatrix(): Matrix {

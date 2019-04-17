@@ -383,7 +383,7 @@ export class UniformBuffer {
 
     /** @hidden */
     public _rebuild(): void {
-        if (this._noUBO) {
+        if (this._noUBO || !this._bufferData) {
             return;
         }
 
