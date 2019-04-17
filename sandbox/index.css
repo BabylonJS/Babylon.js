@@ -1,4 +1,9 @@
-﻿html {
+﻿@font-face {
+    font-family: "babylon-font";
+    src: url("./Assets/font.woff") format('woff');
+}
+
+html {
     --background: #2A2342;
     --footer-background: #201936;
     --footer-height: 70px;
@@ -12,7 +17,8 @@ html, body, #root {
     padding: 0;
     margin: 0;
     overflow: hidden;
-    font-family: "Segoe WP", "Segoe UI", "Verdana", "Arial";
+    font-family: 'babylon-font';
+    font-size: 20px;
     background: var(--background);
 }
 
