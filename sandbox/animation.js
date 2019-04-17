@@ -18,11 +18,13 @@ function displayDropdownContent(display) {
         dropdownContent.style.display = "flex";
         chevronDown.style.display = "inline";
         chevronUp.style.display = "none";
+        dropdownBtn.classList.add("open");
     }
     else {
         dropdownContent.style.display = "none";
         chevronDown.style.display = "none";
         chevronUp.style.display = "inline";
+        dropdownBtn.classList.remove("open");
     }
 }
 dropdownBtn.addEventListener("click", function() {
