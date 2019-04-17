@@ -19,7 +19,7 @@ interface IVector3LineComponentProps {
 export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, { isExpanded: boolean, value: Vector3 }> {
 
     static defaultProps = {
-        step: 1,
+        step: 0.001, // cm
     };
 
     private _localChange = false;
