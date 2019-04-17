@@ -598,9 +598,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     // Loading properties
     /** @hidden */
-    public _waitingActions: Nullable<any> = null;
-    /** @hidden */
-    public _waitingFreezeWorldMatrix: Nullable<boolean> = null;
+    public _waitingData: {
+        lods: Nullable<any>,
+        actions: Nullable<any>
+        freezeWorldMatrix: Nullable<boolean>
+    } = {
+            lods: null,
+            actions: null,
+            freezeWorldMatrix: null
+        };
 
     // Skeleton
     private _skeleton: Nullable<Skeleton> = null;
@@ -674,7 +680,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
         if (fullDetails) {
             ret += ", billboard mode: " + (["NONE", "X", "Y", null, "Z", null, null, "ALL"])[this.billboardMode];
-            ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
+            ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingData.freezeWorldMatrix ? "YES" : "NO");
         }
         return ret;
     }
@@ -1046,6 +1052,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
+    public _postActivate(): void {
+        // Do nothing
+    }
+
+    /** @hidden */
     public _freeze() {
         // Do nothing
     }
@@ -1074,6 +1085,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         return super._getWorldMatrixDeterminant();
+    }
+
+    /**
+     * Gets a boolean indicating if this mesh is an instance or a regular mesh
+     */
+    public get isAnInstance(): boolean {
+        return false;
     }
 
     // ================================== Point of View Movement =================================

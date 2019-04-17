@@ -5240,6 +5240,8 @@ declare module BABYLON {
          * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
          */
         isReady: boolean;
+        /** @hidden */
+        _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
     }
 }
 declare module BABYLON {
@@ -16877,7 +16879,10 @@ declare module BABYLON {
         _preActivate(): InstancedMesh;
         /** @hidden */
         _activate(renderId: number): boolean;
+        /** @hidden */
+        _postActivate(): void;
         getWorldMatrix(): Matrix;
+        readonly isAnInstance: boolean;
         /**
          * Returns the current associated LOD AbstractMesh.
          */
@@ -19113,13 +19118,6 @@ declare module BABYLON {
              * @returns an array of Animatables
              */
             getAllAnimatablesByTarget(target: any): Array<Animatable>;
-            /**
-             * Will stop the animation of the given target
-             * @param target - the target
-             * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
-             * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-             */
-            stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
             /**
             * Stops and removes all animations that have been applied to the scene
             */
@@ -24517,9 +24515,11 @@ declare module BABYLON {
         /** @hidden */
         readonly _positions: Nullable<Vector3[]>;
         /** @hidden */
-        _waitingActions: Nullable<any>;
-        /** @hidden */
-        _waitingFreezeWorldMatrix: Nullable<boolean>;
+        _waitingData: {
+            lods: Nullable<any>;
+            actions: Nullable<any>;
+            freezeWorldMatrix: Nullable<boolean>;
+        };
         private _skeleton;
         /** @hidden */
         _bonesTransformMatrices: Nullable<Float32Array>;
@@ -24694,6 +24694,8 @@ declare module BABYLON {
         /** @hidden */
         _activate(renderId: number): boolean;
         /** @hidden */
+        _postActivate(): void;
+        /** @hidden */
         _freeze(): void;
         /** @hidden */
         _unFreeze(): void;
@@ -24704,6 +24706,10 @@ declare module BABYLON {
         getWorldMatrix(): Matrix;
         /** @hidden */
         _getWorldMatrixDeterminant(): number;
+        /**
+         * Gets a boolean indicating if this mesh is an instance or a regular mesh
+         */
+        readonly isAnInstance: boolean;
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
@@ -26863,6 +26869,7 @@ declare module BABYLON {
         transformFeedback?: WebGLTransformFeedback | null;
         readonly isAsync: boolean;
         readonly isReady: boolean;
+        _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
     }
 }
 declare module BABYLON {
@@ -33028,6 +33035,13 @@ declare module BABYLON {
          * @returns the index where the animation was in the animation list
          */
         removeAnimation(toRemove: Animation): number;
+        /**
+         * Will stop the animation of the given target
+         * @param target - the target
+         * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+         */
+        stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
         /**
          * Removes the given animation group from this scene.
          * @param toRemove The animation group to remove
@@ -49779,6 +49793,11 @@ declare module BABYLON {
          */
         static DefaultNumWorkers: number;
         private static GetDefaultNumWorkers;
+        private static _Default;
+        /**
+         * Default instance for the draco compression object.
+         */
+        static readonly Default: DracoCompression;
         /**
          * Constructor
          * @param numWorkers The number of workers for async operations

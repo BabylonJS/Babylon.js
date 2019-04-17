@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -4168,15 +4168,11 @@ var KHR_draco_mesh_compression = /** @class */ (function () {
         this.name = NAME;
         /** Defines whether this extension is enabled. */
         this.enabled = babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["DracoCompression"].DecoderAvailable;
-        this._dracoCompressionOwned = false;
         this._loader = loader;
     }
     /** @hidden */
     KHR_draco_mesh_compression.prototype.dispose = function () {
-        if (this.dracoCompression && this._dracoCompressionOwned) {
-            this.dracoCompression.dispose();
-            delete this.dracoCompression;
-        }
+        delete this.dracoCompression;
         delete this._loader;
     };
     /** @hidden */
@@ -4216,11 +4212,8 @@ var KHR_draco_mesh_compression = /** @class */ (function () {
             var bufferView = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(extensionContext, _this._loader.gltf.bufferViews, extension.bufferView);
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = _this._loader.loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView).then(function (data) {
-                    if (!_this.dracoCompression) {
-                        _this.dracoCompression = new babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["DracoCompression"]();
-                        _this._dracoCompressionOwned = true;
-                    }
-                    return _this.dracoCompression.decodeMeshAsync(data, attributes).then(function (babylonVertexData) {
+                    var dracoCompression = _this.dracoCompression || babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["DracoCompression"].Default;
+                    return dracoCompression.decodeMeshAsync(data, attributes).then(function (babylonVertexData) {
                         var babylonGeometry = new babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["Geometry"](babylonMesh.name, _this._loader.babylonScene);
                         babylonVertexData.applyToGeometry(babylonGeometry);
                         return babylonGeometry;

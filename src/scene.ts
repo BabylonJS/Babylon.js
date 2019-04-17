@@ -2126,6 +2126,16 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
+     * Will stop the animation of the given target
+     * @param target - the target
+     * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+     * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+     */
+    public stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
+        // Do nothing as code will be provided by animation component
+    }
+
+    /**
      * Removes the given animation group from this scene.
      * @param toRemove The animation group to remove
      * @returns The index of the removed animation group
@@ -3065,8 +3075,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._externalData.remove(key);
     }
 
-    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
-        if (this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
+        if (initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
             for (let step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3279,14 +3289,14 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshLOD = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
-            if (meshLOD === undefined || meshLOD === null) {
+            const meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
 
             // Compute world matrix if LOD is billboard
-            if (meshLOD !== mesh && meshLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
-                meshLOD.computeWorldMatrix();
+            if (meshToRender !== mesh && meshToRender.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
+                meshToRender.computeWorldMatrix();
             }
 
             mesh._preActivate();
@@ -3295,15 +3305,19 @@ export class Scene extends AbstractScene implements IAnimatable {
                 this._activeMeshes.push(mesh);
                 this.activeCamera._activeMeshes.push(mesh);
 
-                if (meshLOD !== mesh) {
-                    meshLOD._activate(this._renderId);
+                if (meshToRender !== mesh) {
+                    meshToRender._activate(this._renderId);
                 }
-                meshLOD._onlyForInstances = false;
 
                 if (mesh._activate(this._renderId)) {
-                    meshLOD._isActive = true;
-                    this._activeMesh(mesh, meshLOD);
+                    if (!mesh.isAnInstance) {
+                        meshToRender._onlyForInstances = false;
+                    }
+                    meshToRender._isActive = true;
+                    this._activeMesh(mesh, meshToRender);
                 }
+
+                mesh._postActivate();
             }
         }
 
@@ -3353,7 +3367,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             const len = subMeshes.length;
             for (let i = 0; i < len; i++) {
                 const subMesh = subMeshes.data[i];
-                this._evaluateSubMesh(subMesh, mesh);
+                this._evaluateSubMesh(subMesh, mesh, sourceMesh);
             }
         }
     }
@@ -3468,7 +3482,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             for (let step of this._cameraDrawRenderTargetStage) {
-                needRebind = needRebind || step.action(this.activeCamera);
+                needRebind = step.action(this.activeCamera) || needRebind;
             }
 
             this._intermediateRendering = false;
