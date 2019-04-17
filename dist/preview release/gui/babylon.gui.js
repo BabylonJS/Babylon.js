@@ -1053,7 +1053,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                     });
                     continue;
                 }
-                var position = mesh.getBoundingInfo().boundingSphere.center;
+                var position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : mesh.getAbsolutePosition();
                 var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
                 if (projectedPosition.z < 0 || projectedPosition.z > 1) {
                     control.notRenderable = true;
