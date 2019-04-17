@@ -27,10 +27,12 @@ function displayDropdownContentEnv(display) {
     if (display) {
         dropdownContentEnv.classList.remove("hidden");
         btnEnvironment.classList.add("open");
+        clickInterceptor.classList.remove("hidden");
     }
     else {
         dropdownContentEnv.classList.add("hidden");
         btnEnvironment.classList.remove("open");
+        clickInterceptor.classList.add("hidden");
     }
 }
 
