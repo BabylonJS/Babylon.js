@@ -25,15 +25,15 @@ var defaultSkyboxIndex = readLocaStorageValue("defaultSkyboxId", 0);
 
 function displayDropdownContentEnv(display) {
     if (display) {
-        dropdownContentEnv.style.display = "block";
+        dropdownContentEnv.classList.remove("hidden");
     }
     else {
-        dropdownContentEnv.style.display = "none";
+        dropdownContentEnv.classList.add("hidden");
     }
 }
 
 btnEnvironment.addEventListener('click', function() {
-    displayDropdownContentEnv(dropdownContentEnv.style.display !== "block");
+    displayDropdownContentEnv(dropdownContentEnv.classList.contains("hidden"));
 }, false);
 
 addEnvironmentLoader = function(index) {
