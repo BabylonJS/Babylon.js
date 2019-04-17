@@ -16879,6 +16879,8 @@ declare module BABYLON {
         _preActivate(): InstancedMesh;
         /** @hidden */
         _activate(renderId: number): boolean;
+        /** @hidden */
+        _postActivate(): void;
         getWorldMatrix(): Matrix;
         readonly isAnInstance: boolean;
         /**
@@ -24513,9 +24515,11 @@ declare module BABYLON {
         /** @hidden */
         readonly _positions: Nullable<Vector3[]>;
         /** @hidden */
-        _waitingActions: Nullable<any>;
-        /** @hidden */
-        _waitingFreezeWorldMatrix: Nullable<boolean>;
+        _waitingData: {
+            lods: Nullable<any>;
+            actions: Nullable<any>;
+            freezeWorldMatrix: Nullable<boolean>;
+        };
         private _skeleton;
         /** @hidden */
         _bonesTransformMatrices: Nullable<Float32Array>;
@@ -24689,6 +24693,8 @@ declare module BABYLON {
         _preActivateForIntermediateRendering(renderId: number): void;
         /** @hidden */
         _activate(renderId: number): boolean;
+        /** @hidden */
+        _postActivate(): void;
         /** @hidden */
         _freeze(): void;
         /** @hidden */
@@ -35052,6 +35058,7 @@ declare module BABYLON {
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
+        private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param element Defines the element the controls should be listened from
@@ -49787,6 +49794,11 @@ declare module BABYLON {
          */
         static DefaultNumWorkers: number;
         private static GetDefaultNumWorkers;
+        private static _Default;
+        /**
+         * Default instance for the draco compression object.
+         */
+        static readonly Default: DracoCompression;
         /**
          * Constructor
          * @param numWorkers The number of workers for async operations

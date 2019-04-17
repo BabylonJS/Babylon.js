@@ -96,7 +96,7 @@ export class Sound {
     private _readyToPlayCallback: Nullable<() => any>;
     private _audioBuffer: Nullable<AudioBuffer>;
     private _soundSource: Nullable<AudioBufferSourceNode>;
-    private _streamingSource: MediaElementAudioSourceNode;
+    private _streamingSource: AudioNode;
     private _soundPanner: Nullable<PannerNode>;
     private _soundGain: Nullable<GainNode>;
     private _inputAudioNode: AudioNode;
@@ -190,7 +190,7 @@ export class Sound {
                         case "MediaStream":
                             this._streaming = true;
                             this._isReadyToPlay = true;
-                            this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(urlOrArrayBuffer);
+                            this._streamingSource = Engine.audioEngine.audioContext.createMediaStreamSource(urlOrArrayBuffer);
 
                             if (this.autoplay) {
                                 this.play();

@@ -2975,7 +2975,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // freezeWorldMatrix
         if (parsedMesh.freezeWorldMatrix) {
-            mesh._waitingFreezeWorldMatrix = parsedMesh.freezeWorldMatrix;
+            mesh._waitingData.freezeWorldMatrix = parsedMesh.freezeWorldMatrix;
         }
 
         // Parent
@@ -2985,7 +2985,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Actions
         if (parsedMesh.actions !== undefined) {
-            mesh._waitingActions = parsedMesh.actions;
+            mesh._waitingData.actions = parsedMesh.actions;
         }
 
         // Overlay
@@ -3107,6 +3107,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Physics
         if (parsedMesh.physicsImpostor) {
             Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
+        }
+
+        // Levels
+        if (parsedMesh.lodMeshIds) {
+            mesh._waitingData.lods = {
+                ids: parsedMesh.lodMeshIds,
+                distances: (parsedMesh.lodDistances) ? parsedMesh.lodDistances : null,
+                coverages: (parsedMesh.lodCoverages) ? parsedMesh.lodCoverages : null
+            };
         }
 
         // Instances
