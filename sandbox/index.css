@@ -219,6 +219,7 @@ a:visited {
 
 /* animation bar */
 #animationBar {
+    margin-left: 10px;
     display: none;
     align-items: center;
     color: white;
