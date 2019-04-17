@@ -117,17 +117,25 @@ export class DracoCompression implements IDisposable {
     public static DefaultNumWorkers = DracoCompression.GetDefaultNumWorkers();
 
     private static GetDefaultNumWorkers(): number {
-        if (typeof navigator === "undefined") {
-            return 1;
-        }
-
-        const hardwareConcurrency =  navigator.hardwareConcurrency;
-        if (!hardwareConcurrency) {
+        if (typeof navigator === "undefined" || !navigator.hardwareConcurrency) {
             return 1;
         }
 
         // Use 50% of the available logical processors but capped at 4.
-        return Math.min(Math.floor(hardwareConcurrency * 0.5), 4);
+        return Math.min(Math.floor(navigator.hardwareConcurrency * 0.5), 4);
+    }
+
+    private static _Default: Nullable<DracoCompression> = null;
+
+    /**
+     * Default instance for the draco compression object.
+     */
+    public static get Default(): DracoCompression {
+        if (!DracoCompression._Default) {
+            DracoCompression._Default = new DracoCompression();
+        }
+
+        return DracoCompression._Default;
     }
 
     /**
