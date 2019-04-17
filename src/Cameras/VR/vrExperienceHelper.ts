@@ -1117,7 +1117,7 @@ export class VRExperienceHelper {
 
             // Update engine state to re enable non-vr camera input
             var engine = this._scene.getEngine();
-            if(engine._onVrDisplayPresentChange){
+            if (engine._onVrDisplayPresentChange) {
                 engine._onVrDisplayPresentChange();
             }
         }
