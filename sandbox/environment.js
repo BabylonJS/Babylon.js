@@ -26,9 +26,11 @@ var defaultSkyboxIndex = readLocaStorageValue("defaultSkyboxId", 0);
 function displayDropdownContentEnv(display) {
     if (display) {
         dropdownContentEnv.classList.remove("hidden");
+        btnEnvironment.classList.add("open");
     }
     else {
         dropdownContentEnv.classList.add("hidden");
+        btnEnvironment.classList.remove("open");
     }
 }
 

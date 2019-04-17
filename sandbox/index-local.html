@@ -4,6 +4,7 @@
 <head>
     <title>BabylonJS - Sandbox</title>
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+    <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css">
     <link href="index.css" rel="stylesheet" />
     <link href="index-media.css" rel="stylesheet" />
     <script src="../dist/preview%20release/ammo.js"></script>
@@ -20,16 +21,10 @@
             <canvas id="renderCanvas" touch-action="none"></canvas>
         </div>
         <div id="footer" class="footer">
+            <div class="footerLeft">
+                <img id="playImg" src="Assets/BabylonIdentity.svg">
+            </div>
             <div id="animationBar">
-                <div class="dropdown">
-                    <div id="dropdownBtn">
-                        <img src="Assets/Icon_Up.svg" id="chevronUp">
-                        <img src="Assets/Icon_Down.svg" id="chevronDown">
-                        <span id="dropdownLabel"></span>
-                    </div>
-                    <div id="dropdownContent">
-                    </div>
-                </div>
                 <div class="row">
                     <button id="playBtn" class="pause">
                         <img id="playImg" src="Assets/Icon_Play.svg">
@@ -37,21 +32,30 @@
                     </button>
                     <input id="slider" type="range" min="0" max="100" value="0" step="any">
                 </div>
+                <div class="dropdown">
+                    <div id="dropdownBtn">
+                        <img src="Assets/Icon_Up.svg" id="chevronUp">
+                        <img src="Assets/Icon_Down.svg" id="chevronDown">
+                        <div id="dropdownLabel"></div>
+                    </div>
+                    <div id="dropdownContent">
+                    </div>
+                </div>
             </div>
             <div class="footerRight">
-                <a href="javascript:void(null);" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg"
-                        alt="Display inspector" title="Display inspector" /></a>
-                <a href="javascript:void(null);" id="btnEnvironment" class="hidden"><img src="./Assets/IBLicon.svg"
-                        alt="Select environment" title="Select environment" />
-                </a>
-                <div id="dropdownContent-env" class="hidden">
-                </div>
                 <a href="javascript:void(null);">
                     <div class="custom-upload"
                         title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
                         <input type="file" id="files" multiple />
                     </div>
                 </a>
+                <a href="javascript:void(null);" id="btnEnvironment" class="hidden"><img src="./Assets/IBLicon.svg"
+                        alt="Select environment" title="Select environment" />
+                </a>
+                <a href="javascript:void(null);" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg"
+                        alt="Display inspector" title="Display inspector" /></a>
+                <div id="dropdownContent-env" class="hidden">
+                </div>
             </div>
         </div>
         <img id="logo" src='./Assets/Logo_Fullscreen.svg' />

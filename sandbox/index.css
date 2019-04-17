@@ -1,13 +1,9 @@
-﻿@font-face {
-    font-family: "babylon-font";
-    src: url("./Assets/font.woff") format('woff');
-}
-
-html {
+﻿html {
     --background: #2A2342;
     --footer-background: #201936;
     --footer-height: 70px;
     --button-hover-color: #BB464B;
+    --button-hover-hover: #e0684b;
     --button-hover-background:  #162D3A;
 }
 
@@ -17,9 +13,10 @@ html, body, #root {
     padding: 0;
     margin: 0;
     overflow: hidden;
-    font-family: 'babylon-font';
     font-size: 20px;
     background: var(--background);
+    font-family: "acumin-pro-condensed";
+    font-weight: normal;
 }
 
 .hidden {
@@ -64,14 +61,24 @@ a:visited {
     padding: 0;
     background-color:var(--footer-background);
     font-size: 0;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 201px 1fr 210px
+}
+
+.footerLeft {
+    display: grid;
+    grid-column: 1;
+    grid-row: 1;
+    padding-left: 40px;
+    align-content: center; 
 }
 
 .footerRight {
-    display: block;
-    float: right;
-    bottom: 0;
-    right: 0px;
-    top: 0px;
+    display: flex;
+    flex-direction: row-reverse;
+    grid-column: 3;
+    grid-row: 1;
 }
 
 .footerRight a {
@@ -197,16 +204,14 @@ a:visited {
 
 /* animation bar */
 #animationBar {
-    position: absolute;
-    bottom: 0px;
     display: none;
     align-items: center;
     color: white;
-    width: calc(100% - var(--footer-height) * 3);
     min-height: 30px;
-    font-size: 14px;
     height: var(--footer-height);
-    background-color: var(--footer-background);
+    background-color: var(--footer-background);    
+    grid-column: 2;
+    grid-row: 1;
 }
 
 .row {
@@ -222,10 +227,9 @@ a:visited {
     margin: 0px;
 }
 
-#animationBar img {
-    width: 36px;
-    height: 36px;
-    margin: 10px;
+#playBtn img {
+    width: var(--footer-height);
+    height: var(--footer-height);
 }
 
 .dropdown {
@@ -234,11 +238,18 @@ a:visited {
     width: 200px;
 }
 
-#dropdownBtn,
 #playBtn {
     display: flex;
     align-items: center;
     height: var(--footer-height);
+    width: var(--footer-height);
+}
+
+#dropdownBtn {
+    display: flex;
+    height: var(--footer-height);
+    width: 200px;
+    font-size: 20px;
 }
 
 #playBtn {
@@ -263,24 +274,28 @@ a:visited {
     position: absolute;
     bottom: var(--footer-height);
     right: 0px;
-    border-bottom: 1px solid white; 
 }
 
 #dropdownContent-env div  {
-    background-color: var(--footer-background);
+    background-color: var(--button-hover-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding: 10px 15px;
-    font-size: 16px;
+    font-size: 20px;
     width: calc(2 * var(--footer-height));
     color: white;
     cursor: pointer;
+    height: 40px;
     box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    align-content: center;
+    justify-content: center;
 }
 
 #dropdownContent-env div:hover {
-    background-color: var(--button-hover-color); 
+    background-color: var(--button-hover-hover); 
     transition: all 0.3s ease;
 }
 #dropdownContent-env div:active {
@@ -288,17 +303,23 @@ a:visited {
     transition: all 0.3s ease;
 }
 
-#dropdownLabel,
+#btnEnvironment.open {
+    background-color:var(--button-hover-color); 
+}
+
+#dropdownLabel {
+    align-self: center;
+    justify-self: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 #dropdownContent a  {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     padding: 10px 15px 10px 46px;
-}
-#dropdownLabel {
-    cursor: pointer;
-    width: 200px;
-    padding: 0px 15px 2px 5px;
 }
 
 #dropdownBtn:hover {
@@ -307,12 +328,24 @@ a:visited {
     transition: all 0.3s ease;
 }
 
+#dropdownBtn.open {
+    background-color:var(--button-hover-color); 
+}
+
 #dropdownContent a {
     max-width: 1000px;
     transition: color 0.5s;
+    height: 40px;
+    font-size: 20px;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    align-content: center;
+    justify-content: center;
 }
 #dropdownContent a:hover {
-    background-color: var(--button-hover-color); 
+    background-color: var(--button-hover-hover); 
     transition: all 0.3s ease;
 }
 #dropdownContent a:active {
@@ -320,12 +353,11 @@ a:visited {
     transition: all 0.3s ease;
 }
 
-#dropdownContent {
-    background-color: var(--footer-background);
+#dropdownContent {    
+    background-color: var(--button-hover-color);
     display: none;
     position: absolute;
     bottom: var(--footer-height);
-    border-bottom: 1px solid white; 
     z-index: 1;
     min-width: 135px;
     width: 200px;
@@ -339,15 +371,25 @@ a:visited {
 }
 
 #chevronUp {
-    display: inline;
     margin-right: 0px;
     margin-left: 0px;
+    height: var(--footer-height);
+    width: var(--footer-height);
 }
 #chevronDown {
     display: none;
     margin-right: 0px;
     margin-left: 0px;
+    height: var(--footer-height);
+    width: var(--footer-height);
 }
+
+#dropdownLabel {
+    cursor: pointer;
+    width: 200px;
+    padding: 0px 15px 2px 5px;
+}
+
 
 #playBtn.play #pauseImg,
 #playBtn.pause #playImg{
