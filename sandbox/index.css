@@ -417,6 +417,7 @@ a:visited {
     -webkit-appearance: none;
     cursor: pointer;
     width: 100%;
+    max-width: 820px;
     height: var(--footer-height);
     outline: none;
     margin-left: 20px;
