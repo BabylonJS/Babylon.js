@@ -482,10 +482,10 @@ export class RuntimeAnimation {
         this._previousDelay = delay;
         this._previousRatio = ratio;
 
-        if (!loop && (to > from && ratio >= range)) { // If we are out of range and not looping get back to caller
+        if (!loop && (to >= from && ratio >= range)) { // If we are out of range and not looping get back to caller
             returnValue = false;
             highLimitValue = animation._getKeyValue(this._maxValue);
-        } else if (!loop && (from > to && ratio <= range)) {
+        } else if (!loop && (from >= to && ratio <= range)) {
             returnValue = false;
             highLimitValue = animation._getKeyValue(this._minValue);
         } else if (this._animationState.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
