@@ -121,8 +121,8 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         imgSpinner.style.height = "18vw";
         imgSpinner.style.marginLeft = "-9vw";
         imgSpinner.style.marginTop = "-9vw";
-        imgSpinner.style.animation = "spin1 1s infinite linear";
-        imgSpinner.style.webkitAnimation = "spin1 1s infinite linear";
+        imgSpinner.style.animation = "spin1 0.75s infinite linear";
+        imgSpinner.style.webkitAnimation = "spin1 0.75s infinite linear";
         imgSpinner.style.transformOrigin = "50% 50%";
         imgSpinner.style.webkitTransformOrigin = "50% 50%";
 
