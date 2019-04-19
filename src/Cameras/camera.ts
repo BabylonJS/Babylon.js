@@ -651,6 +651,11 @@ export class Camera extends Node {
             this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
         }
 
+        // Notify parent camera if rig camera is changed
+        if (this.parent && (this.parent as Camera).onViewMatrixChangedObservable) {
+            (this.parent as Camera).onViewMatrixChangedObservable.notifyObservers((this.parent as Camera));
+        }
+
         this.onViewMatrixChangedObservable.notifyObservers(this);
 
         this._computedViewMatrix.invertToRef(this._worldMatrix);
@@ -785,12 +790,22 @@ export class Camera extends Node {
      * Checks if a cullable object (mesh...) is in the camera frustum
      * This checks the bounding box center. See isCompletelyInFrustum for a full bounding check
      * @param target The object to check
+     * @param checkRigCameras If the rig cameras should be checked (eg. with webVR camera both eyes should be checked) (Default: false)
      * @returns true if the object is in frustum otherwise false
      */
-    public isInFrustum(target: ICullable): boolean {
+    public isInFrustum(target: ICullable, checkRigCameras = false): boolean {
         this._updateFrustumPlanes();
 
-        return target.isInFrustum(this._frustumPlanes);
+        if (checkRigCameras && this.rigCameras.length > 0) {
+            var result = false;
+            this.rigCameras.forEach((cam) => {
+                cam._updateFrustumPlanes();
+                result = result || target.isInFrustum(cam._frustumPlanes);
+            });
+            return result;
+        }else {
+            return target.isInFrustum(this._frustumPlanes);
+        }
     }
 
     /**

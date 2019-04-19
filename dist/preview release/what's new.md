@@ -217,7 +217,7 @@
 - CannonJS ignores connectedPivot joint parameter ([TrevorDev](https://github.com/TrevorDev))
 - Fix case sensitive paths ([mrdunk](https://github.com))
 - Fix more case sensitive paths ([mrdunk](https://github.com))
-- Attaching a BoundingBoxGizmo on a child node shouldn't remove its parent ([TrevorDev](https://github.com/TrevorDev))
+- Attaching a BoundingBoxGizmo on a child node shouldn't remove its parent, rotation gizmo should work on object with parent ([TrevorDev](https://github.com/TrevorDev))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with Oimo and Cannon ([TrevorDev](https://github.com/TrevorDev))
 - Warn of motor with maxForce in Oimo plugin and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
@@ -264,6 +264,7 @@
 - Fix a bug causing `WebRequest.open` to crash if `WebRequest.CustomRequestHeaders` are set [#6055](https://github.com/BabylonJS/Babylon.js/issues/6055)([susares](https://github.com/susares))
 - Fix a bug causing `Mesh.clone` to crash if no physicsEngineComponent is used  ([barroij](https://github.com/barroij))
 - Fix zoom inertia making it difficult to zoom out with ArcRotateCamera ([TrevorDev](https://github.com/TrevorDev))
+- Option for isInFrustum to check rigCameras, viewMatrix updates for rigCameras will notify their parent ([TrevorDev](https://github.com/TrevorDev))
 
 ### Viewer
 

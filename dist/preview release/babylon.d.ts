@@ -30528,9 +30528,10 @@ declare module BABYLON {
          * Checks if a cullable object (mesh...) is in the camera frustum
          * This checks the bounding box center. See isCompletelyInFrustum for a full bounding check
          * @param target The object to check
+         * @param checkRigCameras If the rig cameras should be checked (eg. with webVR camera both eyes should be checked) (Default: false)
          * @returns true if the object is in frustum otherwise false
          */
-        isInFrustum(target: ICullable): boolean;
+        isInFrustum(target: ICullable, checkRigCameras?: boolean): boolean;
         /**
          * Checks if a cullable object (mesh...) is in the camera frustum
          * Unlike isInFrustum this cheks the full bounding box
@@ -49723,7 +49724,7 @@ declare module BABYLON {
         /**
          * Configuration for the decoder.
          */
-        decoder?: {
+        decoder: {
             /**
              * The url to the WebAssembly module.
              */
@@ -49764,20 +49765,18 @@ declare module BABYLON {
      *
      * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
      * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
-     * Use `DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
+     * Use `DracoCompression.DecoderAvailable` to determine if the decoder configuration is available for the current context.
      *
-     * To decode Draco compressed data, create a DracoCompression object and call decodeMeshAsync:
+     * To decode Draco compressed data, get the default DracoCompression object and call decodeMeshAsync:
      * ```javascript
-     *     var dracoCompression = new DracoCompression();
-     *     var vertexData = await dracoCompression.decodeMeshAsync(data, {
-     *         [VertexBuffer.PositionKind]: 0
-     *     });
+     *     var vertexData = await DracoCompression.Default.decodeMeshAsync(data);
      * ```
      *
      * @see https://www.babylonjs-playground.com/#N3EK4B#0
      */
     export class DracoCompression implements IDisposable {
-        private _workerPoolPromise;
+        private _workerPoolPromise?;
+        private _decoderModulePromise?;
         /**
          * The configuration. Defaults to the following urls:
          * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
@@ -49786,7 +49785,7 @@ declare module BABYLON {
          */
         static Configuration: IDracoCompressionConfiguration;
         /**
-         * Returns true if the decoder is available.
+         * Returns true if the decoder configuration is available.
          */
         static readonly DecoderAvailable: boolean;
         /**
@@ -49801,7 +49800,7 @@ declare module BABYLON {
         static readonly Default: DracoCompression;
         /**
          * Constructor
-         * @param numWorkers The number of workers for async operations
+         * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
          */
         constructor(numWorkers?: number);
         /**
@@ -49822,11 +49821,6 @@ declare module BABYLON {
         decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: {
             [kind: string]: number;
         }): Promise<VertexData>;
-        /**
-         * The worker function that gets converted to a blob url to pass into a worker.
-         */
-        private static _Worker;
-        private _loadDecoderWasmBinaryAsync;
     }
 }
 declare module BABYLON {
