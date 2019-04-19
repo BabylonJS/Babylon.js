@@ -607,6 +607,11 @@ export abstract class Light extends Node {
             light._waitingParentId = parsedLight.parentId;
         }
 
+        // Lightmaps
+        if (parsedLight.lightmapMode) {
+            light.lightmapMode = parsedLight.lightmapMode;
+        }
+
         // Animations
         if (parsedLight.animations) {
             for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
