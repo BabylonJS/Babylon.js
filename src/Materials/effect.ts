@@ -638,7 +638,7 @@ export class Effect implements IDisposable {
         // #extension GL_EXT_shader_texture_lod : enable
         // #extension GL_EXT_frag_depth : enable
         // #extension GL_EXT_draw_buffers : require
-        var regex = /#extension.+(GL_OVR_multiview|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
+        var regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
         var result = preparedSourceCode.replace(regex, "");
 
         // Migrate to GLSL v300
@@ -660,7 +660,7 @@ export class Effect implements IDisposable {
         // Add multiview setup to top of file when defined
         var hasMultiviewExtension = this.defines.indexOf("#define MULTIVIEW\n") !== -1;
         if (hasMultiviewExtension && !isFragment) {
-            result = "#extension GL_OVR_multiview : require\nlayout (num_views = 2) in;\n" + result;
+            result = "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + result;
         }
 
         callback(result);
