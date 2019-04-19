@@ -1443,7 +1443,7 @@ export class Engine {
 
         this._caps.textureLOD = (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false;
 
-        this._caps.multiview = this._gl.getExtension('WEBGL_multiview');
+        this._caps.multiview = this._gl.getExtension('OVR_multiview2');
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
