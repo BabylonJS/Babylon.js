@@ -2093,6 +2093,31 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    export interface ISceneOptimizerConfiguration {
+        targetFrameRate?: number;
+        trackerDuration?: number;
+        autoGeneratePriorities?: boolean;
+        improvementMode?: boolean;
+        degradation?: string;
+        types?: {
+            texture?: ISceneOptimizerParameters;
+            hardwareScaling?: ISceneOptimizerParameters;
+            shadow?: ISceneOptimizerParameters;
+            postProcess?: ISceneOptimizerParameters;
+            lensFlare?: ISceneOptimizerParameters;
+            particles?: ISceneOptimizerParameters;
+            renderTarget?: ISceneOptimizerParameters;
+            mergeMeshes?: ISceneOptimizerParameters;
+        };
+        custom?: string;
+    }
+    export interface ISceneOptimizerParameters {
+        priority?: number;
+        maximumSize?: number;
+        step?: number;
+    }
+}
+declare module BabylonViewer {
     export interface ISkyboxConfiguration {
         cubeTexture?: {
             noMipMap?: boolean;
