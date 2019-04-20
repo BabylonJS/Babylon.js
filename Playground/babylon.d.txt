@@ -29958,9 +29958,10 @@ declare module BABYLON {
          * Checks if a cullable object (mesh...) is in the camera frustum
          * This checks the bounding box center. See isCompletelyInFrustum for a full bounding check
          * @param target The object to check
+         * @param checkRigCameras If the rig cameras should be checked (eg. with webVR camera both eyes should be checked) (Default: false)
          * @returns true if the object is in frustum otherwise false
          */
-        isInFrustum(target: ICullable): boolean;
+        isInFrustum(target: ICullable, checkRigCameras?: boolean): boolean;
         /**
          * Checks if a cullable object (mesh...) is in the camera frustum
          * Unlike isInFrustum this cheks the full bounding box
@@ -34410,6 +34411,7 @@ declare module BABYLON {
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
+        private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param element Defines the element the controls should be listened from
@@ -48978,7 +48980,7 @@ declare module BABYLON {
         /**
          * Configuration for the decoder.
          */
-        decoder?: {
+        decoder: {
             /**
              * The url to the WebAssembly module.
              */
@@ -49019,20 +49021,18 @@ declare module BABYLON {
      *
      * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
      * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
-     * Use `DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
+     * Use `DracoCompression.DecoderAvailable` to determine if the decoder configuration is available for the current context.
      *
-     * To decode Draco compressed data, create a DracoCompression object and call decodeMeshAsync:
+     * To decode Draco compressed data, get the default DracoCompression object and call decodeMeshAsync:
      * ```javascript
-     *     var dracoCompression = new DracoCompression();
-     *     var vertexData = await dracoCompression.decodeMeshAsync(data, {
-     *         [VertexBuffer.PositionKind]: 0
-     *     });
+     *     var vertexData = await DracoCompression.Default.decodeMeshAsync(data);
      * ```
      *
      * @see https://www.babylonjs-playground.com/#N3EK4B#0
      */
     export class DracoCompression implements IDisposable {
-        private _workerPoolPromise;
+        private _workerPoolPromise?;
+        private _decoderModulePromise?;
         /**
          * The configuration. Defaults to the following urls:
          * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
@@ -49041,7 +49041,7 @@ declare module BABYLON {
          */
         static Configuration: IDracoCompressionConfiguration;
         /**
-         * Returns true if the decoder is available.
+         * Returns true if the decoder configuration is available.
          */
         static readonly DecoderAvailable: boolean;
         /**
@@ -49056,7 +49056,7 @@ declare module BABYLON {
         static readonly Default: DracoCompression;
         /**
          * Constructor
-         * @param numWorkers The number of workers for async operations
+         * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
          */
         constructor(numWorkers?: number);
         /**
@@ -49077,11 +49077,6 @@ declare module BABYLON {
         decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: {
             [kind: string]: number;
         }): Promise<VertexData>;
-        /**
-         * The worker function that gets converted to a blob url to pass into a worker.
-         */
-        private static _Worker;
-        private _loadDecoderWasmBinaryAsync;
     }
 }
 declare module BABYLON {
@@ -57315,7 +57310,7 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
-        /** @hidden */onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
+        /** @hidden */onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         /** @hidden */onPointerEnter(target: Control): boolean;
         /** @hidden */onPointerOut(target: Control, force?: boolean): void;
         /** @hidden */onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
@@ -58125,7 +58120,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         private _onCutText;
         /** @hidden */
-        private _onPasteText;draw(context: CanvasRenderingContext2D): void;onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        private _onPasteText;draw(context: CanvasRenderingContext2D): void;onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         protected _beforeRenderText(text: string): string;
         dispose(): void;
     }
@@ -58261,6 +58256,7 @@ declare module BABYLON.GUI {
         private _h;
         private _s;
         private _v;
+        private _lastPointerDownID;
         /**
          * BABYLON.Observable raised when the value changes
          */
@@ -58298,7 +58294,7 @@ declare module BABYLON.GUI {
         private _pointerIsDown;
         private _updateValueFromPointer;
         private _isPointOnSquare;
-        private _isPointOnWheel;onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        private _isPointOnWheel;onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         /**
          * This function expands the color picker by creating a color picker dialog with manual
          * color value input and the ability to save colors into an array to be used later in
@@ -58562,6 +58558,7 @@ declare module BABYLON.GUI {
         private _isThumbClamped;
         protected _displayThumb: boolean;
         private _step;
+        private _lastPointerDownID;
         protected _effectiveBarOffset: number;
         protected _renderLeft: number;
         protected _renderTop: number;
@@ -58605,7 +58602,7 @@ declare module BABYLON.GUI {
         protected _prepareRenderingData(type: string): void;
         private _pointerIsDown;
         /** @hidden */
-        protected _updateValueFromPointer(x: number, y: number): void;onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        protected _updateValueFromPointer(x: number, y: number): void;onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
     }
 }
 declare module BABYLON.GUI {

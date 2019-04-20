@@ -491,14 +491,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.0.0-beta.6";
+        return "babylonjs@4.0.0-beta.7";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-beta.6";
+        return "4.0.0-beta.7";
     }
 
     /**
@@ -1443,7 +1443,7 @@ export class Engine {
 
         this._caps.textureLOD = (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false;
 
-        this._caps.multiview = this._gl.getExtension('WEBGL_multiview');
+        this._caps.multiview = this._gl.getExtension('OVR_multiview2');
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;

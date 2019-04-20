@@ -1601,10 +1601,10 @@ export class Control {
     }
 
     /** @hidden */
-    public _onPointerMove(target: Control, coordinates: Vector2): void {
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
         var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerMove(target, coordinates); }
+        if (canNotify && this.parent != null) { this.parent._onPointerMove(target, coordinates, pointerId); }
     }
 
     /** @hidden */
@@ -1703,7 +1703,7 @@ export class Control {
         }
         this._dummyVector2.copyFromFloats(x, y);
         if (type === PointerEventTypes.POINTERMOVE) {
-            this._onPointerMove(this, this._dummyVector2);
+            this._onPointerMove(this, this._dummyVector2, pointerId);
 
             var previousControlOver = this._host._lastControlOver[pointerId];
             if (previousControlOver && previousControlOver !== this) {
