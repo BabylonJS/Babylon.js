@@ -993,13 +993,13 @@ export class InputText extends Control implements IFocusableControl {
 
         return true;
     }
-    public _onPointerMove(target: Control, coordinates: Vector2): void {
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
         if (this._host.focusedControl === this && this._isPointerDown) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);
         }
-        super._onPointerMove(target, coordinates);
+        super._onPointerMove(target, coordinates, pointerId);
     }
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
