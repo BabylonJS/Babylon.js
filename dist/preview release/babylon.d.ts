@@ -41629,7 +41629,7 @@ declare module BABYLON {
              * Bind a webGL buffer for a transform feedback operation
              * @param value defines the webGL buffer to bind
              */
-            bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void;
+            bindTransformFeedbackBuffer(value: Nullable<DataBuffer>): void;
         }
 }
 declare module BABYLON {
