@@ -404,11 +404,11 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray,
         fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo> {
         var intersectInfo: Nullable<IntersectionInfo> = null;
-        
+
         var start = this.indexStart;
         var count = this.indexCount;
 
-        if(!indices.length){
+        if(!indices.length) {
             start = this.verticesStart;
             count = this.verticesCount;
         }
@@ -416,7 +416,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
         // Triangles test
         var p0, p1, p2;
         for (var index = start; index < start + count; index += 3) {
-            if(!indices.length){
+            if(!indices.length) {
                 p0 = positions[index];
                 p1 = positions[index + 1];
                 p2 = positions[index + 2];
@@ -426,7 +426,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
                 p1 = positions[indices[index + 1]];
                 p2 = positions[indices[index + 2]];
             }
-
+            
             if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
                 continue;
             }
