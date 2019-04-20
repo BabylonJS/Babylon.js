@@ -372,6 +372,11 @@ export class SubMesh extends BaseSubMesh implements ICullable {
             return this._intersectLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
         }
 
+        // Check if mesh is unindexed
+        if (!indices.length) {
+            return this._intersectUnIndexedTriangles(ray, positions, indices, fastCheck, trianglePredicate);
+        }
+
         return this._intersectTriangles(ray, positions, indices, fastCheck, trianglePredicate);
     }
 
@@ -404,29 +409,46 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray,
         fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo> {
         var intersectInfo: Nullable<IntersectionInfo> = null;
-
-        var start = this.indexStart;
-        var count = this.indexCount;
-
-        if(!indices.length) {
-            start = this.verticesStart;
-            count = this.verticesCount;
-        }
-
         // Triangles test
-        var p0, p1, p2;
-        for (var index = start; index < start + count; index += 3) {
-            if(!indices.length) {
-                p0 = positions[index];
-                p1 = positions[index + 1];
-                p2 = positions[index + 2];
+        for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
+            var p0 = positions[indices[index]];
+            var p1 = positions[indices[index + 1]];
+            var p2 = positions[indices[index + 2]];
+
+            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
+                continue;
             }
-            else {
-                p0 = positions[indices[index]];
-                p1 = positions[indices[index + 1]];
-                p2 = positions[indices[index + 2]];
+
+            var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
+
+            if (currentIntersectInfo) {
+                if (currentIntersectInfo.distance < 0) {
+                    continue;
+                }
+
+                if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
+                    intersectInfo = currentIntersectInfo;
+                    intersectInfo.faceId = index / 3;
+
+                    if (fastCheck) {
+                        break;
+                    }
+                }
             }
-            
+        }
+        return intersectInfo;
+    }
+
+    /** @hidden */
+    private _intersectUnIndexedTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray,
+        fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo> {
+        var intersectInfo: Nullable<IntersectionInfo> = null;
+        // Triangles test
+        for (var index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 3) {
+            var p0 = positions[index];
+            var p1 = positions[index + 1];
+            var p2 = positions[index + 2];
+
             if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
                 continue;
             }
