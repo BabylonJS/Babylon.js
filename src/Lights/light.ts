@@ -608,7 +608,7 @@ export abstract class Light extends Node {
         }
 
         // Lightmaps
-        if (parsedLight.lightmapMode) {
+        if (parsedLight.lightmapMode !== undefined) {
             light.lightmapMode = parsedLight.lightmapMode;
         }
 
