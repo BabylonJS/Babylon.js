@@ -607,6 +607,11 @@ export abstract class Light extends Node {
             light._waitingParentId = parsedLight.parentId;
         }
 
+        // Falloff
+        if (parsedLight.falloffType !== undefined) {
+            light.falloffType = parsedLight.falloffType;
+        }
+
         // Lightmaps
         if (parsedLight.lightmapMode !== undefined) {
             light.lightmapMode = parsedLight.lightmapMode;
