@@ -21,6 +21,7 @@ import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
+import { UniformBuffer } from "../Materials/uniformBuffer";
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -638,6 +639,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public onRebuildObservable = new Observable<AbstractMesh>();
 
+    /**
+     * The current camera unifom buffer.
+     * @hidden Internal use only.
+     */
+    public _uniformBuffer: UniformBuffer;
+
     // Constructor
 
     /**
@@ -651,6 +658,37 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this.getScene().addMesh(this);
 
         this._resyncLightSources();
+
+        // Mesh Uniform Buffer.
+        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine());
+        this._buildUniformLayout();
+    }
+
+    protected _buildUniformLayout(): void {
+        this._uniformBuffer.addUniform("world", 16);
+        this._uniformBuffer.addUniform("visibility", 1);
+        // TODO. Bones
+        this._uniformBuffer.create();
+    }
+
+    /**
+     * Transfer the mesh values to its UBO.
+     */
+    public transferToEffect(world: Matrix): void {
+        const ubo = this._uniformBuffer;
+
+        // TODO. Instances.
+        // if (!defines.INSTANCES) {
+        ubo.updateMatrix("world", world);
+        // }
+        ubo.updateFloat("visibility", this._visibility);
+
+        // TODO. Bones.
+
+        ubo.update();
+
+        // TODO WEBGPU.
+        this.getScene().getEngine().bindUniformBufferBase(ubo.getBuffer()!, 0, "Mesh");
     }
 
     /**

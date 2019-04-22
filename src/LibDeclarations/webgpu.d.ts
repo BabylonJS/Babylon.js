@@ -358,9 +358,8 @@ interface GPUFenceDescriptor {
 }
 
 interface GPUInputStateDescriptor {
-  attributes?: GPUVertexAttributeDescriptor[];
   indexFormat?: GPUIndexFormat;
-  inputs?: GPUVertexInputDescriptor[];
+  vertexBuffers?: GPUVertexInputDescriptor[];
 }
 
 interface GPULimits {
@@ -418,16 +417,19 @@ interface GPURenderPassDescriptor {
   depthStencilAttachment?: GPURenderPassDepthStencilAttachmentDescriptor;
 }
 
-interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase {
-  colorStates?: GPUColorStateDescriptor[];
-  blendStates?: GPUBlendStateDescriptor[];
-  depthStencilState?: GPUDepthStencilStateDescriptor;
+interface GPURenderPipelineStageDescriptor {
+  vertexStage?: GPUPipelineStageDescriptor;
   fragmentStage?: GPUPipelineStageDescriptor;
+}
+
+interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase, GPURenderPipelineStageDescriptor {
+  colorStates?: GPUColorStateDescriptor[];
+  // blendStates?: GPUBlendStateDescriptor[];
+  depthStencilState?: GPUDepthStencilStateDescriptor;
   vertexInput?: GPUInputStateDescriptor;
   primitiveTopology?: GPUPrimitiveTopology;
   rasterizationState?: GPURasterizationStateDescriptor;
   sampleCount?: number;
-  vertexStage?: GPUPipelineStageDescriptor;
 }
 
 interface GPUSamplerDescriptor {
@@ -445,6 +447,8 @@ interface GPUSamplerDescriptor {
 }
 
 interface GPUShaderModuleDescriptor {
+  // After Migration to Canary
+  // code: Uint32Array;
   code: ArrayBuffer | string;
   label?: string;
 }
@@ -491,15 +495,16 @@ interface GPUTextureViewDescriptor {
 
 interface GPUVertexAttributeDescriptor {
   format?: GPUVertexFormat;
-  inputSlot?: number;
+  // inputSlot?: number;
   offset?: number;
   shaderLocation?: number;
 }
 
 interface GPUVertexInputDescriptor {
-  inputSlot?: number;
-  stepMode?: GPUInputStepMode;
+  // inputSlot?: number;
   stride?: number;
+  stepMode?: GPUInputStepMode;
+  attributes?: GPUVertexAttributeDescriptor[];
 }
 
 interface GPUAdapter {
@@ -522,6 +527,12 @@ interface GPUBuffer extends GPUDebugLabel {
   mapWriteAsync(): Promise<ArrayBuffer>;
   mapReadAsync(): Promise<ArrayBuffer>;
   setSubData(offset: number, ab: ArrayBuffer): void;
+  
+  // After Migration to Canary
+  // PR #261
+  // If `byteLength` is 0, the ArrayBufferView is copied to the end.
+  // That is, `byteLength` "defaults" to `src.byteLength - srcByteOffset`.
+  // setSubData(dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void;
 }
 
 interface GPUCommandEncoder extends GPUDebugLabel {
@@ -609,14 +620,17 @@ interface GPUQueue extends GPUDebugLabel {
 
 interface GPURenderPassEncoder extends GPUProgrammablePassEncoder {
   setPipeline(pipeline: GPURenderPipeline): void;
+  setIndexBuffer(buffer: GPUBuffer, offset: number): void;
+  setVertexBuffers(startSlot: number, buffers: GPUBuffer[], offsets: number[]): void;
+
   draw(vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number): void;
   drawIndexed(indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number, firstInstance: number): void;
-  setBlendColor(color: GPUColor): void;
-  setIndexBuffer(buffer: GPUBuffer, offset: number): void;
-  setScissorRect(x: number, y: number, width: number, height: number): void;
-  setStencilReference(reference: number): void;
-  setVertexBuffers(startSlot: number, buffers: GPUBuffer[], offsets: number[]): void;
+
   setViewport(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number): void;
+  setScissorRect(x: number, y: number, width: number, height: number): void;
+
+  setStencilReference(reference: number): void;
+  setBlendColor(color: GPUColor): void;
 }
 
 interface GPURenderPipeline extends GPUDebugLabel {

@@ -173,7 +173,6 @@ export class WebGPUConstants {
     public static readonly GPUTextureUsage_STORAGE = 8;
     public static readonly GPUTextureUsage_OUTPUT_ATTACHMENT = 16;
 
-    
     public static readonly GPUCompareFunction_never: GPUCompareFunction = "never";
     public static readonly GPUCompareFunction_less: GPUCompareFunction = "less";
     public static readonly GPUCompareFunction_equal: GPUCompareFunction = "equal";
@@ -189,4 +188,16 @@ export class WebGPUConstants {
     public static readonly GPUBindingType_sampledTexture: GPUBindingType = "sampled-texture";
     public static readonly GPUBindingType_storageBuffer: GPUBindingType = "storage-buffer";
     public static readonly GPUBindingType_dynamicStorageBuffer: GPUBindingType = "dynamic-storage-buffer";
+
+    public static readonly GPUInputStepMode_vertex: GPUInputStepMode = "vertex";
+    public static readonly GPUInputStepMode_instance: GPUInputStepMode = "instance";
+
+    public static readonly GPUStencilOperation_keep = "keep";
+    public static readonly GPUStencilOperation_zero = "zero";
+    public static readonly GPUStencilOperation_replace = "replace";
+    public static readonly GPUStencilOperation_invert = "invert";
+    public static readonly GPUStencilOperation_incrementClamp = "increment-clamp";
+    public static readonly GPUStencilOperation_decrementClamp = "decrement-clamp";
+    public static readonly GPUStencilOperation_incrementWrap = "increment-wrap";
+    public static readonly GPUStencilOperation_decrementWrap = "decrement-wrap";
 }

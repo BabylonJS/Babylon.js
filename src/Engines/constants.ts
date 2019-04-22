@@ -59,6 +59,8 @@ export class Constants {
     // Stencil Actions Constants.
     /** Passed to stencilOperation to specify that stencil value must be kept */
     public static readonly KEEP = 0x1E00;
+    /** Passed to stencilOperation to specify that stencil value must be zero */
+    public static readonly ZERO = 0x0000;
     /** Passed to stencilOperation to specify that stencil value must be replaced */
     public static readonly REPLACE = 0x1E01;
     /** Passed to stencilOperation to specify that stencil value must be incremented */

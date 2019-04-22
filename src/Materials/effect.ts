@@ -239,10 +239,11 @@ export class Effect implements IDisposable {
 
     /** @hidden */
     public _bonesComputationForcedToCPU = false;
+    /** @hidden */
+    public _uniformBuffersNames: { [key: string]: number } = {};
 
     private static _uniqueIdSeed = 0;
     private _engine: Engine;
-    private _uniformBuffersNames: { [key: string]: number } = {};
     private _uniformsNames: string[];
     private _samplerList: string[];
     private _samplers: { [key: string]: number } = {};
@@ -1092,7 +1093,7 @@ export class Effect implements IDisposable {
             return;
         }
         Effect._baseCache[bufferName] = buffer;
-        this._engine.bindUniformBufferBase(buffer, bufferName);
+        this._engine.bindUniformBufferBase(buffer, bufferName, name);
     }
 
     /**
