@@ -33,6 +33,8 @@ uniform Material
 
     uniform float visibility;
 
+    uniform vec2 vDebugMode;
+
     uniform vec2 vClearCoatParams;
     uniform vec4 vClearCoatRefractionParams;
     uniform vec2 vClearCoatInfos;

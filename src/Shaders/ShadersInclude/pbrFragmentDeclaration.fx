@@ -125,3 +125,7 @@ uniform mat4 view;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
 #endif
+
+#if DEBUGMODE > 0
+    uniform vec2 vDebugMode;
+#endif
