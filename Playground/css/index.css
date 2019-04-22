@@ -24,12 +24,27 @@ body {
     flex-direction: column;
 }
 
+#logo-part {
+    width: 20vw;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+}
+
 #waitLogo {
-    -webkit-animation: spin1 2s infinite ease-in-out;
-    -moz-animation: spin1 2s infinite ease-in-out;
-    -o-animation: spin1 2s infinite ease-in-out;
-    -ms-animation: spin1 2s infinite ease-in-out;
-    animation: spin1 2s infinite ease-in-out;
+    grid-column: 1;
+    grid-row: 1;
+    margin: 25%;
+}
+
+#waitSpinner {
+    grid-column: 1;
+    grid-row: 1;
+    -webkit-animation: spin1 0.5s infinite linear;
+    -moz-animation: spin1 0.5s infinite linear;
+    -o-animation: spin1 0.5s infinite linear;
+    -ms-animation: spin1 0.5s infinite linear;
+    animation: spin1 0.5s infinite linear;
     -webkit-transform-origin: 50% 50%;
     -moz-transform-origin: 50% 50%;
     -o-transform-origin: 50% 50%;
@@ -60,7 +75,7 @@ body {
 #waitTitle {
     text-align: center;
     font-size: 38px;
-    color: #15A4FA;
+    color: #BB464B;
 }
 .wrapper {
     height: calc(100% - 40px - 30px); /* nvabar top and bottom*/
