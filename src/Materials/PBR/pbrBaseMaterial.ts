@@ -1170,7 +1170,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vLightingIntensity",
             "logarithmicDepthConstant",
             "vSphericalX", "vSphericalY", "vSphericalZ",
-            "vSphericalXX", "vSphericalYY", "vSphericalZZ",
+            "vSphericalXX_ZZ", "vSphericalYY_ZZ", "vSphericalZZ",
             "vSphericalXY", "vSphericalYZ", "vSphericalZX",
             "vSphericalL00",
             "vSphericalL1_1", "vSphericalL10", "vSphericalL11",
