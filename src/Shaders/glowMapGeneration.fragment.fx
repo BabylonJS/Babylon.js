@@ -57,9 +57,4 @@ vec4 finalColor = glowColor;
 #else
     gl_FragColor = finalColor;
 #endif
-
-#ifdef GLOW
-    gl_FragColor.rgb *= gl_FragColor.a;
-    gl_FragColor.a = 1.0;
-#endif
 }
