@@ -77,7 +77,11 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(entity);
-                }else if(className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo){
+                }else if (className.indexOf("Light") !== -1) {
+                    if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.lightGizmo) {
+                        this.props.globalState.enableLightGizmo(this._selectedEntity, true);
+                        this.forceUpdate();
+                    }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
             }
@@ -217,7 +221,11 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(this._selectedEntity);
-                } else if(className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo){
+                } else if(className.indexOf("Light") !== -1){
+                    if(!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.lightGizmo){
+                        this.props.globalState.enableLightGizmo(this._selectedEntity, true);
+                        this.forceUpdate();
+                    }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
             }

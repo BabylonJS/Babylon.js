@@ -283,16 +283,18 @@ export class InstancedMesh extends AbstractMesh {
             this._currentLOD._registerInstanceForRenderId(this, renderId);
         }
 
-        if (this._edgesRenderer && this._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
-            this._sourceMesh._renderingGroup._edgesRenderers.push(this._edgesRenderer);
-        }
-
         if (!this._currentLOD._isActive) {
             this._currentLOD._onlyForInstances = true;
-            this._currentLOD._isActive = true;
             return true;
         }
         return false;
+    }
+
+    /** @hidden */
+    public _postActivate(): void {
+        if (this._edgesRenderer && this._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
+            this._sourceMesh._renderingGroup._edgesRenderers.push(this._edgesRenderer);
+        }
     }
 
     public getWorldMatrix(): Matrix {
@@ -305,6 +307,10 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         return super.getWorldMatrix();
+    }
+
+    public get isAnInstance(): boolean {
+        return true;
     }
 
     /**
@@ -320,7 +326,7 @@ export class InstancedMesh extends AbstractMesh {
         this._currentLOD = <Mesh>this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
 
         if (this._currentLOD === this.sourceMesh) {
-            return this;
+            return this.sourceMesh;
         }
 
         return this._currentLOD;

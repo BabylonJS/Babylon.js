@@ -5240,6 +5240,8 @@ declare module BABYLON {
          * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
          */
         isReady: boolean;
+        /** @hidden */
+        _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
     }
 }
 declare module BABYLON {
@@ -5803,9 +5805,113 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class representing spherical harmonics coefficients to the 3rd degree
+     */
+    export class SphericalHarmonics {
+        /**
+         * Defines whether or not the harmonics have been prescaled for rendering.
+         */
+        preScaled: boolean;
+        /**
+         * The l0,0 coefficients of the spherical harmonics
+         */
+        l00: Vector3;
+        /**
+         * The l1,-1 coefficients of the spherical harmonics
+         */
+        l1_1: Vector3;
+        /**
+         * The l1,0 coefficients of the spherical harmonics
+         */
+        l10: Vector3;
+        /**
+         * The l1,1 coefficients of the spherical harmonics
+         */
+        l11: Vector3;
+        /**
+         * The l2,-2 coefficients of the spherical harmonics
+         */
+        l2_2: Vector3;
+        /**
+         * The l2,-1 coefficients of the spherical harmonics
+         */
+        l2_1: Vector3;
+        /**
+         * The l2,0 coefficients of the spherical harmonics
+         */
+        l20: Vector3;
+        /**
+         * The l2,1 coefficients of the spherical harmonics
+         */
+        l21: Vector3;
+        /**
+         * The l2,2 coefficients of the spherical harmonics
+         */
+        l22: Vector3;
+        /**
+         * Adds a light to the spherical harmonics
+         * @param direction the direction of the light
+         * @param color the color of the light
+         * @param deltaSolidAngle the delta solid angle of the light
+         */
+        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
+        /**
+         * Scales the spherical harmonics by the given amount
+         * @param scale the amount to scale
+         */
+        scaleInPlace(scale: number): void;
+        /**
+         * Convert from incident radiance (Li) to irradiance (E) by applying convolution with the cosine-weighted hemisphere.
+         *
+         * ```
+         * E_lm = A_l * L_lm
+         * ```
+         *
+         * In spherical harmonics this convolution amounts to scaling factors for each frequency band.
+         * This corresponds to equation 5 in "An Efficient Representation for Irradiance Environment Maps", where
+         * the scaling factors are given in equation 9.
+         */
+        convertIncidentRadianceToIrradiance(): void;
+        /**
+         * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
+         *
+         * ```
+         * L = (1/pi) * E * rho
+         * ```
+         *
+         * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
+         */
+        convertIrradianceToLambertianRadiance(): void;
+        /**
+         * Integrates the reconstruction coefficients directly in to the SH preventing further
+         * required operations at run time.
+         *
+         * This is simply done by scaling back the SH with Ylm constants parameter.
+         * The trigonometric part being applied by the shader at run time.
+         */
+        preScaleForRendering(): void;
+        /**
+         * Constructs a spherical harmonics from an array.
+         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
+         * @returns the spherical harmonics
+         */
+        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
+        /**
+         * Gets the spherical harmonics from polynomial
+         * @param polynomial the spherical polynomial
+         * @returns the spherical harmonics
+         */
+        static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
+    }
+    /**
      * Class representing spherical polynomial coefficients to the 3rd degree
      */
     export class SphericalPolynomial {
+        private _harmonics;
+        /**
+         * The spherical harmonics used to create the polynomials.
+         */
+        readonly preScaledHarmonics: SphericalHarmonics;
         /**
          * The x coefficients of the spherical polynomial
          */
@@ -5851,7 +5957,7 @@ declare module BABYLON {
          * Scales the spherical polynomial by the given amount
          * @param scale the amount to scale
          */
-        scale(scale: number): void;
+        scaleInPlace(scale: number): void;
         /**
          * Gets the spherical polynomial from harmonics
          * @param harmonics the spherical harmonics
@@ -5864,93 +5970,6 @@ declare module BABYLON {
          * @returns the spherical polynomial
          */
         static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalPolynomial;
-    }
-    /**
-     * Class representing spherical harmonics coefficients to the 3rd degree
-     */
-    export class SphericalHarmonics {
-        /**
-         * The l0,0 coefficients of the spherical harmonics
-         */
-        l00: Vector3;
-        /**
-         * The l1,-1 coefficients of the spherical harmonics
-         */
-        l1_1: Vector3;
-        /**
-         * The l1,0 coefficients of the spherical harmonics
-         */
-        l10: Vector3;
-        /**
-         * The l1,1 coefficients of the spherical harmonics
-         */
-        l11: Vector3;
-        /**
-         * The l2,-2 coefficients of the spherical harmonics
-         */
-        l2_2: Vector3;
-        /**
-         * The l2,-1 coefficients of the spherical harmonics
-         */
-        l2_1: Vector3;
-        /**
-         * The l2,0 coefficients of the spherical harmonics
-         */
-        l20: Vector3;
-        /**
-         * The l2,1 coefficients of the spherical harmonics
-         */
-        l21: Vector3;
-        /**
-         * The l2,2 coefficients of the spherical harmonics
-         */
-        lL22: Vector3;
-        /**
-         * Adds a light to the spherical harmonics
-         * @param direction the direction of the light
-         * @param color the color of the light
-         * @param deltaSolidAngle the delta solid angle of the light
-         */
-        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
-        /**
-         * Scales the spherical harmonics by the given amount
-         * @param scale the amount to scale
-         */
-        scale(scale: number): void;
-        /**
-         * Convert from incident radiance (Li) to irradiance (E) by applying convolution with the cosine-weighted hemisphere.
-         *
-         * ```
-         * E_lm = A_l * L_lm
-         * ```
-         *
-         * In spherical harmonics this convolution amounts to scaling factors for each frequency band.
-         * This corresponds to equation 5 in "An Efficient Representation for Irradiance Environment Maps", where
-         * the scaling factors are given in equation 9.
-         */
-        convertIncidentRadianceToIrradiance(): void;
-        /**
-         * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
-         *
-         * ```
-         * L = (1/pi) * E * rho
-         * ```
-         *
-         * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
-         */
-        convertIrradianceToLambertianRadiance(): void;
-        /**
-         * Gets the spherical harmonics from polynomial
-         * @param polynomial the spherical polynomial
-         * @returns the spherical harmonics
-         */
-        static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
-        /**
-         * Constructs a spherical harmonics from an array.
-         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
-         * @returns the spherical harmonics
-         */
-        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
     }
 }
 declare module BABYLON {
@@ -16860,7 +16879,10 @@ declare module BABYLON {
         _preActivate(): InstancedMesh;
         /** @hidden */
         _activate(renderId: number): boolean;
+        /** @hidden */
+        _postActivate(): void;
         getWorldMatrix(): Matrix;
+        readonly isAnInstance: boolean;
         /**
          * Returns the current associated LOD AbstractMesh.
          */
@@ -19096,13 +19118,6 @@ declare module BABYLON {
              * @returns an array of Animatables
              */
             getAllAnimatablesByTarget(target: any): Array<Animatable>;
-            /**
-             * Will stop the animation of the given target
-             * @param target - the target
-             * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
-             * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-             */
-            stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
             /**
             * Stops and removes all animations that have been applied to the scene
             */
@@ -24500,9 +24515,11 @@ declare module BABYLON {
         /** @hidden */
         readonly _positions: Nullable<Vector3[]>;
         /** @hidden */
-        _waitingActions: Nullable<any>;
-        /** @hidden */
-        _waitingFreezeWorldMatrix: Nullable<boolean>;
+        _waitingData: {
+            lods: Nullable<any>;
+            actions: Nullable<any>;
+            freezeWorldMatrix: Nullable<boolean>;
+        };
         private _skeleton;
         /** @hidden */
         _bonesTransformMatrices: Nullable<Float32Array>;
@@ -24677,6 +24694,8 @@ declare module BABYLON {
         /** @hidden */
         _activate(renderId: number): boolean;
         /** @hidden */
+        _postActivate(): void;
+        /** @hidden */
         _freeze(): void;
         /** @hidden */
         _unFreeze(): void;
@@ -24687,6 +24706,10 @@ declare module BABYLON {
         getWorldMatrix(): Matrix;
         /** @hidden */
         _getWorldMatrixDeterminant(): number;
+        /**
+         * Gets a boolean indicating if this mesh is an instance or a regular mesh
+         */
+        readonly isAnInstance: boolean;
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
@@ -26846,6 +26869,7 @@ declare module BABYLON {
         transformFeedback?: WebGLTransformFeedback | null;
         readonly isAsync: boolean;
         readonly isReady: boolean;
+        _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
     }
 }
 declare module BABYLON {
@@ -30504,9 +30528,10 @@ declare module BABYLON {
          * Checks if a cullable object (mesh...) is in the camera frustum
          * This checks the bounding box center. See isCompletelyInFrustum for a full bounding check
          * @param target The object to check
+         * @param checkRigCameras If the rig cameras should be checked (eg. with webVR camera both eyes should be checked) (Default: false)
          * @returns true if the object is in frustum otherwise false
          */
-        isInFrustum(target: ICullable): boolean;
+        isInFrustum(target: ICullable, checkRigCameras?: boolean): boolean;
         /**
          * Checks if a cullable object (mesh...) is in the camera frustum
          * Unlike isInFrustum this cheks the full bounding box
@@ -33012,6 +33037,13 @@ declare module BABYLON {
          */
         removeAnimation(toRemove: Animation): number;
         /**
+         * Will stop the animation of the given target
+         * @param target - the target
+         * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+         */
+        stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
+        /**
          * Removes the given animation group from this scene.
          * @param toRemove The animation group to remove
          * @returns The index of the removed animation group
@@ -35027,6 +35059,7 @@ declare module BABYLON {
         wheelDeltaPercentage: number;
         private _wheel;
         private _observer;
+        private computeDeltaFromMouseWheelLegacyEvent;
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param element Defines the element the controls should be listened from
@@ -41596,7 +41629,7 @@ declare module BABYLON {
              * Bind a webGL buffer for a transform feedback operation
              * @param value defines the webGL buffer to bind
              */
-            bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void;
+            bindTransformFeedbackBuffer(value: Nullable<DataBuffer>): void;
         }
 }
 declare module BABYLON {
@@ -44301,6 +44334,7 @@ declare module BABYLON {
     export interface IMaterialBRDFDefines {
         BRDF_V_HEIGHT_CORRELATED: boolean;
         MS_BRDF_ENERGY_CONSERVATION: boolean;
+        SPHERICAL_HARMONICS: boolean;
         /** @hidden */
         _areMiscDirty: boolean;
     }
@@ -44318,6 +44352,12 @@ declare module BABYLON {
          * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
          */
         static DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED: boolean;
+        /**
+         * Default value used for the IBL diffuse part.
+         * This can help switching back to the polynomials mode globally which is a tiny bit
+         * less GPU intensive at the drawback of a lower quality.
+         */
+        static DEFAULT_USE_SPHERICAL_HARMONICS: boolean;
         private _useEnergyConservation;
         /**
          * Defines if the material uses energy conservation.
@@ -44333,6 +44373,15 @@ declare module BABYLON {
          * Not relying on height correlated will also disable energy conservation.
          */
         useSmithVisibilityHeightCorrelated: boolean;
+        private _useSphericalHarmonics;
+        /**
+         * LEGACY Mode set to false
+         * Defines if the material uses spherical harmonics vs spherical polynomials for the
+         * diffuse part of the IBL.
+         * The harmonics despite a tiny bigger cost has been proven to provide closer results
+         * to the ground truth.
+         */
+        useSphericalHarmonics: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsMiscDirty;
         /** @hidden */
@@ -44926,6 +44975,7 @@ declare module BABYLON {
         REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED: boolean;
         INVERTCUBICMAP: boolean;
         USESPHERICALFROMREFLECTIONMAP: boolean;
+        SPHERICAL_HARMONICS: boolean;
         USESPHERICALINVERTEX: boolean;
         REFLECTIONMAP_OPPOSITEZ: boolean;
         LODINREFLECTIONALPHA: boolean;
@@ -49674,7 +49724,7 @@ declare module BABYLON {
         /**
          * Configuration for the decoder.
          */
-        decoder?: {
+        decoder: {
             /**
              * The url to the WebAssembly module.
              */
@@ -49715,20 +49765,18 @@ declare module BABYLON {
      *
      * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
      * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
-     * Use `DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
+     * Use `DracoCompression.DecoderAvailable` to determine if the decoder configuration is available for the current context.
      *
-     * To decode Draco compressed data, create a DracoCompression object and call decodeMeshAsync:
+     * To decode Draco compressed data, get the default DracoCompression object and call decodeMeshAsync:
      * ```javascript
-     *     var dracoCompression = new DracoCompression();
-     *     var vertexData = await dracoCompression.decodeMeshAsync(data, {
-     *         [VertexBuffer.PositionKind]: 0
-     *     });
+     *     var vertexData = await DracoCompression.Default.decodeMeshAsync(data);
      * ```
      *
      * @see https://www.babylonjs-playground.com/#N3EK4B#0
      */
     export class DracoCompression implements IDisposable {
-        private _workerPoolPromise;
+        private _workerPoolPromise?;
+        private _decoderModulePromise?;
         /**
          * The configuration. Defaults to the following urls:
          * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
@@ -49737,7 +49785,7 @@ declare module BABYLON {
          */
         static Configuration: IDracoCompressionConfiguration;
         /**
-         * Returns true if the decoder is available.
+         * Returns true if the decoder configuration is available.
          */
         static readonly DecoderAvailable: boolean;
         /**
@@ -49745,9 +49793,14 @@ declare module BABYLON {
          */
         static DefaultNumWorkers: number;
         private static GetDefaultNumWorkers;
+        private static _Default;
+        /**
+         * Default instance for the draco compression object.
+         */
+        static readonly Default: DracoCompression;
         /**
          * Constructor
-         * @param numWorkers The number of workers for async operations
+         * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
          */
         constructor(numWorkers?: number);
         /**
@@ -49768,11 +49821,6 @@ declare module BABYLON {
         decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: {
             [kind: string]: number;
         }): Promise<VertexData>;
-        /**
-         * The worker function that gets converted to a blob url to pass into a worker.
-         */
-        private static _Worker;
-        private _loadDecoderWasmBinaryAsync;
     }
 }
 declare module BABYLON {
