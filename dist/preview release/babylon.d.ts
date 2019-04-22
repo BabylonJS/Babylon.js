@@ -22687,6 +22687,8 @@ declare module BABYLON {
         /** @hidden */
         private _intersectTriangles;
         /** @hidden */
+        private _intersectUnIndexedTriangles;
+        /** @hidden */
         _rebuild(): void;
         /**
          * Creates a new submesh from the passed mesh
@@ -47020,7 +47022,7 @@ declare module BABYLON {
         /**
          * Renders the submesh passed in parameter to the generation map.
          */
-        protected _renderSubMesh(subMesh: SubMesh): void;
+        protected _renderSubMesh(subMesh: SubMesh, enableAlphaMode?: boolean): void;
         /**
          * Rebuild the required buffers.
          * @hidden Internal use only.
@@ -53631,6 +53633,10 @@ declare module BABYLON {
          * If glow layer is enabled. (Adds a glow effect to emmissive materials)
          */
         glowLayerEnabled: boolean;
+        /**
+         * Gets the glow layer (or null if not defined)
+         */
+        readonly glowLayer: Nullable<GlowLayer>;
         /**
          * Enable or disable the chromaticAberration process from the pipeline
          */
