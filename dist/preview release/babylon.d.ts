@@ -22687,6 +22687,8 @@ declare module BABYLON {
         /** @hidden */
         private _intersectTriangles;
         /** @hidden */
+        private _intersectUnIndexedTriangles;
+        /** @hidden */
         _rebuild(): void;
         /**
          * Creates a new submesh from the passed mesh
