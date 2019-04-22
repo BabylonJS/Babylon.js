@@ -6,7 +6,6 @@ uniform vec4 vCameraInfos;
 varying vec3 vPositionW;
 
 #if DEBUGMODE > 0
-    uniform vec2 vDebugMode;
     varying vec4 vClipSpacePosition;
 #endif
 

@@ -1562,6 +1562,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectivityColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
         ubo.addUniform("visibility", 1);
+        ubo.addUniform("vDebugMode", 2);
 
         PBRClearCoatConfiguration.PrepareUniformBuffer(ubo);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
@@ -1775,6 +1776,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._lightingInfos.w = this._specularIntensity;
 
                 ubo.updateVector4("vLightingIntensity", this._lightingInfos);
+
+                ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
             }
 
             // Textures
@@ -1851,8 +1854,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 eyePosition.z,
                 invertNormal ? -1 : 1);
             effect.setColor3("vAmbientColor", this._globalAmbientColor);
-
-            effect.setFloat2("vDebugMode", this.debugLimit, this.debugFactor);
         }
 
         if (mustRebind || !this.isFrozen) {
