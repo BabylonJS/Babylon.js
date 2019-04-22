@@ -230,11 +230,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
+            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<string> | Promise<Template>;
+            hideOverlayScreen(): Promise<Template> | Promise<string>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -251,11 +251,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<string> | Promise<Template>;
+            showLoadingScreen(): Promise<Template> | Promise<string>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<string> | Promise<Template>;
+            hideLoadingScreen(): Promise<Template> | Promise<string>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
@@ -1031,13 +1031,14 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {
+    import { extendedUpgrade } from "babylonjs-viewer/optimizer/custom/extended";
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
@@ -1737,6 +1738,22 @@ declare module 'babylonjs-viewer/loader/plugins' {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 
+declare module 'babylonjs-viewer/optimizer/custom/extended' {
+    import { SceneManager } from 'babylonjs-viewer/managers/sceneManager';
+    /**
+        * A custom upgrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedUpgrade(sceneManager: SceneManager): boolean;
+    /**
+        * A custom degrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedDegrade(sceneManager: SceneManager): boolean;
+}
+
 declare module 'babylonjs-viewer/configuration/interfaces' {
     export * from 'babylonjs-viewer/configuration/interfaces/cameraConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/colorGradingConfiguration';
@@ -2171,7 +2188,66 @@ declare module 'babylonjs-viewer/configuration/interfaces/imageProcessingConfigu
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/lightConfiguration' {
-    
+    export interface ILightConfiguration {
+        type: number;
+        name?: string;
+        disabled?: boolean;
+        position?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        target?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        direction?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        diffuse?: {
+            r: number;
+            g: number;
+            b: number;
+        };
+        specular?: {
+            r: number;
+            g: number;
+            b: number;
+        };
+        intensity?: number;
+        intensityMode?: number;
+        radius?: number;
+        shadownEnabled?: boolean;
+        shadowConfig?: {
+            useBlurExponentialShadowMap?: boolean;
+            useBlurCloseExponentialShadowMap?: boolean;
+            useKernelBlur?: boolean;
+            blurKernel?: number;
+            blurScale?: number;
+            minZ?: number;
+            maxZ?: number;
+            frustumSize?: number;
+            angleScale?: number;
+            frustumEdgeFalloff?: number;
+            [propName: string]: any;
+        };
+        spotAngle?: number;
+        shadowFieldOfView?: number;
+        shadowBufferSize?: number;
+        shadowFrustumSize?: number;
+        shadowMinZ?: number;
+        shadowMaxZ?: number;
+        [propName: string]: any;
+        behaviors?: {
+            [name: string]: number | {
+                type: number;
+                [propName: string]: any;
+            };
+        };
+    }
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/observersConfiguration' {
