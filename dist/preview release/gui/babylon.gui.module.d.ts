@@ -1113,7 +1113,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
-        _onPointerMove(target: Control, coordinates: Vector2): void;
+        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
@@ -1988,7 +1988,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         private _onPasteText;
         _draw(context: CanvasRenderingContext2D): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: Vector2): void;
+        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         protected _beforeRenderText(text: string): string;
         dispose(): void;
@@ -2137,6 +2137,7 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
         private _h;
         private _s;
         private _v;
+        private _lastPointerDownID;
         /**
          * Observable raised when the value changes
          */
@@ -2177,7 +2178,7 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
         private _isPointOnSquare;
         private _isPointOnWheel;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: Vector2): void;
+        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         /**
          * This function expands the color picker by creating a color picker dialog with manual
@@ -2474,6 +2475,7 @@ declare module "babylonjs-gui/2D/controls/sliders/baseSlider" {
         private _isThumbClamped;
         protected _displayThumb: boolean;
         private _step;
+        private _lastPointerDownID;
         protected _effectiveBarOffset: number;
         protected _renderLeft: number;
         protected _renderTop: number;
@@ -2519,7 +2521,7 @@ declare module "babylonjs-gui/2D/controls/sliders/baseSlider" {
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: Vector2): void;
+        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
     }
 }
@@ -4929,7 +4931,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
@@ -5769,7 +5771,7 @@ declare module BABYLON.GUI {
         private _onPasteText;
         _draw(context: CanvasRenderingContext2D): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         protected _beforeRenderText(text: string): string;
         dispose(): void;
@@ -5908,6 +5910,7 @@ declare module BABYLON.GUI {
         private _h;
         private _s;
         private _v;
+        private _lastPointerDownID;
         /**
          * BABYLON.Observable raised when the value changes
          */
@@ -5948,7 +5951,7 @@ declare module BABYLON.GUI {
         private _isPointOnSquare;
         private _isPointOnWheel;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         /**
          * This function expands the color picker by creating a color picker dialog with manual
@@ -6221,6 +6224,7 @@ declare module BABYLON.GUI {
         private _isThumbClamped;
         protected _displayThumb: boolean;
         private _step;
+        private _lastPointerDownID;
         protected _effectiveBarOffset: number;
         protected _renderLeft: number;
         protected _renderTop: number;
@@ -6266,7 +6270,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2): void;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
     }
 }

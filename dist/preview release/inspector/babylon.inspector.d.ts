@@ -523,6 +523,7 @@ declare module INSPECTOR {
         label: string;
         target: any;
         propertyName: string;
+        step?: number;
         onChange?: (newvalue: BABYLON.Vector2) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
@@ -530,6 +531,9 @@ declare module INSPECTOR {
         isExpanded: boolean;
         value: BABYLON.Vector2;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: IVector2LineComponentProps);
         shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {

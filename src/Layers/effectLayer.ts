@@ -349,9 +349,13 @@ export abstract class EffectLayer {
                 this._renderSubMesh(alphaTestSubMeshes.data[index]);
             }
 
+            const previousAlphaMode = engine.getAlphaMode();
+
             for (index = 0; index < transparentSubMeshes.length; index++) {
-                this._renderSubMesh(transparentSubMeshes.data[index]);
+                this._renderSubMesh(transparentSubMeshes.data[index], true);
             }
+
+            engine.setAlphaMode(previousAlphaMode);
         };
 
         this._mainTexture.onClearObservable.add((engine: Engine) => {
@@ -621,7 +625,7 @@ export abstract class EffectLayer {
     /**
      * Renders the submesh passed in parameter to the generation map.
      */
-    protected _renderSubMesh(subMesh: SubMesh): void {
+    protected _renderSubMesh(subMesh: SubMesh, enableAlphaMode: boolean = false): void {
         if (!this.shouldRender()) {
             return;
         }
@@ -708,6 +712,11 @@ export abstract class EffectLayer {
 
             // Morph targets
             MaterialHelper.BindMorphTargetParameters(mesh, this._effectLayerMapGenerationEffect);
+
+            // Alpha mode
+            if (enableAlphaMode) {
+                engine.setAlphaMode(material.alphaMode);
+            }
 
             // Draw
             mesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,

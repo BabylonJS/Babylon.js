@@ -198,7 +198,7 @@
 - Context loss causing unexpected results with dynamic textures, geometries with the same name and reflectionTextures ([TrevorDev](https://github.com/TrevorDev))
 - CreateScreenshotUsingRenderTarget stretches mirror textures when setting both width and height ([TrevorDev](https://github.com/TrevorDev))
 - VR helper only updating vr cameras position when entering vr, rotation was missing, laser distance stopped working ([TrevorDev](https://github.com/TrevorDev))
-- Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
+- Fix VR controllers after gltfLoader transformNode was changed ([TrevorDev](https://github.com/TrevorDev))
 - Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBahavior using Mesh as base type, causing type-checking problems with AbstractMesh ([Poolminer](https://github.com/Poolminer/))
@@ -217,7 +217,7 @@
 - CannonJS ignores connectedPivot joint parameter ([TrevorDev](https://github.com/TrevorDev))
 - Fix case sensitive paths ([mrdunk](https://github.com))
 - Fix more case sensitive paths ([mrdunk](https://github.com))
-- Attaching a BoundingBoxGizmo on a child node shouldn't remove its parent ([TrevorDev](https://github.com/TrevorDev))
+- Attaching a BoundingBoxGizmo on a child node shouldn't remove its parent, rotation gizmo should work on object with parent ([TrevorDev](https://github.com/TrevorDev))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with Oimo and Cannon ([TrevorDev](https://github.com/TrevorDev))
 - Warn of motor with maxForce in Oimo plugin and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
@@ -236,6 +236,7 @@
 - Fix code branch, that does not try to (re)load an `EquiRectangularCubeTexture`/`HDRCubeTexture` when the caching returns an empty or corrupt `InternalTexture` ([Dennis Dervisis](https://github.com/ddervisis))
 - Add error eventlistener (bubbling up the onError callback chain) in case an `EquiRectangularCubeTexture` cannot be loaded, because of a wrong path or IO problems ([Dennis Dervisis](https://github.com/ddervisis))
 - 3D GUI buttons no longer will scale up when pressing with a multitouch device ([TrevorDev](https://github.com/TrevorDev))
+- 2D GUI elements will use the last clicked controller instead of only the right controller when dual VR controllers are interacting with an element ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -262,6 +263,8 @@
 - Add hemispheric lighting to gizmos to avoid flat look ([TrevorDev](https://github.com/TrevorDev))
 - Fix a bug causing `WebRequest.open` to crash if `WebRequest.CustomRequestHeaders` are set [#6055](https://github.com/BabylonJS/Babylon.js/issues/6055)([susares](https://github.com/susares))
 - Fix a bug causing `Mesh.clone` to crash if no physicsEngineComponent is used  ([barroij](https://github.com/barroij))
+- Fix zoom inertia making it difficult to zoom out with ArcRotateCamera ([TrevorDev](https://github.com/TrevorDev))
+- Option for isInFrustum to check rigCameras, viewMatrix updates for rigCameras will notify their parent ([TrevorDev](https://github.com/TrevorDev))
 
 ### Viewer
 
