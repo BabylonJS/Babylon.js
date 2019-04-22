@@ -947,6 +947,15 @@ export class Engine {
      */
     public readonly premultipliedAlpha: boolean = true;
 
+    protected _isWebGPU: boolean = false;
+
+    /**
+     * Gets a boolean indicating if the engine runs in WebGPU or not.
+     */
+    public get isWebGPU(): boolean {
+        return this._isWebGPU;
+    }
+
     /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
@@ -2665,8 +2674,9 @@ export class Engine {
      * Bind a buffer to the current webGL context at a given location
      * @param buffer defines the buffer to bind
      * @param location defines the index where to bind the buffer
+     * @param name Name of the uniform variable to bind
      */
-    public bindUniformBufferBase(buffer: DataBuffer, location: number): void {
+    public bindUniformBufferBase(buffer: DataBuffer, location: number, name: string): void {
         this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer ? buffer.underlyingResource : null);
     }
 
@@ -3248,7 +3258,7 @@ export class Engine {
      * Creates a new pipeline context
      * @returns the new pipeline
      */
-    public createPipelineContext() {
+    public createPipelineContext(): IPipelineContext {
         var pipelineContext = new WebGLPipelineContext();
         pipelineContext.engine = this;
 
