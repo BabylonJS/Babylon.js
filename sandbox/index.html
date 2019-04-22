@@ -4,7 +4,8 @@
 <head>
     <title>BabylonJS Sandbox - View glTF, glb, obj and babylon files</title>
     <meta name="description" content="Viewer for glTF, glb, obj and babylon files powered by BabylonJS" />
-    <meta name="keywords" content="Babylon.js, Babylon, BabylonJS, glTF, glb, obj, viewer, online viewer, 3D model viewer, 3D, webgl" />
+    <meta name="keywords"
+        content="Babylon.js, Babylon, BabylonJS, glTF, glb, obj, viewer, online viewer, 3D model viewer, 3D, webgl" />
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
 
     <link rel="shortcut icon" href="https://www.babylonjs.com/img/favicon/favicon.ico">
@@ -17,7 +18,8 @@
     <link rel="apple-touch-icon" sizes="144x144" href="https://www.babylonjs.com/img/favicon/apple-icon-144x144.png">
     <link rel="apple-touch-icon" sizes="152x152" href="https://www.babylonjs.com/img/favicon/apple-icon-152x152.png">
     <link rel="apple-touch-icon" sizes="180x180" href="https://www.babylonjs.com/img/favicon/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="https://www.babylonjs.com/img/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="192x192"
+        href="https://www.babylonjs.com/img/favicon/android-icon-192x192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://www.babylonjs.com/img/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="https://www.babylonjs.com/img/favicon/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="https://www.babylonjs.com/img/favicon/favicon-16x16.png">
@@ -71,8 +73,14 @@
             <div class="footerRight">
                 <a href="javascript:void(null);" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg"
                         alt="Display inspector" title="Display inspector" /></a>
+                <a href="javascript:void(null);" id="btnEnvironment" class="hidden"><img src="./Assets/IBLicon.svg"
+                        alt="Select environment" title="Select environment" />
+                </a>
+                <div id="dropdownContent-env" class="hidden">
+                </div>
                 <a href="javascript:void(null);">
-                    <div class="custom-upload" title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
+                    <div class="custom-upload"
+                        title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
                         <input type="file" id="files" multiple />
                     </div>
                 </a>
@@ -82,6 +90,8 @@
         </div>
         <div id="errorZone"></div>
     </div>
+    <script src="environment.js"></script>
+    <script src="animation.js"></script>
     <script src="index.js"></script>
 </body>
 

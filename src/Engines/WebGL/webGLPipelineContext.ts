@@ -27,4 +27,10 @@ export class WebGLPipelineContext implements IPipelineContext {
 
         return false;
     }
+
+    public _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void {
+        if (onCompiled && this.program) {
+            onCompiled(this.program);
+        }
+    }
 }

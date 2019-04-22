@@ -113,6 +113,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                    <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
+                    <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />

@@ -173,7 +173,7 @@ export class CubeMapToSphericalPolynomialTools {
         // small angle approximation of solid angle for each texel (see deltaSolidAngle),
         // and also to compensate for accumulative error due to float precision in the summation.
         var correctionFactor = expectedSolidAngle / totalSolidAngle;
-        sphericalHarmonics.scale(correctionFactor);
+        sphericalHarmonics.scaleInPlace(correctionFactor);
 
         sphericalHarmonics.convertIncidentRadianceToIrradiance();
         sphericalHarmonics.convertIrradianceToLambertianRadiance();

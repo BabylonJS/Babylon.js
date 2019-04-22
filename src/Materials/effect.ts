@@ -388,7 +388,10 @@ export class Effect implements IDisposable {
         if (this._isReady) {
             return true;
         }
-        return this._pipelineContext.isReady;
+        if (this._pipelineContext) {
+            return this._pipelineContext.isReady;
+        }
+        return false;
     }
 
     /**
@@ -636,7 +639,7 @@ export class Effect implements IDisposable {
         // #extension GL_EXT_shader_texture_lod : enable
         // #extension GL_EXT_frag_depth : enable
         // #extension GL_EXT_draw_buffers : require
-        var regex = /#extension.+(GL_OVR_multiview|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
+        var regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
         var result = preparedSourceCode.replace(regex, "");
 
         // Migrate to GLSL v300
@@ -658,7 +661,7 @@ export class Effect implements IDisposable {
         // Add multiview setup to top of file when defined
         var hasMultiviewExtension = this.defines.indexOf("#define MULTIVIEW\n") !== -1;
         if (hasMultiviewExtension && !isFragment) {
-            result = "#extension GL_OVR_multiview : require\nlayout (num_views = 2) in;\n" + result;
+            result = "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + result;
         }
 
         callback(result);
@@ -791,9 +794,7 @@ export class Effect implements IDisposable {
                 scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
             }
 
-            if (onCompiled) {
-                onCompiled(this._pipelineContext);
-            }
+            this._pipelineContext._handlesSpectorRebuildCallback(onCompiled);
         };
         this._fallbacks = null;
         this._prepareEffect();
@@ -814,9 +815,7 @@ export class Effect implements IDisposable {
         try {
             let engine = this._engine;
 
-            if (!this._pipelineContext) {
-                this._pipelineContext = engine.createPipelineContext();
-            }
+            this._pipelineContext = engine.createPipelineContext();
 
             let rebuildRebind = this._rebuildProgram.bind(this);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {

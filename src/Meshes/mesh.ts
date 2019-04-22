@@ -1309,8 +1309,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
 
-        this._isActive = false;
-
         return this;
     }
 
@@ -1509,6 +1507,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+        this._isActive = false;
+
         if (this._checkOcclusionQuery()) {
             return this;
         }
@@ -2980,7 +2980,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // freezeWorldMatrix
         if (parsedMesh.freezeWorldMatrix) {
-            mesh._waitingFreezeWorldMatrix = parsedMesh.freezeWorldMatrix;
+            mesh._waitingData.freezeWorldMatrix = parsedMesh.freezeWorldMatrix;
         }
 
         // Parent
@@ -2990,7 +2990,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Actions
         if (parsedMesh.actions !== undefined) {
-            mesh._waitingActions = parsedMesh.actions;
+            mesh._waitingData.actions = parsedMesh.actions;
         }
 
         // Overlay
@@ -3114,6 +3114,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
         }
 
+        // Levels
+        if (parsedMesh.lodMeshIds) {
+            mesh._waitingData.lods = {
+                ids: parsedMesh.lodMeshIds,
+                distances: (parsedMesh.lodDistances) ? parsedMesh.lodDistances : null,
+                coverages: (parsedMesh.lodCoverages) ? parsedMesh.lodCoverages : null
+            };
+        }
+
         // Instances
         if (parsedMesh.instances) {
             for (var index = 0; index < parsedMesh.instances.length; index++) {
@@ -3133,6 +3142,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
 
                 instance.position = Vector3.FromArray(parsedInstance.position);
+
+                if (parsedInstance.metadata !== undefined) {
+                    instance.metadata = parsedInstance.metadata;
+                }
 
                 if (parsedInstance.parentId) {
                     instance._waitingParentId = parsedInstance.parentId;
