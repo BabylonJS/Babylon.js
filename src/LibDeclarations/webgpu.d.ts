@@ -441,9 +441,9 @@ interface GPUSamplerDescriptor {
   maxAnisotropy?: number;
   minFilter?: GPUFilterMode;
   mipmapFilter?: GPUFilterMode;
-  rAddressMode?: GPUAddressMode;
-  sAddressMode?: GPUAddressMode;
-  tAddressMode?: GPUAddressMode;
+  addressModeU?: GPUAddressMode;
+  addressModeV?: GPUAddressMode;
+  addressModeW?: GPUAddressMode;
 }
 
 interface GPUShaderModuleDescriptor {
@@ -495,9 +495,10 @@ interface GPUTextureViewDescriptor {
 
 interface GPUVertexAttributeDescriptor {
   format?: GPUVertexFormat;
-  // inputSlot?: number;
   offset?: number;
-  shaderLocation?: number;
+  attributeIndex?: number;
+  // After Migration to Canary
+  // shaderLocation?: number;
 }
 
 interface GPUVertexInputDescriptor {

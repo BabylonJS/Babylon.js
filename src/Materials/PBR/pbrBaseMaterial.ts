@@ -1185,7 +1185,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh",
             "microSurfaceSampler", "environmentBrdfSampler", "boneSampler"];
 
-        var uniformBuffers = ["Material", "Scene"];
+        var uniformBuffers = ["Material", "Scene", "Mesh"];
 
         PBRSubSurfaceConfiguration.AddUniforms(uniforms);
         PBRSubSurfaceConfiguration.AddSamplers(samplers);
@@ -1423,7 +1423,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                     defines.ENVIRONMENTBRDF = true;
-                    // Not actual true RGBD, only the B chanel is encoded as RGBD for sheen.
                     defines.ENVIRONMENTBRDF_RGBD = this._environmentBRDFTexture.isRGBD;
                 } else {
                     defines.ENVIRONMENTBRDF = false;
@@ -1561,13 +1560,35 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("pointSize", 1);
         ubo.addUniform("vReflectivityColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
-        ubo.addUniform("visibility", 1);
+        ubo.addUniform("vEyePosition", 4);
+        ubo.addUniform("vAmbientColor", 3);
+
         ubo.addUniform("vDebugMode", 2);
 
         PBRClearCoatConfiguration.PrepareUniformBuffer(ubo);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
+
+        ubo.addUniform("vSphericalL00", 3);
+        ubo.addUniform("vSphericalL1_1", 3);
+        ubo.addUniform("vSphericalL10", 3);
+        ubo.addUniform("vSphericalL11", 3);
+        ubo.addUniform("vSphericalL2_2", 3);
+        ubo.addUniform("vSphericalL2_1", 3);
+        ubo.addUniform("vSphericalL20", 3);
+        ubo.addUniform("vSphericalL21", 3);
+        ubo.addUniform("vSphericalL22", 3);
+
+        ubo.addUniform("vSphericalX", 3);
+        ubo.addUniform("vSphericalY", 3);
+        ubo.addUniform("vSphericalZ", 3);
+        ubo.addUniform("vSphericalXX_ZZ", 3);
+        ubo.addUniform("vSphericalYY_ZZ", 3);
+        ubo.addUniform("vSphericalZZ", 3);
+        ubo.addUniform("vSphericalXY", 3);
+        ubo.addUniform("vSphericalYZ", 3);
+        ubo.addUniform("vSphericalZX", 3);
 
         ubo.create();
     }
@@ -1618,9 +1639,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        if (!defines.INSTANCES) {
-            this.bindOnlyWorldMatrix(world);
-        }
+        mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -1676,30 +1695,30 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
                             if (defines.SPHERICAL_HARMONICS) {
                                 const preScaledHarmonics = polynomials.preScaledHarmonics;
-                                this._activeEffect.setVector3("vSphericalL00", preScaledHarmonics.l00);
-                                this._activeEffect.setVector3("vSphericalL1_1", preScaledHarmonics.l1_1);
-                                this._activeEffect.setVector3("vSphericalL10", preScaledHarmonics.l10);
-                                this._activeEffect.setVector3("vSphericalL11", preScaledHarmonics.l11);
-                                this._activeEffect.setVector3("vSphericalL2_2", preScaledHarmonics.l2_2);
-                                this._activeEffect.setVector3("vSphericalL2_1", preScaledHarmonics.l2_1);
-                                this._activeEffect.setVector3("vSphericalL20", preScaledHarmonics.l20);
-                                this._activeEffect.setVector3("vSphericalL21", preScaledHarmonics.l21);
-                                this._activeEffect.setVector3("vSphericalL22", preScaledHarmonics.l22);
+                                ubo.updateVector3("vSphericalL00", preScaledHarmonics.l00);
+                                ubo.updateVector3("vSphericalL1_1", preScaledHarmonics.l1_1);
+                                ubo.updateVector3("vSphericalL10", preScaledHarmonics.l10);
+                                ubo.updateVector3("vSphericalL11", preScaledHarmonics.l11);
+                                ubo.updateVector3("vSphericalL2_2", preScaledHarmonics.l2_2);
+                                ubo.updateVector3("vSphericalL2_1", preScaledHarmonics.l2_1);
+                                ubo.updateVector3("vSphericalL20", preScaledHarmonics.l20);
+                                ubo.updateVector3("vSphericalL21", preScaledHarmonics.l21);
+                                ubo.updateVector3("vSphericalL22", preScaledHarmonics.l22);
                             }
                             else {
-                                this._activeEffect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
-                                this._activeEffect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
-                                this._activeEffect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
-                                this._activeEffect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
+                                ubo.updateFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                                ubo.updateFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                                ubo.updateFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                                ubo.updateFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
                                     polynomials.xx.y - polynomials.zz.y,
                                     polynomials.xx.z - polynomials.zz.z);
-                                this._activeEffect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
+                                ubo.updateFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
                                     polynomials.yy.y - polynomials.zz.y,
                                     polynomials.yy.z - polynomials.zz.z);
-                                this._activeEffect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
-                                this._activeEffect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
-                                this._activeEffect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
-                                this._activeEffect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                                ubo.updateFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                                ubo.updateFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                                ubo.updateFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                                ubo.updateFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
                             }
                         }
 
@@ -1766,9 +1785,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 ubo.updateColor3("vReflectionColor", this._reflectionColor);
                 ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
 
-                // Visibility
-                ubo.updateFloat("visibility", mesh.visibility);
-
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
                 this._lightingInfos.y = this._emissiveIntensity;
@@ -1776,6 +1792,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._lightingInfos.w = this._specularIntensity;
 
                 ubo.updateVector4("vLightingIntensity", this._lightingInfos);
+
+                // Colors
+                scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
+
+                var eyePosition = scene._forcedViewPosition ? scene._forcedViewPosition : (scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).globalPosition);
+                var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
+                ubo.updateFloat4("vEyePosition",
+                    eyePosition.x,
+                    eyePosition.y,
+                    eyePosition.z,
+                    invertNormal ? -1 : 1);
+                ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
 
                 ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
             }
@@ -1842,18 +1870,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
-
-            // Colors
-            scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
-
-            var eyePosition = scene._forcedViewPosition ? scene._forcedViewPosition : (scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).globalPosition);
-            var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
-            effect.setFloat4("vEyePosition",
-                eyePosition.x,
-                eyePosition.y,
-                eyePosition.z,
-                invertNormal ? -1 : 1);
-            effect.setColor3("vAmbientColor", this._globalAmbientColor);
         }
 
         if (mustRebind || !this.isFrozen) {

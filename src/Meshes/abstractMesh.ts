@@ -692,9 +692,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         // TODO. Bones.
 
         ubo.update();
+    }
 
-        // TODO WEBGPU.
-        this.getScene().getEngine().bindUniformBufferBase(ubo.getBuffer()!, 0, "Mesh");
+    /**
+     * Gets the mesh uniform buffer.
+     */
+    public getMeshUniformBuffer(): UniformBuffer {
+        return this._uniformBuffer;
     }
 
     /**

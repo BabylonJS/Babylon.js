@@ -230,6 +230,13 @@ export class InternalTexture {
     /** @hidden */
     public _webGLTexture: Nullable<WebGLTexture> = null;
     /** @hidden */
+    public _webGPUTexture: Nullable<GPUTexture> = null;
+    /** @hidden */
+    public _webGPUSampler: Nullable<GPUSampler> = null;
+    /** @hidden */
+    public _webGPUTextureView: Nullable<GPUTextureView> = null;
+
+    /** @hidden */
     public _references: number = 1;
 
     private _engine: Engine;
@@ -456,6 +463,8 @@ export class InternalTexture {
         if (this._references === 0) {
             this._engine._releaseTexture(this);
             this._webGLTexture = null;
+            this._webGPUTexture = null;
+            this._webGPUSampler = null;
         }
     }
 }
