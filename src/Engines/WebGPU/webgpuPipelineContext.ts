@@ -4,12 +4,22 @@ import { WebGPUEngine } from '../webgpuEngine';
 import { InternalTexture } from 'Materials';
 
 /** @hidden */
-export interface IWebGPUPipelineContext {
+export interface IWebGPUPipelineContextSamplerCache {
     textureBinding: number;
 
     samplerBinding: number;
 
     texture: InternalTexture;
+}
+
+/** @hidden */
+export interface IWebGPUPipelineContextVertexInputsCache {
+    indexBuffer: Nullable<GPUBuffer>;
+    indexOffset: number;
+
+    vertexStartSlot: number;
+    vertexBuffers: GPUBuffer[];
+    vertexOffsets: number[];
 }
 
 /** @hidden */
@@ -20,13 +30,14 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public fragmentShaderCode: string;
     public stages: Nullable<GPURenderPipelineStageDescriptor>;
 
-    // public vertexInputDescriptor: GPUVertexAttributeDescriptor[] = [];
+    public samplers: { [name: string]: Nullable<IWebGPUPipelineContextSamplerCache> } = { };
+
+    public vertexInputs: IWebGPUPipelineContextVertexInputsCache;
 
     public bindGroupLayouts: (GPUBindGroupLayout | undefined)[];
+    public bindGroups: GPUBindGroup[];
 
     public renderPipeline: GPURenderPipeline;
-
-    public samplers: { [name: string]: Nullable<IWebGPUPipelineContext> } = { };
 
     // Default implementation.
     public onCompiled?: () => void;

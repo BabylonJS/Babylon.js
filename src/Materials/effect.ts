@@ -286,10 +286,12 @@ export class Effect implements IDisposable {
      * @param onCompiled Callback that will be called when the shader is compiled.
      * @param onError Callback that will be called if an error occurs during shader compilation.
      * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
+     * @param key Effect Key identifying uniquely compiled shader variants
      */
     constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null,
-        fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
+        fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "") {
         this.name = baseName;
+        this._key = key;
 
         if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
             var options = <EffectCreationOptions>attributesNamesOrOptions;
@@ -825,10 +827,10 @@ export class Effect implements IDisposable {
 
             let rebuildRebind = this._rebuildProgram.bind(this);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, true, rebuildRebind, null, this._transformFeedbackVaryings);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, true, rebuildRebind, null, this._transformFeedbackVaryings, this._key);
             }
             else {
-                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCode, this._fragmentSourceCode, false, rebuildRebind, defines, this._transformFeedbackVaryings);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCode, this._fragmentSourceCode, false, rebuildRebind, defines, this._transformFeedbackVaryings, this._key);
             }
 
             engine._executeWhenRenderingStateIsCompiled(this._pipelineContext, () => {
