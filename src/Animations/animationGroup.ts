@@ -491,7 +491,7 @@ export class AnimationGroup implements IDisposable {
             }
         }
 
-        if (parsedAnimationGroup.from !== null && parsedAnimationGroup.from !== null) {
+        if (parsedAnimationGroup.from !== null && parsedAnimationGroup.to !== null) {
             animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
         }
 
