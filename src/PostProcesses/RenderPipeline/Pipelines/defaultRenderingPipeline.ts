@@ -362,6 +362,13 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     }
 
     /**
+     * Gets the glow layer (or null if not defined)
+     */
+    public get glowLayer() {
+        return this._glowLayer;
+    }
+
+    /**
      * Enable or disable the chromaticAberration process from the pipeline
      */
     public set chromaticAberrationEnabled(enabled: boolean) {
