@@ -163,7 +163,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
  */
 export class StandardMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture")
-    private _diffuseTexture: Nullable<BaseTexture>;
+    private _diffuseTexture: Nullable<BaseTexture> = null;
     /**
      * The basic texture of the material as viewed under a light.
      */
@@ -171,7 +171,7 @@ export class StandardMaterial extends PushMaterial {
     public diffuseTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("ambientTexture")
-    private _ambientTexture: Nullable<BaseTexture>;
+    private _ambientTexture: Nullable<BaseTexture> = null;
     /**
      * AKA Occlusion Texture in other nomenclature, it helps adding baked shadows into your material.
      */
@@ -179,7 +179,7 @@ export class StandardMaterial extends PushMaterial {
     public ambientTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("opacityTexture")
-    private _opacityTexture: Nullable<BaseTexture>;
+    private _opacityTexture: Nullable<BaseTexture> = null;
     /**
      * Define the transparency of the material from a texture.
      * The final alpha value can be read either from the red channel (if texture.getAlphaFromRGB is false)
@@ -189,7 +189,7 @@ export class StandardMaterial extends PushMaterial {
     public opacityTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("reflectionTexture")
-    private _reflectionTexture: Nullable<BaseTexture>;
+    private _reflectionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the reflection.
      * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
@@ -198,7 +198,7 @@ export class StandardMaterial extends PushMaterial {
     public reflectionTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("emissiveTexture")
-    private _emissiveTexture: Nullable<BaseTexture>;
+    private _emissiveTexture: Nullable<BaseTexture> = null;
     /**
      * Define texture of the material as if self lit.
      * This will be mixed in the final result even in the absence of light.
@@ -207,7 +207,7 @@ export class StandardMaterial extends PushMaterial {
     public emissiveTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("specularTexture")
-    private _specularTexture: Nullable<BaseTexture>;
+    private _specularTexture: Nullable<BaseTexture> = null;
     /**
      * Define how the color and intensity of the highlight given by the light in the material.
      */
@@ -215,7 +215,7 @@ export class StandardMaterial extends PushMaterial {
     public specularTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("bumpTexture")
-    private _bumpTexture: Nullable<BaseTexture>;
+    private _bumpTexture: Nullable<BaseTexture> = null;
     /**
      * Bump mapping is a technique to simulate bump and dents on a rendered surface.
      * These are made by creating a normal map from an image. The means to do this can be found on the web, a search for 'normal map generator' will bring up free and paid for methods of doing this.
@@ -225,7 +225,7 @@ export class StandardMaterial extends PushMaterial {
     public bumpTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("lightmapTexture")
-    private _lightmapTexture: Nullable<BaseTexture>;
+    private _lightmapTexture: Nullable<BaseTexture> = null;
     /**
      * Complex lighting can be computationally expensive to compute at runtime.
      * To save on computation, lightmaps may be used to store calculated lighting in a texture which will be applied to a given mesh.
@@ -235,7 +235,7 @@ export class StandardMaterial extends PushMaterial {
     public lightmapTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("refractionTexture")
-    private _refractionTexture: Nullable<BaseTexture>;
+    private _refractionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the refraction.
      * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
