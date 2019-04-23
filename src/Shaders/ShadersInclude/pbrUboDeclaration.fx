@@ -23,7 +23,10 @@ layout(std140, column_major) uniform;
 //     uniform vec3 vSphericalZX;
 // }
 
-layout(set = 0, binding = 0) uniform Scene {
+#ifdef WEBGPU
+layout(set = 0, binding = 0) 
+#endif
+uniform Scene {
     mat4 viewProjection;
 #ifdef MULTIVIEW
 	mat4 viewProjectionR;
@@ -31,7 +34,10 @@ layout(set = 0, binding = 0) uniform Scene {
     mat4 view;
 };
 
-layout(set = 1, binding = 0) uniform Material
+#ifdef WEBGPU
+layout(set = 1, binding = 0) 
+#endif
+uniform Material
 {
     uniform vec2 vAlbedoInfos;
     uniform vec4 vAmbientInfos;
@@ -117,7 +123,10 @@ layout(set = 1, binding = 0) uniform Material
     uniform vec3 vSphericalZX;
 };
 
-layout(set = 2, binding = 0) uniform Mesh {
+#ifdef WEBGPU
+layout(set = 2, binding = 0) 
+#endif
+uniform Mesh {
     mat4 world;
     float visibility;
 };

@@ -3508,11 +3508,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
-        // TODO WEBGPU. Find a better approach.
-        if (engine.isWebGPU) {
-            camera.transferToEffect();
-        }
-
         this._renderingManager.render(null, null, true, true);
         this.onAfterDrawPhaseObservable.notifyObservers(this);
 

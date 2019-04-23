@@ -1641,6 +1641,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Matrices
         mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
 
+        // Matrices
+        if (!defines.INSTANCES) {
+            this.bindOnlyWorldMatrix(world);
+        }
+
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
             world.toNormalMatrix(this._normalMatrix);
