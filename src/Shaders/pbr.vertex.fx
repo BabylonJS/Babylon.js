@@ -5,14 +5,14 @@
 #define CUSTOM_VERTEX_BEGIN
 
 // Attributes
-#ifdef WEBGGPU
+#ifdef WEBGPU
     layout(location = 0) in vec3 position;
 #else
     attribute vec3 position;
 #endif
 
 #ifdef NORMAL
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 1) in vec3 normal;
     #else
         attribute vec3 normal;
@@ -20,7 +20,7 @@
 #endif
 
 #ifdef TANGENT
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 2) in vec4 tangent;
     #else
         attribute vec4 tangent;
@@ -28,7 +28,7 @@
 #endif
 
 #ifdef UV1
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 3) in vec2 uv;
     #else
         attribute vec2 uv;
@@ -36,7 +36,7 @@
 #endif
 
 #ifdef UV2
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 4) in vec2 uv2;
     #else
         attribute vec2 uv2;
@@ -44,7 +44,7 @@
 #endif
 
 #ifdef VERTEXCOLOR
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 5) in vec4 color;
     #else
         attribute vec4 color;
@@ -63,21 +63,21 @@
 #endif
 
 // Output
-#ifdef WEBGGPU
+#ifdef WEBGPU
     layout(location = 0) out vec3 vPositionW;
 #else
     varying vec3 vPositionW;
 #endif
 
 #ifdef NORMAL
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 1) out vec3 vNormalW;
     #else
         varying vec3 vNormalW;
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        #ifdef WEBGGPU
+        #ifdef WEBGPU
             layout(location = 2) out vec3 vEnvironmentIrradiance;
         #else
             varying vec3 vEnvironmentIrradiance;
@@ -88,7 +88,7 @@
 #endif
 
 #ifdef VERTEXCOLOR
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 3) out vec4 vColor;
     #else
         varying vec4 vColor;
@@ -96,7 +96,7 @@
 #endif
 
 #ifdef REFLECTIONMAP_SKYBOX
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 4) out vec3 vPositionUVW;
     #else
         varying vec3 vPositionUVW;
@@ -104,7 +104,7 @@
 #endif
 
 #if DEBUGMODE > 0
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 5) out vec4 vClipSpacePosition;
     #else
         varying vec4 vClipSpacePosition;
@@ -112,7 +112,7 @@
 #endif
 
 #ifdef MAINUV1
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 6) out vec2 vMainUV1;
     #else
         varying vec2 vMainUV1;
@@ -120,7 +120,7 @@
 #endif
 
 #ifdef MAINUV2
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(location = 7) out vec2 vMainUV2;
     #else
         varying vec2 vMainUV2;
