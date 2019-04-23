@@ -1,6 +1,8 @@
 uniform mat4 view;
 uniform mat4 viewProjection;
 
+uniform mat4 world;
+
 #ifdef ALBEDO
 uniform mat4 albedoMatrix;
 uniform vec2 vAlbedoInfos;
@@ -95,6 +97,34 @@ uniform float pointSize;
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         uniform vec2 vThicknessInfos;
         uniform mat4 thicknessMatrix;;
+    #endif
+#endif
+
+#ifdef NORMAL
+    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
+        #ifdef USESPHERICALFROMREFLECTIONMAP
+            #ifdef SPHERICAL_HARMONICS
+                uniform vec3 vSphericalL00;
+                uniform vec3 vSphericalL1_1;
+                uniform vec3 vSphericalL10;
+                uniform vec3 vSphericalL11;
+                uniform vec3 vSphericalL2_2;
+                uniform vec3 vSphericalL2_1;
+                uniform vec3 vSphericalL20;
+                uniform vec3 vSphericalL21;
+                uniform vec3 vSphericalL22;
+            #else
+                uniform vec3 vSphericalX;
+                uniform vec3 vSphericalY;
+                uniform vec3 vSphericalZ;
+                uniform vec3 vSphericalXX_ZZ;
+                uniform vec3 vSphericalYY_ZZ;
+                uniform vec3 vSphericalZZ;
+                uniform vec3 vSphericalXY;
+                uniform vec3 vSphericalYZ;
+                uniform vec3 vSphericalZX;
+            #endif
+        #endif
     #endif
 #endif
 

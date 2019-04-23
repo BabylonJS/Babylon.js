@@ -1,15 +1,5 @@
 #ifdef USESPHERICALFROMREFLECTIONMAP
     #ifdef SPHERICAL_HARMONICS
-        uniform vec3 vSphericalL00;
-        uniform vec3 vSphericalL1_1;
-        uniform vec3 vSphericalL10;
-        uniform vec3 vSphericalL11;
-        uniform vec3 vSphericalL2_2;
-        uniform vec3 vSphericalL2_1;
-        uniform vec3 vSphericalL20;
-        uniform vec3 vSphericalL21;
-        uniform vec3 vSphericalL22;
-
         // Please note the the coefficient have been prescaled.
         //
         // This uses the theory from both Sloan and Ramamoothi:
@@ -31,16 +21,6 @@
                 + vSphericalL22 * (normal.x * normal.x - (normal.y * normal.y));
         }
     #else
-        uniform vec3 vSphericalX;
-        uniform vec3 vSphericalY;
-        uniform vec3 vSphericalZ;
-        uniform vec3 vSphericalXX_ZZ;
-        uniform vec3 vSphericalYY_ZZ;
-        uniform vec3 vSphericalZZ;
-        uniform vec3 vSphericalXY;
-        uniform vec3 vSphericalYZ;
-        uniform vec3 vSphericalZX;
-
         // By Matthew Jones.
         vec3 computeEnvironmentIrradiance(vec3 normal) {
             // Fast method for evaluating a fixed spherical harmonics function on the sphere (e.g. irradiance or radiance).

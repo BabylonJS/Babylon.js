@@ -1,6 +1,37 @@
 layout(std140, column_major) uniform;
 
-uniform Material
+// layout(set = 0, binding = 0) uniform Harmonics
+// {
+//     uniform vec3 vSphericalL00;
+//     uniform vec3 vSphericalL1_1;
+//     uniform vec3 vSphericalL10;
+//     uniform vec3 vSphericalL11;
+//     uniform vec3 vSphericalL2_2;
+//     uniform vec3 vSphericalL2_1;
+//     uniform vec3 vSphericalL20;
+//     uniform vec3 vSphericalL21;
+//     uniform vec3 vSphericalL22;
+
+//     uniform vec3 vSphericalX;
+//     uniform vec3 vSphericalY;
+//     uniform vec3 vSphericalZ;
+//     uniform vec3 vSphericalXX_ZZ;
+//     uniform vec3 vSphericalYY_ZZ;
+//     uniform vec3 vSphericalZZ;
+//     uniform vec3 vSphericalXY;
+//     uniform vec3 vSphericalYZ;
+//     uniform vec3 vSphericalZX;
+// }
+
+layout(set = 0, binding = 0) uniform Scene {
+    mat4 viewProjection;
+#ifdef MULTIVIEW
+	mat4 viewProjectionR;
+#endif 
+    mat4 view;
+};
+
+layout(set = 1, binding = 0) uniform Material
 {
     uniform vec2 vAlbedoInfos;
     uniform vec4 vAmbientInfos;
@@ -30,8 +61,8 @@ uniform Material
     uniform float pointSize;
     uniform vec4 vReflectivityColor;
     uniform vec3 vEmissiveColor;
-
-    uniform float visibility;
+    uniform vec4 vEyePosition;
+    uniform vec3 vAmbientColor;
 
     uniform vec2 vDebugMode;
 
@@ -64,12 +95,29 @@ uniform Material
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+
+    uniform vec3 vSphericalL00;
+    uniform vec3 vSphericalL1_1;
+    uniform vec3 vSphericalL10;
+    uniform vec3 vSphericalL11;
+    uniform vec3 vSphericalL2_2;
+    uniform vec3 vSphericalL2_1;
+    uniform vec3 vSphericalL20;
+    uniform vec3 vSphericalL21;
+    uniform vec3 vSphericalL22;
+
+    uniform vec3 vSphericalX;
+    uniform vec3 vSphericalY;
+    uniform vec3 vSphericalZ;
+    uniform vec3 vSphericalXX_ZZ;
+    uniform vec3 vSphericalYY_ZZ;
+    uniform vec3 vSphericalZZ;
+    uniform vec3 vSphericalXY;
+    uniform vec3 vSphericalYZ;
+    uniform vec3 vSphericalZX;
 };
 
-uniform Scene {
-    mat4 viewProjection;
-#ifdef MULTIVIEW
-	mat4 viewProjectionR;
-#endif 
-    mat4 view;
+layout(set = 2, binding = 0) uniform Mesh {
+    mat4 world;
+    float visibility;
 };

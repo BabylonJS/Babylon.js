@@ -7,16 +7,15 @@
 		uniform mat4 normalMatrix;
 	#endif
 
-	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv, sampler2D textureSampler, float scale)
+	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv, vec3 textureSample, float scale)
 	{
-		vec3 map = texture2D(textureSampler, uv).xyz;
-		map = map * 2.0 - 1.0;
+		textureSample = textureSample * 2.0 - 1.0;
 
 		#ifdef NORMALXYSCALE
-			map = normalize(map * vec3(scale, scale, 1.0));
+			textureSample = normalize(textureSample * vec3(scale, scale, 1.0));
 		#endif
 
-		return normalize(cotangentFrame * map);
+		return normalize(cotangentFrame * textureSample);
 	}
 
 	// Thanks to http://www.thetenthplanet.de/archives/1180
@@ -48,18 +47,20 @@
 #endif
 
 #ifdef BUMP
-	#if BUMPDIRECTUV == 1
-		#define vBumpUV vMainUV1
-	#elif BUMPDIRECTUV == 2
-		#define vBumpUV vMainUV2
-	#else
-		varying vec2 vBumpUV;
+	#ifndef PBR
+		#if BUMPDIRECTUV == 1
+			#define vBumpUV vMainUV1
+		#elif BUMPDIRECTUV == 2
+			#define vBumpUV vMainUV2
+		#else
+			varying vec2 vBumpUV;
+		#endif
+		uniform sampler2D bumpSampler;
 	#endif
-	uniform sampler2D bumpSampler;
 
 	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv)
 	{
-		return perturbNormal(cotangentFrame, uv, bumpSampler, vBumpInfos.y);
+		return perturbNormal(cotangentFrame, uv, texture2D(bumpSampler, uv).xyz, vBumpInfos.y);
 	}
 
 	// Thanks to http://www.thetenthplanet.de/archives/1180

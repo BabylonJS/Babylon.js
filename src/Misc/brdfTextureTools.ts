@@ -97,6 +97,7 @@ export class BRDFTextureTools {
             scene.useDelayedTextureLoading = useDelayedTextureLoading;
 
             texture.onLoadObservable.addOnce(() => {
+                texture._texture!._isRGBD = true;
                 this._ExpandDefaultBRDFTexture(texture._texture!);
             });
         }

@@ -5,34 +5,127 @@
 #define CUSTOM_VERTEX_BEGIN
 
 // Attributes
-attribute vec3 position;
+#ifdef WEBGGPU
+    layout(location = 0) in vec3 position;
+#else
+    attribute vec3 position;
+#endif
+
 #ifdef NORMAL
-attribute vec3 normal;
+    #ifdef WEBGGPU
+        layout(location = 1) in vec3 normal;
+    #else
+        attribute vec3 normal;
+    #endif
 #endif
+
 #ifdef TANGENT
-attribute vec4 tangent;
+    #ifdef WEBGGPU
+        layout(location = 2) in vec4 tangent;
+    #else
+        attribute vec4 tangent;
+    #endif
 #endif
+
 #ifdef UV1
-attribute vec2 uv;
+    #ifdef WEBGGPU
+        layout(location = 3) in vec2 uv;
+    #else
+        attribute vec2 uv;
+    #endif
 #endif
+
 #ifdef UV2
-attribute vec2 uv2;
+    #ifdef WEBGGPU
+        layout(location = 4) in vec2 uv2;
+    #else
+        attribute vec2 uv2;
+    #endif
 #endif
-#ifdef MAINUV1
-varying vec2 vMainUV1;
-#endif
-#ifdef MAINUV2
-varying vec2 vMainUV2; 
-#endif 
+
 #ifdef VERTEXCOLOR
-attribute vec4 color;
+    #ifdef WEBGGPU
+        layout(location = 5) in vec4 color;
+    #else
+        attribute vec4 color;
+    #endif
 #endif
 
 #include<helperFunctions>
 #include<bonesDeclaration>
 
 // Uniforms
-#include<instancesDeclaration>
+#ifdef INSTANCES
+	attribute vec4 world0;
+	attribute vec4 world1;
+	attribute vec4 world2;
+	attribute vec4 world3;
+#endif
+
+// Output
+#ifdef WEBGGPU
+    layout(location = 0) out vec3 vPositionW;
+#else
+    varying vec3 vPositionW;
+#endif
+
+#ifdef NORMAL
+    #ifdef WEBGGPU
+        layout(location = 1) out vec3 vNormalW;
+    #else
+        varying vec3 vNormalW;
+    #endif
+
+    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
+        #ifdef WEBGGPU
+            layout(location = 2) out vec3 vEnvironmentIrradiance;
+        #else
+            varying vec3 vEnvironmentIrradiance;
+        #endif
+        
+        #include<harmonicsFunctions>
+    #endif
+#endif
+
+#ifdef VERTEXCOLOR
+    #ifdef WEBGGPU
+        layout(location = 3) out vec4 vColor;
+    #else
+        varying vec4 vColor;
+    #endif
+#endif
+
+#ifdef REFLECTIONMAP_SKYBOX
+    #ifdef WEBGGPU
+        layout(location = 4) out vec3 vPositionUVW;
+    #else
+        varying vec3 vPositionUVW;
+    #endif
+#endif
+
+#if DEBUGMODE > 0
+    #ifdef WEBGGPU
+        layout(location = 5) out vec4 vClipSpacePosition;
+    #else
+        varying vec4 vClipSpacePosition;
+    #endif
+#endif
+
+#ifdef MAINUV1
+    #ifdef WEBGGPU
+        layout(location = 6) out vec2 vMainUV1;
+    #else
+        varying vec2 vMainUV1;
+    #endif
+#endif
+
+#ifdef MAINUV2
+    #ifdef WEBGGPU
+        layout(location = 7) out vec2 vMainUV2;
+    #else
+        varying vec2 vMainUV2;
+    #endif
+#endif
 
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0
 varying vec2 vAlbedoUV;
@@ -98,41 +191,14 @@ varying vec2 vBumpUV;
     #endif
 #endif
 
-// Output
-varying vec3 vPositionW;
-#if DEBUGMODE > 0
-    varying vec4 vClipSpacePosition;
-#endif
-#ifdef NORMAL
-    varying vec3 vNormalW;
-    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        varying vec3 vEnvironmentIrradiance;
-        
-        #include<harmonicsFunctions>
-    #endif
-#endif
-
-#ifdef VERTEXCOLOR
-varying vec4 vColor;
-#endif
-
 #include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
-
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
-
-#ifdef REFLECTIONMAP_SKYBOX
-varying vec3 vPositionUVW;
-#endif
-
-#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-varying vec3 vDirectionW;
-#endif
-
 #include<logDepthDeclaration>
+
 #define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void) {

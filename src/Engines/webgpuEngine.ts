@@ -2,6 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Nullable, DataArray, IndicesArray, FloatArray } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Color3, Color4 } from "../Maths/math";
+import { Scalar } from "../Maths/math.scalar";
 import { Engine, EngineCapabilities } from "../Engines/engine";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
@@ -15,6 +16,8 @@ import { WebGPUPipelineContext } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
+import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
 
 /**
  * Options to create the WebGPU engine
@@ -92,6 +95,14 @@ export class WebGPUEngine extends Engine {
     // Caches
     // private _compiledStages: { [key: string]: GPURenderPipelineStageDescriptor } = {};
 
+    // Temporary...
+    private _decodeCanvas = document.createElement("canvas");
+    private _decodeEngine = new Engine(this._decodeCanvas, false, {
+        alpha: true,
+        premultipliedAlpha: false,
+    }, false);
+    //private _decodeScene = new Scene(this._decodeEngine);
+
     /**
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
@@ -127,6 +138,11 @@ export class WebGPUEngine extends Engine {
      */
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = new WebGPUEngineOptions()) {
         super(null);
+
+        this._decodeEngine.getCaps().textureFloat = false;
+        this._decodeEngine.getCaps().textureFloatRender = false;
+        this._decodeEngine.getCaps().textureHalfFloat = false;
+        this._decodeEngine.getCaps().textureHalfFloatRender = false;
 
         Logger.Log(`Babylon.js v${Engine.Version} - WebGPU engine`);
         if (!navigator.gpu) {
@@ -209,13 +225,13 @@ export class WebGPUEngine extends Engine {
         this._caps.highPrecisionShaderSupported = true;
 
         this._caps.colorBufferFloat = true;
-        this._caps.textureFloat = true;
-        this._caps.textureFloatLinearFiltering = true;
-        this._caps.textureFloatRender = true;
+        this._caps.textureFloat = false;
+        this._caps.textureFloatLinearFiltering = false;
+        this._caps.textureFloatRender = false;
 
-        this._caps.textureHalfFloat = true;
-        this._caps.textureHalfFloatLinearFiltering = true;
-        this._caps.textureHalfFloatRender = true;
+        this._caps.textureHalfFloat = false;
+        this._caps.textureHalfFloatLinearFiltering = false;
+        this._caps.textureHalfFloatRender = false;
 
         this._caps.textureLOD = true;
         this._caps.drawBuffersExtension = true;
@@ -370,8 +386,23 @@ export class WebGPUEngine extends Engine {
     }
 
     //------------------------------------------------------------------------------
-    //                              Vertex/Index Buffers
+    //                              WebGPU Buffers
     //------------------------------------------------------------------------------
+
+    private _createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
+        const verticesBufferDescriptor = {
+            size: view.byteLength,
+            usage: flags
+        };
+        const buffer = this._device.createBuffer(verticesBufferDescriptor);
+        const dataBuffer = new WebGPUDataBuffer(buffer);
+        dataBuffer.references = 1;
+        dataBuffer.capacity = verticesBufferDescriptor.size;
+
+        this._setSubData(dataBuffer, 0, view);
+
+        return dataBuffer;
+    }
 
     private _setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void {
         const buffer = dataBuffer.underlyingResource as GPUBuffer;
@@ -381,13 +412,38 @@ export class WebGPUEngine extends Engine {
 
         // After Migration to Canary
         // This would do from PR #261
-        const falseStart = src.byteOffset + srcByteOffset;
+        let falseStart = src.byteOffset + srcByteOffset;
         const falseEnd = falseStart + byteLength;
-        const tempView = new Uint8Array(src.buffer.slice(falseStart, falseEnd));
-        buffer.setSubData(dstByteOffset, tempView.buffer);
+
+        // Chunk
+        const maxChunk = 1024 * 1024;
+        let offset = 0;
+
+        // if ((falseEnd - (falseStart + offset)) > maxChunk) {
+        //     var toto = new Uint8ClampedArray(src.buffer);
+        //     for (let i = 0; i < byteLength; i+=4) {
+        //         toto[i] = Math.ceil(i / byteLength * 255);
+        //         toto[i + 1] = Math.ceil(i / byteLength * 255);
+        //         toto[i + 2] = Math.ceil(i / byteLength * 255);
+        //         toto[i + 3] = 255;
+        //     }
+        // }
+
+        while ((falseEnd - (falseStart + offset)) > maxChunk) {
+            const tempView = new Uint8Array(src.buffer.slice(falseStart + offset, falseStart + offset + maxChunk));
+            buffer.setSubData(dstByteOffset + offset, tempView.buffer);
+            offset += maxChunk;
+        }
+        
+        const tempView = new Uint8Array(src.buffer.slice(falseStart + offset, falseEnd));
+        buffer.setSubData(dstByteOffset + offset, tempView.buffer);
 
         // buffer.setSubData(dstByteOffset, src, srcByteOffset, byteLength);
     }
+
+    //------------------------------------------------------------------------------
+    //                              Vertex/Index Buffers
+    //------------------------------------------------------------------------------
 
     public createVertexBuffer(data: DataArray): DataBuffer {
         let view: ArrayBufferView;
@@ -402,19 +458,7 @@ export class WebGPUEngine extends Engine {
             view = data;
         }
 
-        const verticesBufferDescriptor = {
-            size: view.byteLength,
-            usage: WebGPUConstants.GPUBufferUsage_VERTEX | WebGPUConstants.GPUBufferUsage_TRANSFER_DST
-        };
-
-        const verticesBuffer = this._device.createBuffer(verticesBufferDescriptor);
-
-        const dataBuffer = new WebGPUDataBuffer(verticesBuffer);
-        dataBuffer.references = 1;
-        dataBuffer.capacity = verticesBufferDescriptor.size;
-
-        this._setSubData(dataBuffer, 0, view);
-
+        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_VERTEX | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
         return dataBuffer;
     }
 
@@ -484,20 +528,8 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        const indexBufferDescriptor = {
-            size: view.byteLength,
-            usage: WebGPUConstants.GPUBufferUsage_INDEX | WebGPUConstants.GPUBufferUsage_TRANSFER_DST
-        };
-
-        const indicesBuffer = this._device.createBuffer(indexBufferDescriptor);
-
-        const dataBuffer = new WebGPUDataBuffer(indicesBuffer);
-        dataBuffer.references = 1;
+        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_INDEX | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
         dataBuffer.is32Bits = is32Bits;
-        dataBuffer.capacity = indexBufferDescriptor.size;
-
-        this._setSubData(dataBuffer, 0, view);
-
         return dataBuffer;
     }
 
@@ -575,19 +607,8 @@ export class WebGPUEngine extends Engine {
             view = elements;
         }
 
-        const uboDescriptor = {
-            size: view.byteLength,
-            usage: WebGPUConstants.GPUBufferUsage_UNIFORM | WebGPUConstants.GPUBufferUsage_TRANSFER_DST,
-        };
-        const ubo = this._device.createBuffer(uboDescriptor);
-
-        const result = new WebGPUDataBuffer(ubo);
-        result.capacity = uboDescriptor.size;
-        result.references = 1;
-
-        this.updateUniformBuffer(result, elements);
-
-        return result;
+        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_UNIFORM | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
+        return dataBuffer;
     }
 
     /**
@@ -790,7 +811,8 @@ export class WebGPUEngine extends Engine {
 
             const attributeIndex = attributesNames.indexOf(name);
             if (attributeIndex === -1) {
-                throw "Required attribute not found in the shader.";
+                continue;
+                // throw "Required attribute not found in the shader.";
             }
 
             results[attributeIndex] = +location;
@@ -840,34 +862,331 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _releaseTexture(texture: InternalTexture): void {
+        // TODO. check if it is all to release.
+        if (texture._webGPUTexture) {
+            texture._webGPUTexture.destroy();
+        }
+    }
+
+    private _uploadMipMapsFromWebglTexture(mipMaps: number, webglEngineTexture: InternalTexture, gpuTexture: GPUTexture, width: number, height: number, face: number) {
+        this._uploadFromWebglTexture(webglEngineTexture, gpuTexture, width, height, face);
+        
+        let faceWidth = width;
+        let faceHeight = height;
+
+        for (let mip = 1; mip <= mipMaps; mip++) {
+            faceWidth = Math.max(Math.floor(faceWidth / 2), 1);
+            faceHeight = Math.max(Math.floor(faceHeight / 2), 1);
+
+            this._uploadFromWebglTexture(webglEngineTexture, gpuTexture, faceWidth, faceHeight, face, mip);
+        }
+    }
+
+    private _uploadFromWebglTexture(webglEngineTexture: InternalTexture, gpuTexture: GPUTexture, width: number, height: number, face: number, mip: number = 0): void {
+        let pixels = this._decodeEngine._readTexturePixels(webglEngineTexture, width, height, face, mip);
+        if (pixels instanceof Float32Array) {
+            const newPixels = new Uint8ClampedArray(pixels.length);
+            pixels.forEach((value, index) => newPixels[index] = value * 255);
+            pixels = newPixels;
+        }
+
+        const textureView: GPUTextureCopyView = {
+            texture: gpuTexture,
+            origin: { 
+                x: 0,
+                y: 0,
+                z: 0
+            },
+            mipLevel: mip,
+            arrayLayer: Math.max(face, 0),
+        };
+        const textureExtent = {
+            width,
+            height,
+            depth: 1
+        };
+
+        const commandEncoder = this._device.createCommandEncoder({});
+        const rowPitch = Math.ceil(width * 4 / 256) * 256;
+
+        let dataBuffer: DataBuffer;
+        if (rowPitch == width * 4) {
+            dataBuffer = this._createBuffer(pixels, WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
+            const bufferView: GPUBufferCopyView = {
+                buffer: dataBuffer.underlyingResource,
+                rowPitch: rowPitch,
+                imageHeight: height,
+                offset: 0,
+            };
+            commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
+        } else {
+            const alignedPixels = new Uint8Array(rowPitch * height);
+            let pixelsIndex = 0;
+            for (let y = 0; y < height; ++y) {
+                for (let x = 0; x < width; ++x) {
+                    let i = x * 4 + y * rowPitch;
+
+                    alignedPixels[i] = (pixels as any)[pixelsIndex];
+                    alignedPixels[i + 1] = (pixels as any)[pixelsIndex + 1];
+                    alignedPixels[i + 2] = (pixels as any)[pixelsIndex + 2];
+                    alignedPixels[i + 3] = (pixels as any)[pixelsIndex + 3];
+                    pixelsIndex += 4;
+                }
+            }
+            dataBuffer = this._createBuffer(alignedPixels, WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
+            const bufferView: GPUBufferCopyView = {
+                buffer: dataBuffer.underlyingResource,
+                rowPitch: rowPitch,
+                imageHeight: height,
+                offset: 0,
+            };
+            commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
+        }
+
+        this._device.getQueue().submit([commandEncoder.finish()]);
+
+        this._releaseBuffer(dataBuffer);
     }
 
     public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
-        var url = String(urlArg);
+        const texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
+        const url = String(urlArg);
+
+        // TODO. Find a better way.
+        // TODO. this._options.textureSize
 
         texture.url = url;
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
-        // texture.baseWidth = this._options.textureSize;
-        // texture.baseHeight = this._options.textureSize;
-        // texture.width = this._options.textureSize;
-        // texture.height = this._options.textureSize;
+
         if (format) {
             texture.format = format;
         }
 
-        texture.isReady = true;
+        let webglEngineTexture: InternalTexture;
+        const onLoadInternal = () => {
+            texture.isReady = webglEngineTexture.isReady;
 
-        if (onLoad) {
-            onLoad();
+            const width = webglEngineTexture.width;
+            const height = webglEngineTexture.height;
+            texture.width = width;
+            texture.height = height;
+            texture.baseWidth = width;
+            texture.baseHeight = height;
+            texture._isRGBD = webglEngineTexture._isRGBD;
+            texture._sphericalPolynomial = webglEngineTexture._sphericalPolynomial;
+
+            let mipMaps = Scalar.Log2(Math.max(width, height));
+            mipMaps = Math.round(mipMaps);
+
+            const textureExtent = {
+                width,
+                height,
+                depth: 1
+            };
+            const textureDescriptor: GPUTextureDescriptor = {
+                dimension: WebGPUConstants.GPUTextureDimension_2d,
+                format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
+                arrayLayerCount: 1,
+                mipLevelCount: noMipmap ? 1 : mipMaps + 1,
+                sampleCount: 1,
+                size: textureExtent,
+                usage: WebGPUConstants.GPUTextureUsage_TRANSFER_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
+            }
+
+            const gpuTexture = this._device.createTexture(textureDescriptor);
+            texture._webGPUTexture = gpuTexture;
+
+            // TODO.
+            const samplerDescriptor: GPUSamplerDescriptor = {
+                magFilter: "linear",
+                minFilter: "linear",
+                mipmapFilter: "linear",
+                addressModeU: "repeat",
+                addressModeV: "repeat",
+                addressModeW: "repeat",
+            };
+            const gpuSampler = this._device.createSampler(samplerDescriptor);
+            texture._webGPUSampler = gpuSampler;
+
+            if (noMipmap) {
+                this._uploadFromWebglTexture(webglEngineTexture, gpuTexture, width, height, -1);
+            }
+            else {
+                this._uploadMipMapsFromWebglTexture(mipMaps, webglEngineTexture, gpuTexture, width, height, -1);
+            }
+
+            texture._webGPUTextureView = gpuTexture.createDefaultView();
+
+            webglEngineTexture.dispose();
+
+            if (onLoad) {
+                onLoad();
+            }
         }
+        webglEngineTexture = this._decodeEngine.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, 
+            onLoadInternal, onError, buffer, fallBack, format);
 
         this._internalTexturesCache.push(texture);
 
         return texture;
     }
+
+    public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
+        var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+        texture.isCube = true;
+        texture.url = rootUrl;
+        texture.generateMipMaps = !noMipmap;
+        texture._lodGenerationScale = lodScale;
+        texture._lodGenerationOffset = lodOffset;
+    
+        if (!this._doNotHandleContextLost) {
+            texture._extension = forcedExtension;
+            texture._files = files;
+        }
+    
+        let webglEngineTexture: InternalTexture;
+        const onLoadInternal = () => {
+            texture.isReady = webglEngineTexture.isReady;
+
+            const width = webglEngineTexture.width;
+            const height = webglEngineTexture.height;
+            const depth = 1;
+            texture.width = width;
+            texture.height = height;
+            texture.baseWidth = width;
+            texture.baseHeight = height;
+            texture.depth = depth;
+            texture.baseDepth = depth;
+            texture._isRGBD = webglEngineTexture._isRGBD;
+            texture._sphericalPolynomial = webglEngineTexture._sphericalPolynomial;
+
+            let mipMaps = Scalar.Log2(width);
+            mipMaps = Math.round(mipMaps);
+
+            const textureExtent = {
+                width,
+                height,
+                depth,
+            };
+            const textureDescriptor: GPUTextureDescriptor = {
+                dimension: WebGPUConstants.GPUTextureDimension_2d,
+                format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
+                arrayLayerCount: 6,
+                mipLevelCount: noMipmap ? 1 : mipMaps + 1,
+                sampleCount: 1,
+                size: textureExtent,
+                usage: WebGPUConstants.GPUTextureUsage_TRANSFER_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
+            }
+
+            const gpuTexture = this._device.createTexture(textureDescriptor);
+            texture._webGPUTexture = gpuTexture;
+
+            // TODO.
+            const samplerDescriptor: GPUSamplerDescriptor = {
+                magFilter: "linear",
+                minFilter: "linear",
+                mipmapFilter: "linear",
+                addressModeU: "repeat",
+                addressModeV: "repeat",
+                addressModeW: "repeat",
+            };
+            const gpuSampler = this._device.createSampler(samplerDescriptor);
+            texture._webGPUSampler = gpuSampler;
+
+            const faces = [0, 1, 2, 3, 4, 5];
+            for (let face of faces) {
+                if (noMipmap) {
+                    this._uploadFromWebglTexture(webglEngineTexture, gpuTexture, width, height, face);
+                }
+                else {
+                    this._uploadMipMapsFromWebglTexture(mipMaps, webglEngineTexture, gpuTexture, width, height, face);
+                }
+            }
+            texture._webGPUTextureView = gpuTexture.createView({
+                arrayLayerCount: 6,
+                dimension: "cube",
+                format: "rgba8unorm",
+                mipLevelCount: noMipmap ? 1 : mipMaps + 1,
+                baseArrayLayer: 0,
+                baseMipLevel: 0
+            });
+            webglEngineTexture.dispose();
+        }
+        webglEngineTexture = this._decodeEngine.createCubeTexture(rootUrl, scene, files, noMipmap, onLoadInternal, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback, excludeLoaders);
+
+        this._internalTexturesCache.push(texture);
+    
+        return texture;
+    };
+
+    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
+        texture.samplingMode = samplingMode;
+    }
+
+    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+        // TODO.
+        throw "Unimplemented updateDynamicTexture on WebGPU so far";
+    }
+
+    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
+        if (this._currentEffect) {
+            const pipeline = this._currentEffect._pipelineContext as WebGPUPipelineContext;
+            if (!texture) {
+                pipeline.samplers[name] = null;
+            }
+            else if (pipeline.samplers[name]) {
+                pipeline.samplers[name]!.texture = texture!.getInternalTexture()!;
+            }
+            else {
+                pipeline.samplers[name] = {
+                    textureBinding: channel,
+                    samplerBinding: channel + 1,
+                    texture: texture!.getInternalTexture()!
+                };
+            }
+        }
+    }
+
+    public bindSamplers(effect: Effect): void { }
+
+    public _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
+        if (this._boundTexturesCache[this._activeChannel] !== texture) {
+            this._boundTexturesCache[this._activeChannel] = texture;
+            return true;
+        }
+        return false;
+    }
+
+    /** @hidden */
+    public _bindTexture(channel: number, texture: InternalTexture): void {
+        if (channel < 0) {
+            return;
+        }
+
+        this._bindTextureDirectly(0, texture);
+    }
+
+    /** @hidden */
+    public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+    }
+
+    /** @hidden */
+    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+    }
+
+    /** @hidden */
+    public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+    }
+
+    /** @hidden */
+    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
+    }
+
+    //------------------------------------------------------------------------------
+    //                              Render Target Textures
+    //------------------------------------------------------------------------------
 
     public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
         let fullOptions = new RenderTargetCreationOptions();
@@ -907,58 +1226,6 @@ export class WebGPUEngine extends Engine {
         this._internalTexturesCache.push(texture);
 
         return texture;
-    }
-
-    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-        texture.samplingMode = samplingMode;
-    }
-
-    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-
-    }
-
-    public bindSamplers(effect: Effect): void { }
-
-    /** @hidden */
-    public _getUnpackAlignement(): number {
-        return 1;
-    }
-
-    /** @hidden */
-    public _unpackFlipY(value: boolean) {
-    }
-
-    public _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
-        if (this._boundTexturesCache[this._activeChannel] !== texture) {
-            this._boundTexturesCache[this._activeChannel] = texture;
-            return true;
-        }
-        return false;
-    }
-
-    /** @hidden */
-    public _bindTexture(channel: number, texture: InternalTexture): void {
-        if (channel < 0) {
-            return;
-        }
-
-        this._bindTextureDirectly(0, texture);
-    }
-
-    /** @hidden */
-    public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
-    }
-
-    /** @hidden */
-    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
-    }
-
-    /** @hidden */
-    public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
-    }
-
-    /** @hidden */
-    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
     }
 
     //------------------------------------------------------------------------------
@@ -1287,10 +1554,11 @@ export class WebGPUEngine extends Engine {
                     continue;
                 }
 
-                vertexBuffer.type
-
                 const positionAttributeDescriptor: GPUVertexAttributeDescriptor = {
-                    shaderLocation: location,
+                    attributeIndex: location,
+
+                    // After Migration to Canary
+                    // shaderLocation: location,
                     offset: vertexBuffer.byteOffset,
                     format: this._getVertexInputDescriptorFormat(vertexBuffer.getKind(), vertexBuffer.type, vertexBuffer.normalized),
                 };
@@ -1329,10 +1597,10 @@ export class WebGPUEngine extends Engine {
         bindings = [];
 
         // Group 1: Camera
-        if (this._currentEffect!._uniformBuffersNames["Camera"] > -1) {
+        if (this._currentEffect!._uniformBuffersNames["Scene"] > -1) {
             const groupLayoutBinding: GPUBindGroupLayoutBinding = {
                 binding: 0,
-                visibility: WebGPUConstants.GPUShaderStageBit_VERTEX,
+                visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                 type: WebGPUConstants.GPUBindingType_uniformBuffer,
             };
             bindings.push(groupLayoutBinding);
@@ -1346,10 +1614,7 @@ export class WebGPUEngine extends Engine {
         bindings = [];
 
         // Group 3: Materials
-        bindings = [];
-
-        // Group 4: Mesh
-        if (this._currentEffect!._uniformBuffersNames["Mesh"]) {
+        if (this._currentEffect!._uniformBuffersNames["Material"] > -1) {
             const groupLayoutBinding: GPUBindGroupLayoutBinding = {
                 binding: 0,
                 visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
@@ -1362,6 +1627,42 @@ export class WebGPUEngine extends Engine {
                 bindings,
             });
             bindGroupLayouts[1] = uniformsBindGroupLayout;
+        }
+        bindings = [];
+
+        // Group 4: Mesh
+        if (this._currentEffect!._uniformBuffersNames["Mesh"]) {
+            const groupLayoutBinding: GPUBindGroupLayoutBinding = {
+                binding: 0,
+                visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
+                type: WebGPUConstants.GPUBindingType_uniformBuffer,
+            };
+            bindings.push(groupLayoutBinding);
+        }
+
+        // TODO. Should be on group 2 at the end so as we only have one mesh :-)
+        const samplers = this._currentEffect!._samplerList;
+        const context = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+        for (let samplerName of samplers) {
+            const bindingInfo = context.samplers[samplerName];
+            if (bindingInfo) {
+                bindings.push({
+                    binding: bindingInfo.textureBinding,
+                    visibility: WebGPUConstants.GPUShaderStageBit_FRAGMENT,
+                    type: "sampled-texture"
+                }, {
+                    binding: bindingInfo.samplerBinding,
+                    visibility: WebGPUConstants.GPUShaderStageBit_FRAGMENT,
+                    type: "sampler"
+                });
+            }
+        }
+
+        if (bindings.length > 0) {
+            const uniformsBindGroupLayout = this._device.createBindGroupLayout({
+                bindings,
+            });
+            bindGroupLayouts[2] = uniformsBindGroupLayout;
         }
 
         (this._currentEffect!._pipelineContext as WebGPUPipelineContext).bindGroupLayouts = bindGroupLayouts;
@@ -1441,8 +1742,8 @@ export class WebGPUEngine extends Engine {
     private _setRenderBindGroups(): void {
         const bindGroupLayouts = (this._currentEffect!._pipelineContext as WebGPUPipelineContext).bindGroupLayouts;
 
-        if (this._currentEffect!._uniformBuffersNames["Camera"] > -1) {
-            const dataBuffer = this._uniformsBuffers["Camera"];
+        if (this._currentEffect!._uniformBuffersNames["Scene"] > -1) {
+            const dataBuffer = this._uniformsBuffers["Scene"];
             const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
             // TODO. GC. and cache.
             const uniformBindGroup = this._device.createBindGroup({
@@ -1460,12 +1761,12 @@ export class WebGPUEngine extends Engine {
             this._currentRenderPass!.setBindGroup(0, uniformBindGroup);
         }
 
-        if (this._currentEffect!._uniformBuffersNames["Mesh"]) {
-            const dataBuffer = this._uniformsBuffers["Mesh"];
+        if (this._currentEffect!._uniformBuffersNames["Material"] > -1) {
+            const dataBuffer = this._uniformsBuffers["Material"];
             const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
             // TODO. GC. and cache.
             const uniformBindGroup = this._device.createBindGroup({
-                layout: bindGroupLayouts[1],
+                layout: bindGroupLayouts[0],
                 bindings: [{
                     binding: 0,
                     resource: {
@@ -1477,6 +1778,43 @@ export class WebGPUEngine extends Engine {
             });
 
             this._currentRenderPass!.setBindGroup(1, uniformBindGroup);
+        }
+
+        if (this._currentEffect!._uniformBuffersNames["Mesh"]) {
+            const dataBuffer = this._uniformsBuffers["Mesh"];
+            const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
+            // TODO. GC. and cache.
+            const bindings: GPUBindGroupBinding[] = [{
+                binding: 0,
+                resource: {
+                    buffer: webgpuBuffer,
+                    offset: 0,
+                    size: dataBuffer.capacity,
+                },
+            }];
+
+            // TODO. Should be on group 2 at the end so as we only have one mesh :-)
+            const samplers = this._currentEffect!._samplerList;
+            const context = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+            for (let samplerName of samplers) {
+                const bindingInfo = context.samplers[samplerName];
+                if (bindingInfo) {
+                    bindings.push({
+                        binding: bindingInfo.textureBinding,
+                        //resource: sampler.defaultView,
+                        resource: bindingInfo.texture._webGPUTextureView!,
+                    }, {
+                        binding: bindingInfo.samplerBinding,
+                        resource: bindingInfo.texture._webGPUSampler!,
+                    });
+                }
+            }
+            const uniformBindGroup = this._device.createBindGroup({
+                layout: bindGroupLayouts[2],
+                bindings: bindings,
+            });
+
+            this._currentRenderPass!.setBindGroup(2, uniformBindGroup);
         }
     }
 
@@ -1491,6 +1829,10 @@ export class WebGPUEngine extends Engine {
     }
 
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount: number = 1): void {
+        if (this._internalTexturesCache.length === 0 ||
+            !this._internalTexturesCache[0]._webGPUSampler ||
+            !this._internalTexturesCache[0]._webGPUTexture)
+            return;
         this._setRenderPipeline(fillMode);
 
         this._currentRenderPass!.drawIndexed(indexCount, instancesCount, indexStart, 0, 0);
@@ -1498,10 +1840,26 @@ export class WebGPUEngine extends Engine {
 
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
         this._currentIndexBuffer = null;
+        if (this._internalTexturesCache.length === 0 ||
+            !this._internalTexturesCache[0]._webGPUSampler ||
+            !this._internalTexturesCache[0]._webGPUTexture)
+            return;
 
         this._setRenderPipeline(fillMode);
 
         this._currentRenderPass!.draw(verticesCount, instancesCount, verticesStart, 0);
+    }
+
+    //------------------------------------------------------------------------------
+    //                              Misc
+    //------------------------------------------------------------------------------
+
+    /**
+     * Dispose and release all associated resources
+     */
+    public dispose(): void {
+        this._decodeEngine.dispose();
+        super.dispose();
     }
 
     //------------------------------------------------------------------------------
@@ -1540,6 +1898,11 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
     //                              Unused WebGPU
     //------------------------------------------------------------------------------
+    public _getUnpackAlignement(): number {
+        return 1;
+    }
+
+    public _unpackFlipY(value: boolean) { }
 
     public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
     }

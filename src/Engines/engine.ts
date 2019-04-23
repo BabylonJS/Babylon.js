@@ -5363,8 +5363,9 @@ export class Engine {
      * @param channel The texture channel
      * @param uniform The uniform to set
      * @param texture The texture to apply
+     * @param name The name of the uniform in the effect
      */
-    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void {
+    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
         if (channel === undefined) {
             return;
         }

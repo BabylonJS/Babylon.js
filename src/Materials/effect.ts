@@ -241,11 +241,12 @@ export class Effect implements IDisposable {
     public _bonesComputationForcedToCPU = false;
     /** @hidden */
     public _uniformBuffersNames: { [key: string]: number } = {};
+    /** @hidden */
+    public _samplerList: string[];
 
     private static _uniqueIdSeed = 0;
     private _engine: Engine;
     private _uniformsNames: string[];
-    private _samplerList: string[];
     private _samplers: { [key: string]: number } = {};
     private _isReady = false;
     private _compilationError = "";
@@ -621,7 +622,7 @@ export class Effect implements IDisposable {
 
         var preparedSourceCode = this._processPrecision(sourceCode);
 
-        if (this._engine.webGLVersion == 1) {
+        if (this._engine.webGLVersion == 1 && !this._engine.isWebGPU) {
             callback(preparedSourceCode);
             return;
         }
@@ -655,7 +656,12 @@ export class Effect implements IDisposable {
             result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
             result = result.replace(/gl_FragColor/g, "glFragColor");
             result = result.replace(/gl_FragData/g, "glFragData");
-            result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
+            if (this._engine.isWebGPU) {
+                result = result.replace(/void\s+?main\s*\(/g, "layout(location = 0) out vec4 glFragColor;\nvoid main(");
+            }
+            else {
+                result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
+            }
         }
 
         // Add multiview setup to top of file when defined
@@ -826,6 +832,7 @@ export class Effect implements IDisposable {
             }
 
             engine._executeWhenRenderingStateIsCompiled(this._pipelineContext, () => {
+                // TODO. Move the WebGL Part out.
                 if (engine.supportsUniformBuffers) {
                     for (var name in this._uniformBuffersNames) {
                         this.bindUniformBlock(name, this._uniformBuffersNames[name]);
@@ -837,23 +844,52 @@ export class Effect implements IDisposable {
                     this._uniforms[this._uniformsNames[index]] = uniform;
                 });
 
-                this._attributes = engine.getAttributes(this._pipelineContext, attributesNames);
+                if (!engine.isWebGPU) {
+                    let index: number;
+                    for (index = 0; index < this._samplerList.length; index++) {
+                        const sampler = this.getUniform(this._samplerList[index]);
 
-                var index: number;
-                for (index = 0; index < this._samplerList.length; index++) {
-                    var sampler = this.getUniform(this._samplerList[index]);
+                        if (sampler == null) {
+                            this._samplerList.splice(index, 1);
+                            index--;
+                        }
+                    }
 
-                    if (sampler == null) {
-                        this._samplerList.splice(index, 1);
-                        index--;
+                    this._samplerList.forEach((name, index) => {
+                        this._samplers[name] = index;
+                    });
+                }
+                else {
+                    // TODO. CLEANUP THIS STUFF (FOR SEB) !!!
+                    const samplersRegex = /layout\(set\s*=\s*(\d+)\s*,\s*binding\s*=\s*(\d+).*\)\s*uniform\s*(texture\S*)\s*(\S*)\s*;/gm;
+                    const foundSamplers: { [key: string]: number } = { };
+                    let matches: RegExpExecArray | null;
+                    while (matches = samplersRegex.exec(this._fragmentSourceCode)) {
+                        // const set = matches[1];
+                        const binding = matches[2];
+                        // const type = matches[3];
+                        const name = matches[4].replace("Texture", "");
+            
+                        foundSamplers[name] = +binding;
+                    }
+
+                    let index: number;
+                    for (index = 0; index < this._samplerList.length; index++) {
+                        const name = this._samplerList[index]
+                        const sampler = foundSamplers[this._samplerList[index]];
+
+                        if (sampler == null || sampler == undefined) {
+                            this._samplerList.splice(index, 1);
+                            index--;
+                        }
+                        else {
+                            this._samplers[name] = sampler;
+                        }
                     }
                 }
 
-                this._samplerList.forEach((name, index) => {
-                    this._samplers[name] = index;
-                });
-
-                engine.bindSamplers(this);
+                // Generic WebGL WebGPU part.
+                this._attributes = engine.getAttributes(this._pipelineContext, attributesNames);
 
                 this._compilationError = "";
                 this._isReady = true;
@@ -941,7 +977,7 @@ export class Effect implements IDisposable {
      * @param texture Texture to set.
      */
     public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
-        this._engine.setTexture(this._samplers[channel], this._uniforms[channel], texture);
+        this._engine.setTexture(this._samplers[channel], this._uniforms[channel], texture, channel);
     }
 
     /**

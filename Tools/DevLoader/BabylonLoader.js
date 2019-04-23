@@ -206,6 +206,7 @@ var BABYLONDEVTOOLS;
                 else if (!coreOnly || module.isCore) {
                     this.loadLibrary(moduleName, module.libraries[i], module);
                 }
+                // Allow also loaders in CORE.
                 else if (coreOnly && moduleName === "loaders") {
                     this.loadLibrary(moduleName, module.libraries[i], module);
                 }
