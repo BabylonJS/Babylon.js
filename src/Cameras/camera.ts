@@ -331,6 +331,7 @@ export class Camera extends Node {
      * Transfer the camera values to its UBO.
      */
     public transferToEffect(): void {
+        // TODO WEBGPU. Check if we could split scene and Camera ubo.
         const ubo = this._uniformBuffer;
         const scene = this.getScene();
 
@@ -351,9 +352,6 @@ export class Camera extends Node {
         ubo.updateVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
 
         ubo.update();
-        
-        // TODO WEBGPU.
-        scene.getEngine().bindUniformBufferBase(ubo.getBuffer()!, 0, "Camera");
     }
 
     /**

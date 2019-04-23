@@ -1610,9 +1610,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var world = effectiveMesh.getWorldMatrix();
 
         // TODO WEBGPU. Find a better approach.
-        if (engine.isWebGPU) {
-            this.transferToEffect(world);
-        }
+        this.transferToEffect(world);
 
         if (this._effectiveMaterial._storeEffectOnSubMeshes) {
             this._effectiveMaterial.bindForSubMesh(world, this, subMesh);
