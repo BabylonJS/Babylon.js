@@ -24,9 +24,11 @@ layout(std140, column_major) uniform;
 // }
 
 #ifdef WEBGPU
-layout(set = 0, binding = 0) 
+layout(set = 0, binding = 0) uniform Scene 
+#else
+uniform Scene 
 #endif
-uniform Scene {
+{
     mat4 viewProjection;
 #ifdef MULTIVIEW
 	mat4 viewProjectionR;
@@ -35,9 +37,10 @@ uniform Scene {
 };
 
 #ifdef WEBGPU
-layout(set = 1, binding = 0) 
+layout(set = 1, binding = 0) uniform Material 
+#else
+uniform Material 
 #endif
-uniform Material
 {
     uniform vec2 vAlbedoInfos;
     uniform vec4 vAmbientInfos;
@@ -124,9 +127,11 @@ uniform Material
 };
 
 #ifdef WEBGPU
-layout(set = 2, binding = 0) 
+layout(set = 2, binding = 0) uniform Mesh 
+#else
+uniform Mesh 
 #endif
-uniform Mesh {
+{
     mat4 world;
     float visibility;
 };

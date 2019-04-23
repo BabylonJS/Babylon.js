@@ -727,7 +727,7 @@ export class WebGPUEngine extends Engine {
     private _compilePipelineStageDescriptor(vertexCode: string, fragmentCode: string, defines: Nullable<string>): GPURenderPipelineStageDescriptor {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-        var shaderVersion = "#version 450\n#define WEBGGPU \n";
+        var shaderVersion = "#version 450\n#define WEBGPU \n";
         var vertexShader = this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion);
         var fragmentShader = this._compileShaderToSpirV(fragmentCode, "fragment", defines, shaderVersion);
 

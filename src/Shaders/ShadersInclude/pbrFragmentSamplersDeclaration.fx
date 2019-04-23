@@ -1,5 +1,5 @@
 #ifdef ENVIRONMENTBRDF
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(set = 2, binding = 1) uniform texture2D environmentBrdfSamplerTexture;
         layout(set = 2, binding = 2) uniform sampler environmentBrdfSamplerSampler;
         #define environmentBrdfSampler sampler2D(environmentBrdfSamplerTexture, environmentBrdfSamplerSampler)
@@ -13,7 +13,7 @@
     #ifdef REFLECTIONMAP_3D
         #define sampleReflection(s, c) textureCube(s, c)
 
-        #ifdef WEBGGPU
+        #ifdef WEBGPU
             layout(set = 2, binding = 3) uniform textureCube reflectionSamplerTexture;
             layout(set = 2, binding = 4) uniform sampler reflectionSamplerSampler;
             #define reflectionSampler samplerCube(reflectionSamplerTexture, reflectionSamplerSampler)
@@ -41,7 +41,7 @@
     #endif
 
     #ifdef REFLECTIONMAP_SKYBOX
-        #ifdef WEBGGPU
+        #ifdef WEBGPU
             layout(location = 4) in vec3 vPositionUVW;
         #else
             varying vec3 vPositionUVW;
@@ -62,7 +62,7 @@
         varying vec2 vAlbedoUV;
     #endif
 
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(set = 2, binding = 5) uniform texture2D albedoSamplerTexture;
         layout(set = 2, binding = 6) uniform sampler albedoSamplerSampler;
         #define albedoSampler sampler2D(albedoSamplerTexture, albedoSamplerSampler)
@@ -80,7 +80,7 @@
         varying vec2 vReflectivityUV;
     #endif
 
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(set = 2, binding = 7) uniform texture2D reflectivitySamplerTexture;
         layout(set = 2, binding = 8) uniform sampler reflectivitySamplerSampler;
         #define reflectivitySampler sampler2D(reflectivitySamplerTexture, reflectivitySamplerSampler)
@@ -98,7 +98,7 @@
         varying vec2 vAmbientUV;
     #endif
 
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(set = 2, binding = 9) uniform texture2D ambientSamplerTexture;
         layout(set = 2, binding = 10) uniform sampler ambientSamplerSampler;
         #define ambientSampler sampler2D(ambientSamplerTexture, ambientSamplerSampler)
@@ -116,7 +116,7 @@
         varying vec2 vEmissiveUV;
     #endif
 
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(set = 2, binding = 11) uniform texture2D emissiveSamplerTexture;
         layout(set = 2, binding = 12) uniform sampler emissiveSamplerSampler;
         #define emissiveSampler sampler2D(emissiveSamplerTexture, emissiveSamplerSampler)
@@ -134,7 +134,7 @@
         varying vec2 vBumpUV;
     #endif
 
-    #ifdef WEBGGPU
+    #ifdef WEBGPU
         layout(set = 2, binding = 13) uniform texture2D bumpSamplerTexture;
         layout(set = 2, binding = 14) uniform sampler bumpSamplerSampler;
         #define bumpSampler sampler2D(bumpSamplerTexture, bumpSamplerSampler)
