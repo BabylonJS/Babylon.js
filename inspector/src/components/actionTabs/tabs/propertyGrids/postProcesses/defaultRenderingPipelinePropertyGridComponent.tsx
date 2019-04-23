@@ -95,7 +95,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                     {
                         renderPipeline.glowLayerEnabled &&
                         <div>
-                            <SliderLineComponent label="Intensity" minimum={1} maximum={128} step={1} decimalCount={0} target={renderPipeline.glowLayer} propertyName="blurKernelSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <SliderLineComponent label="Blur kernel size" minimum={1} maximum={128} step={1} decimalCount={0} target={renderPipeline.glowLayer} propertyName="blurKernelSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <SliderLineComponent label="Intensity" minimum={0} maximum={10} step={0.1} target={renderPipeline.glowLayer} propertyName="intensity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         </div>
                     }
