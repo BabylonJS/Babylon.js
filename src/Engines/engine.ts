@@ -757,8 +757,8 @@ export class Engine {
     private _activeRenderLoops = new Array<() => void>();
 
     // Deterministic lockstepMaxSteps
-    private _deterministicLockstep: boolean = false;
-    private _lockstepMaxSteps: number = 4;
+    protected _deterministicLockstep: boolean = false;
+    protected _lockstepMaxSteps: number = 4;
 
     // Lost context
     /**
@@ -978,35 +978,32 @@ export class Engine {
         options = options || {};
 
         if ((<HTMLCanvasElement>canvasOrContext).getContext) {
-            canvas = <HTMLCanvasElement>canvasOrContext;
-            this._renderingCanvas = canvas;
+            if (options.premultipliedAlpha === false) {
+                this.premultipliedAlpha = false;
+            }
 
             if (antialias != null) {
                 options.antialias = antialias;
             }
-
-            if (options.deterministicLockstep === undefined) {
-                options.deterministicLockstep = false;
-            }
-
-            if (options.lockstepMaxSteps === undefined) {
-                options.lockstepMaxSteps = 4;
-            }
-
+    
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
-            }
-
-            if (options.audioEngine === undefined) {
-                options.audioEngine = true;
             }
 
             if (options.stencil === undefined) {
                 options.stencil = true;
             }
 
-            if (options.premultipliedAlpha === false) {
-                this.premultipliedAlpha = false;
+            if (options.deterministicLockstep === undefined) {
+                options.deterministicLockstep = false;
+            }
+    
+            if (options.lockstepMaxSteps === undefined) {
+                options.lockstepMaxSteps = 4;
+            }
+    
+            if (options.audioEngine === undefined) {
+                options.audioEngine = true;
             }
 
             this._deterministicLockstep = options.deterministicLockstep;
@@ -1052,6 +1049,9 @@ export class Engine {
                 }
             }
 
+            canvas = <HTMLCanvasElement>canvasOrContext;
+            this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
+
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -1087,42 +1087,6 @@ export class Engine {
             // Ensures a consistent color space unpacking of textures cross browser.
             this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
 
-            this._onCanvasFocus = () => {
-                this.onCanvasFocusObservable.notifyObservers(this);
-            };
-
-            this._onCanvasBlur = () => {
-                this.onCanvasBlurObservable.notifyObservers(this);
-            };
-
-            canvas.addEventListener("focus", this._onCanvasFocus);
-            canvas.addEventListener("blur", this._onCanvasBlur);
-
-            this._onBlur = () => {
-                if (this.disablePerformanceMonitorInBackground) {
-                    this._performanceMonitor.disable();
-                }
-                this._windowIsBackground = true;
-            };
-
-            this._onFocus = () => {
-                if (this.disablePerformanceMonitorInBackground) {
-                    this._performanceMonitor.enable();
-                }
-                this._windowIsBackground = false;
-            };
-
-            this._onCanvasPointerOut = (ev) => {
-                this.onCanvasPointerOutObservable.notifyObservers(ev);
-            };
-
-            if (DomManagement.IsWindowObjectExist()) {
-                window.addEventListener("blur", this._onBlur);
-                window.addEventListener("focus", this._onFocus);
-            }
-
-            canvas.addEventListener("pointerout", this._onCanvasPointerOut);
-
             // Context lost
             if (!this._doNotHandleContextLost) {
                 this._onContextLost = (evt: Event) => {
@@ -1154,10 +1118,6 @@ export class Engine {
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                 canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
-            }
-
-            if (!options.doNotHandleTouchAction) {
-                this._disableTouchAction();
             }
         } else {
             this._gl = <WebGLRenderingContext>canvasOrContext;
@@ -1238,11 +1198,6 @@ export class Engine {
             this._connectVREvents(canvas, anyDoc);
         }
 
-        // Create Audio Engine if needed.
-        if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
-            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
-        }
-
         // Prepare buffer pointers
         for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
             this._currentBufferPointers[i] = new BufferPointer();
@@ -1263,6 +1218,61 @@ export class Engine {
         console.log(`Babylon.js v${Engine.Version} - ${this.description}`);
 
         this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
+    }
+
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+     * @param audioEngine Defines if an audio engine should be created by default
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
+        this._renderingCanvas = canvas;
+
+        this._onCanvasFocus = () => {
+            this.onCanvasFocusObservable.notifyObservers(this);
+        };
+
+        this._onCanvasBlur = () => {
+            this.onCanvasBlurObservable.notifyObservers(this);
+        };
+
+        canvas.addEventListener("focus", this._onCanvasFocus);
+        canvas.addEventListener("blur", this._onCanvasBlur);
+
+        this._onBlur = () => {
+            if (this.disablePerformanceMonitorInBackground) {
+                this._performanceMonitor.disable();
+            }
+            this._windowIsBackground = true;
+        };
+
+        this._onFocus = () => {
+            if (this.disablePerformanceMonitorInBackground) {
+                this._performanceMonitor.enable();
+            }
+            this._windowIsBackground = false;
+        };
+
+        this._onCanvasPointerOut = (ev) => {
+            this.onCanvasPointerOutObservable.notifyObservers(ev);
+        };
+
+        if (DomManagement.IsWindowObjectExist()) {
+            window.addEventListener("blur", this._onBlur);
+            window.addEventListener("focus", this._onFocus);
+        }
+
+        canvas.addEventListener("pointerout", this._onCanvasPointerOut);
+
+        if (!doNotHandleTouchAction) {
+            this._disableTouchAction();
+        }
+
+        // Create Audio Engine if needed.
+        if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
+            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
+        }
     }
 
     // WebVR

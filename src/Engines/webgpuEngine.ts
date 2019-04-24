@@ -22,35 +22,47 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 /**
  * Options to create the WebGPU engine
  */
-export class WebGPUEngineOptions implements GPURequestAdapterOptions {
+export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
 
     /**
      * If delta time between frames should be constant
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
-    public deterministicLockstep = false;
+    deterministicLockstep?: boolean;
 
     /**
      * Maximum about of steps between frames (Default: 4)
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
-    public lockstepMaxSteps = 4;
+    lockstepMaxSteps?: number;
+
+    /**
+     * Defines that engine should ignore modifying touch action attribute and style
+     * If not handle, you might need to set it up on your side for expected touch devices behavior.
+     */
+    doNotHandleTouchAction?: boolean;
+
+    /**
+     * Defines if webaudio should be initialized as well
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     */
+    audioEngine?: boolean;
 
     /**
      * Defines the category of adapter to use.
      * Is it the discrete or integrated device.
      */
-    public powerPreference?: GPUPowerPreference;
+    powerPreference?: GPUPowerPreference;
 
     /**
      * Defines the device descriptor used to create a device.
      */
-    public deviceDescriptor: GPUDeviceDescriptor = {};
+    deviceDescriptor?: GPUDeviceDescriptor;
 
     /** 
      * Defines the requested Swap Chain Format.
      */
-    public swapChainFormat: GPUTextureFormat = WebGPUConstants.GPUTextureFormat_bgra8unorm;
+    swapChainFormat?: GPUTextureFormat;
 }
 
 /**
@@ -101,27 +113,6 @@ export class WebGPUEngine extends Engine {
         alpha: true,
         premultipliedAlpha: false,
     }, false);
-    //private _decodeScene = new Scene(this._decodeEngine);
-
-    /**
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
-     */
-    public isDeterministicLockStep(): boolean {
-        return this._options.deterministicLockstep;
-    }
-
-    /** @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep */
-    public getLockstepMaxSteps(): number {
-        return this._options.lockstepMaxSteps;
-    }
-
-    /**
-     * Sets hardware scaling, used to save performance if needed
-     * @see https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
-     */
-    public getHardwareScalingLevel(): number {
-        return 1.0;
-    }
 
     /**
      * Gets a boolean indicating that the engine supports uniform buffers
@@ -136,8 +127,11 @@ export class WebGPUEngine extends Engine {
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      */
-    public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = new WebGPUEngineOptions()) {
+    public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
+
+        options.deviceDescriptor = options.deviceDescriptor || { };
+        options.swapChainFormat = options.swapChainFormat || WebGPUConstants.GPUTextureFormat_bgra8unorm;
 
         this._decodeEngine.getCaps().textureFloat = false;
         this._decodeEngine.getCaps().textureFloatRender = false;
@@ -161,8 +155,18 @@ export class WebGPUEngine extends Engine {
             options.lockstepMaxSteps = 4;
         }
 
+        if (options.audioEngine === undefined) {
+            options.audioEngine = true;
+        }
+
+        this._deterministicLockstep = options.deterministicLockstep;
+        this._lockstepMaxSteps = options.lockstepMaxSteps;
+        this._doNotHandleContextLost = true;
+
         this._canvas = canvas;
         this._options = options;
+
+        this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
     }
 
     //------------------------------------------------------------------------------
