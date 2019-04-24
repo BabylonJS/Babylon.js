@@ -423,9 +423,9 @@ export class WebGPUEngine extends Engine {
         const padding = byteLength % 4;
         if (padding !== 0) {
             const tempView = new Uint8Array(src.buffer.slice(chunkStart, chunkEnd));
-            const src = new Uint8Array(byteLength + padding);
+            src = new Uint8Array(byteLength + padding);
             tempView.forEach((element, index) => {
-                src[index] = element;
+                (src as Uint8Array)[index] = element;
             });
             srcByteOffset = 0;
             chunkStart = 0;
@@ -1528,7 +1528,7 @@ export class WebGPUEngine extends Engine {
 
                     // After Migration to Canary
                     // shaderLocation: location,
-                    offset: vertexBuffer.byteOffset,
+                    offset: 0, // 1 to one mapping
                     format: this._getVertexInputDescriptorFormat(vertexBuffer.getKind(), vertexBuffer.type, vertexBuffer.normalized),
                 };
 
@@ -1712,7 +1712,7 @@ export class WebGPUEngine extends Engine {
                 var buffer = vertexBuffer.getBuffer();
                 if (buffer) {
                     vertexInputs.vertexBuffers.push(buffer.underlyingResource);
-                    vertexInputs.vertexOffsets.push(0);
+                    vertexInputs.vertexOffsets.push(vertexBuffer.byteOffset);
                 }
             }
         }
