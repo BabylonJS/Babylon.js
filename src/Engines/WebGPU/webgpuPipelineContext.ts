@@ -1,7 +1,7 @@
 import { IPipelineContext } from '../IPipelineContext';
 import { Nullable } from '../../types';
 import { WebGPUEngine } from '../webgpuEngine';
-import { InternalTexture } from 'Materials';
+import { InternalTexture } from '../../Materials/Textures/internalTexture';
 
 /** @hidden */
 export interface IWebGPUPipelineContextSamplerCache {

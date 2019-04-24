@@ -985,7 +985,7 @@ export class Engine {
             if (antialias != null) {
                 options.antialias = antialias;
             }
-    
+
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
@@ -997,11 +997,11 @@ export class Engine {
             if (options.deterministicLockstep === undefined) {
                 options.deterministicLockstep = false;
             }
-    
+
             if (options.lockstepMaxSteps === undefined) {
                 options.lockstepMaxSteps = 4;
             }
-    
+
             if (options.audioEngine === undefined) {
                 options.audioEngine = true;
             }
