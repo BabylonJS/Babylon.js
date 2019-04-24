@@ -3,7 +3,7 @@ import { Nullable, DataArray, IndicesArray, FloatArray } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Color3, Color4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
-import { Engine, EngineCapabilities } from "../Engines/engine";
+import { Engine, EngineCapabilities, InstancingAttributeInfo } from "../Engines/engine";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { EffectCreationOptions, EffectFallbacks, Effect } from "../Materials/effect";
