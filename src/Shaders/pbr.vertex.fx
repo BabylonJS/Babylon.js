@@ -51,16 +51,31 @@
     #endif
 #endif
 
+#ifdef INSTANCES
+    #ifdef WEBGPU
+        layout(location = 6) in vec4 world0;
+    #else
+        attribute vec4 world0;
+    #endif
+    #ifdef WEBGPU
+        layout(location = 7) in vec4 world1;
+    #else
+        attribute vec4 world1;
+    #endif
+    #ifdef WEBGPU
+        layout(location = 8) in vec4 world2;
+    #else
+        attribute vec4 world2;
+    #endif
+    #ifdef WEBGPU
+        layout(location = 9) in vec4 world3;
+    #else
+        attribute vec4 world3;
+    #endif
+#endif
+
 #include<helperFunctions>
 #include<bonesDeclaration>
-
-// Uniforms
-#ifdef INSTANCES
-	attribute vec4 world0;
-	attribute vec4 world1;
-	attribute vec4 world2;
-	attribute vec4 world3;
-#endif
 
 // Output
 #ifdef WEBGPU
