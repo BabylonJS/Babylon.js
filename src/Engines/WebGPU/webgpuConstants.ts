@@ -1,13 +1,13 @@
 /** @hidden */
 export class WebGPUConstants {
-    public static readonly GPUCullMode_none: GPUCullMode = "none"
-    public static readonly GPUCullMode_front: GPUCullMode = "front"
+    public static readonly GPUCullMode_none: GPUCullMode = "none";
+    public static readonly GPUCullMode_front: GPUCullMode = "front";
     public static readonly GPUCullMode_back: GPUCullMode = "back";
 
     public static readonly GPUFrontFace_ccw: GPUFrontFace = "ccw";
     public static readonly GPUFrontFace_cw: GPUFrontFace = "cw";
 
-    public static readonly GPUIndexFormat_uint16: GPUIndexFormat = "uint16"
+    public static readonly GPUIndexFormat_uint16: GPUIndexFormat = "uint16";
     public static readonly GPUIndexFormat_uint32: GPUIndexFormat = "uint32";
 
     public static readonly GPULoadOp_clear: GPULoadOp = "clear";
@@ -18,9 +18,9 @@ export class WebGPUConstants {
     public static readonly GPUPrimitiveTopology_pointList: GPUPrimitiveTopology = "point-list";
     public static readonly GPUPrimitiveTopology_lineList: GPUPrimitiveTopology = "line-list";
     public static readonly GPUPrimitiveTopology_lineStrip: GPUPrimitiveTopology = "line-strip";
-    public static readonly GPUPrimitiveTopology_triangleList: GPUPrimitiveTopology = "triangle-list"
+    public static readonly GPUPrimitiveTopology_triangleList: GPUPrimitiveTopology = "triangle-list";
     public static readonly GPUPrimitiveTopology_triangleStrip: GPUPrimitiveTopology = "triangle-strip";
-    
+
     public static readonly GPUTextureDimension_1d: GPUTextureDimension = "1d";
     public static readonly GPUTextureDimension_2d: GPUTextureDimension = "2d";
     public static readonly GPUTextureDimension_3d: GPUTextureDimension = "3d";
@@ -79,7 +79,7 @@ export class WebGPUConstants {
     /* Depth and Stencil formats */
     public static readonly GPUTextureFormat_depth32float: GPUTextureFormat = "depth32float";
     public static readonly GPUTextureFormat_depth32floatStencil8: GPUTextureFormat = "depth32float-stencil8";
-      
+
     public static readonly GPUTextureViewDimension_1d: GPUTextureViewDimension = "1d";
     public static readonly GPUTextureViewDimension_2d: GPUTextureViewDimension = "2d";
     public static readonly GPUTextureViewDimension_2dArray: GPUTextureViewDimension = "2d-array";
@@ -89,7 +89,7 @@ export class WebGPUConstants {
 
     public static readonly GPUPowerPreference_lowPower: GPUPowerPreference = "low-power";
     public static readonly GPUPowerPreference_highPerformance: GPUPowerPreference = "high-performance";
-    
+
     public static readonly GPUVertexFormat_uchar: GPUVertexFormat = "uchar";
     public static readonly GPUVertexFormat_uchar2: GPUVertexFormat = "uchar2";
     public static readonly GPUVertexFormat_uchar3: GPUVertexFormat = "uchar3";
@@ -149,7 +149,7 @@ export class WebGPUConstants {
     public static readonly GPUBufferUsage_VERTEX = 32;
     public static readonly GPUBufferUsage_UNIFORM = 64;
     public static readonly GPUBufferUsage_STORAGE = 128;
-    
+
     public static readonly GPUColorWriteBits_NONE = 0;
     public static readonly GPUColorWriteBits_RED = 1;
     public static readonly GPUColorWriteBits_GREEN = 2;

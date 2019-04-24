@@ -59,7 +59,7 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      */
     deviceDescriptor?: GPUDeviceDescriptor;
 
-    /** 
+    /**
      * Defines the requested Swap Chain Format.
      */
     swapChainFormat?: GPUTextureFormat;
@@ -102,7 +102,7 @@ export class WebGPUEngine extends Engine {
     private _currentVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
-    private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {}
+    private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
 
     // Caches
     private _compiledStages: { [key: string]: GPURenderPipelineStageDescriptor } = {};
@@ -180,11 +180,11 @@ export class WebGPUEngine extends Engine {
         return (window as any).Shaderc(shadercOptions)
             .then((shaderc: any) => {
                 this._shaderc = shaderc;
-                return navigator.gpu!.requestAdapter(this._options)
+                return navigator.gpu!.requestAdapter(this._options);
             })
             .then((adapter: GPUAdapter) => {
                 this._adapter = adapter;
-                return this._adapter.requestDevice(this._options.deviceDescriptor)
+                return this._adapter.requestDevice(this._options.deviceDescriptor);
             })
             .then((device: GPUDevice) => this._device = device)
             .then(() => {
@@ -431,7 +431,7 @@ export class WebGPUEngine extends Engine {
             // After Migration to Canary
             // buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, maxChunk);
         }
-        
+
         const tempView = new Uint8Array(src.buffer.slice(chunkStart + offset, chunkEnd));
         buffer.setSubData(dstByteOffset + offset, tempView.buffer);
 
@@ -820,7 +820,7 @@ export class WebGPUEngine extends Engine {
 
     private _uploadMipMapsFromWebglTexture(mipMaps: number, webglEngineTexture: InternalTexture, gpuTexture: GPUTexture, width: number, height: number, face: number) {
         this._uploadFromWebglTexture(webglEngineTexture, gpuTexture, width, height, face);
-        
+
         let faceWidth = width;
         let faceHeight = height;
 
@@ -842,7 +842,7 @@ export class WebGPUEngine extends Engine {
 
         const textureView: GPUTextureCopyView = {
             texture: gpuTexture,
-            origin: { 
+            origin: {
                 x: 0,
                 y: 0,
                 z: 0
@@ -943,7 +943,7 @@ export class WebGPUEngine extends Engine {
                 sampleCount: 1,
                 size: textureExtent,
                 usage: WebGPUConstants.GPUTextureUsage_TRANSFER_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
-            }
+            };
 
             const gpuTexture = this._device.createTexture(textureDescriptor);
             texture._webGPUTexture = gpuTexture;
@@ -974,8 +974,8 @@ export class WebGPUEngine extends Engine {
             if (onLoad) {
                 onLoad();
             }
-        }
-        webglEngineTexture = this._decodeEngine.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, 
+        };
+        webglEngineTexture = this._decodeEngine.createTexture(urlArg, noMipmap, invertY, scene, samplingMode,
             onLoadInternal, onError, buffer, fallBack, format);
 
         this._internalTexturesCache.push(texture);
@@ -990,12 +990,12 @@ export class WebGPUEngine extends Engine {
         texture.generateMipMaps = !noMipmap;
         texture._lodGenerationScale = lodScale;
         texture._lodGenerationOffset = lodOffset;
-    
+
         if (!this._doNotHandleContextLost) {
             texture._extension = forcedExtension;
             texture._files = files;
         }
-    
+
         let webglEngineTexture: InternalTexture;
         const onLoadInternal = () => {
             texture.isReady = webglEngineTexture.isReady;
@@ -1028,7 +1028,7 @@ export class WebGPUEngine extends Engine {
                 sampleCount: 1,
                 size: textureExtent,
                 usage: WebGPUConstants.GPUTextureUsage_TRANSFER_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
-            }
+            };
 
             const gpuTexture = this._device.createTexture(textureDescriptor);
             texture._webGPUTexture = gpuTexture;
@@ -1063,13 +1063,13 @@ export class WebGPUEngine extends Engine {
                 baseMipLevel: 0
             });
             webglEngineTexture.dispose();
-        }
+        };
         webglEngineTexture = this._decodeEngine.createCubeTexture(rootUrl, scene, files, noMipmap, onLoadInternal, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback, excludeLoaders);
 
         this._internalTexturesCache.push(texture);
-    
+
         return texture;
-    };
+    }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         texture.samplingMode = samplingMode;
@@ -1334,7 +1334,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _getDepthStencilStateDescriptor(): GPUDepthStencilStateDescriptor {
-        // TODO. Depth State according to the cached state. 
+        // TODO. Depth State according to the cached state.
         // And the current render pass attachment setup.
         const stencilFrontBack: GPUStencilStateFaceDescriptor = {
             compare: this._getCompareFunction(this._stencilState.stencilFunc),
@@ -1377,7 +1377,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _getRasterizationStateDescriptor(): GPURasterizationStateDescriptor {
-        // TODO. Cull State according to the cached state. 
+        // TODO. Cull State according to the cached state.
         // And the current render pass attachment setup.
         return {
             frontFace: this._getFrontFace(),
@@ -1397,14 +1397,14 @@ export class WebGPUEngine extends Engine {
 
     private _getColorStateDescriptors(): GPUColorStateDescriptor[] {
         // TODO. Color State according to the cached blend state.
-        // And the current render pass attaschment setup. 
+        // And the current render pass attaschment setup.
         // Manage Multi render target.
         return [{
             format: this._options.swapChainFormat,
             // alphaBlend: {
             //     srcFactor: ,
             //     dstFactor: ,
-            //     operation: , 
+            //     operation: ,
             // },
             // colorBlend: {
             //     srcFactor: ,
@@ -1445,7 +1445,7 @@ export class WebGPUEngine extends Engine {
                         return WebGPUConstants.GPUVertexFormat_uint2;
                     case VertexBuffer.FLOAT:
                         return WebGPUConstants.GPUVertexFormat_float2;
-                };
+                }
             case VertexBuffer.NormalKind:
             case VertexBuffer.PositionKind:
                 switch (type) {

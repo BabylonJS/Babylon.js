@@ -871,13 +871,13 @@ export class Effect implements IDisposable {
                         const binding = matches[2];
                         // const type = matches[3];
                         const name = matches[4].replace("Texture", "");
-            
+
                         foundSamplers[name] = +binding;
                     }
 
                     let index: number;
                     for (index = 0; index < this._samplerList.length; index++) {
-                        const name = this._samplerList[index]
+                        const name = this._samplerList[index];
                         const sampler = foundSamplers[this._samplerList[index]];
 
                         if (sampler == null || sampler == undefined) {
