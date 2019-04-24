@@ -723,7 +723,9 @@ export class WebGPUEngine extends Engine {
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
         key: string) {
-        let webGpuContext = pipelineContext as WebGPUPipelineContext;
+        const webGpuContext = pipelineContext as WebGPUPipelineContext;
+        webGpuContext.vertexShaderCode = vertexSourceCode;
+        webGpuContext.fragmentShaderCode = fragmentSourceCode;
 
         const stages = this._compiledStages[key];
         if (stages) {
@@ -736,11 +738,6 @@ export class WebGPUEngine extends Engine {
             else {
                 webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines);
             }
-
-            webGpuContext.vertexShaderCode = vertexSourceCode;
-            webGpuContext.fragmentShaderCode = fragmentSourceCode;
-            webGpuContext.stages = webGpuContext.stages;
-
             this._compiledStages[key] = webGpuContext.stages;
         }
     }
