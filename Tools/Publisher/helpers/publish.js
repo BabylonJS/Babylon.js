@@ -10,14 +10,14 @@ function publish(version, packageName, publishPath, public) {
 
     let tag = "";
     // check for alpha or beta
-    if (version.indexOf('alpha') !== -1 || version.indexOf('beta') !== -1) {
+    if (version.indexOf('alpha') !== -1 || version.indexOf('beta') !== -1 || version.indexOf('rc') !== -1) {
         tag = ' --tag preview';
     }
 
     //publish the respected package
     var cmd = 'npm publish "' + publishPath + '"' + tag;
     if (public) {
-       cmd += " --access public";
+        cmd += " --access public";
     }
 
     if (process.env.BABYLONJSREALPUBLISH === "true") {
