@@ -393,14 +393,15 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     private _createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
+        const padding = view.byteLength % 4;
         const verticesBufferDescriptor = {
-            size: view.byteLength,
+            size: view.byteLength + padding,
             usage: flags
         };
         const buffer = this._device.createBuffer(verticesBufferDescriptor);
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
-        dataBuffer.capacity = verticesBufferDescriptor.size;
+        dataBuffer.capacity = view.byteLength;
 
         this._setSubData(dataBuffer, 0, view);
 
@@ -416,7 +417,21 @@ export class WebGPUEngine extends Engine {
         // After Migration to Canary
         // This would do from PR #261
         let chunkStart = src.byteOffset + srcByteOffset;
-        const chunkEnd = chunkStart + byteLength;
+        let chunkEnd = chunkStart + byteLength;
+
+        // 4 bytes alignments for upload
+        const padding = byteLength % 4;
+        if (padding !== 0) {
+            const tempView = new Uint8Array(src.buffer.slice(chunkStart, chunkEnd));
+            const src = new Uint8Array(byteLength + padding);
+            tempView.forEach((element, index) => {
+                src[index] = element;
+            });
+            srcByteOffset = 0;
+            chunkStart = 0;
+            chunkEnd = byteLength + padding;
+            byteLength = byteLength + padding;
+        }
 
         // Chunk
         // After Migration to Canary
