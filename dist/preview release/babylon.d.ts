@@ -7998,6 +7998,8 @@ declare module BABYLON {
         /** @hidden */
         _linkedTransformNode: Nullable<TransformNode>;
         /** @hidden */
+        _waitingTransformNodeId: Nullable<string>;
+        /** @hidden */
         /** @hidden */
         _matrix: Matrix;
         /**
@@ -19180,6 +19182,8 @@ declare module BABYLON {
         private _uniqueId;
         /** @hidden */
         _numBonesWithLinkedTransformNode: number;
+        /** @hidden */
+        _hasWaitingData: Nullable<boolean>;
         /**
          * Specifies if the skeleton should be serialized
          */

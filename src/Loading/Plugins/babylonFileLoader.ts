@@ -345,6 +345,25 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             }
         }
 
+        // link skeleton transform nodes
+        for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
+            var skeleton = scene.skeletons[index];
+            if (skeleton._hasWaitingData) {
+                if (skeleton.bones != null) {
+                    skeleton.bones.forEach((bone) => {
+                        if (bone._waitingTransformNodeId) {
+                            var linkTransformNode = scene.getLastEntryByID(bone._waitingTransformNodeId) as TransformNode;
+                            if (linkTransformNode) {
+                                bone.linkTransformNode(linkTransformNode);
+                            }
+                            bone._waitingTransformNodeId = null;
+                        }
+                    });
+                }
+                skeleton._hasWaitingData = null;
+            }
+        }
+
         // freeze world matrix application
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var currentMesh = scene.meshes[index];
@@ -566,6 +585,25 @@ SceneLoader.RegisterPlugin({
                     }
                     if (currentMesh._waitingData.lods) {
                         loadDetailLevels(scene, currentMesh);
+                    }
+                }
+
+                // link skeleton transform nodes
+                for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
+                    var skeleton = scene.skeletons[index];
+                    if (skeleton._hasWaitingData) {
+                        if (skeleton.bones != null) {
+                            skeleton.bones.forEach((bone) => {
+                                if (bone._waitingTransformNodeId) {
+                                    var linkTransformNode = scene.getLastEntryByID(bone._waitingTransformNodeId) as TransformNode;
+                                    if (linkTransformNode) {
+                                        bone.linkTransformNode(linkTransformNode);
+                                    }
+                                    bone._waitingTransformNodeId = null;
+                                }
+                            });
+                        }
+                        skeleton._hasWaitingData = null;
                     }
                 }
 
