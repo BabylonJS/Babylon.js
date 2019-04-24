@@ -1466,6 +1466,10 @@ export class WebGPUEngine extends Engine {
             case VertexBuffer.MatricesWeightsKind:
             case VertexBuffer.MatricesWeightsExtraKind:
             case VertexBuffer.TangentKind:
+            case "world0":
+            case "world1":
+            case "world2":
+            case "world3":
                 switch (type) {
                     case VertexBuffer.BYTE:
                         return normalized ? WebGPUConstants.GPUVertexFormat_char4norm : WebGPUConstants.GPUVertexFormat_char4;
