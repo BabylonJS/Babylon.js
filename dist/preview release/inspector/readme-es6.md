@@ -20,7 +20,7 @@ import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 ```
 
-The first line will ensure you can access the property debugLayer of the scene while the second will ensure the inspector can be use within your scene.
+The first line will ensure you can access the property debugLayer of the scene while the second will ensure the inspector can be used within your scene.
 
 This is a great example where code splitting or conditional loading could be use to ensure you are not delivering the inspector if not part of your final app.
 

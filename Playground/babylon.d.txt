@@ -7906,6 +7906,7 @@ declare module BABYLON {
         private _needToDecompose;
         private _needToCompose;
         /** @hidden */linkedTransformNode: Nullable<TransformNode>;
+        /** @hidden */waitingTransformNodeId: Nullable<string>;
         /** @hidden */
         /** @hidden */matrix: Matrix;
         /**
@@ -18873,6 +18874,7 @@ declare module BABYLON {
         private _canUseTextureForBones;
         private _uniqueId;
         /** @hidden */numBonesWithLinkedTransformNode: number;
+        /** @hidden */hasWaitingData: Nullable<boolean>;
         /**
          * Specifies if the skeleton should be serialized
          */

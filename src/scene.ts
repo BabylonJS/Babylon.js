@@ -3084,7 +3084,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             const material = subMesh.getMaterial();
             if (material !== null && material !== undefined) {
                 // Render targets
-                if (material.hasRenderTargetTextures && material.getRenderTargetTextures !== undefined) {
+                if (material.hasRenderTargetTextures && material.getRenderTargetTextures != null) {
                     if (this._processedMaterials.indexOf(material) === -1) {
                         this._processedMaterials.push(material);
 

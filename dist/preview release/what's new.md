@@ -184,8 +184,6 @@
 - Migrating CI to Azure DevOps pipelines ([Sebavan](https://github.com/Sebavan))
 - Test both WebGL1 and WebGL2 ([Sebavan](https://github.com/Sebavan))
 
-### Viewer
-
 ## Bug fixes
 - Fixed ArcRotateCamera.setTarget (position was sometimes wrong) ([Deltakosh](https://github.com/deltakosh))
 - Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
@@ -267,11 +265,10 @@
 - Fix zoom inertia making it difficult to zoom out with ArcRotateCamera ([TrevorDev](https://github.com/TrevorDev))
 - Option for isInFrustum to check rigCameras, viewMatrix updates for rigCameras will notify their parent ([TrevorDev](https://github.com/TrevorDev))
 
-### Viewer
-
 ### Loaders
 
 - Added missing `loadedAnimationGroups` to `MeshAssetTask` ([bghgary](https://github.com/bghgary))
+- Added missing `linkTransformNode` to `BabylonFileLoader` ([MackeyK24](https://github.com/mackeyk24))
 
 ## Breaking changes
 
