@@ -679,14 +679,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Transfer the mesh values to its UBO.
+     * @param world The world matrix associated with the mesh
      */
     public transferToEffect(world: Matrix): void {
         const ubo = this._uniformBuffer;
 
-        // TODO. Instances.
-        // if (!defines.INSTANCES) {
         ubo.updateMatrix("world", world);
-        // }
         ubo.updateFloat("visibility", this._visibility);
 
         // TODO. Bones.
@@ -696,6 +694,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets the mesh uniform buffer.
+     * @return the uniform buffer of the mesh.
      */
     public getMeshUniformBuffer(): UniformBuffer {
         return this._uniformBuffer;

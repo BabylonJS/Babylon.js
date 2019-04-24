@@ -175,6 +175,8 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Initializes the WebGPU context and dependencies.
+     * @param shadercOptions Defines the ShaderC compiler options if necessary
+     * @returns a promise notifying the readiness of the engine.
      */
     public initEngineAsync(shadercOptions: any = null): Promise<void> {
         return (window as any).Shaderc(shadercOptions)
