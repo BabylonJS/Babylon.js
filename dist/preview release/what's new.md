@@ -272,6 +272,7 @@
 ### Loaders
 
 - Added missing `loadedAnimationGroups` to `MeshAssetTask` ([bghgary](https://github.com/bghgary))
+- Added missing `linkTransformNode` to `BabylonFileLoader` ([MackeyK24](https://github.com/mackeyk24))
 
 ## Breaking changes
 
