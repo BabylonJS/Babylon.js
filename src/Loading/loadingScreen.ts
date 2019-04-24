@@ -35,7 +35,10 @@ export class DefaultLoadingScreen implements ILoadingScreen {
     private _loadingDiv: Nullable<HTMLDivElement>;
     private _loadingTextDiv: HTMLDivElement;
 
+    /** Gets or sets the logo url to use for the default loading screen */
     public static DefaultLogoUrl = "";
+
+    /** Gets or sets the spinner url to use for the default loading screen */
     public static DefaultSpinnerUrl = "";
 
     /**
