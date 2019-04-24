@@ -60,6 +60,9 @@ export class Bone extends Node {
     public _linkedTransformNode: Nullable<TransformNode> = null;
 
     /** @hidden */
+    public _waitingTransformNodeId: Nullable<string> = null;
+
+    /** @hidden */
     get _matrix(): Matrix {
         this._compose();
         return this._localMatrix;

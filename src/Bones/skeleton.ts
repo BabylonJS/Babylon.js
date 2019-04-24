@@ -63,6 +63,9 @@ export class Skeleton implements IAnimatable {
     /** @hidden */
     public _numBonesWithLinkedTransformNode = 0;
 
+    /** @hidden */
+    public _hasWaitingData: Nullable<boolean> = null;
+
     /**
      * Specifies if the skeleton should be serialized
      */
@@ -690,6 +693,11 @@ export class Skeleton implements IAnimatable {
 
             if (parsedBone.animation) {
                 bone.animations.push(Animation.Parse(parsedBone.animation));
+            }
+
+            if (parsedBone.linkedTransformNodeId !== undefined && parsedBone.linkedTransformNodeId !== null) {
+                skeleton._hasWaitingData = true;
+                bone._waitingTransformNodeId = parsedBone.linkedTransformNodeId;
             }
         }
 
