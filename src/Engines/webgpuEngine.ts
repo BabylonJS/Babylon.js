@@ -577,6 +577,10 @@ export class WebGPUEngine extends Engine {
         throw "Not implemented on WebGPU so far.";
     }
 
+    public updateAndBindInstancesBuffer(instancesBuffer: DataBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void {
+        throw "Not implemented on WebGPU so far.";
+    }
+
     public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
@@ -1528,7 +1532,7 @@ export class WebGPUEngine extends Engine {
 
                     // After Migration to Canary
                     // shaderLocation: location,
-                    offset: 0, // 1 to one mapping
+                    offset: 0, // not available in WebGL
                     format: this._getVertexInputDescriptorFormat(vertexBuffer.getKind(), vertexBuffer.type, vertexBuffer.normalized),
                 };
 
