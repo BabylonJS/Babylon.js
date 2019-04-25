@@ -7998,6 +7998,8 @@ declare module BABYLON {
         /** @hidden */
         _linkedTransformNode: Nullable<TransformNode>;
         /** @hidden */
+        _waitingTransformNodeId: Nullable<string>;
+        /** @hidden */
         /** @hidden */
         _matrix: Matrix;
         /**
@@ -19180,6 +19182,8 @@ declare module BABYLON {
         private _uniqueId;
         /** @hidden */
         _numBonesWithLinkedTransformNode: number;
+        /** @hidden */
+        _hasWaitingData: Nullable<boolean>;
         /**
          * Specifies if the skeleton should be serialized
          */
@@ -22686,6 +22690,8 @@ declare module BABYLON {
         private _intersectLines;
         /** @hidden */
         private _intersectTriangles;
+        /** @hidden */
+        private _intersectUnIndexedTriangles;
         /** @hidden */
         _rebuild(): void;
         /**
@@ -47020,7 +47026,7 @@ declare module BABYLON {
         /**
          * Renders the submesh passed in parameter to the generation map.
          */
-        protected _renderSubMesh(subMesh: SubMesh): void;
+        protected _renderSubMesh(subMesh: SubMesh, enableAlphaMode?: boolean): void;
         /**
          * Rebuild the required buffers.
          * @hidden Internal use only.
@@ -53631,6 +53637,10 @@ declare module BABYLON {
          * If glow layer is enabled. (Adds a glow effect to emmissive materials)
          */
         glowLayerEnabled: boolean;
+        /**
+         * Gets the glow layer (or null if not defined)
+         */
+        readonly glowLayer: Nullable<GlowLayer>;
         /**
          * Enable or disable the chromaticAberration process from the pipeline
          */
