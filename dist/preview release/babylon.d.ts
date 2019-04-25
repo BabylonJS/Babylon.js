@@ -29134,7 +29134,7 @@ declare module BABYLON {
          * Compiled shader to webGL program.
          * @hidden
          */
-        _pipelineContext: IPipelineContext;
+        _pipelineContext: Nullable<IPipelineContext>;
         private _valueCache;
         private static _baseCache;
         /**
@@ -29170,7 +29170,7 @@ declare module BABYLON {
          * The pipeline context for this effect
          * @returns the associated pipeline context
          */
-        getPipelineContext(): IPipelineContext;
+        getPipelineContext(): Nullable<IPipelineContext>;
         /**
          * The set of names of attribute variables for the shader.
          * @returns An array of attribute names.
