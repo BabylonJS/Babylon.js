@@ -912,12 +912,11 @@ export class TransformNode extends Node {
      * @returns the world matrix
      */
     public computeWorldMatrix(force?: boolean): Matrix {
-        let currentRenderId = this.getScene().getRenderId();
-
         if (this._isWorldMatrixFrozen && !this._isDirty) {
             return this._worldMatrix;
         }
 
+        let currentRenderId = this.getScene().getRenderId();
         if (!this._isDirty && !force && this.isSynchronized()) {
             this._currentRenderId = currentRenderId;
             return this._worldMatrix;
