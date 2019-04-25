@@ -3084,7 +3084,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             const material = subMesh.getMaterial();
             if (material !== null && material !== undefined) {
                 // Render targets
-                if (material.hasRenderTargetTextures && material.getRenderTargetTextures !== undefined) {
+                if (material.hasRenderTargetTextures && material.getRenderTargetTextures != null) {
                     if (this._processedMaterials.indexOf(material) === -1) {
                         this._processedMaterials.push(material);
 
@@ -3216,8 +3216,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._evaluateActiveMeshes();
         this._activeMeshesFrozen = true;
 
-        for (var mesh of this._activeMeshes.data) {
-            mesh._freeze();
+        for (var index = 0; index < this._activeMeshes.length; index++) {
+            this._activeMeshes.data[index]._freeze();
         }
         return this;
     }
@@ -3227,8 +3227,8 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public unfreezeActiveMeshes(): Scene {
-        for (var mesh of this._activeMeshes.data) {
-            mesh._unFreeze();
+        for (var index = 0; index < this._activeMeshes.length; index++) {
+            this._activeMeshes.data[index]._unFreeze();
         }
 
         this._activeMeshesFrozen = false;
