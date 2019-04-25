@@ -4,6 +4,7 @@ import { EventState, Observer } from "../../Misc/observable";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import { Scalar } from '../../Maths/math.scalar';
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
@@ -67,6 +68,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                             estimatedTargetRadius -= targetInertia;
                             targetInertia *= this.camera.inertia;
                         }
+                        estimatedTargetRadius = Scalar.Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
                         delta = this.computeDeltaFromMouseWheelLegacyEvent(mouseWheelLegacyEvent, estimatedTargetRadius);
                     }
                 } else {
