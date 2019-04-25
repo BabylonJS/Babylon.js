@@ -2415,22 +2415,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
 }
 
 declare module 'babylonjs-viewer/configuration/interfaces/vrConfiguration' {
-    import { VRExperienceHelperOptions } from "babylonjs";
-    export interface IVRConfiguration {
-        disabled?: boolean;
-        objectScaleFactor?: number;
-        disableInteractions?: boolean;
-        disableTeleportation?: boolean;
-        overrideFloorMeshName?: string;
-        vrOptions?: VRExperienceHelperOptions;
-        modelHeightCorrection?: number | boolean;
-        rotateUsingControllers?: boolean;
-        cameraPosition?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-    }
+    
 }
 
 declare module 'babylonjs-viewer/labs/environmentSerializer' {
