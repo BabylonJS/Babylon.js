@@ -6,9 +6,9 @@
 // Dependencies for this module:
 //   ../../../../../Tools/Gulp/babylonjs
 //   ../../../../../Tools/Gulp/babylonjs-loaders
-//   ../../../../../Tools/Gulp/babylonjs/Misc/observable
 //   ../../../../../Tools/Gulp/babylonjs/Engines/engine
 //   ../../../../../Tools/Gulp/babylonjs/Loading/sceneLoader
+//   ../../../../../Tools/Gulp/babylonjs/Misc/observable
 //   ../../../../../Tools/Gulp/babylonjs/scene
 //   ../../../../../Tools/Gulp/babylonjs/Meshes/abstractMesh
 //   ../../../../../Tools/Gulp/babylonjs/Particles/IParticleSystem
@@ -119,59 +119,7 @@ declare module 'babylonjs-viewer/configuration/globals' {
 }
 
 declare module 'babylonjs-viewer/viewer/viewerManager' {
-    import { Observable } from 'babylonjs/Misc/observable';
-    import { AbstractViewer } from 'babylonjs-viewer/viewer/viewer';
-    /**
-        * The viewer manager is the container for all viewers currently registered on this page.
-        * It is possible to have more than one viewer on a single page.
-        */
-    export class ViewerManager {
-            /**
-                * A callback that will be triggered when a new viewer was added
-                */
-            onViewerAdded: (viewer: AbstractViewer) => void;
-            /**
-                * Will notify when a new viewer was added
-                */
-            onViewerAddedObservable: Observable<AbstractViewer>;
-            /**
-                * Will notify when a viewer was removed (disposed)
-                */
-            onViewerRemovedObservable: Observable<string>;
-            constructor();
-            /**
-                * Adding a new viewer to the viewer manager and start tracking it.
-                * @param viewer the viewer to add
-                */
-            addViewer(viewer: AbstractViewer): void;
-            /**
-                * remove a viewer from the viewer manager
-                * @param viewer the viewer to remove
-                */
-            removeViewer(viewer: AbstractViewer): void;
-            /**
-                * Get a viewer by its baseId (if the container element has an ID, it is the this is. if not, a random id was assigned)
-                * @param id the id of the HTMl element (or the viewer's, if none provided)
-                */
-            getViewerById(id: string): AbstractViewer;
-            /**
-                * Get a viewer using a container element
-                * @param element the HTML element to search viewers associated with
-                */
-            getViewerByHTMLElement(element: HTMLElement): AbstractViewer | undefined;
-            /**
-                * Get a promise that will fullfil when this viewer was initialized.
-                * Since viewer initialization and template injection is asynchronous, using the promise will guaranty that
-                * you will get the viewer after everything was already configured.
-                * @param id the viewer id to find
-                */
-            getViewerPromiseById(id: string): Promise<AbstractViewer>;
-            /**
-                * dispose the manager and all of its associated viewers
-                */
-            dispose(): void;
-    }
-    export let viewerManager: ViewerManager;
+    
 }
 
 declare module 'babylonjs-viewer/viewer/defaultViewer' {
@@ -230,11 +178,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Mainly used for help and errors
                 * @param subScreen the name of the subScreen. Those can be defined in the configuration object
                 */
-            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
+            showOverlayScreen(subScreen: string): Promise<Template> | Promise<string>;
             /**
                 * Hide the overlay screen.
                 */
-            hideOverlayScreen(): Promise<string> | Promise<Template>;
+            hideOverlayScreen(): Promise<Template> | Promise<string>;
             /**
                 * show the viewer (in case it was hidden)
                 *
@@ -251,11 +199,11 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
                 * Show the loading screen.
                 * The loading screen can be configured using the configuration object
                 */
-            showLoadingScreen(): Promise<string> | Promise<Template>;
+            showLoadingScreen(): Promise<Template> | Promise<string>;
             /**
                 * Hide the loading screen
                 */
-            hideLoadingScreen(): Promise<string> | Promise<Template>;
+            hideLoadingScreen(): Promise<Template> | Promise<string>;
             dispose(): void;
             protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
     }
