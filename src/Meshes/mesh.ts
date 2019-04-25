@@ -2075,7 +2075,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var meshes = this.getScene().meshes;
             for (const abstractMesh of meshes) {
                 let mesh = abstractMesh as Mesh;
-                if (mesh._internalMeshDataInfo._source && mesh._internalMeshDataInfo._source === this) {
+                if (mesh._internalMeshDataInfo && mesh._internalMeshDataInfo._source && mesh._internalMeshDataInfo._source === this) {
                     mesh._internalMeshDataInfo._source = null;
                 }
             }
