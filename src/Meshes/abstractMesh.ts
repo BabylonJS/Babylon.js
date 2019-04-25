@@ -681,7 +681,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         const ubo = this._uniformBuffer;
 
         ubo.updateMatrix("world", world);
-        ubo.updateFloat("visibility", this._visibility);
+        ubo.updateFloat("visibility", this._internalAbstractMeshDataInfo._visibility);
 
         // TODO. Bones.
 
