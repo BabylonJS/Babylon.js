@@ -1,5 +1,5 @@
 import { Tools } from "../Misc/tools";
-import { Observer, Observable } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene, IDisposable } from "../scene";
@@ -21,6 +21,7 @@ import { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
+import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -55,6 +56,22 @@ class _FacetDataStorage {
     public facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
 
     public invertedMatrix: Matrix; // Inverted world matrix.
+}
+
+/**
+ * @hidden
+ **/
+class _InternalAbstractMeshDataInfo {
+    public _hasVertexAlpha = false;
+    public _useVertexColors = true;
+    public _numBoneInfluencers = 4;
+    public _applyFog = true;
+    public _receiveShadows = false;
+    public _facetData = new _FacetDataStorage();
+    public _visibility = 1.0;
+    public _skeleton: Nullable<Skeleton> = null;
+    public _layerMask: number = 0x0FFFFFFF;
+    public _computeBonesUsingShaders = true;
 }
 
 /**
@@ -134,7 +151,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return TransformNode.BILLBOARDMODE_ALL;
     }
 
-    private _facetData = new _FacetDataStorage();
+    // Internal data
+    private _internalAbstractMeshDataInfo = new _InternalAbstractMeshDataInfo();
 
     /**
      * The culling strategy to use to check whether the mesh must be rendered or not.
@@ -153,17 +171,17 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
      */
     public get facetNb(): number {
-        return this._facetData.facetNb;
+        return this._internalAbstractMeshDataInfo._facetData.facetNb;
     }
     /**
      * Gets or set the number (integer) of subdivisions per axis in the partioning space
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
      */
     public get partitioningSubdivisions(): number {
-        return this._facetData.partitioningSubdivisions;
+        return this._internalAbstractMeshDataInfo._facetData.partitioningSubdivisions;
     }
     public set partitioningSubdivisions(nb: number) {
-        this._facetData.partitioningSubdivisions = nb;
+        this._internalAbstractMeshDataInfo._facetData.partitioningSubdivisions = nb;
     }
     /**
      * The ratio (float) to apply to the bouding box size to set to the partioning space.
@@ -171,10 +189,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
      */
     public get partitioningBBoxRatio(): number {
-        return this._facetData.partitioningBBoxRatio;
+        return this._internalAbstractMeshDataInfo._facetData.partitioningBBoxRatio;
     }
     public set partitioningBBoxRatio(ratio: number) {
-        this._facetData.partitioningBBoxRatio = ratio;
+        this._internalAbstractMeshDataInfo._facetData.partitioningBBoxRatio = ratio;
     }
 
     /**
@@ -184,10 +202,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
      */
     public get mustDepthSortFacets(): boolean {
-        return this._facetData.facetDepthSort;
+        return this._internalAbstractMeshDataInfo._facetData.facetDepthSort;
     }
     public set mustDepthSortFacets(sort: boolean) {
-        this._facetData.facetDepthSort = sort;
+        this._internalAbstractMeshDataInfo._facetData.facetDepthSort = sort;
     }
 
     /**
@@ -197,10 +215,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
      */
     public get facetDepthSortFrom(): Vector3 {
-        return this._facetData.facetDepthSortFrom;
+        return this._internalAbstractMeshDataInfo._facetData.facetDepthSortFrom;
     }
     public set facetDepthSortFrom(location: Vector3) {
-        this._facetData.facetDepthSortFrom = location;
+        this._internalAbstractMeshDataInfo._facetData.facetDepthSortFrom = location;
     }
 
     /**
@@ -208,7 +226,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
      */
     public get isFacetDataEnabled(): boolean {
-        return this._facetData.facetDataEnabled;
+        return this._internalAbstractMeshDataInfo._facetData.facetDataEnabled;
     }
 
     /** @hidden */
@@ -227,14 +245,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     */
     public onCollideObservable = new Observable<AbstractMesh>();
 
-    private _onCollideObserver: Nullable<Observer<AbstractMesh>>;
-
     /** Set a function to call when this mesh collides with another one */
     public set onCollide(callback: () => void) {
-        if (this._onCollideObserver) {
-            this.onCollideObservable.remove(this._onCollideObserver);
+        if (this._meshCollisionData._onCollideObserver) {
+            this.onCollideObservable.remove(this._meshCollisionData._onCollideObserver);
         }
-        this._onCollideObserver = this.onCollideObservable.add(callback);
+        this._meshCollisionData._onCollideObserver = this.onCollideObservable.add(callback);
     }
 
     /**
@@ -242,13 +258,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     */
     public onCollisionPositionChangeObservable = new Observable<Vector3>();
 
-    private _onCollisionPositionChangeObserver: Nullable<Observer<Vector3>>;
     /** Set a function to call when the collision's position changes */
     public set onCollisionPositionChange(callback: () => void) {
-        if (this._onCollisionPositionChangeObserver) {
-            this.onCollisionPositionChangeObservable.remove(this._onCollisionPositionChangeObserver);
+        if (this._meshCollisionData._onCollisionPositionChangeObserver) {
+            this.onCollisionPositionChangeObservable.remove(this._meshCollisionData._onCollisionPositionChangeObserver);
         }
-        this._onCollisionPositionChangeObserver = this.onCollisionPositionChangeObservable.add(callback);
+        this._meshCollisionData._onCollisionPositionChangeObserver = this.onCollisionPositionChangeObservable.add(callback);
     }
 
     /**
@@ -266,8 +281,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _occlusionQuery: Nullable<WebGLQuery> = null;
 
-    private _visibility = 1.0;
-
     /** @hidden */
     public _isActive = false;
 
@@ -281,18 +294,18 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets or sets mesh visibility between 0 and 1 (default is 1)
      */
     public get visibility(): number {
-        return this._visibility;
+        return this._internalAbstractMeshDataInfo._visibility;
     }
 
     /**
      * Gets or sets mesh visibility between 0 and 1 (default is 1)
      */
     public set visibility(value: number) {
-        if (this._visibility === value) {
+        if (this._internalAbstractMeshDataInfo._visibility === value) {
             return;
         }
 
-        this._visibility = value;
+        this._internalAbstractMeshDataInfo._visibility = value;
         this._markSubMeshesAsMiscDirty();
     }
 
@@ -362,21 +375,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._unBindEffect();
     }
 
-    private _receiveShadows = false;
-
     /**
      * Gets or sets a boolean indicating that this mesh can receive realtime shadows
      * @see http://doc.babylonjs.com/babylon101/shadows
      */
     public get receiveShadows(): boolean {
-        return this._receiveShadows;
+        return this._internalAbstractMeshDataInfo._receiveShadows;
     }
     public set receiveShadows(value: boolean) {
-        if (this._receiveShadows === value) {
+        if (this._internalAbstractMeshDataInfo._receiveShadows === value) {
             return;
         }
 
-        this._receiveShadows = value;
+        this._internalAbstractMeshDataInfo._receiveShadows = value;
         this._markSubMeshesAsLightDirty();
     }
 
@@ -390,78 +401,71 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** Defines alpha to use when rendering overlay */
     public overlayAlpha = 0.5;
 
-    private _hasVertexAlpha = false;
     /** Gets or sets a boolean indicating that this mesh contains vertex color data with alpha values */
     public get hasVertexAlpha(): boolean {
-        return this._hasVertexAlpha;
+        return this._internalAbstractMeshDataInfo._hasVertexAlpha;
     }
     public set hasVertexAlpha(value: boolean) {
-        if (this._hasVertexAlpha === value) {
+        if (this._internalAbstractMeshDataInfo._hasVertexAlpha === value) {
             return;
         }
 
-        this._hasVertexAlpha = value;
+        this._internalAbstractMeshDataInfo._hasVertexAlpha = value;
         this._markSubMeshesAsAttributesDirty();
         this._markSubMeshesAsMiscDirty();
     }
 
-    private _useVertexColors = true;
-
     /** Gets or sets a boolean indicating that this mesh needs to use vertex color data to render (if this kind of vertex data is available in the geometry) */
     public get useVertexColors(): boolean {
-        return this._useVertexColors;
+        return this._internalAbstractMeshDataInfo._useVertexColors;
     }
     public set useVertexColors(value: boolean) {
-        if (this._useVertexColors === value) {
+        if (this._internalAbstractMeshDataInfo._useVertexColors === value) {
             return;
         }
 
-        this._useVertexColors = value;
+        this._internalAbstractMeshDataInfo._useVertexColors = value;
         this._markSubMeshesAsAttributesDirty();
     }
 
-    private _computeBonesUsingShaders = true;
     /**
      * Gets or sets a boolean indicating that bone animations must be computed by the CPU (false by default)
      */
     public get computeBonesUsingShaders(): boolean {
-        return this._computeBonesUsingShaders;
+        return this._internalAbstractMeshDataInfo._computeBonesUsingShaders;
     }
     public set computeBonesUsingShaders(value: boolean) {
-        if (this._computeBonesUsingShaders === value) {
+        if (this._internalAbstractMeshDataInfo._computeBonesUsingShaders === value) {
             return;
         }
 
-        this._computeBonesUsingShaders = value;
+        this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
         this._markSubMeshesAsAttributesDirty();
     }
 
-    private _numBoneInfluencers = 4;
     /** Gets or sets the number of allowed bone influences per vertex (4 by default) */
     public get numBoneInfluencers(): number {
-        return this._numBoneInfluencers;
+        return this._internalAbstractMeshDataInfo._numBoneInfluencers;
     }
     public set numBoneInfluencers(value: number) {
-        if (this._numBoneInfluencers === value) {
+        if (this._internalAbstractMeshDataInfo._numBoneInfluencers === value) {
             return;
         }
 
-        this._numBoneInfluencers = value;
+        this._internalAbstractMeshDataInfo._numBoneInfluencers = value;
         this._markSubMeshesAsAttributesDirty();
     }
-
-    private _applyFog = true;
 
     /** Gets or sets a boolean indicating that this mesh will allow fog to be rendered on it (true by default) */
     public get applyFog(): boolean {
-        return this._applyFog;
+        return this._internalAbstractMeshDataInfo._applyFog;
     }
     public set applyFog(value: boolean) {
-        if (this._applyFog === value) {
+        if (this._internalAbstractMeshDataInfo._applyFog === value) {
             return;
         }
 
-        this._applyFog = value;
+        this._internalAbstractMeshDataInfo._applyFog = value;
         this._markSubMeshesAsMiscDirty();
     }
 
@@ -472,22 +476,20 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes collision (true by default) */
     public useOctreeForCollisions = true;
 
-    private _layerMask: number = 0x0FFFFFFF;
-
     /**
      * Gets or sets the current layer mask (default is 0x0FFFFFFF)
      * @see http://doc.babylonjs.com/how_to/layermasks_and_multi-cam_textures
      */
     public get layerMask(): number {
-        return this._layerMask;
+        return this._internalAbstractMeshDataInfo._layerMask;
     }
 
     public set layerMask(value: number) {
-        if (value === this._layerMask) {
+        if (value === this._internalAbstractMeshDataInfo._layerMask) {
             return;
         }
 
-        this._layerMask = value;
+        this._internalAbstractMeshDataInfo._layerMask = value;
         this._resyncLightSources();
     }
 
@@ -508,9 +510,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public actionManager: Nullable<AbstractActionManager> = null;
 
     // Collisions
-    private _checkCollisions = false;
-    private _collisionMask = -1;
-    private _collisionGroup = -1;
+    private _meshCollisionData = new _MeshCollisionData();
 
     /**
      * Gets or sets the ellipsoid used to impersonate this mesh when using collision engine (default is (0.5, 1, 0.5))
@@ -522,20 +522,17 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public ellipsoidOffset = new Vector3(0, 0, 0);
-    private _collider: Nullable<Collider> = null;
-    private _oldPositionForCollisions = new Vector3(0, 0, 0);
-    private _diffPositionForCollisions = new Vector3(0, 0, 0);
 
     /**
      * Gets or sets a collision mask used to mask collisions (default is -1).
      * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
      */
     public get collisionMask(): number {
-        return this._collisionMask;
+        return this._meshCollisionData._collisionMask;
     }
 
     public set collisionMask(mask: number) {
-        this._collisionMask = !isNaN(mask) ? mask : -1;
+        this._meshCollisionData._collisionMask = !isNaN(mask) ? mask : -1;
     }
 
     /**
@@ -543,11 +540,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
      */
     public get collisionGroup(): number {
-        return this._collisionGroup;
+        return this._meshCollisionData._collisionGroup;
     }
 
     public set collisionGroup(mask: number) {
-        this._collisionGroup = !isNaN(mask) ? mask : -1;
+        this._meshCollisionData._collisionGroup = !isNaN(mask) ? mask : -1;
     }
 
     // Edges
@@ -608,8 +605,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             freezeWorldMatrix: null
         };
 
-    // Skeleton
-    private _skeleton: Nullable<Skeleton> = null;
     /** @hidden */
     public _bonesTransformMatrices: Nullable<Float32Array> = null;
 
@@ -618,17 +613,18 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
      */
     public set skeleton(value: Nullable<Skeleton>) {
-        if (this._skeleton && this._skeleton.needInitialSkinMatrix) {
-            this._skeleton._unregisterMeshWithPoseMatrix(this);
+        let skeleton = this._internalAbstractMeshDataInfo._skeleton;
+        if (skeleton && skeleton.needInitialSkinMatrix) {
+            skeleton._unregisterMeshWithPoseMatrix(this);
         }
 
         if (value && value.needInitialSkinMatrix) {
             value._registerMeshWithPoseMatrix(this);
         }
 
-        this._skeleton = value;
+        this._internalAbstractMeshDataInfo._skeleton = value;
 
-        if (!this._skeleton) {
+        if (!this._internalAbstractMeshDataInfo._skeleton) {
             this._bonesTransformMatrices = null;
         }
 
@@ -636,7 +632,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     public get skeleton(): Nullable<Skeleton> {
-        return this._skeleton;
+        return this._internalAbstractMeshDataInfo._skeleton;
     }
 
     /**
@@ -675,8 +671,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public toString(fullDetails?: boolean): string {
         var ret = "Name: " + this.name + ", isInstance: " + (this.getClassName() !== "InstancedMesh" ? "YES" : "NO");
         ret += ", # of submeshes: " + (this.subMeshes ? this.subMeshes.length : 0);
-        if (this._skeleton) {
-            ret += ", skeleton: " + this._skeleton.name;
+
+        let skeleton = this._internalAbstractMeshDataInfo._skeleton;
+        if (skeleton) {
+            ret += ", skeleton: " + skeleton.name;
         }
         if (fullDetails) {
             ret += ", billboard mode: " + (["NONE", "X", "Y", null, "Z", null, null, "ALL"])[this.billboardMode];
@@ -1359,11 +1357,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public get checkCollisions(): boolean {
-        return this._checkCollisions;
+        return this._meshCollisionData._checkCollisions;
     }
 
     public set checkCollisions(collisionEnabled: boolean) {
-        this._checkCollisions = collisionEnabled;
+        this._meshCollisionData._checkCollisions = collisionEnabled;
     }
 
     /**
@@ -1371,7 +1369,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public get collider(): Nullable<Collider> {
-        return this._collider;
+        return this._meshCollisionData._collider;
     }
 
     /**
@@ -1383,24 +1381,24 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public moveWithCollisions(displacement: Vector3): AbstractMesh {
         var globalPosition = this.getAbsolutePosition();
 
-        globalPosition.addToRef(this.ellipsoidOffset, this._oldPositionForCollisions);
+        globalPosition.addToRef(this.ellipsoidOffset, this._meshCollisionData._oldPositionForCollisions);
         let coordinator = this.getScene().collisionCoordinator;
 
-        if (!this._collider) {
-            this._collider = coordinator.createCollider();
+        if (!this._meshCollisionData._collider) {
+            this._meshCollisionData._collider = coordinator.createCollider();
         }
 
-        this._collider._radius = this.ellipsoid;
+        this._meshCollisionData._collider._radius = this.ellipsoid;
 
-        coordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+        coordinator.getNewPosition(this._meshCollisionData._oldPositionForCollisions, displacement, this._meshCollisionData._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
         return this;
     }
 
     private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
-        newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
+        newPosition.subtractToRef(this._meshCollisionData._oldPositionForCollisions, this._meshCollisionData._diffPositionForCollisions);
 
-        if (this._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {
-            this.position.addInPlace(this._diffPositionForCollisions);
+        if (this._meshCollisionData._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {
+            this.position.addInPlace(this._meshCollisionData._diffPositionForCollisions);
         }
 
         if (collidedMesh) {
@@ -1596,7 +1594,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // Skeleton
-        this._skeleton = null;
+        this._internalAbstractMeshDataInfo._skeleton = null;
 
         // Intersections in progress
         for (index = 0; index < this._intersectionsInProgress.length; index++) {
@@ -1679,7 +1677,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // facet data
-        if (this._facetData.facetDataEnabled) {
+        if (this._internalAbstractMeshDataInfo._facetData.facetDataEnabled) {
             this.disableFacetData();
         }
 
@@ -1714,7 +1712,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     // Facet data
     /** @hidden */
     private _initFacetData(): AbstractMesh {
-        const data = this._facetData;
+        const data = this._internalAbstractMeshDataInfo._facetData;
         if (!data.facetNormals) {
             data.facetNormals = new Array<Vector3>();
         }
@@ -1743,7 +1741,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public updateFacetData(): AbstractMesh {
-        const data = this._facetData;
+        const data = this._internalAbstractMeshDataInfo._facetData;
         if (!data.facetDataEnabled) {
             this._initFacetData();
         }
@@ -1844,10 +1842,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetLocalNormals(): Vector3[] {
-        if (!this._facetData.facetNormals) {
+        let facetData = this._internalAbstractMeshDataInfo._facetData;
+        if (!facetData.facetNormals) {
             this.updateFacetData();
         }
-        return this._facetData.facetNormals;
+        return facetData.facetNormals;
     }
 
     /**
@@ -1857,10 +1856,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetLocalPositions(): Vector3[] {
-        if (!this._facetData.facetPositions) {
+        let facetData = this._internalAbstractMeshDataInfo._facetData;
+        if (!facetData.facetPositions) {
             this.updateFacetData();
         }
-        return this._facetData.facetPositions;
+        return facetData.facetPositions;
     }
 
     /**
@@ -1869,10 +1869,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetLocalPartitioning(): number[][] {
-        if (!this._facetData.facetPartitioning) {
+        let facetData = this._internalAbstractMeshDataInfo._facetData;
+
+        if (!facetData.facetPartitioning) {
             this.updateFacetData();
         }
-        return this._facetData.facetPartitioning;
+        return facetData.facetPartitioning;
     }
 
     /**
@@ -1938,7 +1940,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public getFacetsAtLocalCoordinates(x: number, y: number, z: number): Nullable<number[]> {
         var bInfo = this.getBoundingInfo();
-        const data = this._facetData;
+        const data = this._internalAbstractMeshDataInfo._facetData;
 
         var ox = Math.floor((x - bInfo.minimum.x * data.partitioningBBoxRatio) * data.subDiv.X * data.partitioningBBoxRatio / data.bbSize.x);
         var oy = Math.floor((y - bInfo.minimum.y * data.partitioningBBoxRatio) * data.subDiv.Y * data.partitioningBBoxRatio / data.bbSize.y);
@@ -2047,7 +2049,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetDataParameters(): any {
-        return this._facetData.facetParameters;
+        return this._internalAbstractMeshDataInfo._facetData.facetParameters;
     }
 
     /**
@@ -2056,13 +2058,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public disableFacetData(): AbstractMesh {
-        if (this._facetData.facetDataEnabled) {
-            this._facetData.facetDataEnabled = false;
-            this._facetData.facetPositions = new Array<Vector3>();
-            this._facetData.facetNormals = new Array<Vector3>();
-            this._facetData.facetPartitioning = new Array<number[]>();
-            this._facetData.facetParameters = null;
-            this._facetData.depthSortedIndices = new Uint32Array(0);
+        let facetData = this._internalAbstractMeshDataInfo._facetData;
+        if (facetData.facetDataEnabled) {
+            facetData.facetDataEnabled = false;
+            facetData.facetPositions = new Array<Vector3>();
+            facetData.facetNormals = new Array<Vector3>();
+            facetData.facetPartitioning = new Array<number[]>();
+            facetData.facetParameters = null;
+            facetData.depthSortedIndices = new Uint32Array(0);
         }
         return this;
     }
