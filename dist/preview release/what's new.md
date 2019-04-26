@@ -30,9 +30,9 @@
 - Added `TrailMesh` class. Credit to furcatomasz ([danjpar](https://github.com/danjpar)) **** NEED DEMO or DOC LINK)
 - Support rendering to a Multiview outputRenderTargetTexture with multiview engine component to improve performance for XR scenarios ([TrevorDev](https://github.com/TrevorDev))
 - PBR:
-  - Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
-  - Added anisotropy support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
-  - Added sheen support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+  - Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#clear-coat)
+  - Added anisotropy support to PBR [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#anisotropy)
+  - Added sheen support to PBR ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#sheen)
   - Added sub-surface support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
   - Added energy conservation through Multiscattering BRDF support to PBR [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#energy-conservation)
   - Added Inspector Debug Mode ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#how-to-debug)
