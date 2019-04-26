@@ -38086,6 +38086,13 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var mesh = this.props.mesh;
         this.props.onSelectionChangedObservable.notifyObservers(mesh.material);
     };
+    MeshPropertyGridComponent.prototype.onSourceMeshLink = function () {
+        if (!this.props.onSelectionChangedObservable) {
+            return;
+        }
+        var instanceMesh = this.props.mesh;
+        this.props.onSelectionChangedObservable.notifyObservers(instanceMesh.sourceMesh);
+    };
     MeshPropertyGridComponent.prototype.convertPhysicsTypeToString = function () {
         var mesh = this.props.mesh;
         switch (mesh.physicsImpostor.type) {
@@ -38134,7 +38141,9 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "IsEnabled", isSelected: function () { return mesh.isEnabled(); }, onSelect: function (value) { return mesh.setEnabled(value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "IsPickable", target: mesh, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.material &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Material", value: mesh.material.name, onLink: function () { return _this.onMaterialLink(); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Material", value: mesh.material.name, onLink: function () { return _this.onMaterialLink(); } }),
+                mesh.isAnInstance &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Source", value: mesh.sourceMesh.name, onLink: function () { return _this.onSourceMeshLink(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Position", target: mesh, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !mesh.rotationQuaternion &&
@@ -38143,7 +38152,8 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_8__["QuaternionLineComponent"], { label: "Rotation", target: mesh, propertyName: "rotationQuaternion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Scaling", target: mesh, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "DISPLAY", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Visibility", target: mesh, propertyName: "visibility", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                !mesh.isAnInstance &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Visibility", target: mesh, propertyName: "visibility", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Alpha index", target: mesh, propertyName: "alphaIndex", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Receive shadows", target: mesh, propertyName: "receiveShadows", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].ColorKind) &&

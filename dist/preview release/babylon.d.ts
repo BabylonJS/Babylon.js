@@ -12376,10 +12376,6 @@ declare module BABYLON {
         /**
          * @hidden
          */
-        _keyboardInput: Nullable<FreeCameraKeyboardMoveInput>;
-        /**
-         * @hidden
-         */
         _mouseInput: Nullable<FreeCameraMouseInput>;
         /**
          * Instantiates a new FreeCameraInputsManager.
@@ -12407,6 +12403,10 @@ declare module BABYLON {
          * @returns the current input manager
          */
         addTouch(): FreeCameraInputsManager;
+        /**
+         * Remove all attached input methods from a camera
+         */
+        clear(): void;
     }
 }
 declare module BABYLON {
@@ -20896,10 +20896,7 @@ declare module BABYLON {
          * @hidden
          */
         static _GetDefaultSideOrientation(orientation?: number): number;
-        private _onBeforeRenderObservable;
-        private _onBeforeBindObservable;
-        private _onAfterRenderObservable;
-        private _onBeforeDrawObservable;
+        private _internalMeshDataInfo;
         /**
          * An event triggered before rendering the mesh
          */
@@ -20939,13 +20936,11 @@ declare module BABYLON {
         delayLoadingFile: string;
         /** @hidden */
         _binaryInfo: any;
-        private _LODLevels;
         /**
          * User defined function used to change how LOD level selection is done
          * @see http://doc.babylonjs.com/how_to/how_to_use_lod
          */
         onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
-        private _morphTargetManager;
         /**
          * Gets or sets the morph target manager
          * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
@@ -20964,18 +20959,12 @@ declare module BABYLON {
         private _effectiveMaterial;
         /** @hidden */
         _shouldGenerateFlatShading: boolean;
-        private _preActivateId;
         /** @hidden */
         _originalBuilderSideOrientation: number;
         /**
          * Use this property to change the original side orientation defined at construction time
          */
         overrideMaterialSideOrientation: Nullable<number>;
-        private _areNormalsFrozen;
-        private _sourcePositions;
-        private _sourceNormals;
-        private _source;
-        private meshMap;
         /**
          * Gets the source mesh (the one used to clone this one from)
          */
@@ -24229,6 +24218,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * @hidden
+     */
+    export class _MeshCollisionData {
+        _checkCollisions: boolean;
+        _collisionMask: number;
+        _collisionGroup: number;
+        _collider: Nullable<Collider>;
+        _oldPositionForCollisions: Vector3;
+        _diffPositionForCollisions: Vector3;
+        _onCollideObserver: Nullable<Observer<AbstractMesh>>;
+        _onCollisionPositionChangeObserver: Nullable<Observer<Vector3>>;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to store all common mesh properties
      */
     export class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
@@ -24288,7 +24292,7 @@ declare module BABYLON {
         static readonly BILLBOARDMODE_Z: number;
         /** Billboard on all axes */
         static readonly BILLBOARDMODE_ALL: number;
-        private _facetData;
+        private _internalAbstractMeshDataInfo;
         /**
          * The culling strategy to use to check whether the mesh must be rendered or not.
          * This value can be changed at any time and will be used on the next render mesh selection.
@@ -24341,14 +24345,12 @@ declare module BABYLON {
         * An event triggered when this mesh collides with another one
         */
         onCollideObservable: Observable<AbstractMesh>;
-        private _onCollideObserver;
         /** Set a function to call when this mesh collides with another one */
         onCollide: () => void;
         /**
         * An event triggered when the collision's position changes
         */
         onCollisionPositionChangeObservable: Observable<Vector3>;
-        private _onCollisionPositionChangeObserver;
         /** Set a function to call when the collision's position changes */
         onCollisionPositionChange: () => void;
         /**
@@ -24361,7 +24363,6 @@ declare module BABYLON {
         definedFacingForward: boolean;
         /** @hidden */
         _occlusionQuery: Nullable<WebGLQuery>;
-        private _visibility;
         /** @hidden */
         _isActive: boolean;
         /** @hidden */
@@ -24405,7 +24406,6 @@ declare module BABYLON {
         private _material;
         /** Gets or sets current material */
         material: Nullable<Material>;
-        private _receiveShadows;
         /**
          * Gets or sets a boolean indicating that this mesh can receive realtime shadows
          * @see http://doc.babylonjs.com/babylon101/shadows
@@ -24419,21 +24419,16 @@ declare module BABYLON {
         overlayColor: Color3;
         /** Defines alpha to use when rendering overlay */
         overlayAlpha: number;
-        private _hasVertexAlpha;
         /** Gets or sets a boolean indicating that this mesh contains vertex color data with alpha values */
         hasVertexAlpha: boolean;
-        private _useVertexColors;
         /** Gets or sets a boolean indicating that this mesh needs to use vertex color data to render (if this kind of vertex data is available in the geometry) */
         useVertexColors: boolean;
-        private _computeBonesUsingShaders;
         /**
          * Gets or sets a boolean indicating that bone animations must be computed by the CPU (false by default)
          */
         computeBonesUsingShaders: boolean;
-        private _numBoneInfluencers;
         /** Gets or sets the number of allowed bone influences per vertex (4 by default) */
         numBoneInfluencers: number;
-        private _applyFog;
         /** Gets or sets a boolean indicating that this mesh will allow fog to be rendered on it (true by default) */
         applyFog: boolean;
         /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes selection (true by default) */
@@ -24442,7 +24437,6 @@ declare module BABYLON {
         useOctreeForPicking: boolean;
         /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes collision (true by default) */
         useOctreeForCollisions: boolean;
-        private _layerMask;
         /**
          * Gets or sets the current layer mask (default is 0x0FFFFFFF)
          * @see http://doc.babylonjs.com/how_to/layermasks_and_multi-cam_textures
@@ -24461,9 +24455,7 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/how_to/how_to_use_actions
          */
         actionManager: Nullable<AbstractActionManager>;
-        private _checkCollisions;
-        private _collisionMask;
-        private _collisionGroup;
+        private _meshCollisionData;
         /**
          * Gets or sets the ellipsoid used to impersonate this mesh when using collision engine (default is (0.5, 1, 0.5))
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
@@ -24474,9 +24466,6 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
          */
         ellipsoidOffset: Vector3;
-        private _collider;
-        private _oldPositionForCollisions;
-        private _diffPositionForCollisions;
         /**
          * Gets or sets a collision mask used to mask collisions (default is -1).
          * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
@@ -24526,7 +24515,6 @@ declare module BABYLON {
             actions: Nullable<any>;
             freezeWorldMatrix: Nullable<boolean>;
         };
-        private _skeleton;
         /** @hidden */
         _bonesTransformMatrices: Nullable<Float32Array>;
         /**
@@ -29146,7 +29134,7 @@ declare module BABYLON {
          * Compiled shader to webGL program.
          * @hidden
          */
-        _pipelineContext: IPipelineContext;
+        _pipelineContext: Nullable<IPipelineContext>;
         private _valueCache;
         private static _baseCache;
         /**
@@ -29182,7 +29170,7 @@ declare module BABYLON {
          * The pipeline context for this effect
          * @returns the associated pipeline context
          */
-        getPipelineContext(): IPipelineContext;
+        getPipelineContext(): Nullable<IPipelineContext>;
         /**
          * The set of names of attribute variables for the shader.
          * @returns An array of attribute names.
