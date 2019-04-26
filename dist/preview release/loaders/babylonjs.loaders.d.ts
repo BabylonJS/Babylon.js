@@ -1180,6 +1180,17 @@ declare module BABYLON.GLTF2 {
          */
         _loadVertexDataAsync?(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
         /**
+         * @hidden Define this method to modify the default behavior when loading data for mesh primitives.
+         * @param context The context when loading the asset
+         * @param name The mesh name when loading the asset
+         * @param node The glTF node when loading the asset
+         * @param mesh The glTF mesh when loading the asset
+         * @param primitive The glTF mesh primitive property
+         * @param assign A function called synchronously after parsing the glTF properties
+         * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
+         */
+        _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Promise<AbstractMesh>;
+        /**
          * @hidden Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
          * @param context The context when loading the asset
          * @param material The glTF material property
@@ -1219,7 +1230,7 @@ declare module BABYLON.GLTF2 {
          */
         loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
         /**
-         * Define this method to modify the default behavior when loading skins.
+         * @hidden Define this method to modify the default behavior when loading skins.
          * @param context The context when loading the asset
          * @param node The glTF node property
          * @param skin The glTF skin property
@@ -1227,7 +1238,7 @@ declare module BABYLON.GLTF2 {
          */
         _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
         /**
-         * Define this method to modify the default behavior when loading uris.
+         * @hidden Define this method to modify the default behavior when loading uris.
          * @param context The context when loading the asset
          * @param property The glTF property associated with the uri
          * @param uri The uri to load
@@ -1346,7 +1357,17 @@ declare module BABYLON.GLTF2 {
          */
         loadNodeAsync(context: string, node: INode, assign?: (babylonTransformNode: TransformNode) => void): Promise<TransformNode>;
         private _loadMeshAsync;
-        private _loadMeshPrimitiveAsync;
+        /**
+         * @hidden Define this method to modify the default behavior when loading data for mesh primitives.
+         * @param context The context when loading the asset
+         * @param name The mesh name when loading the asset
+         * @param node The glTF node when loading the asset
+         * @param mesh The glTF mesh when loading the asset
+         * @param primitive The glTF mesh primitive property
+         * @param assign A function called synchronously after parsing the glTF properties
+         * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
+         */
+        _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Promise<AbstractMesh>;
         private _loadVertexDataAsync;
         private _createMorphTargets;
         private _loadMorphTargetsAsync;
@@ -1374,7 +1395,17 @@ declare module BABYLON.GLTF2 {
          * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
          */
         loadAnimationAsync(context: string, animation: IAnimation): Promise<AnimationGroup>;
-        private _loadAnimationChannelAsync;
+        /**
+         * @hidden Loads a glTF animation channel.
+         * @param context The context when loading the asset
+         * @param animationContext The context of the animation when loading the asset
+         * @param animation The glTF animation property
+         * @param channel The glTF animation channel property
+         * @param babylonAnimationGroup The babylon animation group property
+         * @param animationTargetOverride The babylon animation channel target override property. My be null.
+         * @returns A void promise when the channel load is complete
+         */
+        _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, babylonAnimationGroup: AnimationGroup, animationTargetOverride?: Nullable<IAnimatable>): Promise<void>;
         private _loadAnimationSamplerAsync;
         private _loadBufferAsync;
         /**
@@ -1474,6 +1505,7 @@ declare module BABYLON.GLTF2 {
         private _extensionsLoadNodeAsync;
         private _extensionsLoadCameraAsync;
         private _extensionsLoadVertexDataAsync;
+        private _extensionsLoadMeshPrimitiveAsync;
         private _extensionsLoadMaterialAsync;
         private _extensionsCreateMaterial;
         private _extensionsLoadMaterialPropertiesAsync;
@@ -1554,12 +1586,11 @@ declare module BABYLON.GLTF2.Loader.Extensions {
     export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
         /** The name of this extension. */
         readonly name: string;
-        /** The draco compression used to decode vertex data. */
+        /** The draco compression used to decode vertex data or DracoCompression.Default if not defined */
         dracoCompression?: DracoCompression;
         /** Defines whether this extension is enabled. */
         enabled: boolean;
         private _loader;
-        private _dracoCompressionOwned;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -1789,9 +1820,17 @@ declare module BABYLON {
          */
         OptimizeWithUV: boolean;
         /**
+         * Defines custom scaling of UV coordinates of loaded meshes.
+         */
+        UVScaling: Vector2;
+        /**
          * Invert model on y-axis (does a model scaling inversion)
          */
         InvertY: boolean;
+        /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        InvertTextureY: boolean;
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
@@ -1823,6 +1862,10 @@ declare module BABYLON {
          */
         static INVERT_Y: boolean;
         /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
+        /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
         static IMPORT_VERTEX_COLORS: boolean;
@@ -1830,6 +1873,10 @@ declare module BABYLON {
          * Compute the normals for the model, even if normals are present in the file.
          */
         static COMPUTE_NORMALS: boolean;
+        /**
+         * Defines custom scaling of UV coordinates of loaded meshes.
+         */
+        static UV_SCALING: Vector2;
         /**
          * Skip loading the materials even if defined in the OBJ file (materials are ignored).
          */

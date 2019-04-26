@@ -16,12 +16,12 @@ import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
-import { AxesViewerComponent } from "./axesViewerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
+import { Color3LineComponent } from '../../../lines/color3LineComponent';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -161,6 +161,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         this.props.onSelectionChangedObservable.notifyObservers(mesh.material);
     }
 
+    onSourceMeshLink() {
+        if (!this.props.onSelectionChangedObservable) {
+            return;
+        }
+
+        const instanceMesh = this.props.mesh as any;
+        this.props.onSelectionChangedObservable.notifyObservers(instanceMesh.sourceMesh);
+    }
+
     convertPhysicsTypeToString(): string {
         const mesh = this.props.mesh;
         switch (mesh.physicsImpostor!.type) {
@@ -217,6 +226,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         mesh.material &&
                         <TextLineComponent label="Material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
                     }
+                    {
+                        mesh.isAnInstance &&
+                        <TextLineComponent label="Source" value={(mesh as any).sourceMesh.name} onLink={() => this.onSourceMeshLink()} />
+                    }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -231,7 +244,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <Vector3LineComponent label="Scaling" target={mesh} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="DISPLAY" closed={true}>
-                    <SliderLineComponent label="Visibility" target={mesh} propertyName="visibility" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    {
+                        !mesh.isAnInstance &&
+                        <SliderLineComponent label="Visibility" target={mesh} propertyName="visibility" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                     <FloatLineComponent lockObject={this.props.lockObject} label="Alpha index" target={mesh} propertyName="alphaIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Receive shadows" target={mesh} propertyName="receiveShadows" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
@@ -255,13 +271,13 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <CheckBoxLineComponent label="Collisions" target={mesh} propertyName="checkCollisions" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextLineComponent label="Has normals" value={mesh.isVerticesDataPresent(VertexBuffer.NormalKind) ? "Yes" : "No"} />
                     <TextLineComponent label="Has vertex colors" value={mesh.isVerticesDataPresent(VertexBuffer.ColorKind) ? "Yes" : "No"} />
-                    <TextLineComponent label="has UV set 0" value={mesh.isVerticesDataPresent(VertexBuffer.UVKind) ? "Yes" : "No"} />
-                    <TextLineComponent label="has UV set 1" value={mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) ? "Yes" : "No"} />
-                    <TextLineComponent label="has UV set 2" value={mesh.isVerticesDataPresent(VertexBuffer.UV3Kind) ? "Yes" : "No"} />
-                    <TextLineComponent label="has UV set 3" value={mesh.isVerticesDataPresent(VertexBuffer.UV4Kind) ? "Yes" : "No"} />
-                    <TextLineComponent label="has tangents" value={mesh.isVerticesDataPresent(VertexBuffer.TangentKind) ? "Yes" : "No"} />
-                    <TextLineComponent label="has matrix weights" value={mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind) ? "Yes" : "No"} />
-                    <TextLineComponent label="has matrix indices" value={mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) ? "Yes" : "No"} />
+                    <TextLineComponent label="Has UV set 0" value={mesh.isVerticesDataPresent(VertexBuffer.UVKind) ? "Yes" : "No"} />
+                    <TextLineComponent label="Has UV set 1" value={mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) ? "Yes" : "No"} />
+                    <TextLineComponent label="Has UV set 2" value={mesh.isVerticesDataPresent(VertexBuffer.UV3Kind) ? "Yes" : "No"} />
+                    <TextLineComponent label="Has UV set 3" value={mesh.isVerticesDataPresent(VertexBuffer.UV4Kind) ? "Yes" : "No"} />
+                    <TextLineComponent label="Has tangents" value={mesh.isVerticesDataPresent(VertexBuffer.TangentKind) ? "Yes" : "No"} />
+                    <TextLineComponent label="Has matrix weights" value={mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind) ? "Yes" : "No"} />
+                    <TextLineComponent label="Has matrix indices" value={mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) ? "Yes" : "No"} />
                 </LineContainerComponent>
                 {
                     mesh.physicsImpostor != null &&
@@ -272,6 +288,23 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <TextLineComponent label="Type" value={this.convertPhysicsTypeToString()} />
                     </LineContainerComponent>
                 }
+                <LineContainerComponent globalState={this.props.globalState} title="EDGE RENDERING" closed={true}>
+                    <CheckBoxLineComponent label="Enable" target={mesh} isSelected={() => mesh.edgesRenderer != null} onSelect={value => {
+                        if (value) {
+                            mesh.enableEdgesRendering();
+                        } else {
+                            mesh.disableEdgesRendering();
+                        }
+                    }} />
+                    <SliderLineComponent label="Edge width" minimum={0} maximum={10} step={0.1} target={mesh} propertyName="edgesWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent label="Edge color" target={mesh} propertyName="edgesColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="OUTLINE & OVERLAY" closed={true}>
+                    <CheckBoxLineComponent label="Render overlay" target={mesh} propertyName="renderOverlay" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent label="Overlay color" target={mesh} propertyName="overlayColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Render outline" target={mesh} propertyName="renderOutline" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
                     {
                         mesh.material &&
@@ -281,7 +314,6 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         mesh.isVerticesDataPresent(VertexBuffer.NormalKind) &&
                         <CheckBoxLineComponent label="Render vertex normals" isSelected={() => renderNormalVectors} onSelect={() => this.renderNormalVectors()} />
                     }
-                    <AxesViewerComponent globalState={this.props.globalState} node={mesh} />
                     <CheckBoxLineComponent label="Render wireframe over mesh" isSelected={() => renderWireframeOver} onSelect={() => this.renderWireframeOver()} />
                 </LineContainerComponent>
             </div>

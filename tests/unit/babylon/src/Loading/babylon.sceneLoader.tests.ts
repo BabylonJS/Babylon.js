@@ -539,12 +539,12 @@ describe('Babylon Scene Loader', function() {
             `;
 
             var scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, () => { }, ".obj").then(container => {
                 expect(container.meshes.length).to.eq(1);
                 let tetrahedron = container.meshes[0];
 
-                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-                var colors : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                var positions: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var colors: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
 
                 expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
                 assert.isNull(colors, 'expecting colors vertex buffer to be null')
@@ -569,11 +569,11 @@ describe('Babylon Scene Loader', function() {
             `;
 
             var scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, () => { }, ".obj").then(container => {
                 expect(container.meshes.length).to.eq(1);
                 let tetrahedron = container.meshes[0];
 
-                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var positions: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
                 expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
             })

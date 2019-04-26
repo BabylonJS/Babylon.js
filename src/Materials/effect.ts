@@ -4,6 +4,9 @@ import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math
 import { Constants } from "../Engines/constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
+import { IDisposable } from '../scene';
+import { IPipelineContext } from '../Engines/IPipelineContext';
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -21,7 +24,7 @@ export class EffectFallbacks {
     private _currentRank = 32;
     private _maxRank = -1;
 
-    private _mesh: Nullable<AbstractMesh>;
+    private _mesh: Nullable<AbstractMesh> = null;
 
     /**
      * Removes the fallback from the bound mesh.
@@ -181,7 +184,7 @@ export class EffectCreationOptions {
 /**
  * Effect containing vertex and fragment shader that can be executed on an object.
  */
-export class Effect {
+export class Effect implements IDisposable {
     /**
      * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
      */
@@ -189,23 +192,23 @@ export class Effect {
     /**
      * Name of the effect.
      */
-    public name: any;
+    public name: any = null;
     /**
      * String container all the define statements that should be set on the shader.
      */
-    public defines: string;
+    public defines: string = "";
     /**
      * Callback that will be called when the shader is compiled.
      */
-    public onCompiled: Nullable<(effect: Effect) => void>;
+    public onCompiled: Nullable<(effect: Effect) => void> = null;
     /**
      * Callback that will be called if an error occurs during shader compilation.
      */
-    public onError: Nullable<(effect: Effect, errors: string) => void>;
+    public onError: Nullable<(effect: Effect, errors: string) => void> = null;
     /**
      * Callback that will be called when effect is bound.
      */
-    public onBind: Nullable<(effect: Effect) => void>;
+    public onBind: Nullable<(effect: Effect) => void> = null;
     /**
      * Unique ID of the effect.
      */
@@ -221,7 +224,7 @@ export class Effect {
     public onErrorObservable = new Observable<Effect>();
 
     /** @hidden */
-    public _onBindObservable: Nullable<Observable<Effect>>;
+    public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     /**
      * Observable that will be called when effect is bound.
@@ -242,31 +245,31 @@ export class Effect {
     private _uniformBuffersNames: { [key: string]: number } = {};
     private _uniformsNames: string[];
     private _samplerList: string[];
-    private _samplers: {[key: string]: number} = {};
+    private _samplers: { [key: string]: number } = {};
     private _isReady = false;
     private _compilationError = "";
     private _attributesNames: string[];
     private _attributes: number[];
-    private _uniforms: {[key: string] : Nullable<WebGLUniformLocation>} = {};
+    private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
     /**
      * Key for the effect.
      * @hidden
      */
-    public _key: string;
+    public _key: string = "";
     private _indexParameters: any;
-    private _fallbacks: Nullable<EffectFallbacks>;
-    private _vertexSourceCode: string;
-    private _fragmentSourceCode: string;
-    private _vertexSourceCodeOverride: string;
-    private _fragmentSourceCodeOverride: string;
-    private _transformFeedbackVaryings: Nullable<string[]>;
+    private _fallbacks: Nullable<EffectFallbacks> = null;
+    private _vertexSourceCode: string = "";
+    private _fragmentSourceCode: string = "";
+    private _vertexSourceCodeOverride: string = "";
+    private _fragmentSourceCodeOverride: string = "";
+    private _transformFeedbackVaryings: Nullable<string[]> = null;
     /**
      * Compiled shader to webGL program.
      * @hidden
      */
-    public _program: WebGLProgram;
-    private _valueCache: { [key: string]: any };
-    private static _baseCache: { [key: number]: WebGLBuffer } = {};
+    public _pipelineContext: Nullable<IPipelineContext> = null;
+    private _valueCache: { [key: string]: any } = {};
+    private static _baseCache: { [key: number]: DataBuffer } = {};
 
     /**
      * Instantiates an effect.
@@ -381,10 +384,13 @@ export class Effect {
      * @returns if the effect is compiled and prepared.
      */
     public isReady(): boolean {
-        if (!this._isReady && this._program && this._program.isParallelCompiled) {
-            return this._engine._isProgramCompiled(this._program);
+        if (this._isReady) {
+            return true;
         }
-        return this._isReady;
+        if (this._pipelineContext) {
+            return this._pipelineContext.isReady;
+        }
+        return false;
     }
 
     /**
@@ -396,11 +402,11 @@ export class Effect {
     }
 
     /**
-     * The compiled webGL program for the effect
-     * @returns the webGL program.
+     * The pipeline context for this effect
+     * @returns the associated pipeline context
      */
-    public getProgram(): WebGLProgram {
-        return this._program;
+    public getPipelineContext(): Nullable<IPipelineContext> {
+        return this._pipelineContext;
     }
 
     /**
@@ -487,7 +493,7 @@ export class Effect {
             func(effect);
         });
 
-        if (!this._program || this._program.isParallelCompiled) {
+        if (!this._pipelineContext || this._pipelineContext.isAsync) {
             setTimeout(() => {
                 this._checkIsReady();
             }, 16);
@@ -632,7 +638,7 @@ export class Effect {
         // #extension GL_EXT_shader_texture_lod : enable
         // #extension GL_EXT_frag_depth : enable
         // #extension GL_EXT_draw_buffers : require
-        var regex = /#extension.+(GL_OVR_multiview|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
+        var regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
         var result = preparedSourceCode.replace(regex, "");
 
         // Migrate to GLSL v300
@@ -654,7 +660,7 @@ export class Effect {
         // Add multiview setup to top of file when defined
         var hasMultiviewExtension = this.defines.indexOf("#define MULTIVIEW\n") !== -1;
         if (hasMultiviewExtension && !isFragment) {
-            result = "#extension GL_OVR_multiview : require\nlayout (num_views = 2) in;\n" + result;
+            result = "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + result;
         }
 
         callback(result);
@@ -771,7 +777,7 @@ export class Effect {
      * @param onError Callback called on error.
      * @hidden
      */
-    public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) {
+    public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) {
         this._isReady = false;
 
         this._vertexSourceCodeOverride = vertexSourceCode;
@@ -787,22 +793,10 @@ export class Effect {
                 scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
             }
 
-            if (onCompiled) {
-                onCompiled(this._program);
-            }
+            this._pipelineContext!._handlesSpectorRebuildCallback(onCompiled);
         };
         this._fallbacks = null;
         this._prepareEffect();
-    }
-
-    /**
-     * Gets the uniform locations of the the specified variable names
-     * @param names THe names of the variables to lookup.
-     * @returns Array of locations in the same order as variable names.
-     */
-    public getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[] {
-        let engine = this._engine;
-        return engine.getUniforms(this._program, names);
     }
 
     /**
@@ -815,32 +809,34 @@ export class Effect {
         let fallbacks = this._fallbacks;
         this._valueCache = {};
 
-        var previousProgram = this._program;
+        var previousPipelineContext = this._pipelineContext;
 
         try {
             let engine = this._engine;
 
+            this._pipelineContext = engine.createPipelineContext();
+
+            let rebuildRebind = this._rebuildProgram.bind(this);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, true, rebuildRebind, null, this._transformFeedbackVaryings);
             }
             else {
-                this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines, undefined, this._transformFeedbackVaryings);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCode, this._fragmentSourceCode, false, rebuildRebind, defines, this._transformFeedbackVaryings);
             }
-            this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 
-            engine._executeWhenProgramIsCompiled(this._program, () => {
+            engine._executeWhenRenderingStateIsCompiled(this._pipelineContext, () => {
                 if (engine.supportsUniformBuffers) {
                     for (var name in this._uniformBuffersNames) {
                         this.bindUniformBlock(name, this._uniformBuffersNames[name]);
                     }
                 }
 
-                let uniforms = engine.getUniforms(this._program, this._uniformsNames);
+                let uniforms = engine.getUniforms(this._pipelineContext!, this._uniformsNames);
                 uniforms.forEach((uniform, index) => {
                     this._uniforms[this._uniformsNames[index]] = uniform;
                 });
 
-                this._attributes = engine.getAttributes(this._program, attributesNames);
+                this._attributes = engine.getAttributes(this._pipelineContext!, attributesNames);
 
                 var index: number;
                 for (index = 0; index < this._samplerList.length; index++) {
@@ -871,12 +867,12 @@ export class Effect {
                     this._fallbacks.unBindMesh();
                 }
 
-                if (previousProgram) {
-                    this.getEngine()._deleteProgram(previousProgram);
+                if (previousPipelineContext) {
+                    this.getEngine()._deletePipelineContext(previousPipelineContext);
                 }
             });
 
-            if (this._program.isParallelCompiled) {
+            if (this._pipelineContext.isAsync) {
                 this._checkIsReady();
             }
 
@@ -892,8 +888,8 @@ export class Effect {
                 return " " + attribute;
             }));
             Logger.Error("Error: " + this._compilationError);
-            if (previousProgram) {
-                this._program = previousProgram;
+            if (previousPipelineContext) {
+                this._pipelineContext = previousPipelineContext;
                 this._isReady = true;
                 if (this.onError) {
                     this.onError(this, this._compilationError);
@@ -1089,7 +1085,7 @@ export class Effect {
      * @param buffer Buffer to bind.
      * @param name Name of the uniform variable to bind to.
      */
-    public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
+    public bindUniformBuffer(buffer: DataBuffer, name: string): void {
         let bufferName = this._uniformBuffersNames[name];
         if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
             return;
@@ -1104,7 +1100,7 @@ export class Effect {
      * @param index Index to bind.
      */
     public bindUniformBlock(blockName: string, index: number): void {
-        this._engine.bindUniformBlock(this._program, blockName, index);
+        this._engine.bindUniformBlock(this._pipelineContext!, blockName, index);
     }
 
     /**
@@ -1499,6 +1495,11 @@ export class Effect {
             this._engine.setDirectColor4(this._uniforms[uniformName], color4);
         }
         return this;
+    }
+
+    /** Release all associated resources */
+    public dispose() {
+        this._engine._releaseEffect(this);
     }
 
     /**

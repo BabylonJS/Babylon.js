@@ -16,6 +16,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
+import { DataBuffer } from '../Meshes/dataBuffer';
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
@@ -106,7 +107,7 @@ export class SpriteManager implements ISpriteManager {
     private _vertexData: Float32Array;
     private _buffer: Buffer;
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
-    private _indexBuffer: WebGLBuffer;
+    private _indexBuffer: DataBuffer;
     private _effectBase: Effect;
     private _effectFog: Effect;
 

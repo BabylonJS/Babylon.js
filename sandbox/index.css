@@ -245,8 +245,32 @@ a {
         border: none;
     }
 
-#dropdownContent {
+#dropdownContent-env {
+    position: absolute;
+    bottom: 56px;
+    right: 0px;
+    border-bottom: 1px solid white; 
+}
+
+#dropdownContent-env div  {
     background-color: #3B789A;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 10px 15px;
+    font-size: 16px;
+    width: 100px;
+    color: white;
+    cursor: pointer;
+}
+
+#dropdownContent-env div:hover {
+    background-color: #2c5a74;
+    transition: all 0.3s ease;
+}
+#dropdownContent-env div:active {
+    background-color: #162D3A;
+    transition: all 0.3s ease;
 }
 
 #dropdownLabel,
@@ -282,6 +306,7 @@ a {
 }
 
 #dropdownContent {
+    background-color: #3B789A;
     display: none;
     position: absolute;
     bottom: 56px;

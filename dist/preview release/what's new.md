@@ -8,7 +8,7 @@
 - Added [support for AmmoJS](https://doc.babylonjs.com/how_to/using_the_physics_engine) as a physics plugin (Composite objects, motors, joints) ([TrevorDev](https://github.com/TrevorDev))
   - Added support for soft bodies, which are 3D softbody, 2D cloth and 1D rope, in Ammo physics plugin. [Doc](https://doc.babylonjs.com/how_to/soft_bodies) ([JohnK](https://github.com/BabylonJSGuide))
   - Added support for [Convex Hull Impostor][https://github.com/kripken/ammo.js/blob/master/bullet/src/BulletCollision/CollisionShapes/btConvexHullShape.h] using Ammo.js plugin ([MackeyK24](https://github.com/mackeyk24))
-  - Added AmmoJSPlugin scene file loader [MackeyK24](https://github.com/mackeyk24))
+  - Added AmmoJSPlugin scene file loader ([MackeyK24](https://github.com/mackeyk24))
 - Added support for [WebXR](https://doc.babylonjs.com/how_to/webxr) ([TrevorDev](https://github.com/TrevorDev))
   - Add customAnimationFrameRequester to allow sessions to hook into engine's render loop ([TrevorDev](https://github.com/TrevorDev))
   - camera customDefaultRenderTarget to allow cameras to render to a custom render target (eg. xr framebuffer) instead of the canvas ([TrevorDev](https://github.com/TrevorDev))
@@ -30,13 +30,14 @@
 - Added `TrailMesh` class. Credit to furcatomasz ([danjpar](https://github.com/danjpar)) **** NEED DEMO or DOC LINK)
 - Support rendering to a Multiview outputRenderTargetTexture with multiview engine component to improve performance for XR scenarios ([TrevorDev](https://github.com/TrevorDev))
 - PBR:
-  - Added Inspector Debug Mode ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
-  - Added Smith Height Correlated Visibility term to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
-  - Added energy conservation through Multiscattering BRDF support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
-  - Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
-  - Added anisotropy support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
-  - Added sheen support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
-  - Added sub-surface support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+  - Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#clear-coat)
+  - Added anisotropy support to PBR [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#anisotropy)
+  - Added sheen support to PBR ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#sheen)
+  - Added sub-surface support to PBR ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#sub-surface)
+  - Added energy conservation through Multiscattering BRDF support to PBR [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#energy-conservation)
+  - Added Inspector Debug Mode ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#how-to-debug)
+  - Added Smith Height Correlated Visibility term to PBR ([Sebavan](https://github.com/Sebavan)) [White Paper](http://jcgt.org/published/0003/02/03/)
+  - Added SH Harmonics support to PBR ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#spherical-harmonics)
 - Added a STL exporter ([pryme8](https://github.com/pryme8))
 
 ## Optimizations
@@ -79,6 +80,7 @@
 
 ### Core Engine
 
+- Add `reflectionMatrix` support for more `coordinatesMode`'s ([Dennis Dervisis](https://github.com/ddervisis))
 - Added new `WebRequest` class to centralize all network requests. Can be used to configure headers of all network requests ([Deltakosh](https://github.com/deltakosh))
 - Added `WebRequest.CustomRequestHeaders`, `WebRequest.UseCustomRequestHeaders` to send Custom Request Headers alongside XMLHttpRequest's i.e. when loading files (Tools.Loadfile) from resources requiring special headers like 'Authorization' ([susares](https://github.com/susares))
 - Added support for user clip planes to LineMeshes ([Deltakosh](https://github.com/deltakosh))
@@ -131,16 +133,18 @@
 - Added `MeshExploder` class ([danjpar](https://github.com/danjpar))
 - Observables can now make observers top or bottom priority ([TrevorDev](https://github.com/TrevorDev))
 - Mesh outline no longer is shown through the mesh when it's transparent ([TrevorDev](https://github.com/TrevorDev))
-- DeviceOrientationCamera will no longer be modified by mouse input if the orientation sensor is active ([TrevorDev](https://github.com/TrevorDev))
+- DeviceOrientationCamera will no longer be modified by mouse input when the orientation sensor is active ([TrevorDev](https://github.com/TrevorDev))
 - Added LoadScriptAsync tools helper function [MackeyK24](https://github.com/mackeyk24))
 - Added customShaderNameResolve to PBRMaterialBase to allow subclasses to specify custom shader information [MackeyK24](https://github.com/mackeyk24))
 - Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))
+- Added custom defines for roughness and microsurface in PBRCustomMaterial [Lockphase](https://github.com/lockphase)) 
 - Added `auto-exposure` support in `StandardRenderingPipeline` when `HDR` is enabled ([julien-moreau](https://github.com/julien-moreau))
 - Add `EquiRectangularCubeTexture` class to enable the usage of browser-canvas supported images as `CubeTexture`'s ([Dennis Dervisis](https://github.com/ddervisis))
 - Add `EquiRectangularCubeTextureAssetTask` to be able to load `EquiRectangularCubeTextures`s via Asset Manager ([Dennis Dervisis](https://github.com/ddervisis))
 - Added `Matrix.RotationAlignToRef` method to obtain rotation matrix from one vector to another ([sable](https://github.com/thscott))
 - ArcRotateCamera will now cache the necessary matrices when modifying its upVector, instead of calculating them each time they're needed ([sable](https://github.com/thscott))
 - Update `DracoCompression` to use web workers ([bghgary](https://github.com/bghgary))
+- Added `LOD Babylon Mesh Entities` to support to babylonFileLoader.ts ([MackeyK24](https://github.com/mackeyk24))
 
 ### OBJ Loader
 - Add color vertex support (not part of standard) ([brianzinn](https://github.com/brianzinn))
@@ -157,10 +161,13 @@
   - Skinned meshes now set an override mesh instead of reparenting to the `__root__` transform node
   - Loaded bones are linked with the transform node created for the corresponding glTF node
 - Improve load performance by blocking material dirtying during load ([bghgary](https://github.com/bghgary))
+- Added animation group target override to support custom animation targets ([MackeyK24](https://github.com/mackeyk24))
+- Added loadMeshPrimitiveAsync extension support ([MackeyK24](https://github.com/mackeyk24))
 
 ### glTF Serializer
 
 - Added support for exporting `KHR_lights_punctual`
+- Exporting a glTF from a Babylon scene with right-handed coordinate system should no longer cause the mesh normals to flip.([Nicholas Barlow](https://github.com/drigax))
 
 ### Post-Processes Library
 - Added the [Ocean](https://doc.babylonjs.com/extensions/oceanpostprocess) post-process ([julien-moreau](https://github.com/julien-moreau))
@@ -177,8 +184,6 @@
 - Migrating CI to Azure DevOps pipelines ([Sebavan](https://github.com/Sebavan))
 - Test both WebGL1 and WebGL2 ([Sebavan](https://github.com/Sebavan))
 
-### Viewer
-
 ## Bug fixes
 - Fixed ArcRotateCamera.setTarget (position was sometimes wrong) ([Deltakosh](https://github.com/deltakosh))
 - Fixed TransformNode.setDirection (orientation was wrong) ([Deltakosh](https://github.com/deltakosh))
@@ -191,7 +196,7 @@
 - Context loss causing unexpected results with dynamic textures, geometries with the same name and reflectionTextures ([TrevorDev](https://github.com/TrevorDev))
 - CreateScreenshotUsingRenderTarget stretches mirror textures when setting both width and height ([TrevorDev](https://github.com/TrevorDev))
 - VR helper only updating vr cameras position when entering vr, rotation was missing, laser distance stopped working ([TrevorDev](https://github.com/TrevorDev))
-- Fix VR controllers after gltfLoader transformNode change ([TrevorDev](https://github.com/TrevorDev))
+- Fix VR controllers after gltfLoader transformNode was changed ([TrevorDev](https://github.com/TrevorDev))
 - Bounding Box fixedDragMeshScreenSize stopped working and allow rotating through bounding box ([TrevorDev](https://github.com/TrevorDev))
 - VR helper would rotate non vr camera while in VR ([TrevorDev](https://github.com/TrevorDev))
 - PointerDragBahavior using Mesh as base type, causing type-checking problems with AbstractMesh ([Poolminer](https://github.com/Poolminer/))
@@ -210,7 +215,7 @@
 - CannonJS ignores connectedPivot joint parameter ([TrevorDev](https://github.com/TrevorDev))
 - Fix case sensitive paths ([mrdunk](https://github.com))
 - Fix more case sensitive paths ([mrdunk](https://github.com))
-- Attaching a BoundingBoxGizmo on a child should not remove its parent ([TrevorDev](https://github.com/TrevorDev))
+- Attaching a BoundingBoxGizmo on a child node shouldn't remove its parent, rotation gizmo should work on object with parent ([TrevorDev](https://github.com/TrevorDev))
 - AmmoJS fix include issue caused after modules update and use world contact point to be consistent with Oimo and Cannon ([TrevorDev](https://github.com/TrevorDev))
 - Warn of motor with maxForce in Oimo plugin and set default force to be consistent with others, cannonJS support no impostor, cannonJS cylinder axis, ammoJS wake up impostor when apply force/impulse ([TrevorDev](https://github.com/TrevorDev))
 - Utility layer should render on last active camera ([TrevorDev](https://github.com/TrevorDev))
@@ -228,6 +233,9 @@
 - Fix ArcRotateCamera rebuildAnglesAndRadius when upVector modified ([sable](https://github.com/thscott))
 - Fix code branch, that does not try to (re)load an `EquiRectangularCubeTexture`/`HDRCubeTexture` when the caching returns an empty or corrupt `InternalTexture` ([Dennis Dervisis](https://github.com/ddervisis))
 - Add error eventlistener (bubbling up the onError callback chain) in case an `EquiRectangularCubeTexture` cannot be loaded, because of a wrong path or IO problems ([Dennis Dervisis](https://github.com/ddervisis))
+- 3D GUI buttons no longer will scale up when pressing with a multitouch device ([TrevorDev](https://github.com/TrevorDev))
+- 2D GUI elements will use the last clicked controller instead of only the right controller when dual VR controllers are interacting with an element ([TrevorDev](https://github.com/TrevorDev))
+- Virtual keyboard not showing up when made visible ([TrevorDev](https://github.com/TrevorDev))
 
 ### Core Engine
 - Fixed a bug with `mesh.alwaysSelectAsActiveMesh` preventing layerMask to be taken in account ([Deltakosh](https://github.com/deltakosh))
@@ -253,12 +261,14 @@
 - Auto Update Touch Action [#5674](https://github.com/BabylonJS/Babylon.js/issues/5674)([Sebavan](https://github.com/Sebavan))
 - Add hemispheric lighting to gizmos to avoid flat look ([TrevorDev](https://github.com/TrevorDev))
 - Fix a bug causing `WebRequest.open` to crash if `WebRequest.CustomRequestHeaders` are set [#6055](https://github.com/BabylonJS/Babylon.js/issues/6055)([susares](https://github.com/susares))
-
-### Viewer
+- Fix a bug causing `Mesh.clone` to crash if no physicsEngineComponent is used  ([barroij](https://github.com/barroij))
+- Fix zoom inertia making it difficult to zoom out with ArcRotateCamera ([TrevorDev](https://github.com/TrevorDev))
+- Option for isInFrustum to check rigCameras, viewMatrix updates for rigCameras will notify their parent ([TrevorDev](https://github.com/TrevorDev))
 
 ### Loaders
 
 - Added missing `loadedAnimationGroups` to `MeshAssetTask` ([bghgary](https://github.com/bghgary))
+- Added missing `linkTransformNode` to `BabylonFileLoader` ([MackeyK24](https://github.com/mackeyk24))
 
 ## Breaking changes
 

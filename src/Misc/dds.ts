@@ -9,6 +9,8 @@ import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cube
 import { Scene } from '../scene';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 
+import "../Engines/Extensions/engine.cubeTexture";
+
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:
 // http://msdn.microsoft.com/en-us/library/bb943991.aspx/

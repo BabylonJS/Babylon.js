@@ -103,6 +103,8 @@ declare module BABYLON {
         Fragment_MainBegin: string;
         Fragment_Custom_Albedo: string;
         Fragment_Before_Lights: string;
+        Fragment_Custom_MetallicRoughness: string;
+        Fragment_Custom_MicroSurface: string;
         Fragment_Before_Fog: string;
         Fragment_Custom_Alpha: string;
         Fragment_Before_FragColor: string;
@@ -135,6 +137,8 @@ declare module BABYLON {
         Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial;
         Vertex_Begin(shaderPart: string): PBRCustomMaterial;

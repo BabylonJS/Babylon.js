@@ -1081,6 +1081,8 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALBEDO', (this.CustomParts.Fragment_Custom_Albedo ? this.CustomParts.Fragment_Custom_Albedo : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
+            .replace('#define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS', (this.CustomParts.Fragment_Custom_MetallicRoughness ? this.CustomParts.Fragment_Custom_MetallicRoughness : ""))
+            .replace('#define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE', (this.CustomParts.Fragment_Custom_MicroSurface ? this.CustomParts.Fragment_Custom_MicroSurface : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', (this.CustomParts.Fragment_Before_Fog ? this.CustomParts.Fragment_Before_Fog : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
         this._isCreatedShader = true;
@@ -1128,6 +1130,14 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
     };
     PBRCustomMaterial.prototype.Fragment_Before_Lights = function (shaderPart) {
         this.CustomParts.Fragment_Before_Lights = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Custom_MetallicRoughness = function (shaderPart) {
+        this.CustomParts.Fragment_Custom_MetallicRoughness = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Custom_MicroSurface = function (shaderPart) {
+        this.CustomParts.Fragment_Custom_MicroSurface = shaderPart;
         return this;
     };
     PBRCustomMaterial.prototype.Fragment_Before_Fog = function (shaderPart) {
@@ -4649,16 +4659,16 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
         var engine = scene.getEngine();
         // Ensure that active light is the first shadow light
         if (this._activeLight) {
-            for (var _i = 0, _a = mesh._lightSources; _i < _a.length; _i++) {
+            for (var _i = 0, _a = mesh.lightSources; _i < _a.length; _i++) {
                 var light = _a[_i];
                 if (light.shadowEnabled) {
                     if (this._activeLight === light) {
                         break; // We are good
                     }
-                    var lightPosition = mesh._lightSources.indexOf(this._activeLight);
+                    var lightPosition = mesh.lightSources.indexOf(this._activeLight);
                     if (lightPosition !== -1) {
-                        mesh._lightSources.splice(lightPosition, 1);
-                        mesh._lightSources.splice(0, 0, this._activeLight);
+                        mesh.lightSources.splice(lightPosition, 1);
+                        mesh.lightSources.splice(0, 0, this._activeLight);
                     }
                     break;
                 }

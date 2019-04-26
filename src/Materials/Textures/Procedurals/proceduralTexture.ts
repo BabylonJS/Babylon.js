@@ -15,7 +15,9 @@ import { Texture } from "../../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
+import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Shaders/procedural.vertex";
+import { DataBuffer } from '../../../Meshes/dataBuffer';
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -60,7 +62,7 @@ export class ProceduralTexture extends Texture {
     private _currentRefreshId = -1;
     private _refreshRate = 1;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _uniforms = new Array<string>();
     private _samplers = new Array<string>();
     private _fragment: any;
@@ -201,9 +203,7 @@ export class ProceduralTexture extends Texture {
         if (this._effect === undefined) {
             return;
         }
-
-        var engine = this._engine;
-        engine._releaseEffect(this._effect);
+        this._effect.dispose();
     }
 
     protected _getDefines(): string {

@@ -259,11 +259,15 @@ declare module INSPECTOR {
     interface INumericInputComponentProps {
         label: string;
         value: number;
+        step?: number;
         onChange: (value: number) => void;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: INumericInputComponentProps);
         shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
@@ -304,6 +308,7 @@ declare module INSPECTOR {
         label: string;
         target: any;
         propertyName: string;
+        step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
@@ -311,6 +316,9 @@ declare module INSPECTOR {
         isExpanded: boolean;
         value: BABYLON.Vector3;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: IVector3LineComponentProps);
         shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
@@ -515,6 +523,7 @@ declare module INSPECTOR {
         label: string;
         target: any;
         propertyName: string;
+        step?: number;
         onChange?: (newvalue: BABYLON.Vector2) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
@@ -522,6 +531,9 @@ declare module INSPECTOR {
         isExpanded: boolean;
         value: BABYLON.Vector2;
     }> {
+        static defaultProps: {
+            step: number;
+        };
         private _localChange;
         constructor(props: IVector2LineComponentProps);
         shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
@@ -689,22 +701,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface IAxisViewerComponentProps {
-        node: BABYLON.TransformNode;
-        globalState: GlobalState;
-    }
-    export class AxesViewerComponent extends React.Component<IAxisViewerComponentProps, {
-        displayAxis: boolean;
-    }> {
-        constructor(props: IAxisViewerComponentProps);
-        shouldComponentUpdate(nextProps: IAxisViewerComponentProps, nextState: {
-            displayAxis: boolean;
-        }): boolean;
-        displayAxes(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
     interface IMeshPropertyGridComponentProps {
         globalState: GlobalState;
         mesh: BABYLON.Mesh;
@@ -720,6 +716,7 @@ declare module INSPECTOR {
         renderNormalVectors(): void;
         displayNormals(): void;
         onMaterialLink(): void;
+        onSourceMeshLink(): void;
         convertPhysicsTypeToString(): string;
         render(): JSX.Element;
     }
