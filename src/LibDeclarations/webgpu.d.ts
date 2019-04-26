@@ -528,7 +528,7 @@ interface GPUBuffer extends GPUDebugLabel {
 
   mapWriteAsync(): Promise<ArrayBuffer>;
   mapReadAsync(): Promise<ArrayBuffer>;
-  setSubData(dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void;
+  setSubData(dstByteOffset: number, src: ArrayBufferView, srcByteOffset?, byteLength?): void;
 }
 
 interface GPUCommandEncoder extends GPUDebugLabel {
