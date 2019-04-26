@@ -24,7 +24,7 @@ export class EffectFallbacks {
     private _currentRank = 32;
     private _maxRank = -1;
 
-    private _mesh: Nullable<AbstractMesh>;
+    private _mesh: Nullable<AbstractMesh> = null;
 
     /**
      * Removes the fallback from the bound mesh.
@@ -192,23 +192,23 @@ export class Effect implements IDisposable {
     /**
      * Name of the effect.
      */
-    public name: any;
+    public name: any = null;
     /**
      * String container all the define statements that should be set on the shader.
      */
-    public defines: string;
+    public defines: string = "";
     /**
      * Callback that will be called when the shader is compiled.
      */
-    public onCompiled: Nullable<(effect: Effect) => void>;
+    public onCompiled: Nullable<(effect: Effect) => void> = null;
     /**
      * Callback that will be called if an error occurs during shader compilation.
      */
-    public onError: Nullable<(effect: Effect, errors: string) => void>;
+    public onError: Nullable<(effect: Effect, errors: string) => void> = null;
     /**
      * Callback that will be called when effect is bound.
      */
-    public onBind: Nullable<(effect: Effect) => void>;
+    public onBind: Nullable<(effect: Effect) => void> = null;
     /**
      * Unique ID of the effect.
      */
@@ -224,7 +224,7 @@ export class Effect implements IDisposable {
     public onErrorObservable = new Observable<Effect>();
 
     /** @hidden */
-    public _onBindObservable: Nullable<Observable<Effect>>;
+    public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     /**
      * Observable that will be called when effect is bound.
@@ -255,20 +255,20 @@ export class Effect implements IDisposable {
      * Key for the effect.
      * @hidden
      */
-    public _key: string;
+    public _key: string = "";
     private _indexParameters: any;
-    private _fallbacks: Nullable<EffectFallbacks>;
-    private _vertexSourceCode: string;
-    private _fragmentSourceCode: string;
-    private _vertexSourceCodeOverride: string;
-    private _fragmentSourceCodeOverride: string;
-    private _transformFeedbackVaryings: Nullable<string[]>;
+    private _fallbacks: Nullable<EffectFallbacks> = null;
+    private _vertexSourceCode: string = "";
+    private _fragmentSourceCode: string = "";
+    private _vertexSourceCodeOverride: string = "";
+    private _fragmentSourceCodeOverride: string = "";
+    private _transformFeedbackVaryings: Nullable<string[]> = null;
     /**
      * Compiled shader to webGL program.
      * @hidden
      */
-    public _pipelineContext: IPipelineContext;
-    private _valueCache: { [key: string]: any };
+    public _pipelineContext: Nullable<IPipelineContext> = null;
+    private _valueCache: { [key: string]: any } = {};
     private static _baseCache: { [key: number]: DataBuffer } = {};
 
     /**
@@ -405,7 +405,7 @@ export class Effect implements IDisposable {
      * The pipeline context for this effect
      * @returns the associated pipeline context
      */
-    public getPipelineContext(): IPipelineContext {
+    public getPipelineContext(): Nullable<IPipelineContext> {
         return this._pipelineContext;
     }
 
@@ -793,7 +793,7 @@ export class Effect implements IDisposable {
                 scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
             }
 
-            this._pipelineContext._handlesSpectorRebuildCallback(onCompiled);
+            this._pipelineContext!._handlesSpectorRebuildCallback(onCompiled);
         };
         this._fallbacks = null;
         this._prepareEffect();
@@ -831,12 +831,12 @@ export class Effect implements IDisposable {
                     }
                 }
 
-                let uniforms = engine.getUniforms(this._pipelineContext, this._uniformsNames);
+                let uniforms = engine.getUniforms(this._pipelineContext!, this._uniformsNames);
                 uniforms.forEach((uniform, index) => {
                     this._uniforms[this._uniformsNames[index]] = uniform;
                 });
 
-                this._attributes = engine.getAttributes(this._pipelineContext, attributesNames);
+                this._attributes = engine.getAttributes(this._pipelineContext!, attributesNames);
 
                 var index: number;
                 for (index = 0; index < this._samplerList.length; index++) {
@@ -1100,7 +1100,7 @@ export class Effect implements IDisposable {
      * @param index Index to bind.
      */
     public bindUniformBlock(blockName: string, index: number): void {
-        this._engine.bindUniformBlock(this._pipelineContext, blockName, index);
+        this._engine.bindUniformBlock(this._pipelineContext!, blockName, index);
     }
 
     /**
