@@ -26,7 +26,7 @@ interface INativeEngine {
     deleteIndexBuffer(buffer: any): void;
     recordIndexBuffer(vertexArray: any, buffer: any): void;
 
-    createVertexBuffer(data: DataArray, byteStride: number, infos: Array<{ location: number, numElements: number, byteOffset: number, normalized: boolean }>): any;
+    createVertexBuffer(data: ArrayBufferView, byteStride: number, infos: Array<{ location: number, numElements: number, type: number, normalized: boolean, byteOffset: number }>): any;
     deleteVertexBuffer(buffer: any): void;
     recordVertexBuffer(vertexArray: any, buffer: any): void;
 
@@ -305,10 +305,8 @@ export class NativeEngine extends Engine {
 
         // Vertex
 
-        // TODO: handle vertex buffers that are not Float32Array
-
         // Map the vertex buffers that point to the same underlying buffer.
-        const map: { [id: number]: { buffer: WebGLBufferInfo, byteStride: number, infos: Array<{ location: number, numElements: number, byteOffset: number, normalized: boolean }> } } = {};
+        const map: { [id: number]: { buffer: WebGLBufferInfo, byteStride: number, infos: Array<{ location: number, numElements: number, type: number, normalized: boolean, byteOffset: number }> } } = {};
         const attributes = effect.getAttributesNames();
         for (let index = 0; index < attributes.length; index++) {
             const location = effect.getAttributeLocation(index);
@@ -326,7 +324,13 @@ export class NativeEngine extends Engine {
 
                         // TODO: check if byteStride matches for all vertex buffers??
 
-                        entry.infos.push({location: location, numElements: vertexBuffer.getSize(), byteOffset: vertexBuffer.byteOffset, normalized: vertexBuffer.normalized });
+                        entry.infos.push({
+                            location: location,
+                            numElements: vertexBuffer.getSize(),
+                            type: vertexBuffer.type,
+                            normalized: vertexBuffer.normalized,
+                            byteOffset: vertexBuffer.byteOffset
+                        });
                     }
                 }
             }
@@ -337,7 +341,10 @@ export class NativeEngine extends Engine {
             const entry = map[id];
             const buffer = entry.buffer;
             if (!buffer.nativeVertexBuffer) {
-                buffer.nativeVertexBuffer = this._native.createVertexBuffer(buffer.data, entry.byteStride, entry.infos);
+                // TODO: handle non-normalized non-float data (shader always expects float data)
+
+                const data = ArrayBuffer.isView(buffer.data) ? buffer.data : new Float32Array(buffer.data);
+                buffer.nativeVertexBuffer = this._native.createVertexBuffer(data, entry.byteStride, entry.infos);
             }
             this._native.recordVertexBuffer(vertexArray, buffer.nativeVertexBuffer);
         }
