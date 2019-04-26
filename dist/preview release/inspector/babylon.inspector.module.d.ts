@@ -882,6 +882,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
         renderNormalVectors(): void;
         displayNormals(): void;
         onMaterialLink(): void;
+        onSourceMeshLink(): void;
         convertPhysicsTypeToString(): string;
         render(): JSX.Element;
     }
@@ -2906,6 +2907,7 @@ declare module INSPECTOR {
         renderNormalVectors(): void;
         displayNormals(): void;
         onMaterialLink(): void;
+        onSourceMeshLink(): void;
         convertPhysicsTypeToString(): string;
         render(): JSX.Element;
     }
