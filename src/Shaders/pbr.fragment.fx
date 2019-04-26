@@ -955,7 +955,9 @@ void main(void) {
             // Tint reflectance
             environmentRefraction.rgb *= volumeAlbedo;
         #else
-            // Nothing to change for refraction.
+            // Compute tint from min distance only.
+            vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
+            refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
         #endif
 
         // Decrease Albedo Contribution
