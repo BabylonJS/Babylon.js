@@ -410,7 +410,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 colShape.setActivationState(AmmoJSPlugin.DISABLE_DEACTIVATION_FLAG);
                 this.world.addSoftBody(colShape, 1, -1);
                 impostor.physicsBody = colShape;
-                impostor._pluginData.toDispose.concat([colShape]);
+                impostor._pluginData.toDispose.push(colShape);
                 this.setBodyPressure(impostor, 0);
                 if (impostor.type === PhysicsImpostor.SoftbodyImpostor) {
                     this.setBodyPressure(impostor, impostor.getParam("pressure"));
@@ -447,7 +447,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
                 this.world.addRigidBody(body);
                 impostor.physicsBody = body;
-                impostor._pluginData.toDispose.concat([body, rbInfo, myMotionState, startTransform, localInertia, colShape]);
+                impostor._pluginData.toDispose = impostor._pluginData.toDispose.concat([body, rbInfo, myMotionState, startTransform, localInertia, colShape]);
             }
             this.setBodyRestitution(impostor, impostor.getParam("restitution"));
             this.setBodyFriction(impostor, impostor.getParam("friction"));
@@ -915,7 +915,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     // Only create btBvhTriangleMeshShape impostor is static
                     // See https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=7283
                     var tetraMesh = new Ammo.btTriangleMesh();
-                    impostor._pluginData.toDispose.concat([tetraMesh]);
+                    impostor._pluginData.toDispose.push(tetraMesh);
                     var triangeCount = this._addMeshVerts(tetraMesh, object, object);
                     if (triangeCount == 0) {
                         returnValue = new Ammo.btCompoundShape();
@@ -930,7 +930,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 var triangeCount = this._addHullVerts(convexMesh, object, object);
                 if (triangeCount == 0) {
                     // Cleanup Unused Convex Hull Shape
-                    impostor._pluginData.toDispose.concat([convexMesh]);
+                    impostor._pluginData.toDispose.push(convexMesh);
                     returnValue = new Ammo.btCompoundShape();
                 } else {
                     returnValue = convexMesh;

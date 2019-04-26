@@ -7,7 +7,188 @@ import { VertexData } from "../../Meshes/mesh.vertexData";
 declare var DracoDecoderModule: any;
 declare var WebAssembly: any;
 
+// WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
+declare function postMessage(message: any, transfer?: any[]): void;
+
+function loadScriptAsync(url: string): Promise<void> {
+    if (typeof importScripts === "function") {
+        importScripts(url);
+        return Promise.resolve();
+    }
+    else {
+        return new Promise((resolve, reject) => {
+            Tools.LoadScript(url, () => {
+                resolve();
+            }, (message) => {
+                reject(new Error(message));
+            });
+        });
+    }
+}
+
+function loadFileAsync(url: string): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+        Tools.LoadFile(url, (data) => {
+            resolve(data as ArrayBuffer);
+        }, undefined, undefined, true, (request, exception) => {
+            reject(exception);
+        });
+    });
+}
+
+function createDecoderAsync(wasmUrl?: string, wasmBinary?: ArrayBuffer, fallbackUrl?: string): Promise<any> | undefined {
+    const decoderUrl = (wasmBinary && wasmUrl) || fallbackUrl;
+    if (decoderUrl) {
+        return loadScriptAsync(decoderUrl).then(() => {
+            return new Promise((resolve) => {
+                DracoDecoderModule({ wasmBinary: wasmBinary }).then((module: any) => {
+                    resolve({ module: module });
+                });
+            });
+        });
+    }
+
+    return undefined;
+}
+
+function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: { [kind: string]: number } | undefined, onIndicesData: (data: Uint32Array) => void, onAttributeData: (kind: string, data: Float32Array) => void): void {
+    const buffer = new decoderModule.DecoderBuffer();
+    buffer.Init(dataView, dataView.byteLength);
+
+    const decoder = new decoderModule.Decoder();
+    let geometry: any;
+    let status: any;
+
+    try {
+        const type = decoder.GetEncodedGeometryType(buffer);
+        switch (type) {
+            case decoderModule.TRIANGULAR_MESH:
+                geometry = new decoderModule.Mesh();
+                status = decoder.DecodeBufferToMesh(buffer, geometry);
+                break;
+            case decoderModule.POINT_CLOUD:
+                geometry = new decoderModule.PointCloud();
+                status = decoder.DecodeBufferToPointCloud(buffer, geometry);
+                break;
+            default:
+                throw new Error(`Invalid geometry type ${type}`);
+        }
+
+        if (!status.ok() || !geometry.ptr) {
+            throw new Error(status.error_msg());
+        }
+
+        const numPoints = geometry.num_points();
+
+        if (type === decoderModule.TRIANGULAR_MESH) {
+            const numFaces = geometry.num_faces();
+            const faceIndices = new decoderModule.DracoInt32Array();
+            try {
+                const indices = new Uint32Array(numFaces * 3);
+                for (let i = 0; i < numFaces; i++) {
+                    decoder.GetFaceFromMesh(geometry, i, faceIndices);
+                    const offset = i * 3;
+                    indices[offset + 0] = faceIndices.GetValue(0);
+                    indices[offset + 1] = faceIndices.GetValue(1);
+                    indices[offset + 2] = faceIndices.GetValue(2);
+                }
+                onIndicesData(indices);
+            }
+            finally {
+                decoderModule.destroy(faceIndices);
+            }
+        }
+
+        const processAttribute = (kind: string, attribute: any) => {
+            const dracoData = new decoderModule.DracoFloat32Array();
+            try {
+                decoder.GetAttributeFloatForAllPoints(geometry, attribute, dracoData);
+                const babylonData = new Float32Array(numPoints * attribute.num_components());
+                for (let i = 0; i < babylonData.length; i++) {
+                    babylonData[i] = dracoData.GetValue(i);
+                }
+                onAttributeData(kind, babylonData);
+            }
+            finally {
+                decoderModule.destroy(dracoData);
+            }
+        };
+
+        if (attributes) {
+            for (const kind in attributes) {
+                const id = attributes[kind];
+                const attribute = decoder.GetAttributeByUniqueId(geometry, id);
+                processAttribute(kind, attribute);
+            }
+        }
+        else {
+            const nativeAttributeTypes: { [kind: string]: string } = {
+                "position": "POSITION",
+                "normal": "NORMAL",
+                "color": "COLOR",
+                "uv": "TEX_COORD"
+            };
+
+            for (const kind in nativeAttributeTypes) {
+                const id = decoder.GetAttributeId(geometry, decoderModule[nativeAttributeTypes[kind]]);
+                if (id !== -1) {
+                    const attribute = decoder.GetAttribute(geometry, id);
+                    processAttribute(kind, attribute);
+                }
+            }
+        }
+    }
+    finally {
+        if (geometry) {
+            decoderModule.destroy(geometry);
+        }
+
+        decoderModule.destroy(decoder);
+        decoderModule.destroy(buffer);
+    }
+}
+
+/**
+ * The worker function that gets converted to a blob url to pass into a worker.
+ */
+function worker(): void {
+    let decoderPromise: Promise<any> | undefined;
+
+    onmessage = (event) => {
+        const data = event.data;
+        switch (data.id) {
+            case "init": {
+                const decoder = data.decoder;
+                decoderPromise = createDecoderAsync(decoder.wasmUrl, decoder.wasmBinary, decoder.fallbackUrl);
+                postMessage("done");
+                break;
+            }
+            case "decodeMesh": {
+                if (!decoderPromise) {
+                    throw new Error("Draco decoder module is not available");
+                }
+                decoderPromise.then((decoder) => {
+                    decodeMesh(decoder.module, data.dataView, data.attributes, (indices) => {
+                        postMessage({ id: "indices", value: indices }, [indices.buffer]);
+                    }, (kind, data) => {
+                        postMessage({ id: kind, value: data }, [data.buffer]);
+                    });
+                    postMessage("done");
+                });
+                break;
+            }
+        }
+    };
+}
+
+function getAbsoluteUrl<T>(url: T): T | string {
+    if (typeof document !== "object" || typeof url !== "string") {
+        return url;
+    }
+
+    return Tools.GetAbsoluteUrl(url);
+}
 
 /**
  * Configuration for Draco compression
@@ -16,7 +197,7 @@ export interface IDracoCompressionConfiguration {
     /**
      * Configuration for the decoder.
      */
-    decoder?: {
+    decoder: {
         /**
          * The url to the WebAssembly module.
          */
@@ -60,20 +241,18 @@ export interface IDracoCompressionConfiguration {
  *
  * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
  * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
- * Use `DracoCompression.DecoderAvailable` to determine if the decoder is available for the current session.
+ * Use `DracoCompression.DecoderAvailable` to determine if the decoder configuration is available for the current context.
  *
- * To decode Draco compressed data, create a DracoCompression object and call decodeMeshAsync:
+ * To decode Draco compressed data, get the default DracoCompression object and call decodeMeshAsync:
  * ```javascript
- *     var dracoCompression = new DracoCompression();
- *     var vertexData = await dracoCompression.decodeMeshAsync(data, {
- *         [VertexBuffer.PositionKind]: 0
- *     });
+ *     var vertexData = await DracoCompression.Default.decodeMeshAsync(data);
  * ```
  *
  * @see https://www.babylonjs-playground.com/#N3EK4B#0
  */
 export class DracoCompression implements IDisposable {
-    private _workerPoolPromise: Promise<WorkerPool>;
+    private _workerPoolPromise?: Promise<WorkerPool>;
+    private _decoderModulePromise?: Promise<any>;
 
     /**
      * The configuration. Defaults to the following urls:
@@ -90,25 +269,11 @@ export class DracoCompression implements IDisposable {
     };
 
     /**
-     * Returns true if the decoder is available.
+     * Returns true if the decoder configuration is available.
      */
     public static get DecoderAvailable(): boolean {
-        if (typeof DracoDecoderModule !== "undefined") {
-            return true;
-        }
-
         const decoder = DracoCompression.Configuration.decoder;
-        if (decoder) {
-            if (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") {
-                return true;
-            }
-
-            if (decoder.fallbackUrl) {
-                return true;
-            }
-        }
-
-        return false;
+        return !!((decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") || decoder.fallbackUrl);
     }
 
     /**
@@ -117,35 +282,46 @@ export class DracoCompression implements IDisposable {
     public static DefaultNumWorkers = DracoCompression.GetDefaultNumWorkers();
 
     private static GetDefaultNumWorkers(): number {
-        const hardwareConcurrency = navigator && navigator.hardwareConcurrency;
-        if (!hardwareConcurrency) {
+        if (typeof navigator !== "object" || !navigator.hardwareConcurrency) {
             return 1;
         }
 
         // Use 50% of the available logical processors but capped at 4.
-        return Math.min(Math.floor(hardwareConcurrency * 0.5), 4);
+        return Math.min(Math.floor(navigator.hardwareConcurrency * 0.5), 4);
+    }
+
+    private static _Default: Nullable<DracoCompression> = null;
+
+    /**
+     * Default instance for the draco compression object.
+     */
+    public static get Default(): DracoCompression {
+        if (!DracoCompression._Default) {
+            DracoCompression._Default = new DracoCompression();
+        }
+
+        return DracoCompression._Default;
     }
 
     /**
      * Constructor
-     * @param numWorkers The number of workers for async operations
+     * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
      */
     constructor(numWorkers = DracoCompression.DefaultNumWorkers) {
-        if (!URL || !URL.createObjectURL) {
-            throw new Error("Object URLs are not available");
-        }
+        const decoder = DracoCompression.Configuration.decoder;
 
-        if (!Worker) {
-            throw new Error("Workers are not available");
-        }
+        const decoderWasmBinaryPromise: Promise<ArrayBuffer | undefined> =
+            (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object")
+                ? loadFileAsync(getAbsoluteUrl(decoder.wasmBinaryUrl))
+                : Promise.resolve(undefined);
 
-        this._workerPoolPromise = this._loadDecoderWasmBinaryAsync().then((decoderWasmBinary) => {
-            const workerBlobUrl = URL.createObjectURL(new Blob([`(${DracoCompression._Worker.toString()})()`], { type: "application/javascript" }));
-            const workerPromises = new Array<Promise<Worker>>(numWorkers);
-            for (let i = 0; i < workerPromises.length; i++) {
-                workerPromises[i] = new Promise((resolve, reject) => {
-                    const decoder = DracoCompression.Configuration.decoder;
-                    if (decoder) {
+        if (numWorkers && typeof Worker === "function") {
+            this._workerPoolPromise = decoderWasmBinaryPromise.then((decoderWasmBinary) => {
+                const workerContent = `${loadScriptAsync}${createDecoderAsync}${decodeMesh}(${worker})()`;
+                const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
+                const workerPromises = new Array<Promise<Worker>>(numWorkers);
+                for (let i = 0; i < workerPromises.length; i++) {
+                    workerPromises[i] = new Promise((resolve, reject) => {
                         const worker = new Worker(workerBlobUrl);
                         const onError = (error: ErrorEvent) => {
                             worker.removeEventListener("error", onError);
@@ -165,30 +341,40 @@ export class DracoCompression implements IDisposable {
                         worker.addEventListener("message", onMessage);
 
                         worker.postMessage({
-                            id: "initDecoder",
-                            decoderWasmUrl: decoder.wasmUrl ? Tools.GetAbsoluteUrl(decoder.wasmUrl) : null,
-                            decoderWasmBinary: decoderWasmBinary,
-                            fallbackUrl: decoder.fallbackUrl ? Tools.GetAbsoluteUrl(decoder.fallbackUrl) : null
+                            id: "init",
+                            decoder: {
+                                wasmUrl: getAbsoluteUrl(decoder.wasmUrl),
+                                wasmBinary: decoderWasmBinary,
+                                fallbackUrl: getAbsoluteUrl(decoder.fallbackUrl)
+                            }
                         });
-                    }
-                });
-            }
+                    });
+                }
 
-            return Promise.all(workerPromises).then((workers) => {
-                return new WorkerPool(workers);
+                return Promise.all(workerPromises).then((workers) => {
+                    return new WorkerPool(workers);
+                });
             });
-        });
+        }
+        else {
+            this._decoderModulePromise = decoderWasmBinaryPromise.then((decoderWasmBinary) => {
+                return createDecoderAsync(decoder.wasmUrl, decoderWasmBinary, decoder.fallbackUrl);
+            });
+        }
     }
 
     /**
      * Stop all async operations and release resources.
      */
     public dispose(): void {
-        this._workerPoolPromise.then((workerPool) => {
-            workerPool.dispose();
-        });
+        if (this._workerPoolPromise) {
+            this._workerPoolPromise.then((workerPool) => {
+                workerPool.dispose();
+            });
+        }
 
         delete this._workerPoolPromise;
+        delete this._decoderModulePromise;
     }
 
     /**
@@ -196,218 +382,78 @@ export class DracoCompression implements IDisposable {
      * @returns a promise that resolves when ready
      */
     public whenReadyAsync(): Promise<void> {
-        return this._workerPoolPromise.then(() => { });
-    }
+        if (this._workerPoolPromise) {
+            return this._workerPoolPromise.then(() => { });
+        }
 
-   /**
-     * Decode Draco compressed mesh data to vertex data.
-     * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
-     * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
-     * @returns A promise that resolves with the decoded vertex data
-     */
-    public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<VertexData> {
-        const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+        if (this._decoderModulePromise) {
+            return this._decoderModulePromise.then(() => { });
+        }
 
-        return this._workerPoolPromise.then((workerPool) => {
-            return new Promise<VertexData>((resolve, reject) => {
-                workerPool.push((worker, onComplete) => {
-                    const vertexData = new VertexData();
-
-                    const onError = (error: ErrorEvent) => {
-                        worker.removeEventListener("error", onError);
-                        worker.removeEventListener("message", onMessage);
-                        reject(error);
-                        onComplete();
-                    };
-
-                    const onMessage = (message: MessageEvent) => {
-                        if (message.data === "done") {
-                            worker.removeEventListener("error", onError);
-                            worker.removeEventListener("message", onMessage);
-                            resolve(vertexData);
-                            onComplete();
-                        }
-                        else if (message.data.id === "indices") {
-                            vertexData.indices = message.data.value;
-                        }
-                        else {
-                            vertexData.set(message.data.value, message.data.id);
-                        }
-                    };
-
-                    worker.addEventListener("error", onError);
-                    worker.addEventListener("message", onMessage);
-
-                    const dataViewCopy = new Uint8Array(dataView.byteLength);
-                    dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
-
-                    worker.postMessage({ id: "decodeMesh", dataView: dataViewCopy, attributes: attributes }, [dataViewCopy.buffer]);
-                });
-            });
-        });
+        return Promise.resolve();
     }
 
     /**
-     * The worker function that gets converted to a blob url to pass into a worker.
-     */
-    private static _Worker(): void {
-        const nativeAttributeTypes: { [kind: string]: string } = {
-            "position": "POSITION",
-            "normal": "NORMAL",
-            "color": "COLOR",
-            "uv": "TEX_COORD"
-        };
+      * Decode Draco compressed mesh data to vertex data.
+      * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
+      * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+      * @returns A promise that resolves with the decoded vertex data
+      */
+    public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<VertexData> {
+        const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
-        // self is actually a DedicatedWorkerGlobalScope
-        const _self = self as any as {
-            onmessage: (event: MessageEvent) => void;
-            postMessage: (message: any, transfer?: any[]) => void;
-            close: () => void;
-        };
+        if (this._workerPoolPromise) {
+            return this._workerPoolPromise.then((workerPool) => {
+                return new Promise<VertexData>((resolve, reject) => {
+                    workerPool.push((worker, onComplete) => {
+                        const vertexData = new VertexData();
 
-        let decoderModulePromise: Promise<any>;
+                        const onError = (error: ErrorEvent) => {
+                            worker.removeEventListener("error", onError);
+                            worker.removeEventListener("message", onMessage);
+                            reject(error);
+                            onComplete();
+                        };
 
-        function initDecoder(decoderWasmUrl: string | undefined, decoderWasmBinary: ArrayBuffer | undefined, fallbackUrl: string | undefined): void {
-            if (decoderWasmUrl && decoderWasmBinary && typeof WebAssembly === "object") {
-                importScripts(decoderWasmUrl);
-                decoderModulePromise = DracoDecoderModule({
-                    wasmBinary: decoderWasmBinary
-                });
-            }
-            else if (fallbackUrl) {
-                importScripts(fallbackUrl);
-                decoderModulePromise = DracoDecoderModule();
-            }
-            else {
-                throw Error("Failed to initialize Draco decoder");
-            }
-
-            _self.postMessage("done");
-        }
-
-        function decodeMesh(dataView: ArrayBufferView, attributes: { [kind: string]: number }): void {
-            decoderModulePromise.then((decoderModule) => {
-                const buffer = new decoderModule.DecoderBuffer();
-                buffer.Init(dataView, dataView.byteLength);
-
-                const decoder = new decoderModule.Decoder();
-                let geometry: any;
-                let status: any;
-
-                try {
-                    const type = decoder.GetEncodedGeometryType(buffer);
-                    switch (type) {
-                        case decoderModule.TRIANGULAR_MESH:
-                            geometry = new decoderModule.Mesh();
-                            status = decoder.DecodeBufferToMesh(buffer, geometry);
-                            break;
-                        case decoderModule.POINT_CLOUD:
-                            geometry = new decoderModule.PointCloud();
-                            status = decoder.DecodeBufferToPointCloud(buffer, geometry);
-                            break;
-                        default:
-                            throw new Error(`Invalid geometry type ${type}`);
-                    }
-
-                    if (!status.ok() || !geometry.ptr) {
-                        throw new Error(status.error_msg());
-                    }
-
-                    const numPoints = geometry.num_points();
-
-                    if (type === decoderModule.TRIANGULAR_MESH) {
-                        const numFaces = geometry.num_faces();
-                        const faceIndices = new decoderModule.DracoInt32Array();
-                        try {
-                            const indices = new Uint32Array(numFaces * 3);
-                            for (let i = 0; i < numFaces; i++) {
-                                decoder.GetFaceFromMesh(geometry, i, faceIndices);
-                                const offset = i * 3;
-                                indices[offset + 0] = faceIndices.GetValue(0);
-                                indices[offset + 1] = faceIndices.GetValue(1);
-                                indices[offset + 2] = faceIndices.GetValue(2);
+                        const onMessage = (message: MessageEvent) => {
+                            if (message.data === "done") {
+                                worker.removeEventListener("error", onError);
+                                worker.removeEventListener("message", onMessage);
+                                resolve(vertexData);
+                                onComplete();
                             }
-                            _self.postMessage({ id: "indices", value: indices }, [indices.buffer]);
-                        }
-                        finally {
-                            decoderModule.destroy(faceIndices);
-                        }
-                    }
-
-                    const processAttribute = (kind: string, attribute: any) => {
-                        const dracoData = new decoderModule.DracoFloat32Array();
-                        try {
-                            decoder.GetAttributeFloatForAllPoints(geometry, attribute, dracoData);
-                            const babylonData = new Float32Array(numPoints * attribute.num_components());
-                            for (let i = 0; i < babylonData.length; i++) {
-                                babylonData[i] = dracoData.GetValue(i);
+                            else if (message.data.id === "indices") {
+                                vertexData.indices = message.data.value;
                             }
-                            _self.postMessage({ id: kind, value: babylonData }, [babylonData.buffer]);
-                        }
-                        finally {
-                            decoderModule.destroy(dracoData);
-                        }
-                    };
-
-                    if (attributes) {
-                        for (const kind in attributes) {
-                            const id = attributes[kind];
-                            const attribute = decoder.GetAttributeByUniqueId(geometry, id);
-                            processAttribute(kind, attribute);
-                        }
-                    }
-                    else {
-                        for (const kind in nativeAttributeTypes) {
-                            const id = decoder.GetAttributeId(geometry, decoderModule[nativeAttributeTypes[kind]]);
-                            if (id !== -1) {
-                                const attribute = decoder.GetAttribute(geometry, id);
-                                processAttribute(kind, attribute);
+                            else {
+                                vertexData.set(message.data.value, message.data.id);
                             }
-                        }
-                    }
-                }
-                finally {
-                    if (geometry) {
-                        decoderModule.destroy(geometry);
-                    }
+                        };
 
-                    decoderModule.destroy(decoder);
-                    decoderModule.destroy(buffer);
-                }
+                        worker.addEventListener("error", onError);
+                        worker.addEventListener("message", onMessage);
 
-                _self.postMessage("done");
-            });
-        }
+                        const dataViewCopy = new Uint8Array(dataView.byteLength);
+                        dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
 
-        _self.onmessage = (event) => {
-            const data = event.data;
-            switch (data.id) {
-                case "initDecoder": {
-                    initDecoder(data.decoderWasmUrl, data.decoderWasmBinary, data.fallbackUrl);
-                    break;
-                }
-                case "decodeMesh": {
-                    decodeMesh(data.dataView, data.attributes);
-                    break;
-                }
-            }
-        };
-    }
-
-    private _loadDecoderWasmBinaryAsync(): Promise<Nullable<ArrayBuffer>> {
-        const decoder = DracoCompression.Configuration.decoder;
-        if (decoder && decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") {
-            const wasmBinaryUrl = Tools.GetAbsoluteUrl(decoder.wasmBinaryUrl);
-            return new Promise((resolve, reject) => {
-                Tools.LoadFile(wasmBinaryUrl, (data) => {
-                    resolve(data as ArrayBuffer);
-                }, undefined, undefined, true, (request, exception) => {
-                    reject(exception);
+                        worker.postMessage({ id: "decodeMesh", dataView: dataViewCopy, attributes: attributes }, [dataViewCopy.buffer]);
+                    });
                 });
             });
         }
-        else {
-            return Promise.resolve(null);
+
+        if (this._decoderModulePromise) {
+            return this._decoderModulePromise.then((decoder) => {
+                const vertexData = new VertexData();
+                decodeMesh(decoder.module, dataView, attributes, (indices) => {
+                    vertexData.indices = indices;
+                }, (kind, data) => {
+                    vertexData.set(data, kind);
+                });
+                return vertexData;
+            });
         }
+
+        throw new Error("Draco decoder module is not available");
     }
 }

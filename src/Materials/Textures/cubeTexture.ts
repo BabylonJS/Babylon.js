@@ -10,6 +10,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/ind
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
 
+import "../../Engines/Extensions/engine.cubeTexture";
+
 /**
  * Class for creating a cube texture
  */
@@ -213,6 +215,13 @@ export class CubeTexture extends BaseTexture {
     }
 
     /**
+     * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
+     */
+    public get isPrefiltered(): boolean {
+        return this._prefiltered;
+    }
+
+    /**
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "CubeTexture"
      */
@@ -265,7 +274,7 @@ export class CubeTexture extends BaseTexture {
                 this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
             }
             else {
-                this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, undefined, this._format, forcedExtension);
+                this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
             }
         }
     }

@@ -371,7 +371,7 @@ export class Color3 {
     }
 
     /**
-     * Creates a new Vector3 from the starting index of the given array
+     * Creates a new Color3 from the starting index of the given array
      * @param array defines the source array
      * @param offset defines an offset in the source array
      * @returns a new Color3 object
@@ -4386,7 +4386,7 @@ export class Matrix {
      * It will be incremented every time the matrix data change.
      * You can use it to speed the comparison between two versions of the same matrix.
      */
-    public updateFlag: number;
+    public updateFlag: number = -1;
 
     private readonly _m: Float32Array = new Float32Array(16);
 
@@ -5321,6 +5321,8 @@ export class Matrix {
         m[13] = translation.y;
         m[14] = translation.z;
         m[15] = 1;
+
+        result._markAsUpdated();
     }
 
     /**

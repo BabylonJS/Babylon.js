@@ -104,6 +104,11 @@ export class GeometryBufferRenderer {
      */
     public set enableVelocity(enable: boolean) {
         this._enableVelocity = enable;
+
+        if (!enable) {
+            this._previousTransformationMatrices = {};
+        }
+
         this.dispose();
         this._createRenderTargets();
     }
@@ -218,7 +223,7 @@ export class GeometryBufferRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("geometry",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorldViewProjection"],
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorldViewProjection", "currentWorldViewProjection"],
                 ["diffuseSampler"], join,
                 undefined, undefined, undefined,
                 { buffersCount: this._enablePosition ? 3 : 2 });
@@ -299,7 +304,7 @@ export class GeometryBufferRenderer {
             }
 
             // Velocity
-            if (!this._previousTransformationMatrices[mesh.uniqueId]) {
+            if (this._enableVelocity && !this._previousTransformationMatrices[mesh.uniqueId]) {
                 this._previousTransformationMatrices[mesh.uniqueId] = Matrix.Identity();
             }
 
@@ -338,7 +343,10 @@ export class GeometryBufferRenderer {
                 }
 
                 // Velocity
-                this._effect.setMatrix("previousWorldViewProjection", this._previousTransformationMatrices[mesh.uniqueId]);
+                if (this._enableVelocity) {
+                    this._effect.setMatrix("currentWorldViewProjection", mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix()));
+                    this._effect.setMatrix("previousWorldViewProjection", this._previousTransformationMatrices[mesh.uniqueId]);
+                }
 
                 // Draw
                 mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
@@ -346,7 +354,9 @@ export class GeometryBufferRenderer {
             }
 
             // Velocity
-            this._previousTransformationMatrices[mesh.uniqueId] = mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix());
+            if (this._enableVelocity) {
+                this._previousTransformationMatrices[mesh.uniqueId] = mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix());
+            }
         };
 
         this._multiRenderTarget.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {

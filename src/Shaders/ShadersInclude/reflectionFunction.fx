@@ -24,7 +24,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 	float lat = acos(direction.y);
 	vec2 sphereCoords = vec2(lon, lat) * RECIPROCAL_PI2 * 2.0;
 	float s = sphereCoords.x * 0.5 + 0.5;
-	float t = sphereCoords.y;	
+	float t = sphereCoords.y;
 
  	#ifdef REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED
 		return vec3(1.0 - s, t, 0);
@@ -37,11 +37,12 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 
 	vec3 cameraToVertex = normalize(worldPos.xyz - vEyePosition.xyz);
 	vec3 r = normalize(reflect(cameraToVertex, worldNormal));
+	r = vec3(reflectionMatrix * vec4(r, 0));
 	float lon = atan(r.z, r.x);
 	float lat = acos(r.y);
 	vec2 sphereCoords = vec2(lon, lat) * RECIPROCAL_PI2 * 2.0;
 	float s = sphereCoords.x * 0.5 + 0.5;
-	float t = sphereCoords.y;		
+	float t = sphereCoords.y;
 
 	return vec3(s, t, 0);
 #endif
@@ -51,6 +52,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 	vec3 viewNormal = normalize(vec3(view * vec4(worldNormal, 0.0)));
 
 	vec3 r = reflect(viewDir, viewNormal);
+	r = vec3(reflectionMatrix * vec4(r, 0));
 	r.z = r.z - 1.0;
 
 	float m = 2.0 * length(r);
@@ -76,7 +78,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
     #endif
 
     coords = vec3(reflectionMatrix * vec4(coords, 0));
-    
+
     #ifdef INVERTCUBICMAP
         coords.y *= -1.0;
     #endif
@@ -90,7 +92,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 #endif
 
 #ifdef REFLECTIONMAP_SKYBOX
-	return vPositionUVW;
+	return vec3(reflectionMatrix * vec4(vPositionUVW, 0));
 #endif
 
 #ifdef REFLECTIONMAP_EXPLICIT

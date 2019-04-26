@@ -63,6 +63,9 @@ export class Skeleton implements IAnimatable {
     /** @hidden */
     public _numBonesWithLinkedTransformNode = 0;
 
+    /** @hidden */
+    public _hasWaitingData: Nullable<boolean> = null;
+
     /**
      * Specifies if the skeleton should be serialized
      */
@@ -407,6 +410,7 @@ export class Skeleton implements IAnimatable {
 
         for (var index = 0; index < this.bones.length; index++) {
             var bone = this.bones[index];
+            bone._childUpdateId++;
             var parentBone = bone.getParent();
 
             if (parentBone) {
@@ -519,7 +523,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Clone the current skeleton
      * @param name defines the name of the new skeleton
-     * @param id defines the id of the enw skeleton
+     * @param id defines the id of the new skeleton
      * @returns the new skeleton
      */
     public clone(name: string, id: string): Skeleton {
@@ -689,6 +693,11 @@ export class Skeleton implements IAnimatable {
 
             if (parsedBone.animation) {
                 bone.animations.push(Animation.Parse(parsedBone.animation));
+            }
+
+            if (parsedBone.linkedTransformNodeId !== undefined && parsedBone.linkedTransformNodeId !== null) {
+                skeleton._hasWaitingData = true;
+                bone._waitingTransformNodeId = parsedBone.linkedTransformNodeId;
             }
         }
 

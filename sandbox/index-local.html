@@ -40,8 +40,14 @@
             <div class="footerRight">
                 <a href="javascript:void(null);" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg"
                         alt="Display inspector" title="Display inspector" /></a>
+                <a href="javascript:void(null);" id="btnEnvironment" class="hidden"><img src="./Assets/IBLicon.svg"
+                        alt="Select environment" title="Select environment" />
+                </a>
+                <div id="dropdownContent-env" class="hidden">
+                </div>
                 <a href="javascript:void(null);">
-                    <div class="custom-upload" title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
+                    <div class="custom-upload"
+                        title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
                         <input type="file" id="files" multiple />
                     </div>
                 </a>
@@ -60,6 +66,8 @@
         };
 
         BABYLONDEVTOOLS.Loader
+            .require('environment.js')
+            .require('animation.js')
             .require('index.js')
             .load(function() {
                 BABYLON.DracoCompression.Configuration.decoder = {

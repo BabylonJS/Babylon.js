@@ -98,6 +98,13 @@ export class PlaneRotationGizmo extends Gizmo {
                 if (!this.attachedMesh.rotationQuaternion) {
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
                 }
+
+                // Remove parent priort to rotating
+                var attachedMeshParent = this.attachedMesh.parent;
+                if (attachedMeshParent) {
+                    this.attachedMesh.setParent(null);
+                }
+
                 // Calc angle over full 360 degree (https://stackoverflow.com/questions/43493711/the-angle-between-two-3d-vectors-with-a-result-range-0-360)
                 var newVector = event.dragPlanePoint.subtract(this.attachedMesh.absolutePosition).normalize();
                 var originalVector = lastDragPosition.subtract(this.attachedMesh.absolutePosition).normalize();
@@ -168,6 +175,11 @@ export class PlaneRotationGizmo extends Gizmo {
                 if (snapped) {
                     tmpSnapEvent.snapDistance = angle;
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
+                }
+
+                // Restore parent
+                if (attachedMeshParent) {
+                    this.attachedMesh.setParent(attachedMeshParent);
                 }
             }
         });
