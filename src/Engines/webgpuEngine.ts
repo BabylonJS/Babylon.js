@@ -252,9 +252,9 @@ export class WebGPUEngine extends Engine {
     }
 
     private _initializeContextAndSwapChain(): void {
-        this._context = this._canvas.getContext('gpupresent') as GPUCanvasContext;
-        this._swapChain = this._device.createSwapChain({
-            context: this._context,
+        this._context = this._canvas.getContext('gpupresent') as unknown as GPUCanvasContext;
+        this._swapChain = this._context.configureSwapChain({
+            device: this._device,
             format: this._options.swapChainFormat,
         });
     }
@@ -436,24 +436,14 @@ export class WebGPUEngine extends Engine {
         }
 
         // Chunk
-        // After Migration to Canary
-        // const maxChunk = 1024 * 1024 * 16;
-        const maxChunk = 1024 * 1024;
+        const maxChunk = 1024 * 1024 * 15;
         let offset = 0;
         while ((chunkEnd - (chunkStart + offset)) > maxChunk) {
-            const tempView = new Uint8Array(src.buffer.slice(chunkStart + offset, chunkStart + offset + maxChunk));
-            buffer.setSubData(dstByteOffset + offset, tempView.buffer);
+            buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, maxChunk);
             offset += maxChunk;
 
-            // After Migration to Canary
-            // buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, maxChunk);
         }
-
-        const tempView = new Uint8Array(src.buffer.slice(chunkStart + offset, chunkEnd));
-        buffer.setSubData(dstByteOffset + offset, tempView.buffer);
-
-        // After Migration to Canary
-        // buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, byteLength - offset);
+        buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, byteLength - offset);
     }
 
     //------------------------------------------------------------------------------
@@ -688,19 +678,16 @@ export class WebGPUEngine extends Engine {
     }
 
     private _createPipelineStageDescriptor(vertexShader: Uint32Array, fragmentShader: Uint32Array): GPURenderPipelineStageDescriptor {
-        // After Migration to Canary
         return {
             vertexStage: {
                 module: this._device.createShaderModule({
-                    // code: vertexShader,
-                    code: vertexShader.buffer,
+                    code: vertexShader,
                 }),
                 entryPoint: "main",
             },
             fragmentStage: {
                 module: this._device.createShaderModule({
-                    // code: fragmentShader,
-                    code: fragmentShader.buffer,
+                    code: fragmentShader,
                 }),
                 entryPoint: "main"
             }
@@ -780,12 +767,12 @@ export class WebGPUEngine extends Engine {
             const location = matches[1];
             const name = matches[2];
 
-            const attributeIndex = attributesNames.indexOf(name);
-            if (attributeIndex === -1) {
+            const shaderLocation = attributesNames.indexOf(name);
+            if (shaderLocation === -1) {
                 continue;
             }
 
-            results[attributeIndex] = +location;
+            results[shaderLocation] = +location;
         }
 
         return results;
@@ -1081,7 +1068,8 @@ export class WebGPUEngine extends Engine {
                 format: "rgba8unorm",
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 baseArrayLayer: 0,
-                baseMipLevel: 0
+                baseMipLevel: 0,
+                aspect: "all",
             });
             webglEngineTexture.dispose();
         };
@@ -1530,10 +1518,7 @@ export class WebGPUEngine extends Engine {
                 }
 
                 const positionAttributeDescriptor: GPUVertexAttributeDescriptor = {
-                    attributeIndex: location,
-
-                    // After Migration to Canary
-                    // shaderLocation: location,
+                    shaderLocation: location,
                     offset: 0, // not available in WebGL
                     format: this._getVertexInputDescriptorFormat(vertexBuffer.getKind(), vertexBuffer.type, vertexBuffer.normalized),
                 };
