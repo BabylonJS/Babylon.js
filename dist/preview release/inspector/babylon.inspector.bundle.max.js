@@ -40939,6 +40939,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneExplorerFilterComponent, _super);
@@ -41125,6 +41126,13 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             action: function () {
                 var newPointLight = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["PointLight"]("point light", babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), scene);
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPointLight);
+            }
+        });
+        nodeContextMenus.push({
+            label: "Add new directional light",
+            action: function () {
+                var newDirectionalLight = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["DirectionalLight"]("directional light", new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, -1, 1), scene);
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
             }
         });
         nodeContextMenus.push({

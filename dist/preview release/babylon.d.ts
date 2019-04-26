@@ -43235,6 +43235,8 @@ declare module BABYLON {
     export class LightGizmo extends Gizmo {
         private _lightMesh;
         private _material;
+        private cachedPosition;
+        private cachedForward;
         /**
          * Creates a LightGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
