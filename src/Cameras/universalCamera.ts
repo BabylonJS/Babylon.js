@@ -5,6 +5,8 @@ import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math";
 import { Camera } from "./camera";
 
+import "../Gamepads/gamepadSceneComponent";
+
 Node.AddNodeConstructor("FreeCamera", (name, scene) => {
     // Forcing to use the Universal camera
     return () => new UniversalCamera(name, Vector3.Zero(), scene);
