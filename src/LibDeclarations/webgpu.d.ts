@@ -153,7 +153,12 @@ type GPUTextureViewDimension =
   | "cube"
   | "cube-array"
   | "3d";
-  
+
+type GPUTextureAspect =
+ | "all"
+ | "stencil-only"
+ | "depth-only";
+
 type GPUVertexFormat =
   | "uchar"
   | "uchar2"
@@ -447,9 +452,7 @@ interface GPUSamplerDescriptor {
 }
 
 interface GPUShaderModuleDescriptor {
-  // After Migration to Canary
-  // code: Uint32Array;
-  code: ArrayBuffer | string;
+  code: Uint32Array;
   label?: string;
 }
 
@@ -461,7 +464,7 @@ interface GPUStencilStateFaceDescriptor {
 }
 
 interface GPUSwapChainDescriptor {
-  context?: GPUCanvasContext ;
+  device?: GPUDevice;
   format?: GPUTextureFormat;
   usage?: GPUTextureUsageFlags;
 }
@@ -484,7 +487,7 @@ interface GPUTextureDescriptor {
 }
 
 interface GPUTextureViewDescriptor {
-  aspect?: GPUTextureAspectFlags;
+  aspect?: GPUTextureAspect;
   baseArrayLayer?: number;
   baseMipLevel?: number;
   dimension?: GPUTextureViewDimension;
@@ -496,9 +499,7 @@ interface GPUTextureViewDescriptor {
 interface GPUVertexAttributeDescriptor {
   format?: GPUVertexFormat;
   offset?: number;
-  attributeIndex?: number;
-  // After Migration to Canary
-  // shaderLocation?: number;
+  shaderLocation?: number;
 }
 
 interface GPUVertexInputDescriptor {
@@ -527,13 +528,7 @@ interface GPUBuffer extends GPUDebugLabel {
 
   mapWriteAsync(): Promise<ArrayBuffer>;
   mapReadAsync(): Promise<ArrayBuffer>;
-  setSubData(offset: number, ab: ArrayBuffer): void;
-  
-  // After Migration to Canary
-  // PR #261
-  // If `byteLength` is 0, the ArrayBufferView is copied to the end.
-  // That is, `byteLength` "defaults" to `src.byteLength - srcByteOffset`.
-  // setSubData(dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void;
+  setSubData(dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void;
 }
 
 interface GPUCommandEncoder extends GPUDebugLabel {
@@ -563,6 +558,8 @@ interface GPUDebugLabel {
 
 // SwapChain / CanvasContext
 interface GPUCanvasContext {
+  configureSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
+  getSwapChainPreferredFormat(context: GPUCanvasContext): Promise<GPUTextureFormat> ;
 }
 
 interface GPUDevice {
@@ -584,12 +581,6 @@ interface GPUDevice {
   createTexture(descriptor: GPUTextureDescriptor): GPUTexture;
 
   getQueue(): GPUQueue;
-
-  // Calling createSwapChain a second time for the same GPUCanvasContext
-  // invalidates the previous one, and all of the textures it’s produced.
-  createSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
-
-  getSwapChainPreferredFormat(context: GPUCanvasContext): Promise<GPUTextureFormat> ;
 }
 
 interface GPUFence extends GPUDebugLabel {
