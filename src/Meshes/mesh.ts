@@ -135,6 +135,54 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Mesh cap setting : two caps, one at the beginning  and one at the end of the mesh
      */
     public static readonly CAP_ALL = 3;
+    /**
+     * Mesh pattern setting : no flip or rotate
+     */
+    public static readonly NO_FLIP = 0;
+    /**
+     * Mesh pattern setting : flip (reflect in y axis) alternate tiles on each row or column
+     */
+    public static readonly FLIP_TILE = 1;
+    /**
+     * Mesh pattern setting : rotate (180degs) alternate tiles on each row or column
+     */
+    public static readonly ROTATE_TILE = 2;
+    /**
+     * Mesh pattern setting : flip (reflect in y axis) all tiles on alternate rows
+     */
+    public static readonly FLIP_ROW = 3;
+    /**
+     * Mesh pattern setting : rotate (180degs) all tiles on alternate rows
+     */
+    public static readonly ROTATE_ROW = 4;
+    /**
+     * Mesh pattern setting : flip and rotate alternate tiles on each row or column
+     */
+    public static readonly FLIP_N_ROTATE_TILE = 5;
+    /**
+     * Mesh pattern setting : rotate pattern and rotate
+     */
+    public static readonly FLIP_N_ROTATE_ROW = 6;
+    /**
+     * Mesh tile positioning : part tiles same on left/right or top/bottom
+     */
+    public static readonly CENTER = 0;
+    /**
+     * Mesh tile positioning : part tiles on left
+     */
+    public static readonly LEFT = 1;
+    /**
+     * Mesh tile positioning : part tiles on right
+     */
+    public static readonly RIGHT = 2;
+    /**
+     * Mesh tile positioning : part tiles on top
+     */
+    public static readonly TOP = 3;
+    /**
+     * Mesh tile positioning : part tiles on bottom
+     */
+    public static readonly BOTTOM = 4;
 
     /**
      * Gets the default side orientation.
