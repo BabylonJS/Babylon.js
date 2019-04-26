@@ -33,7 +33,7 @@
   - Added clear coat support to PBR ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#clear-coat)
   - Added anisotropy support to PBR [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#anisotropy)
   - Added sheen support to PBR ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#sheen)
-  - Added sub-surface support to PBR ([Sebavan](https://github.com/Sebavan)) **** NEED DEMO or DOC LINK)
+  - Added sub-surface support to PBR ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#sub-surface)
   - Added energy conservation through Multiscattering BRDF support to PBR [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#energy-conservation)
   - Added Inspector Debug Mode ([Sebavan](https://github.com/Sebavan)) [Documentation](https://doc.babylonjs.com/how_to/physically_based_rendering_master#how-to-debug)
   - Added Smith Height Correlated Visibility term to PBR ([Sebavan](https://github.com/Sebavan)) [White Paper](http://jcgt.org/published/0003/02/03/)
