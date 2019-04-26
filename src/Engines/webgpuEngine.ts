@@ -324,9 +324,6 @@ export class WebGPUEngine extends Engine {
         this._cachedEffectForVertexBuffers = null;
     }
 
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-    }
-
     public setColorWrite(enable: boolean): void {
         this.__colorWrite = enable;
     }
@@ -1363,12 +1360,43 @@ export class WebGPUEngine extends Engine {
         };
     }
 
+    /**
+     * Set various states to the webGL context
+     * @param culling defines backface culling state
+     * @param zOffset defines the value to apply to zOffset (0 by default)
+     * @param force defines if states must be applied even if cache is up to date
+     * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     */
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
+        // Culling
+        if (this._depthCullingState.cull !== culling || force) {
+            this._depthCullingState.cull = culling;
+        }
+
+        // Cull face
+        // var cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+        var cullFace = this.cullBackFaces ? 1 : 2;
+        if (this._depthCullingState.cullFace !== cullFace || force) {
+            this._depthCullingState.cullFace = cullFace;
+        }
+
+        // Z offset
+        this.setZOffset(zOffset);
+
+        // Front face
+        // var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
+        var frontFace = reverseSide ? 1 : 2;
+        if (this._depthCullingState.frontFace !== frontFace || force) {
+            this._depthCullingState.frontFace = frontFace;
+        }
+    }
+
     private _getFrontFace(): GPUFrontFace {
-        switch (this._depthCullingState.cullFace) {
-            case Constants.MATERIAL_ClockWiseSideOrientation:
-                return WebGPUConstants.GPUFrontFace_cw;
-            default:
+        switch (this._depthCullingState.frontFace) {
+            case 1: // Should be the opposite will be fixed tomorrow
                 return WebGPUConstants.GPUFrontFace_ccw;
+            default:
+                return WebGPUConstants.GPUFrontFace_cw;
         }
     }
 
@@ -1377,11 +1405,11 @@ export class WebGPUEngine extends Engine {
             return WebGPUConstants.GPUCullMode_none;
         }
 
-        if (this.cullBackFaces) {
-            return WebGPUConstants.GPUCullMode_back;
+        if (this._depthCullingState.cullFace === 2) {
+            return WebGPUConstants.GPUCullMode_front;
         }
         else {
-            return WebGPUConstants.GPUCullMode_front;
+            return WebGPUConstants.GPUCullMode_back;
         }
     }
 
@@ -1641,7 +1669,7 @@ export class WebGPUEngine extends Engine {
         // Unsupported at the moment but needs to be extracted from the MSAA param.
         const sampleCount = 1;
         const topology = this._getTopology(fillMode);
-        const rasterizationStateDescrriptor = this._getRasterizationStateDescriptor();
+        const rasterizationStateDescriptor = this._getRasterizationStateDescriptor();
         const depthStateDescriptor = this._getDepthStencilStateDescriptor();
         const colorStateDescriptors = this._getColorStateDescriptors();
         const stages = this._getStages();
@@ -1651,7 +1679,7 @@ export class WebGPUEngine extends Engine {
         gpuPipeline.renderPipeline = this._device.createRenderPipeline({
             sampleCount: sampleCount,
             primitiveTopology: topology,
-            rasterizationState: rasterizationStateDescrriptor,
+            rasterizationState: rasterizationStateDescriptor,
             depthStencilState: depthStateDescriptor,
             colorStates: colorStateDescriptors,
 
