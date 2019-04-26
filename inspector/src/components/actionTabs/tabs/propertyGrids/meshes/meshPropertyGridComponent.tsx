@@ -161,6 +161,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         this.props.onSelectionChangedObservable.notifyObservers(mesh.material);
     }
 
+    onSourceMeshLink() {
+        if (!this.props.onSelectionChangedObservable) {
+            return;
+        }
+
+        const instanceMesh = this.props.mesh as any;
+        this.props.onSelectionChangedObservable.notifyObservers(instanceMesh.sourceMesh);
+    }
+
     convertPhysicsTypeToString(): string {
         const mesh = this.props.mesh;
         switch (mesh.physicsImpostor!.type) {
@@ -217,6 +226,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         mesh.material &&
                         <TextLineComponent label="Material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
                     }
+                    {
+                        mesh.isAnInstance &&
+                        <TextLineComponent label="Source" value={(mesh as any).sourceMesh.name} onLink={() => this.onSourceMeshLink()} />
+                    }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -231,7 +244,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <Vector3LineComponent label="Scaling" target={mesh} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="DISPLAY" closed={true}>
-                    <SliderLineComponent label="Visibility" target={mesh} propertyName="visibility" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    {
+                        !mesh.isAnInstance &&
+                        <SliderLineComponent label="Visibility" target={mesh} propertyName="visibility" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                     <FloatLineComponent lockObject={this.props.lockObject} label="Alpha index" target={mesh} propertyName="alphaIndex" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Receive shadows" target={mesh} propertyName="receiveShadows" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
