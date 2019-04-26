@@ -16,6 +16,7 @@ import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline
 import { Vector3 } from 'babylonjs/Maths/math';
 import { PointLight } from 'babylonjs/Lights/pointLight';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
+import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 
 require("./sceneExplorer.scss");
 
@@ -253,6 +254,13 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             action: () => {
                 let newPointLight = new PointLight("point light", Vector3.Zero(), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newPointLight);
+            }
+        });
+        nodeContextMenus.push({
+            label: "Add new directional light",
+            action: () => {
+                let newDirectionalLight = new DirectionalLight("directional light", new Vector3(1, -1, 1), scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
             }
         });
         nodeContextMenus.push({

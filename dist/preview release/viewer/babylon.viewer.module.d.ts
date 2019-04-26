@@ -175,90 +175,7 @@ declare module 'babylonjs-viewer/viewer/viewerManager' {
 }
 
 declare module 'babylonjs-viewer/viewer/defaultViewer' {
-    import { ViewerConfiguration, IModelConfiguration } from 'babylonjs-viewer/configuration';
-    import { Template } from 'babylonjs-viewer/templating/templateManager';
-    import { TemplateManager } from 'babylonjs-viewer/templating/templateManager';
-    import { AbstractViewerWithTemplate } from 'babylonjs-viewer/viewer/viewerWithTemplate';
-    import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
-    import { IViewerTemplatePlugin } from 'babylonjs-viewer/templating/viewerTemplatePlugin';
-    /**
-        * The Default viewer is the default implementation of the AbstractViewer.
-        * It uses the templating system to render a new canvas and controls.
-        */
-    export class DefaultViewer extends AbstractViewerWithTemplate {
-            containerElement: Element;
-            /**
-                * The corresponsing template manager of this viewer.
-                */
-            templateManager: TemplateManager;
-            fullscreenElement?: Element;
-            /**
-                * Create a new default viewer
-                * @param containerElement the element in which the templates will be rendered
-                * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
-                */
-            constructor(containerElement: Element, initialConfiguration?: ViewerConfiguration);
-            registerTemplatePlugin(plugin: IViewerTemplatePlugin): void;
-            /**
-                * This will be executed when the templates initialize.
-                */
-            protected _onTemplatesLoaded(): Promise<import("babylonjs-viewer/viewer/viewer").AbstractViewer>;
-            protected _initVR(): void;
-            /**
-                * Toggle fullscreen of the entire viewer
-                */
-            toggleFullscreen: () => void;
-            /**
-                * Preparing the container element to present the viewer
-                */
-            protected _prepareContainerElement(): void;
-            /**
-                * This function will configure the templates and update them after a model was loaded
-                * It is mainly responsible to changing the title and subtitle etc'.
-                * @param model the model to be used to configure the templates by
-                */
-            protected _configureTemplate(model?: ViewerModel): void;
-            /**
-                * This will load a new model to the default viewer
-                * overriding the AbstractViewer's loadModel.
-                * The scene will automatically be cleared of the old models, if exist.
-                * @param model the configuration object (or URL) to load.
-                */
-            loadModel(model?: string | File | IModelConfiguration): Promise<ViewerModel>;
-            /**
-                * Show the overlay and the defined sub-screen.
-                * Mainly used for help and errors
-                * @param subScreen the name of the subScreen. Those can be defined in the configuration object
-                */
-            showOverlayScreen(subScreen: string): Promise<string> | Promise<Template>;
-            /**
-                * Hide the overlay screen.
-                */
-            hideOverlayScreen(): Promise<string> | Promise<Template>;
-            /**
-                * show the viewer (in case it was hidden)
-                *
-                * @param visibilityFunction an optional function to execute in order to show the container
-                */
-            show(visibilityFunction?: ((template: Template) => Promise<Template>)): Promise<Template>;
-            /**
-                * hide the viewer (in case it is visible)
-                *
-                * @param visibilityFunction an optional function to execute in order to hide the container
-                */
-            hide(visibilityFunction?: ((template: Template) => Promise<Template>)): Promise<Template>;
-            /**
-                * Show the loading screen.
-                * The loading screen can be configured using the configuration object
-                */
-            showLoadingScreen(): Promise<string> | Promise<Template>;
-            /**
-                * Hide the loading screen
-                */
-            hideLoadingScreen(): Promise<string> | Promise<Template>;
-            dispose(): void;
-            protected _onConfigurationLoaded(configuration: ViewerConfiguration): void;
-    }
+    
 }
 
 declare module 'babylonjs-viewer/viewer/viewer' {
@@ -1031,13 +948,14 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
 }
 
 declare module 'babylonjs-viewer/optimizer/custom' {
+    import { extendedUpgrade } from "babylonjs-viewer/optimizer/custom/extended";
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 
@@ -1156,187 +1074,6 @@ declare module 'babylonjs-viewer/configuration/configuration' {
                     defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
                     globalLightRotation?: number;
             };
-    }
-}
-
-declare module 'babylonjs-viewer/templating/templateManager' {
-    import { Observable } from 'babylonjs/Misc/observable';
-    import { EventManager } from 'babylonjs-viewer/templating/eventManager';
-    import { ITemplateConfiguration } from 'babylonjs-viewer/configuration/interfaces';
-    /**
-        * The object sent when an event is triggered
-        */
-    export interface EventCallback {
-            event: Event;
-            template: Template;
-            selector: string;
-            payload?: any;
-    }
-    /**
-        * The template manager, a member of the viewer class, will manage the viewer's templates and generate the HTML.
-        * The template manager managers a single viewer and can be seen as the collection of all sub-templates of the viewer.
-        */
-    export class TemplateManager {
-            containerElement: Element;
-            /**
-                * Will be triggered when any template is initialized
-                */
-            onTemplateInit: Observable<Template>;
-            /**
-                * Will be triggered when any template is fully loaded
-                */
-            onTemplateLoaded: Observable<Template>;
-            /**
-                * Will be triggered when a template state changes
-                */
-            onTemplateStateChange: Observable<Template>;
-            /**
-                * Will be triggered when all templates finished loading
-                */
-            onAllLoaded: Observable<TemplateManager>;
-            /**
-                * Will be triggered when any event on any template is triggered.
-                */
-            onEventTriggered: Observable<EventCallback>;
-            /**
-                * This template manager's event manager. In charge of callback registrations to native event types
-                */
-            eventManager: EventManager;
-            constructor(containerElement: Element);
-            /**
-                * Initialize the template(s) for the viewer. Called bay the Viewer class
-                * @param templates the templates to be used to initialize the main template
-                */
-            initTemplate(templates: {
-                    [key: string]: ITemplateConfiguration;
-            }): Promise<void>;
-            /**
-                * Get the canvas in the template tree.
-                * There must be one and only one canvas inthe template.
-                */
-            getCanvas(): HTMLCanvasElement | null;
-            /**
-                * Get a specific template from the template tree
-                * @param name the name of the template to load
-                */
-            getTemplate(name: string): Template | undefined;
-            /**
-                * Dispose the template manager
-                */
-            dispose(): void;
-    }
-    /**
-        * This class represents a single template in the viewer's template tree.
-        * An example for a template is a single canvas, an overlay (containing sub-templates) or the navigation bar.
-        * A template is injected using the template manager in the correct position.
-        * The template is rendered using Handlebars and can use Handlebars' features (such as parameter injection)
-        *
-        * For further information please refer to the documentation page, https://doc.babylonjs.com
-        */
-    export class Template {
-            name: string;
-            /**
-                * Will be triggered when the template is loaded
-                */
-            onLoaded: Observable<Template>;
-            /**
-                * will be triggered when the template is appended to the tree
-                */
-            onAppended: Observable<Template>;
-            /**
-                * Will be triggered when the template's state changed (shown, hidden)
-                */
-            onStateChange: Observable<Template>;
-            /**
-                * Will be triggered when an event is triggered on ths template.
-                * The event is a native browser event (like mouse or pointer events)
-                */
-            onEventTriggered: Observable<EventCallback>;
-            onParamsUpdated: Observable<Template>;
-            onHTMLRendered: Observable<Template>;
-            /**
-                * is the template loaded?
-                */
-            isLoaded: boolean;
-            /**
-                * This is meant to be used to track the show and hide functions.
-                * This is NOT (!!) a flag to check if the element is actually visible to the user.
-                */
-            isShown: boolean;
-            /**
-                * Is this template a part of the HTML tree (the template manager injected it)
-                */
-            isInHtmlTree: boolean;
-            /**
-                * The HTML element containing this template
-                */
-            parent: HTMLElement;
-            /**
-                * A promise that is fulfilled when the template finished loading.
-                */
-            initPromise: Promise<Template>;
-            constructor(name: string, _configuration: ITemplateConfiguration);
-            /**
-                * Some templates have parameters (like background color for example).
-                * The parameters are provided to Handlebars which in turn generates the template.
-                * This function will update the template with the new parameters
-                *
-                * Note that when updating parameters the events will be registered again (after being cleared).
-                *
-                * @param params the new template parameters
-                */
-            updateParams(params: {
-                    [key: string]: string | number | boolean | object;
-            }, append?: boolean): void;
-            redraw(): void;
-            /**
-                * Get the template'S configuration
-                */
-            readonly configuration: ITemplateConfiguration;
-            /**
-                * A template can be a parent element for other templates or HTML elements.
-                * This function will deliver all child HTML elements of this template.
-                */
-            getChildElements(): Array<string>;
-            /**
-                * Appending the template to a parent HTML element.
-                * If a parent is already set and you wish to replace the old HTML with new one, forceRemove should be true.
-                * @param parent the parent to which the template is added
-                * @param forceRemove if the parent already exists, shoud the template be removed from it?
-                */
-            appendTo(parent: HTMLElement, forceRemove?: boolean): void;
-            /**
-                * Show the template using the provided visibilityFunction, or natively using display: flex.
-                * The provided function returns a promise that should be fullfilled when the element is shown.
-                * Since it is a promise async operations are more than possible.
-                * See the default viewer for an opacity example.
-                * @param visibilityFunction The function to execute to show the template.
-                */
-            show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template>;
-            /**
-                * Hide the template using the provided visibilityFunction, or natively using display: none.
-                * The provided function returns a promise that should be fullfilled when the element is hidden.
-                * Since it is a promise async operations are more than possible.
-                * See the default viewer for an opacity example.
-                * @param visibilityFunction The function to execute to show the template.
-                */
-            hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template>;
-            /**
-                * Dispose this template
-                */
-            dispose(): void;
-    }
-}
-
-declare module 'babylonjs-viewer/viewer/viewerWithTemplate' {
-    import { AbstractViewer } from "babylonjs-viewer/viewer/viewer";
-    import { ConfigurationLoader } from "babylonjs-viewer/configuration/loader";
-    /**
-      * The AbstractViewer is the center of Babylon's viewer.
-      * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
-      */
-    export abstract class AbstractViewerWithTemplate extends AbstractViewer {
-        protected getConfigurationLoader(): ConfigurationLoader;
     }
 }
 
@@ -1737,6 +1474,191 @@ declare module 'babylonjs-viewer/loader/plugins' {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 
+declare module 'babylonjs-viewer/templating/templateManager' {
+    import { Observable } from 'babylonjs/Misc/observable';
+    import { EventManager } from 'babylonjs-viewer/templating/eventManager';
+    import { ITemplateConfiguration } from 'babylonjs-viewer/configuration/interfaces';
+    /**
+        * The object sent when an event is triggered
+        */
+    export interface EventCallback {
+            event: Event;
+            template: Template;
+            selector: string;
+            payload?: any;
+    }
+    /**
+        * The template manager, a member of the viewer class, will manage the viewer's templates and generate the HTML.
+        * The template manager managers a single viewer and can be seen as the collection of all sub-templates of the viewer.
+        */
+    export class TemplateManager {
+            containerElement: Element;
+            /**
+                * Will be triggered when any template is initialized
+                */
+            onTemplateInit: Observable<Template>;
+            /**
+                * Will be triggered when any template is fully loaded
+                */
+            onTemplateLoaded: Observable<Template>;
+            /**
+                * Will be triggered when a template state changes
+                */
+            onTemplateStateChange: Observable<Template>;
+            /**
+                * Will be triggered when all templates finished loading
+                */
+            onAllLoaded: Observable<TemplateManager>;
+            /**
+                * Will be triggered when any event on any template is triggered.
+                */
+            onEventTriggered: Observable<EventCallback>;
+            /**
+                * This template manager's event manager. In charge of callback registrations to native event types
+                */
+            eventManager: EventManager;
+            constructor(containerElement: Element);
+            /**
+                * Initialize the template(s) for the viewer. Called bay the Viewer class
+                * @param templates the templates to be used to initialize the main template
+                */
+            initTemplate(templates: {
+                    [key: string]: ITemplateConfiguration;
+            }): Promise<void>;
+            /**
+                * Get the canvas in the template tree.
+                * There must be one and only one canvas inthe template.
+                */
+            getCanvas(): HTMLCanvasElement | null;
+            /**
+                * Get a specific template from the template tree
+                * @param name the name of the template to load
+                */
+            getTemplate(name: string): Template | undefined;
+            /**
+                * Dispose the template manager
+                */
+            dispose(): void;
+    }
+    /**
+        * This class represents a single template in the viewer's template tree.
+        * An example for a template is a single canvas, an overlay (containing sub-templates) or the navigation bar.
+        * A template is injected using the template manager in the correct position.
+        * The template is rendered using Handlebars and can use Handlebars' features (such as parameter injection)
+        *
+        * For further information please refer to the documentation page, https://doc.babylonjs.com
+        */
+    export class Template {
+            name: string;
+            /**
+                * Will be triggered when the template is loaded
+                */
+            onLoaded: Observable<Template>;
+            /**
+                * will be triggered when the template is appended to the tree
+                */
+            onAppended: Observable<Template>;
+            /**
+                * Will be triggered when the template's state changed (shown, hidden)
+                */
+            onStateChange: Observable<Template>;
+            /**
+                * Will be triggered when an event is triggered on ths template.
+                * The event is a native browser event (like mouse or pointer events)
+                */
+            onEventTriggered: Observable<EventCallback>;
+            onParamsUpdated: Observable<Template>;
+            onHTMLRendered: Observable<Template>;
+            /**
+                * is the template loaded?
+                */
+            isLoaded: boolean;
+            /**
+                * This is meant to be used to track the show and hide functions.
+                * This is NOT (!!) a flag to check if the element is actually visible to the user.
+                */
+            isShown: boolean;
+            /**
+                * Is this template a part of the HTML tree (the template manager injected it)
+                */
+            isInHtmlTree: boolean;
+            /**
+                * The HTML element containing this template
+                */
+            parent: HTMLElement;
+            /**
+                * A promise that is fulfilled when the template finished loading.
+                */
+            initPromise: Promise<Template>;
+            constructor(name: string, _configuration: ITemplateConfiguration);
+            /**
+                * Some templates have parameters (like background color for example).
+                * The parameters are provided to Handlebars which in turn generates the template.
+                * This function will update the template with the new parameters
+                *
+                * Note that when updating parameters the events will be registered again (after being cleared).
+                *
+                * @param params the new template parameters
+                */
+            updateParams(params: {
+                    [key: string]: string | number | boolean | object;
+            }, append?: boolean): void;
+            redraw(): void;
+            /**
+                * Get the template'S configuration
+                */
+            readonly configuration: ITemplateConfiguration;
+            /**
+                * A template can be a parent element for other templates or HTML elements.
+                * This function will deliver all child HTML elements of this template.
+                */
+            getChildElements(): Array<string>;
+            /**
+                * Appending the template to a parent HTML element.
+                * If a parent is already set and you wish to replace the old HTML with new one, forceRemove should be true.
+                * @param parent the parent to which the template is added
+                * @param forceRemove if the parent already exists, shoud the template be removed from it?
+                */
+            appendTo(parent: HTMLElement, forceRemove?: boolean): void;
+            /**
+                * Show the template using the provided visibilityFunction, or natively using display: flex.
+                * The provided function returns a promise that should be fullfilled when the element is shown.
+                * Since it is a promise async operations are more than possible.
+                * See the default viewer for an opacity example.
+                * @param visibilityFunction The function to execute to show the template.
+                */
+            show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template>;
+            /**
+                * Hide the template using the provided visibilityFunction, or natively using display: none.
+                * The provided function returns a promise that should be fullfilled when the element is hidden.
+                * Since it is a promise async operations are more than possible.
+                * See the default viewer for an opacity example.
+                * @param visibilityFunction The function to execute to show the template.
+                */
+            hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template>;
+            /**
+                * Dispose this template
+                */
+            dispose(): void;
+    }
+}
+
+declare module 'babylonjs-viewer/optimizer/custom/extended' {
+    import { SceneManager } from 'babylonjs-viewer/managers/sceneManager';
+    /**
+        * A custom upgrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedUpgrade(sceneManager: SceneManager): boolean;
+    /**
+        * A custom degrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedDegrade(sceneManager: SceneManager): boolean;
+}
+
 declare module 'babylonjs-viewer/configuration/interfaces' {
     export * from 'babylonjs-viewer/configuration/interfaces/cameraConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/colorGradingConfiguration';
@@ -1777,48 +1699,6 @@ declare module 'babylonjs-viewer/configuration/interfaces/environmentMapConfigur
                     g?: number;
                     b?: number;
             };
-    }
-}
-
-declare module 'babylonjs-viewer/templating/eventManager' {
-    import { EventCallback, TemplateManager } from "babylonjs-viewer/templating/templateManager";
-    /**
-        * The EventManager is in charge of registering user interctions with the viewer.
-        * It is used in the TemplateManager
-        */
-    export class EventManager {
-            constructor(_templateManager: TemplateManager);
-            /**
-                * Register a new callback to a specific template.
-                * The best example for the usage can be found in the DefaultViewer
-                *
-                * @param templateName the templateName to register the event to
-                * @param callback The callback to be executed
-                * @param eventType the type of event to register
-                * @param selector an optional selector. if not defined the parent object in the template will be selected
-                */
-            registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * This will remove a registered event from the defined template.
-                * Each one of the variables apart from the template name are optional, but one must be provided.
-                *
-                * @param templateName the templateName
-                * @param callback the callback to remove (optional)
-                * @param eventType the event type to remove (optional)
-                * @param selector the selector from which to remove the event (optional)
-                */
-            unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * Dispose the event manager
-                */
-            dispose(): void;
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/loader' {
-    import { RenderOnlyConfigurationLoader } from "babylonjs-viewer/configuration/renderOnlyLoader";
-    export class ConfigurationLoader extends RenderOnlyConfigurationLoader {
-        protected getExtendedConfig(type: string | undefined): import("babylonjs-viewer/configuration/configuration").ViewerConfiguration;
     }
 }
 
@@ -1953,6 +1833,41 @@ declare module 'babylonjs-viewer/loader/plugins/extendedMaterialLoaderPlugin' {
       */
     export class ExtendedMaterialLoaderPlugin implements ILoaderPlugin {
         onMaterialLoaded(baseMaterial: Material): void;
+    }
+}
+
+declare module 'babylonjs-viewer/templating/eventManager' {
+    import { EventCallback, TemplateManager } from "babylonjs-viewer/templating/templateManager";
+    /**
+        * The EventManager is in charge of registering user interctions with the viewer.
+        * It is used in the TemplateManager
+        */
+    export class EventManager {
+            constructor(_templateManager: TemplateManager);
+            /**
+                * Register a new callback to a specific template.
+                * The best example for the usage can be found in the DefaultViewer
+                *
+                * @param templateName the templateName to register the event to
+                * @param callback The callback to be executed
+                * @param eventType the type of event to register
+                * @param selector an optional selector. if not defined the parent object in the template will be selected
+                */
+            registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
+            /**
+                * This will remove a registered event from the defined template.
+                * Each one of the variables apart from the template name are optional, but one must be provided.
+                *
+                * @param templateName the templateName
+                * @param callback the callback to remove (optional)
+                * @param eventType the event type to remove (optional)
+                * @param selector the selector from which to remove the event (optional)
+                */
+            unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
+            /**
+                * Dispose the event manager
+                */
+            dispose(): void;
     }
 }
 
