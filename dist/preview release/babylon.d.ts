@@ -6087,6 +6087,8 @@ declare module BABYLON {
     export class EngineStore {
         /** Gets the list of created engines */
         static Instances: Engine[];
+        /** @hidden */
+        static _LastCreatedScene: Nullable<Scene>;
         /**
          * Gets the latest created engine
          */

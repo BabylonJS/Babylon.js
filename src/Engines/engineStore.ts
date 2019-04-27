@@ -11,6 +11,9 @@ export class EngineStore {
     /** Gets the list of created engines */
     public static Instances = new Array<Engine>();
 
+    /** @hidden */
+    public static _LastCreatedScene: Nullable<Scene> = null;
+
     /**
      * Gets the latest created engine
      */
@@ -26,15 +29,6 @@ export class EngineStore {
      * Gets the latest created scene
      */
     public static get LastCreatedScene(): Nullable<Scene> {
-        var lastCreatedEngine = this.LastCreatedEngine;
-        if (!lastCreatedEngine) {
-            return null;
-        }
-
-        if (lastCreatedEngine.scenes.length === 0) {
-            return null;
-        }
-
-        return lastCreatedEngine.scenes[lastCreatedEngine.scenes.length - 1];
+        return this._LastCreatedScene;
     }
 }
