@@ -1300,6 +1300,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     constructor(engine: Engine, options?: SceneOptions) {
         super();
         this._engine = engine || EngineStore.LastCreatedEngine;
+        EngineStore._LastCreatedScene = this;
 
         this._engine.scenes.push(this);
         this._uid = null;

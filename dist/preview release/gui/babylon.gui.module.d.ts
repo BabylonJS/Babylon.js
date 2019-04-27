@@ -857,20 +857,20 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         width: string | number;
         /**
-         * Gets control width in pixel
+         * Gets or sets the control width in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly widthInPixels: number;
+        widthInPixels: number;
         /**
          * Gets or sets control height
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         height: string | number;
         /**
-         * Gets control height in pixel
+         * Gets or sets control height in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly heightInPixels: number;
+        heightInPixels: number;
         /** Gets or set font family */
         fontFamily: string;
         /** Gets or sets font style */
@@ -884,8 +884,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         style: Nullable<Style>;
         /** @hidden */
         readonly _isFontSizeInPercentage: boolean;
-        /** Gets font size in pixels */
-        readonly fontSizeInPixels: number;
+        /** Gets or sets font size in pixels */
+        fontSizeInPixels: number;
         /** Gets or sets font size */
         fontSize: string | number;
         /** Gets or sets foreground color */
@@ -908,80 +908,80 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         paddingLeft: string | number;
         /**
-         * Gets a value indicating the padding in pixels to use on the left of the control
+         * Gets or sets a value indicating the padding in pixels to use on the left of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly paddingLeftInPixels: number;
+        paddingLeftInPixels: number;
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         paddingRight: string | number;
         /**
-         * Gets a value indicating the padding in pixels to use on the right of the control
+         * Gets or sets a value indicating the padding in pixels to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly paddingRightInPixels: number;
+        paddingRightInPixels: number;
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         paddingTop: string | number;
         /**
-         * Gets a value indicating the padding in pixels to use on the top of the control
+         * Gets or sets a value indicating the padding in pixels to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly paddingTopInPixels: number;
+        paddingTopInPixels: number;
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         paddingBottom: string | number;
         /**
-         * Gets a value indicating the padding in pixels to use on the bottom of the control
+         * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly paddingBottomInPixels: number;
+        paddingBottomInPixels: number;
         /**
          * Gets or sets a value indicating the left coordinate of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         left: string | number;
         /**
-         * Gets a value indicating the left coordinate in pixels of the control
+         * Gets or sets a value indicating the left coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly leftInPixels: number;
+        leftInPixels: number;
         /**
          * Gets or sets a value indicating the top coordinate of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         top: string | number;
         /**
-         * Gets a value indicating the top coordinate in pixels of the control
+         * Gets or sets a value indicating the top coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly topInPixels: number;
+        topInPixels: number;
         /**
          * Gets or sets a value indicating the offset on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkOffsetX: string | number;
         /**
-         * Gets a value indicating the offset in pixels on X axis to the linked mesh
+         * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        readonly linkOffsetXInPixels: number;
+        linkOffsetXInPixels: number;
         /**
          * Gets or sets a value indicating the offset on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkOffsetY: string | number;
         /**
-         * Gets a value indicating the offset in pixels on Y axis to the linked mesh
+         * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        readonly linkOffsetYInPixels: number;
+        linkOffsetYInPixels: number;
         /** Gets the center coordinate on X axis */
         readonly centerX: number;
         /** Gets the center coordinate on Y axis */
@@ -4675,20 +4675,20 @@ declare module BABYLON.GUI {
          */
         width: string | number;
         /**
-         * Gets control width in pixel
+         * Gets or sets the control width in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly widthInPixels: number;
+        widthInPixels: number;
         /**
          * Gets or sets control height
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         height: string | number;
         /**
-         * Gets control height in pixel
+         * Gets or sets control height in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly heightInPixels: number;
+        heightInPixels: number;
         /** Gets or set font family */
         fontFamily: string;
         /** Gets or sets font style */
@@ -4702,8 +4702,8 @@ declare module BABYLON.GUI {
         style: BABYLON.Nullable<Style>;
         /** @hidden */
         readonly _isFontSizeInPercentage: boolean;
-        /** Gets font size in pixels */
-        readonly fontSizeInPixels: number;
+        /** Gets or sets font size in pixels */
+        fontSizeInPixels: number;
         /** Gets or sets font size */
         fontSize: string | number;
         /** Gets or sets foreground color */
@@ -4726,80 +4726,80 @@ declare module BABYLON.GUI {
          */
         paddingLeft: string | number;
         /**
-         * Gets a value indicating the padding in pixels to use on the left of the control
+         * Gets or sets a value indicating the padding in pixels to use on the left of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly paddingLeftInPixels: number;
+        paddingLeftInPixels: number;
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         paddingRight: string | number;
         /**
-         * Gets a value indicating the padding in pixels to use on the right of the control
+         * Gets or sets a value indicating the padding in pixels to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly paddingRightInPixels: number;
+        paddingRightInPixels: number;
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         paddingTop: string | number;
         /**
-         * Gets a value indicating the padding in pixels to use on the top of the control
+         * Gets or sets a value indicating the padding in pixels to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly paddingTopInPixels: number;
+        paddingTopInPixels: number;
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         paddingBottom: string | number;
         /**
-         * Gets a value indicating the padding in pixels to use on the bottom of the control
+         * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly paddingBottomInPixels: number;
+        paddingBottomInPixels: number;
         /**
          * Gets or sets a value indicating the left coordinate of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         left: string | number;
         /**
-         * Gets a value indicating the left coordinate in pixels of the control
+         * Gets or sets a value indicating the left coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly leftInPixels: number;
+        leftInPixels: number;
         /**
          * Gets or sets a value indicating the top coordinate of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         top: string | number;
         /**
-         * Gets a value indicating the top coordinate in pixels of the control
+         * Gets or sets a value indicating the top coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        readonly topInPixels: number;
+        topInPixels: number;
         /**
          * Gets or sets a value indicating the offset on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkOffsetX: string | number;
         /**
-         * Gets a value indicating the offset in pixels on X axis to the linked mesh
+         * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        readonly linkOffsetXInPixels: number;
+        linkOffsetXInPixels: number;
         /**
          * Gets or sets a value indicating the offset on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkOffsetY: string | number;
         /**
-         * Gets a value indicating the offset in pixels on Y axis to the linked mesh
+         * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        readonly linkOffsetYInPixels: number;
+        linkOffsetYInPixels: number;
         /** Gets the center coordinate on X axis */
         readonly centerX: number;
         /** Gets the center coordinate on Y axis */
